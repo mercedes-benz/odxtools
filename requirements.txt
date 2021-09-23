@@ -1,0 +1,6 @@
+bitstruct >= 6.0.0
+argparse_addons
+PyInquirer
+jinja2
+python-can < 4.0
+aioisotp
