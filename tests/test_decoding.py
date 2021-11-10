@@ -92,7 +92,7 @@ class TestDecoding(unittest.TestCase):
         expected_message = Message(coded_message, service, req, param_dict={"SID": 0x7d,
                                                                             "coded_const_parameter_2": 0xab})
         decoded_message = diag_layer.decode(coded_message)[0]
-
+        
         self.assertEqual(expected_message.coded_message,
                          decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)

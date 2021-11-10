@@ -23,12 +23,12 @@
 {%- if param.long_name %}
  <LONG-NAME>{{param.long_name|e}}</LONG-NAME>
 {%- endif %}
-{%- if param.byte_position is defined %}
+{%- if param.byte_position is not none %}
  <BYTE-POSITION>{{param.byte_position}}</BYTE-POSITION>
 {%- endif %}
 {%- if param.parameter_type == "MATCHING-REQUEST-PARAM" and param.request_byte_position is defined %}
  <REQUEST-BYTE-POS>{{param.request_byte_position}}</REQUEST-BYTE-POS>
-{%- elif param.byte_position is defined %}
+{%- elif param.bit_position != 0 %}
  <BIT-POSITION>{{param.bit_position}}</BIT-POSITION>
 {%- endif %}
 {%- if param.byte_length is defined and param.byte_length is not none %}

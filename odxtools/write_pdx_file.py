@@ -87,7 +87,7 @@ def write_pdx_file(output_file_name : str,
         # allows to put XML attributes on a separate line while it is
         # collapsed with the previous line in the rendering
         jinja_env.filters["odxtools_collapse_xml_attribute"] = lambda x: " "+x.strip() if x.strip() else ""
-
+        
         vars = {}
         vars["odxtools_version"] = odxtools.__version__
         vars["database"] = database

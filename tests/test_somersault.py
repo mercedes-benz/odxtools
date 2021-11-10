@@ -17,7 +17,7 @@ class TestDecode(unittest.TestCase):
         self.assertEqual(m.service, odxdb.ecus.somersault_assiduous.services.headstand)
         self.assertEqual(m.structure, odxdb.ecus.somersault_assiduous.services.headstand.request)
         self.assertEqual(m.param_dict, {"sid": 0x03, "duration": 0x45})
-
+        
     def test_decode_inherited_request(self):
         raw_message = odxdb.ecus.somersault_assiduous.services.do_backward_flips(backward_soberness_check=0x21,
                                                                                  num_flips=2)
@@ -36,7 +36,7 @@ class TestDecode(unittest.TestCase):
         # "ecus.somersault_lazy" here)
         db_response = next(filter(lambda x: x.short_name == "grudging_forward", odxdb.diag_layers.somersault.positive_responses))
         raw_response_message = db_response.encode(raw_request_message)
-
+        
         messages = odxdb.diag_layers.somersault.decode_response(raw_response_message, raw_request_message)
         self.assertTrue(len(messages) == 1, f"There should be only one service for 0x0145 but there are: {messages}")
         m = messages[0]

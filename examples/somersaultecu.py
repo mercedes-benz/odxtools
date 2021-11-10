@@ -18,7 +18,7 @@ from odxtools.service import DiagService
 from odxtools.structures import Request
 from odxtools.structures import Response
 
-from odxtools.compumethods import IdenticalCompuMethod
+from odxtools.compumethods import CompuScale, IdenticalCompuMethod, Limit
 from odxtools.compumethods import LinearCompuMethod
 from odxtools.compumethods import TexttableCompuMethod
 
@@ -68,14 +68,14 @@ SID = IntEnum('SID', [(i.name, i.value) for i in chain(uds.SID, SID)])
 somersault_functional_classes = {
     "flip":
     FunctionalClass(
-        id="somersault.FNC.flip",
-        short_name="flip",
+        id="somersault.FNC.flip", 
+        short_name="flip", 
         long_name="Flip"),
 
     "session":
     FunctionalClass(
-        id="somersault.FNC.session",
-        short_name="session",
+        id="somersault.FNC.session", 
+        short_name="session", 
         long_name="Session"),
 }
 
@@ -83,14 +83,14 @@ somersault_functional_classes = {
 somersault_additional_audiences = {
     "attentive_admirer":
     AdditionalAudience(
-        id="somersault.AA.attentive_admirer",
-        short_name="attentive_admirer",
+        id="somersault.AA.attentive_admirer", 
+        short_name="attentive_admirer", 
         long_name="Attentive Admirer"),
 
     "anyone":
     AdditionalAudience(
-        id="somersault.AA.anyone",
-        short_name="anyone",
+        id="somersault.AA.anyone", 
+        short_name="anyone", 
         long_name="Anyone"),
 }
 
@@ -123,8 +123,14 @@ somersault_compumethods = {
     TexttableCompuMethod(
         internal_type="A_UINT32",
         internal_to_phys= [
-            {'COMPU-CONST': 'false', 'LOWER-LIMIT': 0, 'UPPER-LIMIT': 0, 'COMPU-INVERSE-VALUE': None},
-            {'COMPU-CONST': 'true', 'LOWER-LIMIT': 1, 'UPPER-LIMIT': 1, 'COMPU-INVERSE-VALUE': None}
+            CompuScale(compu_const="false",
+                       lower_limit=Limit(0),
+                       upper_limit=Limit(0)
+                       ),
+            CompuScale(compu_const="true",
+                       lower_limit=Limit(1),
+                       upper_limit=Limit(1)
+                       ),
         ])
 }
 
@@ -609,7 +615,7 @@ somersault_services = {
                     enabled_audience_refs=[
                         somersault_additional_audiences["attentive_admirer"].id,
                         somersault_additional_audiences["anyone"].id,
-                    ],
+                    ], 
                     is_development=False)
                 ),
 
@@ -629,6 +635,7 @@ somersault_services = {
     "forward_flips":
     DiagService(id="somersault.service.do_forward_flips",
                 short_name="do_forward_flips",
+                description="<p>Do a forward flip.</p>",
                 semantic="FUNCTION",
                 request=somersault_requests["forward_flips"].id,
                 positive_responses=[
@@ -647,7 +654,7 @@ somersault_services = {
                     somersault_functional_classes["flip"].id
                 ],
                 audience=Audience(
-                    enabled_audience_refs=[somersault_additional_audiences["attentive_admirer"].id],
+                    enabled_audience_refs=[somersault_additional_audiences["attentive_admirer"].id], 
                     is_development=False)
                 ),
 
@@ -666,7 +673,7 @@ somersault_services = {
                     somersault_functional_classes["flip"].id
                 ],
                 audience=Audience(
-                    enabled_audience_refs=[somersault_additional_audiences["attentive_admirer"].id],
+                    enabled_audience_refs=[somersault_additional_audiences["attentive_admirer"].id], 
                     is_development=False)
                 ),
 
@@ -682,7 +689,7 @@ somersault_services = {
                     somersault_negative_responses["general"].id,
                 ],
                 audience=Audience(
-                    disabled_audience_refs=[somersault_additional_audiences["attentive_admirer"].id],
+                    disabled_audience_refs=[somersault_additional_audiences["attentive_admirer"].id], 
                     is_aftersales=False,
                     is_aftermarket=False)
                 ),
@@ -800,7 +807,8 @@ somersault_diaglayer = DiagLayer(
     variant_type="BASE-VARIANT",
     id="somersault",
     short_name="somersault",
-    long_name="Base variant of the somersault ECU & cetera",
+    long_name="Somersault base variant",
+    description="<p>Base variant of the somersault ECU &amp; cetera</p>",
     requests=list(somersault_requests.values()),
     services=list(somersault_services.values()),
     positive_responses=list(somersault_positive_responses.values()),
@@ -819,7 +827,8 @@ somersault_lazy_diaglayer = DiagLayer(
     variant_type="ECU-VARIANT",
     id="somersault_lazy",
     short_name="somersault_lazy",
-    long_name="Sloppy variant of the somersault ECU (lazy < assiduous)",
+    long_name="Somersault lazy ECU",
+    description="<p>Sloppy variant of the somersault ECU (lazy &lt; assiduous)</p>",
     parent_refs=[
         DiagLayer.ParentRef( # <- TODO: this is a bit sketchy IMO
             reference=somersault_diaglayer.id,
@@ -844,7 +853,8 @@ somersault_assiduous_diaglayer = DiagLayer(
     variant_type="ECU-VARIANT",
     id="somersault_assiduous",
     short_name="somersault_assiduous",
-    long_name="Hard-working variant of the somersault ECU (lazy < assiduous)",
+    long_name="Somersault assiduous ECU",
+    description="<p>Hard-working variant of the somersault ECU (lazy &lt; assiduous)</p>",
     diag_data_dictionary_spec=DiagDataDictionarySpec(),
     parent_refs=[
         DiagLayer.ParentRef( # <- TODO: this is a bit sketchy IMO

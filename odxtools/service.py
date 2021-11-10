@@ -48,16 +48,16 @@ class DiagService:
 
         if all(isinstance(x, Response) for x in positive_responses):
             self._positive_responses = \
-                NamedItemList(lambda pr: pr.short_name,
-                              positive_responses)
+                NamedItemList[Response](lambda pr: pr.short_name,
+                                        positive_responses)
             self.pos_res_ref_ids = [pr.id for pr in positive_responses]
         else:
             self._positive_responses = None
             self.pos_res_ref_ids = positive_responses
 
         if all(isinstance(x, Response) for x in negative_responses):
-            NamedItemList(lambda nr: nr.short_name,
-                          negative_responses)
+            NamedItemList[Response](lambda nr: nr.short_name,
+                                    negative_responses)
             self.neg_res_ref_ids = [nr.id for nr in negative_responses]
         else:
             self._negative_responses = None

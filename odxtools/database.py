@@ -5,7 +5,7 @@ from xml.etree import ElementTree
 from itertools import chain
 from zipfile import ZipFile
 
-from .diaglayer import read_diag_layer_container_from_odx
+from .diaglayer import DiagLayer, read_diag_layer_container_from_odx
 from .globals import logger
 from .nameditemlist import NamedItemList
 
@@ -80,12 +80,12 @@ class Database:
         return self._id_lookup
 
     @property
-    def ecus(self) -> NamedItemList:
+    def ecus(self) -> NamedItemList[DiagLayer]:
         """ECU-variants defined in the data base"""
         return self._ecus
 
     @property
-    def diag_layers(self) -> NamedItemList:
+    def diag_layers(self) -> NamedItemList[DiagLayer]:
         """all diagnostic layers defined in the data base"""
         return self._diag_layers
 

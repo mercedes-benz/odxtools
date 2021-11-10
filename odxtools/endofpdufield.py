@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2021 MBition GmbH
 
-from odxtools.utils import read_description_from_odx
-from odxtools.exceptions import DecodeError
-from odxtools.structures import BasicStructure
-from .globals import logger
+from typing import List, Union
+from .utils import read_description_from_odx
+from .structures import BasicStructure
 from .dataobjectproperty import DopBase
+from .decodestate import DecodeState
+from .encodestate import EncodeState
 
 
 class EndOfPduField(DopBase):
@@ -50,22 +51,36 @@ class EndOfPduField(DopBase):
     def convert_physical_to_internal(self, physical_value):
         return self.structure.convert_physical_to_internal(physical_value)
 
-    def convert_physical_to_bytes(self, physical_value, bit_position: int):
-        return self.structure.convert_physical_to_bytes(physical_value, bit_position)
+    def convert_physical_to_bytes(self, physical_value: Union[dict, List[dict]], encode_state: EncodeState, bit_position=0):
+        assert bit_position == 0, "End of PDU field must be byte aligned. Is there an error in reading the .odx?"
+        if isinstance(physical_value, dict):
+            # If the value is given as a dict, the End of PDU field behaves like the underlying structure.
+            return self.structure.convert_physical_to_bytes(physical_value, encode_state)
+        else:
+            assert isinstance(physical_value, List), "The value of an End of PDU field must be a list or a dict." 
+            # If the value is given as a list, each list element is a encoded seperately using the structure.
+            coded_rpc = bytes()
+            for value in physical_value:
+                encode_state = encode_state._replace(coded_message=bytes())
+                coded_rpc += self.structure.convert_physical_to_bytes(value, encode_state)
+            return coded_rpc
 
-    def convert_bytes_to_physical(self, byte_code: int, byte_position=0, bit_position=0):
-        next_byte_position = byte_position
+    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position=0):
+        next_byte_position = decode_state.next_byte_position
+        byte_code = decode_state.coded_message
+
         value = []
         while len(byte_code) > next_byte_position:
             # ATTENTION: the ODX specification is very misleading
             # here: it says that the item is repeated until the end of
             # the PDU, but it means that DOP of the items that are
             # repeated are identical, not their values
-            new_value, next_byte_position = self.structure.convert_bytes_to_physical(byte_code,
-                                                                                     byte_position=next_byte_position,
+            new_value, next_byte_position = self.structure.convert_bytes_to_physical(decode_state,
                                                                                      bit_position=bit_position)
-
+            # Update next byte_position
+            decode_state = decode_state._replace(next_byte_position=next_byte_position)
             value.append(new_value)
+
         return value, next_byte_position
 
     def _resolve_references(self, parent_dl, id_lookup):
@@ -77,9 +92,7 @@ class EndOfPduField(DopBase):
             self._structure = parent_dl.data_object_properties[self.structure_snref]
 
     def __repr__(self) -> str:
-        return \
-            f"EndOfPduField(short_name='{self.short_name}', " + \
-                          f"ref='{self.structure.id}')"
+        return f"EndOfPduField(short_name='{self.short_name}', ref='{self.structure.id}')"
 
     def __str__(self):
         return "\n".join([

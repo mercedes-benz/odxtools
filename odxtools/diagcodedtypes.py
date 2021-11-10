@@ -3,8 +3,11 @@
 
 import abc
 from typing import Union
-from odxtools.exceptions import DecodeError
+
+from .exceptions import DecodeError, EncodeError
 from .globals import xsi, logger
+from .decodestate import DecodeState
+from .encodestate import EncodeState
 
 import bitstruct
 
@@ -14,7 +17,7 @@ ODX_TYPE_TO_FORMAT_LETTER = {
     "A_FLOAT32": 'f',
     "A_FLOAT64": 'f',
     "A_BYTEFIELD": 'r',
-    "A_UNICODE2STRING": 't',  # TODO: How to handle different string encodings?
+    "A_UNICODE2STRING": 'r',  # UTF-16 strings must be converted explicitly
     "A_ASCIISTRING": 't',
     "A_UTF8STRING": 't'
 }
@@ -31,16 +34,138 @@ class DiagCodedType(abc.ABC):
         self.base_type_encoding = base_type_encoding
         self.is_highlow_byte_order = is_highlow_byte_order
 
+    def _extract_internal(self, coded_message, byte_position, bit_position, bit_length, base_data_type, is_highlow_byte_order, bit_mask=None):
+        """Extract the internal value.
+
+        Helper method for `DiagCodedType.convert_bytes_to_internal`.
+        """
+        # If the bit length is zero, return "empty" values of each type
+        if bit_length == 0:
+            if base_data_type in ["A_BYTEFIELD"]:
+                return bytes(), byte_position
+            elif base_data_type in ["A_UNICODE2STRING", "A_ASCIISTRING", "A_UTF8STRING"]:
+                return "", byte_position
+            else:
+                return 0, byte_position
+
+        byte_length = (bit_length + bit_position + 7) // 8
+        if byte_position + byte_length > len(coded_message):
+            raise DecodeError(
+                f"Expected a longer message."
+            )
+        next_byte_position = byte_position + byte_length
+        extracted_bytes = coded_message[byte_position:next_byte_position]
+
+        # TODO: Apply bit mask, etc.
+        if bit_mask is not None:
+            raise NotImplementedError(
+                f"Don't know how to handle bit_mask={bit_mask}.")
+
+        # Apply byteorder
+        if not is_highlow_byte_order and base_data_type not in ["A_UNICODE2STRING", "A_BYTEFIELD", "A_ASCIISTRING", "A_UTF8STRING"]:
+            extracted_bytes = extracted_bytes[::-1]
+
+        format_letter = ODX_TYPE_TO_FORMAT_LETTER[base_data_type]
+        padding = 8 * byte_length - (bit_length + bit_position)
+        internal_value = bitstruct.unpack_from(
+            f"{format_letter}{bit_length}", extracted_bytes, offset=padding)[0]
+
+        if base_data_type == "A_UNICODE2STRING":
+            # Convert bytes to string with utf-16 decoding
+            if is_highlow_byte_order:
+                internal_value = internal_value.decode("utf-16-be")
+            else:
+                internal_value = internal_value.decode("utf-16-le")
+
+        return internal_value, next_byte_position
+
+    def _to_bytes(self, internal_value, bit_position, bit_length, base_data_type, is_highlow_byte_order, bit_mask=None):
+        """Convert the internal_value to bytes."""
+        # Check that bytes and strings actually fit into the bit length
+        if base_data_type in ["A_BYTEFIELD"] and 8 * len(internal_value) > bit_length:
+            raise EncodeError(f"The bytefield {internal_value.hex()} is too large."
+                              f" The maximum byte length is {bit_length//8}.")
+        if base_data_type in ["A_ASCIISTRING", "A_UTF8STRING"] and 8 * len(internal_value) > bit_length:
+            raise EncodeError(f"The string {repr(internal_value)} is too large."
+                              f" The maximum number of characters is {bit_length//8}.")
+        if base_data_type in ["A_UNICODE2STRING"] and 16 * len(internal_value) > bit_length:
+            raise EncodeError(f"The string {repr(internal_value)} is too large."
+                              f" The maximum number of characters is {bit_length//16}.")
+
+        # If the bit length is zero, return empty bytes
+        if bit_length == 0:
+            if base_data_type in ["A_INT32", "A_UINT32", "A_FLOAT32", "A_FLOAT64"] and base_data_type != 0:
+                raise EncodeError(f"The number {repr(internal_value)} cannot be encoded into {bit_length} bits.")
+            return bytes()
+
+        char = ODX_TYPE_TO_FORMAT_LETTER[base_data_type]
+
+        # The coded byte is divided into (0..0)(value)(0..0) with bit lengths (left_pad)(bit_length)(bit_position)
+        offset = (8 - ((bit_length + bit_position) % 8)) % 8
+        assert 0 <= offset and offset < 8 and (
+            offset + bit_length + bit_position) % 8 == 0, f"Computational mistake, offset={offset}"
+        left_pad = f'p{offset}' if offset > 0 else ''
+
+        # Convert string to bytes with utf-16 encoding
+        if base_data_type == "A_UNICODE2STRING":
+            if is_highlow_byte_order:
+                internal_value = internal_value.encode("utf-16-be")
+            else:
+                internal_value = internal_value.encode("utf-16-le")
+
+        code = bitstruct.pack(f'{left_pad}{char}{bit_length}', internal_value)
+
+        if not is_highlow_byte_order and base_data_type not in ["A_UNICODE2STRING", "A_BYTEFIELD", "A_ASCIISTRING", "A_UTF8STRING"]:
+            code = code[::-1]
+
+        # TODO: Apply bit mask.
+        if bit_mask is not None:
+            raise NotImplementedError(
+                f"Don't know how to handle bit_mask={bit_mask}."
+            )
+
+        return code
+
+    def _minimal_byte_length_of(self, internal_value: Union[bytes, str]) -> int:
+        """Helper method to get the minimal byte length.
+        (needed for LeadingLength- and MinMaxLengthType)
+        """
+        # A_BYTEFIELD, A_ASCIISTRING, A_UNICODE2STRING, A_UTF8STRING
+        if self.base_data_type == "A_BYTEFIELD":
+            byte_length = len(internal_value)
+        elif self.base_data_type in ["A_ASCIISTRING", "A_UTF8STRING"]:
+            # TODO: Handle different encodings
+            byte_length = len(bytes(internal_value, "utf-8"))
+        elif self.base_data_type == "A_UNICODE2STRING":
+            byte_length = len(bytes(internal_value, "utf-16-le"))
+            assert byte_length % 2 == 0, (f"The bit length of A_UNICODE2STRING must"
+                                          f" be a multiple of 16 but is {8*byte_length}")
+        return byte_length
+
     @abc.abstractclassmethod
-    def convert_bytes_to_internal(self, coded_message: Union[bytes, bytearray], byte_position: int = 0, bit_position: int = 0):
+    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> bytes:
+        """Encode the internal value.
+
+        Parameters
+        ----------
+        internal_value : python type corresponding to self.base_data_type
+            the value to be encoded
+        bit_position : int 
+
+        length_keys : Dict[str, int]
+            mapping from ID (of the length key) to bit length
+            (only needed for ParamLengthInfoType) 
+        """
+        pass
+
+    @abc.abstractclassmethod
+    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
         """Decode the parameter value from the coded message.
 
         Parameters
         ----------
-        coded_message : bytes or bytearray
-            the coded message
-        byte_position : int or None
-            Byte position of the parameter
+        decode_state : DecodeState
+            The decoding state
 
         Returns
         -------
@@ -63,31 +188,50 @@ class LeadingLengthInfoType(DiagCodedType):
                          base_type_encoding=base_type_encoding,
                          is_highlow_byte_order=is_highlow_byte_order)
         self.bit_length = bit_length
-        assert base_data_type in [
-            "A_BYTEFIELD", "A_ASCIISTRING", "A_UNICODE2STRING", "A_UTF8STRING"]
+        assert self.bit_length > 0, "A Leading length info type with bit length == 0 does not make sense."
+        assert base_data_type in ["A_BYTEFIELD", "A_ASCIISTRING", "A_UNICODE2STRING", "A_UTF8STRING"], (
+            f"A leading length info type cannot have the base data type {self.base_data_type}."
+        )
 
-    def convert_bytes_to_internal(self, coded_message: Union[bytes, bytearray], byte_position: int = 0, bit_position: int = 0):
-        value = bytearray()
-        num_bytes = 0
-        byte_length = 0
+    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> Union[bytes, bytearray]:
+        byte_length = self._minimal_byte_length_of(internal_value)
 
-        if self.bit_length > 0:
-            byteorder = '>' if self.is_highlow_byte_order else '<'
-            num_bytes = (self.bit_length + bit_position + 7) // 8
-            bit_offset = 8 * (byte_position + num_bytes) - \
-                bit_position - self.bit_length
-            bit_offset_format = f"p{bit_offset}" if bit_offset > 0 else ""
-            byte_length = bitstruct.unpack(
-                f'{bit_offset_format}u{self.bit_length}{byteorder}', coded_message)[0]
+        length_byte = self._to_bytes(byte_length,
+                                     bit_position=bit_position,
+                                     bit_length=self.bit_length,
+                                     base_data_type="A_UINT32",
+                                     is_highlow_byte_order=self.is_highlow_byte_order)
 
-            if byte_length > 0:
-                bit_offset = 8 * (byte_position + num_bytes)
-                bit_offset_format = f"p{bit_offset}" if bit_offset > 0 else ""
-                format_letter = ODX_TYPE_TO_FORMAT_LETTER[self.base_data_type]
-                value = bitstruct.unpack(
-                    f'{bit_offset_format}{format_letter}{8 * byte_length}{byteorder}', coded_message)[0]
+        value_byte = self._to_bytes(internal_value,
+                                    bit_position=0,
+                                    bit_length=8*byte_length,
+                                    base_data_type=self.base_data_type,
+                                    is_highlow_byte_order=self.is_highlow_byte_order)
 
-        return value, byte_position + num_bytes + byte_length
+        return length_byte + value_byte
+
+    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
+        coded_message = decode_state.coded_message
+
+        # Extract length of the parameter value
+        byte_length, byte_position = self._extract_internal(coded_message=coded_message,
+                                                            byte_position=decode_state.next_byte_position,
+                                                            bit_position=bit_position,
+                                                            bit_length=self.bit_length,
+                                                            base_data_type="A_UINT32",  # length is an integer
+                                                            is_highlow_byte_order=self.is_highlow_byte_order)
+
+        # Extract actual value
+        # TODO: The returned value is None if the byte_length is 0. Maybe change it
+        #       to some default value like an empty bytearray() or 0?
+        value, next_byte_position = self._extract_internal(coded_message=coded_message,
+                                                           byte_position=byte_position,
+                                                           bit_position=0,
+                                                           bit_length=8*byte_length,
+                                                           base_data_type=self.base_data_type,
+                                                           is_highlow_byte_order=self.is_highlow_byte_order)
+
+        return value, next_byte_position
 
     def __repr__(self) -> str:
         repr_str = f"LeadingLengthInfoType(base_data_type='{self.base_data_type}', bit_length={self.bit_length}"
@@ -105,21 +249,123 @@ class MinMaxLengthType(DiagCodedType):
     def __init__(self,
                  base_data_type,
                  min_length,
+                 termination,
                  max_length=None,
-                 termination=None,
                  base_type_encoding=None,
                  is_highlow_byte_order=True):
         super().__init__(base_data_type,
                          dct_type="MIN-MAX-LENGTH-TYPE",
                          base_type_encoding=base_type_encoding,
                          is_highlow_byte_order=is_highlow_byte_order)
+        assert min_length <= max_length
         self.min_length = min_length
         self.max_length = max_length
         self.termination = termination
 
-    def convert_bytes_to_internal(self, coded_message: Union[bytes, bytearray], byte_position: int = 0, bit_position: int = 0):
-        raise NotImplementedError(
-            'MinMaxLenthType decoding is not implemented.')
+        assert base_data_type in ["A_BYTEFIELD", "A_ASCIISTRING", "A_UNICODE2STRING", "A_UTF8STRING"], (
+            f"A min-max length type cannot have the base data type {self.base_data_type}."
+        )
+        assert termination in ["ZERO", "HEX-FF", "END-OF-PDU"], (
+            f"A min-max length type cannot have the termination {self.termination}"
+        )
+
+    def __termination_character(self):
+        """Returns the termination character or None if it isn't defined."""
+        # The termination character is actually not specified by ASAM
+        # for A_BYTEFIELD but I assume it is only one byte.
+        termination_char = None
+        if self.termination == "ZERO":
+            if self.base_data_type not in ["A_UNICODE2STRING"]:
+                termination_char = bytes([0x0])
+            else:
+                termination_char = bytes([0x0, 0x0])
+        elif self.termination == "HEX-FF":
+            if self.base_data_type not in ["A_UNICODE2STRING"]:
+                termination_char = bytes([0xff])
+            else:
+                termination_char = bytes([0xff, 0xff])
+        return termination_char
+
+    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> bytes:
+        byte_length = self._minimal_byte_length_of(internal_value)
+
+        # The coded value must have at least length min_length
+        if byte_length < self.min_length:
+            raise EncodeError(f"The internal value {internal_value} is only {byte_length} bytes"
+                              f" long but the min length is {self.min_length}")
+        # The coded value must not have a length greater than max_length
+        if self.max_length and byte_length > self.max_length:
+            raise EncodeError(f"The internal value {internal_value} requires {byte_length}"
+                              f" bytes, but the max length is {self.max_length}")
+
+        value_byte = self._to_bytes(internal_value,
+                                    bit_position=0,
+                                    bit_length=8*byte_length,
+                                    base_data_type=self.base_data_type,
+                                    is_highlow_byte_order=self.is_highlow_byte_order)
+
+        if encode_state.is_end_of_pdu or byte_length == self.max_length:
+            # All termination types may be ended by the PDU
+            return value_byte
+        else:
+            termination_char = self.__termination_character()
+            assert termination_char is not None, \
+                (f"MinMaxLengthType with termination {self.termination}"
+                 f"(min: {self.min_length}, max: {self.max_length}) failed encoding {internal_value}")
+            return value_byte + termination_char
+
+    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
+        if decode_state.next_byte_position + self.min_length > len(decode_state.coded_message):
+            raise DecodeError("The PDU ended before min length was reached.")
+
+        coded_message = decode_state.coded_message
+        byte_position = decode_state.next_byte_position
+        termination_char = self.__termination_character()
+
+        # If no termination char is found, this is the next byte after the parameter.
+        max_termination_byte = min(byte_position + self.max_length,
+                                   len(coded_message))
+
+        if self.termination != "END-OF-PDU":
+            # The parameter either ends after max length, at the end of the PDU
+            # or if a termination character is found.
+            char_length = len(termination_char)  # either 1 or 2
+
+            termination_byte = byte_position + self.min_length
+            found_char = False
+            # Search the termination character
+            while termination_byte < max_termination_byte and not found_char:
+                found_char = coded_message[termination_byte: termination_byte +
+                                           char_length] == termination_char
+                if not found_char:
+                    termination_byte += char_length
+
+            byte_length = termination_byte - byte_position
+
+            # Extract the value
+            value, byte = self._extract_internal(decode_state.coded_message,
+                                                 byte_position=byte_position,
+                                                 bit_position=bit_position,
+                                                 bit_length=8*byte_length,
+                                                 base_data_type=self.base_data_type,
+                                                 is_highlow_byte_order=self.is_highlow_byte_order)
+            assert byte == termination_byte
+
+            # next byte starts after the termination character
+            next_byte_position = byte+char_length if found_char else byte
+            return value, next_byte_position
+        else:
+            # If termination == "END-OF-PDU", the parameter ends after max_length
+            # or at the end of the PDU.
+            byte_length = max_termination_byte - byte_position
+
+            value, byte = self._extract_internal(decode_state.coded_message,
+                                                 byte_position=byte_position,
+                                                 bit_position=bit_position,
+                                                 bit_length=8*byte_length,
+                                                 base_data_type=self.base_data_type,
+                                                 is_highlow_byte_order=self.is_highlow_byte_order)
+            return value, byte
 
     def __repr__(self) -> str:
         repr_str = f"ParamLengthInfoType(base_data_type='{self.base_data_type}', min_length={self.min_length}"
@@ -149,9 +395,36 @@ class ParamLengthInfoType(DiagCodedType):
                          is_highlow_byte_order=is_highlow_byte_order)
         self.length_key_ref = length_key_ref
 
-    def convert_bytes_to_internal(self, coded_message: Union[bytes, bytearray], byte_position: int = 0, bit_position: int = 0):
-        raise NotImplementedError(
-            'ParamLengthInfoType decoding is not implemented.')
+    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> bytes:
+        bit_length = encode_state.length_keys[self.length_key_ref]
+
+        return self._to_bytes(internal_value,
+                              bit_position=bit_position,
+                              bit_length=bit_length,
+                              base_data_type=self.base_data_type,
+                              is_highlow_byte_order=self.is_highlow_byte_order)
+
+    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
+        # Find length key with matching ID.
+        bit_length = None
+        for parameter, value in decode_state.parameter_value_pairs:
+            # if isinstance(param_value.parameter, LengthKeyParameter) would be prettier,
+            # but leads to cyclic import...
+            if parameter.parameter_type == "LENGTH-KEY" \
+                    and parameter.id == self.length_key_ref:
+                # The bit length of the parameter to be extracted is given by the length key.
+                bit_length = value
+                break
+
+        assert value is not None, f"Did not find any length key with ID {self.length_key_ref}"
+
+        # Extract the internal value and return.
+        return self._extract_internal(decode_state.coded_message,
+                                      decode_state.next_byte_position,
+                                      bit_position,
+                                      bit_length,
+                                      self.base_data_type,
+                                      self.is_highlow_byte_order)
 
     def __repr__(self) -> str:
         repr_str = f"ParamLengthInfoType(base_data_type='{self.base_data_type}', length_key_ref={self.length_key_ref}"
@@ -182,67 +455,22 @@ class StandardLengthType(DiagCodedType):
         self.bit_mask = bit_mask
         self.condensed = condensed
 
-    def convert_internal_to_bytes(self, internal_value, bit_position: int) -> Union[bytes, bytearray]:
-        num_bytes = (self.bit_length + bit_position + 7) // 8
-        # TODO: Apply bit mask, etc.
-        if self.bit_mask is not None:
-            raise NotImplementedError(
-                f"Don't know how to handle bit_mask={self.bit_mask}.")
-        byteorder = "big" if self.is_highlow_byte_order else "little"
+    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> bytes:
+        return self._to_bytes(internal_value,
+                              bit_position,
+                              self.bit_length,
+                              self.base_data_type,
+                              is_highlow_byte_order=self.is_highlow_byte_order,
+                              bit_mask=self.bit_mask)
 
-        if isinstance(internal_value, (bytes, bytearray)):
-            # Make sure the length is num_bytes and reverse order if necessary
-            return int.from_bytes(internal_value, "big").to_bytes(num_bytes, byteorder)
-        if isinstance(internal_value, int):
-            internal_value = internal_value << bit_position
-            return internal_value.to_bytes(num_bytes, byteorder)
-        else:
-            logger.warn(
-                f"Can only convert integers to bytes, but not '{internal_value}' of type {type(internal_value)}.")
-            try:
-                return bytearray(internal_value)
-            except:
-                raise NotImplementedError(
-                    f"Can only convert integers to bytes. Did not convert {type(internal_value)} to bytes")
-
-    def convert_bytes_to_internal(self, coded_message: Union[bytes, bytearray], byte_position: int = 0, bit_position: int = 0):
-        """Extract the bytes at the parameters's byte position and convert them to the internal value.
-
-        Parameters
-        ----------
-        coded_message : bytes or bytearray
-            the coded message
-        byte_length : int
-        byte_position : int or None
-            Byte position of the parameter
-
-        Returns
-        -------
-        bytes or bytearray
-            the extracted bytes
-        int
-            the next byte position after the extracted parameter
-        """
-        byte_length = (self.bit_length + bit_position + 7) // 8
-        if byte_position + byte_length > len(coded_message):
-            raise DecodeError(
-                f"Expected a longer message."
-            )
-        next_byte_position = byte_position+byte_length
-        extracted_bytes = coded_message[byte_position:next_byte_position]
-
-        # TODO: Apply bit mask, highlow byte order, etc.
-        if self.bit_mask is not None:
-            raise NotImplementedError(
-                f"Don't know how to handle bit_mask={self.bit_mask}.")
-        # Apply byteorder
-        if not self.is_highlow_byte_order:
-            extracted_bytes = extracted_bytes[::-1]
-        format_letter = ODX_TYPE_TO_FORMAT_LETTER[self.base_data_type]
-        padding = 8 * byte_length - (self.bit_length + bit_position)
-        internal_value = bitstruct.unpack_from(
-            f"{format_letter}{self.bit_length}", extracted_bytes, offset=padding)[0]
-        return internal_value, next_byte_position
+    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
+        return self._extract_internal(decode_state.coded_message,
+                                      decode_state.next_byte_position,
+                                      bit_position,
+                                      self.bit_length,
+                                      self.base_data_type,
+                                      self.is_highlow_byte_order,
+                                      bit_mask=self.bit_mask)
 
     def __repr__(self) -> str:
         repr_str = f"StandardLengthType(base_data_type='{self.base_data_type}', bit_length={self.bit_length}"

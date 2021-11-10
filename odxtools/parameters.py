@@ -2,8 +2,10 @@
 # Copyright (c) 2021 MBition GmbH
 
 import abc
-from odxtools.utils import read_description_from_odx
-from odxtools.exceptions import DecodeError
+from .decodestate import DecodeState
+from .encodestate import EncodeState
+from .utils import read_description_from_odx
+from .exceptions import DecodeError
 from typing import Union
 
 from .diagcodedtypes import DiagCodedType, read_diag_coded_type_from_odx
@@ -46,11 +48,14 @@ class Parameter(abc.ABC):
         pass
 
     @abc.abstractclassmethod
-    def get_coded_value_as_bytes(self):
+    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
+        """Get the coded value of the parameter given the encode state.
+        Note that this method is called by `encode_into_pdu`.
+        """
         pass
 
     @abc.abstractclassmethod
-    def decode_from_pdu(self, coded_message, default_byte_position=None):
+    def decode_from_pdu(self, decode_state: DecodeState):
         """Decode the parameter value from the coded message.
 
         If the paramter does have a byte position property, the coded bytes the parameter covers are extracted
@@ -64,19 +69,66 @@ class Parameter(abc.ABC):
 
         Parameters
         ----------
-        coded_message : bytes or bytearray
-            the coded message
-        default_byte_position : int or None
-            Byte position used iff the parameter does not have a byte position in the .odx
+        decode_state : DecodeState
+            The decoding state containing
+            * the byte message to be decoded
+            * the parameter values that are already decoded
+            * the next byte position that is used iff the parameter does not specify a byte position
 
         Returns
         -------
-        str or int or bytes or bytearray or dict
+        ParameterValuePair | List[ParameterValuePair]
             the decoded parameter value (the type is defined by the DOP)
         int
             the next byte position after the extracted parameter
         """
         pass
+
+    def encode_into_pdu(self, encode_state: EncodeState) -> bytearray:
+        """Insert the encoded value of a parameter into the coded RPC.
+
+        If the byte position of the parameter is not defined,
+        the byte code is appended to the coded RPC.
+
+        Technical note for subclasses:
+        The default implementation tries to compute the coded value
+        via `self.get_coded_value_as_bytes(encoded_state)` and inserts it into
+        the PDU. Thus it suffices to overwrite `get_coded_value_as_bytes()`.
+
+        Parameters:
+        ----------
+        encode_state: EncodeState, i.e. a named tuple with attributes
+            * coded_message: bytes, the message encoded so far
+            * parameter_values: List[ParameterValuePairs]
+            * triggering_coded_request: bytes
+
+        Returns:
+        -------
+        bytearray
+            the updated, coded message after encoding the parameter into it
+        """
+        byte_value = self.get_coded_value_as_bytes(encode_state)
+
+        old_rpc = encode_state.coded_message
+        new_rpc = bytearray(old_rpc)
+
+        if self.byte_position is not None:
+            byte_position = self.byte_position
+        else:
+            byte_position = len(old_rpc)
+
+        min_length = byte_position + len(byte_value)
+        if len(old_rpc) < min_length:
+            # Make byte code longer if necessary
+            new_rpc += bytearray([0] * (min_length - len(old_rpc)))
+        for byte_idx_val, byte_idx_rpc in enumerate(range(byte_position, byte_position + len(byte_value))):
+            # insert byte value
+            assert new_rpc[byte_idx_rpc] & byte_value[byte_idx_val] == 0, "Bytes are already set!"
+            new_rpc[byte_idx_rpc] |= byte_value[byte_idx_val]
+
+        logger.debug(f"Param {self.short_name} inserts"
+                     f" 0x{byte_value.hex()} at byte pos {byte_position}")
+        return new_rpc
 
     def _as_dict(self):
         """
@@ -157,15 +209,15 @@ class ParameterWithDOP(Parameter):
         if self.dop_snref:
             dop = parent_dl.data_object_properties[self.dop_snref]
             if not dop:
-                logger.info(f"Could not resolve DOP-SNREF {self.dop_snref}")
+                logger.info(f"Param {self.short_name} could not resolve DOP-SNREF {self.dop_snref}")
         elif self.dop_ref:
             dop = id_lookup.get(self.dop_ref)
             if not dop:
-                logger.info(f"Could not resolve DOP-REF {self.dop_ref}")
+                logger.info(f"Param {self.short_name} could not resolve DOP-REF {self.dop_ref}")
         else:
-            logger.warn(f"Parameter without DOP-(SN)REF should not exist!")
+            logger.warn(f"Param {self.short_name}  without DOP-(SN)REF should not exist!")
         if self.dop and dop != self.dop:
-            logger.warn(f"Reference and DOP are inconsistent!")
+            logger.warn(f"Param {self.short_name}: Reference and DOP are inconsistent!")
 
         self._dop = dop
 
@@ -183,15 +235,20 @@ class ParameterWithDOP(Parameter):
     def get_coded_value(self, physical_value=None):
         return self.dop.convert_physical_to_internal(physical_value)
 
-    def get_coded_value_as_bytes(self, physical_value):
-        return self.dop.convert_physical_to_bytes(physical_value, bit_position=self.bit_position)
+    def get_coded_value_as_bytes(self, encode_state: EncodeState):
+        physical_value = encode_state.parameter_values[self.short_name]
+        return self.dop.convert_physical_to_bytes(physical_value, encode_state, bit_position=self.bit_position)
 
-    def decode_from_pdu(self, coded_message, default_byte_position=None):
-        byte_position = self.byte_position if self.byte_position is not None else default_byte_position
+    def decode_from_pdu(self, decode_state: DecodeState):
+        if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
+            decode_state = decode_state._replace(
+                next_byte_position=self.byte_position)
+
         # Use DOP to decode
-        phys_val, next_byte_pos = self.dop.convert_bytes_to_physical(
-            coded_message, byte_position=byte_position, bit_position=self.bit_position)
-        return phys_val, next_byte_pos
+        phys_val, next_byte_position = self.dop.convert_bytes_to_physical(
+            decode_state, bit_position=self.bit_position)
+
+        return phys_val, next_byte_position
 
     def _as_dict(self):
         d = super()._as_dict()
@@ -244,25 +301,33 @@ class CodedConstParameter(Parameter):
     def get_coded_value(self):
         return self.coded_value
 
-    def get_coded_value_as_bytes(self):
-        return self.diag_coded_type.convert_internal_to_bytes(self.coded_value, bit_position=self.bit_position)
+    def get_coded_value_as_bytes(self, encode_state: EncodeState):
+        if self.short_name in encode_state.parameter_values \
+                and encode_state.parameter_values[self.short_name] != self.coded_value:
+            raise TypeError(f"The parameter '{self.short_name}' is constant {self.coded_value}"
+                            " and thus can not be changed.")
+        return self.diag_coded_type.convert_internal_to_bytes(self.coded_value, encode_state, bit_position=self.bit_position)
 
-    def decode_from_pdu(self, coded_message, default_byte_position=None):
+    def decode_from_pdu(self, decode_state: DecodeState):
+        if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
+            # Update byte position
+            decode_state = decode_state._replace(
+                next_byte_position=self.byte_position)
+
         # Extract coded values
-        byte_position = self.byte_position if self.byte_position is not None else default_byte_position
-        coded_val, next_byte_pos = self.diag_coded_type.convert_bytes_to_internal(coded_message,
-                                                                                  byte_position=byte_position,
-                                                                                  bit_position=self.bit_position)
+        coded_val, next_byte_position = self.diag_coded_type.convert_bytes_to_internal(decode_state,
+                                                                                       bit_position=self.bit_position)
 
         # Check if the coded value in the message is correct.
         if self.coded_value != coded_val:
             raise DecodeError(
                 f"Coded constant parameter does not match! "
                 f"The parameter {self.short_name} expected coded value {self.coded_value} but got {coded_val} "
-                f"at byte position {self.byte_position if self.byte_position is not None else default_byte_position} "
-                f"in coded message {coded_message.hex()}."
+                f"at byte position {decode_state.next_byte_position} "
+                f"in coded message {decode_state.coded_message.hex()}."
             )
-        return self.coded_value, next_byte_pos
+
+        return self.coded_value, next_byte_position
 
     def _as_dict(self):
         d = super()._as_dict()
@@ -321,21 +386,27 @@ class PhysicalConstantParameter(ParameterWithDOP):
     def get_coded_value(self):
         return self.dop.convert_physical_to_internal(self.physical_constant_value)
 
-    def get_coded_value_as_bytes(self):
-        return super().get_coded_value_as_bytes(self.physical_constant_value)
+    def get_coded_value_as_bytes(self, encode_state: EncodeState):
+        if self.short_name in encode_state.parameter_values \
+                and encode_state.parameter_values[self.short_name] != self.physical_constant_value:
+            raise TypeError(f"The parameter '{self.short_name}' is constant {self.physical_constant_value}"
+                            " and thus can not be changed.")
+        return self.dop.convert_physical_to_bytes(self.physical_constant_value, bit_position=self.bit_position)
 
-    def decode_from_pdu(self, coded_message, default_byte_position=None):
-        phys_val, next_byte_pos = super().decode_from_pdu(
-            coded_message, default_byte_position=default_byte_position)
+    def decode_from_pdu(self, decode_state: DecodeState):
+        # Decode value
+        decode_state = super().decode_from_pdu(decode_state)
 
+        # Check if decoded value matches expected value
+        phys_val = decode_state.parameter_value_pairs[-1].value
         if phys_val != self.physical_constant_value:
             raise DecodeError(
                 f"Physical constant parameter does not match! "
                 f"The parameter {self.short_name} expected physical value {self.physical_constant_value} but got {phys_val} "
-                f"at byte position {self.byte_position if self.byte_position is not None else default_byte_position} "
-                f"in coded message {coded_message.hex()}."
+                f"at byte position {decode_state.byte_position} "
+                f"in coded message {decode_state.coded_message.hex()}."
             )
-        return phys_val, next_byte_pos
+        return decode_state
 
     def __repr__(self):
         repr_str = f"CodedConstParameter(short_name='{self.short_name}', coded_value={self.coded_value}"
@@ -376,15 +447,14 @@ class ReservedParameter(Parameter):
     def get_coded_value(self):
         return 0
 
-    def get_coded_value_as_bytes(self):
+    def get_coded_value_as_bytes(self, encode_state):
         return int(0).to_bytes((self.bit_length + self.bit_position + 7) // 8, "big")
 
-    def decode_from_pdu(self, coded_message, default_byte_position=None):
-
-        byte_position = self.byte_position if self.byte_position is not None else default_byte_position
+    def decode_from_pdu(self, decode_state: DecodeState):
+        byte_position = self.byte_position if self.byte_position is not None else decode_state.next_byte_position
         byte_length = (self.bit_length + self.bit_position + 7) // 8
-        val_as_bytes = coded_message[byte_position:byte_position+byte_length]
-        next_byte_pos = byte_position + byte_length
+        val_as_bytes = decode_state.coded_message[byte_position:byte_position+byte_length]
+        next_byte_position = byte_position + byte_length
 
         # Check that reserved bits are 0
         expected = sum(2**i for i in range(self.bit_position,
@@ -396,10 +466,11 @@ class ReservedParameter(Parameter):
             raise DecodeError(
                 f"Reserved bits must be Zero! "
                 f"The parameter {self.short_name} expected {self.bit_length} bits to be Zero starting at bit position {self.bit_position} "
-                f"at byte position {self.byte_position if self.byte_position is not None else default_byte_position} "
-                f"in coded message {coded_message.hex()}."
+                f"at byte position {byte_position} "
+                f"in coded message {decode_state.coded_message.hex()}."
             )
-        return None, next_byte_pos
+
+        return None, next_byte_position
 
     def __repr__(self):
         repr_str = f"ReservedParameter(short_name='{self.short_name}'"
@@ -452,11 +523,14 @@ class ValueParameter(ParameterWithDOP):
         else:
             return self.dop.convert_physical_to_internal(self.physical_default_value)
 
-    def get_coded_value_as_bytes(self, physical_value=None):
-        if physical_value is not None:
-            return self.dop.convert_physical_to_bytes(physical_value, bit_position=self.bit_position)
-        else:
-            return self.dop.convert_physical_to_bytes(self.physical_default_value, bit_position=self.bit_position)
+    def get_coded_value_as_bytes(self, encode_state: EncodeState):
+        physical_value = encode_state.parameter_values.get(self.short_name,
+                                                           self.physical_default_value)
+        if physical_value is None:
+            raise TypeError(f"A value for parameter '{self.short_name}' must be specified"
+                            f" as the parameter does not exhibit a default.")
+        assert self.dop is not None, f"Param {self.short_name} does not have a DOP. Maybe resolving references failed?"
+        return self.dop.convert_physical_to_bytes(physical_value, encode_state=encode_state, bit_position=self.bit_position)
 
     def get_valid_physical_values(self):
         if isinstance(self.dop, DataObjectProperty):
@@ -514,20 +588,21 @@ class MatchingRequestParameter(Parameter):
     def get_coded_value(self, request_value=None):
         return request_value
 
-    def get_coded_value_as_bytes(self, request_value=None):
-        return bytearray(request_value)
+    def get_coded_value_as_bytes(self, encode_state: EncodeState):
+        if not encode_state.triggering_request:
+            raise TypeError(f"Parameter '{self.short_name}' is of matching request type,"
+                            " but no original request has been specified.")
+        return encode_state.triggering_request[self.request_byte_position:self.request_byte_position+self.byte_length]
 
-    def decode_from_pdu(self, coded_message, default_byte_position=None):
-
-        byte_position = self.byte_position if self.byte_position is not None else default_byte_position
+    def decode_from_pdu(self, decode_state: DecodeState):
+        byte_position = self.byte_position if self.byte_position is not None else decode_state.next_byte_position
         byte_length = (self.bit_length + self.bit_position + 7) // 8
-        val_as_bytes = coded_message[byte_position:byte_position+byte_length]
-        next_byte_pos = byte_position + byte_length
+        val_as_bytes = decode_state.coded_message[byte_position:byte_position+byte_length]
 
-        return val_as_bytes, next_byte_pos
+        return val_as_bytes, byte_position + byte_length
 
     def __repr__(self):
-        repr_str = f"ValueParameter(short_name='{self.short_name}'"
+        repr_str = f"MatchingRequestParameter(short_name='{self.short_name}'"
         if self.long_name is not None:
             repr_str += f", long_name='{self.long_name}'"
         if self.byte_position is not None:
@@ -610,6 +685,15 @@ class SystemParameter(ParameterWithDOP):
 
 
 class LengthKeyParameter(ParameterWithDOP):
+    """Length Keys specify the bit (!) length of another parameter.
+
+    The other parameter references the length key parameter using a ParamLengthInfoType as .diag_coded_type.
+
+    LengthKeyParameters are decoded the same as ValueParameters.
+    The main difference to ValueParameters is that a LengthKeyParameter has an `.id` attribute
+    and its DOP must be a simple DOP with PHYSICAL-TYPE/BASE-DATA-TYPE="A_UINT32".
+    """
+
     def __init__(self,
                  short_name,
                  id,
@@ -639,17 +723,22 @@ class LengthKeyParameter(ParameterWithDOP):
         raise NotImplementedError(
             "LengthKeyParameter.is_optional is not implemented yet.")
 
-    def get_coded_value(self):
-        raise NotImplementedError(
-            "Encoding a LengthKeyParameter is not implemented yet.")
+    def encode_into_pdu(self, encode_state: EncodeState) -> bytearray:
+        physical_value = encode_state.parameter_values.get(self.short_name,)
 
-    def get_coded_value_as_bytes(self):
-        raise NotImplementedError(
-            "Encoding a LengthKeyParameter is not implemented yet.")
+        # TODO: Maybe it'd be nice if the length key value would default to the minimal needed length,
+        #       instead of raising a TypeError here. But for that we'd
+        #       (1) need to find the parameter that references this length key and determine its bit length
+        #       and (2) make sure that we choose a length is a valid physical value for the DOP.
+        #       (Restrictions may be e.g. multiple of 8 or 16, depending on the compu method.)
+        if physical_value is None:
+            raise TypeError(f"A value for the length key '{self.short_name}'"
+                            f" must be specified.")
 
-    def decode_from_pdu(self, coded_message, default_byte_position=None):
-        raise NotImplementedError(
-            "Decoding a LengthKeyParameter is not implemented yet.")
+        # Set the value of the length key in the length key dict.
+        encode_state.length_keys[self.id] = physical_value
+
+        return super(ParameterWithDOP, self).encode_into_pdu(encode_state)
 
 
 class DynamicParameter(Parameter):
@@ -1031,78 +1120,3 @@ def read_parameter_from_odx(et_element):
                                    description=description)
 
     raise NotImplementedError(f"I don't know the type {parameter_type}")
-
-
-def _insert_byte_value_into(coded_rpc, byte_value, byte_position: int, debug_info=None):
-    new_rpc = bytearray(coded_rpc)
-
-    assert byte_position is not None
-
-    min_length = byte_position + len(byte_value)
-    if len(coded_rpc) < min_length:
-        # Make byte code longer if necessary
-        new_rpc += bytearray([0] * (min_length - len(coded_rpc)))
-    for byte_idx_val, byte_idx_rpc in enumerate(range(byte_position, byte_position + len(byte_value))):
-        # insert byte value
-        assert new_rpc[byte_idx_rpc] & byte_value[byte_idx_val] == 0, "Bytes are already set!"
-        new_rpc[byte_idx_rpc] |= byte_value[byte_idx_val]
-    logger.info(f"Insert at byte pos {byte_position}")
-    return new_rpc
-
-
-def _get_coded_value_as_bytes_for_parameter(parameter: Parameter, value=None, bit_length=None, triggering_coded_request : bytearray = None, debug_info=None):
-    if parameter.parameter_type in ["CODED-CONST", "PHYS-CONST", "RESERVED"]:
-        coded_value = parameter.get_coded_value_as_bytes()
-        assert isinstance(coded_value, (bytes, bytearray)
-                          ), f"{parameter.parameter_type} parameter {parameter.short_name} encoded None"
-    elif parameter.parameter_type in ["VALUE"]:
-        coded_value = parameter.get_coded_value_as_bytes(physical_value=value)
-    elif parameter.parameter_type in ["MATCHING-REQUEST-PARAM"]:
-        if triggering_coded_request is None:
-            raise TypeError(f"Parameter {parameter.short_name} is of type {parameter.parameter_type}, but no coded triggering request has been specified")
-        logger.info(
-            f"Parameter {parameter.short_name} of type {parameter.parameter_type} is given the coded value {value}")
-        rbp = parameter.request_byte_position
-        plen = parameter.byte_length
-        coded_value = bytes(triggering_coded_request[rbp:rbp+plen])
-    else:
-        logger.warning(
-            f"Coding for parameter {parameter.short_name} of type {parameter.parameter_type} is not implemented. Debug info: {debug_info}")
-        coded_value = 0
-    return coded_value
-
-
-def encode_parameter_value_into_pdu(coded_rpc, parameter: Parameter, value=None, byte_position=None, triggering_coded_request=None, debug_info=None):
-    """Insert the encoded value of a parameter into the coded RPC.
-
-    If the byte position of the parameter is not defined, the byte code is appended to the coded RPC.
-
-    Parameters:
-    ----------
-    coded_rpc
-    parameter
-    value: int | str | bytes
-        physical value of the parameter if the parameter type is VALUE else coded value from the request if it is MATCHING-REQUEST-PARAM
-    bit_length: int
-        bit length of the coded value. Required if the parameter "does not know it itself" (i.e. for a parameter with variable length)
-    """
-    assert isinstance(coded_rpc, (bytes, bytearray, list))
-    logger.debug(
-        f"insert_parameter_value_to({coded_rpc}, parameter={parameter.short_name}, phys_val={value})")
-
-    if byte_position is None:
-        if parameter.byte_position is not None:
-            byte_position = parameter.byte_position
-        else:
-            byte_position = len(coded_rpc)
-
-    byte_value = _get_coded_value_as_bytes_for_parameter(
-        parameter, value=value, triggering_coded_request=triggering_coded_request, debug_info=debug_info)
-    logger.debug(
-        f"Parameter {parameter.short_name} inserting coded value {byte_value.hex()}")
-    debug_info = str(debug_info) + \
-        f", Parameter {parameter.short_name} of type {parameter.parameter_type}"
-    return _insert_byte_value_into(coded_rpc,
-                                   byte_value,
-                                   byte_position=byte_position,
-                                   debug_info=None)

@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2021 MBition GmbH
 
-from odxtools.dataobjectproperty import DopBase
+from .dataobjectproperty import DopBase
 from .exceptions import DecodeError, EncodeError
-from typing import Iterable, OrderedDict, Union
 from .parameters import *
+from .decodestate import DecodeState, ParameterValuePair
+from .encodestate import EncodeState
 from .nameditemlist import NamedItemList
+from typing import Iterable, OrderedDict, Union
+
 
 class BasicStructure(DopBase):
     def __init__(self,
@@ -31,9 +34,11 @@ class BasicStructure(DopBase):
 
     def coded_const_prefix(self, request_prefix: Union[bytes, bytearray] = bytes()):
         prefix = bytearray()
+        encode_state = EncodeState(prefix, parameter_values={})
         for p in self.parameters:
             if isinstance(p, CodedConstParameter) and p.bit_length % 8 == 0:
-                prefix = encode_parameter_value_into_pdu(prefix, p)
+                prefix = p.encode_into_pdu(encode_state)
+                encode_state = EncodeState(prefix, *encode_state[1:])
             else:
                 break
         return prefix
@@ -41,97 +46,104 @@ class BasicStructure(DopBase):
     def get_required_parameters(self):
         return filter(lambda p: p.is_required(), self.parameters)
 
-    def convert_physical_to_internal(self, param_values: dict):
-        coded_message = bytearray()
-        for param in sorted(self.parameters, key=lambda p: p.byte_position):
-            coded_message = encode_parameter_value_into_pdu(coded_message,
-                                                            param,
-                                                            value=param_values.get(param.short_name))
-        return coded_message
-
-    def convert_physical_to_bytes(self, param_values: dict, bit_position=0):
-        if bit_position != 0:
-            raise EncodeError("Structures must be aligned, i.e. bit_position=0, but "
-                              f"{self.short_name} was passed the bit position {bit_position}")
-        coded_structure = self.convert_physical_to_internal(param_values)
-        if self._byte_size is not None and len(coded_structure) > self._byte_size:
-            # TODO
-            logger.critical(
-                f"The structure expected to be {self._byte_size} bytes long but encoding of parameters only needs {len(coded_structure)} bytes. How to extend length?")
-        return coded_structure
-
-    def convert_bytes_to_physical(self, byte_code: int, byte_position=0, bit_position=0):
-        if bit_position != 0:
-            raise DecodeError("Structures must be aligned, i.e. bit_position=0, but "
-                              f"{self.short_name} was passed the bit position {bit_position}")
-        byte_code = byte_code[byte_position:]
-        param_dict = OrderedDict()
-        next_byte_position = 0
-        for parameter in self.parameters:
-            param_value, byte_pos = parameter.decode_from_pdu(byte_code,
-                                                              default_byte_position=next_byte_position)
-            next_byte_position = max(next_byte_position, byte_pos)
-            param_dict[parameter.short_name] = param_value
-        return param_dict, byte_position + next_byte_position
-
-    def encode(self, triggering_coded_request=None, **params) -> bytearray:
-        """
-        Composes an UDS message as bytes for this service.
-        Parameters:
-        ----------
-        params: dict
-            Parameters of the RPC as mapping from SHORT-NAME of the parameter to the value
-        """
-        logger.debug(f"{self.short_name} encode RPC with params={params}")
+    def convert_physical_to_internal(self,
+                                     param_values: dict,
+                                     triggering_coded_request,
+                                     is_end_of_pdu=True):
+        logger.debug(f"{self.short_name} encode RPC"
+                     f" with params={param_values}")
 
         coded_rpc = bytearray()
+        encode_state = EncodeState(coded_rpc,
+                                   param_values,
+                                   triggering_request=triggering_coded_request,
+                                   is_end_of_pdu=False)
+
+        # Keep track of the expected length. (This is just to double check and not actually needed.)
         bit_length = 0
         for param in self.parameters:
-            param_name = param.short_name
-            param_value = None
+            if param == self.parameters[-1]:
+                # The last parameter is at the end of the PDU iff the structure itself is at the end of the PDU
+                encode_state = encode_state._replace(is_end_of_pdu=is_end_of_pdu)
 
-            if isinstance(param, CodedConstParameter):
-                if param_name in params \
-                   and params[param_name] != param.coded_value:
-                    raise TypeError(f"The parameter '{param_name}' is constant {param.coded_value} and can thus not be changed.")
-            elif isinstance(param, MatchingRequestParameter):
-                if not triggering_coded_request:
-                    raise TypeError(f"Parameter '{param_name}' is of matching request type, but no original request has been specified.")
-            elif isinstance(param, ValueParameter):
-                param_value = params.get(param_name, )
-                if param_value is None:
-                    param_value = param.physical_default_value
-
-                if param_value is None:
-                    raise TypeError(f"A value for parameter '{param_name}' must be specified as the parameter does not exhibit a default.")
-
-            coded_rpc = encode_parameter_value_into_pdu(
-                coded_rpc,
-                triggering_coded_request=triggering_coded_request,
-                parameter=param,
-                value=param_value
-            )
+            coded_rpc = param.encode_into_pdu(encode_state)
+            encode_state = encode_state._replace(coded_message=coded_rpc)
 
             # Compute expected length
             if bit_length is not None and param.bit_length is not None:
                 bit_length = bit_length + param.bit_length
             else:
                 bit_length = None
+
         # Assert that length is as expected
         if bit_length is not None:
             assert bit_length % 8 == 0, f"Length of coded structure is not divisible by 8, i.e. is not a full sequence of bytes."
-            assert len(coded_rpc) == bit_length // 8, f"{self.short_name} can't encode: Actual length is {len(coded_rpc)}, computed byte length is {bit_length // 8}, \n" + '\n'.join(
+            assert len(coded_rpc) == bit_length // 8, f"{self.short_name} can't encode: Actual length is {len(coded_rpc)}, computed byte length is {bit_length // 8}, computed_rpc is {coded_rpc.hex()}, \n" + '\n'.join(
                 self.__message_format_lines())
 
         return bytearray(coded_rpc)
 
+    def convert_physical_to_bytes(self, param_values: dict, encode_state: EncodeState, bit_position=0):
+        if bit_position != 0:
+            raise EncodeError("Structures must be aligned, i.e. bit_position=0, but "
+                              f"{self.short_name} was passed the bit position {bit_position}")
+        return self.convert_physical_to_internal(param_values,
+                                                 triggering_coded_request=encode_state.triggering_request,
+                                                 is_end_of_pdu=encode_state.is_end_of_pdu
+                                                 )
+
+    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position=0):
+        if bit_position != 0:
+            raise DecodeError("Structures must be aligned, i.e. bit_position=0, but "
+                              f"{self.short_name} was passed the bit position {bit_position}")
+        byte_code = decode_state.coded_message[decode_state.next_byte_position:]
+        inner_decode_state = DecodeState(coded_message=byte_code,
+                                         parameter_value_pairs=[],
+                                         next_byte_position=0)
+
+        for parameter in self.parameters:
+            value, next_byte_position = parameter.decode_from_pdu(
+                inner_decode_state)
+
+            inner_decode_state.parameter_value_pairs.append(
+                ParameterValuePair(parameter, value))
+            inner_decode_state = DecodeState(coded_message=byte_code,
+                                             parameter_value_pairs=inner_decode_state.parameter_value_pairs,
+                                             next_byte_position=max(inner_decode_state.next_byte_position,
+                                                                    next_byte_position))
+        # Construct the param dict.
+        # TODO: Wouldn't it be prettier if we kept the information of each parameter
+        #       instead of just using the short_name as the key and "forgetting" everything else?
+        param_dict = OrderedDict((pv.parameter.short_name, pv.value)
+                                 for pv in inner_decode_state.parameter_value_pairs)
+
+        return param_dict, decode_state.next_byte_position + inner_decode_state.next_byte_position
+
+    def encode(self, triggering_coded_request=None, **params) -> bytearray:
+        """
+        Composes an UDS message as bytes for this service.
+        Parameters:
+        ----------
+        triggering_coded_request: bytes
+            coded request (only needed when encoding a response)
+        params: dict
+            Parameters of the RPC as mapping from SHORT-NAME of the parameter to the value
+        """
+        return self.convert_physical_to_internal(params,
+                                                 triggering_coded_request=triggering_coded_request,
+                                                 is_end_of_pdu=True)
+
     def decode(self, message: Union[bytes, bytearray]):
-        param_dict, next_byte_position = self.convert_bytes_to_physical(
-            message)
+        # dummy decode state to be passed to convert_bytes_to_physical
+        decode_state = DecodeState(coded_message=message,
+                                   parameter_value_pairs=[],
+                                   next_byte_position=0)
+        param_values, next_byte_position = self.convert_bytes_to_physical(
+            decode_state)
         if len(message) != next_byte_position:
             raise DecodeError(
                 f"The message {message.hex()} is longer than could be parsed. Expected {next_byte_position} but got {len(message)}.")
-        return param_dict
+        return param_values
 
     def parameter_dict(self):
         """
@@ -159,7 +171,7 @@ class BasicStructure(DopBase):
 
     def __message_format_lines(self):
         # sort parameters
-        sorted_params: list = list(self.parameters) # copy list
+        sorted_params: list = list(self.parameters)  # copy list
         if all(p.byte_position is not None for p in self.parameters):
             sorted_params.sort(key=lambda p: (
                 p.byte_position, 8 - p.bit_position))
@@ -380,6 +392,7 @@ def read_structure_from_odx(et_element):
         res = Response(
             id,
             short_name,
+            response_type=et_element.tag,
             parameters=parameters,
             long_name=long_name,
             description=description

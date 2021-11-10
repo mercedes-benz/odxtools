@@ -2,10 +2,13 @@
 # Copyright (c) 2021 MBition GmbH
 
 import abc
-from odxtools.exceptions import DecodeError
 
-from typing import Iterable
+from typing import Iterable, List, NamedTuple, Optional, Union
+from enum import Enum
 
+from odxtools.utils import read_description_from_odx
+
+from .exceptions import DecodeError
 from .globals import logger
 from .odxtypes import ODX_TYPE_TO_PYTHON_TYPE, ODX_TYPE_PARSER, _odx_isinstance
 
@@ -62,14 +65,61 @@ class IdenticalCompuMethod(CompuMethod):
         return _odx_isinstance(internal_value, self.internal_type)
 
 
+class IntervalType(Enum):
+    OPEN = "OPEN"
+    CLOSED = "CLOSED"
+    INFINITE = "INFINITE"
+
+
+class Limit(NamedTuple):
+    value: Union[str, int, bytes]
+    interval_type: IntervalType = IntervalType.CLOSED
+
+
+class CompuRationalCoeffs(NamedTuple):
+    numerators: List[float]
+    denominators: List[float] = None
+
+
+class CompuScale(NamedTuple):
+    """A COMPU-SCALE represents one value range of a COMPU-METHOD.
+
+    Example:
+
+    For a TEXTTABLE compu method a compu scale within COMPU-INTERNAL-TO-PHYS
+    can be defined with
+    ```
+    scale = CompuScale(
+        short_label="example_label", # optional: provide a label
+        description="<p>fancy description</p>", # optional: provide a description
+        lower_limit=Limit(0), # required: lower limit
+        upper_limit=Limit(3), # required: upper limit
+        compu_inverse_value=2, # required iff lower_limit != upper_limit
+        compu_const="true", # required: physical value to be shown to the user
+    )
+    ```
+
+    Almost all attributes are optional but there are compu-method-specific restrictions.
+    E.g., lower_limit must always be defined unless the COMPU-METHOD is of CATEGORY LINEAR or RAT-FUNC.
+    Either `compu_const` or `compu_rational_coeffs` must be defined but never both.
+    """
+    short_label: str = None
+    description: str = None
+    lower_limit: Limit = None
+    upper_limit: Limit = None
+    compu_inverse_value: Union[float, str] = None
+    compu_const: Union[float, str] = None
+    compu_rational_coeffs: CompuRationalCoeffs = None
+
+
 class TexttableCompuMethod(CompuMethod):
-    def __init__(self, internal_to_phys, internal_type):
+    def __init__(self, internal_to_phys: List[CompuScale], internal_type):
         self.internal_type = internal_type
         self.physical_type = "A_UNICODE2STRING"
         self.internal_to_phys = internal_to_phys
 
-        assert all(scale["LOWER-LIMIT"] is not None or scale["UPPER-LIMIT"]
-                   is not None for scale in self.internal_to_phys), "Text table compu method doesn't have expected format!"
+        assert all(scale.lower_limit is not None or scale.upper_limit is not None
+                   for scale in self.internal_to_phys), "Text table compu method doesn't have expected format!"
 
     @property
     def category(self):
@@ -77,17 +127,17 @@ class TexttableCompuMethod(CompuMethod):
 
     def convert_physical_to_internal(self, physical_value):
         scale = next(filter(
-            lambda scale: scale["COMPU-CONST"] == physical_value, self.internal_to_phys), None)
+            lambda scale: scale.compu_const == physical_value, self.internal_to_phys), None)
         if scale is not None:
-            res = scale["COMPU-INVERSE-VALUE"] if scale["COMPU-INVERSE-VALUE"] is not None else scale["LOWER-LIMIT"]
+            res = scale.compu_inverse_value if scale.compu_inverse_value is not None else scale.lower_limit.value
             assert isinstance(res, int)
             return res
 
-    def __is_internal_in_scale(self, internal_value, scale):
-        if scale["UPPER-LIMIT"] is None:
-            return internal_value == scale["LOWER-LIMIT"]
+    def __is_internal_in_scale(self, internal_value, scale: CompuScale):
+        if scale.lower_limit.value is None:
+            return internal_value == scale.lower_limit.value
         else:
-            return scale["LOWER-LIMIT"] <= internal_value and internal_value <= scale["UPPER-LIMIT"]
+            return scale.lower_limit.value <= internal_value and internal_value <= scale.lower_limit.value
 
     def convert_internal_to_physical(self, internal_value):
         try:
@@ -96,16 +146,16 @@ class TexttableCompuMethod(CompuMethod):
         except StopIteration:
             raise DecodeError(
                 f"Texttable compu method could not decode {internal_value} to string.")
-        return scale["COMPU-CONST"]
+        return scale.compu_const
 
     def is_valid_physical_value(self, physical_value):
-        return physical_value in map(lambda x: x["COMPU-CONST"], self.internal_to_phys)
+        return physical_value in map(lambda x: x.compu_const, self.internal_to_phys)
 
     def is_valid_internal_value(self, internal_value):
         return any(self.__is_internal_in_scale(internal_value, scale) for scale in self.internal_to_phys)
 
     def get_valid_physical_values(self):
-        return list(map(lambda x: x["COMPU-CONST"], self.internal_to_phys))
+        return list(map(lambda x: x.compu_const, self.internal_to_phys))
 
 
 class LinearCompuMethod(CompuMethod):
@@ -119,34 +169,25 @@ class LinearCompuMethod(CompuMethod):
                  internal_type,
                  physical_type,
                  denominator=1,
-                 internal_lower_limit=None,
-                 internal_upper_limit=None,
-                 lower_interval_type=None,
-                 upper_interval_type=None):
+                 internal_lower_limit: Optional[Limit] = None,
+                 internal_upper_limit: Optional[Limit] = None):
+
         self.offset = offset
         self.factor = factor
         self.denominator = denominator
         self.internal_type = internal_type
         self.physical_type = physical_type
 
-        if lower_interval_type is not None:
-            self.lower_interval_type = lower_interval_type
-        elif internal_lower_limit is None or internal_lower_limit == float("-inf"):
-            self.lower_interval_type = "INFINITE"
-        else:
-            self.lower_interval_type = "CLOSED"
+        self.internal_lower_limit = internal_lower_limit
+        if internal_lower_limit is None or internal_lower_limit.interval_type == IntervalType.INFINITE:
+            self.internal_lower_limit = Limit(float("-inf"),
+                                              IntervalType.INFINITE)
 
-        if upper_interval_type is not None:
-            self.upper_interval_type = upper_interval_type
-        elif internal_upper_limit is None or internal_upper_limit == float("inf"):
-            self.upper_interval_type = "INFINITE"
-        else:
-            self.upper_interval_type = "CLOSED"
+        self.internal_upper_limit = internal_upper_limit
+        if internal_upper_limit is None or internal_upper_limit.interval_type == IntervalType.INFINITE:
+            self.internal_upper_limit = Limit(float("inf"),
+                                              IntervalType.INFINITE)
 
-        self.internal_lower_limit = internal_lower_limit if self.lower_interval_type != "INFINITE" else float(
-            "-inf")
-        self.internal_upper_limit = internal_upper_limit if self.upper_interval_type != "INFINITE" else float(
-            "inf")
         assert self.internal_lower_limit is not None and self.internal_upper_limit is not None
         assert denominator > 0 and type(denominator) == int
 
@@ -156,7 +197,7 @@ class LinearCompuMethod(CompuMethod):
 
     def convert_internal_to_physical(self, internal_value):
         assert self.is_valid_internal_value(internal_value) or internal_value in [
-            self.internal_lower_limit, self.internal_upper_limit]
+            self.internal_lower_limit.value, self.internal_upper_limit.value]
         if self.denominator is None:
             result = self.offset + self.factor * internal_value
         else:
@@ -192,19 +233,19 @@ class LinearCompuMethod(CompuMethod):
         invert = -1 if self.factor < 0 else 1
         physical_value *= invert
 
-        if self.lower_interval_type != "INFINITE":
+        if self.internal_lower_limit.interval_type != IntervalType.INFINITE:
             physical_lower_limit = self.convert_internal_to_physical(
-                self.internal_lower_limit) * invert
-            if self.lower_interval_type == "CLOSED" and physical_lower_limit > physical_value:
+                self.internal_lower_limit.value) * invert
+            if self.internal_lower_limit.interval_type == IntervalType.CLOSED and physical_lower_limit > physical_value:
                 return False
-            elif self.lower_interval_type == "OPEN" and physical_lower_limit >= physical_value:
+            elif self.internal_lower_limit.interval_type == IntervalType.OPEN and physical_lower_limit >= physical_value:
                 return False
-        if self.upper_interval_type != "INFINITE":
+        if self.internal_upper_limit.interval_type != IntervalType.INFINITE:
             physical_upper_limit = self.convert_internal_to_physical(
-                self.internal_upper_limit) * invert
-            if self.upper_interval_type == "CLOSED" and physical_upper_limit < physical_value:
+                self.internal_upper_limit.value) * invert
+            if self.internal_upper_limit.interval_type == IntervalType.CLOSED and physical_upper_limit < physical_value:
                 return False
-            elif self.upper_interval_type == "OPEN" and physical_upper_limit <= physical_value:
+            elif self.internal_upper_limit.interval_type == IntervalType.OPEN and physical_upper_limit <= physical_value:
                 return False
 
         return True
@@ -220,15 +261,15 @@ class LinearCompuMethod(CompuMethod):
             #    f"Internal: Type of {internal_value} is {type(internal_value)}, expected is {expected_type}")
             return False
 
-        if self.lower_interval_type != "INFINITE":
-            if self.lower_interval_type == "CLOSED" and self.internal_lower_limit > internal_value:
+        if self.internal_lower_limit.interval_type != IntervalType.INFINITE:
+            if self.internal_lower_limit.interval_type == IntervalType.CLOSED and self.internal_lower_limit.value > internal_value:
                 return False
-            elif self.lower_interval_type == "OPEN" and self.internal_lower_limit >= internal_value:
+            elif self.internal_lower_limit.interval_type == IntervalType.OPEN and self.internal_lower_limit.value >= internal_value:
                 return False
-        if self.upper_interval_type != "INFINITE":
-            if self.upper_interval_type == "CLOSED" and self.internal_upper_limit < internal_value:
+        if self.internal_upper_limit.interval_type != IntervalType.INFINITE:
+            if self.internal_upper_limit.interval_type == IntervalType.CLOSED and self.internal_upper_limit.value < internal_value:
                 return False
-            elif self.upper_interval_type == "OPEN" and self.internal_upper_limit <= internal_value:
+            elif self.internal_upper_limit.interval_type == IntervalType.OPEN and self.internal_upper_limit.value <= internal_value:
                 return False
 
         return True
@@ -244,8 +285,8 @@ class ScaleLinearCompuMethod(CompuMethod):
         return "SCALE-LINEAR"
 
     def convert_physical_to_internal(self, physical_value):
-        assert self.is_valid_physical_value(
-            physical_value), f"cannot convert the invalid physical value {physical_value} of type {type(physical_value)}"
+        assert self.is_valid_physical_value(physical_value), \
+            f"cannot convert the invalid physical value {physical_value} of type {type(physical_value)}"
         lin_method = next(
             scale for scale in self.linear_methods if scale.is_valid_physical_value(physical_value))
         return lin_method.convert_physical_to_internal(physical_value)
@@ -266,9 +307,6 @@ def _parse_compu_scale_to_linear_compu_method(scale_element, internal_type, phys
     assert physical_type in ["A_FLOAT32", "A_FLOAT64", "A_INT32", "A_UINT32"]
     assert internal_type in ["A_FLOAT32", "A_FLOAT64", "A_INT32", "A_UINT32"]
 
-    internal_python_type = float if internal_type.startswith(
-        "A_FLOAT") else int
-
     if internal_type.startswith("A_FLOAT") or physical_type.startswith("A_FLOAT"):
         computation_python_type = float
     else:
@@ -288,40 +326,57 @@ def _parse_compu_scale_to_linear_compu_method(scale_element, internal_type, phys
             coeffs.find("COMPU-DENOMINATOR/V").text)
         assert kwargs["denominator"] > 0
 
-    if scale_element.find("LOWER-LIMIT") is not None:
-        interval_type = scale_element.find("LOWER-LIMIT").get("INTERVAL-TYPE")
-        if interval_type is not None:
-            kwargs["lower_interval_type"] = interval_type
+    # Read lower limit
+    internal_lower_limit = read_limit_from_odx(
+        scale_element.find("LOWER-LIMIT"),
+        internal_type=internal_type
+    )
+    if internal_lower_limit is None:
+        internal_lower_limit = Limit(float("-inf"), IntervalType.INFINITE)
+    kwargs["internal_lower_limit"] = internal_lower_limit
 
-        if kwargs.get("lower_interval_type") == "INFINITE":
-            kwargs["internal_lower_limit"] = float("-inf")
-        elif scale_element.find("LOWER-LIMIT").text is not None:
-            kwargs["internal_lower_limit"] = internal_python_type(
-                scale_element.find("LOWER-LIMIT").text)
+    # Read upper limit
+    internal_upper_limit = read_limit_from_odx(
+        scale_element.find("UPPER-LIMIT"),
+        internal_type=internal_type
+    )
+    if internal_upper_limit is None:
+        if not is_scale_linear:
+            internal_upper_limit = Limit(float("inf"), IntervalType.INFINITE)
         else:
-            raise NotImplementedError("Couldn't interpret lower limit!")
-
-    if scale_element.find("UPPER-LIMIT") is not None:
-        interval_type = scale_element.find("UPPER-LIMIT").get("INTERVAL-TYPE")
-        if interval_type is not None:
-            kwargs["upper_interval_type"] = interval_type
-
-        if kwargs.get("upper_interval_type") == "INFINITE":
-            kwargs["internal_upper_limit"] = float("inf")
-        elif scale_element.find("UPPER-LIMIT").text is not None:
-            kwargs["internal_upper_limit"] = internal_python_type(
-                scale_element.find("UPPER-LIMIT").text)
-        else:
-            raise NotImplementedError("Couldn't interpret upper limit!")
-
-    elif is_scale_linear:
-        assert kwargs.get("internal_lower_limit") is not None and kwargs.get(
-            "lower_interval_type") == "CLOSED"
-        logger.info("Scale linear without UPPER-LIMIT")
-        kwargs["internal_upper_limit"] = kwargs["internal_lower_limit"]
-        kwargs["upper_interval_type"] = "CLOSED"
+            assert (internal_lower_limit is not None
+                    and internal_lower_limit.interval_type == IntervalType.CLOSED)
+            logger.info("Scale linear without UPPER-LIMIT")
+            internal_upper_limit = internal_lower_limit
+    kwargs["internal_upper_limit"] = internal_upper_limit
 
     return LinearCompuMethod(offset=offset, factor=factor, **kwargs)
+
+
+def read_limit_from_odx(et_element, internal_type: str):
+    if et_element is not None:
+        if et_element.get("INTERVAL-TYPE"):
+            interval_type = IntervalType(et_element.get("INTERVAL-TYPE"))
+        else:
+            interval_type = IntervalType.CLOSED
+
+        if interval_type == IntervalType.INFINITE:
+            if et_element.tag == "LOWER-LIMIT":
+                limit = Limit(float("-inf"), interval_type)
+            else:
+                assert et_element.tag == "UPPER-LIMIT"
+                limit = Limit(float("inf"), interval_type)
+        else:
+            if internal_type == "A_BYTEFIELD":
+                limit = Limit(int("0x" + et_element.text, 16), interval_type)
+            elif internal_type.startswith("A_FLOAT"):
+                limit = Limit(float(et_element.text), interval_type)
+            else:
+                limit = Limit(int(et_element.text, 10), interval_type)
+
+    else:
+        limit = None
+    return limit
 
 
 def read_compu_method_from_odx(et_element, internal_type, physical_type) -> CompuMethod:
@@ -337,36 +392,46 @@ def read_compu_method_from_odx(et_element, internal_type, physical_type) -> Comp
     kwargs = {"internal_type": internal_type}
 
     if compu_category == "IDENTICAL":
-        assert internal_type == physical_type or (internal_type in ["A_ASCIISTRING",  "A_UTF8STRING"] and physical_type ==
-                                                  "A_UNICODE2STRING"), f"Internal type '{internal_type}' and physical type '{physical_type}' must be the same for compu methods of category '{compu_category}'"
+        assert (internal_type == physical_type or (
+            internal_type in ["A_ASCIISTRING",  "A_UTF8STRING"] and physical_type == "A_UNICODE2STRING")
+        ), (f"Internal type '{internal_type}' and physical type '{physical_type}'"
+            f" must be the same for compu methods of category '{compu_category}'")
         return IdenticalCompuMethod(internal_type=internal_type, physical_type=physical_type)
 
     if compu_category == "TEXTTABLE":
         assert physical_type == "A_UNICODE2STRING"
         compu_internal_to_phys = et_element.find("COMPU-INTERNAL-TO-PHYS")
 
-        if internal_type == "A_BYTEFIELD":
-            internal_to_phys = [
-                {
-                    "COMPU-CONST": scale.find("COMPU-CONST").find("VT").text,
-                    "LOWER-LIMIT": int("0x" + scale.find("LOWER-LIMIT").text, 16) if scale.find("LOWER-LIMIT") is not None else None,
-                    "UPPER-LIMIT": int("0x" + scale.find("UPPER-LIMIT").text, 16) if scale.find("UPPER-LIMIT") is not None else None,
-                    "COMPU-INVERSE-VALUE": scale.find("COMPU-INVERSE-VALUE/VT").text if scale.find("COMPU-INVERSE-VALUE/VT") is not None
-                    else float(scale.find("COMPU-INVERSE-VALUE/V").text) if scale.find("COMPU-INVERSE-VALUE/V") is not None else None
-                } for scale in compu_internal_to_phys.iterfind("COMPU-SCALES/COMPU-SCALE")
-            ]
-        else:
-            internal_to_phys = [
-                {
-                    "COMPU-CONST": scale.find("COMPU-CONST").find("VT").text,
-                    "LOWER-LIMIT": int(scale.find("LOWER-LIMIT").text) if scale.find("LOWER-LIMIT") is not None else None,
-                    "UPPER-LIMIT": int(scale.find("UPPER-LIMIT").text) if scale.find("UPPER-LIMIT") is not None else None,
-                    "COMPU-INVERSE-VALUE": scale.find("COMPU-INVERSE-VALUE/VT").text if scale.find("COMPU-INVERSE-VALUE/VT") is not None
-                    else float(scale.find("COMPU-INVERSE-VALUE/V").text) if scale.find("COMPU-INVERSE-VALUE/V") is not None else None
-                } for scale in compu_internal_to_phys.iterfind("COMPU-SCALES/COMPU-SCALE")
-            ]
+        internal_to_phys = []
+        for scale in compu_internal_to_phys.iterfind("COMPU-SCALES/COMPU-SCALE"):
+            lower_limit = read_limit_from_odx(scale.find("LOWER-LIMIT"),
+                                              internal_type=internal_type)
+            upper_limit = read_limit_from_odx(scale.find("UPPER-LIMIT"),
+                                              internal_type=internal_type)
+
+            if scale.find("COMPU-INVERSE-VALUE/VT") is not None:
+                compu_inverse_value = scale.find(
+                    "COMPU-INVERSE-VALUE/VT"
+                ).text
+            elif scale.find("COMPU-INVERSE-VALUE/V") is not None:
+                compu_inverse_value = float(
+                    scale.find("COMPU-INVERSE-VALUE/V").text
+                )
+            else:
+                compu_inverse_value = None
+
+            internal_to_phys.append(CompuScale(
+                short_label=(scale.find("SHORT-LABEL").text
+                             if scale.find("SHORT-LABEL") is not None else None),
+                description=read_description_from_odx(scale.find("DESC")),
+                lower_limit=lower_limit,
+                upper_limit=upper_limit,
+                compu_inverse_value=compu_inverse_value,
+                compu_const=scale.find("COMPU-CONST").find("VT").text
+            ))
+
         kwargs["internal_to_phys"] = internal_to_phys
-        assert all(isinstance(scale["LOWER-LIMIT"], int) or isinstance(scale["UPPER-LIMIT"], int)
+        assert all(isinstance(scale.lower_limit.value, int) or isinstance(scale.upper_limit.value, int)
                    for scale in internal_to_phys), "Text table compu method doesn't have expected format!"
         return TexttableCompuMethod(**kwargs)
 
@@ -385,7 +450,7 @@ def read_compu_method_from_odx(et_element, internal_type, physical_type) -> Comp
             scale, internal_type, physical_type, additional_kwargs=kwargs) for scale in scales]
         return ScaleLinearCompuMethod(linear_methods)
 
-    # ToDo: Implement other categories (never instantiate CompuMethod)
+    # TODO: Implement other categories (never instantiate CompuMethod)
     logger.warning(
         f"Warning: Computation category {compu_category} is not implemented!")
     return CompuMethod()

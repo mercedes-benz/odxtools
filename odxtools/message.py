@@ -3,8 +3,10 @@
 
 from typing import Union
 
+
 class Message:
     """A CAN message with its interpretation."""
+
     def __init__(self,
                  coded_message: Union[bytes, bytearray],
                  service,
@@ -22,6 +24,9 @@ class Message:
         self.service = service
         self.structure = structure
         self.param_dict = param_dict
+
+    def __getitem__(self, key: str):
+        return self.param_dict[key]
 
     def __str__(self):
         param_string = ", ".join(map(lambda param: f"{param[0]}={repr(param[1])}",

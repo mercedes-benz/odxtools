@@ -3,7 +3,7 @@
 
 import unittest
 
-from odxtools.compumethods import LinearCompuMethod
+from odxtools.compumethods import Limit, LinearCompuMethod
 
 
 class TestLinearCompuMethod(unittest.TestCase):
@@ -38,15 +38,17 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertFalse(compu_method.is_valid_physical_value("123"))
         self.assertFalse(compu_method.is_valid_physical_value(1.2345))
 
-
     def test_linear_compu_method_type_string(self):
-        compu_method = LinearCompuMethod(1, 3, "A_ASCIISTRING", "A_UNICODE2STRING")
+        compu_method = LinearCompuMethod(
+            1, 3, "A_ASCIISTRING", "A_UNICODE2STRING")
         self.assertTrue(compu_method.is_valid_internal_value("123"))
         self.assertFalse(compu_method.is_valid_internal_value(123))
         self.assertFalse(compu_method.is_valid_internal_value(1.2345))
 
     def test_linear_compu_method_limits(self):
-        compu_method = LinearCompuMethod(1, 5, "A_INT32", "A_INT32", internal_lower_limit=2, internal_upper_limit=15)
+        compu_method = LinearCompuMethod(1, 5, "A_INT32", "A_INT32",
+                                         internal_lower_limit=Limit(2),
+                                         internal_upper_limit=Limit(15))
         self.assertFalse(compu_method.is_valid_internal_value(-3))
         self.assertFalse(compu_method.is_valid_internal_value(1))
         self.assertFalse(compu_method.is_valid_internal_value(16))

@@ -4,15 +4,12 @@
 import sys
 import argparse
 import PyInquirer
-import json
 
-import odxtools.snoop as snoop
-
-from .load_file import load_file
-from .database import Database
-from .structures import Request, Response
-from .parameters import ParameterWithDOP
-from .odxtypes import ODX_TYPE_TO_PYTHON_TYPE
+from ..database import Database
+from ..structures import Request, Response
+from ..parameters import ParameterWithDOP
+from ..odxtypes import ODX_TYPE_TO_PYTHON_TYPE
+from . import _parser_utils
 
 import logging
 # logging.basicConfig(level=logging.DEBUG)
@@ -55,90 +52,6 @@ def _convert_string_to_bytes(string_value):
         return bytes(int(x, 16) for x in string_value.split(" ") if len(x) > 0)
     else:
         return int(string_value, 16).to_bytes((int(string_value, 16).bit_length() + 7) // 8, 'big')
-
-
-def print_diagnostic_service(service, print_params=False):
-
-    print(f" {service.short_name} <ID: {service.id}>")
-    if print_params:
-        print(f"  Message format of a request:")
-        service.request.print_message_format(indent=3)
-
-        print(
-            f"  Number of positive responses: {len(service.positive_responses)}")
-        if len(service.positive_responses) == 1:
-            print(f"  Message format of a positive response:")
-            service.positive_responses[0].print_message_format(
-                indent=3)
-
-        print(
-            f"  Number of negative responses: {len(service.negative_responses)}")
-        if len(service.negative_responses) == 1:
-            print(f"  Message format of a negative response:")
-            service.negative_responses[0].print_message_format(
-                indent=3)
-
-    if len(service.positive_responses) > 1 or len(service.negative_responses) > 1:
-        # Does this ever happen?
-        raise NotImplementedError(
-            f"The diagnostic service {service.id} offers more than one response!")
-
-
-def print_summary(odxdb: Database,
-                  print_services=False,
-                  print_dops=False,
-                  print_params=False,
-                  print_com_params=False,
-                  variants=None,
-                  service_filter=lambda x: True):
-
-    diag_layer_names = variants if variants else list(map(lambda dl: dl.short_name, odxdb.diag_layers))
-
-    for dl_sn in diag_layer_names:
-        dl = odxdb.diag_layers[dl_sn]
-        if not dl:
-            print(f"The variant '{dl_sn}' could not be found!")
-            continue
-        service_sns = sorted(service.short_name for service in dl.services)
-        data_object_properties = dl.data_object_properties
-        com_params = dl.communication_parameters
-
-        if dl.get_receive_id() is not None:
-            recv_id = hex(dl.get_receive_id())
-        else:
-            recv_id = "None"
-        if dl.get_send_id() is not None:
-            send_id = hex(dl.get_send_id())
-        else:
-            send_id = "None"
-        print(
-            f"{dl.variant_type} '{dl.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
-        )
-        print(
-            f" num services: {len(service_sns)}, num DOPs: {len(data_object_properties)}, num communication parameters: {len(com_params)}."
-        )
-
-        if print_services and len(service_sns) > 0:
-            services = [dl.services[service_sn] for service_sn in service_sns]
-            services = list(filter(service_filter, services))
-            if len(services) > 0:
-                print(
-                    f"The services of the {dl.variant_type} '{dl.short_name}' are: ")
-                for service in services:
-                    if service_filter(service):
-                        print_diagnostic_service(
-                            service, print_params=print_params)
-
-        if print_dops and len(data_object_properties) > 0:
-            print(f"The DOPs of the {dl.variant_type} '{dl.short_name}' are: ")
-            for dop in sorted(data_object_properties, key=lambda x: (type(x).__name__, x.short_name)):
-                print("  " + str(dop).replace("\n", "\n  "))
-
-        if print_com_params and len(com_params) > 0:
-            print(
-                f"The communication parameters of the {dl.variant_type} '{dl.short_name}' are: ")
-            for com_param in com_params:
-                print(f"  {com_param.id_ref}: {com_param.value}")
 
 
 def _validate_string_value(input, parameter):
@@ -232,9 +145,6 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
             answered_request = answer.get("request")
             print(f"Input interpretation as list: {list(answered_request)}")
 
-        print(
-            "Warning: Type conversion only works 'sometimes' .. pass integers, unless a list of valid text values is given.")
-
         # Request values for parameters
         for key, param_or_structure in param_dict.items():
             if isinstance(param_or_structure, dict):
@@ -254,10 +164,10 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
                 if val is not None:
                     param_values[key] = val
         if isinstance(sub_service, Response):
-            payload = sub_service.encode(
-                param_values, coded_request=answered_request)
+            payload = sub_service.encode(coded_request=answered_request,
+                                         **param_values)
         else:
-            payload = sub_service.encode(param_values)
+            payload = sub_service.encode(**param_values)
     else:
         # There are no optional parameters that need to be defined by the user -> Just print message
         payload = sub_service.encode()
@@ -311,7 +221,7 @@ def encode_message_from_string_values(sub_service, parameter_values: dict = {}):
                 parameter.physical_data_type if parameter.parameter_type != "MATCHING-REQUEST-PARAM"
                 else "A_BYTEFIELD"
             )
-    payload = sub_service.encode(parameter_values)
+    payload = sub_service.encode(**parameter_values)
     print(f"Message payload: 0x{bytes(payload).hex()}")
 
 
@@ -392,199 +302,17 @@ def browse(odxdb: Database):
                 sub_service, ask_user_confirmation=True)
 
 
-def start_cli():
-    argparser = argparse.ArgumentParser(
-        description="\n".join([
-            "Utilities to interact with automotive diagnostic descriptions based on the ODX standard.",
-            "",
-            "Examples:",
-            "  For printing all services use:",
-            "   odxtools list ./path/to/database.pdx --services",
-            "  For browsing the data base and encoding messages use:",
-            "   odxtools browse ./path/to/database.pdx"
-        ]),
-        prog="odxtools",
-        formatter_class=argparse.RawTextHelpFormatter)
-
-    # do not enable the CANdela workarounds. Note that we disable then
-    # by default because CANdela is by far the most common tool to
-    # work with ODX.
-    argparser.add_argument("-c", "--conformant", default=False, action='store_const', const=True,
-                           required=False, help="The input file fully confirms to the standard, i.e., disable work-arounds for bugs of the CANdela tool")
-
-    subparsers = argparser.add_subparsers(
-        help='Select a sub command', dest="subparser_name")
-
-    # The 'list' command just dumps stuff to the console
-    parser_list = subparsers.add_parser(
-        'list',
-        description="\n".join([
-            "List the content of automotive diagnostic files (*.pdx)",
-            "",
-            "Examples:",
-            "  For displaying only the names of the diagnostic layers use:",
-            "    odxtools list ./path/to/database.pdx",
-            "  For displaying all content use:",
-            "    odxtools list ./path/to/database.pdx --all",
-            "  For more information use:",
-            "    odxtools list -h"
-        ]),
-        help="Print a summary of automotive diagnostic files.",
-        formatter_class=argparse.RawTextHelpFormatter)
-
-    parser_list.add_argument(
-        "pdx_file", metavar="PDX_FILE", help="path to the .pdx file")
-
-    parser_list.add_argument("-v", "--variants", nargs='+', metavar="VARIANT",
-                             required=False, help="Specifies which variants should be included.", default="all")
-
-    # The service option is None if option is not passed at all (-> do not print services), it is an empty list if "--services is passed"
-    parser_list.add_argument("-s", "--services", nargs='*', default=None, metavar="SERVICE",
-                             required=False, help="Print a list of diagnostic services specified in the pdx. \n"
-                             + "If no service names are specified, all services are printed.")
-    # Pretty print message format and list parameters
-    parser_list.add_argument("-p", "--params", default=False, action='store_const', const=True,
-                             required=False, help="Print a list of all parameters relevant for the selected items.\n")
-    parser_list.add_argument("-d", "--dops", default=False, action='store_const', const=True,
-                             required=False, help="Print a list of all data object properties relevant for the selected items")
-
-    # Shortcut to just dump everything
-    parser_list.add_argument("-a", "--all", default=False, action='store_const', const=True,
-                             required=False, help="Print a list of all diagnostic services and DOPs specified in the pdx")
-
+def add_subparser(subparsers):
     # Browse interactively to avoid spamming the console.
-    parser_browse = subparsers.add_parser(
+    parser = subparsers.add_parser(
         'browse',
         description="Interactively browse the content of automotive diagnostic files (*.pdx).",
         help="Interactively browse the content of automotive diagnostic files.",
         formatter_class=argparse.RawTextHelpFormatter)
 
-    parser_browse.add_argument(
-        "pdx_file", metavar="PDX_FILE", help="path to the .pdx file")
-
-    # follow a diagnostics session over a CAN bus and ISO-TP
-    parser_snoop = subparsers.add_parser(
-        'snoop',
-        description="Live decoding of a diagnostic session.",
-        help="Live decoding of a diagnostic session.",
-        formatter_class=argparse.RawTextHelpFormatter)
-
-    snoop.add_cli_arguments(parser_snoop)
-
-    # Encode a message (this is basically a short cut through browse to directly encode).
-    parser_encode = subparsers.add_parser(
-        'encode-message',
-        description="Encode a message. Interactively asks for parameter values.",
-        help="\n".join([
-            "Encode a message. Interactively asks for parameter values.",
-            "This is a short cut through the browse command to directly encode a message."
-        ]),
-        formatter_class=argparse.RawTextHelpFormatter
-    )
-
-    parser_encode.add_argument("pdx_file", metavar="PDX_FILE",
-                               help="path to the .pdx file")
-
-    source_group = parser_encode.add_mutually_exclusive_group(required=True)
-    source_group.add_argument("--short-names", metavar=("ECU_VARIANT", "DIAGNOSTIC_SERVICE"),
-                              nargs=2, help="short name of the diagnostic layer and service")
-    source_group.add_argument("--service-id", metavar="DIAGNOSTIC_SERVICE_ID", nargs=1,
-                              help="ID of the request")
-
-    parser_encode.add_argument("--type", choices=["RQ", "PR", "NR"], default="RQ",
-                               required=False, help="")
-
-    parser_encode.add_argument("--parameters", metavar="JSON_DICT",
-                               help="\n".join([
-                                   "parameters as JSON dict, e.g.,",
-                                   "'{\"param_name\": \"param_value\", \"structure_name\": {\"simple_param_name\" : \"simple_param_value\"}}'",
-                                   "Note that you have to use \" as delimiter for each name and value."]
-                               )
-                               )
-
-    # Decode message
-    parser_decode = subparsers.add_parser(
-        'decode-message',
-        description="Encode a message. Interactively asks for parameter values.",
-        help="\n".join([
-            "Decode a message. Interactively asks for parameter values.",
-            "This is a short cut through the browse command to directly encode a message."
-        ]),
-        formatter_class=argparse.RawTextHelpFormatter
-    )
-
-    parser_decode.add_argument("pdx_file", metavar="PDX_FILE",
-                               help="path to the .pdx file")
-    parser_decode.add_argument("--variant", metavar=("ECU_VARIANT"),
-                               nargs=1, help="short name of the diagnostic layer")
-    parser_decode.add_argument("--message", metavar=("UDS-MESSAGE"),
-                               nargs=1, help="UDS message to be decoded, e.g. 0x1A2B3C")
-
-    args = argparser.parse_args()  # deals with the help message handling
-
-    if args.subparser_name is None:
-        argparser.print_usage()
-        exit()
-
-    db_file_name = args.pdx_file
-
-    logging.debug(f"Argument interpretation: {args}")
-    odxdb = None
-    if db_file_name is not None:
-        odxdb = load_file(db_file_name,
-                          enable_candela_workarounds=not args.conformant)
-
-    if args.subparser_name == "list":
-        variants = args.variants if args.variants else None
-
-        print_summary(odxdb, print_services=args.all or args.params or args.services is not None,
-                      service_filter=(lambda s: s.short_name in args.services
-                                      if args.services and len(args.services) > 0 else lambda s: True),
-                      print_dops=args.all or args.dops, variants=None if variants == "all" else variants,
-                      print_params=args.all or args.params,
-                      print_com_params=args.all)
-    elif args.subparser_name == "browse":
-        browse(odxdb)
-    elif args.subparser_name == "snoop":
-        snoop.run(args, odxdb)
-    elif args.subparser_name == "encode-message":
-        if args.short_names:
-            variant_sn = args.short_names[0]
-            service_sn = args.short_names[1]
-            diagnostic_service = odxdb.diag_layers[variant_sn].services[service_sn]
-        else:
-            service_id = args.service_id[0]
-            diagnostic_service = odxdb.id_lookup[service_id]
-        if args.type == "RQ":
-            serv = diagnostic_service.request
-        elif args.type == "PR":
-            serv = diagnostic_service.positive_responses[0]
-        elif args.type == "NR":
-            serv = diagnostic_service.negative_responses[0]
-        else:
-            print(f"Message type: {args.type}")
-
-        if args.parameters is not None:
-            params = json.loads(args.parameters)
-            encode_message_from_string_values(serv, params)
-        else:
-            encode_message_interactively(serv, ask_user_confirmation=False)
-
-        # print("Pass parameters with the --parameter option. Use JSON Format. The parameters are:")
-        # print("{")
-        # print(", \n".join(f"{p_sn} : {param}" for p_sn, param in serv.parameter_dict().items()))
-        # print("}")
-    elif args.subparser_name == "decode-message":
-        variant_sn = args.variant[0]
-        uds_message = _convert_string_to_bytes(args.message[0])
-        variant = odxdb.diag_layers[variant_sn]
-        for m in variant.decode(uds_message):
-            print(f"{m}")
+    _parser_utils.add_pdx_argument(parser)
 
 
-if __name__ == "__main__":
-    # Command line tool
-    start_cli()
-else:
-    # Module is imported
-    pass
+def run(args):
+    odxdb = _parser_utils.load_file(args)
+    browse(odxdb)
