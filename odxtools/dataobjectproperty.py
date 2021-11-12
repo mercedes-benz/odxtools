@@ -2,14 +2,16 @@
 # Copyright (c) 2021 MBition GmbH
 
 import abc
-from typing import List, Union
+from typing import List, Optional, Union
 from dataclasses import dataclass
+
 from .globals import logger
 from .compumethods import CompuMethod, read_compu_method_from_odx
 from .odxtypes import _odx_isinstance
-
 from .diagcodedtypes import DiagCodedType, StandardLengthType, read_diag_coded_type_from_odx
-from .exceptions import DecodeError
+from .decodestate import DecodeState
+from .encodestate import EncodeState
+from .exceptions import DecodeError, EncodeError
 
 
 class DopBase(abc.ABC):
@@ -41,12 +43,12 @@ class DopBase(abc.ABC):
         pass
 
     @abc.abstractclassmethod
-    def convert_physical_to_bytes(self, physical_value, bit_position: int):
+    def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState, bit_position: int) -> bytes:
         """Convert the physical value into bytes."""
         pass
 
     @abc.abstractclassmethod
-    def convert_bytes_to_physical(self, byte_code: Union[bytes, bytearray], byte_position: int = 0, bit_position: int = 0):
+    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
         """Extract the bytes from the PDU and convert them to the physical value."""
         pass
 
@@ -73,11 +75,12 @@ class DataObjectProperty(DopBase):
 
     @property
     def bit_length(self):
-        # assert self.diag_coded_type.bit_length is None or isinstance(
-        #     self.diag_coded_type.bit_length, int)
-        # TODO: Some DiagCodedTypes, e.g. MinMaxLengthType doesn't have a bit length.
-        #       Remove bit length attribute from DOP or return None?
-        return getattr(self.diag_coded_type, "bit_length", None)
+        # TODO: The DiagCodedTypes except StandardLengthType don't have a bit length.
+        #       Should we remove this bit_length property from DOP or return None?
+        if isinstance(self.diag_coded_type, StandardLengthType):
+            return self.diag_coded_type.bit_length
+        else:
+            return None
 
     def convert_physical_to_internal(self, physical_value):
         assert _odx_isinstance(
@@ -85,29 +88,30 @@ class DataObjectProperty(DopBase):
 
         return self.compu_method.convert_physical_to_internal(physical_value)
 
-    def convert_physical_to_bytes(self, physical_value, bit_position):
-        assert self.is_valid_physical_value(
-            physical_value), f"value {physical_value} of type, {type(physical_value)} is not valid. Expected type {self.physical_data_type}"
-        internal_val = self.convert_physical_to_internal(physical_value)
-        if self.diag_coded_type.dct_type == "STANDARD-LENGTH-TYPE":
-            return self.diag_coded_type.convert_internal_to_bytes(internal_val, bit_position=bit_position)
-        else:
-            raise NotImplementedError(
-                f"The diag coded type {self.diag_coded_type.dct_type} is not implemented yet.")
+    def convert_physical_to_bytes(self, physical_value, encode_state, bit_position):
+        if not self.is_valid_physical_value(physical_value):
+            raise EncodeError(f"The value {repr(physical_value)} of type {type(physical_value)}"
+                              f" is not a valid." +
+                              (f" Valid values are {self.compu_method.get_valid_physical_values()}"
+                               if self.compu_method.get_valid_physical_values()
+                               else f" Expected type {self.physical_data_type}.")
+                              )
 
-    def convert_bytes_to_physical(self, byte_code: Union[bytes, bytearray], byte_position: int = 0, bit_position: int = 0):
+        internal_val = self.convert_physical_to_internal(physical_value)
+        return self.diag_coded_type.convert_internal_to_bytes(internal_val, encode_state, bit_position=bit_position)
+
+    def convert_bytes_to_physical(self, decode_state, bit_position: int = 0):
         assert 0 <= bit_position and bit_position < 8
 
-        internal, next_byte_position = self.diag_coded_type.convert_bytes_to_internal(byte_code,
-                                                                                      byte_position=byte_position,
+        internal, next_byte_position = self.diag_coded_type.convert_bytes_to_internal(decode_state,
                                                                                       bit_position=bit_position)
 
         if self.compu_method.is_valid_internal_value(internal):
             return self.compu_method.convert_internal_to_physical(internal), next_byte_position
         else:
             # TODO: How to prevent this?
-            raise DecodeError(
-                f"DOP {self.short_name} could not convert coded value {internal} to physical type {self.physical_data_type}.")
+            raise DecodeError(f"DOP {self.short_name} could not convert the coded value "
+                              f" {repr(internal)} to physical type {self.physical_data_type}.")
 
     def is_valid_physical_value(self, physical_value):
         return self.compu_method.is_valid_physical_value(physical_value)
@@ -143,11 +147,13 @@ class DiagnosticTroubleCode:
 
 class DtcRef:
     """A proxy for DiagnosticTroubleCode.
-    The DTC is referenced by ID and the ID-REF is resolved after parsing."""
+    The DTC is referenced by ID and the ID-REF
+    is resolved after loading the pdx database.
+    """
 
     def __init__(self, dtc_id):
         self.dtc_id = dtc_id
-        self.dtc = None
+        self.dtc: Optional[DiagnosticTroubleCode] = None
 
     @property
     def id(self):
@@ -178,7 +184,12 @@ class DtcRef:
         return self.dtc.is_temporary
 
     def _resolve_references(self, id_lookup):
-        self.dtc = id_lookup[self.dtc_id]
+        self.dtc: Optional[DiagnosticTroubleCode] = id_lookup.get(self.dtc_id)
+        if self.dtc is None:
+            logger.debug(f"DTC-REF {self.dtc_id} could not be resolved.")
+        else:
+            assert isinstance(self.dtc, DiagnosticTroubleCode),\
+                f"DTC-REF {self.dtc_id} does not reference a DTC but a {type(self.dtc)}."
 
 
 class DtcDop(DataObjectProperty):
@@ -207,17 +218,33 @@ class DtcDop(DataObjectProperty):
         self.is_visible = is_visible
         self.linked_dtc_dops = linked_dtc_dops
 
-    def convert_bytes_to_physical(self, byte_code: Union[bytes, bytearray], byte_position: int = 0, bit_position: int = 0):
-        trouble_code, next_byte = super().convert_bytes_to_physical(byte_code,
-                                                                    byte_position=byte_position,
+    def convert_bytes_to_physical(self, decode_state, bit_position: int = 0):
+        trouble_code, next_byte = super().convert_bytes_to_physical(decode_state,
                                                                     bit_position=bit_position)
         try:
             dtc = next(filter(lambda dtc: dtc.trouble_code == trouble_code,
                               self.dtcs))
         except:
-            raise DecodeError(
-                f"DTC-DOP {self.short_name} extracted value {trouble_code} from PDU but it does not match any specified trouble codes.")
+            raise DecodeError(f"DTC-DOP {self.short_name} extracted value {trouble_code} from PDU"
+                              f" but it does not match any specified trouble codes.")
         return dtc, next_byte
+
+    def convert_physical_to_bytes(self, physical_value, encode_state, bit_position):
+        if isinstance(physical_value, DiagnosticTroubleCode):
+            trouble_code = physical_value.trouble_code
+        elif isinstance(physical_value, int):
+            # assume that physical value is the trouble_code
+            trouble_code = physical_value
+        elif isinstance(physical_value, int):
+            # assume that physical value is the short_name
+            dtc = next(filter(lambda dtc: dtc.short_name == physical_value,
+                              self.dtcs))
+            trouble_code = dtc.trouble_code
+        else:
+            raise EncodeError(f"The DTC-DOP {self.short_name} expected a"
+                              f" DiagnosticTroubleCode but got {physical_value}.")
+
+        return super().convert_physical_to_bytes(trouble_code, encode_state, bit_position)
 
     def _build_id_lookup(self):
         id_lookup = {}
@@ -278,10 +305,9 @@ def read_data_object_property_from_odx(et_element):
                                  long_name=long_name,
                                  description=description)
     else:
-        # TODO
         dtcs = [read_dtc_from_odx(el)
                 for el in et_element.iterfind("DTCS/DTC")]
-        dtcs += [DtcRef(et_element.get("ID"))
+        dtcs += [DtcRef(el.get("ID-REF"))
                  for el in et_element.iterfind("DTCS/DTC-REF")]
 
         is_visible = et_element.get("IS-VISIBLE") == "true"

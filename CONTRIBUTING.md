@@ -29,7 +29,7 @@ In the context of project-related discussions, please respect our
 
 Before your first pull request can be merged, you need to sign our
 [Contributor License Agreement (CLA)](CONTRIBUTORS_LICENSE_AGREEMENT.md)
-and be send to
+and send it to
 [cla-mbition@daimler.com](mailto:cla-mbition@daimler.com).
 
 After sending the signed document, your code contributions can

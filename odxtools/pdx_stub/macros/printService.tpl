@@ -17,6 +17,11 @@
 {%- if service.long_name and service.long_name.strip() %}
  <LONG-NAME>{{service.long_name|e}}</LONG-NAME>
 {%- endif %}
+{%- if service.description and service.description.strip() %}
+ <DESC>
+ {{service.description}}
+ </DESC>
+{%- endif %}
 {%- if service.functional_class_refs %}
  <FUNCT-CLASS-REFS>
 {%- for ref in service.functional_class_refs %}

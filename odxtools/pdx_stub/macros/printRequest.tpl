@@ -13,6 +13,11 @@
 {%- if request.long_name %}
  <LONG-NAME>{{request.long_name|e}}</LONG-NAME>
 {%- endif %}
+{%- if request.description and request.description.strip() %}
+ <DESC>
+ {{request.description}}
+ </DESC>
+{%- endif %}
 {%- if request.parameters %}
  <PARAMS>
  {%- for param in request.parameters -%}

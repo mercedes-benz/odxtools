@@ -9,4 +9,4 @@ def read_description_from_odx(et_element):
         return None
     raw_string = ElementTree.tostring(et_element, encoding="unicode", method="xml")
     raw_string = "\n".join(raw_string.split("\n")[1:-2]) # Remove DESC start and end tag.
-    return raw_string
+    return raw_string.strip()

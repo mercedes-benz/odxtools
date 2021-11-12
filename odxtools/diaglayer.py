@@ -111,25 +111,25 @@ class DiagLayer:
 
         # Requests and Responses
         self.requests = requests
-        self.positive_responses = NamedItemList(lambda pr: pr.short_name,
-                                                positive_responses)
-        self.negative_responses = NamedItemList(lambda nr: nr.short_name,
-                                                negative_responses)
+        self.positive_responses = NamedItemList[Response](lambda pr: pr.short_name,
+                                                          positive_responses)
+        self.negative_responses = NamedItemList[Response](lambda nr: nr.short_name,
+                                                          negative_responses)
 
         # ParentRefs
         self.parent_refs = parent_refs
 
         # DiagServices (note that they do not include inherited services!)
-        self._local_services = NamedItemList(lambda ser: ser.short_name,
-                                             services)
+        self._local_services = NamedItemList[DiagService](lambda ser: ser.short_name,
+                                                          services)
         self._diag_comm_refs = diag_comm_refs
 
         # DOP-BASEs
         self.local_diag_data_dictionary_spec = diag_data_dictionary_spec
 
         # Communication parameters, e.g. CAN-IDs
-        self._local_communication_parameters = NamedItemList(lambda cp: cp._python_name(),
-                                                             communication_parameters)
+        self._local_communication_parameters = NamedItemList[CommunicationParameterRef](lambda cp: cp._python_name(),
+                                                                                        communication_parameters)
 
         self.additional_audiences = additional_audiences
         self.functional_classes = functional_classes
@@ -146,21 +146,21 @@ class DiagLayer:
         self._enable_candela_workarounds = enable_candela_workarounds
 
     @property
-    def services(self) -> NamedItemList:
+    def services(self) -> NamedItemList[DiagService]:
         """All services that this diagnostic layer offers including inherited services."""
         return self._services
 
     @property
-    def data_object_properties(self) -> NamedItemList:
+    def data_object_properties(self) -> NamedItemList[DopBase]:
         """All data object properties including inherited ones.
-        This attribute corresponds to all specializations of DOP-BASE
-        defined in the DIAG-DATA-DICTIONARY-SPEC of this diag layer as well as
+        This attribute corresponds to all specializations of DOP-BASE 
+        defined in the DIAG-DATA-DICTIONARY-SPEC of this diag layer as well as 
         in the DIAG-DATA-DICTIONARY-SPEC of any parent.
         """
         return self._data_object_properties
 
     @property
-    def communication_parameters(self) -> NamedItemList:
+    def communication_parameters(self) -> NamedItemList[CommunicationParameterRef]:
         """All communication parameters including inherited ones."""
         return self._communication_parameters
 
@@ -168,7 +168,7 @@ class DiagLayer:
         """Resolves all references.
 
         This method should be called whenever the diag layer (or a referenced object) was changed.
-        Particularly, this method assumes that all inherited diag layer are correctly initialized,
+        Particularly, this method assumes that all inherited diag layer are correctly initialized, 
         i.e., have resolved their references.
         """
         id_lookup.update(self._build_id_lookup())
@@ -207,18 +207,18 @@ class DiagLayer:
 
         services = sorted(self._compute_available_services_by_name(id_lookup).values(),
                           key=lambda service: service.short_name)
-        self._services = NamedItemList(lambda s: s.short_name,
-                                       services)
+        self._services = NamedItemList[DiagService](lambda s: s.short_name,
+                                                    services)
 
         dops = sorted(self._compute_available_data_object_properties_by_name().values(),
                       key=lambda dop: dop.short_name)
-        self._data_object_properties = NamedItemList(lambda dop: dop.short_name,
-                                                     dops)
+        self._data_object_properties = NamedItemList[DiagService](lambda dop: dop.short_name,
+                                                                  dops)
 
         comparams = sorted(self._compute_available_commmunication_parameters_by_name().values(),
                            key=lambda comparam: comparam.id_ref)
-        self._communication_parameters = NamedItemList(lambda cp: cp._python_name(),
-                                                       comparams)
+        self._communication_parameters = NamedItemList[DiagService](lambda cp: cp._python_name(),
+                                                                    comparams)
 
         # Resolve all other references
         for struct in chain(self.requests,
@@ -444,6 +444,24 @@ class DiagLayer:
                 # fragment of the the ASAM MCD2-D standard.
                 return int(com_param.value[4])
 
+    def get_tester_present_time(self):
+        """Timeout on inactivity in seconds.
+
+        This is defined by the communication parameter "ISO_14230_3.CP_TesterPresentTime".
+        If the variant does not define this parameter, the default value 3.0 is returned.
+
+        Description of the comparam: "Time between a response and the next subsequent tester present message
+        (if no other request is sent to this ECU) in case of physically addressed requests."
+        """
+        cps = list(filter(lambda x: x.id_ref == "ISO_14230_3.CP_TesterPresentTime",
+                          self.communication_parameters))
+        if len(cps):
+            assert len(cps) == 1
+            idle_timeout = int(cps[0].value) / 1e6
+        else:
+            idle_timeout = 3.0  # default specified by the standard
+        return idle_timeout
+
     def __repr__(self) -> str:
         return f"""DiagLayer(variant_type={self.variant_type},
           id={repr(self.id)},
@@ -577,8 +595,9 @@ class DiagLayerContainer:
         self.base_variants = base_variants
         self.ecu_variants = ecu_variants
 
-        self._diag_layers = NamedItemList(lambda dop: dop.short_name,
-                                          list(chain(self.ecu_shared_datas, self.protocols, self.functional_groups, self.base_variants, self.ecu_variants)))
+        self._diag_layers = NamedItemList[DiagLayer](
+            lambda dop: dop.short_name,
+            list(chain(self.ecu_shared_datas, self.protocols, self.functional_groups, self.base_variants, self.ecu_variants)))
 
     @property
     def diag_layers(self):

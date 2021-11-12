@@ -45,19 +45,27 @@
   <COMPU-SCALES>
   {%- for cs in cm.internal_to_phys %}
    <COMPU-SCALE>
-   {%- if cs["LOWER-LIMIT"] is not none %}
-    <LOWER-LIMIT>{{cs["LOWER-LIMIT"]}}</LOWER-LIMIT>
+   {%- if cs.short_label and cs.short_label.strip() %}
+    <SHORT-LABEL>{{cs.short_label|e}}</SHORT-LABEL>
    {%- endif %}
-   {%- if cs["UPPER-LIMIT"] is not none %}
-    <UPPER-LIMIT>{{cs["UPPER-LIMIT"]}}</UPPER-LIMIT>
+   {%- if cs.description and cs.description.strip() %}
+    <DESC>
+    {{cs.description}}
+    </DESC>
    {%- endif %}
-   {%- if cs["COMPU-INVERSE-VALUE"] is not none %}
+   {%- if cs.lower_limit is not none %}
+    <LOWER-LIMIT>{{cs.lower_limit.value}}</LOWER-LIMIT>
+   {%- endif %}
+   {%- if cs.upper_limit is not none %}
+    <UPPER-LIMIT>{{cs.upper_limit.value}}</UPPER-LIMIT>
+   {%- endif %}
+   {%- if cs.compu_inverse_value is not none %}
     <COMPU-INVERSE-VALUE>
-     <V>{{cs["COMPU-INVERSE-VALUE"] | int }}</V>
+     <V>{{cs.compu_inverse_value | int }}</V>
     </COMPU-INVERSE-VALUE>
    {%- endif %}
     <COMPU-CONST>
-     <VT>{{cs["COMPU-CONST"]|e }}</VT>
+     <VT>{{cs.compu_const | e }}</VT>
     </COMPU-CONST>
    </COMPU-SCALE>
   {%- endfor %}
@@ -67,11 +75,11 @@
  <COMPU-INTERNAL-TO-PHYS>
 		<COMPU-SCALES>
 			<COMPU-SCALE>
-   {%- if cm.lower_interval_type != "INFINITE" and cm.internal_lower_limit is not none %}
-				<LOWER-LIMIT>{{cm.internal_lower_limit}}</LOWER-LIMIT>
+   {%- if cm.internal_lower_limit.interval_type.value != "INFINITE" and cm.internal_lower_limit is not none %}
+				<LOWER-LIMIT>{{cm.internal_lower_limit.value}}</LOWER-LIMIT>
    {%- endif %}
-   {%- if cm.upper_interval_type != "INFINITE" and cm.internal_upper_limit is not none %}
-				<UPPER-LIMIT>{{cm.internal_upper_limit}}</UPPER-LIMIT>
+   {%- if cm.internal_upper_limit.interval_type.value != "INFINITE" and cm.internal_upper_limit is not none %}
+				<UPPER-LIMIT>{{cm.internal_upper_limit.value}}</UPPER-LIMIT>
    {%- endif %}
 				<COMPU-RATIONAL-COEFFS>
 					<COMPU-NUMERATOR>
@@ -93,11 +101,11 @@
 		<COMPU-SCALES>
   {%- for lm in cm.linear_methods %}
  		<COMPU-SCALE>
-   {%- if lm.lower_interval_type != "INFINITE" and lm.internal_lower_limit is not none %}
-				<LOWER-LIMIT>{{lm.internal_lower_limit}}</LOWER-LIMIT>
+   {%- if lm.internal_lower_limit.interval_type.value != "INFINITE" and lm.internal_lower_limit is not none %}
+				<LOWER-LIMIT>{{lm.internal_lower_limit.value}}</LOWER-LIMIT>
    {%- endif %}
-   {%- if lm.uper_interval_type != "INFINITE" and lm.internal_upper_limit is not none %}
-				<UPPER-LIMIT>{{lm.internal_upper_limit}}</UPPER-LIMIT>
+   {%- if lm.internal_upper_limit.interval_type.value != "INFINITE" and lm.internal_upper_limit is not none %}
+				<UPPER-LIMIT>{{lm.internal_upper_limit.value}}</UPPER-LIMIT>
    {%- endif %}
 				<COMPU-RATIONAL-COEFFS>
 					<COMPU-NUMERATOR>

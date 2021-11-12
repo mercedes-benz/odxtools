@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2021 MBition GmbH
 
-from typing import List, Union
+from typing import List, Union, Generic, TypeVar
 
-class NamedItemList:
+T = TypeVar('T')
+
+class NamedItemList(Generic[T]):
     """A list that provides direct access to its items as named attributes.
 
     This is a hybrid between a list and a user-defined object: One can
@@ -45,8 +47,8 @@ class NamedItemList:
 
     def __len__(self):
         return len(self._list)
-
-    def __getitem__(self, key: Union[int, str]):
+            
+    def __getitem__(self, key: Union[int, str]) -> T:
         if isinstance(key, int):
             return self._list[key]
         else:

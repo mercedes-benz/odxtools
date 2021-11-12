@@ -10,6 +10,11 @@
 <{{tag_name}} ID="{{resp.id}}">
  <SHORT-NAME>{{resp.short_name}}</SHORT-NAME>
  <LONG-NAME>{{resp.long_name|e}}</LONG-NAME>
+{%- if resp.description and resp.description.strip() %}
+ <DESC>
+ {{resp.description}}
+ </DESC>
+{%- endif %}
 {%- if resp.parameters %}
  <PARAMS>
 {%- for param in resp.parameters -%}

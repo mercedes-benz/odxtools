@@ -102,5 +102,5 @@ __author__ = 'Katrin Bauer'
 
 def _main():
     # Command line tool
-    from . import odxtools_cli as cli
-    cli.start_cli()
+    from .cli import main as _main
+    _main.start_cli()
