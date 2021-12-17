@@ -3,7 +3,7 @@
 
 import unittest
 
-from odxtools.compumethods import Limit, LinearCompuMethod
+from odxtools.compumethods import Limit, LinearCompuMethod, IntervalType
 
 
 class TestLinearCompuMethod(unittest.TestCase):
@@ -66,6 +66,28 @@ class TestLinearCompuMethod(unittest.TestCase):
 
         self.assertEqual(compu_method.convert_internal_to_physical(4), 21)
         self.assertEqual(compu_method.convert_physical_to_internal(21), 4)
+
+    def test_linear_compu_method_physical_limits(self):
+        # Define decoding function: f: (2, 15] -> [-74, -9), f(x) = -5*x + 1
+        compu_method = LinearCompuMethod(1, -5, "A_INT32", "A_INT32",
+                                         internal_lower_limit=Limit(2,
+                                                                    interval_type=IntervalType.OPEN),
+                                         internal_upper_limit=Limit(15))
+
+        self.assertEqual(compu_method.physical_lower_limit,
+                         Limit(-74, interval_type=IntervalType.CLOSED))
+        self.assertEqual(compu_method.physical_upper_limit,
+                         Limit(-9, interval_type=IntervalType.OPEN))
+
+        self.assertTrue(compu_method.is_valid_internal_value(3))
+        self.assertTrue(compu_method.is_valid_internal_value(15))
+        self.assertFalse(compu_method.is_valid_internal_value(2))
+        self.assertFalse(compu_method.is_valid_internal_value(16))
+
+        self.assertTrue(compu_method.is_valid_physical_value(-74))
+        self.assertTrue(compu_method.is_valid_physical_value(-10))
+        self.assertFalse(compu_method.is_valid_physical_value(-75))
+        self.assertFalse(compu_method.is_valid_physical_value(-9))
 
 
 if __name__ == '__main__':
