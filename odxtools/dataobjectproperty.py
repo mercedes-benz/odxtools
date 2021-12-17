@@ -135,16 +135,24 @@ class DataObjectProperty(DopBase):
     def __repr__(self) -> str:
         return \
             f"DataObjectProperty('{self.short_name}', " + \
-            f"category='{self.compu_method.category}', " + \
-            f"internal_type='{self.diag_coded_type.base_data_type}', " + \
-            f"physical_type='{self.physical_data_type}')"
+            ", ".join([
+                f"category='{self.compu_method.category}'",
+                f"internal_type='{self.diag_coded_type.base_data_type}'",
+                f"physical_type='{self.physical_data_type}'",
+                f"unit_ref='{self.unit_ref}'",
+            ]) + \
+            ")"
 
     def __str__(self) -> str:
         return \
             f"DataObjectProperty('{self.short_name}', " + \
-            f"category='{self.compu_method.category}', " + \
-            f"internal_type='{self.diag_coded_type.base_data_type}', " + \
-            f"physical_type='{self.physical_data_type}')"
+            ", ".join([
+                f"category='{self.compu_method.category}'",
+                f"internal_type='{self.diag_coded_type.base_data_type}'",
+                f"physical_type='{self.physical_data_type}'",
+                f"unit_ref='{self.unit_ref}'",
+            ]) + \
+            ")"
 
 
 @dataclass
@@ -248,7 +256,7 @@ class DtcDop(DataObjectProperty):
         elif isinstance(physical_value, int):
             # assume that physical value is the trouble_code
             trouble_code = physical_value
-        elif isinstance(physical_value, int):
+        elif isinstance(physical_value, str):
             # assume that physical value is the short_name
             dtc = next(filter(lambda dtc: dtc.short_name == physical_value,
                               self.dtcs))

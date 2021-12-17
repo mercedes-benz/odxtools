@@ -8,6 +8,7 @@
 {%- import('macros/printFunctionalClass.tpl') as pfc %}
 {%- import('macros/printStructure.tpl') as pst %}
 {%- import('macros/printEndOfPdu.tpl') as peopdu %}
+{%- import('macros/printUnitSpec.tpl') as punit %}
 {%- import('macros/printService.tpl') as ps %}
 {%- import('macros/printRequest.tpl') as prq %}
 {%- import('macros/printResponse.tpl') as presp %}
@@ -62,6 +63,9 @@
    {{ peopdu.printEndOfPdu(eopdu)|indent(3) }}
  {%- endfor %}
   </END-OF-PDU-FIELDS>
+ {%- endif %}
+ {%- if dl.local_diag_data_dictionary_spec.unit_spec %}
+  {{ punit.printUnitSpec(dl.local_diag_data_dictionary_spec.unit_spec)|indent(2) }}
  {%- endif %}
  </DIAG-DATA-DICTIONARY-SPEC>
 {%- endif %}

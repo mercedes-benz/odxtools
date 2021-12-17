@@ -147,6 +147,9 @@
 {%- else %}
  <PHYSICAL-TYPE BASE-DATA-TYPE="{{dop.physical_data_type}}" />
 {%- endif %}
+{%- if dop.unit_ref %}
+ <UNIT-REF ID-REF="{{ dop.unit_ref }}" />
+{%- endif %}
 </{{tag_name}}>
 {%- endmacro -%}
 
@@ -175,7 +178,7 @@
   {%- if dtc.display_trouble_code is not none   %}
    <DISPLAY-TROUBLE-CODE>{{dtc.display_trouble_code}}</DISPLAY-TROUBLE-CODE>
   {%- endif %}
-   <TEXT>{{dtc.text}}</TEXT>
+   <TEXT>{{dtc.text|e}}</TEXT>
   {%- if not dtc.level is none   %}
    <LEVEL>{{dtc.level}}</LEVEL>
   {%- endif %}
