@@ -16,7 +16,7 @@ from .functionalclass import read_functional_class_from_odx
 from .audience import read_additional_audience_from_odx
 from .message import Message
 from .service import DiagService, read_diag_service_from_odx
-from .structures import Request, Response, read_structure_from_odx
+from .structures import Request, Response, Structure, read_structure_from_odx
 
 # Defines priority of overiding objects
 PRIORITY_OF_DIAG_LAYER_TYPE = {
@@ -188,13 +188,9 @@ class DiagLayer:
             id_lookup[obj.id] = obj
 
         if self.local_diag_data_dictionary_spec:
-            for obj in chain(self.local_diag_data_dictionary_spec.data_object_props,
-                             self.local_diag_data_dictionary_spec.structures,
-                             self.local_diag_data_dictionary_spec.end_of_pdu_fields):
-                id_lookup[obj.id] = obj
-
-            for obj in self.local_diag_data_dictionary_spec.dtc_dops:
-                id_lookup.update(obj._build_id_lookup())
+            id_lookup.update(
+                self.local_diag_data_dictionary_spec._build_id_lookup()
+            )
 
         id_lookup[self.id] = self
         return id_lookup
@@ -229,11 +225,8 @@ class DiagLayer:
             service._resolve_references(id_lookup)
 
         if self.local_diag_data_dictionary_spec:
-            for dtc_dop in self.local_diag_data_dictionary_spec.dtc_dops:
-                dtc_dop._resolve_references(id_lookup)
-            for struct in chain(self.local_diag_data_dictionary_spec.structures,
-                                self.local_diag_data_dictionary_spec.end_of_pdu_fields):
-                struct._resolve_references(self, id_lookup)
+            self.local_diag_data_dictionary_spec._resolve_references(self,
+                                                                     id_lookup)
 
     def __local_services_by_name(self, id_lookup) -> dict:
         services_by_name = {
