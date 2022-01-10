@@ -32,8 +32,8 @@ class TestUnitSpec(unittest.TestCase):
                     short_name="Kilometre",
                     display_name="km",
                     physical_dimension_ref="ID.metre",
-                    factor_si_to_unit=.001,
-                    offset_si_to_unit=0.
+                    factor_si_to_unit=1000,
+                    offset_si_to_unit=0
                 )
             ]
         )

@@ -59,7 +59,20 @@ class PhysicalDimension:
 @dataclass
 class Unit:
     """
-    A minimal unit just consists of an ID, short name and a display name:
+    A unit consists of an ID, short name and a display name.
+
+    Additionally, a unit may reference an SI unit (`.physical_dimension`)
+    and an offset to that unit (`factor_si_to_unit`, `offset_si_to_unit`).
+    The factor and offset are defined such that the following equation holds true:
+
+    UNIT = FACTOR-SI-TO-UNIT * SI-UNIT + OFFSET-SI-TO-UNIT
+
+    For example: 1km = 1000 * 1m + 0
+
+    Examples
+    --------
+
+    A minimal unit representing kilometres:
 
     ```
     Unit(
@@ -69,15 +82,15 @@ class Unit:
     )
     ```
 
-    Additionally, a unit may reference a SI unit (`.physical_dimension`)
-    and an offset to that unit (`factor_si_to_unit`, `offset_si_to_unit`).
+    A unit that also references a physical dimension:
+
     ```
     Unit(
         id="ID.kilometre",
         short_name="Kilometre",
         display_name="km",
         physical_dimension_ref="ID.metre",
-        factor_si_to_unit=0.001,
+        factor_si_to_unit=1000,
         offset_si_to_unit=0
     )
     # where the physical_dimension_ref references, e.g.:
@@ -157,13 +170,16 @@ class UnitSpec:
     """
     unit_groups: NamedItemList[UnitGroup] = field(default_factory=list)
     units: NamedItemList[Unit] = field(default_factory=list)
-    physical_dimensions: NamedItemList[PhysicalDimension] = field(default_factory=list)
+    physical_dimensions: NamedItemList[PhysicalDimension] = field(
+        default_factory=list)
 
     def __post_init__(self):
-        self.unit_groups = NamedItemList(lambda x: x.short_name, self.unit_groups)
+        self.unit_groups = NamedItemList(lambda x: x.short_name,
+                                         self.unit_groups)
         self.units = NamedItemList(lambda x: x.short_name, self.units)
-        self.physical_dimensions = NamedItemList(lambda x: x.short_name, self.physical_dimensions)
-    
+        self.physical_dimensions = NamedItemList(lambda x: x.short_name,
+                                                 self.physical_dimensions)
+
     def _build_id_lookup(self):
         id_lookup = {}
         id_lookup.update({

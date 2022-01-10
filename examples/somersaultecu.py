@@ -28,18 +28,24 @@ from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 
 from odxtools.diagcodedtypes import StandardLengthType
 
+from odxtools.units import UnitSpec
+from odxtools.units import PhysicalDimension
+from odxtools.units import Unit
+from odxtools.units import UnitGroup
+
 from odxtools.parameters import CodedConstParameter
 from odxtools.parameters import ReservedParameter
 from odxtools.parameters import ValueParameter
 from odxtools.parameters import MatchingRequestParameter
 
-from odxtools.communicationparameter import  CommunicationParameterRef
+from odxtools.communicationparameter import CommunicationParameterRef
 
 from odxtools.audience import AdditionalAudience, Audience
 from odxtools.functionalclass import FunctionalClass
 
 import odxtools.obd as obd
 import odxtools.uds as uds
+
 
 class SID(IntEnum):
     """The Somersault-ECU specific service IDs.
@@ -68,14 +74,14 @@ SID = IntEnum('SID', [(i.name, i.value) for i in chain(uds.SID, SID)])
 somersault_functional_classes = {
     "flip":
     FunctionalClass(
-        id="somersault.FNC.flip", 
-        short_name="flip", 
+        id="somersault.FNC.flip",
+        short_name="flip",
         long_name="Flip"),
 
     "session":
     FunctionalClass(
-        id="somersault.FNC.session", 
-        short_name="session", 
+        id="somersault.FNC.session",
+        short_name="session",
         long_name="Session"),
 }
 
@@ -83,14 +89,14 @@ somersault_functional_classes = {
 somersault_additional_audiences = {
     "attentive_admirer":
     AdditionalAudience(
-        id="somersault.AA.attentive_admirer", 
-        short_name="attentive_admirer", 
+        id="somersault.AA.attentive_admirer",
+        short_name="attentive_admirer",
         long_name="Attentive Admirer"),
 
     "anyone":
     AdditionalAudience(
-        id="somersault.AA.anyone", 
-        short_name="anyone", 
+        id="somersault.AA.anyone",
+        short_name="anyone",
         long_name="Anyone"),
 }
 
@@ -110,6 +116,50 @@ somersault_diagcodedtypes = {
     StandardLengthType(
         base_data_type="A_UINT32",
         bit_length=16),
+}
+
+somersault_physical_dimensions = {
+    "second": PhysicalDimension(
+        id="somersault.PD.second",
+        short_name="second",
+        long_name="Second",
+        time_exp=1
+    )
+}
+
+somersault_units = {
+    "second":
+        Unit(
+            id="somersault.unit.second",
+            short_name="second",
+            display_name="s",
+            long_name="Second",
+            description="<p>SI unit for the time</p>",
+            factor_si_to_unit=1,
+            offset_si_to_unit=0,
+            physical_dimension_ref=somersault_physical_dimensions["second"].id
+        ),
+    "minute":
+        Unit(
+            id="somersault.unit.minute",
+            short_name="minute",
+            display_name="min",
+            long_name="Minute",
+            factor_si_to_unit=60,
+            offset_si_to_unit=0,
+            physical_dimension_ref=somersault_physical_dimensions["second"].id
+        ),
+}
+
+somersault_unit_groups = {
+    "european_duration":
+        UnitGroup(
+            short_name="european_duration",
+            category="COUNTRY",
+            unit_refs=[somersault_units["second"].id, somersault_units["minute"].id],
+            long_name="Duration",
+            description="<p>Units for measuring a duration</p>"
+        ),
 }
 
 # computation methods
@@ -174,7 +224,8 @@ somersault_dops = {
         short_name="duration",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
         physical_data_type="A_UINT32",
-        compu_method=somersault_compumethods["uint_passthrough"]),
+        compu_method=somersault_compumethods["uint_passthrough"],
+        unit_ref=somersault_units["second"].id),
 
     "error_code":
     DataObjectProperty(
@@ -800,7 +851,13 @@ somersault_communication_parameters = [
 ]
 
 somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
-    data_object_props=list(somersault_dops.values()))
+    data_object_props=list(somersault_dops.values()),
+    unit_spec=UnitSpec(
+        unit_groups=list(somersault_unit_groups.values()),
+        units=list(somersault_units.values()),
+        physical_dimensions=list(somersault_physical_dimensions.values()),
+    ),
+)
 
 # diagnostics layer
 somersault_diaglayer = DiagLayer(
