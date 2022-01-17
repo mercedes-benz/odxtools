@@ -4,12 +4,9 @@
 # Copyright (c) 2021 MBition GmbH
 
 import sys
-import re
 import argparse
-import select
 import can
 import asyncio
-import time
 
 from . import _parser_utils
 import odxtools
