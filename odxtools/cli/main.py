@@ -6,6 +6,7 @@ import argparse
 from . import list
 from . import browse
 from . import snoop
+from . import find
 
 
 def start_cli():
@@ -30,6 +31,7 @@ def start_cli():
     list.add_subparser(subparsers)
     browse.add_subparser(subparsers)
     snoop.add_subparser(subparsers)
+    find.add_subparser(subparsers)
 
     args = argparser.parse_args()  # deals with the help message handling
 
@@ -43,3 +45,5 @@ def start_cli():
         browse.run(args)
     elif args.subparser_name == "snoop":
         snoop.run(args)
+    elif args.subparser_name == "find":
+        find.run(args)

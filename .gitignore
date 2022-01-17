@@ -8,3 +8,6 @@ __pycache__/
 
 # Coverage log
 .coverage
+
+# ide
+.idea

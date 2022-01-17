@@ -219,7 +219,7 @@ using `odxtools --help`:
 
 ```
 $ odxtools --help
-usage: odxtools [-h] [-c] {list,browse,snoop,encode-message,decode-message} ...
+usage: odxtools [-h] [-c] {list,browse,snoop,find,encode-message,decode-message} ...
 
 Utilities to interact with automotive diagnostic descriptions based on the ODX standard.
 
@@ -230,11 +230,12 @@ Examples:
    odxtools browse ./path/to/database.pdx
 
 positional arguments:
-  {list,browse,snoop,encode-message,decode-message}
+  {list,browse,snoop,find,encode-message,decode-message}
                         Select a sub command
     list                Print a summary of automotive diagnostic files.
     browse              Interactively browse the content of automotive diagnostic files.
     snoop               Live decoding of a diagnostic session.
+    find                Find & display services by hex-data, or name, can also decodes requests.
     encode-message      Encode a message. Interactively asks for parameter values.
                         This is a short cut through the browse command to directly encode a message.
     decode-message      Decode a message. Interactively asks for parameter values.
@@ -412,6 +413,68 @@ Tester: do_forward_flips(forward_soberness_check=18, num_flips=3)
 Tester: do_forward_flips(forward_soberness_check=18, num_flips=50)
  -> flips_not_done(rq_sid=bytearray(b'\xba'), reason=1, flips_successfully_done=6)
 ```
+
+### The `find` subcommand
+
+The `find` subcommand can be used to find a service and its associated 
+information by either a hex request, or partial name via cli. 
+
+In addition, it can also decode a hex request and display its parameters 
+mapped to a service. 
+
+```
+$ odxtools find $BASE_DIR/odxtools/examples/somersault.pdx -D 10 00
+
+
+=====================================
+somersault_lazy, somersault_assiduous
+=====================================
+
+
+ session_start <ID: somersault.service.session_start>
+  Message format of a request:
+           7     6     5     4     3     2     1     0  
+        +-----+-----+-----+-----+-----+-----+-----+-----+
+      0 | sid (8 bits)                                  |
+        +-----+-----+-----+-----+-----+-----+-----+-----+
+      1 | id (8 bits)                                   |
+        +-----+-----+-----+-----+-----+-----+-----+-----+
+   Parameter(short_name='sid', type='CODED-CONST', semantic=None, byte_position=0, bit_length=8, coded_value='0x10')
+   Parameter(short_name='id', type='CODED-CONST', semantic=None, byte_position=1, bit_length=8, coded_value='0x0')
+  Number of positive responses: 1
+  Message format of a positive response:
+           7     6     5     4     3     2     1     0  
+        +-----+-----+-----+-----+-----+-----+-----+-----+
+      0 | sid (8 bits)                                  |
+        +-----+-----+-----+-----+-----+-----+-----+-----+
+      1 | can_do_backward_flips (8 bits)                |
+        +-----+-----+-----+-----+-----+-----+-----+-----+
+   Parameter(short_name='sid', type='CODED-CONST', semantic=None, byte_position=0, bit_length=8, coded_value='0x50')
+   Parameter(short_name='can_do_backward_flips', type='VALUE', semantic=None, byte_position=1, bit_length=8, dop_ref='somersault.DOP.boolean')
+    DataObjectProperty('boolean', category='TEXTTABLE', internal_type='A_UINT32', physical_type='A_UNICODE2STRING')
+  Number of negative responses: 1
+  Message format of a negative response:
+           7     6     5     4     3     2     1     0  
+        +-----+-----+-----+-----+-----+-----+-----+-----+
+      0 | sid (8 bits)                                  |
+        +-----+-----+-----+-----+-----+-----+-----+-----+
+      1 | rq_sid (8 bits)                               |
+        +-----+-----+-----+-----+-----+-----+-----+-----+
+      2 | response_code (8 bits)                        |
+        +-----+-----+-----+-----+-----+-----+-----+-----+
+   Parameter(short_name='sid', type='CODED-CONST', semantic=None, byte_position=0, bit_length=8, coded_value='0x7f')
+   Parameter(short_name='rq_sid', type='MATCHING-REQUEST-PARAM', semantic=None, byte_position=1)
+    Request byte position = 0, byte length = 1
+   Parameter(short_name='response_code', type='VALUE', semantic=None, byte_position=2, bit_length=8, dop_ref='somersault.DOP.error_code')
+    DataObjectProperty('error_code', category='IDENTICAL', internal_type='A_UINT32', physical_type='A_UINT32')
+
+Decoded Request('start_session'):
+	sid: 16
+	id: 0
+```
+
+`odxtools find $BASE_DIR/odxtools/examples/somersault.pdx -d 10 00` would display the same information, 
+without the decoded request, and `-s <name>` can be used to find a service by partial name.
 
 ## Testing
 
