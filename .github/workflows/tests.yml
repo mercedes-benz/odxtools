@@ -1,0 +1,27 @@
+name: Tests
+
+on: [push, pull_request, workflow_dispatch]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.8, 3.9]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install dependencies
+      run: |
+        python3 -m pip install --upgrade pip
+        python3 -m pip install -r requirements.txt
+        python3 -m pip install coveralls
+    - name: Create somersault.pdx
+      run: |
+        export PYTHONPATH=$PYTHONPATH:$PWD
+        cd examples
+        python3 mksomersaultpdx.py somersault.pdx
+    - name: Run unit tests
+      run: |
+        export PYTHONPATH=$PYTHONPATH:$PWD
+        python3 -m unittest tests/*.py
