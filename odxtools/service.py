@@ -107,7 +107,8 @@ class DiagService:
 
         # Check if message is a request or positive or negative response
         interpretable_message_types = list(filter(lambda r: all(b == message[i]
-                                                                for (i, b) in enumerate(r.coded_const_prefix())),
+                                                                for (i, b) in enumerate(r.coded_const_prefix(
+                                                                    request_prefix=self.request.coded_const_prefix()))),
                                                   [self.request, *self.positive_responses,
                                                    *self.negative_responses]
                                                   ))
