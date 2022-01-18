@@ -34,9 +34,12 @@ class BasicStructure(DopBase):
 
     def coded_const_prefix(self, request_prefix: Union[bytes, bytearray] = bytes()):
         prefix = bytearray()
-        encode_state = EncodeState(prefix, parameter_values={})
+        encode_state = EncodeState(prefix, parameter_values={}, triggering_request=request_prefix)
         for p in self.parameters:
             if isinstance(p, CodedConstParameter) and p.bit_length % 8 == 0:
+                prefix = p.encode_into_pdu(encode_state)
+                encode_state = EncodeState(prefix, *encode_state[1:])
+            elif isinstance(p, MatchingRequestParameter):
                 prefix = p.encode_into_pdu(encode_state)
                 encode_state = EncodeState(prefix, *encode_state[1:])
             else:

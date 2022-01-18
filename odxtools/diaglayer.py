@@ -321,8 +321,9 @@ class DiagLayer:
             # Compute prefixes for the request and all responses
             request_prefix = s.request.coded_const_prefix()
             prefixes = [request_prefix] + [
-                message.coded_const_prefix(request_prefix=request_prefix) for message in chain(s.positive_responses,
-                                                                                               s.negative_responses)
+                message.coded_const_prefix(
+                    request_prefix=request_prefix
+                ) for message in chain(s.positive_responses, s.negative_responses)
             ]
             for coded_prefix in prefixes:
                 # Traverse prefix tree
