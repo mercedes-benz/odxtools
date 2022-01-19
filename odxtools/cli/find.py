@@ -9,11 +9,13 @@ from ..service import DiagService
 from . import _parser_utils
 
 
-def get_display_value(v):
+def get_display_value(v, _param):
     import binascii
 
     if isinstance(v, bytes):
         return binascii.hexlify(v, ' ', 1).decode('utf-8')
+    elif isinstance(v, int):
+        return f"{v} ({hex(v)})"
     else:
         return v
 
@@ -22,7 +24,8 @@ def print_decoded_message(service: DiagService, message: bytes):
     decoded = service.decode_message(message)
     print(f"\nDecoded {decoded.structure}:")
     for k, v in decoded.param_dict.items():
-        print(f"\t{k}: {get_display_value(v)}")
+        param = decoded.structure.parameter_dict()[k]
+        print(f"\t{k}: {get_display_value(v, param)}")
     pass
 
 
@@ -31,7 +34,8 @@ def print_summary(odxdb: Database,
                   data=None,
                   service_names=None,
                   decode=False,
-                  print_params=False):
+                  print_params=False,
+                  allow_unknown_bit_lengths=False):
     ecu_names = ecu_variants if ecu_variants else [
         ecu.short_name for ecu in odxdb.ecus
     ]
@@ -62,7 +66,9 @@ def print_summary(odxdb: Database,
         print(f"\n{filler}")
         print(f"{', '.join(ecu_names)}")
         print(f"{filler}\n\n")
-        print_diagnostic_service(service, print_params=print_params)
+        print_diagnostic_service(service,
+                                 print_params=print_params,
+                                 allow_unknown_bit_lengths=allow_unknown_bit_lengths)
         if decode:
             print_decoded_message(service, data)
 
@@ -101,6 +107,8 @@ def add_subparser(subparsers):
 
     parser.add_argument("-nd", "--no-details", action='store_false', required=False, help="Don't show all service details")
 
+    parser.add_argument("-ro", "--relaxed-output", action='store_true', required=False, help="Relax output formatting rules (allow unknown bitlengths for ascii representation)")
+
 
 def hex_to_binary(data):
     import binascii
@@ -120,4 +128,5 @@ def run(args):
                   data=data,
                   decode=decode,
                   service_names=args.service_names,
-                  print_params=args.no_details)
+                  print_params=args.no_details,
+                  allow_unknown_bit_lengths=args.relaxed_output)

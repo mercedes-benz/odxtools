@@ -21,7 +21,7 @@ def format_desc(desc, ident=0):
     return desc
 
 
-def print_diagnostic_service(service: DiagService, print_params=False):
+def print_diagnostic_service(service: DiagService, print_params=False, allow_unknown_bit_lengths=False):
 
     print(f" {service.short_name} <ID: {service.id}>")
 
@@ -31,21 +31,25 @@ def print_diagnostic_service(service: DiagService, print_params=False):
 
     if print_params:
         print(f"  Message format of a request:")
-        service.request.print_message_format(indent=3)
+        service.request.print_message_format(
+            indent=3,
+            allow_unknown_lengths=allow_unknown_bit_lengths)
 
         print(
             f"  Number of positive responses: {len(service.positive_responses)}")
         if len(service.positive_responses) == 1:
             print(f"  Message format of a positive response:")
             service.positive_responses[0].print_message_format(
-                indent=3)
+                indent=3,
+                allow_unknown_lengths=allow_unknown_bit_lengths)
 
         print(
             f"  Number of negative responses: {len(service.negative_responses)}")
         if len(service.negative_responses) == 1:
             print(f"  Message format of a negative response:")
             service.negative_responses[0].print_message_format(
-                indent=3)
+                indent=3,
+                allow_unknown_lengths=allow_unknown_bit_lengths)
 
     if len(service.positive_responses) > 1 or len(service.negative_responses) > 1:
         # Does this ever happen?
