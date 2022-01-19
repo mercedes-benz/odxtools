@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2021 MBition GmbH
+# Copyright (c) 2022 MBition GmbH
 
 def bytefield_to_bytearray(bytefield : str) -> bytearray:
     bytes_string = [ bytefield[i:i+2] for i in range(0, len(bytefield), 2)]

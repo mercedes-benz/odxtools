@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2021 MBition GmbH
+# Copyright (c) 2022 MBition GmbH
 
 # Configuration file for the Sphinx documentation builder.
 #
@@ -23,7 +23,7 @@ import odxtools
 # -- Project information -----------------------------------------------------
 
 project = 'odxtools'
-copyright = '2021'
+copyright = '2022'
 author = 'Katrin Bauer et al'
 
 # The full version, including alpha/beta/rc tags

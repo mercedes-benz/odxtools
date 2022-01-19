@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2021 MBition GmbH
+# Copyright (c) 2022 MBition GmbH
 
 import abc
 from typing import List, Optional, Union
@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 from .globals import logger
 from .compumethods import CompuMethod, read_compu_method_from_odx
+from .units import Unit
 from .odxtypes import _odx_isinstance
 from .diagcodedtypes import DiagCodedType, StandardLengthType, read_diag_coded_type_from_odx
 from .decodestate import DecodeState
@@ -62,8 +63,9 @@ class DataObjectProperty(DopBase):
                  diag_coded_type: DiagCodedType,
                  physical_data_type: str,
                  compu_method: CompuMethod,
-                 long_name: str = None,
-                 description: str = None
+                 unit_ref: Optional[str] = None,
+                 long_name: Optional[str] = None,
+                 description: Optional[str] = None
                  ):
         super().__init__(id=id,
                          short_name=short_name,
@@ -72,6 +74,12 @@ class DataObjectProperty(DopBase):
         self.diag_coded_type = diag_coded_type
         self.physical_data_type = physical_data_type
         self.compu_method = compu_method
+        self.unit_ref = unit_ref
+        self._unit = None
+
+    @property
+    def unit(self) -> Optional[Unit]:
+        return self._unit
 
     @property
     def bit_length(self):
@@ -119,19 +127,32 @@ class DataObjectProperty(DopBase):
     def get_valid_physical_values(self):
         return self.compu_method.get_valid_physical_values()
 
+    def _resolve_references(self, id_lookup):
+        """Resolves the reference to the unit"""
+        if self.unit_ref:
+            self._unit = id_lookup[self.unit_ref]
+
     def __repr__(self) -> str:
         return \
             f"DataObjectProperty('{self.short_name}', " + \
-            f"category='{self.compu_method.category}', " + \
-            f"internal_type='{self.diag_coded_type.base_data_type}', " + \
-            f"physical_type='{self.physical_data_type}')"
+            ", ".join([
+                f"category='{self.compu_method.category}'",
+                f"internal_type='{self.diag_coded_type.base_data_type}'",
+                f"physical_type='{self.physical_data_type}'",
+                f"unit_ref='{self.unit_ref}'",
+            ]) + \
+            ")"
 
     def __str__(self) -> str:
         return \
             f"DataObjectProperty('{self.short_name}', " + \
-            f"category='{self.compu_method.category}', " + \
-            f"internal_type='{self.diag_coded_type.base_data_type}', " + \
-            f"physical_type='{self.physical_data_type}')"
+            ", ".join([
+                f"category='{self.compu_method.category}'",
+                f"internal_type='{self.diag_coded_type.base_data_type}'",
+                f"physical_type='{self.physical_data_type}'",
+                f"unit_ref='{self.unit_ref}'",
+            ]) + \
+            ")"
 
 
 @dataclass
@@ -235,7 +256,7 @@ class DtcDop(DataObjectProperty):
         elif isinstance(physical_value, int):
             # assume that physical value is the trouble_code
             trouble_code = physical_value
-        elif isinstance(physical_value, int):
+        elif isinstance(physical_value, str):
             # assume that physical value is the short_name
             dtc = next(filter(lambda dtc: dtc.short_name == physical_value,
                               self.dtcs))
@@ -297,11 +318,16 @@ def read_data_object_property_from_odx(et_element):
         "COMPU-METHOD"), diag_coded_type.base_data_type, physical_data_type)
 
     if et_element.tag == "DATA-OBJECT-PROP":
+        if et_element.find("UNIT-REF") is not None:
+            unit_ref = et_element.find("UNIT-REF").get("ID-REF")
+        else:
+            unit_ref = None
         dop = DataObjectProperty(id,
                                  short_name,
                                  diag_coded_type,
                                  physical_data_type,
                                  compu_method,
+                                 unit_ref=unit_ref,
                                  long_name=long_name,
                                  description=description)
     else:

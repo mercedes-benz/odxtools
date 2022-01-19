@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2021 MBition GmbH
+# Copyright (c) 2022 MBition GmbH
 
 from typing import Any, Dict, NamedTuple, Union
 

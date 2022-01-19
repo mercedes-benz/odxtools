@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2021 MBition GmbH
+# Copyright (c) 2022 MBition GmbH
 
 from .dataobjectproperty import DopBase
 from .exceptions import DecodeError, EncodeError

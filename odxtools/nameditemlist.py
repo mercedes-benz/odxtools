@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2021 MBition GmbH
+# Copyright (c) 2022 MBition GmbH
 
 from typing import List, Union, Generic, TypeVar
 
@@ -54,6 +54,16 @@ class NamedItemList(Generic[T]):
         else:
             return self.__dict__.get(key)
 
+    def __eq__(self, other: object) -> bool:
+        """
+        Named item lists are equal if the underlying lists are equal.
+        Note that this does not consider the map `item_to_name_fn`.
+        """
+        if not isinstance(other, NamedItemList):
+            return False
+        else:
+            return self._list == other._list
+    
     def __str__(self):
         return f"[{', '.join([self._item_to_name_fn(s) for s in self._list])}]"
 

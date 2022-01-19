@@ -1,13 +1,15 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2021 MBition GmbH
+# Copyright (c) 2022 MBition GmbH
 
 from dataclasses import dataclass, field
 from itertools import chain
+from typing import Optional
 
 from .nameditemlist import NamedItemList
-from .dataobjectproperty import read_data_object_property_from_odx
-from .endofpdufield import read_end_of_pdu_field_from_odx
-from .structures import read_structure_from_odx
+from .dataobjectproperty import DataObjectProperty, DopBase, DtcDop, read_data_object_property_from_odx
+from .endofpdufield import EndOfPduField, read_end_of_pdu_field_from_odx
+from .structures import Structure, read_structure_from_odx
+from .units import read_unit_spec_from_odx, UnitSpec
 from .globals import logger
 
 
@@ -17,18 +19,19 @@ def _construct_named_item_list(iterable):
 
 @dataclass()
 class DiagDataDictionarySpec:
-    dtc_dops: NamedItemList = field(
+    dtc_dops: NamedItemList[DtcDop] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
-    data_object_props: NamedItemList = field(
+    data_object_props: NamedItemList[DataObjectProperty] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
-    structures: NamedItemList = field(
+    structures: NamedItemList[Structure] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
-    end_of_pdu_fields: NamedItemList = field(
+    end_of_pdu_fields: NamedItemList[EndOfPduField] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
+    unit_spec: Optional[UnitSpec] = None
 
     def __post_init__(self):
         self._all_data_object_properties = _construct_named_item_list(
@@ -54,6 +57,37 @@ class DiagDataDictionarySpec:
             self.end_of_pdu_fields = _construct_named_item_list(
                 self.end_of_pdu_fields)
 
+    def _build_id_lookup(self):
+        id_lookup = {}
+        for obj in chain(self.data_object_props,
+                         self.structures,
+                         self.end_of_pdu_fields):
+            id_lookup[obj.id] = obj
+
+        for obj in self.dtc_dops:
+            id_lookup.update(obj._build_id_lookup())
+
+        if self.unit_spec:
+            id_lookup.update(self.unit_spec._build_id_lookup())
+
+        return id_lookup
+
+    def _resolve_references(self, parent_dl, id_lookup: dict):
+        for dop in chain(
+                self.dtc_dops,
+                self.data_object_props
+        ):
+            dop._resolve_references(id_lookup)
+
+        for struct in chain(
+                self.structures,
+                self.end_of_pdu_fields
+        ):
+            struct._resolve_references(parent_dl, id_lookup)
+
+        if self.unit_spec:
+            self.unit_spec._resolve_references(id_lookup)
+
     @property
     def all_data_object_properties(self):
         return self._all_data_object_properties
@@ -72,6 +106,11 @@ def read_diag_data_dictionary_spec_from_odx(et_element):
 
     dtc_dops = [read_data_object_property_from_odx(dop_element)
                 for dop_element in et_element.iterfind("DTC-DOPS/DTC-DOP")]
+
+    if et_element.find("UNIT-SPEC") is not None:
+        unit_spec = read_unit_spec_from_odx(et_element.find("UNIT-SPEC"))
+    else:
+        unit_spec = None
 
     # TODO: Parse different specs.. Which of them are needed?
     for (path, name) in [
@@ -92,5 +131,6 @@ def read_diag_data_dictionary_spec_from_odx(et_element):
         data_object_props=data_object_props,
         structures=structures,
         end_of_pdu_fields=end_of_pdu_fields,
-        dtc_dops=dtc_dops
+        dtc_dops=dtc_dops,
+        unit_spec=unit_spec
     )
