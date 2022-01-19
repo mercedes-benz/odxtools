@@ -1,7 +1,7 @@
 {#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
  #
  # SPDX-License-Identifier: MIT
- # Copyright (c) 2021 MBition GmbH
+ # Copyright (c) 2022 MBition GmbH
 -#}
 
 {%- macro printComparamRef(cp) -%}

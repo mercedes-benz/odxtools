@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2021 MBition GmbH
+# Copyright (c) 2022 MBition GmbH
 
 from odxtools.audience import Audience, read_audience_from_odx
 from odxtools.utils import read_description_from_odx
