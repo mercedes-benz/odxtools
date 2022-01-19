@@ -6,45 +6,23 @@ import argparse
 import PyInquirer
 
 from ..database import Database
-from ..structures import Request, Response
+from ..structures import Response
 from ..parameters import ParameterWithDOP
-from ..odxtypes import ODX_TYPE_TO_PYTHON_TYPE
+from ..odxtypes import DataType
 from . import _parser_utils
 
 import logging
 # logging.basicConfig(level=logging.DEBUG)
 
 
-def _convert_string_to_odx_type(string_value: str, odx_type: str):
-    if ODX_TYPE_TO_PYTHON_TYPE[odx_type] != str:
-        if ODX_TYPE_TO_PYTHON_TYPE[odx_type] == int:
-            return int(string_value, 0)
-        elif ODX_TYPE_TO_PYTHON_TYPE[odx_type] == float:
-            try:
-                return float(string_value)
-            except:
-                sub_mantissas = string_value.split(".")
-                if len(sub_mantissas) == 1:
-                    logging.debug(
-                        f"Interpreting string {string_value} as float {float(int(string_value, 0))}")
-                    return float(int(string_value, 0))
-                else:
-                    mantissa_before_point = int(sub_mantissas[0], 16)
-                    mantissa_after_point = int("0x" + sub_mantissas[1], 16)
-                    mantissa_after_point *= 16**(-len(sub_mantissas[1]))
-                    logging.debug(
-                        f"Interpreting string {string_value} as float {mantissa_before_point + mantissa_after_point}")
-                    return mantissa_before_point + mantissa_after_point
-
-        elif ODX_TYPE_TO_PYTHON_TYPE[odx_type] in [bytes, bytearray]:
-            val_as_int = int(string_value, 0)
-            val_as_byte = val_as_int.to_bytes(
-                (val_as_int.bit_length() + 7) // 8, "big")
-            logging.debug(
-                f"Value conversion: {string_value} -> {val_as_int} -> {val_as_byte.hex()}")
-            return val_as_byte
+def _convert_string_to_odx_type(string_value: str, odx_type: DataType):
+    """Similar to odx_type.cast_string(string_value) but more relaxed to parse user input"""
+    if odx_type == DataType.A_UINT32:
+        return int(string_value, 0)
+    elif odx_type == DataType.A_BYTEFIELD:
+        return _convert_string_to_bytes(string_value)
     else:
-        return str(string_value)
+        return odx_type.cast_string(string_value)
 
 
 def _convert_string_to_bytes(string_value):
@@ -60,7 +38,7 @@ def _validate_string_value(input, parameter):
     elif isinstance(parameter, ParameterWithDOP):
         try:
             val = _convert_string_to_odx_type(input,
-                                              parameter.physical_data_type
+                                              parameter.physical_type.base_data_type
                                               )
         except:
             return False
@@ -77,13 +55,13 @@ def prompt_single_parameter_value(parameter):
         param_prompt = [{
             "type": "input",
             "name": parameter.short_name,
-            "message": f"Value for parameter '{parameter.short_name}' (Type: {parameter.physical_data_type})" + (f"[optional]" if parameter.is_optional() else ""),
+            "message": f"Value for parameter '{parameter.short_name}' (Type: {parameter.physical_type.base_data_type})" + (f"[optional]" if parameter.is_optional() else ""),
             # TODO: improve validation
             "validate": lambda x: _validate_string_value(x, parameter),
             # TODO: do type conversion?
             "filter": lambda x: x
-            # x if x == "" or p.physical_data_type is None
-            # else _convert_string_to_odx_type(x, p.physical_data_type, param=p) # This does not work because the next parameter to be promted is used (for some reason?)
+            # x if x == "" or p.physical_type.base_data_type is None
+            # else _convert_string_to_odx_type(x, p.physical_type.base_data_type, param=p) # This does not work because the next parameter to be promted is used (for some reason?)
         }]
     else:
         param_prompt = [{
@@ -95,8 +73,8 @@ def prompt_single_parameter_value(parameter):
     answer = PyInquirer.prompt(param_prompt)
     if answer.get(parameter.short_name) == "" and parameter.is_optional():
         return None
-    elif parameter.physical_data_type is not None:
-        return _convert_string_to_odx_type(answer.get(parameter.short_name), parameter.physical_data_type)
+    elif parameter.physical_type.base_data_type is not None:
+        return _convert_string_to_odx_type(answer.get(parameter.short_name), parameter.physical_type.base_data_type)
     else:
         logging.warning(
             f"Parameter {parameter.short_name} does not have a physical data type. Param details: {parameter}")
@@ -208,7 +186,7 @@ def encode_message_from_string_values(sub_service, parameter_values: dict = {}):
                     continue
                 parameter_values[parameter_sn][simple_param_sn] = _convert_string_to_odx_type(
                     simple_val,
-                    parameter.physical_data_type
+                    parameter.physical_type.base_data_type
                 )
         else:
             try:
@@ -218,8 +196,8 @@ def encode_message_from_string_values(sub_service, parameter_values: dict = {}):
                 continue
             parameter_values[parameter_sn] = _convert_string_to_odx_type(
                 parameter_value,
-                parameter.physical_data_type if parameter.parameter_type != "MATCHING-REQUEST-PARAM"
-                else "A_BYTEFIELD"
+                parameter.physical_type.base_data_type if parameter.parameter_type != "MATCHING-REQUEST-PARAM"
+                else DataType.A_BYTEFIELD
             )
     payload = sub_service.encode(**parameter_values)
     print(f"Message payload: 0x{bytes(payload).hex()}")

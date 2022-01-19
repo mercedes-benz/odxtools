@@ -2,16 +2,18 @@
 # Copyright (c) 2022 MBition GmbH
 
 import abc
+from typing import Union
+
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .utils import read_description_from_odx
 from .exceptions import DecodeError
-from typing import Union
 
 from .diagcodedtypes import DiagCodedType, read_diag_coded_type_from_odx
+from .physicaltype import PhysicalType
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .globals import xsi, logger
-from .odxtypes import ODX_TYPE_PARSER
+from .odxtypes import DataType
 
 
 class Parameter(abc.ABC):
@@ -229,8 +231,8 @@ class ParameterWithDOP(Parameter):
             return None
 
     @property
-    def physical_data_type(self):
-        return self.dop.physical_data_type
+    def physical_type(self) -> PhysicalType:
+        return self.dop.physical_type
 
     def get_coded_value(self, physical_value=None):
         return self.dop.convert_physical_to_internal(physical_value)
@@ -289,7 +291,7 @@ class CodedConstParameter(Parameter):
         return self.diag_coded_type.bit_length
 
     @property
-    def internal_data_type(self):
+    def internal_data_type(self) -> DataType:
         return self.diag_coded_type.base_data_type
 
     def is_required(self):
@@ -375,7 +377,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
     @property
     def physical_constant_value(self):
         # Cast to physical type
-        return ODX_TYPE_PARSER[self.dop.physical_data_type](self._physical_constant_value)
+        return self.dop.physical_type.base_data_type.cast_string(self._physical_constant_value)
 
     def is_required(self):
         return False
@@ -509,7 +511,7 @@ class ValueParameter(ParameterWithDOP):
         if self._physical_default_value is None:
             return None
         else:
-            return ODX_TYPE_PARSER[self.dop.physical_data_type](self._physical_default_value)
+            return self.dop.physical_type.base_data_type.cast_string(self._physical_default_value)
 
     def is_required(self):
         return True if self.physical_default_value is None else False
@@ -1000,7 +1002,7 @@ def read_parameter_from_odx(et_element):
     elif parameter_type == "CODED-CONST":
         diag_coded_type = read_diag_coded_type_from_odx(
             et_element.find("DIAG-CODED-TYPE"))
-        coded_value = ODX_TYPE_PARSER[diag_coded_type.base_data_type](
+        coded_value = diag_coded_type.base_data_type.cast_string(
             et_element.find("CODED-VALUE").text)
 
         return CodedConstParameter(short_name,

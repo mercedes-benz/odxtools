@@ -7,6 +7,7 @@ from odxtools.compumethods import IdenticalCompuMethod
 from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.dataobjectproperty import DataObjectProperty, DiagnosticTroubleCode, DtcDop
 from odxtools.diagdatadictionaryspec import *
+from odxtools.physicaltype import PhysicalType
 
 
 class TestDiagDataDictionarySpec(unittest.TestCase):
@@ -16,7 +17,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
 
         dtc_dop = DtcDop("DOP.dtc_dop", "dtc_dop",
                          diag_coded_type=uint_type,
-                         physical_data_type="A_UINT32",
+                         physical_type=PhysicalType("A_UINT32"),
                          compu_method=ident_compu_methud,
                          dtcs=[DiagnosticTroubleCode(
                              "DOP.dtc_dop.DTC.X10",
@@ -29,13 +30,13 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         dop_1 = DataObjectProperty("DOP.the_dop",
                                    "the_dop",
                                    diag_coded_type=uint_type,
-                                   physical_data_type="A_UINT32",
+                                   physical_type=PhysicalType("A_UINT32"),
                                    compu_method=ident_compu_methud)
 
         dop_2 = DataObjectProperty("DOP.another_dop",
                                    "another_dop",
                                    diag_coded_type=uint_type,
-                                   physical_data_type="A_UINT32",
+                                   physical_type=PhysicalType("A_UINT32"),
                                    compu_method=ident_compu_methud)
 
         ddds = DiagDataDictionarySpec(dtc_dops=[dtc_dop],

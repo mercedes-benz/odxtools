@@ -38,7 +38,7 @@
  <DIAG-DATA-DICTIONARY-SPEC>
 {%- if dl.local_diag_data_dictionary_spec.dtc_dops  %}
   <DTC-DOPS>
- {%- for dop in dl.local_diag_data_dictionary_spec.dtc_dops %}
+ {%- for dop in dl.local_diag_data_dictionary_spec.dtc_dops -%}
   {{ pdop.printDTCDOP(dop)|indent(3) }}
  {%- endfor %}
   </DTC-DOPS>
