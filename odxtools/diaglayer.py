@@ -230,7 +230,8 @@ class DiagLayer:
 
     def __local_services_by_name(self, id_lookup) -> dict:
         services_by_name = {
-            id_lookup[ref].short_name: id_lookup[ref] for ref in self._diag_comm_refs
+            # TODO: Write log message for unresolved references
+            id_lookup[ref].short_name: id_lookup[ref] for ref in self._diag_comm_refs if ref in id_lookup
         }
         services_by_name.update({
             service.short_name: service for service in self._local_services
@@ -413,7 +414,11 @@ class DiagLayer:
                 # delivered by CANdela generated PDX files and that
                 # both are different from the one of the COMPARAM
                 # fragment included in the MCD2-D standard
-                return int(com_param.value[2])
+                try:
+                    return int(com_param.value[2])
+                except ValueError:
+                    return None
+
             else:
                 # assume the parameter order specified by the COMPARAM
                 # fragment of the the ASAM MCD2-D standard.

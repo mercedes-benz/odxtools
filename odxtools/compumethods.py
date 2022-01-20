@@ -431,6 +431,80 @@ def _parse_compu_scale_to_linear_compu_method(scale_element, internal_type, phys
 
     return LinearCompuMethod(offset=offset, factor=factor, **kwargs)
 
+# TODO: implement this properly!
+class TabIntpCompuMethod(CompuMethod):
+    def __init__(self,
+                 internal_type,
+                 physical_type):
+        logger.debug("Created table interpolation compu method!")
+        logger.warning("TODO: Implement table interpolation compu method properly!")
+        self._internal_type = internal_type
+        self._physical_type = physical_type
+
+    @property
+    def category(self):
+        return "TAB-INTP"
+
+    def convert_physical_to_internal(self, physical_value):
+        return ODX_TYPE_TO_PYTHON_TYPE[self._internal_type](physical_value)
+
+    def convert_internal_to_physical(self, internal_value):
+        return ODX_TYPE_TO_PYTHON_TYPE[self._physical_type](internal_value)
+
+    def is_valid_physical_value(self, physical_value):
+        return True
+
+    def is_valid_internal_value(self, internal_value):
+        return True
+
+def _parse_compu_scale_to_linear_compu_method(scale_element, internal_type, physical_type, is_scale_linear=False, additional_kwargs={}):
+    assert physical_type in ["A_FLOAT32", "A_FLOAT64", "A_INT32", "A_UINT32"]
+    assert internal_type in ["A_FLOAT32", "A_FLOAT64", "A_INT32", "A_UINT32"]
+
+    if internal_type.startswith("A_FLOAT") or physical_type.startswith("A_FLOAT"):
+        computation_python_type = float
+    else:
+        computation_python_type = int
+
+    kwargs = additional_kwargs.copy()
+    kwargs["internal_type"] = internal_type
+    kwargs["physical_type"] = physical_type
+
+    coeffs = scale_element.find("COMPU-RATIONAL-COEFFS")
+    nums = coeffs.iterfind("COMPU-NUMERATOR/V")
+
+    offset = computation_python_type(next(nums).text)
+    factor = computation_python_type(next(nums).text)
+    if coeffs.find("COMPU-DENOMINATOR/V") is not None:
+        kwargs["denominator"] = int(
+            coeffs.find("COMPU-DENOMINATOR/V").text)
+        assert kwargs["denominator"] > 0
+
+    # Read lower limit
+    internal_lower_limit = read_limit_from_odx(
+        scale_element.find("LOWER-LIMIT"),
+        internal_type=internal_type
+    )
+    if internal_lower_limit is None:
+        internal_lower_limit = Limit(float("-inf"), IntervalType.INFINITE)
+    kwargs["internal_lower_limit"] = internal_lower_limit
+
+    # Read upper limit
+    internal_upper_limit = read_limit_from_odx(
+        scale_element.find("UPPER-LIMIT"),
+        internal_type=internal_type
+    )
+    if internal_upper_limit is None:
+        if not is_scale_linear:
+            internal_upper_limit = Limit(float("inf"), IntervalType.INFINITE)
+        else:
+            assert (internal_lower_limit is not None
+                    and internal_lower_limit.interval_type == IntervalType.CLOSED)
+            logger.info("Scale linear without UPPER-LIMIT")
+            internal_upper_limit = internal_lower_limit
+    kwargs["internal_upper_limit"] = internal_upper_limit
+
+    return LinearCompuMethod(offset=offset, factor=factor, **kwargs)
 
 def read_limit_from_odx(et_element, internal_type: str):
     if et_element is not None:
@@ -477,7 +551,7 @@ def read_compu_method_from_odx(et_element, internal_type, physical_type) -> Comp
             f" must be the same for compu methods of category '{compu_category}'")
         return IdenticalCompuMethod(internal_type=internal_type, physical_type=physical_type)
 
-    if compu_category == "TEXTTABLE":
+    elif compu_category == "TEXTTABLE":
         assert physical_type == "A_UNICODE2STRING"
         compu_internal_to_phys = et_element.find("COMPU-INTERNAL-TO-PHYS")
 
@@ -514,20 +588,24 @@ def read_compu_method_from_odx(et_element, internal_type, physical_type) -> Comp
                    for scale in internal_to_phys), "Text table compu method doesn't have expected format!"
         return TexttableCompuMethod(**kwargs)
 
-    if compu_category == "LINEAR":
+    elif compu_category == "LINEAR":
         # Compu method can be described by the function f(x) = (offset + factor * x) / denominator
 
         scale = et_element.find(
             "COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE")
         return _parse_compu_scale_to_linear_compu_method(scale, internal_type, physical_type, additional_kwargs=kwargs)
 
-    if compu_category == "SCALE-LINEAR":
+    elif compu_category == "SCALE-LINEAR":
 
         scales = et_element.iterfind(
             "COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE")
         linear_methods = [_parse_compu_scale_to_linear_compu_method(
             scale, internal_type, physical_type, additional_kwargs=kwargs) for scale in scales]
         return ScaleLinearCompuMethod(linear_methods)
+
+    elif compu_category == "TAB-INTP":
+        return TabIntpCompuMethod(internal_type=internal_type, physical_type=physical_type)
+
 
     # TODO: Implement other categories (never instantiate CompuMethod)
     logger.warning(
