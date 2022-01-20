@@ -257,7 +257,7 @@ class MinMaxLengthType(DiagCodedType):
                          dct_type="MIN-MAX-LENGTH-TYPE",
                          base_type_encoding=base_type_encoding,
                          is_highlow_byte_order=is_highlow_byte_order)
-        assert min_length <= max_length
+        assert max_length is None or min_length <= max_length
         self.min_length = min_length
         self.max_length = max_length
         self.termination = termination

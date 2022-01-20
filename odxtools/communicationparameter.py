@@ -37,19 +37,23 @@ class CommunicationParameterRef:
 
 
 def _read_complex_value_from_odx(et_element):
-    if et_element.tag == "SIMPLE-VALUE":
-        return et_element.text
-    else:
-        return [el.text if el.tag == "SIMPLE-VALUE" else _read_complex_value_from_odx(el) for el in et_element.findall("*")]
+    result = []
+    for el in et_element.findall("*"):
+        if el.tag == "SIMPLE-VALUE":
+            result.append('' if el.text is None else el.text)
+        else:
+            result.append(_read_complex_value_from_odx(el))
+    return result
 
 
 def read_communication_param_ref_from_odx(et_element):
+    id_ref = et_element.get("ID-REF")
+
     if et_element.find("SIMPLE-VALUE") is not None:
         value = et_element.find("SIMPLE-VALUE").text
     else:
         value = _read_complex_value_from_odx(et_element.find("COMPLEX-VALUE"))
 
-    id_ref = et_element.get("ID-REF")
     description = read_description_from_odx(et_element.find("DESC"))
     protocol_sn_ref = et_element.find(
         "PROTOCOL-SNREF").text if et_element.find("PROTOCOL-SNREF") is not None else None
