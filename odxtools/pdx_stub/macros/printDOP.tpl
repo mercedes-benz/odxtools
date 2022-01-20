@@ -5,7 +5,7 @@
 -#}
 
 {%- macro printDiagCodedType(dct) -%}
-<DIAG-CODED-TYPE BASE-DATA-TYPE="{{dct.base_data_type}}"
+<DIAG-CODED-TYPE BASE-DATA-TYPE="{{dct.base_data_type.value}}"
  {%- filter odxtools_collapse_xml_attribute %}
   {%- if dct.base_type_encoding %}
                  BASE-TYPE-ENCODING="{{dct.base_type_encoding}}"
@@ -35,6 +35,18 @@
 </DIAG-CODED-TYPE>
 {%- endmacro -%}
 
+
+{%- macro printPhysicalType(physical_type) %}
+{%- if physical_type.display_radix is not none %}
+<PHYSICAL-TYPE BASE-DATA-TYPE="{{physical_type.base_data_type.value}}" DISPLAY-RADIX="{{physical_type.display_radix.value}}" />
+{%- elif physical_type.precision is not none   %}
+<PHYSICAL-TYPE BASE-DATA-TYPE="{{physical_type.base_data_type.value}}">
+ <PRECISION>{{physical_type.precision}}</PRECISION>
+</PHYSICAL-TYPE>
+{%- else %}
+<PHYSICAL-TYPE BASE-DATA-TYPE="{{physical_type.base_data_type.value}}" />
+{%- endif %}
+{%- endmacro -%}
 
 
 {%- macro printCompuMethod(cm) -%}
@@ -128,8 +140,6 @@
 {%- endmacro -%}
 
 
-
-
 {%- macro printDOP(dop, tag_name) %}
 <{{tag_name}} ID="{{dop.id}}">
  <SHORT-NAME>{{dop.short_name}}</SHORT-NAME>
@@ -139,14 +149,8 @@
 {%- endif %}
 {%- if dop.diag_coded_type is defined %}
  {{ printDiagCodedType(dop.diag_coded_type)|indent(1) -}}
-{%- endif %}
-{%- if dop.physical_data_type.startswith("A_UINT")   %}
- <PHYSICAL-TYPE BASE-DATA-TYPE="{{dop.physical_data_type}}" DISPLAY-RADIX="HEX" />
-{%- elif dop.physical_data_type.startswith("A_INT")   %}
- <PHYSICAL-TYPE BASE-DATA-TYPE="{{dop.physical_data_type}}" DISPLAY-RADIX="DEC" />
-{%- else %}
- <PHYSICAL-TYPE BASE-DATA-TYPE="{{dop.physical_data_type}}" />
-{%- endif %}
+{%- endif -%}
+ {{ printPhysicalType(dop.physical_type)|indent(1) }}
 {%- if dop.unit_ref %}
  <UNIT-REF ID-REF="{{ dop.unit_ref }}" />
 {%- endif %}
@@ -159,13 +163,7 @@
  <SHORT-NAME>{{dop.short_name}}</SHORT-NAME>
  <LONG-NAME>{{dop.long_name}}</LONG-NAME>
  {{ printDiagCodedType(dop.diag_coded_type)|indent(1) -}}
-{%- if dop.physical_data_type.startswith("A_UINT")   %}
- <PHYSICAL-TYPE BASE-DATA-TYPE="{{dop.physical_data_type}}" DISPLAY-RADIX="HEX" />
-{%- elif dop.physical_data_type.startswith("A_INT")   %}
- <PHYSICAL-TYPE BASE-DATA-TYPE="{{dop.physical_data_type}}" DISPLAY-RADIX="DEC" />
-{%- else %}
- <PHYSICAL-TYPE BASE-DATA-TYPE="{{dop.physical_data_type}}" />
-{%- endif %}
+ {{ printPhysicalType(dop.physical_type)|indent(1) }}
  {{ printCompuMethod(dop.compu_method)|indent(1) }}
  <DTCS>
  {%- for dtc in dop.dtcs %}

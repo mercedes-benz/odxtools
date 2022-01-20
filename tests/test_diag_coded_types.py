@@ -8,6 +8,7 @@ from odxtools.parameters import LengthKeyParameter, CodedConstParameter, ValuePa
 from odxtools.decodestate import ParameterValuePair
 
 from odxtools.diaglayer import DiagLayer
+from odxtools.physicaltype import PhysicalType
 from odxtools.structures import Request
 
 from odxtools.compumethods import IdenticalCompuMethod, LinearCompuMethod
@@ -113,7 +114,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                 id="BV.dummy_DL.DOP.certificateClient",
                 short_name="certificateClient",
                 diag_coded_type=diagcodedtypes["certificateClient"],
-                physical_data_type="A_BYTEFIELD",
+                physical_type=PhysicalType("A_BYTEFIELD"),
                 compu_method=compumethods["bytes_passthrough"]),
         }
 
@@ -255,7 +256,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                 id="BV.dummy_DL.DOP.uint8_times_8",
                 short_name="uint8_times_8",
                 diag_coded_type=diagcodedtypes["uint8"],
-                physical_data_type="A_UINT32",
+                physical_type=PhysicalType("A_UINT32"),
                 compu_method=compumethods["multiply_with_8"]),
 
             "certificateClient":
@@ -263,7 +264,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                 id="BV.dummy_DL.DOP.certificateClient",
                 short_name="certificateClient",
                 diag_coded_type=diagcodedtypes["length_key_ref_to_lengthOfCertificateClient"],
-                physical_data_type="A_UINT32",
+                physical_type=PhysicalType("A_UINT32"),
                 compu_method=compumethods["uint_passthrough"]),
         }
 
@@ -466,7 +467,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 id="BV.dummy_DL.DOP.certificateClient",
                 short_name="certificateClient",
                 diag_coded_type=diagcodedtypes["certificateClient"],
-                physical_data_type="A_BYTEFIELD",
+                physical_type=PhysicalType("A_BYTEFIELD"),
                 compu_method=compumethods["bytes_passthrough"]),
         }
 

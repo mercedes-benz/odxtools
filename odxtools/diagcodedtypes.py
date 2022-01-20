@@ -4,6 +4,8 @@
 import abc
 from typing import Union
 
+from odxtools.odxtypes import DataType
+
 from .exceptions import DecodeError, EncodeError
 from .globals import xsi, logger
 from .decodestate import DecodeState
@@ -12,41 +14,43 @@ from .encodestate import EncodeState
 import bitstruct
 
 ODX_TYPE_TO_FORMAT_LETTER = {
-    "A_INT32": 's',
-    "A_UINT32": 'u',
-    "A_FLOAT32": 'f',
-    "A_FLOAT64": 'f',
-    "A_BYTEFIELD": 'r',
-    "A_UNICODE2STRING": 'r',  # UTF-16 strings must be converted explicitly
-    "A_ASCIISTRING": 't',
-    "A_UTF8STRING": 't'
+    DataType.A_INT32: 's',
+    DataType.A_UINT32: 'u',
+    DataType.A_FLOAT32: 'f',
+    DataType.A_FLOAT64: 'f',
+    DataType.A_BYTEFIELD: 'r',
+    DataType.A_UNICODE2STRING: 'r',  # UTF-16 strings must be converted explicitly
+    DataType.A_ASCIISTRING: 't',
+    DataType.A_UTF8STRING: 't'
 }
 
 
 class DiagCodedType(abc.ABC):
     def __init__(self,
-                 base_data_type: str,
+                 base_data_type: Union[str, DataType],
                  dct_type: str,
                  base_type_encoding=None,
                  is_highlow_byte_order: bool = True):
-        self.base_data_type = base_data_type
+        self.base_data_type = DataType(base_data_type)
         self.dct_type = dct_type
         self.base_type_encoding = base_type_encoding
         self.is_highlow_byte_order = is_highlow_byte_order
 
-    def _extract_internal(self, coded_message, byte_position, bit_position, bit_length, base_data_type, is_highlow_byte_order, bit_mask=None):
+    def _extract_internal(self,
+                          coded_message,
+                          byte_position,
+                          bit_position,
+                          bit_length,
+                          base_data_type: DataType,
+                          is_highlow_byte_order,
+                          bit_mask=None):
         """Extract the internal value.
 
         Helper method for `DiagCodedType.convert_bytes_to_internal`.
         """
         # If the bit length is zero, return "empty" values of each type
         if bit_length == 0:
-            if base_data_type in ["A_BYTEFIELD"]:
-                return bytes(), byte_position
-            elif base_data_type in ["A_UNICODE2STRING", "A_ASCIISTRING", "A_UTF8STRING"]:
-                return "", byte_position
-            else:
-                return 0, byte_position
+            return base_data_type.as_python_type()()
 
         byte_length = (bit_length + bit_position + 7) // 8
         if byte_position + byte_length > len(coded_message):
@@ -62,7 +66,7 @@ class DiagCodedType(abc.ABC):
                 f"Don't know how to handle bit_mask={bit_mask}.")
 
         # Apply byteorder
-        if not is_highlow_byte_order and base_data_type not in ["A_UNICODE2STRING", "A_BYTEFIELD", "A_ASCIISTRING", "A_UTF8STRING"]:
+        if not is_highlow_byte_order and base_data_type not in [DataType.A_UNICODE2STRING, DataType.A_BYTEFIELD, DataType.A_ASCIISTRING, DataType.A_UTF8STRING]:
             extracted_bytes = extracted_bytes[::-1]
 
         format_letter = ODX_TYPE_TO_FORMAT_LETTER[base_data_type]
@@ -70,7 +74,7 @@ class DiagCodedType(abc.ABC):
         internal_value = bitstruct.unpack_from(
             f"{format_letter}{bit_length}", extracted_bytes, offset=padding)[0]
 
-        if base_data_type == "A_UNICODE2STRING":
+        if base_data_type == DataType.A_UNICODE2STRING:
             # Convert bytes to string with utf-16 decoding
             if is_highlow_byte_order:
                 internal_value = internal_value.decode("utf-16-be")
@@ -82,20 +86,21 @@ class DiagCodedType(abc.ABC):
     def _to_bytes(self, internal_value, bit_position, bit_length, base_data_type, is_highlow_byte_order, bit_mask=None):
         """Convert the internal_value to bytes."""
         # Check that bytes and strings actually fit into the bit length
-        if base_data_type in ["A_BYTEFIELD"] and 8 * len(internal_value) > bit_length:
+        if base_data_type in [DataType.A_BYTEFIELD] and 8 * len(internal_value) > bit_length:
             raise EncodeError(f"The bytefield {internal_value.hex()} is too large."
                               f" The maximum byte length is {bit_length//8}.")
-        if base_data_type in ["A_ASCIISTRING", "A_UTF8STRING"] and 8 * len(internal_value) > bit_length:
+        if base_data_type in [DataType.A_ASCIISTRING, DataType.A_UTF8STRING] and 8 * len(internal_value) > bit_length:
             raise EncodeError(f"The string {repr(internal_value)} is too large."
                               f" The maximum number of characters is {bit_length//8}.")
-        if base_data_type in ["A_UNICODE2STRING"] and 16 * len(internal_value) > bit_length:
+        if base_data_type in [DataType.A_UNICODE2STRING] and 16 * len(internal_value) > bit_length:
             raise EncodeError(f"The string {repr(internal_value)} is too large."
                               f" The maximum number of characters is {bit_length//16}.")
 
         # If the bit length is zero, return empty bytes
         if bit_length == 0:
-            if base_data_type in ["A_INT32", "A_UINT32", "A_FLOAT32", "A_FLOAT64"] and base_data_type != 0:
-                raise EncodeError(f"The number {repr(internal_value)} cannot be encoded into {bit_length} bits.")
+            if base_data_type in [DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32, DataType.A_FLOAT64] and base_data_type != 0:
+                raise EncodeError(
+                    f"The number {repr(internal_value)} cannot be encoded into {bit_length} bits.")
             return bytes()
 
         char = ODX_TYPE_TO_FORMAT_LETTER[base_data_type]
@@ -107,7 +112,7 @@ class DiagCodedType(abc.ABC):
         left_pad = f'p{offset}' if offset > 0 else ''
 
         # Convert string to bytes with utf-16 encoding
-        if base_data_type == "A_UNICODE2STRING":
+        if base_data_type == DataType.A_UNICODE2STRING:
             if is_highlow_byte_order:
                 internal_value = internal_value.encode("utf-16-be")
             else:
@@ -115,7 +120,7 @@ class DiagCodedType(abc.ABC):
 
         code = bitstruct.pack(f'{left_pad}{char}{bit_length}', internal_value)
 
-        if not is_highlow_byte_order and base_data_type not in ["A_UNICODE2STRING", "A_BYTEFIELD", "A_ASCIISTRING", "A_UTF8STRING"]:
+        if not is_highlow_byte_order and base_data_type not in [DataType.A_UNICODE2STRING, DataType.A_BYTEFIELD, DataType.A_ASCIISTRING, DataType.A_UTF8STRING]:
             code = code[::-1]
 
         # TODO: Apply bit mask.
@@ -131,12 +136,12 @@ class DiagCodedType(abc.ABC):
         (needed for LeadingLength- and MinMaxLengthType)
         """
         # A_BYTEFIELD, A_ASCIISTRING, A_UNICODE2STRING, A_UTF8STRING
-        if self.base_data_type == "A_BYTEFIELD":
+        if self.base_data_type == DataType.A_BYTEFIELD:
             byte_length = len(internal_value)
-        elif self.base_data_type in ["A_ASCIISTRING", "A_UTF8STRING"]:
+        elif self.base_data_type in [DataType.A_ASCIISTRING, DataType.A_UTF8STRING]:
             # TODO: Handle different encodings
             byte_length = len(bytes(internal_value, "utf-8"))
-        elif self.base_data_type == "A_UNICODE2STRING":
+        elif self.base_data_type == DataType.A_UNICODE2STRING:
             byte_length = len(bytes(internal_value, "utf-16-le"))
             assert byte_length % 2 == 0, (f"The bit length of A_UNICODE2STRING must"
                                           f" be a multiple of 16 but is {8*byte_length}")
@@ -189,7 +194,7 @@ class LeadingLengthInfoType(DiagCodedType):
                          is_highlow_byte_order=is_highlow_byte_order)
         self.bit_length = bit_length
         assert self.bit_length > 0, "A Leading length info type with bit length == 0 does not make sense."
-        assert base_data_type in ["A_BYTEFIELD", "A_ASCIISTRING", "A_UNICODE2STRING", "A_UTF8STRING"], (
+        assert self.base_data_type in [DataType.A_BYTEFIELD, DataType.A_ASCIISTRING, DataType.A_UNICODE2STRING, DataType.A_UTF8STRING], (
             f"A leading length info type cannot have the base data type {self.base_data_type}."
         )
 
@@ -199,7 +204,7 @@ class LeadingLengthInfoType(DiagCodedType):
         length_byte = self._to_bytes(byte_length,
                                      bit_position=bit_position,
                                      bit_length=self.bit_length,
-                                     base_data_type="A_UINT32",
+                                     base_data_type=DataType.A_UINT32,
                                      is_highlow_byte_order=self.is_highlow_byte_order)
 
         value_byte = self._to_bytes(internal_value,
@@ -218,7 +223,7 @@ class LeadingLengthInfoType(DiagCodedType):
                                                             byte_position=decode_state.next_byte_position,
                                                             bit_position=bit_position,
                                                             bit_length=self.bit_length,
-                                                            base_data_type="A_UINT32",  # length is an integer
+                                                            base_data_type=DataType.A_UINT32,  # length is an integer
                                                             is_highlow_byte_order=self.is_highlow_byte_order)
 
         # Extract actual value
@@ -262,10 +267,10 @@ class MinMaxLengthType(DiagCodedType):
         self.max_length = max_length
         self.termination = termination
 
-        assert base_data_type in ["A_BYTEFIELD", "A_ASCIISTRING", "A_UNICODE2STRING", "A_UTF8STRING"], (
+        assert self.base_data_type in [DataType.A_BYTEFIELD, DataType.A_ASCIISTRING, DataType.A_UNICODE2STRING, DataType.A_UTF8STRING], (
             f"A min-max length type cannot have the base data type {self.base_data_type}."
         )
-        assert termination in ["ZERO", "HEX-FF", "END-OF-PDU"], (
+        assert self.termination in ["ZERO", "HEX-FF", "END-OF-PDU"], (
             f"A min-max length type cannot have the termination {self.termination}"
         )
 
@@ -275,12 +280,12 @@ class MinMaxLengthType(DiagCodedType):
         # for A_BYTEFIELD but I assume it is only one byte.
         termination_char = None
         if self.termination == "ZERO":
-            if self.base_data_type not in ["A_UNICODE2STRING"]:
+            if self.base_data_type not in [DataType.A_UNICODE2STRING]:
                 termination_char = bytes([0x0])
             else:
                 termination_char = bytes([0x0, 0x0])
         elif self.termination == "HEX-FF":
-            if self.base_data_type not in ["A_UNICODE2STRING"]:
+            if self.base_data_type not in [DataType.A_UNICODE2STRING]:
                 termination_char = bytes([0xff])
             else:
                 termination_char = bytes([0xff, 0xff])

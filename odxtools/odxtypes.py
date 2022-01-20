@@ -1,11 +1,16 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-def bytefield_to_bytearray(bytefield : str) -> bytearray:
-    bytes_string = [ bytefield[i:i+2] for i in range(0, len(bytefield), 2)]
+from enum import Enum
+from typing import Any, Union
+
+
+def bytefield_to_bytearray(bytefield: str) -> bytearray:
+    bytes_string = [bytefield[i:i+2] for i in range(0, len(bytefield), 2)]
     return bytearray(map(lambda x: int(x, 16), bytes_string))
 
-ODX_TYPE_PARSER = {
+
+_ODX_TYPE_PARSER = {
     "A_INT32": int,
     "A_UINT32": int,
     "A_FLOAT32": float,
@@ -17,7 +22,7 @@ ODX_TYPE_PARSER = {
     "A_UTF8STRING": str
 }
 
-ODX_TYPE_TO_PYTHON_TYPE = {
+_ODX_TYPE_TO_PYTHON_TYPE = {
     "A_INT32": int,
     "A_UINT32": int,
     "A_FLOAT32": float,
@@ -29,13 +34,42 @@ ODX_TYPE_TO_PYTHON_TYPE = {
     "A_UTF8STRING": str
 }
 
-def _odx_isinstance(value, odx_type):
-    expected_type = ODX_TYPE_TO_PYTHON_TYPE[odx_type]
-    if isinstance(value, expected_type):
-        return True
-    elif expected_type == float and isinstance(value, (int, float)):
-        return True
-    elif odx_type == "A_BYTEFIELD" and isinstance(value, (bytearray, bytes)):
-        return True
-    else:
-        return False
+class DataType(Enum):
+    """Types for the physical and internal value.
+
+    These types can be used either as BASE-DATA-TYPE (for the "internal value")
+    or the PHYSICAL-DATA-TYPE (for the "physical value").
+
+    Relevant pages in the ASAM MCD-2D specification:
+    * p. 38 (Table 1): ASAM types correspondence with XML Schema types
+    * p. 96: Restrictions to the bit length given the BASE-DATA-TYPE.
+    """
+    A_INT32 = "A_INT32"
+    A_UINT32 = "A_UINT32"
+    A_FLOAT32 = "A_FLOAT32"
+    A_FLOAT64 = "A_FLOAT64"
+    A_UNICODE2STRING = "A_UNICODE2STRING"
+    A_BYTEFIELD = "A_BYTEFIELD"
+    # only in DATA-TYPE not in PHYSICAL-DATA-TYPE
+    A_ASCIISTRING = "A_ASCIISTRING"
+    A_UTF8STRING = "A_UTF8STRING"
+
+    def as_python_type(self) -> type:
+        return _ODX_TYPE_TO_PYTHON_TYPE[self.value]
+
+    def cast_string(self, value: str) -> Union[int, float, str, bytearray]:
+        return _ODX_TYPE_PARSER[self.value](value)
+
+    def cast(self, value: Any) -> Union[int, float, str, bytearray]:
+        return self.as_python_type()(value)
+
+    def isinstance(self, value: Any) -> bool:
+        expected_type = self.as_python_type()
+        if isinstance(value, expected_type):
+            return True
+        elif expected_type == float and isinstance(value, (int, float)):
+            return True
+        elif self == DataType.A_BYTEFIELD and isinstance(value, (bytearray, bytes)):
+            return True
+        else:
+            return False

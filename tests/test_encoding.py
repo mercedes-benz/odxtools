@@ -8,6 +8,7 @@ from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.compumethods import LinearCompuMethod
 from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.parameters import CodedConstParameter, ValueParameter
+from odxtools.physicaltype import PhysicalType
 from odxtools.structures import Request
 
 class TestEncodeRequest(unittest.TestCase):
@@ -34,7 +35,7 @@ class TestEncodeRequest(unittest.TestCase):
         # This CompuMethod represents the linear function: decode(x) = 2*x + 8 and encode(x) = (x-8)/2
         compu_method = LinearCompuMethod(8, 2, "A_UINT32", "A_UINT32")
         dop = DataObjectProperty("dop-id", "example dop", diag_coded_type,
-                                 physical_data_type="A_UINT32", compu_method=compu_method)
+                                 physical_type=PhysicalType("A_UINT32"), compu_method=compu_method)
         param1 = ValueParameter("linear_value_parameter", dop=dop)
         req = Request("request_id", "request_sn", [param1])
 

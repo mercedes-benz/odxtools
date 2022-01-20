@@ -16,7 +16,7 @@ from .functionalclass import read_functional_class_from_odx
 from .audience import read_additional_audience_from_odx
 from .message import Message
 from .service import DiagService, read_diag_service_from_odx
-from .structures import Request, Response, Structure, read_structure_from_odx
+from .structures import Request, Response, read_structure_from_odx
 
 # Defines priority of overiding objects
 PRIORITY_OF_DIAG_LAYER_TYPE = {

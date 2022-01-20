@@ -6,13 +6,15 @@ from odxtools.endofpdufield import EndOfPduField
 from odxtools.dataobjectproperty import DataObjectProperty, DiagnosticTroubleCode, DtcDop
 from odxtools.compumethods import IdenticalCompuMethod, LinearCompuMethod
 from odxtools.message import Message
-import unittest
-
 from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.parameters import CodedConstParameter, MatchingRequestParameter, ValueParameter
+from odxtools.physicaltype import PhysicalType
 from odxtools.structures import Request, Response, Structure
 from odxtools.service import DiagService
 from odxtools.diaglayer import DiagLayer
+from odxtools.odxtypes import DataType
+
+import unittest
 
 
 class TestIdentifyingService(unittest.TestCase):
@@ -92,7 +94,7 @@ class TestDecoding(unittest.TestCase):
         expected_message = Message(coded_message, service, req, param_dict={"SID": 0x7d,
                                                                             "coded_const_parameter_2": 0xab})
         decoded_message = diag_layer.decode(coded_message)[0]
-        
+
         self.assertEqual(expected_message.coded_message,
                          decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
@@ -154,7 +156,7 @@ class TestDecoding(unittest.TestCase):
         dop = DataObjectProperty("dop.id",
                                  "dop_sn",
                                  diag_coded_type_4,
-                                 physical_data_type="A_UINT32",
+                                 physical_type=PhysicalType(DataType.A_UINT32),
                                  compu_method=compu_method)
         id_lookup.update({dop.id: dop})
 
@@ -209,7 +211,7 @@ class TestDecoding(unittest.TestCase):
         dop = DataObjectProperty("dop.id",
                                  "dop_sn",
                                  diag_coded_type_4,
-                                 physical_data_type="A_UINT32",
+                                 physical_type=PhysicalType(DataType.A_UINT32),
                                  compu_method=compu_method)
         id_lookup.update({dop.id: dop})
 
@@ -257,7 +259,8 @@ class TestDecoding(unittest.TestCase):
                          decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
         self.assertEqual(expected_message.structure, decoded_message.structure)
-        self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
+        self.assertEqual(expected_message.param_dict,
+                         decoded_message.param_dict)
 
     def test_decode_request_linear_compu_method(self):
         id_lookup = {}
@@ -267,7 +270,7 @@ class TestDecoding(unittest.TestCase):
         dop = DataObjectProperty("linear.dop.id",
                                  "linear.dop.sn",
                                  diag_coded_type,
-                                 physical_data_type="A_UINT32",
+                                 physical_type=PhysicalType(DataType.A_UINT32),
                                  compu_method=compu_method)
         id_lookup[dop.id] = dop
         req_param1 = CodedConstParameter("SID",
@@ -380,7 +383,7 @@ class TestDecoding(unittest.TestCase):
         dop = DtcDop("dtc.dop.id",
                      "dtc_dop_sn",
                      diag_coded_type,
-                     physical_data_type="A_UINT32",
+                     physical_type=PhysicalType(DataType.A_UINT32),
                      compu_method=compu_method,
                      dtcs=dtcs,
                      is_visible=True)

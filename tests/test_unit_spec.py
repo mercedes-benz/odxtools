@@ -3,6 +3,7 @@
 
 import unittest
 from xml.etree import ElementTree
+from odxtools.physicaltype import PhysicalType
 
 from odxtools.units import read_unit_spec_from_odx, Unit, UnitSpec, PhysicalDimension
 
@@ -83,7 +84,7 @@ class TestUnitSpec(unittest.TestCase):
             id="dop_id",
             short_name="dop_sn",
             diag_coded_type=dct,
-            physical_data_type="A_UINT32",
+            physical_type=PhysicalType("A_UINT32"),
             compu_method=IdenticalCompuMethod("A_UINT32", "A_UINT32"),
             unit_ref=unit.id
         )

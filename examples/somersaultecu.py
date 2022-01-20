@@ -27,6 +27,7 @@ from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 
 from odxtools.diagcodedtypes import StandardLengthType
+from odxtools.physicaltype import PhysicalType
 
 from odxtools.units import UnitSpec
 from odxtools.units import PhysicalDimension
@@ -191,7 +192,7 @@ somersault_dops = {
         id="somersault.DOP.num_flips",
         short_name="num_flips",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_data_type="A_UINT32",
+        physical_type=PhysicalType("A_UINT32"),
         compu_method=somersault_compumethods["uint_passthrough"]),
 
     "soberness_check":
@@ -199,7 +200,7 @@ somersault_dops = {
         id="somersault.DOP.soberness_check",
         short_name="soberness_check",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_data_type="A_UINT32",
+        physical_type=PhysicalType("A_UINT32"),
         compu_method=somersault_compumethods["uint_passthrough"]),
 
     "dizzyness_level":
@@ -207,7 +208,7 @@ somersault_dops = {
         id="somersault.DOP.dizzyness_level",
         short_name="dizzyness_level",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_data_type="A_UINT32",
+        physical_type=PhysicalType("A_UINT32"),
         compu_method=somersault_compumethods["uint_passthrough"]),
 
     "happiness_level":
@@ -215,7 +216,7 @@ somersault_dops = {
         id="somersault.DOP.happiness_level",
         short_name="happiness_level",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_data_type="A_UINT32",
+        physical_type=PhysicalType("A_UINT32"),
         compu_method=somersault_compumethods["uint_passthrough"]),
 
     "duration":
@@ -223,7 +224,7 @@ somersault_dops = {
         id="somersault.DOP.duration",
         short_name="duration",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_data_type="A_UINT32",
+        physical_type=PhysicalType("A_UINT32"),
         compu_method=somersault_compumethods["uint_passthrough"],
         unit_ref=somersault_units["second"].id),
 
@@ -232,7 +233,7 @@ somersault_dops = {
         id="somersault.DOP.error_code",
         short_name="error_code",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_data_type="A_UINT32",
+        physical_type=PhysicalType("A_UINT32"),
         compu_method=somersault_compumethods["uint_passthrough"]),
 
     "boolean":
@@ -240,7 +241,7 @@ somersault_dops = {
         id="somersault.DOP.boolean",
         short_name="boolean",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_data_type="A_UNICODE2STRING",
+        physical_type=PhysicalType("A_UNICODE2STRING"),
         compu_method=somersault_compumethods["boolean"]),
 }
 

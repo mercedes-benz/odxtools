@@ -5,10 +5,10 @@ import abc
 from typing import List, Optional, Union
 from dataclasses import dataclass
 
+from .physicaltype import PhysicalType, read_physical_type_from_odx
 from .globals import logger
 from .compumethods import CompuMethod, read_compu_method_from_odx
 from .units import Unit
-from .odxtypes import _odx_isinstance
 from .diagcodedtypes import DiagCodedType, StandardLengthType, read_diag_coded_type_from_odx
 from .decodestate import DecodeState
 from .encodestate import EncodeState
@@ -61,7 +61,7 @@ class DataObjectProperty(DopBase):
                  id: str,
                  short_name: str,
                  diag_coded_type: DiagCodedType,
-                 physical_data_type: str,
+                 physical_type: PhysicalType,
                  compu_method: CompuMethod,
                  unit_ref: Optional[str] = None,
                  long_name: Optional[str] = None,
@@ -72,7 +72,7 @@ class DataObjectProperty(DopBase):
                          long_name=long_name,
                          description=description)
         self.diag_coded_type = diag_coded_type
-        self.physical_data_type = physical_data_type
+        self.physical_type = physical_type
         self.compu_method = compu_method
         self.unit_ref = unit_ref
         self._unit = None
@@ -91,8 +91,8 @@ class DataObjectProperty(DopBase):
             return None
 
     def convert_physical_to_internal(self, physical_value):
-        assert _odx_isinstance(
-            physical_value, self.physical_data_type), f"Expected {self.physical_data_type}, got {type(physical_value)}"
+        assert self.physical_type.base_data_type.isinstance(physical_value),\
+            f"Expected {self.physical_type.base_data_type.value}, got {type(physical_value)}"
 
         return self.compu_method.convert_physical_to_internal(physical_value)
 
@@ -102,7 +102,7 @@ class DataObjectProperty(DopBase):
                               f" is not a valid." +
                               (f" Valid values are {self.compu_method.get_valid_physical_values()}"
                                if self.compu_method.get_valid_physical_values()
-                               else f" Expected type {self.physical_data_type}.")
+                               else f" Expected type {self.physical_type.base_data_type.value}.")
                               )
 
         internal_val = self.convert_physical_to_internal(physical_value)
@@ -119,7 +119,7 @@ class DataObjectProperty(DopBase):
         else:
             # TODO: How to prevent this?
             raise DecodeError(f"DOP {self.short_name} could not convert the coded value "
-                              f" {repr(internal)} to physical type {self.physical_data_type}.")
+                              f" {repr(internal)} to physical type {self.physical_type.base_data_type}.")
 
     def is_valid_physical_value(self, physical_value):
         return self.compu_method.is_valid_physical_value(physical_value)
@@ -137,8 +137,8 @@ class DataObjectProperty(DopBase):
             f"DataObjectProperty('{self.short_name}', " + \
             ", ".join([
                 f"category='{self.compu_method.category}'",
-                f"internal_type='{self.diag_coded_type.base_data_type}'",
-                f"physical_type='{self.physical_data_type}'",
+                f"internal_type='{self.diag_coded_type}'",
+                f"physical_type={self.physical_type}",
                 f"unit_ref='{self.unit_ref}'",
             ]) + \
             ")"
@@ -148,8 +148,8 @@ class DataObjectProperty(DopBase):
             f"DataObjectProperty('{self.short_name}', " + \
             ", ".join([
                 f"category='{self.compu_method.category}'",
-                f"internal_type='{self.diag_coded_type.base_data_type}'",
-                f"physical_type='{self.physical_data_type}'",
+                f"diag_coded_type='{self.diag_coded_type}'",
+                f"physical_type={self.physical_type}",
                 f"unit_ref='{self.unit_ref}'",
             ]) + \
             ")"
@@ -220,7 +220,7 @@ class DtcDop(DataObjectProperty):
                  id: str,
                  short_name: str,
                  diag_coded_type: DiagCodedType,
-                 physical_data_type: str,
+                 physical_type: PhysicalType,
                  compu_method: CompuMethod,
                  dtcs: List[Union[DiagnosticTroubleCode, DtcRef]],
                  is_visible=False,
@@ -233,7 +233,7 @@ class DtcDop(DataObjectProperty):
                          long_name=long_name,
                          description=description,
                          diag_coded_type=diag_coded_type,
-                         physical_data_type=physical_data_type,
+                         physical_type=physical_type,
                          compu_method=compu_method)
         self.dtcs = dtcs
         self.is_visible = is_visible
@@ -312,10 +312,11 @@ def read_data_object_property_from_odx(et_element):
 
     diag_coded_type = read_diag_coded_type_from_odx(
         et_element.find("DIAG-CODED-TYPE"))
-    physical_data_type = et_element.find(
-        "PHYSICAL-TYPE").get("BASE-DATA-TYPE")
+
+    physical_type = read_physical_type_from_odx(
+        et_element.find("PHYSICAL-TYPE"))
     compu_method = read_compu_method_from_odx(et_element.find(
-        "COMPU-METHOD"), diag_coded_type.base_data_type, physical_data_type)
+        "COMPU-METHOD"), diag_coded_type.base_data_type, physical_type.base_data_type)
 
     if et_element.tag == "DATA-OBJECT-PROP":
         if et_element.find("UNIT-REF") is not None:
@@ -325,7 +326,7 @@ def read_data_object_property_from_odx(et_element):
         dop = DataObjectProperty(id,
                                  short_name,
                                  diag_coded_type,
-                                 physical_data_type,
+                                 physical_type,
                                  compu_method,
                                  unit_ref=unit_ref,
                                  long_name=long_name,
@@ -340,7 +341,7 @@ def read_data_object_property_from_odx(et_element):
         dop = DtcDop(id,
                      short_name,
                      diag_coded_type,
-                     physical_data_type,
+                     physical_type,
                      compu_method,
                      dtcs,
                      is_visible=is_visible,
