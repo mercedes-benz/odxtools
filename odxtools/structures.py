@@ -172,7 +172,7 @@ class BasicStructure(DopBase):
             if isinstance(p, ParameterWithDOP):
                 p.resolve_references(parent_dl, id_lookup)
 
-    def __message_format_lines(self):
+    def __message_format_lines(self, allow_unknown_lengths=False):
         # sort parameters
         sorted_params: list = list(self.parameters)  # copy list
         if all(p.byte_position is not None for p in self.parameters):
@@ -243,7 +243,7 @@ class BasicStructure(DopBase):
 
                         break
 
-                    elif not params[i].bit_length:
+                    elif not params[i].bit_length and not allow_unknown_lengths:
                         # The bit length is not set for the current
                         # parameter, i.e. it was either not specified
                         # or the parameter is of variable length and
@@ -252,9 +252,9 @@ class BasicStructure(DopBase):
                         error = True
                         break
                     else:
-                        breakpoint += params[i].bit_length
+                        breakpoint += params[i].bit_length or (allow_unknown_lengths and 8)
                         name = params[i].short_name + \
-                            f" ({params[i].bit_length} bits)"
+                            f" ({params[i].bit_length or 'Unknown'} bits)"
                         next_line += "| " + name
 
                     i += 1
@@ -296,12 +296,12 @@ class BasicStructure(DopBase):
         else:
             return None
 
-    def print_message_format(self, indent: int = 5):
+    def print_message_format(self, indent: int = 5, allow_unknown_lengths=False):
         """
         Print a description of the message format to `stdout`.
         """
 
-        message_as_lines = self.__message_format_lines()
+        message_as_lines = self.__message_format_lines(allow_unknown_lengths=allow_unknown_lengths)
         if message_as_lines is not None:
             print(f"{indent * ' '}" +
                   f"\n{indent * ' '}".join(message_as_lines))
