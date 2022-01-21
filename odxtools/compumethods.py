@@ -477,56 +477,6 @@ class TabIntpCompuMethod(CompuMethod):
         return True
 
 
-def _parse_compu_scale_to_linear_compu_method(scale_element, internal_type, physical_type, is_scale_linear=False, additional_kwargs={}):
-    assert physical_type in ["A_FLOAT32", "A_FLOAT64", "A_INT32", "A_UINT32"]
-    assert internal_type in ["A_FLOAT32", "A_FLOAT64", "A_INT32", "A_UINT32"]
-
-    if internal_type.startswith("A_FLOAT") or physical_type.startswith("A_FLOAT"):
-        computation_python_type = float
-    else:
-        computation_python_type = int
-
-    kwargs = additional_kwargs.copy()
-    kwargs["internal_type"] = internal_type
-    kwargs["physical_type"] = physical_type
-
-    coeffs = scale_element.find("COMPU-RATIONAL-COEFFS")
-    nums = coeffs.iterfind("COMPU-NUMERATOR/V")
-
-    offset = computation_python_type(next(nums).text)
-    factor = computation_python_type(next(nums).text)
-    if coeffs.find("COMPU-DENOMINATOR/V") is not None:
-        kwargs["denominator"] = int(
-            coeffs.find("COMPU-DENOMINATOR/V").text)
-        assert kwargs["denominator"] > 0
-
-    # Read lower limit
-    internal_lower_limit = read_limit_from_odx(
-        scale_element.find("LOWER-LIMIT"),
-        internal_type=internal_type
-    )
-    if internal_lower_limit is None:
-        internal_lower_limit = Limit(float("-inf"), IntervalType.INFINITE)
-    kwargs["internal_lower_limit"] = internal_lower_limit
-
-    # Read upper limit
-    internal_upper_limit = read_limit_from_odx(
-        scale_element.find("UPPER-LIMIT"),
-        internal_type=internal_type
-    )
-    if internal_upper_limit is None:
-        if not is_scale_linear:
-            internal_upper_limit = Limit(float("inf"), IntervalType.INFINITE)
-        else:
-            assert (internal_lower_limit is not None
-                    and internal_lower_limit.interval_type == IntervalType.CLOSED)
-            logger.info("Scale linear without UPPER-LIMIT")
-            internal_upper_limit = internal_lower_limit
-    kwargs["internal_upper_limit"] = internal_upper_limit
-
-    return LinearCompuMethod(offset=offset, factor=factor, **kwargs)
-
-
 def read_limit_from_odx(et_element, internal_type: DataType):
     if et_element is not None:
         if et_element.get("INTERVAL-TYPE"):
