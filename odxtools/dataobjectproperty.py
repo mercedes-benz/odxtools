@@ -33,16 +33,6 @@ class DopBase(abc.ABC):
         self.description = description
         self.is_visible = is_visible
 
-    @property
-    @abc.abstractclassmethod
-    def bit_length(self):
-        pass
-
-    @abc.abstractclassmethod
-    def convert_physical_to_internal(self, physical_value):
-        """Convert the physical value to the internal value."""
-        pass
-
     @abc.abstractclassmethod
     def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState, bit_position: int) -> bytes:
         """Convert the physical value into bytes."""

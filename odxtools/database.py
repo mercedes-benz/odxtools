@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+from typing import Any, Dict
 from xml.etree import ElementTree
 from itertools import chain
 from zipfile import ZipFile
@@ -20,7 +21,7 @@ class Database:
                  odx_d_file_name: str = None,
                  enable_candela_workarounds: bool = True):
         self._diag_layer_containers = []
-        self._id_lookup = {}
+        self._id_lookup: Dict[str, Any] = {}
         dlc_elements = []
 
         if pdx_zip is None and odx_d_file_name is None:

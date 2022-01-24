@@ -30,6 +30,10 @@ def print_diagnostic_service(service: DiagService, print_params=False, allow_unk
         print(f"  Service description: " + desc)
 
     if print_params:
+        assert service.request is not None
+        assert service.positive_responses is not None
+        assert service.negative_responses is not None
+
         print(f"  Message format of a request:")
         service.request.print_message_format(
             indent=3,
@@ -38,6 +42,8 @@ def print_diagnostic_service(service: DiagService, print_params=False, allow_unk
         print(
             f"  Number of positive responses: {len(service.positive_responses)}")
         if len(service.positive_responses) == 1:
+            assert service.positive_responses[0] is not None
+
             print(f"  Message format of a positive response:")
             service.positive_responses[0].print_message_format(
                 indent=3,
@@ -46,12 +52,15 @@ def print_diagnostic_service(service: DiagService, print_params=False, allow_unk
         print(
             f"  Number of negative responses: {len(service.negative_responses)}")
         if len(service.negative_responses) == 1:
+            assert service.negative_responses[0] is not None
+
             print(f"  Message format of a negative response:")
             service.negative_responses[0].print_message_format(
                 indent=3,
                 allow_unknown_lengths=allow_unknown_bit_lengths)
 
-    if len(service.positive_responses) > 1 or len(service.negative_responses) > 1:
+    if ((service.positive_responses and len(service.positive_responses) > 1)
+            or (service.negative_responses and len(service.negative_responses) > 1)):
         # Does this ever happen?
         raise NotImplementedError(
             f"The diagnostic service {service.id} offers more than one response!")

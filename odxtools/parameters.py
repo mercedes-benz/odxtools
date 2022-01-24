@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 import abc
-from typing import Union
+from typing import Optional, Union
 
 from .decodestate import DecodeState
 from .encodestate import EncodeState
@@ -11,7 +11,7 @@ from .exceptions import DecodeError
 
 from .diagcodedtypes import DiagCodedType, read_diag_coded_type_from_odx
 from .physicaltype import PhysicalType
-from .dataobjectproperty import DataObjectProperty, DopBase
+from .dataobjectproperty import DataObjectProperty, DopBase, DtcDop
 from .globals import xsi, logger
 from .odxtypes import DataType
 
@@ -25,16 +25,16 @@ class Parameter(abc.ABC):
                  bit_position=0,
                  semantic=None,
                  description=None):
-        self.short_name = short_name
-        self.long_name = long_name
-        self.byte_position = byte_position
-        self.bit_position = bit_position
-        self.parameter_type = parameter_type
-        self.semantic = semantic
-        self.description = description
+        self.short_name: str = short_name
+        self.long_name: Optional[str] = long_name
+        self.byte_position: Optional[int] = byte_position
+        self.bit_position: int = bit_position
+        self.parameter_type: str = parameter_type
+        self.semantic: Optional[str] = semantic
+        self.description: Optional[str] = description
 
     @property
-    def bit_length(self):
+    def bit_length(self) -> Optional[int]:
         return None
 
     @abc.abstractclassmethod
@@ -178,11 +178,11 @@ class Parameter(abc.ABC):
 
 class ParameterWithDOP(Parameter):
     def __init__(self,
-                 short_name,
-                 parameter_type,
+                 short_name: str,
+                 parameter_type: str,
                  dop=None,
-                 dop_ref=None,
-                 dop_snref=None,
+                 dop_ref: Optional[str] = None,
+                 dop_snref: Optional[str] = None,
                  **kwargs):
         super().__init__(short_name, parameter_type, **kwargs)
         self.dop_ref = dop_ref
@@ -211,15 +211,19 @@ class ParameterWithDOP(Parameter):
         if self.dop_snref:
             dop = parent_dl.data_object_properties[self.dop_snref]
             if not dop:
-                logger.info(f"Param {self.short_name} could not resolve DOP-SNREF {self.dop_snref}")
+                logger.info(
+                    f"Param {self.short_name} could not resolve DOP-SNREF {self.dop_snref}")
         elif self.dop_ref:
             dop = id_lookup.get(self.dop_ref)
             if not dop:
-                logger.info(f"Param {self.short_name} could not resolve DOP-REF {self.dop_ref}")
+                logger.info(
+                    f"Param {self.short_name} could not resolve DOP-REF {self.dop_ref}")
         else:
-            logger.warn(f"Param {self.short_name}  without DOP-(SN)REF should not exist!")
+            logger.warn(
+                f"Param {self.short_name} without DOP-(SN)REF should not exist!")
         if self.dop and dop != self.dop:
-            logger.warn(f"Param {self.short_name}: Reference and DOP are inconsistent!")
+            logger.warn(
+                f"Param {self.short_name}: Reference and DOP are inconsistent!")
 
         self._dop = dop
 
@@ -231,17 +235,22 @@ class ParameterWithDOP(Parameter):
             return None
 
     @property
-    def physical_type(self) -> PhysicalType:
-        return self.dop.physical_type
+    def physical_type(self) -> Optional[PhysicalType]:
+        if isinstance(self.dop, (DataObjectProperty, DtcDop)):
+            return self.dop.physical_type
+        else:
+            return None
 
     def get_coded_value(self, physical_value=None):
         return self.dop.convert_physical_to_internal(physical_value)
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
+        assert self.dop is not None, "Reference to DOP is not resolved"
         physical_value = encode_state.parameter_values[self.short_name]
         return self.dop.convert_physical_to_bytes(physical_value, encode_state, bit_position=self.bit_position)
 
     def decode_from_pdu(self, decode_state: DecodeState):
+        assert self.dop is not None, "Reference to DOP is not resolved"
         if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
             decode_state = decode_state._replace(
                 next_byte_position=self.byte_position)
@@ -389,11 +398,12 @@ class PhysicalConstantParameter(ParameterWithDOP):
         return self.dop.convert_physical_to_internal(self.physical_constant_value)
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
+        assert self.dop is not None, "Reference to DOP is not resolved"
         if self.short_name in encode_state.parameter_values \
                 and encode_state.parameter_values[self.short_name] != self.physical_constant_value:
             raise TypeError(f"The parameter '{self.short_name}' is constant {self.physical_constant_value}"
                             " and thus can not be changed.")
-        return self.dop.convert_physical_to_bytes(self.physical_constant_value, bit_position=self.bit_position)
+        return self.dop.convert_physical_to_bytes(self.physical_constant_value, encode_state, bit_position=self.bit_position)
 
     def decode_from_pdu(self, decode_state: DecodeState):
         # Decode value
@@ -404,8 +414,8 @@ class PhysicalConstantParameter(ParameterWithDOP):
         if phys_val != self.physical_constant_value:
             raise DecodeError(
                 f"Physical constant parameter does not match! "
-                f"The parameter {self.short_name} expected physical value {self.physical_constant_value} but got {phys_val} "
-                f"at byte position {decode_state.byte_position} "
+                f"The parameter {self.short_name} expected physical value {self.physical_constant_value!r} but got {phys_val!r} "
+                f"at byte position {decode_state.next_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}."
             )
         return decode_state

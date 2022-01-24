@@ -43,21 +43,21 @@ def print_summary(odxdb: Database,
         print(
             f" num services: {len(service_sns)}, num DOPs: {len(data_object_properties)}, num communication parameters: {len(com_params)}."
         )
-        
+
         if dl.description:
             desc = format_desc(dl.description, ident=2)
             print(f" Description: " + desc)
 
         if print_services and len(service_sns) > 0:
-            services = [dl.services[service_sn] for service_sn in service_sns]
-            services = list(filter(service_filter, services))
+            all_services = [dl.services[service_sn] for service_sn in service_sns]
+            services = [s for s in all_services
+                        if s is not None and service_filter(s)]
             if len(services) > 0:
                 print(
                     f"The services of the {dl.variant_type} '{dl.short_name}' are: ")
                 for service in services:
-                    if service_filter(service):
-                        print_diagnostic_service(
-                            service, print_params=print_params)
+                    print_diagnostic_service(
+                        service, print_params=print_params)
 
         if print_dops and len(data_object_properties) > 0:
             print(f"The DOPs of the {dl.variant_type} '{dl.short_name}' are: ")

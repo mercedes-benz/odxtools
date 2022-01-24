@@ -7,7 +7,7 @@ from .parameters import *
 from .decodestate import DecodeState, ParameterValuePair
 from .encodestate import EncodeState
 from .nameditemlist import NamedItemList
-from typing import Iterable, OrderedDict, Union
+from typing import Dict, Iterable, Optional, OrderedDict, Union
 
 
 class BasicStructure(DopBase):
@@ -63,7 +63,7 @@ class BasicStructure(DopBase):
                                    is_end_of_pdu=False)
 
         # Keep track of the expected length. (This is just to double check and not actually needed.)
-        bit_length = 0
+        bit_length: Optional[int] = 0
         for param in self.parameters:
             if param == self.parameters[-1]:
                 # The last parameter is at the end of the PDU iff the structure itself is at the end of the PDU
@@ -122,18 +122,18 @@ class BasicStructure(DopBase):
 
         return param_dict, decode_state.next_byte_position + inner_decode_state.next_byte_position
 
-    def encode(self, triggering_coded_request=None, **params) -> bytearray:
+    def encode(self, coded_request=None, **params) -> bytearray:
         """
         Composes an UDS message as bytes for this service.
         Parameters:
         ----------
-        triggering_coded_request: bytes
+        coded_request: bytes
             coded request (only needed when encoding a response)
         params: dict
             Parameters of the RPC as mapping from SHORT-NAME of the parameter to the value
         """
         return self.convert_physical_to_internal(params,
-                                                 triggering_coded_request=triggering_coded_request,
+                                                 triggering_coded_request=coded_request,
                                                  is_end_of_pdu=True)
 
     def decode(self, message: Union[bytes, bytearray]):
@@ -156,8 +156,9 @@ class BasicStructure(DopBase):
         params = self.parameters
         assert all(not isinstance(p, ParameterWithDOP) or isinstance(
             p.dop, DataObjectProperty) or isinstance(p.dop, Structure) for p in self.parameters)
-        param_dict = {
-            p.short_name: p for p in params if not isinstance(p, ParameterWithDOP) or not isinstance(p.dop, BasicStructure)
+        param_dict: Dict[str, Union[Parameter, Dict[str, Parameter]]] = {
+            p.short_name: p for p in params
+            if not isinstance(p, ParameterWithDOP) or not isinstance(p.dop, Structure)
         }
         param_dict.update({
             struct_param.short_name: struct_param.dop.parameter_dict()
@@ -366,7 +367,7 @@ class Response(BasicStructure):
                     val = coded_request[byte_pos:byte_pos+byte_length]
                     params[param.short_name] = val
 
-        return super().encode(triggering_coded_request=coded_request, **params)
+        return super().encode(coded_request=coded_request, **params)
 
     def __repr__(self) -> str:
         return f"Response('{self.short_name}')"

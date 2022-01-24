@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import List, Union, Generic, TypeVar
+from typing import Callable, Dict, Iterable, List, Optional, Union, Generic, TypeVar
 
 T = TypeVar('T')
+
 
 class NamedItemList(Generic[T]):
     """A list that provides direct access to its items as named attributes.
@@ -18,14 +19,18 @@ class NamedItemList(Generic[T]):
     avoid naming collisions. The user is responsible that the strings
     returned by the item-to-name function are valid identifiers in python.
     """
-    def __init__(self, item_to_name_fn, input_list = None):
+
+    def __init__(self, item_to_name_fn: Callable[[T], str], input_list: Iterable[T] = None):
         self._item_to_name_fn = item_to_name_fn
-        self._list = []
+        self._list: List[T] = []
+        # TODO (?): This duplicates self.__dict__ -> Is there a prettier type-safe way?
+        self._typed_dict: Dict[str, T] = {}
+
         if input_list is not None:
             for item in input_list:
                 self.append(item)
 
-    def append(self, item):
+    def append(self, item: T):
         """
         Append a new item to the list and make it accessible as a
         member attribute.
@@ -40,6 +45,7 @@ class NamedItemList(Generic[T]):
         while True:
             if tmp not in self.__dict__:
                 self.__dict__[tmp] = item
+                self._typed_dict[tmp] = item
                 return tmp
 
             i += 1
@@ -47,12 +53,12 @@ class NamedItemList(Generic[T]):
 
     def __len__(self):
         return len(self._list)
-            
-    def __getitem__(self, key: Union[int, str]) -> T:
+
+    def __getitem__(self, key: Union[int, str]) -> Optional[T]:
         if isinstance(key, int):
             return self._list[key]
         else:
-            return self.__dict__.get(key)
+            return self._typed_dict.get(key)
 
     def __eq__(self, other: object) -> bool:
         """
@@ -64,6 +70,9 @@ class NamedItemList(Generic[T]):
         else:
             return self._list == other._list
     
+    def __iter__(self):
+        return iter(self._list)
+
     def __str__(self):
         return f"[{', '.join([self._item_to_name_fn(s) for s in self._list])}]"
 

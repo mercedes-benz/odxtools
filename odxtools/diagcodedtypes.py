@@ -139,9 +139,11 @@ class DiagCodedType(abc.ABC):
         if self.base_data_type == DataType.A_BYTEFIELD:
             byte_length = len(internal_value)
         elif self.base_data_type in [DataType.A_ASCIISTRING, DataType.A_UTF8STRING]:
+            assert isinstance(internal_value, str)
             # TODO: Handle different encodings
             byte_length = len(bytes(internal_value, "utf-8"))
         elif self.base_data_type == DataType.A_UNICODE2STRING:
+            assert isinstance(internal_value, str)
             byte_length = len(bytes(internal_value, "utf-16-le"))
             assert byte_length % 2 == 0, (f"The bit length of A_UNICODE2STRING must"
                                           f" be a multiple of 16 but is {8*byte_length}")

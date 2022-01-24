@@ -7,7 +7,7 @@ from typing import Union
 
 import odxtools.obd as obd
 
-class SID(IntEnum):
+class UDSSID(IntEnum):
     """The service IDs standardized by UDS.
 
     For additional information, see https://en.wikipedia.org/wiki/Unified_Diagnostic_Services
@@ -48,7 +48,7 @@ class SID(IntEnum):
     # 0xBA..0xBE: Reserved for ECU specific services
 
 # add the OBD SIDs to the ones from UDS
-SID = IntEnum('UdsSID', [(i.name, i.value) for i in chain(obd.SID, SID)])
+SID = IntEnum('UdsSID', ((i.name, i.value) for i in chain(obd.SID, UDSSID)))  # type: ignore
 
 class NegativeResponseCodes(IntEnum):
     """The standardized negative response codes of UDS.
@@ -90,8 +90,8 @@ def positive_response_id(service_id: int) -> int:
 NegativeResponseId = 0x7f
 def negative_response_id(service_id: int) -> int:
     """Given a service ID of a request, return the corresponding SID for a negative response"""
-    assert service_id != 0x7f - 0x40
-    return UdsNegativeResponseId
+    assert service_id != 0x7f - 0x40  # TODO: What is this assert supposed to do?
+    return NegativeResponseId
 
 def is_reponse_pending(telegram_payload: Union[bytes, bytearray], request_sid: int = None) -> bool:
     # "response pending" responses exhibit at least three bytes
@@ -102,7 +102,7 @@ def is_reponse_pending(telegram_payload: Union[bytes, bytearray], request_sid: i
     rq_sid = telegram_payload[1]
     resp_code = telegram_payload[2]
 
-    # "response pending" answers are alway negative
+    # "response pending" answers are always negative
     if sid != NegativeResponseId:
         return False
 

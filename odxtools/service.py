@@ -1,22 +1,26 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+from dataclasses import dataclass
+from pyclbr import Function
 from odxtools.audience import Audience, read_audience_from_odx
+from odxtools.functionalclass import FunctionalClass
 from odxtools.utils import read_description_from_odx
 from odxtools.exceptions import DecodeError
-from typing import List, Optional, Union
+from typing import Iterable, List, Optional, Union
 from .structures import Request, Response
 from .nameditemlist import NamedItemList
 from .message import Message
 
 
+@dataclass
 class DiagService:
     def __init__(self,
                  id,
                  short_name,
                  request,
-                 positive_responses,
-                 negative_responses,
+                 positive_responses: Union[List[str], List[Response]],
+                 negative_responses: Union[List[str], List[Response]],
                  long_name=None,
                  description=None,
                  semantic=None,
@@ -34,52 +38,70 @@ class DiagService:
         positive_responses: List[str] | List[Response]
         negative_responses: List[str] | List[Response]
         """
-        self.id = id
-        self.short_name = short_name
+        self.id: str = id
+        self.short_name: str = short_name
+        self.long_name: Optional[str] = long_name
+        self.description: Optional[str] = description
+        self.semantic: Optional[str] = semantic
+        self.audience: Optional[Audience] = audience
+        self.functional_class_refs: List[str] = functional_class_refs
+        self._functional_classes: Union[List[FunctionalClass],
+                                        NamedItemList[FunctionalClass]] = []
+
+        self._request: Optional[Request]
+        self.request_ref_id: str
+        self._positive_responses: Optional[NamedItemList[Response]]
+        self.pos_res_ref_ids: List[str]
+        self._negative_responses: Optional[NamedItemList[Response]]
+        self.neg_res_ref_ids: List[str]
+
         if isinstance(request, str):
             self._request = None
             self.request_ref_id = request
         elif isinstance(request, Request):
             self._request = request
-            self.request_ref_id = request
+            self.request_ref_id = request.id
         else:
             raise ValueError(
                 "request must be a string (the ID of a request) or a Request object")
 
         if all(isinstance(x, Response) for x in positive_responses):
+            # TODO (?): Can we tell mypy that positive_responses is definitely of type Iterable[Response]
             self._positive_responses = \
                 NamedItemList[Response](lambda pr: pr.short_name,
-                                        positive_responses)
-            self.pos_res_ref_ids = [pr.id for pr in positive_responses]
-        else:
+                                        positive_responses)  # type: ignore
+            self.pos_res_ref_ids = [
+                pr.id for pr in positive_responses]  # type: ignore
+        elif all(isinstance(x, str) for x in positive_responses):
             self._positive_responses = None
-            self.pos_res_ref_ids = positive_responses
+            self.pos_res_ref_ids = [str(r) for r in positive_responses]
+        else:
+            raise TypeError(
+                "positive_responses must be of type Union[List[str], List[Response], None]")
 
         if all(isinstance(x, Response) for x in negative_responses):
-            NamedItemList[Response](lambda nr: nr.short_name,
-                                    negative_responses)
-            self.neg_res_ref_ids = [nr.id for nr in negative_responses]
-        else:
+            self._negative_responses = \
+                NamedItemList[Response](lambda nr: nr.short_name,
+                                        negative_responses)  # type: ignore
+            self.neg_res_ref_ids = [
+                nr.id for nr in negative_responses]  # type: ignore
+        elif all(isinstance(x, str) for x in negative_responses):
             self._negative_responses = None
-            self.neg_res_ref_ids = negative_responses
-
-        self.long_name = long_name
-        self.description = description
-        self.semantic = semantic
-        self.audience = audience
-        self.functional_class_refs = functional_class_refs
-        self._functional_classes = []
+            self.neg_res_ref_ids = [str(r) for r in negative_responses]
+        else:
+            raise TypeError(
+                "negative_responses must be of type Union[List[str], List[Response], None]")
 
     @property
-    def request(self) -> Request:
+    def request(self) -> Optional[Request]:
         return self._request
 
     @property
-    def positive_responses(self) -> List[Response]:
+    def positive_responses(self) -> Optional[NamedItemList[Response]]:
         return self._positive_responses
 
     @property
-    def negative_responses(self) -> List[Response]:
+    def negative_responses(self) -> Optional[NamedItemList[Response]]:
         return self._negative_responses
 
     @property
@@ -106,12 +128,20 @@ class DiagService:
     def decode_message(self, message: Union[bytes, bytearray]) -> Message:
 
         # Check if message is a request or positive or negative response
-        interpretable_message_types = list(filter(lambda r: all(b == message[i]
-                                                                for (i, b) in enumerate(r.coded_const_prefix(
-                                                                    request_prefix=self.request.coded_const_prefix()))),
-                                                  [self.request, *self.positive_responses,
-                                                   *self.negative_responses]
-                                                  ))
+        interpretable_message_types = []
+
+        if self.request is None or self.positive_responses is None or self.negative_responses is None:
+            raise ValueError("References couldn't be resolved or have not been resolved yet."
+                             " Try calling `database.resolve_references()`.")
+
+        for message_type in [self.request,
+                             *self.positive_responses,
+                             *self.negative_responses]:
+            prefix = message_type.coded_const_prefix(
+                request_prefix=self.request.coded_const_prefix())
+            if all(b == message[i] for (i, b) in enumerate(prefix)):
+                interpretable_message_types.append(message_type)
+
         if len(interpretable_message_types) != 1:
             raise DecodeError(
                 f"The service {self.short_name} cannot decode the message {message.hex()}")

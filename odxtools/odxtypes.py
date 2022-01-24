@@ -2,15 +2,17 @@
 # Copyright (c) 2022 MBition GmbH
 
 from enum import Enum
-from typing import Any, Union
+from typing import Any, Callable, Dict, Literal, Type, Union
 
 
 def bytefield_to_bytearray(bytefield: str) -> bytearray:
     bytes_string = [bytefield[i:i+2] for i in range(0, len(bytefield), 2)]
     return bytearray(map(lambda x: int(x, 16), bytes_string))
 
+PythonType = Union[str, int, float, bytearray]
+LiteralPythonType = Type[Union[str, int, float, bytearray]]
 
-_ODX_TYPE_PARSER = {
+_ODX_TYPE_PARSER: Dict[str, Callable[[str], PythonType]] = {
     "A_INT32": int,
     "A_UINT32": int,
     "A_FLOAT32": float,
@@ -22,7 +24,7 @@ _ODX_TYPE_PARSER = {
     "A_UTF8STRING": str
 }
 
-_ODX_TYPE_TO_PYTHON_TYPE = {
+_ODX_TYPE_TO_PYTHON_TYPE: Dict[str, LiteralPythonType] = {
     "A_INT32": int,
     "A_UINT32": int,
     "A_FLOAT32": float,
@@ -33,6 +35,7 @@ _ODX_TYPE_TO_PYTHON_TYPE = {
     "A_ASCIISTRING": str,
     "A_UTF8STRING": str
 }
+
 
 class DataType(Enum):
     """Types for the physical and internal value.

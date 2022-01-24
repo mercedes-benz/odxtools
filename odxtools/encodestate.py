@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import Any, Dict, NamedTuple, Union
+from typing import Any, Dict, NamedTuple, Optional, Union
 
 
 class EncodeState(NamedTuple):
@@ -22,7 +22,7 @@ class EncodeState(NamedTuple):
     # a mapping from short name to value for each parameter
     parameter_values: Dict[str, Any]
     # For encoding a response: request that triggered the response
-    triggering_request: Union[bytes, bytearray] = None
+    triggering_request: Optional[Union[bytes, bytearray]] = None
     # Mapping from IDs to bit lengths (specified by LengthKeyParameters)
     length_keys: Dict[str, int] = {}
     # Flag whether the parameter is the last on the PDU (needed for MinMaxLengthType)
