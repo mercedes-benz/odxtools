@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from dataclasses import dataclass, field
-from typing import List, Literal, Optional
+from typing import List, Literal, Optional, Union
 
 from .nameditemlist import NamedItemList
 from .utils import read_description_from_odx
@@ -168,10 +168,13 @@ class UnitSpec:
 
     The following odx elements are not internalized: ADMIN-DATA, SDGS
     """
-    unit_groups: NamedItemList[UnitGroup] = field(default_factory=list)
-    units: NamedItemList[Unit] = field(default_factory=list)
-    physical_dimensions: NamedItemList[PhysicalDimension] = field(
-        default_factory=list)
+    # TODO (?): Why are there type errors...
+    unit_groups: Union[NamedItemList[UnitGroup],
+                       List[UnitGroup]] = field(default_factory=list)  # type: ignore
+    units: Union[NamedItemList[Unit], List[Unit]] = field(
+        default_factory=list)  # type: ignore
+    physical_dimensions: Union[NamedItemList[PhysicalDimension],
+                               List[PhysicalDimension]] = field(default_factory=list)  # type: ignore
 
     def __post_init__(self):
         self.unit_groups = NamedItemList(lambda x: x.short_name,

@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from dataclasses import dataclass, field
+from typing import Optional
 from odxtools.utils import read_description_from_odx
 
 
@@ -37,8 +38,8 @@ class AdditionalAudience:
     """
     id: str
     short_name: str
-    long_name: str = None
-    description: str = None
+    long_name: Optional[str] = None
+    description: Optional[str] = None
 
 
 def read_audience_from_odx(et_element):

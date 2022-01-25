@@ -135,9 +135,12 @@ class DiagLayer:
         self.functional_classes = functional_classes
 
         # Properties that include inherited objects
-        self._services = []
-        self._communication_parameters = []
-        self._data_object_properties = []
+        self._services: NamedItemList[DiagService]\
+            = NamedItemList(lambda s: s.short_name, [])
+        self._communication_parameters: NamedItemList[CommunicationParameterRef]\
+            = NamedItemList(lambda s: s.id_ref, [])
+        self._data_object_properties: NamedItemList[DopBase]\
+            = NamedItemList(lambda s: s.short_name, [])
 
         if id_lookup is not None:
             self.finalize_init(id_lookup)
@@ -371,7 +374,7 @@ class DiagLayer:
                 pass
         if len(decoded_messages) == 0:
             raise DecodeError(
-                f"None of the services {possible_services} could parse {message}.")
+                f"None of the services {possible_services} could parse {message.hex()}.")
         return decoded_messages
 
     def decode_response(self, response: Union[bytes, bytearray], request: Union[bytes, bytearray, Message]) -> Iterable[Message]:
@@ -396,7 +399,7 @@ class DiagLayer:
                 pass
         if len(decoded_messages) == 0:
             raise DecodeError(
-                f"None of the services {possible_services} could parse {response}.")
+                f"None of the services {possible_services} could parse {response.hex()}.")
         return decoded_messages
 
     def get_receive_id(self):

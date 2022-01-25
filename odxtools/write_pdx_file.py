@@ -2,7 +2,6 @@
 # Copyright (c) 2022 MBition GmbH
 
 import zipfile
-import sys
 import os
 import odxtools
 import jinja2
@@ -10,16 +9,20 @@ import time
 import datetime
 import inspect
 
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 def jinja2_odxraise_helper(msg):
     raise Exception(msg)
 
+
+__module_filname = inspect.getsourcefile(odxtools)
+assert isinstance(__module_filname, str)
+__pdx_stub_dir = os.path.sep.join([os.path.dirname(__module_filname),
+                                  "pdx_stub"])
 def write_pdx_file(output_file_name : str,
                    database : odxtools.Database,
                    auxiliary_content_specifiers : List[Tuple[str, str]] = [],
-                   stub_dir : str = os.path.sep.join([os.path.dirname(inspect.getsourcefile(odxtools)),
-                                                      "pdx_stub"])) -> bool:
+                   stub_dir : str = __pdx_stub_dir) -> bool:
     """
     Write an internalized database to a PDX file.
     """
@@ -79,7 +82,7 @@ def write_pdx_file(output_file_name : str,
             zf_name = os.path.basename(output_file_name)
             with zf.open(zf_name, "w") as out_file:
                 file_index.append( (zf_name, creation_date, mime_type) )
-                out_file.write(data)
+                out_file.write(data)  # type: ignore
 
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(stub_dir))
         jinja_env.globals['odxraise'] = jinja2_odxraise_helper
@@ -88,7 +91,7 @@ def write_pdx_file(output_file_name : str,
         # collapsed with the previous line in the rendering
         jinja_env.filters["odxtools_collapse_xml_attribute"] = lambda x: " "+x.strip() if x.strip() else ""
         
-        vars = {}
+        vars: Dict[str, Any] = {}
         vars["odxtools_version"] = odxtools.__version__
         vars["database"] = database
         vars["dlc"] = None

@@ -3,10 +3,11 @@
 
 import sys
 import argparse
+from typing import Dict, Union
 import PyInquirer
 
 from ..database import Database
-from ..structures import Response
+from ..structures import Request, Response
 from ..parameters import ParameterWithDOP
 from ..odxtypes import DataType
 from . import _parser_utils
@@ -152,7 +153,8 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
     print(f"Message payload: 0x{bytes(payload).hex()}")
 
 
-def encode_message_from_string_values(sub_service, parameter_values: dict = {}):
+def encode_message_from_string_values(sub_service: Union[Request, Response],
+                                      parameter_values: Dict[str, Union[str, Dict[str, str]]] = {}):
     parameter_values = parameter_values.copy()
     param_dict = sub_service.parameter_dict()
 
@@ -162,7 +164,9 @@ def encode_message_from_string_values(sub_service, parameter_values: dict = {}):
         if isinstance(parameter, dict):
             # parameter_value refers to a structure (represented as dict of params)
             for simple_param_sn, simple_param in parameter.items():
-                if simple_param.is_required() and (parameter_values.get(parameter_sn) is None or parameter_values.get(parameter_sn).get(simple_param_sn) is None):
+                structured_value = parameter_values.get(parameter_sn)
+                if simple_param.is_required() and (not isinstance(structured_value, dict)
+                                                   or structured_value.get(simple_param_sn) is None):
                     missing_parameter_names.append(
                         f"{parameter_sn} :: {simple_param_sn}")
         else:
@@ -177,17 +181,18 @@ def encode_message_from_string_values(sub_service, parameter_values: dict = {}):
     for parameter_sn, parameter_value in parameter_values.items():
         if isinstance(parameter_value, dict):
             # parameter_value refers to a structure (represented as dict of params)
-            parameter_values[parameter_sn] = parameter_values[parameter_sn].copy()
+            typed_dict = parameter_value.copy()
             for simple_param_sn, simple_val in parameter_value.items():
                 try:
                     parameter = param_dict[parameter_sn][simple_param_sn]
                 except:
                     print(f"I don't know the parameter {simple_param_sn}")
                     continue
-                parameter_values[parameter_sn][simple_param_sn] = _convert_string_to_odx_type(
+                typed_dict[simple_param_sn] = _convert_string_to_odx_type(
                     simple_val,
                     parameter.physical_type.base_data_type
                 )
+                parameter_values[parameter_sn] = typed_dict
         else:
             try:
                 parameter = param_dict[parameter_sn]
@@ -199,7 +204,7 @@ def encode_message_from_string_values(sub_service, parameter_values: dict = {}):
                 parameter.physical_type.base_data_type if parameter.parameter_type != "MATCHING-REQUEST-PARAM"
                 else DataType.A_BYTEFIELD
             )
-    payload = sub_service.encode(**parameter_values)
+    payload = sub_service.encode(**parameter_values) # type: ignore
     print(f"Message payload: 0x{bytes(payload).hex()}")
 
 
@@ -221,6 +226,7 @@ def browse(odxdb: Database):
             return
 
         variant = odxdb.diag_layers[answer.get("variant")]
+        assert variant is not None
         recv_id = hex(variant.get_receive_id()
                       ) if variant.get_receive_id() is not None else "None"
         send_id = hex(variant.get_send_id()
@@ -245,6 +251,10 @@ def browse(odxdb: Database):
             service_sn = answer.get("service")
 
             service = variant.services[service_sn]
+            assert service is not None
+            assert service.request is not None
+            assert service.positive_responses is not None
+            assert service.negative_responses is not None
 
             # Select a service of the ECU
             selection = [{
@@ -267,7 +277,7 @@ def browse(odxdb: Database):
                         "value": nr,
                         "short": f"Negative response: {nr.short_name}"
                     } for nr in service.negative_responses]
-                    + ["[back]"]
+                    + ["[back]"] # type: ignore
             }]
             answer = PyInquirer.prompt(selection)
             if answer.get("message_type") == "[back]":

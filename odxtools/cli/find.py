@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 import argparse
+from typing import Dict, List
 
 from ._print_utils import print_diagnostic_service
 from ..database import Database
@@ -39,7 +40,7 @@ def print_summary(odxdb: Database,
     ecu_names = ecu_variants if ecu_variants else [
         ecu.short_name for ecu in odxdb.ecus
     ]
-    services = {}
+    services: Dict[DiagService, List[str]] = {}
     for ecu_name in ecu_names:
         ecu = odxdb.ecus[ecu_name]
         if not ecu:
