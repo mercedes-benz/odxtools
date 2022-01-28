@@ -69,7 +69,9 @@ def print_summary(odxdb: Database,
         print(f"{filler}\n\n")
         print_diagnostic_service(service,
                                  print_params=print_params,
-                                 allow_unknown_bit_lengths=allow_unknown_bit_lengths)
+                                 allow_unknown_bit_lengths=allow_unknown_bit_lengths,
+                                 print_pre_condition_states=True,
+                                 print_audiences=True)
         if decode:
             print_decoded_message(service, data)
 
