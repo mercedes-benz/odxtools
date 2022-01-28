@@ -8,6 +8,8 @@ from odxtools.state import State
 from odxtools.utils import read_description_from_odx
 from odxtools.exceptions import DecodeError
 from typing import List, Optional, Union
+
+from .state_transition import StateTransition
 from .structures import Request, Response
 from .nameditemlist import NamedItemList
 from .message import Message
@@ -26,7 +28,8 @@ class DiagService:
                  semantic=None,
                  audience: Optional[Audience] = None,
                  functional_class_refs=[],
-                 pre_condition_state_refs=[]):
+                 pre_condition_state_refs=[],
+                 state_transition_refs=[]):
         """Constructs the service.
 
         Parameters:
@@ -51,6 +54,9 @@ class DiagService:
         self.pre_condition_state_refs: List[str] = pre_condition_state_refs
         self._pre_condition_states: Union[List[State],
                                           NamedItemList[State]] = []
+        self.state_transition_refs: List[str] = state_transition_refs
+        self._state_transitions: Union[List[StateTransition],
+                                       NamedItemList[StateTransition]] = []
 
         self._request: Optional[Request]
         self.request_ref_id: str
@@ -116,6 +122,10 @@ class DiagService:
     def pre_condition_states(self):
         return self._pre_condition_states
 
+    @property
+    def state_transitions(self):
+        return self._state_transitions
+
     def _resolve_references(self, id_lookup):
         self._request = id_lookup.get(self.request_ref_id)
         self._positive_responses = \
@@ -134,6 +144,10 @@ class DiagService:
             NamedItemList(
                 lambda st: st.short_name,
                 [id_lookup.get(st_id) for st_id in self.pre_condition_state_refs])
+        self._state_transitions = \
+            NamedItemList(
+                lambda st: st.short_name,
+                [id_lookup.get(stt_id) for stt_id in self.state_transition_refs])
         if self.audience:
             self.audience._resolve_references(id_lookup)
 
@@ -227,6 +241,9 @@ def read_diag_service_from_odx(et_element):
     pre_condition_state_ref_ids = [
         el.get("ID-REF") for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF")
     ]
+    state_transition_ref_ids = [
+        el.get("ID-REF") for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
+    ]
     long_name = et_element.find(
         "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
     description = read_description_from_odx(et_element.find("DESC"))
@@ -245,5 +262,6 @@ def read_diag_service_from_odx(et_element):
                                semantic=semantic,
                                audience=audience,
                                functional_class_refs=functional_class_ref_ids,
-                               pre_condition_state_refs=pre_condition_state_ref_ids)
+                               pre_condition_state_refs=pre_condition_state_ref_ids,
+                               state_transition_refs=state_transition_ref_ids)
     return diag_service

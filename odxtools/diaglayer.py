@@ -7,6 +7,7 @@ from typing import Dict, Iterable, List, Union
 from .exceptions import *
 from .globals import logger, xsi
 from .state import read_state_from_odx
+from .state_transition import read_state_transition_from_odx
 
 from .utils import read_description_from_odx
 from .nameditemlist import NamedItemList
@@ -101,7 +102,8 @@ class DiagLayer:
                  id_lookup=None,
                  additional_audiences=[],
                  functional_classes=[],
-                 states=[]
+                 states=[],
+                 state_transitions=[]
                  ):
         logger.info(f"Initializing variant type {variant_type}")
         self.variant_type = variant_type
@@ -136,6 +138,7 @@ class DiagLayer:
         self.additional_audiences = additional_audiences
         self.functional_classes = functional_classes
         self.states = states
+        self.state_transitions = state_transitions
 
         # Properties that include inherited objects
         self._services: NamedItemList[DiagService]\
@@ -191,7 +194,8 @@ class DiagLayer:
                          self.negative_responses,
                          self.additional_audiences,
                          self.functional_classes,
-                         self.states):
+                         self.states,
+                         self.state_transitions):
             id_lookup[obj.id] = obj
 
         if self.local_diag_data_dictionary_spec:
@@ -554,6 +558,10 @@ def read_diag_layer_from_odx(et_element, enable_candela_workarounds=True):
     states = [
         read_state_from_odx(el) for el in et_element.iterfind("STATE-CHARTS/STATE-CHART/STATES/STATE")]
 
+    state_transitions = [
+        read_state_transition_from_odx(el) for el in
+        et_element.iterfind("STATE-CHARTS/STATE-CHART/STATE-TRANSITIONS/STATE-TRANSITION")]
+
     if et_element.find("DIAG-DATA-DICTIONARY-SPEC"):
         diag_data_dictionary_spec = read_diag_data_dictionary_spec_from_odx(
             et_element.find("DIAG-DATA-DICTIONARY-SPEC"))
@@ -579,6 +587,7 @@ def read_diag_layer_from_odx(et_element, enable_candela_workarounds=True):
                    additional_audiences=additional_audiences,
                    functional_classes=functional_classes,
                    states=states,
+                   state_transitions=state_transitions,
                    enable_candela_workarounds=enable_candela_workarounds,
                    )
 
