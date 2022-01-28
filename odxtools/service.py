@@ -47,6 +47,9 @@ class DiagService:
         self.functional_class_refs: List[str] = functional_class_refs
         self._functional_classes: Union[List[FunctionalClass],
                                         NamedItemList[FunctionalClass]] = []
+        self.pre_condition_state_refs: List[str] = pre_condition_state_refs
+        self.pre_condition_states: Union[List[StateClass],
+                                         NamedItemList[StateClass]] = []
 
         self._request: Optional[Request]
         self.request_ref_id: str
@@ -187,6 +190,12 @@ class DiagService:
 
     def __repr__(self):
         return self.__str__()
+
+    def __hash__(self) -> int:
+        return hash(self.id)
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, DiagService) and self.id == o.id
 
 
 def read_diag_service_from_odx(et_element):
