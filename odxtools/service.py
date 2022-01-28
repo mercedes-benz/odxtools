@@ -2,12 +2,14 @@
 # Copyright (c) 2022 MBition GmbH
 
 from dataclasses import dataclass
-from pyclbr import Function
 from odxtools.audience import Audience, read_audience_from_odx
 from odxtools.functionalclass import FunctionalClass
+from odxtools.state import State
 from odxtools.utils import read_description_from_odx
 from odxtools.exceptions import DecodeError
-from typing import Iterable, List, Optional, Union
+from typing import List, Optional, Union
+
+from .state_transition import StateTransition
 from .structures import Request, Response
 from .nameditemlist import NamedItemList
 from .message import Message
@@ -25,7 +27,9 @@ class DiagService:
                  description=None,
                  semantic=None,
                  audience: Optional[Audience] = None,
-                 functional_class_refs=[]):
+                 functional_class_refs=[],
+                 pre_condition_state_refs=[],
+                 state_transition_refs=[]):
         """Constructs the service.
 
         Parameters:
@@ -47,6 +51,12 @@ class DiagService:
         self.functional_class_refs: List[str] = functional_class_refs
         self._functional_classes: Union[List[FunctionalClass],
                                         NamedItemList[FunctionalClass]] = []
+        self.pre_condition_state_refs: List[str] = pre_condition_state_refs
+        self._pre_condition_states: Union[List[State],
+                                          NamedItemList[State]] = []
+        self.state_transition_refs: List[str] = state_transition_refs
+        self._state_transitions: Union[List[StateTransition],
+                                       NamedItemList[StateTransition]] = []
 
         self._request: Optional[Request]
         self.request_ref_id: str
@@ -108,6 +118,14 @@ class DiagService:
     def functional_classes(self):
         return self._functional_classes
 
+    @property
+    def pre_condition_states(self):
+        return self._pre_condition_states
+
+    @property
+    def state_transitions(self):
+        return self._state_transitions
+
     def _resolve_references(self, id_lookup):
         self._request = id_lookup.get(self.request_ref_id)
         self._positive_responses = \
@@ -117,11 +135,19 @@ class DiagService:
         self._negative_responses = \
             NamedItemList(
                 lambda nr: nr.short_name,
-                [id_lookup.get(pr_id) for pr_id in self.neg_res_ref_ids])
+                [id_lookup.get(nr_id) for nr_id in self.neg_res_ref_ids])
         self._functional_classes = \
             NamedItemList(
                 lambda fc: fc.short_name,
                 [id_lookup.get(fc_id) for fc_id in self.functional_class_refs])
+        self._pre_condition_states = \
+            NamedItemList(
+                lambda st: st.short_name,
+                [id_lookup.get(st_id) for st_id in self.pre_condition_state_refs])
+        self._state_transitions = \
+            NamedItemList(
+                lambda st: st.short_name,
+                [id_lookup.get(stt_id) for stt_id in self.state_transition_refs])
         if self.audience:
             self.audience._resolve_references(id_lookup)
 
@@ -188,6 +214,12 @@ class DiagService:
     def __repr__(self):
         return self.__str__()
 
+    def __hash__(self) -> int:
+        return hash(self.id)
+
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, DiagService) and self.id == o.id
+
 
 def read_diag_service_from_odx(et_element):
 
@@ -206,7 +238,12 @@ def read_diag_service_from_odx(et_element):
     functional_class_ref_ids = [
         el.get("ID-REF") for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF")
     ]
-
+    pre_condition_state_ref_ids = [
+        el.get("ID-REF") for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF")
+    ]
+    state_transition_ref_ids = [
+        el.get("ID-REF") for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
+    ]
     long_name = et_element.find(
         "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
     description = read_description_from_odx(et_element.find("DESC"))
@@ -224,5 +261,7 @@ def read_diag_service_from_odx(et_element):
                                description=description,
                                semantic=semantic,
                                audience=audience,
-                               functional_class_refs=functional_class_ref_ids)
+                               functional_class_refs=functional_class_ref_ids,
+                               pre_condition_state_refs=pre_condition_state_ref_ids,
+                               state_transition_refs=state_transition_ref_ids)
     return diag_service
