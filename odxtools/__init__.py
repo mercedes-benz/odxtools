@@ -70,6 +70,7 @@ from .database import Database
 from .diaglayer import DiagLayer
 
 from .service import DiagService
+from .singleecujob import SingleEcuJob
 
 from .structures import Request, Response
 

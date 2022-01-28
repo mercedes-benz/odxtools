@@ -2,10 +2,14 @@
 # Copyright (c) 2022 MBition GmbH
 
 import argparse
+from typing import List, Union
 
 from ._print_utils import print_diagnostic_service, format_desc
-from ..database import Database
 from . import _parser_utils
+
+from ..database import Database
+from ..service import DiagService
+from ..singleecujob import SingleEcuJob
 
 
 def print_summary(odxdb: Database,
@@ -13,6 +17,10 @@ def print_summary(odxdb: Database,
                   print_dops=False,
                   print_params=False,
                   print_com_params=False,
+                  print_pre_condition_states=False,
+                  print_state_transitions=False,
+                  print_audiences=False,
+                  allow_unknown_bit_lengths=False,
                   variants=None,
                   service_filter=lambda x: True):
 
@@ -25,7 +33,10 @@ def print_summary(odxdb: Database,
         if not dl:
             print(f"The variant '{dl_sn}' could not be found!")
             continue
-        service_sns = sorted(service.short_name for service in dl.services)
+
+        all_services: List[Union[DiagService, SingleEcuJob]] \
+            = sorted(dl.services, key=lambda x: x.short_name)
+
         data_object_properties = dl.data_object_properties
         com_params = dl.communication_parameters
 
@@ -41,23 +52,32 @@ def print_summary(odxdb: Database,
             f"{dl.variant_type} '{dl.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
         )
         print(
-            f" num services: {len(service_sns)}, num DOPs: {len(data_object_properties)}, num communication parameters: {len(com_params)}."
+            f" num services: {len(all_services)}, num DOPs: {len(data_object_properties)}, num communication parameters: {len(com_params)}."
         )
 
         if dl.description:
             desc = format_desc(dl.description, ident=2)
             print(f" Description: " + desc)
 
-        if print_services and len(service_sns) > 0:
-            all_services = [dl.services[service_sn] for service_sn in service_sns]
-            services = [s for s in all_services
-                        if s is not None and service_filter(s)]
+        if print_services and len(all_services) > 0:
+            services = [s for s in all_services if service_filter(s)]
             if len(services) > 0:
                 print(
                     f"The services of the {dl.variant_type} '{dl.short_name}' are: ")
                 for service in services:
-                    print_diagnostic_service(
-                        service, print_params=print_params)
+                    if isinstance(service, DiagService):
+                        print_diagnostic_service(
+                            service,
+                            print_params=print_params,
+                            print_pre_condition_states=print_pre_condition_states,
+                            print_state_transitions=print_state_transitions,
+                            print_audiences=print_audiences,
+                            allow_unknown_bit_lengths=allow_unknown_bit_lengths
+                        )
+                    elif isinstance(service, SingleEcuJob):
+                        print(f" Single ECU job: {service.id}")
+                    else:
+                        print(f" Unidentifiable service: {service}")
 
         if print_dops and len(data_object_properties) > 0:
             print(f"The DOPs of the {dl.variant_type} '{dl.short_name}' are: ")
@@ -116,4 +136,8 @@ def run(args):
                                   if args.services and len(args.services) > 0 else lambda s: True),
                   print_dops=args.all or args.dops, variants=None if variants == "all" else variants,
                   print_params=args.all or args.params,
-                  print_com_params=args.all)
+                  print_com_params=args.all,
+                  print_pre_condition_states=args.all,
+                  print_state_transitions=args.all,
+                  print_audiences=args.all,
+                  allow_unknown_bit_lengths=args.all)

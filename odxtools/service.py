@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from dataclasses import dataclass
 from odxtools.audience import Audience, read_audience_from_odx
 from odxtools.functionalclass import FunctionalClass
 from odxtools.state import State
@@ -15,7 +14,6 @@ from .nameditemlist import NamedItemList
 from .message import Message
 
 
-@dataclass
 class DiagService:
     def __init__(self,
                  id,
