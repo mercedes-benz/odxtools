@@ -34,7 +34,7 @@ def print_diagnostic_service(service: DiagService, print_params=False, print_pre
         pre_condition_states_short_names = [pre_condition_state.short_name for pre_condition_state in service.pre_condition_states]
         print(f"  Pre-Condition-States: {', '.join(pre_condition_states_short_names)}")
 
-    if print_audiences:
+    if print_audiences and service.audience:
         enabled_audiences_short_names = [enabled_audience.short_name for enabled_audience in service.audience.enabled_audiences]
         print(f"  Enabled-Audiences: {', '.join(enabled_audiences_short_names)}")
 
