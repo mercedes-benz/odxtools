@@ -10,6 +10,7 @@
 {%- import('macros/printEndOfPdu.tpl') as peopdu %}
 {%- import('macros/printUnitSpec.tpl') as punit %}
 {%- import('macros/printService.tpl') as ps %}
+{%- import('macros/printSingleEcuJob.tpl') as psej %}
 {%- import('macros/printRequest.tpl') as prq %}
 {%- import('macros/printResponse.tpl') as presp %}
 {%- import('macros/printComparamRef.tpl') as pcom %}
@@ -69,16 +70,17 @@
  {%- endif %}
  </DIAG-DATA-DICTIONARY-SPEC>
 {%- endif %}
-{%- if dl._local_services %}
+{%- if dl._local_services or dl._local_single_ecu_jobs or dl._diag_comm_refs %}
  <DIAG-COMMS>
 {%- for service in dl._local_services %}
   {{ ps.printService(service)|indent(2) }}
 {%- endfor %}
-{%- if dl._diag_comm_refs %}
+{%- for job in dl._local_single_ecu_jobs %}
+  {{ psej.printSingleEcuJob(job)|indent(2) }}
+{%- endfor %}
 {%- for dcr in dl._diag_comm_refs %}
   <DIAG-COMM-REF ID-REF="{{dcr}}" />
 {%- endfor %}
-{%- endif %}
  </DIAG-COMMS>
 {%- endif %}
 {%- if dl.requests %}

@@ -14,6 +14,7 @@ from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayer import DiagLayerContainer
 
 from odxtools.service import DiagService
+from odxtools.singleecujob import SingleEcuJob, ProgCode
 
 from odxtools.structures import Request
 from odxtools.structures import Response
@@ -748,6 +749,22 @@ somersault_services = {
 
 }
 
+somersault_single_ecu_jobs = {
+    "compulsory_program":
+    SingleEcuJob(id="somersault.service.compulsory_program",
+                 short_name="compulsory_program",
+                 long_name="Compulsory Program",
+                 description="<p>Do several fancy moves.</p>",
+                 prog_codes=[
+                    ProgCode(
+                        code_file="jobs.jar",
+                        syntax="JAR",
+                        entrypoint="com.supervisor.jobs.CompulsoryProgram",
+                        revision="1.23.4"
+                    ),
+                 ])
+}
+
 # communication parameters
 def extract_constant_bytes(params):
     return bytes(map(lambda x: x.coded_value,
@@ -869,6 +886,7 @@ somersault_diaglayer = DiagLayer(
     description="<p>Base variant of the somersault ECU &amp; cetera</p>",
     requests=list(somersault_requests.values()),
     services=list(somersault_services.values()),
+    single_ecu_jobs=list(somersault_single_ecu_jobs.values()),
     positive_responses=list(somersault_positive_responses.values()),
     negative_responses=list(somersault_negative_responses.values()),
     diag_data_dictionary_spec=somersault_diag_data_dictionary_spec,

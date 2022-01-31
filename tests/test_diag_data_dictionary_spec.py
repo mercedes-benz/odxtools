@@ -6,7 +6,7 @@ import unittest
 from odxtools.compumethods import IdenticalCompuMethod
 from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.dataobjectproperty import DataObjectProperty, DiagnosticTroubleCode, DtcDop
-from odxtools.diagdatadictionaryspec import *
+from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.physicaltype import PhysicalType
 
 

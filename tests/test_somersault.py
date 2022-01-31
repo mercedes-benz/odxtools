@@ -60,6 +60,7 @@ class TestNavigation(unittest.TestCase):
         self.assertIsNotNone(odxdb.ecus.somersault_assiduous.services.do_backward_flips)
         self.assertIsNotNone(odxdb.ecus.somersault_assiduous.services.do_forward_flips)
         self.assertIsNotNone(odxdb.ecus.somersault_assiduous.services.report_status)
+        self.assertIsNotNone(odxdb.ecus.somersault_assiduous.services.compulsory_program)
 
         # The lazy ECU variant only inherits services but does not add any.
         self.assertIsNotNone(odxdb.ecus.somersault_lazy.services.do_forward_flips)

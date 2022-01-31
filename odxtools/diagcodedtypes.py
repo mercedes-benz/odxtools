@@ -4,8 +4,7 @@
 import abc
 from typing import Union
 
-from odxtools.odxtypes import DataType
-
+from .odxtypes import DataType
 from .exceptions import DecodeError, EncodeError
 from .globals import xsi, logger
 from .decodestate import DecodeState
@@ -392,7 +391,7 @@ class MinMaxLengthType(DiagCodedType):
 
 class ParamLengthInfoType(DiagCodedType):
     def __init__(self,
-                 base_data_type: str,
+                 base_data_type: Union[str, DataType],
                  length_key_ref: str,
                  base_type_encoding=None,
                  is_highlow_byte_order=True):
@@ -448,7 +447,7 @@ class ParamLengthInfoType(DiagCodedType):
 class StandardLengthType(DiagCodedType):
 
     def __init__(self,
-                 base_data_type: str,
+                 base_data_type: Union[str, DataType],
                  bit_length: int,
                  bit_mask=None,
                  condensed: bool = False,

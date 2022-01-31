@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from itertools import chain
-from typing import Dict, Iterable, List, Union
+from typing import Any, Dict, Iterable, List, Union
 
 from .exceptions import *
 from .globals import logger, xsi
@@ -18,6 +18,7 @@ from .functionalclass import read_functional_class_from_odx
 from .audience import read_additional_audience_from_odx
 from .message import Message
 from .service import DiagService, read_diag_service_from_odx
+from .singleecujob import SingleEcuJob, read_single_ecu_job_from_odx
 from .structures import Request, Response, read_structure_from_odx
 
 # Defines priority of overiding objects
@@ -65,7 +66,8 @@ class DiagLayer:
         def _resolve_references(self, id_lookup):
             self.referenced_diag_layer = id_lookup.get(self.id_ref)
             if self.referenced_diag_layer is None:
-                logger.warn(f"Could not resolve parent ref to {self.id_ref}")
+                logger.warning(
+                    f"Could not resolve parent ref to {self.id_ref}")
 
         def get_inheritance_priority(self):
             return PRIORITY_OF_DIAG_LAYER_TYPE[self.referenced_diag_layer.variant_type]
@@ -93,6 +95,7 @@ class DiagLayer:
                  positive_responses: List[Response] = [],
                  negative_responses: List[Response] = [],
                  services: List[DiagService] = [],
+                 single_ecu_jobs: List[SingleEcuJob] = [],
                  diag_comm_refs: List[str] = [],
                  parent_refs: List[ParentRef] = [],
                  diag_data_dictionary_spec: DiagDataDictionarySpec = None,
@@ -126,6 +129,8 @@ class DiagLayer:
         # DiagServices (note that they do not include inherited services!)
         self._local_services = NamedItemList[DiagService](lambda ser: ser.short_name,
                                                           services)
+        self._local_single_ecu_jobs = NamedItemList[SingleEcuJob](lambda job: job.short_name,
+                                                                  single_ecu_jobs)
         self._diag_comm_refs = diag_comm_refs
 
         # DOP-BASEs
@@ -141,7 +146,7 @@ class DiagLayer:
         self.state_transitions = state_transitions
 
         # Properties that include inherited objects
-        self._services: NamedItemList[DiagService]\
+        self._services: NamedItemList[Union[DiagService, SingleEcuJob]]\
             = NamedItemList(lambda s: s.short_name, [])
         self._communication_parameters: NamedItemList[CommunicationParameterRef]\
             = NamedItemList(lambda s: s.id_ref, [])
@@ -155,7 +160,7 @@ class DiagLayer:
         self._enable_candela_workarounds = enable_candela_workarounds
 
     @property
-    def services(self) -> NamedItemList[DiagService]:
+    def services(self) -> NamedItemList[Union[DiagService, SingleEcuJob]]:
         """All services that this diagnostic layer offers including inherited services."""
         return self._services
 
@@ -189,6 +194,7 @@ class DiagLayer:
 
         id_lookup = {}
         for obj in chain(self._local_services,
+                         self._local_single_ecu_jobs,
                          self.requests,
                          self.positive_responses,
                          self.negative_responses,
@@ -206,7 +212,7 @@ class DiagLayer:
         id_lookup[self.id] = self
         return id_lookup
 
-    def _resolve_references(self, id_lookup):
+    def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
         """Recursively resolve all references."""
         # Resolve inheritance
         for pr in self.parent_refs:
@@ -214,38 +220,51 @@ class DiagLayer:
 
         services = sorted(self._compute_available_services_by_name(id_lookup).values(),
                           key=lambda service: service.short_name)
-        self._services = NamedItemList[DiagService](lambda s: s.short_name,
-                                                    services)
+        self._services = NamedItemList[Union[DiagService, SingleEcuJob]](
+            lambda s: s.short_name,
+            services)
 
         dops = sorted(self._compute_available_data_object_properties_by_name().values(),
                       key=lambda dop: dop.short_name)
-        self._data_object_properties = NamedItemList[DiagService](lambda dop: dop.short_name,
-                                                                  dops)
+        self._data_object_properties = NamedItemList[DopBase](
+            lambda dop: dop.short_name,
+            dops)
 
         comparams = sorted(self._compute_available_commmunication_parameters_by_name().values(),
                            key=lambda comparam: comparam.id_ref)
-        self._communication_parameters = NamedItemList[DiagService](lambda cp: cp._python_name(),
-                                                                    comparams)
+        self._communication_parameters = NamedItemList[CommunicationParameterRef](
+            lambda cp: cp._python_name(),
+            comparams)
 
         # Resolve all other references
         for struct in chain(self.requests,
                             self.positive_responses,
                             self.negative_responses):
             struct._resolve_references(self, id_lookup)
-        for service in self._local_services:
+
+        local_diag_comms: Iterable[Union[DiagService, SingleEcuJob]] \
+            = (*self._local_services, *self._local_single_ecu_jobs)
+        for service in local_diag_comms:
             service._resolve_references(id_lookup)
 
         if self.local_diag_data_dictionary_spec:
             self.local_diag_data_dictionary_spec._resolve_references(self,
                                                                      id_lookup)
 
-    def __local_services_by_name(self, id_lookup) -> dict:
-        services_by_name = {
-            # TODO: Write log message for unresolved references
-            id_lookup[ref].short_name: id_lookup[ref] for ref in self._diag_comm_refs if ref in id_lookup
-        }
+    def __local_services_by_name(self, id_lookup) -> Dict[str, Union[DiagService, SingleEcuJob]]:
+        services_by_name: Dict[str, Union[DiagService, SingleEcuJob]] = {}
+
+        for ref in self._diag_comm_refs:
+            if ref in id_lookup:
+                services_by_name[id_lookup[ref].short_name] = id_lookup[ref]
+            else:
+                logger.warning(f"Diag comm ref {ref!r} could not be resolved.")
+
         services_by_name.update({
             service.short_name: service for service in self._local_services
+        })
+        services_by_name.update({
+            service.short_name: service for service in self._local_single_ecu_jobs
         })
         return services_by_name
 
@@ -320,7 +339,8 @@ class DiagLayer:
         (a) SIDs for different services are the same like for service 1 and 2 (thus each leaf node is a list) and
         (b) one SID is the prefix of another SID like for service 3 and 4 (thus the constant `-1` key).
         """
-        services = self._services
+        services = list(filter(lambda s: isinstance(
+            s, DiagService), self._services))
         prefix_tree = {}
         for s in services:
             # Compute prefixes for the request and all responses
@@ -528,10 +548,8 @@ def read_diag_layer_from_odx(et_element, enable_candela_workarounds=True):
                 for service in et_element.iterfind("DIAG-COMMS/DIAG-SERVICE")]
     diag_comm_refs = [service.get("ID-REF")
                       for service in et_element.iterfind("DIAG-COMMS/DIAG-COMM-REF")]
-
-    num = len(list(et_element.iterfind('DIAG-COMMS/SINGLE-ECU-JOB')))
-    if num > 0:
-        logger.info(f"Not implemented: Did not parse {num} ECU jobs.")
+    single_ecu_jobs = [read_single_ecu_job_from_odx(sej)
+                       for sej in et_element.iterfind("DIAG-COMMS/SINGLE-ECU-JOB")]
 
     # Parse ParentRefs
     parent_refs = [read_parent_ref_from_odx(pr_el)
@@ -581,6 +599,7 @@ def read_diag_layer_from_odx(et_element, enable_candela_workarounds=True):
                    negative_responses=negative_responses,
                    services=services,
                    diag_comm_refs=diag_comm_refs,
+                   single_ecu_jobs=single_ecu_jobs,
                    parent_refs=parent_refs,
                    diag_data_dictionary_spec=diag_data_dictionary_spec,
                    communication_parameters=com_params,

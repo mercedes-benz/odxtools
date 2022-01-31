@@ -3,10 +3,11 @@
 
 import sys
 import argparse
-from typing import Dict, Union
+from typing import Dict, List, Union
 import PyInquirer
 
 from ..database import Database
+from ..service import DiagService
 from ..structures import Request, Response
 from ..parameters import ParameterWithDOP
 from ..odxtypes import DataType
@@ -237,12 +238,13 @@ def browse(odxdb: Database):
 
         service_sn = 0
         while True:
+            services: List[DiagService] = [s for s in variant.services if isinstance(s, DiagService)]
             # Select a service of the ECU
             selection = [{
                 "type": "list",
                 "name": "service",
                 "message": f"The variant {variant.short_name} offers the following services. Select one!",
-                "choices": [s.short_name for s in variant.services] + ["[back]"],
+                "choices": [s.short_name for s in services] + ["[back]"],
             }]
             answer = PyInquirer.prompt(selection)
             if answer.get("service") == "[back]":
@@ -251,12 +253,12 @@ def browse(odxdb: Database):
             service_sn = answer.get("service")
 
             service = variant.services[service_sn]
-            assert service is not None
+            assert service is not None and isinstance(service, DiagService)
             assert service.request is not None
             assert service.positive_responses is not None
             assert service.negative_responses is not None
 
-            # Select a service of the ECU
+            # Select a request/ response of the service
             selection = [{
                 "type": "list",
                 "name": "message_type",
