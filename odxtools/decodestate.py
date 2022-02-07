@@ -11,9 +11,9 @@ class ParameterValuePair(NamedTuple):
 
 class DecodeState(NamedTuple):
     """Utility class to be used while decoding a message."""
-    # bytes to be decoded
     coded_message: Union[bytes, bytearray]
-    # values of already decoded parameters
+    """bytes to be decoded"""
     parameter_value_pairs: List[ParameterValuePair]
-    # Position of the next parameter if its position is not specified in ODX
+    """values of already decoded parameters"""
     next_byte_position: int
+    """Position of the next parameter if its position is not specified in ODX"""

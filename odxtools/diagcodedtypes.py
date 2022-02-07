@@ -377,7 +377,7 @@ class MinMaxLengthType(DiagCodedType):
             return value, byte
 
     def __repr__(self) -> str:
-        repr_str = f"ParamLengthInfoType(base_data_type='{self.base_data_type}', min_length={self.min_length}"
+        repr_str = f"MinMaxLengthType(base_data_type='{self.base_data_type}', min_length={self.min_length}"
         if self.max_length is not None:
             repr_str += f", base_type_encoding={self.max_length}"
         if self.termination is not None:

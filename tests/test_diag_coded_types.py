@@ -34,6 +34,13 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                                                             bit_position=1)
         self.assertEqual(internal, bytes([0x3]))
 
+    def test_decode_leading_length_info_type_zero_length(self):
+        dct = LeadingLengthInfoType("A_BYTEFIELD", 8)
+        state = DecodeState(bytes([0x0, 0x1]), [], 0)
+        internal, next_byte = dct.convert_bytes_to_internal(state, 0)
+        self.assertEqual(internal, bytes())
+        self.assertEqual(next_byte, 1)
+
     def test_encode_leading_length_info_type_bytefield(self):
         dct = LeadingLengthInfoType("A_UTF8STRING", 6)
         state = EncodeState(bytes([]), {})
@@ -46,6 +53,16 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                                                  state,
                                                  bit_position=1)
         self.assertEqual(internal, bytes([0x2, 0x3]))
+
+    def test_decode_leading_length_info_type_zero_length(self):
+        dct = LeadingLengthInfoType("A_BYTEFIELD", 8)
+        state = EncodeState(bytes([0x12, 0x34]), {})
+        byte_val = dct.convert_internal_to_bytes(
+            bytes([0x0]), state, bit_position=0)
+        # Right now `bytes([0x1, 0x0])` is the encoded value.
+        # However, since bytes() is shorter and would be decoded
+        # to the same value this may be changed...
+        self.assertIn(byte_val, [bytes(), bytes([0x1, 0x0])])
 
     def test_decode_leading_length_info_type_unicode2string(self):
         dct = LeadingLengthInfoType("A_UNICODE2STRING",

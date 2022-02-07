@@ -270,6 +270,15 @@ class LinearCompuMethod(CompuMethod):
         This method is only called during the initialization of a LinearCompuMethod.
         """
         def convert_to_limit_to_physical(limit: Limit, is_upper_limit: bool):
+            """Helper method
+
+            Parameters:
+
+            limit
+                the internal limit to be converted to a physical limit
+            is_upper_limit
+                True iff limit is the internal upper limit
+            """
             assert isinstance(limit.value, (int, float))
             if limit.interval_type == IntervalType.INFINITE:
                 return limit
@@ -296,6 +305,14 @@ class LinearCompuMethod(CompuMethod):
                 self.internal_upper_limit, True)
             self._physical_upper_limit = convert_to_limit_to_physical(
                 self.internal_lower_limit, False)
+
+        if self.physical_type == DataType.A_UINT32:
+            # If the data type is unsigned, the physical lower limit should be at least 0.
+            if self._physical_lower_limit.interval_type == IntervalType.INFINITE or self._physical_lower_limit.value < 0:
+                self._physical_lower_limit = Limit(
+                    value=0,
+                    interval_type=IntervalType.CLOSED
+                )
 
     def _convert_internal_to_physical(self, internal_value):
         if self.denominator is None:
