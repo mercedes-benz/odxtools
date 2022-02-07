@@ -68,7 +68,11 @@ class BasicStructure(DopBase):
             if param == self.parameters[-1]:
                 # The last parameter is at the end of the PDU iff the structure itself is at the end of the PDU
                 encode_state = encode_state._replace(is_end_of_pdu=is_end_of_pdu)
-
+                if isinstance(param, ValueParameter) and hasattr(param.dop, 'min_number_of_items'):
+                    # The param repeats itself, making bit_length calculation invalid
+                    # Temporary workaround
+                    # Can not import EndOfPduField to check on its type due to circular dependency
+                    bit_length = None
             coded_rpc = param.encode_into_pdu(encode_state)
             encode_state = encode_state._replace(coded_message=coded_rpc)
 

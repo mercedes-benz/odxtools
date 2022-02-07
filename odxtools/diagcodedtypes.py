@@ -49,7 +49,7 @@ class DiagCodedType(abc.ABC):
         """
         # If the bit length is zero, return "empty" values of each type
         if bit_length == 0:
-            return base_data_type.as_python_type()()
+            return base_data_type.as_python_type()(), byte_position
 
         byte_length = (bit_length + bit_position + 7) // 8
         if byte_position + byte_length > len(coded_message):
@@ -315,6 +315,8 @@ class MinMaxLengthType(DiagCodedType):
             return value_byte
         else:
             termination_char = self.__termination_character()
+            if self.termination == 'END-OF-PDU':
+                termination_char = bytes()
             assert termination_char is not None, \
                 (f"MinMaxLengthType with termination {self.termination}"
                  f"(min: {self.min_length}, max: {self.max_length}) failed encoding {internal_value}")
@@ -329,8 +331,9 @@ class MinMaxLengthType(DiagCodedType):
         termination_char = self.__termination_character()
 
         # If no termination char is found, this is the next byte after the parameter.
-        max_termination_byte = min(byte_position + self.max_length,
-                                   len(coded_message))
+        max_termination_byte = len(coded_message)
+        if self.max_length is not None:
+            max_termination_byte = min(max_termination_byte, byte_position + self.max_length)
 
         if self.termination != "END-OF-PDU":
             # The parameter either ends after max length, at the end of the PDU
@@ -520,10 +523,9 @@ def read_diag_coded_type_from_odx(et_element):
                                      is_highlow_byte_order=is_highlow_byte_order)
     elif dct_type == "MIN-MAX-LENGTH-TYPE":
         min_length = int(et_element.find("MIN-LENGTH").text)
-        try:
+        max_length = None
+        if et_element.find("MAX-LENGTH"):
             max_length = int(et_element.find("MAX-LENGTH").text)
-        except:
-            max_length = None
         termination = et_element.get("TERMINATION")
 
         return MinMaxLengthType(base_data_type,
@@ -542,10 +544,9 @@ def read_diag_coded_type_from_odx(et_element):
                                    is_highlow_byte_order=is_highlow_byte_order)
     elif dct_type == "STANDARD-LENGTH-TYPE":
         bit_length = int(et_element.find("BIT-LENGTH").text)
-        try:
+        bit_mask = None
+        if et_element.find("BIT-MASK"):
             bit_mask = et_element.find("BIT-MASK").text
-        except:
-            bit_mask = None
         condensed = et_element.get("CONDENSED") == "true"
         return StandardLengthType(base_data_type,
                                   bit_length,
