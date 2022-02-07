@@ -1,13 +1,17 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from .dataobjectproperty import DopBase
-from .exceptions import DecodeError, EncodeError
-from .parameters import *
+from typing import Dict, Iterable, Optional, OrderedDict, Union
+
+from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState, ParameterValuePair
 from .encodestate import EncodeState
+from .exceptions import DecodeError, EncodeError
+from .globals import logger
 from .nameditemlist import NamedItemList
-from typing import Dict, Iterable, Optional, OrderedDict, Union
+from .parameters import Parameter, ParameterWithDOP, read_parameter_from_odx
+from .parameters import CodedConstParameter, MatchingRequestParameter, ValueParameter
+from .utils import read_description_from_odx
 
 
 class BasicStructure(DopBase):
@@ -34,7 +38,8 @@ class BasicStructure(DopBase):
 
     def coded_const_prefix(self, request_prefix: Union[bytes, bytearray] = bytes()):
         prefix = bytearray()
-        encode_state = EncodeState(prefix, parameter_values={}, triggering_request=request_prefix)
+        encode_state = EncodeState(
+            prefix, parameter_values={}, triggering_request=request_prefix)
         for p in self.parameters:
             if isinstance(p, CodedConstParameter) and p.bit_length % 8 == 0:
                 prefix = p.encode_into_pdu(encode_state)
@@ -67,7 +72,8 @@ class BasicStructure(DopBase):
         for param in self.parameters:
             if param == self.parameters[-1]:
                 # The last parameter is at the end of the PDU iff the structure itself is at the end of the PDU
-                encode_state = encode_state._replace(is_end_of_pdu=is_end_of_pdu)
+                encode_state = encode_state._replace(
+                    is_end_of_pdu=is_end_of_pdu)
                 if isinstance(param, ValueParameter) and hasattr(param.dop, 'min_number_of_items'):
                     # The param repeats itself, making bit_length calculation invalid
                     # Temporary workaround
@@ -257,7 +263,8 @@ class BasicStructure(DopBase):
                         error = True
                         break
                     else:
-                        breakpoint += params[i].bit_length or (allow_unknown_lengths and 8)
+                        breakpoint += params[i].bit_length or (
+                            allow_unknown_lengths and 8)
                         name = params[i].short_name + \
                             f" ({params[i].bit_length or 'Unknown'} bits)"
                         next_line += "| " + name
@@ -306,7 +313,8 @@ class BasicStructure(DopBase):
         Print a description of the message format to `stdout`.
         """
 
-        message_as_lines = self.__message_format_lines(allow_unknown_lengths=allow_unknown_lengths)
+        message_as_lines = self.__message_format_lines(
+            allow_unknown_lengths=allow_unknown_lengths)
         if message_as_lines is not None:
             print(f"{indent * ' '}" +
                   f"\n{indent * ' '}".join(message_as_lines))
@@ -380,7 +388,7 @@ class Response(BasicStructure):
         return f"Response('{self.short_name}')"
 
 
-def read_structure_from_odx(et_element):
+def read_structure_from_odx(et_element) -> Union[Structure, Request, Response, None]:
     id = et_element.get("ID")
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME").text
@@ -388,6 +396,7 @@ def read_structure_from_odx(et_element):
     parameters = [read_parameter_from_odx(et_parameter)
                   for et_parameter in et_element.iterfind("PARAMS/PARAM")]
 
+    res: Union[Structure, Request, Response, None]
     if et_element.tag == "REQUEST":
         res = Request(
             id,
