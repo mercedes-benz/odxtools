@@ -10,20 +10,20 @@ class EncodeState(NamedTuple):
     While encoding parameters may update the dicts with new keys 
     but this is the only allowed change.
     In particular the coded_message is not updated in-place.
-    Instead the new encode state can be constructed with:
-    ```
-    for p in self.parameters:
-        prefix = p.encode_into_pdu(encode_state)
-        encode_state = encode_state._replace(coded_message=prefix)
-    ``` 
+    Instead the new encode state can be constructed with::
+
+        for p in self.parameters:
+            prefix = p.encode_into_pdu(encode_state)
+            encode_state = encode_state._replace(coded_message=prefix)
+
     """
-    # payload that is constructed so far
     coded_message: bytes
-    # a mapping from short name to value for each parameter
+    """payload that is constructed so far"""
     parameter_values: Dict[str, Any]
-    # For encoding a response: request that triggered the response
+    """a mapping from short name to value for each parameter"""
     triggering_request: Optional[Union[bytes, bytearray]] = None
-    # Mapping from IDs to bit lengths (specified by LengthKeyParameters)
+    """If encoding a response: request that triggered the response"""
     length_keys: Dict[str, int] = {}
-    # Flag whether the parameter is the last on the PDU (needed for MinMaxLengthType)
+    """Mapping from IDs to bit lengths (specified by LengthKeyParameters)"""
     is_end_of_pdu: bool = False
+    """Flag whether the parameter is the last on the PDU (needed for MinMaxLengthType)"""

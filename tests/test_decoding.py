@@ -5,9 +5,10 @@
 from odxtools.endofpdufield import EndOfPduField
 from odxtools.dataobjectproperty import DataObjectProperty, DiagnosticTroubleCode, DtcDop
 from odxtools.compumethods import IdenticalCompuMethod, LinearCompuMethod
+from odxtools.exceptions import DecodeError
 from odxtools.message import Message
-from odxtools.diagcodedtypes import StandardLengthType
-from odxtools.parameters import CodedConstParameter, MatchingRequestParameter, ValueParameter
+from odxtools.diagcodedtypes import LeadingLengthInfoType, MinMaxLengthType, StandardLengthType
+from odxtools.parameters import CodedConstParameter, MatchingRequestParameter, PhysicalConstantParameter, ValueParameter
 from odxtools.physicaltype import PhysicalType
 from odxtools.structures import Request, Response, Structure
 from odxtools.service import DiagService
@@ -68,7 +69,7 @@ class TestIdentifyingService(unittest.TestCase):
 
 
 class TestDecoding(unittest.TestCase):
-    def test_decode_request_const(self):
+    def test_decode_request_coded_const(self):
         diag_coded_type = StandardLengthType("A_UINT32", 8)
         req_param1 = CodedConstParameter(
             "SID", diag_coded_type, coded_value=0x7d, byte_position=0)
@@ -102,7 +103,7 @@ class TestDecoding(unittest.TestCase):
         self.assertEqual(expected_message.param_dict,
                          decoded_message.param_dict)
 
-    def test_decode_request_const_byte_position(self):
+    def test_decode_request_coded_const_undefined_byte_position(self):
         """Test decoding of parameter
         Test if the decoding works if the byte position of the second parameter
         must be inferred from the order in the surrounding structure."""
@@ -399,6 +400,145 @@ class TestDecoding(unittest.TestCase):
         decoded_param_dict = pos_response.decode(coded_message)
         self.assertEqual(decoded_param_dict["DTC_Param"],
                          dtc1)
+
+
+class TestDecodingAndEncoding(unittest.TestCase):
+    def setUp(self) -> None:
+        super().setUp()
+        self.dop_bytes_termination_end_of_pdu = DataObjectProperty(
+            id="DOP_ID",
+            short_name="DOP",
+            diag_coded_type=MinMaxLengthType(
+                DataType.A_BYTEFIELD, min_length=0, termination='END-OF-PDU'),
+            physical_type=PhysicalType(DataType.A_BYTEFIELD),
+            compu_method=IdenticalCompuMethod(
+                internal_type=DataType.A_BYTEFIELD,
+                physical_type=DataType.A_BYTEFIELD
+            )
+        )
+        self.parameter_termination_end_of_pdu = ValueParameter(
+            short_name="min_max_parameter",
+            dop=self.dop_bytes_termination_end_of_pdu
+        )
+
+        self.parameter_sid = CodedConstParameter(
+            short_name="SID",
+            diag_coded_type=StandardLengthType("A_UINT32", 8),
+            coded_value=0x12,
+            byte_position=0
+        )
+
+    def test_min_max_length_type_end_of_pdu(self):
+        req_param1 = self.parameter_sid
+        req_param2 = self.parameter_termination_end_of_pdu
+        request = Request(
+            id="request",
+            short_name="Request",
+            parameters=[
+                req_param1,
+                req_param2
+            ]
+        )
+        expected_coded_message = bytes([0x12, 0x34])
+        expected_param_dict = {
+            "SID": 0x12,
+            "min_max_parameter": bytes([0x34])
+        }
+
+        actual_param_dict = request.decode(expected_coded_message)
+        self.assertEqual(dict(actual_param_dict), expected_param_dict)
+
+        actual_coded_message = request.encode(**expected_param_dict)
+        self.assertEqual(actual_coded_message, expected_coded_message)
+
+    def test_min_max_length_type_end_of_pdu_in_structure(self):
+        struct_param = self.parameter_termination_end_of_pdu
+
+        structure = Structure(
+            id="structure_id",
+            short_name="Structure_with_End_of_PDU_termination",
+            parameters=[
+                struct_param
+            ]
+        )
+
+        req_param1 = self.parameter_sid
+        req_param2 = ValueParameter(
+            short_name="min_max_parameter",
+            dop=structure
+        )
+
+        request = Request(
+            id="request",
+            short_name="Request",
+            parameters=[
+                req_param1,
+                req_param2
+            ]
+        )
+
+        expected_coded_message = bytes([0x12, 0x34])
+        expected_param_dict = {
+            "SID": 0x12,
+            "min_max_parameter": {
+                "min_max_parameter": bytes([0x34])
+            }
+        }
+
+        actual_param_dict = request.decode(expected_coded_message)
+        self.assertEqual(dict(actual_param_dict), expected_param_dict)
+
+        actual_coded_message = request.encode(**expected_param_dict)
+        self.assertEqual(actual_coded_message, expected_coded_message)
+
+    def test_physical_constant_parameter(self):
+        diag_coded_type = StandardLengthType("A_UINT32", 8)
+        offset = 0x34
+        dop = DataObjectProperty(
+            id="DOP_ID",
+            short_name="DOP",
+            diag_coded_type=diag_coded_type,
+            physical_type=PhysicalType(DataType.A_INT32),
+            compu_method=LinearCompuMethod(
+                offset=offset,
+                factor=1,
+                internal_type=DataType.A_UINT32,
+                physical_type=DataType.A_INT32
+            )
+        )
+        req_param1 = CodedConstParameter(
+            short_name="SID",
+            diag_coded_type=diag_coded_type,
+            coded_value=0x12,
+            byte_position=0
+        )
+        req_param2 = PhysicalConstantParameter(
+            short_name="physical_constant_parameter",
+            physical_constant_value=offset,
+            dop=dop
+        )
+        request = Request(
+            id="request",
+            short_name="Request",
+            parameters=[
+                req_param1,
+                req_param2
+            ]
+        )
+
+        expected_coded_message = bytes([0x12, 0x0])
+        expected_param_dict = {
+            "SID": 0x12,
+            "physical_constant_parameter": offset
+        }
+
+        actual_param_dict = request.decode(expected_coded_message)
+        self.assertEqual(dict(actual_param_dict), expected_param_dict)
+
+        actual_coded_message = request.encode(**expected_param_dict)
+        self.assertEqual(actual_coded_message, expected_coded_message)
+
+        self.assertRaises(DecodeError, request.decode, bytes([0x12, 0x34]))
 
 
 if __name__ == '__main__':

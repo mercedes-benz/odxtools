@@ -336,7 +336,7 @@ async def main(args):
             tester_task = asyncio.create_task(tester_main(network))
 
         if args.mode == "server":
-            await tester_task
+            await server_task
         elif args.mode == "tester":
             await tester_task
         else:

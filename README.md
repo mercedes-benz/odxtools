@@ -480,7 +480,7 @@ without the decoded request, and `-s <name>` can be used to find a service by pa
 
 The included unit tests can be run via
 ```
-$ python -m unittest tests/test_odxtools.py
+$ python -m unittest tests/test_*.py
 ```
 
 ## Contributing
