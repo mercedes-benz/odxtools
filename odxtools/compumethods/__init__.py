@@ -6,20 +6,9 @@
 A computational method is used to convert the physical type
 into the internal type and vice versa.
 
-All compu method inherit from the abstrat base class CompuMethod.
+All compu methods inherit from the abstract base class CompuMethod.
 Each category is represented by a different sub class.
 """
-
-from . import compumethodbase
-from . import compurationalcoeffs
-from . import compuscale
-from . import identicalcompumethod
-from . import limit
-from . import linearcompumethod
-from . import readcompumethod
-from . import scalelinearcompumethod
-from . import tabintpcompumethod
-from . import texttablecompumethod
 
 from .compumethodbase import CompuMethod
 from .identicalcompumethod import IdenticalCompuMethod
