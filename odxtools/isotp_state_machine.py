@@ -7,6 +7,7 @@ import bitstruct
 import can
 import asyncio
 import re
+import sys
 from enum import IntEnum
 
 class IsoTp(IntEnum):
