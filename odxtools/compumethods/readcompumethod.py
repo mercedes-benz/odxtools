@@ -54,7 +54,7 @@ def _parse_compu_scale_to_linear_compu_method(scale_element,
         except ValueError as ex:
             pass
         finally:
-            kwargs["denominator"] = fload(
+            kwargs["denominator"] = float(
                 coeffs.find("COMPU-DENOMINATOR/V").text)
         assert kwargs["denominator"] > 0
 
