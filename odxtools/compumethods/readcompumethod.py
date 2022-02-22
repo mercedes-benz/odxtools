@@ -50,11 +50,12 @@ def _parse_compu_scale_to_linear_compu_method(scale_element,
     if coeffs.find("COMPU-DENOMINATOR/V") is not None:
         try:
             kwargs["denominator"] = int(
-            coeffs.find("COMPU-DENOMINATOR/V").text)
+                coeffs.find("COMPU-DENOMINATOR/V").text)
         except ValueError as ex:
+            pass
         finally:
             kwargs["denominator"] = fload(
-            coeffs.find("COMPU-DENOMINATOR/V").text)
+                coeffs.find("COMPU-DENOMINATOR/V").text)
         assert kwargs["denominator"] > 0
 
     # Read lower limit
