@@ -82,7 +82,7 @@ class LinearCompuMethod(CompuMethod):
                                               IntervalType.INFINITE)
 
         assert self.internal_lower_limit is not None and self.internal_upper_limit is not None
-        assert denominator > 0 and type(denominator) == int or type(denominator) == float
+        assert denominator > 0 and isinstance(denominator, (int, float))
 
         self.__compute_physical_limits()
 
