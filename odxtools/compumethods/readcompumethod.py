@@ -48,12 +48,8 @@ def _parse_compu_scale_to_linear_compu_method(scale_element,
     offset = computation_python_type(next(nums).text)
     factor = computation_python_type(next(nums).text)
     if coeffs.find("COMPU-DENOMINATOR/V") is not None:
-        try:
-            kwargs["denominator"] = int(
-                coeffs.find("COMPU-DENOMINATOR/V").text)
-        except ValueError as ex:
-            kwargs["denominator"] = float(
-                coeffs.find("COMPU-DENOMINATOR/V").text)
+        kwargs["denominator"] = float(
+            coeffs.find("COMPU-DENOMINATOR/V").text)
         assert kwargs["denominator"] > 0
 
     # Read lower limit
