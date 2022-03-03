@@ -147,11 +147,11 @@ class DataObjectProperty(DopBase):
 
 @dataclass
 class DiagnosticTroubleCode:
-    id: str
-    short_name: str
     trouble_code: int
-    text: str
-    display_trouble_code: Union[str, None] = None
+    id: Optional[str] = None
+    short_name: Optional[str] = None
+    text: Optional[str] = None
+    display_trouble_code: Optional[str] = None
     level: Union[bytes, bytearray, None] = None
     is_temporary: bool = False
 
@@ -232,12 +232,22 @@ class DtcDop(DataObjectProperty):
     def convert_bytes_to_physical(self, decode_state, bit_position: int = 0):
         trouble_code, next_byte = super().convert_bytes_to_physical(decode_state,
                                                                     bit_position=bit_position)
-        try:
-            dtc = next(filter(lambda dtc: dtc.trouble_code == trouble_code,
-                              self.dtcs))
-        except:
-            raise DecodeError(f"DTC-DOP {self.short_name} extracted value {trouble_code} from PDU"
-                              f" but it does not match any specified trouble codes.")
+
+        dtcs = [ x for x in self.dtcs if x.trouble_code == trouble_code ]
+
+        assert len(dtcs) < 2, \
+            f"Multiple matching DTCs for trouble code 0x{trouble_code:06x}"
+
+        if len(dtcs) == 1:
+            # we found exactly one described DTC
+            return dtcs[0], next_byte
+
+        # the DTC was not specified. This probably means that the
+        # diagnostic description file is incomplete. We do not bail
+        # out but we cannot provide an interpretation for it out of the
+        # box...
+        dtc = DiagnosticTroubleCode(trouble_code=trouble_code)
+
         return dtc, next_byte
 
     def convert_physical_to_bytes(self, physical_value, encode_state, bit_position):

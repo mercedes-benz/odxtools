@@ -370,15 +370,15 @@ class TestDecoding(unittest.TestCase):
         diag_coded_type = StandardLengthType("A_UINT32", 8)
         compu_method = IdenticalCompuMethod("A_INT32", "A_INT32")
 
-        dtc1 = DiagnosticTroubleCode("dtcID1",
-                                     "P34_sn",
-                                     0x34,
-                                     "Error encountered",
+        dtc1 = DiagnosticTroubleCode(id="dtcID1",
+                                     short_name="P34_sn",
+                                     trouble_code=0x34,
+                                     text="Error encountered",
                                      display_trouble_code="P34")
-        dtc2 = DiagnosticTroubleCode("dtcID2",
-                                     "P56_sn",
-                                     0x56,
-                                     "Crashed into wall",
+        dtc2 = DiagnosticTroubleCode(id="dtcID2",
+                                     short_name="P56_sn",
+                                     trouble_code=0x56,
+                                     text="Crashed into wall",
                                      display_trouble_code="P56")
         dtcs = [dtc1, dtc2]
         dop = DtcDop("dtc.dop.id",
