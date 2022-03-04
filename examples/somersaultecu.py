@@ -1035,7 +1035,8 @@ somersault_assiduous_diaglayer.negative_responses=list(somersault_assiduous_nega
 somersault_dlc = DiagLayerContainer(
     id="DLC.somersault",
     short_name="somersault",
-    long_name="This is a nice ECU which does somersaults & cetera",
+    long_name="Collect all saults in the summer",
+    description="<p>This contains ECUs which do somersaults &amp; cetera</p>",
     base_variants=[somersault_diaglayer],
     ecu_variants=[somersault_lazy_diaglayer, somersault_assiduous_diaglayer]
 )

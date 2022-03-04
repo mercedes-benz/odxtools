@@ -14,6 +14,11 @@
 {%- if dlc.long_name %}
   <LONG-NAME>{{dlc.long_name|e}}</LONG-NAME>
 {%- endif %}
+{%- if dlc.description %}
+  <DESC>
+{{dlc.description}}
+  </DESC>
+{%- endif %}
 {%- if dlc.protocols %}
   <PROTOCOLS>
  {%- for dl in dlc.protocols %}
@@ -51,4 +56,3 @@
 {%- endif %}
  </DIAG-LAYER-CONTAINER>
 </ODX>
-
