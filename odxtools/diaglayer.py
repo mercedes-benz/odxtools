@@ -618,6 +618,7 @@ class DiagLayerContainer:
                  id,
                  short_name,
                  long_name=None,
+                 description=None,
                  ecu_shared_datas=[],
                  protocols=[],
                  functional_groups=[],
@@ -626,6 +627,7 @@ class DiagLayerContainer:
         self.id = id
         self.short_name = short_name
         self.long_name = long_name
+        self.description = description
 
         self.ecu_shared_datas = ecu_shared_datas
         self.protocols = protocols
@@ -658,6 +660,7 @@ def read_diag_layer_container_from_odx(et_element, enable_candela_workarounds=Tr
         long_name = et_element.find("LONG-NAME").text
     except:
         long_name = None
+    description = read_description_from_odx(et_element.find("DESC"))
     ecu_shared_datas = [read_diag_layer_from_odx(dl_element, enable_candela_workarounds=enable_candela_workarounds)
                         for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")]
     protocols = [read_diag_layer_from_odx(dl_element, enable_candela_workarounds=enable_candela_workarounds)
@@ -672,6 +675,7 @@ def read_diag_layer_container_from_odx(et_element, enable_candela_workarounds=Tr
     return DiagLayerContainer(id,
                               short_name,
                               long_name=long_name,
+                              description=description,
                               ecu_shared_datas=ecu_shared_datas,
                               protocols=protocols,
                               functional_groups=functional_groups,
