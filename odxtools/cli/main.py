@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
+# Copyright (c) 2021-2022 MBition GmbH
 
 import argparse
 
@@ -8,6 +8,7 @@ from . import browse
 from . import snoop
 from . import find
 
+from ..version import __version__ as odxtools_version
 
 def start_cli():
     argparser = argparse.ArgumentParser(
@@ -23,8 +24,12 @@ def start_cli():
         prog="odxtools",
         formatter_class=argparse.RawTextHelpFormatter)
 
+    argparser.add_argument("--version", required=False,
+                           action='store_true',
+                           help="Print the odxtools version")
+
     subparsers = argparser.add_subparsers(
-        help='Select a sub command',
+        help='Select a sub-command',
         dest="subparser_name"
     )
 
@@ -35,6 +40,9 @@ def start_cli():
 
     args = argparser.parse_args()  # deals with the help message handling
 
+    if args.version:
+        print(f"odxtools {odxtools_version}")
+        exit()
     if args.subparser_name is None:
         argparser.print_usage()
         exit()
