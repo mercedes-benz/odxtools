@@ -11,7 +11,15 @@ import re
 cwd = pathlib.Path(__file__).parent
 
 readme_text = (cwd / "README.md").read_text()
-requires_list = (cwd/'requirements.txt').read_text().split("\n")
+requires_list = [
+    "bitstruct >= 6.0.0",
+    "argparse_addons",
+    "PyInquirer",
+    "jinja2",
+    "python-can < 4.0",
+    "can-isotp",
+    "markdownify",
+]
 version_string = re.search(r"^__version__ = '(.*)'$",
                            (cwd / "odxtools" / "version.py").read_text(),
                            re.MULTILINE).group(1)
