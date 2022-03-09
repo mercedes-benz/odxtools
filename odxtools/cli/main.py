@@ -29,7 +29,7 @@ def start_cli():
                            help="Print the odxtools version")
 
     subparsers = argparser.add_subparsers(
-        help='Select a sub-command',
+        help='Select a subcommand',
         dest="subparser_name"
     )
 
