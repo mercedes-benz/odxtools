@@ -71,7 +71,7 @@ source using `git`. The first step is to clone the repository:
 
 ```bash
 cd $BASE_DIR
-git clone https://github.com/Daimler/odxtools
+git clone https://github.com/mercedes-benz/odxtools
 ```
 
 After this, make sure that all python dependencies are installed:
@@ -486,16 +486,16 @@ $ python -m unittest tests/test_*.py
 ## Contributing
 
 We welcome any contributions.  If you want to contribute to this
-project, please read the [contributing guide](CONTRIBUTING.md).
+project, please read the [contributing guide](https://github.com/mercedes-benz/daimler-foss/blob/master/CONTRIBUTING.md).
 
 ## Code of Conduct
 
-Please read our [Code of Conduct](https://github.com/Daimler/daimler-foss/blob/master/CODE_OF_CONDUCT.md)
+Please read our [Code of Conduct](https://github.com/mercedes-benz/daimler-foss/blob/master/CODE_OF_CONDUCT.md)
 as it is our base for interaction.
 
 ## License
 
-This project is licensed under the [MIT LICENSE](LICENSE).
+This project is licensed under the [MIT LICENSE]((https://github.com/mercedes-benz/daimler-foss/blob/master/LICENSE).
 
 ## Provider Information
 
