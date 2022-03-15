@@ -51,6 +51,9 @@ class NamedItemList(Generic[T]):
             i += 1
             tmp = f"{item_name}_{i}"
 
+    def sort(self, key=None, reverse=False):
+        return self._list.sort(key=key, reverse=reverse)
+
     def __len__(self):
         return len(self._list)
 
@@ -69,7 +72,7 @@ class NamedItemList(Generic[T]):
             return False
         else:
             return self._list == other._list
-    
+
     def __iter__(self):
         return iter(self._list)
 

@@ -20,7 +20,7 @@ class Database:
                  pdx_zip: ZipFile = None,
                  odx_d_file_name: str = None,
                  enable_candela_workarounds: bool = True):
-        self._diag_layer_containers = []
+
         self._id_lookup: Dict[str, Any] = {}
         dlc_elements = []
 
@@ -42,17 +42,20 @@ class Database:
 
                     dlc_elements.append(root.find("DIAG-LAYER-CONTAINER"))
 
-            self._diag_layer_containers = [
+            tmp = [
                 read_diag_layer_container_from_odx(dlc_el, enable_candela_workarounds=enable_candela_workarounds) \
                   for dlc_el in dlc_elements
             ]
+            self._diag_layer_containers = NamedItemList(lambda x: x.short_name, tmp)
             self._diag_layer_containers.sort(key=lambda x: x.short_name)
             self.finalize_init()
 
         elif odx_d_file_name is not None:
             dlc_element = ElementTree.parse(odx_d_file_name).find("DIAG-LAYER-CONTAINER")
 
-            self._diag_layer_containers = [read_diag_layer_container_from_odx(dlc_element)]
+            self._diag_layer_containers = \
+                NamedItemList(lambda x: x.short_name,
+                              [read_diag_layer_container_from_odx(dlc_element)])
             self.finalize_init()
 
     def finalize_init(self):
