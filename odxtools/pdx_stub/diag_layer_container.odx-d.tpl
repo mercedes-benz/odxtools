@@ -1,9 +1,11 @@
 {#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
  #
  # SPDX-License-Identifier: MIT
- # Copyright (c) 2022 MBition GmbH
+ # Copyright (c) 2021-2022 MBition GmbH
 -#}
 {%- import('macros/printVariant.tpl') as pv -%}
+{%- import('macros/printAdminData.tpl') as pad -%}
+{%- import('macros/printCompanyData.tpl') as pcd -%}
 
 
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -18,6 +20,16 @@
   <DESC>
 {{dlc.description}}
   </DESC>
+{%- endif %}
+{%- if dlc.admin_data %}
+  {{pad.printAdminData(dlc.admin_data)|indent(2)}}
+{%- endif %}
+{%- if dlc.company_datas %}
+  <COMPANY-DATAS>
+ {%- for cd in dlc.company_datas %}
+   {{pcd.printCompanyData(cd)|indent(3)}}
+ {%- endfor %}
+  </COMPANY-DATAS>
 {%- endif %}
 {%- if dlc.protocols %}
   <PROTOCOLS>

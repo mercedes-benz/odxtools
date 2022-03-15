@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from itertools import chain
-from typing import Any, Dict, Iterable, List, Union
+from typing import Optional, Any, Dict, Iterable, List, Union
 
 from .exceptions import *
 from .globals import logger, xsi
@@ -11,6 +11,8 @@ from .state_transition import read_state_transition_from_odx
 
 from .utils import read_description_from_odx
 from .nameditemlist import NamedItemList
+from .admindata import AdminData, read_admin_data_from_odx
+from .companydata import CompanyData, read_company_datas_from_odx
 from .communicationparameter import CommunicationParameterRef, read_communication_param_ref_from_odx
 from .diagdatadictionaryspec import DiagDataDictionarySpec, read_diag_data_dictionary_spec_from_odx
 from .dataobjectproperty import DopBase
@@ -619,15 +621,20 @@ class DiagLayerContainer:
                  short_name,
                  long_name=None,
                  description=None,
+                 admin_data: Optional[AdminData] = None,
+                 company_datas: Optional[NamedItemList[CompanyData]] = None,
                  ecu_shared_datas=[],
                  protocols=[],
                  functional_groups=[],
                  base_variants=[],
-                 ecu_variants=[]):
+                 ecu_variants=[]
+                 ):
         self.id = id
         self.short_name = short_name
         self.long_name = long_name
         self.description = description
+        self.admin_data = admin_data
+        self.company_datas = company_datas
 
         self.ecu_shared_datas = ecu_shared_datas
         self.protocols = protocols
@@ -638,6 +645,26 @@ class DiagLayerContainer:
         self._diag_layers = NamedItemList[DiagLayer](
             lambda dop: dop.short_name,
             list(chain(self.ecu_shared_datas, self.protocols, self.functional_groups, self.base_variants, self.ecu_variants)))
+
+    def _build_id_lookup(self):
+        result = {}
+        if self.admin_data is not None:
+            result.update(self.admin_data._build_id_lookup())
+
+        if self.company_datas is not None:
+            for cd in self.company_datas:
+                result.update(cd._build_id_lookup())
+
+        return result
+
+    def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
+        if self.admin_data is not None:
+            self.admin_data._resolve_references(id_lookup)
+
+        if self.company_datas is not None:
+            for cd in self.company_datas:
+                cd._resolve_references(id_lookup)
+
 
     @property
     def diag_layers(self):
@@ -661,6 +688,8 @@ def read_diag_layer_container_from_odx(et_element, enable_candela_workarounds=Tr
     except:
         long_name = None
     description = read_description_from_odx(et_element.find("DESC"))
+    admin_data = read_admin_data_from_odx(et_element.find("ADMIN-DATA"))
+    company_datas = read_company_datas_from_odx(et_element.find("COMPANY-DATAS"))
     ecu_shared_datas = [read_diag_layer_from_odx(dl_element, enable_candela_workarounds=enable_candela_workarounds)
                         for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")]
     protocols = [read_diag_layer_from_odx(dl_element, enable_candela_workarounds=enable_candela_workarounds)
@@ -676,6 +705,8 @@ def read_diag_layer_container_from_odx(et_element, enable_candela_workarounds=Tr
                               short_name,
                               long_name=long_name,
                               description=description,
+                              admin_data=admin_data,
+                              company_datas=company_datas,
                               ecu_shared_datas=ecu_shared_datas,
                               protocols=protocols,
                               functional_groups=functional_groups,

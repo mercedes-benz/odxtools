@@ -69,10 +69,17 @@ class Database:
 
         # Build id_lookup
         self._id_lookup = {}
+
+        for dlc in self.diag_layer_containers:
+            self.id_lookup.update(dlc._build_id_lookup())
+
         for dl in self.diag_layers:
             self.id_lookup.update(dl._build_id_lookup())
 
         # Resolve references
+        for dlc in self.diag_layer_containers:
+            dlc._resolve_references(self.id_lookup)
+
         for dl_type_name in ["ECU-SHARED-DATA", "PROTOCOL", "FUNCTIONAL-GROUP", "BASE-VARIANT", "ECU-VARIANT"]:
             for dl in self.diag_layers:
                 if dl.variant_type == dl_type_name:

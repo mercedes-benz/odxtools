@@ -8,7 +8,12 @@ from itertools import chain
 
 import odxtools
 
+from odxtools.nameditemlist import NamedItemList
+
 from odxtools.database import Database
+
+from odxtools.companydata import XDoc, RelatedDoc, CompanySpecificInfo, TeamMember, CompanyData
+from odxtools.admindata import CompanyDocInfo, Modification, DocRevision, AdminData
 
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayer import DiagLayerContainer
@@ -71,6 +76,118 @@ SID = IntEnum('SID', [(i.name, i.value) for i in chain(uds.SID, SID)])
 ##################
 # Base variant of Somersault ECU
 ##################
+
+# admin data
+somersault_admin_data = None
+
+# company datas
+somersault_team_members = {
+    "doggy":
+    TeamMember(id="TM.Doggy",
+               short_name="Doggy",
+               long_name="Doggy the dog",
+               description="Dog is man's best friend",
+               roles=["gymnast", "tracker"],
+               department="sniffers",
+               address="Some road",
+               zip="12345",
+               city="New Dogsville",
+               phone="+0 1234/5678-9",
+               fax="+0 1234/5678-0",
+               email="info@suncus.com"),
+
+    "horsey":
+    TeamMember(id="TM.Horsey",
+               short_name="Horsey",
+               long_name="Horsey the horse",
+               description="Trustworthy worker",
+               roles=["gymnast" ],
+               department="haulers",
+               address="Some road",
+               zip="12345",
+               city="New Dogsville",
+               phone="+0 1234/5678-91",
+               fax="+0 1234/5678-0",
+               email="info@suncus.com"),
+
+    "slothy":
+    TeamMember(id="TM.Slothy",
+               short_name="Slothy")
+}
+
+somersault_company_datas = {
+    "suncus":
+    CompanyData(id="CD.Suncus",
+                short_name="Suncus",
+                long_name="Circus of the sun",
+                description="Prestigious group of performers",
+                roles=["circus", "gym"],
+                team_members=NamedItemList(lambda x: x.short_name,
+                                           [
+                                               somersault_team_members["doggy"],
+                                               somersault_team_members["horsey"],
+                                           ]),
+                company_specific_info=CompanySpecificInfo(
+                    related_docs = [
+                        RelatedDoc(
+                            description="We are the best!",
+                            xdoc=XDoc(short_name="best",
+                                      long_name="suncus is the best",
+                                      description="great propaganda...",
+                                      number="1",
+                                      state="published",
+                                      date="2015-01-15T20:15:20+05:00",
+                                      publisher="Suncus Publishing",
+                                      url="https://suncus-is-the-best.com",
+                                      position="first!")),
+                    ]),
+                ),
+
+    "acme":
+    CompanyData(id="CD.ACME",
+                short_name="ACME_Corporation",
+                team_members=NamedItemList(lambda x: x.short_name,
+                                           [
+                                               somersault_team_members["slothy"],
+                                           ]),
+                ),
+
+}
+
+somersault_admin_data = \
+    AdminData(language="en-US",
+              company_doc_infos = \
+              [
+                  CompanyDocInfo(company_data_ref="CD.Suncus",
+                                 team_member_ref="TM.Doggy",
+                                 doc_label="A really meaningful label"),
+              ],
+              doc_revisions = \
+              [
+                  DocRevision(team_member_ref="TM.Doggy",
+                              revision_label="1.0",
+                              state="draft",
+                              date="1926-07-18T11:11:11+01:00",
+                              tool="odxtools 0.0.1",
+                              modifications = [
+                                  Modification(change="add somersault ECU",
+                                               reason="we needed a new artist"),
+                                  Modification(change="increase robustness to dizzyness",
+                                               reason="No alcohol anymore"),
+                              ]),
+                  DocRevision(team_member_ref="TM.Horsey",
+                              revision_label="1.1",
+                              state="released",
+                              date="2020-08-19T12:12:12+08:00",
+                              tool="odxtools 0.1",
+                              modifications = [
+                                  Modification(change="rename somersault ECU to somersault_assiduous to enable slothy to add somersault_lazy"),
+                              ]),
+
+                  DocRevision(team_member_ref="TM.Slothy",
+                              revision_label="1.0.3.2.1.5.6",
+                              date="1900-01-01T00:00:00+00:00"),
+              ])
 
 # functional classes
 somersault_functional_classes = {
@@ -1037,13 +1154,20 @@ somersault_dlc = DiagLayerContainer(
     short_name="somersault",
     long_name="Collect all saults in the summer",
     description="<p>This contains ECUs which do somersaults &amp; cetera</p>",
+    admin_data=somersault_admin_data,
+    company_datas=NamedItemList(lambda x: x.short_name,
+                                [
+                                    somersault_company_datas["suncus"],
+                                    somersault_company_datas["acme"],
+                                ]),
     base_variants=[somersault_diaglayer],
     ecu_variants=[somersault_lazy_diaglayer, somersault_assiduous_diaglayer]
 )
 
 # create a database object
 database = Database()
-database.diag_layer_containers = [somersault_dlc]
+database.diag_layer_containers = NamedItemList(lambda x: x.short_name,
+                                               [somersault_dlc])
 
 # Create ID mapping and resolve references
 database.finalize_init()
