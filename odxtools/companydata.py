@@ -101,15 +101,15 @@ def read_xdoc_from_odx(xdoc):
     if position is not None:
         position = position.text
 
-    return XDoc(short_name = short_name,
-                long_name = long_name,
-                description = description,
-                number = number,
-                state = state,
-                date = date,
-                publisher = publisher,
-                url = url,
-                position = position,
+    return XDoc(short_name=short_name,
+                long_name=long_name,
+                description=description,
+                number=number,
+                state=state,
+                date=date,
+                publisher=publisher,
+                url=url,
+                position=position,
                 )
 
 def read_company_datas_from_odx(et_element):
@@ -190,18 +190,18 @@ def read_company_datas_from_odx(et_element):
                 if tm_email is not None:
                     tm_email = tm_email.text
 
-                tml.append(TeamMember(id = tm_id,
-                                      short_name = tm_short_name,
-                                      long_name = tm_long_name,
-                                      description = tm_description,
-                                      roles = tm_roles,
-                                      department = tm_department,
-                                      address = tm_address,
-                                      zip = tm_zip,
-                                      city = tm_city,
-                                      phone = tm_phone,
-                                      fax = tm_fax,
-                                      email = tm_email))
+                tml.append(TeamMember(id=tm_id,
+                                      short_name=tm_short_name,
+                                      long_name=tm_long_name,
+                                      description=tm_description,
+                                      roles=tm_roles,
+                                      department=tm_department,
+                                      address=tm_address,
+                                      zip=tm_zip,
+                                      city=tm_city,
+                                      phone=tm_phone,
+                                      fax=tm_fax,
+                                      email=tm_email))
 
             team_members = tml
 
@@ -219,20 +219,20 @@ def read_company_datas_from_odx(et_element):
                     if xdoc is not None:
                         xdoc = read_xdoc_from_odx(xdoc)
 
-                    rdlist.append(RelatedDoc(description = rd_description,
-                                             xdoc = xdoc,
+                    rdlist.append(RelatedDoc(description=rd_description,
+                                             xdoc=xdoc,
                                              ))
 
                 related_docs = rdlist
 
             company_specific_info = CompanySpecificInfo(related_docs=related_docs)
 
-        cdl.append(CompanyData(id = id,
-                               short_name = short_name,
-                               long_name = long_name,
-                               description = description,
-                               roles = roles,
-                               team_members = team_members,
-                               company_specific_info = company_specific_info))
+        cdl.append(CompanyData(id=id,
+                               short_name=short_name,
+                               long_name=long_name,
+                               description=description,
+                               roles=roles,
+                               team_members=team_members,
+                               company_specific_info=company_specific_info))
 
     return cdl

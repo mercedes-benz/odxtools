@@ -128,15 +128,15 @@ def read_admin_data_from_odx(et_element):
                     if m_reason is not None:
                         m_reason = m_reason.text
 
-                    modlist.append(Modification(change = m_change,
-                                                reason = m_reason))
+                    modlist.append(Modification(change=m_change,
+                                                reason=m_reason))
 
-            drlist.append(DocRevision(team_member_ref = team_member_ref,
-                                      revision_label = revision_label,
-                                      state = state,
-                                      date = date,
-                                      tool = tool,
-                                      modifications = modlist))
+            drlist.append(DocRevision(team_member_ref=team_member_ref,
+                                      revision_label=revision_label,
+                                      state=state,
+                                      date=date,
+                                      tool=tool,
+                                      modifications=modlist))
 
 
         doc_revisions = drlist
@@ -144,6 +144,6 @@ def read_admin_data_from_odx(et_element):
     else:
         doc_revisions = []
 
-    return AdminData(language = language,
-                     company_doc_infos = company_doc_infos,
-                     doc_revisions = doc_revisions)
+    return AdminData(language=language,
+                     company_doc_infos=company_doc_infos,
+                     doc_revisions=doc_revisions)

@@ -128,7 +128,7 @@ somersault_company_datas = {
                                                somersault_team_members["horsey"],
                                            ]),
                 company_specific_info=CompanySpecificInfo(
-                    related_docs = [
+                    related_docs=[
                         RelatedDoc(
                             description="We are the best!",
                             xdoc=XDoc(short_name="best",
@@ -156,20 +156,20 @@ somersault_company_datas = {
 
 somersault_admin_data = \
     AdminData(language="en-US",
-              company_doc_infos = \
+              company_doc_infos=\
               [
                   CompanyDocInfo(company_data_ref="CD.Suncus",
                                  team_member_ref="TM.Doggy",
                                  doc_label="A really meaningful label"),
               ],
-              doc_revisions = \
+              doc_revisions=\
               [
                   DocRevision(team_member_ref="TM.Doggy",
                               revision_label="1.0",
                               state="draft",
                               date="1926-07-18T11:11:11+01:00",
                               tool="odxtools 0.0.1",
-                              modifications = [
+                              modifications=[
                                   Modification(change="add somersault ECU",
                                                reason="we needed a new artist"),
                                   Modification(change="increase robustness to dizzyness",
@@ -180,7 +180,7 @@ somersault_admin_data = \
                               state="released",
                               date="2020-08-19T12:12:12+08:00",
                               tool="odxtools 0.1",
-                              modifications = [
+                              modifications=[
                                   Modification(change="rename somersault ECU to somersault_assiduous to enable slothy to add somersault_lazy"),
                               ]),
 
@@ -291,7 +291,7 @@ somersault_compumethods = {
     "boolean":
     TexttableCompuMethod(
         internal_type="A_UINT32",
-        internal_to_phys= [
+        internal_to_phys=[
             CompuScale(compu_const="false",
                        lower_limit=Limit(0),
                        upper_limit=Limit(0)
@@ -373,13 +373,13 @@ somersault_requests = {
         parameters=[
             CodedConstParameter(
                 short_name="sid",
-                diag_coded_type = somersault_diagcodedtypes["uint8"],
+                diag_coded_type=somersault_diagcodedtypes["uint8"],
                 byte_position=0,
                 coded_value=SID.DiagnosticSessionControl.value,
             ),
             CodedConstParameter(
                 short_name="id",
-                diag_coded_type = somersault_diagcodedtypes["uint8"],
+                diag_coded_type=somersault_diagcodedtypes["uint8"],
                 byte_position=1,
                 coded_value=0x0,
             ),
@@ -394,13 +394,13 @@ somersault_requests = {
         parameters=[
             CodedConstParameter(
                 short_name="sid",
-                diag_coded_type = somersault_diagcodedtypes["uint8"],
+                diag_coded_type=somersault_diagcodedtypes["uint8"],
                 byte_position=0,
                 coded_value=SID.DiagnosticSessionControl.value,
             ),
             CodedConstParameter(
                 short_name="id",
-                diag_coded_type = somersault_diagcodedtypes["uint8"],
+                diag_coded_type=somersault_diagcodedtypes["uint8"],
                 byte_position=1,
                 coded_value=0x1,
             ),
@@ -415,13 +415,13 @@ somersault_requests = {
         parameters=[
             CodedConstParameter(
                 short_name="sid",
-                diag_coded_type = somersault_diagcodedtypes["uint8"],
+                diag_coded_type=somersault_diagcodedtypes["uint8"],
                 byte_position=0,
                 coded_value=SID.TesterPresent.value
             ),
             CodedConstParameter(
                 short_name="id",
-                diag_coded_type = somersault_diagcodedtypes["uint8"],
+                diag_coded_type=somersault_diagcodedtypes["uint8"],
                 byte_position=1,
                 coded_value=0x0
             ),
@@ -438,7 +438,7 @@ somersault_requests = {
         parameters=[
             CodedConstParameter(
                 short_name="sid",
-                diag_coded_type = somersault_diagcodedtypes["uint8"],
+                diag_coded_type=somersault_diagcodedtypes["uint8"],
                 byte_position=0,
                 coded_value=SID.ForwardFlipCondition.value,
             ),
@@ -459,7 +459,7 @@ somersault_requests = {
         parameters=[
             CodedConstParameter(
                 short_name="sid",
-                diag_coded_type = somersault_diagcodedtypes["uint8"],
+                diag_coded_type=somersault_diagcodedtypes["uint8"],
                 byte_position=0,
                 coded_value=SID.ForwardFlip.value
             ),
@@ -484,7 +484,7 @@ somersault_requests = {
         parameters=[
             CodedConstParameter(
                 short_name="sid",
-                diag_coded_type = somersault_diagcodedtypes["uint8"],
+                diag_coded_type=somersault_diagcodedtypes["uint8"],
                 byte_position=0,
                 coded_value=SID.BackwardFlip.value
             ),
@@ -510,13 +510,13 @@ somersault_requests = {
         parameters=[
             CodedConstParameter(
                 short_name="sid",
-                diag_coded_type = somersault_diagcodedtypes["uint8"],
+                diag_coded_type=somersault_diagcodedtypes["uint8"],
                 byte_position=0,
                 coded_value=SID.ReadDataByIdentifier.value,
             ),
             CodedConstParameter(
                 short_name="id",
-                diag_coded_type = somersault_diagcodedtypes["uint8"],
+                diag_coded_type=somersault_diagcodedtypes["uint8"],
                 byte_position=1,
                 coded_value=0x0,
             ),
@@ -534,7 +534,7 @@ somersault_positive_responses = {
              parameters=[
                  CodedConstParameter(
                      short_name="sid",
-                     diag_coded_type = somersault_diagcodedtypes["uint8"],
+                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                      byte_position=0,
                      coded_value=uds.positive_response_id(SID.DiagnosticSessionControl.value),
                  ),
@@ -552,13 +552,13 @@ somersault_positive_responses = {
              parameters=[
                  CodedConstParameter(
                      short_name="sid",
-                     diag_coded_type = somersault_diagcodedtypes["uint16"],
+                     diag_coded_type=somersault_diagcodedtypes["uint16"],
                      byte_position=0,
                      coded_value=uds.positive_response_id(SID.TesterPresent.value),
                  ),
                  CodedConstParameter(
                      short_name="status",
-                     diag_coded_type = somersault_diagcodedtypes["uint8"],
+                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                      byte_position=1,
                      coded_value=0x00,
                  ),
@@ -571,7 +571,7 @@ somersault_positive_responses = {
              parameters=[
                  CodedConstParameter(
                      short_name="sid",
-                     diag_coded_type = somersault_diagcodedtypes["uint8"],
+                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                      byte_position=0,
                      coded_value=uds.positive_response_id(SID.ForwardFlip.value),
                  ),
@@ -589,7 +589,7 @@ somersault_positive_responses = {
              parameters=[
                  CodedConstParameter(
                      short_name="sid",
-                     diag_coded_type = somersault_diagcodedtypes["uint8"],
+                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                      byte_position=0,
                      coded_value=uds.positive_response_id(SID.ForwardFlip.value),
                  ),
@@ -668,7 +668,7 @@ somersault_negative_responses = {
              parameters=[
                  CodedConstParameter(
                      short_name="sid",
-                     diag_coded_type = somersault_diagcodedtypes["uint8"],
+                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                      byte_position=0,
                      coded_value=uds.NegativeResponseId,
                  ),
@@ -692,13 +692,13 @@ somersault_negative_responses = {
              parameters=[
                  CodedConstParameter(
                      short_name="sid",
-                     diag_coded_type = somersault_diagcodedtypes["uint8"],
+                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                      byte_position=0,
                      coded_value=uds.NegativeResponseId,
                  ),
                  CodedConstParameter(
                      short_name="rq_sid",
-                     diag_coded_type = somersault_diagcodedtypes["uint8"],
+                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                      byte_position=1,
                      coded_value=uds.SID.TesterPresent.value,
                  ),
@@ -711,7 +711,7 @@ somersault_negative_responses = {
              parameters=[
                  CodedConstParameter(
                      short_name="sid",
-                     diag_coded_type = somersault_diagcodedtypes["uint8"],
+                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                      byte_position=0,
                      coded_value=uds.NegativeResponseId,
                  ),
@@ -785,7 +785,7 @@ somersault_services = {
                     enabled_audience_refs=[
                         somersault_additional_audiences["attentive_admirer"].id,
                         somersault_additional_audiences["anyone"].id,
-                    ], 
+                    ],
                     is_development=False)
                 ),
 
@@ -824,7 +824,7 @@ somersault_services = {
                     somersault_functional_classes["flip"].id
                 ],
                 audience=Audience(
-                    enabled_audience_refs=[somersault_additional_audiences["attentive_admirer"].id], 
+                    enabled_audience_refs=[somersault_additional_audiences["attentive_admirer"].id],
                     is_development=False)
                 ),
 
@@ -843,7 +843,7 @@ somersault_services = {
                     somersault_functional_classes["flip"].id
                 ],
                 audience=Audience(
-                    enabled_audience_refs=[somersault_additional_audiences["attentive_admirer"].id], 
+                    enabled_audience_refs=[somersault_additional_audiences["attentive_admirer"].id],
                     is_development=False)
                 ),
 
@@ -859,7 +859,7 @@ somersault_services = {
                     somersault_negative_responses["general"].id,
                 ],
                 audience=Audience(
-                    disabled_audience_refs=[somersault_additional_audiences["attentive_admirer"].id], 
+                    disabled_audience_refs=[somersault_additional_audiences["attentive_admirer"].id],
                     is_aftersales=False,
                     is_aftermarket=False)
                 ),
@@ -1069,7 +1069,7 @@ somersault_assiduous_requests = {
         parameters=[
             CodedConstParameter(
                 short_name="sid",
-                diag_coded_type = somersault_diagcodedtypes["uint8"],
+                diag_coded_type=somersault_diagcodedtypes["uint8"],
                 byte_position=0,
                 coded_value=0x3
             ),
@@ -1089,7 +1089,7 @@ somersault_assiduous_positive_responses = {
              parameters=[
                  CodedConstParameter(
                      short_name="sid",
-                     diag_coded_type = somersault_diagcodedtypes["uint8"],
+                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                      byte_position=0,
                      coded_value=0x1,
                  ),
@@ -1109,7 +1109,7 @@ somersault_assiduous_negative_responses = {
              parameters=[
                  CodedConstParameter(
                      short_name="sid",
-                     diag_coded_type = somersault_diagcodedtypes["uint8"],
+                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                      byte_position=0,
                      coded_value=0x20,
                  ),
@@ -1139,10 +1139,10 @@ somersault_assiduous_services = {
 }
 
 # fill the diagnostics layer object
-somersault_assiduous_diaglayer.requests=list(somersault_assiduous_requests.values())
-somersault_assiduous_diaglayer._local_services=list(somersault_assiduous_services.values())
-somersault_assiduous_diaglayer.positive_responses=list(somersault_assiduous_positive_responses.values())
-somersault_assiduous_diaglayer.negative_responses=list(somersault_assiduous_negative_responses.values())
+somersault_assiduous_diaglayer.requests = list(somersault_assiduous_requests.values())
+somersault_assiduous_diaglayer._local_services = list(somersault_assiduous_services.values())
+somersault_assiduous_diaglayer.positive_responses = list(somersault_assiduous_positive_responses.values())
+somersault_assiduous_diaglayer.negative_responses = list(somersault_assiduous_negative_responses.values())
 
 ##################
 # Container with all ECUs
