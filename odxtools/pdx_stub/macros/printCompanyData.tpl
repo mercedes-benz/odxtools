@@ -11,9 +11,9 @@
  <LONG-NAME>{{company_data.long_name|e}}</LONG-NAME>
  {%- endif %}
  {%- if company_data.description is not none %}
- <DESC><p>
+ <DESC>
 {{company_data.description}}
- </p></DESC>
+ </DESC>
  {%- endif %}
  {%- if company_data.roles is not none %}
  <ROLES>
@@ -31,9 +31,9 @@
    <LONG-NAME>{{team_member.long_name|e}}</LONG-NAME>
    {%- endif %}
    {%- if company_data.description is not none %}
-   <DESC><p>
+   <DESC>
 {{team_member.description}}
-   </p></DESC>
+   </DESC>
    {%- endif %}
    {%- if team_member.roles is not none %}
    <ROLES>
@@ -79,9 +79,9 @@
      <LONG-NAME>{{rd.xdoc.long_name|e}}</LONG-NAME>
      {%- endif %}
      {%- if rd.xdoc.description is not none %}
-     <DESC><p>
+     <DESC>
 {{rd.xdoc.description}}
-     </p></DESC>
+     </DESC>
      {%- endif %}
      {%- if rd.xdoc.number is not none %}
      <NUMBER>{{rd.xdoc.number|e}}</NUMBER>
@@ -104,9 +104,9 @@
     </XDOC>
     {%- endif %}
     {%- if rd.description is not none %}
-    <DESC><p>
+    <DESC>
 {{rd.description}}
-    </p></DESC>
+    </DESC>
     {%- endif %}
    </RELATED-DOC>
   {%- endfor %}
