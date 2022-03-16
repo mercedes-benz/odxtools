@@ -6,9 +6,9 @@
 
 {%- macro printCompanyData(company_data) -%}
 <COMPANY-DATA ID="{{company_data.id}}">
- <SHORT-NAME>{{company_data.short_name}}</SHORT-NAME>
+ <SHORT-NAME>{{company_data.short_name|e}}</SHORT-NAME>
  {%- if company_data.long_name is not none %}
- <LONG-NAME>{{company_data.long_name}}</LONG-NAME>
+ <LONG-NAME>{{company_data.long_name|e}}</LONG-NAME>
  {%- endif %}
  {%- if company_data.description is not none %}
  <DESC><p>
@@ -18,7 +18,7 @@
  {%- if company_data.roles is not none %}
  <ROLES>
   {%- for role in company_data.roles %}
-  <ROLE>{{role}}</ROLE>
+  <ROLE>{{role|e}}</ROLE>
   {%- endfor %}
  </ROLES>
  {%- endif %}
@@ -26,9 +26,9 @@
  <TEAM-MEMBERS>
   {%- for team_member in company_data.team_members %}
   <TEAM-MEMBER ID="{{team_member.id}}">
-   <SHORT-NAME>{{team_member.short_name}}</SHORT-NAME>
+   <SHORT-NAME>{{team_member.short_name|e}}</SHORT-NAME>
    {%- if company_data.long_name is not none %}
-   <LONG-NAME>{{team_member.long_name}}</LONG-NAME>
+   <LONG-NAME>{{team_member.long_name|e}}</LONG-NAME>
    {%- endif %}
    {%- if company_data.description is not none %}
    <DESC><p>
@@ -38,30 +38,30 @@
    {%- if team_member.roles is not none %}
    <ROLES>
     {%- for role in team_member.roles %}
-    <ROLE>{{role}}</ROLE>
+    <ROLE>{{role|e}}</ROLE>
     {%- endfor %}
    </ROLES>
    {%- endif %}
    {%- if team_member.department is not none %}
-   <DEPARTMENT>{{team_member.department}}</DEPARTMENT>
+   <DEPARTMENT>{{team_member.department|e}}</DEPARTMENT>
    {%- endif %}
    {%- if team_member.address is not none %}
-   <ADDRESS>{{team_member.address}}</ADDRESS>
+   <ADDRESS>{{team_member.address|e}}</ADDRESS>
    {%- endif %}
    {%- if team_member.zip is not none %}
-   <ZIP>{{team_member.zip}}</ZIP>
+   <ZIP>{{team_member.zip|e}}</ZIP>
    {%- endif %}
    {%- if team_member.city is not none %}
-   <CITY>{{team_member.city}}</CITY>
+   <CITY>{{team_member.city|e}}</CITY>
    {%- endif %}
    {%- if team_member.phone is not none %}
-   <PHONE>{{team_member.phone}}</PHONE>
+   <PHONE>{{team_member.phone|e}}</PHONE>
    {%- endif %}
    {%- if team_member.fax is not none %}
-   <FAX>{{team_member.fax}}</FAX>
+   <FAX>{{team_member.fax|e}}</FAX>
    {%- endif %}
    {%- if team_member.email is not none %}
-   <EMAIL>{{team_member.email}}</EMAIL>
+   <EMAIL>{{team_member.email|e}}</EMAIL>
    {%- endif %}
   </TEAM-MEMBER>
   {%- endfor %}
@@ -74,9 +74,9 @@
    <RELATED-DOC>
     {%- if rd.xdoc  is not none %}
     <XDOC>
-     <SHORT-NAME>{{rd.xdoc.short_name}}</SHORT-NAME>
+     <SHORT-NAME>{{rd.xdoc.short_name|e}}</SHORT-NAME>
      {%- if rd.xdoc.long_name is not none %}
-     <LONG-NAME>{{rd.xdoc.long_name}}</LONG-NAME>
+     <LONG-NAME>{{rd.xdoc.long_name|e}}</LONG-NAME>
      {%- endif %}
      {%- if rd.xdoc.description is not none %}
      <DESC><p>
@@ -84,22 +84,22 @@
      </p></DESC>
      {%- endif %}
      {%- if rd.xdoc.number is not none %}
-     <NUMBER>{{rd.xdoc.number}}</NUMBER>
+     <NUMBER>{{rd.xdoc.number|e}}</NUMBER>
      {%- endif %}
      {%- if rd.xdoc.state is not none %}
-     <STATE>{{rd.xdoc.state}}</STATE>
+     <STATE>{{rd.xdoc.state|e}}</STATE>
      {%- endif %}
      {%- if rd.xdoc.date is not none %}
-     <DATE>{{rd.xdoc.date}}</DATE>
+     <DATE>{{rd.xdoc.date|e}}</DATE>
      {%- endif %}
      {%- if rd.xdoc.publisher is not none %}
-     <PUBLISHER>{{rd.xdoc.publisher}}</PUBLISHER>
+     <PUBLISHER>{{rd.xdoc.publisher|e}}</PUBLISHER>
      {%- endif %}
      {%- if rd.xdoc.url is not none %}
-     <URL>{{rd.xdoc.url}}</URL>
+     <URL>{{rd.xdoc.url|e}}</URL>
      {%- endif %}
      {%- if rd.xdoc.position is not none %}
-     <POSITION>{{rd.xdoc.position}}</POSITION>
+     <POSITION>{{rd.xdoc.position|e}}</POSITION>
      {%- endif %}
     </XDOC>
     {%- endif %}

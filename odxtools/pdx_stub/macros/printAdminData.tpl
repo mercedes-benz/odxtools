@@ -7,7 +7,7 @@
 {%- macro printAdminData(admin_data) -%}
 <ADMIN-DATA>
  {%- if admin_data.language is not none %}
- <LANGUAGE>{{admin_data.language}}</LANGUAGE>
+ <LANGUAGE>{{admin_data.language|e}}</LANGUAGE>
  {%- endif %}
  {%- if admin_data.company_doc_infos is not none %}
  <COMPANY-DOC-INFOS>
@@ -18,7 +18,7 @@
     <TEAM-MEMBER-REF ID-REF="{{cdi.team_member_ref}}" />
    {%- endif %}
    {%- if cdi.doc_label is not none %}
-    <DOC-LABEL>{{cdi.doc_label}}</DOC-LABEL>
+    <DOC-LABEL>{{cdi.doc_label|e}}</DOC-LABEL>
    {%- endif %}
   </COMPANY-DOC-INFO>
   {%- endfor %}
@@ -32,24 +32,24 @@
    <TEAM-MEMBER-REF ID-REF="{{doc_revision.team_member_ref}}" />
    {%- endif %}
    {%- if doc_revision.revision_label is not none %}
-   <REVISION-LABEL>{{doc_revision.revision_label}}</REVISION-LABEL>
+   <REVISION-LABEL>{{doc_revision.revision_label|e}}</REVISION-LABEL>
    {%- endif %}
    {%- if doc_revision.state is not none %}
-   <STATE>{{doc_revision.state}}</STATE>
+   <STATE>{{doc_revision.state|e}}</STATE>
    {%- endif %}
-   <DATE>{{doc_revision.date}}</DATE>
+   <DATE>{{doc_revision.date|e}}</DATE>
    {%- if doc_revision.tool is not none %}
-   <TOOL>{{doc_revision.tool}}</TOOL>
+   <TOOL>{{doc_revision.tool|e}}</TOOL>
    {%- endif %}
    {%- if doc_revision.modifications|length > 0 %}
    <MODIFICATIONS>
     {%- for mod in doc_revision.modifications %}
     <MODIFICATION>
      {%- if mod.change is not none %}
-     <CHANGE>{{mod.change}}</CHANGE>
+     <CHANGE>{{mod.change|e}}</CHANGE>
      {%- endif %}
      {%- if mod.reason is not none %}
-     <REASON>{{mod.reason}}</REASON>
+     <REASON>{{mod.reason|e}}</REASON>
      {%- endif %}
     </MODIFICATION>
     {%- endfor %}
