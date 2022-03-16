@@ -20,7 +20,7 @@ class Database:
                  pdx_zip: ZipFile = None,
                  odx_d_file_name: str = None,
                  enable_candela_workarounds: bool = True):
-        self._diag_layer_containers = []
+
         self._id_lookup: Dict[str, Any] = {}
         dlc_elements = []
 
@@ -42,17 +42,20 @@ class Database:
 
                     dlc_elements.append(root.find("DIAG-LAYER-CONTAINER"))
 
-            self._diag_layer_containers = [
+            tmp = [
                 read_diag_layer_container_from_odx(dlc_el, enable_candela_workarounds=enable_candela_workarounds) \
                   for dlc_el in dlc_elements
             ]
+            self._diag_layer_containers = NamedItemList(lambda x: x.short_name, tmp)
             self._diag_layer_containers.sort(key=lambda x: x.short_name)
             self.finalize_init()
 
         elif odx_d_file_name is not None:
             dlc_element = ElementTree.parse(odx_d_file_name).find("DIAG-LAYER-CONTAINER")
 
-            self._diag_layer_containers = [read_diag_layer_container_from_odx(dlc_element)]
+            self._diag_layer_containers = \
+                NamedItemList(lambda x: x.short_name,
+                              [read_diag_layer_container_from_odx(dlc_element)])
             self.finalize_init()
 
     def finalize_init(self):
@@ -66,10 +69,17 @@ class Database:
 
         # Build id_lookup
         self._id_lookup = {}
+
+        for dlc in self.diag_layer_containers:
+            self.id_lookup.update(dlc._build_id_lookup())
+
         for dl in self.diag_layers:
             self.id_lookup.update(dl._build_id_lookup())
 
         # Resolve references
+        for dlc in self.diag_layer_containers:
+            dlc._resolve_references(self.id_lookup)
+
         for dl_type_name in ["ECU-SHARED-DATA", "PROTOCOL", "FUNCTIONAL-GROUP", "BASE-VARIANT", "ECU-VARIANT"]:
             for dl in self.diag_layers:
                 if dl.variant_type == dl_type_name:
