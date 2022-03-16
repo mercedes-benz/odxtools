@@ -41,7 +41,7 @@
    {%- if doc_revision.tool is not none %}
    <TOOL>{{doc_revision.tool|e}}</TOOL>
    {%- endif %}
-   {%- if doc_revision.modifications|length > 0 %}
+   {%- if doc_revision.modifications is not none %}
    <MODIFICATIONS>
     {%- for mod in doc_revision.modifications %}
     <MODIFICATION>
