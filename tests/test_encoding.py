@@ -7,9 +7,10 @@ import unittest
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.compumethods import LinearCompuMethod
 from odxtools.diagcodedtypes import StandardLengthType
-from odxtools.parameters import CodedConstParameter, ValueParameter
+from odxtools.exceptions import EncodeError
+from odxtools.parameters import CodedConstParameter, ValueParameter, NrcConstParameter
 from odxtools.physicaltype import PhysicalType
-from odxtools.structures import Request
+from odxtools.structures import Request, Response
 
 class TestEncodeRequest(unittest.TestCase):
     def test_encode_coded_const_infer_order(self):
@@ -21,7 +22,7 @@ class TestEncodeRequest(unittest.TestCase):
         req = Request("request_id", "request_sn", [param1, param2])
         self.assertEqual(req.encode(), bytearray([0x7d, 0xab]))
 
-    def test_encode_coded_const_rerder(self):
+    def test_encode_coded_const_reorder(self):
         diag_coded_type = StandardLengthType("A_UINT32", 8)
         param1 = CodedConstParameter(
             "param1", diag_coded_type, coded_value=0x34, byte_position=1)
@@ -48,6 +49,16 @@ class TestEncodeRequest(unittest.TestCase):
             bytearray([0x3])  # encode(14) = (14-8)/2 = 3
         )
 
+    def test_encode_nrc_const(self):
+        diag_coded_type = StandardLengthType("A_UINT32", 8)
+        param1 = CodedConstParameter(
+            "param1", diag_coded_type, coded_value=0x12, byte_position=0)
+        param2 = NrcConstParameter(
+            "param2", diag_coded_type, coded_values=[0x34, 0xab], byte_position=1)
+        resp = Response("response_id", "response_sn", [param1, param2])
+        self.assertEqual(resp.encode(), bytearray([0x12, 0x34]))
+        self.assertEqual(resp.encode(param2=0xab), bytearray([0x12, 0xab]))
+        self.assertRaises(EncodeError, resp.encode, param2=0xef)
 
 if __name__ == '__main__':
     unittest.main()

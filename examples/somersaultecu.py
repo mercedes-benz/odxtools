@@ -44,6 +44,7 @@ from odxtools.parameters import CodedConstParameter
 from odxtools.parameters import ReservedParameter
 from odxtools.parameters import ValueParameter
 from odxtools.parameters import MatchingRequestParameter
+from odxtools.parameters import NrcConstParameter
 
 from odxtools.communicationparameter import CommunicationParameterRef
 
@@ -86,7 +87,7 @@ somersault_team_members = {
     TeamMember(id="TM.Doggy",
                short_name="Doggy",
                long_name="Doggy the dog",
-               description="Dog is man's best friend",
+               description="<p>Dog is man's best friend</p>",
                roles=["gymnast", "tracker"],
                department="sniffers",
                address="Some road",
@@ -100,7 +101,7 @@ somersault_team_members = {
     TeamMember(id="TM.Horsey",
                short_name="Horsey",
                long_name="Horsey the horse",
-               description="Trustworthy worker",
+               description="<p>Trustworthy worker</p>",
                roles=["gymnast" ],
                department="haulers",
                address="Some road",
@@ -120,7 +121,7 @@ somersault_company_datas = {
     CompanyData(id="CD.Suncus",
                 short_name="Suncus",
                 long_name="Circus of the sun",
-                description="Prestigious group of performers",
+                description="<p>Prestigious group of performers</p>",
                 roles=["circus", "gym"],
                 team_members=NamedItemList(lambda x: x.short_name,
                                            [
@@ -130,10 +131,10 @@ somersault_company_datas = {
                 company_specific_info=CompanySpecificInfo(
                     related_docs=[
                         RelatedDoc(
-                            description="We are the best!",
+                            description="<p>We are the best!</p>",
                             xdoc=XDoc(short_name="best",
                                       long_name="suncus is the best",
-                                      description="great propaganda...",
+                                      description="<p>great propaganda...</p>",
                                       number="1",
                                       state="published",
                                       date="2015-01-15T20:15:20+05:00",
@@ -719,10 +720,11 @@ somersault_negative_responses = {
                                           request_byte_position=0,
                                           byte_position=1,
                                           byte_length=1),
-                 ValueParameter(
+                 NrcConstParameter(
                      short_name="reason",
-                     dop_ref="somersault.DOP.error_code",
+                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                      byte_position=2,
+                     coded_values=[0, 1, 2]
                      # possible values (TODO: make this an enum parameter):
                      # 0 -> not sober
                      # 1 -> too dizzy

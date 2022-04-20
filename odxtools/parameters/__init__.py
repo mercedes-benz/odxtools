@@ -9,6 +9,7 @@ from .codedconstparameter import CodedConstParameter
 from .dynamicparameter import DynamicParameter
 from .lengthkeyparameter import LengthKeyParameter
 from .matchingrequestparameter import MatchingRequestParameter
+from .nrcconstparameter import NrcConstParameter
 from .physicalconstantparameter import PhysicalConstantParameter
 from .reservedparameter import ReservedParameter
 from .systemparameter import SystemParameter
