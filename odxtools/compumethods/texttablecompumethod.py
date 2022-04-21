@@ -24,7 +24,7 @@ class TexttableCompuMethod(CompuMethod):
             lambda scale: scale.compu_const == physical_value, self.internal_to_phys), None)
         if scale is not None:
             res = scale.compu_inverse_value if scale.compu_inverse_value is not None else scale.lower_limit.value
-            assert isinstance(res, int)
+            assert self.internal_type.isinstance(res)
             return res
 
     def __is_internal_in_scale(self, internal_value, scale: CompuScale):

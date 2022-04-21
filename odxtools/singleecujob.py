@@ -139,7 +139,7 @@ class SingleEcuJob:
     functional_class_refs: List[str] = field(default_factory=list)
     audience: Optional[Audience] = None
     # optional xsd:elements specific to SINGLE-ECU-JOB
-    # make_from(...) just tells the type checker to pretend its a list...
+    # cast(...) just tells the type checker to pretend it's a list...
     input_params: Union[NamedItemList[InputParam], List[InputParam]] \
         = cast(List[InputParam], field(default_factory=list))
     output_params: Union[NamedItemList[OutputParam], List[OutputParam]] \
