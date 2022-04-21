@@ -22,7 +22,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
     @property
     def physical_constant_value(self):
         # Cast to physical type
-        return self.dop.physical_type.base_data_type.cast_string(self._physical_constant_value)
+        return self.dop.physical_type.base_data_type.from_string(self._physical_constant_value)
 
     def is_required(self):
         return False

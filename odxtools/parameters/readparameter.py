@@ -77,7 +77,7 @@ def read_parameter_from_odx(et_element):
     elif parameter_type == "CODED-CONST":
         diag_coded_type = read_diag_coded_type_from_odx(
             et_element.find("DIAG-CODED-TYPE"))
-        coded_value = diag_coded_type.base_data_type.cast_string(
+        coded_value = diag_coded_type.base_data_type.from_string(
             et_element.find("CODED-VALUE").text)
 
         return CodedConstParameter(short_name,
@@ -92,7 +92,7 @@ def read_parameter_from_odx(et_element):
     elif parameter_type == "NRC-CONST":
         diag_coded_type = read_diag_coded_type_from_odx(
             et_element.find("DIAG-CODED-TYPE"))
-        coded_values = [diag_coded_type.base_data_type.cast_string(val.text)
+        coded_values = [diag_coded_type.base_data_type.from_string(val.text)
                         for val in et_element.iterfind("CODED-VALUES/CODED-VALUE")]
 
         return NrcConstParameter(short_name,

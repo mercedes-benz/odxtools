@@ -60,11 +60,16 @@ class DataType(Enum):
     def as_python_type(self) -> type:
         return _ODX_TYPE_TO_PYTHON_TYPE[self.value]
 
-    def cast_string(self, value: str) -> Union[int, float, str, bytearray]:
+    def from_string(self, value: str) -> Union[int, float, str, bytearray]:
         return _ODX_TYPE_PARSER[self.value](value)
 
-    def cast(self, value: Any) -> Union[int, float, str, bytearray]:
-        return self.as_python_type()(value)
+    def make_from(self, value: Any) -> Union[int, float, str, bytearray]:
+        if isinstance(value, str):
+            # parse the string
+            return self.from_string(value)
+        else:
+            # regular type cast of python objects
+            return self.as_python_type()(value)
 
     def isinstance(self, value: Any) -> bool:
         expected_type = self.as_python_type()
