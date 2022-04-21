@@ -4,12 +4,13 @@
 
 from ..diagcodedtypes import read_diag_coded_type_from_odx
 from ..globals import xsi
-from ..utils import read_description_from_odx
+from ..utils import read_element_id
 
 from .codedconstparameter import CodedConstParameter
 from .dynamicparameter import DynamicParameter
 from .lengthkeyparameter import LengthKeyParameter
 from .matchingrequestparameter import MatchingRequestParameter
+from .nrcconstparameter import NrcConstParameter
 from .physicalconstantparameter import PhysicalConstantParameter
 from .reservedparameter import ReservedParameter
 from .systemparameter import SystemParameter
@@ -20,13 +21,12 @@ from .valueparameter import ValueParameter
 
 
 def read_parameter_from_odx(et_element):
-    short_name = et_element.find("SHORT-NAME").text
+    element_id = read_element_id(et_element)
+    short_name = element_id["short_name"]
+    long_name = element_id.get("long_name")
+    description = element_id.get("description")
 
-    long_name = et_element.find(
-        "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
     semantic = et_element.get("SEMANTIC")
-
-    description = read_description_from_odx(et_element.find("DESC"))
 
     byte_position = int(et_element.find(
         "BYTE-POSITION").text) if et_element.find("BYTE-POSITION") is not None else None
@@ -88,6 +88,21 @@ def read_parameter_from_odx(et_element):
                                    byte_position=byte_position,
                                    bit_position=bit_position,
                                    description=description)
+
+    elif parameter_type == "NRC-CONST":
+        diag_coded_type = read_diag_coded_type_from_odx(
+            et_element.find("DIAG-CODED-TYPE"))
+        coded_values = [diag_coded_type.base_data_type.cast_string(val.text)
+                        for val in et_element.iterfind("CODED-VALUES/CODED-VALUE")]
+
+        return NrcConstParameter(short_name,
+                                 long_name=long_name,
+                                 semantic=semantic,
+                                 diag_coded_type=diag_coded_type,
+                                 coded_values=coded_values,
+                                 byte_position=byte_position,
+                                 bit_position=bit_position,
+                                 description=description)
 
     elif parameter_type == "RESERVED":
         bit_length = int(et_element.find("BIT-LENGTH").text)
@@ -152,6 +167,7 @@ def read_parameter_from_odx(et_element):
             "TABLE-KEY-REF").get("ID-REF") if et_element.find("TABLE-KEY-REF") is not None else None
         key_snref = et_element.find(
             "TABLE-KEY-SNREF").get("SHORT-NAME") if et_element.find("TABLE-KEY-SNREF") is not None else None
+
         return TableStructParameter(short_name=short_name,
                                     table_key_ref=key_ref,
                                     table_key_snref=key_snref,

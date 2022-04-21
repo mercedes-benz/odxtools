@@ -7,14 +7,19 @@ from xml.etree import ElementTree
 
 def read_description_from_odx(et_element: ElementTree.Element):
     """Read a DESCRIPTION element. The element usually has the name DESC."""
+    # TODO: Invent a better representation of a DESC element.
+    #       This just represents it as XHTML string. 
     if et_element is None:
         return None
 
     raw_string = ElementTree.tostring(et_element,
                                       encoding="unicode",
-                                      method="xml")
+                                      method="xml").strip()
     # Remove DESC start and end tag.
-    raw_string = "\n".join(raw_string.split("\n")[1:-2])
+    assert raw_string.startswith("<DESC>"), raw_string
+    assert raw_string.endswith("</DESC>"), raw_string
+    # Remove starting and ending tag
+    raw_string = raw_string[len("<DESC>"):-len("</DESC>")]
     return raw_string.strip()
 
 

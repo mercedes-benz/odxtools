@@ -38,6 +38,12 @@
  <CODED-VALUE>{{param.coded_value}}</CODED-VALUE>
 {%- elif param.physical_constant_value is defined %}
  <PHYS-CONSTANT-VALUE>{{param.physical_constant_value}}</PHYS-CONSTANT-VALUE>
+{%- elif param.coded_values is defined %}
+ <CODED-VALUES>
+ {%- for coded_value in param.coded_values %}
+  <CODED-VALUE>{{coded_value}}</CODED-VALUE>
+ {%- endfor %}
+ </CODED-VALUES>
 {%- endif %}
 {%- if param.dop_ref %}
  <DOP-REF ID-REF="{{param.dop_ref}}"/>

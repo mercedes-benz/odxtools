@@ -74,7 +74,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(cd.id, 'CD.Suncus')
         self.assertEqual(cd.short_name, 'Suncus')
         self.assertEqual(cd.long_name, 'Circus of the sun')
-        self.assertEqual(cd.description, 'Prestigious group of performers')
+        self.assertEqual(cd.description, '<p>Prestigious group of performers</p>')
         self.assertEqual(cd.roles, ['circus', 'gym'])
 
         self.assertEqual([x.short_name for x in cd.team_members],
@@ -87,7 +87,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(doggy.id, 'TM.Doggy')
         self.assertEqual(doggy.short_name, 'Doggy')
         self.assertEqual(doggy.long_name, 'Doggy the dog')
-        self.assertEqual(doggy.description, "Dog is man's best friend")
+        self.assertEqual(doggy.description, "<p>Dog is man's best friend</p>")
         self.assertEqual(doggy.roles, ['gymnast', 'tracker'])
         self.assertEqual(doggy.department, 'sniffers')
         self.assertEqual(doggy.address, 'Some road')
@@ -102,13 +102,13 @@ class TestDatabase(unittest.TestCase):
 
         rd = cd.company_specific_info.related_docs[0]
 
-        self.assertEqual(rd.description, 'We are the best!')
+        self.assertEqual(rd.description, '<p>We are the best!</p>')
         self.assertTrue(rd.xdoc is not None)
 
         xdoc = rd.xdoc
         self.assertEqual(xdoc.short_name, 'best')
         self.assertEqual(xdoc.long_name, 'suncus is the best')
-        self.assertEqual(xdoc.description, 'great propaganda...')
+        self.assertEqual(xdoc.description, '<p>great propaganda...</p>')
         self.assertEqual(xdoc.number, '1')
         self.assertEqual(xdoc.state, 'published')
         self.assertEqual(xdoc.date, '2015-01-15T20:15:20+05:00')
@@ -164,6 +164,21 @@ class TestDatabase(unittest.TestCase):
                              'num_flips_done'
                          ])
         self.assertEqual(pr.bit_length, 16)
+
+        nr = service.negative_responses.flips_not_done
+        self.assertEqual([x.short_name for x in nr.parameters],
+                         [
+                             'sid',
+                             'rq_sid',
+                             'reason',
+                             'flips_successfully_done'
+                         ])
+        self.assertEqual(nr.bit_length, 32)
+
+        nrc_const = nr.parameters.reason
+        self.assertEqual(nrc_const.parameter_type, 'NRC-CONST')
+        self.assertEqual(nrc_const.coded_values, [0, 1, 2])
+
 
 class TestDecode(unittest.TestCase):
 

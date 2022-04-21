@@ -29,7 +29,9 @@
  {%- if dct.dct_type in ("STANDARD-LENGTH-TYPE", "LEADING-LENGTH-INFO-TYPE") %}
  <BIT-LENGTH>{{dct.bit_length}}</BIT-LENGTH>
  {%- else %}
+ {%- if dct.max_length is not none %}
  <MAX-LENGTH>{{dct.max_length}}</MAX-LENGTH>
+ {%- endif %}
  <MIN-LENGTH>{{dct.min_length}}</MIN-LENGTH>
  {%- endif %}
 </DIAG-CODED-TYPE>
