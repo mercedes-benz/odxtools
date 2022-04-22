@@ -153,7 +153,7 @@ class LinearCompuMethod(CompuMethod):
 
         if self.internal_type == DataType.A_FLOAT64 and self.physical_type in [DataType.A_INT32, DataType.A_UINT32]:
             result = round(result)
-        return self.physical_type.cast(result)
+        return self.physical_type.make_from(result)
 
     def convert_internal_to_physical(self, internal_value) -> Union[int, float]:
         assert self.is_valid_internal_value(internal_value)
@@ -170,7 +170,7 @@ class LinearCompuMethod(CompuMethod):
 
         if self.physical_type == DataType.A_FLOAT64 and self.internal_type in [DataType.A_INT32, DataType.A_UINT32]:
             result = round(result)
-        return self.internal_type.cast(result)
+        return self.internal_type.make_from(result)
 
     def is_valid_physical_value(self, physical_value):
         # Do type checks

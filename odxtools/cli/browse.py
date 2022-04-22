@@ -18,13 +18,13 @@ import logging
 
 
 def _convert_string_to_odx_type(string_value: str, odx_type: DataType):
-    """Similar to odx_type.cast_string(string_value) but more relaxed to parse user input"""
+    """Similar to odx_type.from_string(string_value) but more relaxed to parse user input"""
     if odx_type == DataType.A_UINT32:
         return int(string_value, 0)
     elif odx_type == DataType.A_BYTEFIELD:
         return _convert_string_to_bytes(string_value)
     else:
-        return odx_type.cast_string(string_value)
+        return odx_type.from_string(string_value)
 
 
 def _convert_string_to_bytes(string_value):

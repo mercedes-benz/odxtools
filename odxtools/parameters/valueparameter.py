@@ -28,7 +28,7 @@ class ValueParameter(ParameterWithDOP):
         if self._physical_default_value is None:
             return None
         else:
-            return self.dop.physical_type.base_data_type.cast_string(self._physical_default_value)
+            return self.dop.physical_type.base_data_type.from_string(self._physical_default_value)
 
     def is_required(self):
         return True if self.physical_default_value is None else False

@@ -95,11 +95,10 @@ def read_limit_from_odx(et_element, internal_type: DataType):
                 limit = Limit(float("inf"), interval_type)
         else:
             if internal_type == DataType.A_BYTEFIELD:
-                limit = Limit(int("0x" + et_element.text, 16), interval_type)
-            elif internal_type.as_python_type() == float:
-                limit = Limit(float(et_element.text), interval_type)
+                limit = Limit(int(et_element.text, 16), interval_type)
             else:
-                limit = Limit(int(et_element.text, 10), interval_type)
+                limit = Limit(internal_type.from_string(et_element.text),
+                              interval_type)
     return limit
 
 
@@ -133,14 +132,10 @@ def read_compu_method_from_odx(et_element, internal_type: DataType, physical_typ
             upper_limit = read_limit_from_odx(scale.find("UPPER-LIMIT"),
                                               internal_type=internal_type)
 
-            if scale.find("COMPU-INVERSE-VALUE/VT") is not None:
-                compu_inverse_value = scale.find(
-                    "COMPU-INVERSE-VALUE/VT"
-                ).text
-            elif scale.find("COMPU-INVERSE-VALUE/V") is not None:
-                compu_inverse_value = float(
-                    scale.find("COMPU-INVERSE-VALUE/V").text
-                )
+            if (vt := scale.find("COMPU-INVERSE-VALUE/VT")) is not None:
+                compu_inverse_value = internal_type.from_string(vt)
+            elif (v := scale.find("COMPU-INVERSE-VALUE/V")) is not None:
+                compu_inverse_value = internal_type.from_string(v)
             else:
                 compu_inverse_value = None
 
@@ -155,9 +150,6 @@ def read_compu_method_from_odx(et_element, internal_type: DataType, physical_typ
             ))
 
         kwargs["internal_to_phys"] = internal_to_phys
-        for scale in internal_to_phys:
-            assert isinstance(scale.lower_limit.value, int) or isinstance(scale.upper_limit.value, int),\
-                "Text table compu method doesn't have expected format!"
         return TexttableCompuMethod(**kwargs)
 
     elif compu_category == "LINEAR":

@@ -17,10 +17,10 @@ class TabIntpCompuMethod(CompuMethod):
             "TODO: Implement table interpolation compu method properly!")
 
     def convert_physical_to_internal(self, physical_value):
-        return self.internal_type.cast(physical_value)
+        return self.internal_type.make_from(physical_value)
 
     def convert_internal_to_physical(self, internal_value):
-        return self.physical_type.cast(internal_value)
+        return self.physical_type.make_from(internal_value)
 
     def is_valid_physical_value(self, physical_value):
         return True
