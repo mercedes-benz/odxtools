@@ -11,8 +11,8 @@ def read_description_from_odx(et_element: ElementTree.Element):
     #       This just represents it as XHTML string. 
     if et_element is None:
         return None
-
-    raw_string = et_element.text + ''.join(ElementTree.tostring(e, encoding='unicode') for e in et_element)
+ 
+    raw_string = (et_element.text or '') + ''.join(ElementTree.tostring(e, encoding='unicode') for e in et_element)
 
     return raw_string.strip()
 
