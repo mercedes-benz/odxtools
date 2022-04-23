@@ -4,6 +4,8 @@
 from typing import Dict, Literal
 from xml.etree import ElementTree
 
+def content(tag):
+    return 
 
 def read_description_from_odx(et_element: ElementTree.Element):
     """Read a DESCRIPTION element. The element usually has the name DESC."""
@@ -12,14 +14,8 @@ def read_description_from_odx(et_element: ElementTree.Element):
     if et_element is None:
         return None
 
-    raw_string = ElementTree.tostring(et_element,
-                                      encoding="unicode",
-                                      method="xml").strip()
-    # Remove DESC start and end tag.
-    assert raw_string.startswith("<DESC>"), raw_string
-    assert raw_string.endswith("</DESC>"), raw_string
-    # Remove starting and ending tag
-    raw_string = raw_string[len("<DESC>"):-len("</DESC>")]
+    raw_string = et_element.text + ''.join(ET.tostring(e, encoding='unicode') for e in et_element)
+
     return raw_string.strip()
 
 
