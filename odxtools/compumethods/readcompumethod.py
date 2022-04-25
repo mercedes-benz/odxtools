@@ -133,9 +133,9 @@ def read_compu_method_from_odx(et_element, internal_type: DataType, physical_typ
                                               internal_type=internal_type)
 
             if (vt := scale.find("COMPU-INVERSE-VALUE/VT")) is not None:
-                compu_inverse_value = internal_type.from_string(vt)
+                compu_inverse_value = internal_type.from_string(vt.text)
             elif (v := scale.find("COMPU-INVERSE-VALUE/V")) is not None:
-                compu_inverse_value = internal_type.from_string(v)
+                compu_inverse_value = internal_type.from_string(v.text)
             else:
                 compu_inverse_value = None
 
