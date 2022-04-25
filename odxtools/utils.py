@@ -12,7 +12,9 @@ def read_description_from_odx(et_element: ElementTree.Element):
     if et_element is None:
         return None
  
-    raw_string = (et_element.text or '') + ''.join(ElementTree.tostring(e, encoding='unicode') for e in et_element)
+    raw_string = et_element.text
+    for e in et_element:
+        raw_string += ElementTree.tostring(e, encoding='unicode')
 
     return raw_string.strip()
 
