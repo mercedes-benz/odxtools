@@ -391,7 +391,9 @@ class Response(BasicStructure):
 def read_structure_from_odx(et_element) -> Union[Structure, Request, Response, None]:
     id = et_element.get("ID")
     short_name = et_element.find("SHORT-NAME").text
-    long_name = et_element.find("LONG-NAME").text
+    long_name = et_element.find("LONG-NAME")
+    if long_name is not None:
+        long_name = long_name.text
     description = read_description_from_odx(et_element.find("DESC"))
     parameters = [read_parameter_from_odx(et_parameter)
                   for et_parameter in et_element.iterfind("PARAMS/PARAM")]
