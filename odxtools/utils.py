@@ -11,15 +11,11 @@ def read_description_from_odx(et_element: ElementTree.Element):
     #       This just represents it as XHTML string. 
     if et_element is None:
         return None
+ 
+    raw_string = et_element.text or ''
+    for e in et_element:
+        raw_string += ElementTree.tostring(e, encoding='unicode')
 
-    raw_string = ElementTree.tostring(et_element,
-                                      encoding="unicode",
-                                      method="xml").strip()
-    # Remove DESC start and end tag.
-    assert raw_string.startswith("<DESC>"), raw_string
-    assert raw_string.endswith("</DESC>"), raw_string
-    # Remove starting and ending tag
-    raw_string = raw_string[len("<DESC>"):-len("</DESC>")]
     return raw_string.strip()
 
 
