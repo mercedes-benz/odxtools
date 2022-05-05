@@ -11,7 +11,7 @@ from .globals import logger
 from .nameditemlist import NamedItemList
 from .parameters import Parameter, ParameterWithDOP, read_parameter_from_odx
 from .parameters import CodedConstParameter, MatchingRequestParameter, ValueParameter
-from .utils import read_description_from_odx
+from .utils import read_description_from_odx, parameter_info
 
 
 class BasicStructure(DopBase):
@@ -52,7 +52,40 @@ class BasicStructure(DopBase):
         return prefix
 
     def get_required_parameters(self):
-        return filter(lambda p: p.is_required(), self.parameters)
+        """Return the list of parameters which can are required for
+        encoding the structure.  """
+        return [p for p in self.parameters if p.is_required()]
+
+    def get_free_parameters(self):
+        """Return the list of parameters which can be freely specified by
+        the user when encoding the structure.
+
+        This means all required parameters plus the parameters that
+        can be omitted minus those which are implicitly specified by
+        the corresponding request (in the case of responses).
+
+        """
+        from .endofpdufield import EndOfPduField
+
+        result = []
+        for param in self.parameters:
+            if isinstance(param, EndOfPduField):
+                result.append(param)
+                continue
+            elif not param.is_required():
+                continue
+            # The user cannot specify MatchingRequestParameters freely!
+            elif isinstance(param, MatchingRequestParameter):
+                continue
+            result.append(param)
+
+        return result
+
+    def free_parameters_info(self):
+        """Return a human readable description of the structure's
+        free parameters.
+        """
+        return parameter_info(self.get_free_parameters())
 
     def convert_physical_to_internal(self,
                                      param_values: dict,
