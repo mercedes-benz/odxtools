@@ -148,8 +148,12 @@ class DiagCodedType(abc.ABC):
                                           f" be a multiple of 16 but is {8*byte_length}")
         return byte_length
 
-    @abc.abstractclassmethod
-    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> Union[bytes, bytearray]:
+    @abc.abstractmethod
+    def convert_internal_to_bytes(self,
+                                  internal_value: Any,
+                                  encode_state: EncodeState,
+                                  bit_position: int) \
+                                  -> Union[bytes, bytearray]:
         """Encode the internal value.
 
         Parameters
@@ -164,7 +168,7 @@ class DiagCodedType(abc.ABC):
         """
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0) -> Any:
         """Decode the parameter value from the coded message.
 
@@ -199,7 +203,12 @@ class LeadingLengthInfoType(DiagCodedType):
             f"A leading length info type cannot have the base data type {self.base_data_type}."
         )
 
-    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> Union[bytes, bytearray]:
+    def convert_internal_to_bytes(self,
+                                  internal_value: Any,
+                                  encode_state: EncodeState,
+                                  bit_position: int) \
+                                  -> Union[bytes, bytearray]:
+
         byte_length = self._minimal_byte_length_of(internal_value)
 
         length_byte = self._to_bytes(byte_length,
