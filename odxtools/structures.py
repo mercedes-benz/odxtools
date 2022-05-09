@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import Dict, Iterable, Optional, OrderedDict, Union
+from typing import Any, List, Dict, Iterable, Optional, OrderedDict, Union
 
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState, ParameterValuePair
@@ -11,19 +11,18 @@ from .globals import logger
 from .nameditemlist import NamedItemList
 from .parameters import Parameter, ParameterWithDOP, read_parameter_from_odx
 from .parameters import CodedConstParameter, MatchingRequestParameter, ValueParameter
-from .utils import read_description_from_odx, parameter_info
-
+from .utils import read_description_from_odx
 
 class BasicStructure(DopBase):
     def __init__(self,
                  id,
                  short_name,
-                 parameters: Iterable[Parameter],
+                 parameters: Iterable[Union[Parameter, "EndOfPduField"]], # type: ignore
                  long_name=None,
                  byte_size=None,
                  description=None):
         super().__init__(id, short_name, long_name=long_name, description=description)
-        self.parameters = NamedItemList(lambda par: par.short_name, parameters)
+        self.parameters : NamedItemList[Union[Parameter, "EndOfPduField"]] = NamedItemList(lambda par: par.short_name, parameters) # type: ignore
 
         self._byte_size = byte_size
 
@@ -51,12 +50,12 @@ class BasicStructure(DopBase):
                 break
         return prefix
 
-    def get_required_parameters(self):
-        """Return the list of parameters which can are required for
-        encoding the structure.  """
+    def get_required_parameters(self) -> List[Parameter]:
+        """Return the list of parameters which are required for
+        encoding the structure."""
         return [p for p in self.parameters if p.is_required()]
 
-    def get_free_parameters(self):
+    def get_free_parameters(self) -> List[Union[Parameter, "EndOfPduField"]]: # type: ignore
         """Return the list of parameters which can be freely specified by
         the user when encoding the structure.
 
@@ -67,7 +66,7 @@ class BasicStructure(DopBase):
         """
         from .endofpdufield import EndOfPduField
 
-        result = []
+        result : List[Union[Parameter, EndOfPduField]] = []
         for param in self.parameters:
             if isinstance(param, EndOfPduField):
                 result.append(param)
@@ -81,10 +80,12 @@ class BasicStructure(DopBase):
 
         return result
 
-    def free_parameters_info(self):
+    def free_parameters_info(self) -> str:
         """Return a human readable description of the structure's
         free parameters.
         """
+        from .parameter_info import parameter_info
+
         return parameter_info(self.get_free_parameters())
 
     def convert_physical_to_internal(self,

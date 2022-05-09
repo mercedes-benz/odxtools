@@ -23,7 +23,7 @@ class CompuMethod:
         raise NotImplementedError()
 
     @abc.abstractclassmethod
-    def convert_internal_to_physical(self, internal_value):
+    def convert_internal_to_physical(self, internal_value) -> Union[int, float, str]:
         raise NotImplementedError()
 
     @abc.abstractclassmethod

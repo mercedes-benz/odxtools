@@ -40,7 +40,7 @@ class EndOfPduField(DopBase):
         self.is_visible = is_visible
 
     @property
-    def structure(self) -> BasicStructure:
+    def structure(self) -> "BasicStructure":
         """may be a Structure or a env-data-desc"""
         return self._structure
 

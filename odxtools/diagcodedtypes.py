@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 import abc
-from typing import Union
+from typing import Any, Union
 
 from .odxtypes import DataType
 from .exceptions import DecodeError, EncodeError
@@ -149,7 +149,7 @@ class DiagCodedType(abc.ABC):
         return byte_length
 
     @abc.abstractclassmethod
-    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> bytes:
+    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> Union[bytes, bytearray]:
         """Encode the internal value.
 
         Parameters
@@ -165,7 +165,7 @@ class DiagCodedType(abc.ABC):
         pass
 
     @abc.abstractclassmethod
-    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
+    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0) -> Any:
         """Decode the parameter value from the coded message.
 
         Parameters
