@@ -31,26 +31,26 @@ class Parameter(abc.ABC):
     def bit_length(self) -> Optional[int]:
         return None
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def is_required(self):
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def is_optional(self):
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get_coded_value(self):
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         """Get the coded value of the parameter given the encode state.
         Note that this method is called by `encode_into_pdu`.
         """
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def decode_from_pdu(self, decode_state: DecodeState):
         """Decode the parameter value from the coded message.
 

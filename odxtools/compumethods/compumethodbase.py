@@ -18,19 +18,16 @@ class CompuMethod:
         self.physical_type = DataType(physical_type)
         self.category = category
 
-    @abc.abstractclassmethod
     def convert_physical_to_internal(self, physical_value):
         raise NotImplementedError()
 
-    @abc.abstractclassmethod
-    def convert_internal_to_physical(self, internal_value):
+    def convert_internal_to_physical(self, internal_value) \
+        -> Union[int, float, str]:
         raise NotImplementedError()
 
-    @abc.abstractclassmethod
     def is_valid_physical_value(self, physical_value):
         raise NotImplementedError()
 
-    @abc.abstractclassmethod
     def is_valid_internal_value(self, internal_value):
         raise NotImplementedError()
 

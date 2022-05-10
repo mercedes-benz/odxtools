@@ -202,19 +202,35 @@ class TestDecode(unittest.TestCase):
         self.assertEqual(m.structure, odxdb.ecus.somersault_assiduous.services.do_backward_flips.request)
         self.assertEqual(m.param_dict, {"sid": 0xbb, "backward_soberness_check": 0x21, "num_flips": 0x02})
 
-    def test_decode_response(self):
-        raw_request_message = odxdb.ecus.somersault_lazy.services.do_forward_flips(forward_soberness_check=0x12, num_flips=3)
-        # TODO: responses currently don't seem to be inherited. (if
-        # done, change "diag_layers.somersault" to
-        # "ecus.somersault_lazy" here)
-        db_response = next(filter(lambda x: x.short_name == "grudging_forward", odxdb.diag_layers.somersault.positive_responses))
-        raw_response_message = db_response.encode(raw_request_message)
+    def test_free_param_info(self):
+        ecu = odxdb.ecus.somersault_lazy
+        service = ecu.services.do_forward_flips
+        request = service.request
+        pos_response = service.positive_responses.grudging_forward
+        neg_response = service.negative_responses.flips_not_done
 
-        messages = odxdb.diag_layers.somersault.decode_response(raw_response_message, raw_request_message)
+        free_param_info = request.free_parameters_info()
+        self.assertEqual(free_param_info, 'forward_soberness_check: uint8\nnum_flips: uint8\n')
+
+        free_param_info = pos_response.free_parameters_info()
+        self.assertEqual(free_param_info, '')
+
+        free_param_info = neg_response.free_parameters_info()
+        self.assertEqual(free_param_info, 'flips_successfully_done: uint8\n')
+
+    def test_decode_response(self):
+        ecu = odxdb.ecus.somersault_lazy
+        service = ecu.services.do_forward_flips
+        raw_request_message = service(forward_soberness_check=0x12, num_flips=3)
+        pos_response = service.positive_responses.grudging_forward
+
+        raw_response_message = pos_response.encode(raw_request_message)
+
+        messages = ecu.decode_response(raw_response_message, raw_request_message)
         self.assertTrue(len(messages) == 1, f"There should be only one service for 0x0145 but there are: {messages}")
         m = messages[0]
         self.assertEqual(m.coded_message, bytes([0xfa, 0x03]))
-        self.assertEqual(m.structure, db_response)
+        self.assertEqual(m.structure, pos_response)
         self.assertEqual(m.param_dict,
                          { 'sid': 0xfa, 'num_flips_done': bytearray([0x03]) })
 

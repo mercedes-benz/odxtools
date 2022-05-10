@@ -4,6 +4,7 @@
 from typing import Dict, Literal
 from xml.etree import ElementTree
 
+import re
 
 def read_description_from_odx(et_element: ElementTree.Element):
     """Read a DESCRIPTION element. The element usually has the name DESC."""

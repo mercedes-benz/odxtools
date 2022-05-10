@@ -155,7 +155,8 @@ class LinearCompuMethod(CompuMethod):
             result = round(result)
         return self.physical_type.make_from(result)
 
-    def convert_internal_to_physical(self, internal_value) -> Union[int, float]:
+    def convert_internal_to_physical(self, internal_value) \
+        -> Union[int, float]:
         assert self.is_valid_internal_value(internal_value)
         return self._convert_internal_to_physical(internal_value)
 

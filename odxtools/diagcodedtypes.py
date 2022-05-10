@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 import abc
-from typing import Union
+from typing import Any, Union
 
 from .odxtypes import DataType
 from .exceptions import DecodeError, EncodeError
@@ -148,8 +148,12 @@ class DiagCodedType(abc.ABC):
                                           f" be a multiple of 16 but is {8*byte_length}")
         return byte_length
 
-    @abc.abstractclassmethod
-    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> bytes:
+    @abc.abstractmethod
+    def convert_internal_to_bytes(self,
+                                  internal_value: Any,
+                                  encode_state: EncodeState,
+                                  bit_position: int) \
+                                  -> Union[bytes, bytearray]:
         """Encode the internal value.
 
         Parameters
@@ -164,8 +168,8 @@ class DiagCodedType(abc.ABC):
         """
         pass
 
-    @abc.abstractclassmethod
-    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
+    @abc.abstractmethod
+    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0) -> Any:
         """Decode the parameter value from the coded message.
 
         Parameters
@@ -199,7 +203,12 @@ class LeadingLengthInfoType(DiagCodedType):
             f"A leading length info type cannot have the base data type {self.base_data_type}."
         )
 
-    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> Union[bytes, bytearray]:
+    def convert_internal_to_bytes(self,
+                                  internal_value: Any,
+                                  encode_state: EncodeState,
+                                  bit_position: int) \
+                                  -> Union[bytes, bytearray]:
+
         byte_length = self._minimal_byte_length_of(internal_value)
 
         length_byte = self._to_bytes(byte_length,

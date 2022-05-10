@@ -20,7 +20,7 @@ class NamedItemList(Generic[T]):
     returned by the item-to-name function are valid identifiers in python.
     """
 
-    def __init__(self, item_to_name_fn: Callable[[T], str], input_list: Iterable[T] = None):
+    def __init__(self, item_to_name_fn: Callable[[T], str], input_list: Optional[Iterable[T]] = None):
         self._item_to_name_fn = item_to_name_fn
         self._list: List[T] = []
         # TODO (?): This duplicates self.__dict__ -> Is there a prettier type-safe way?

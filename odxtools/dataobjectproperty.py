@@ -33,12 +33,12 @@ class DopBase(abc.ABC):
         self.description = description
         self.is_visible = is_visible
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState, bit_position: int) -> bytes:
         """Convert the physical value into bytes."""
         pass
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
         """Extract the bytes from the PDU and convert them to the physical value."""
         pass
