@@ -168,7 +168,23 @@ def read_compu_method_from_odx(et_element, internal_type: DataType, physical_typ
         return ScaleLinearCompuMethod(linear_methods)
 
     elif compu_category == "TAB-INTP":
-        return TabIntpCompuMethod(internal_type=internal_type, physical_type=physical_type)
+
+        scales = et_element.findall(
+            "COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE")
+        internal = [scale.findtext("LOWER-LIMIT") for scale in scales]
+        physical = [scale.findtext("COMPU-CONST/V") for scale in scales]
+
+        # cast to correct type
+        if internal_type in [DataType.A_INT32, DataType.A_UINT32]:
+            internal = [int(x) for x in internal]
+        else:
+            internal = [float(x) for x in internal]
+        if physical_type in [DataType.A_INT32, DataType.A_UINT32]:
+            physical = [int(x) for x in physical]
+        else:
+            physical = [float(x) for x in physical]
+
+        return TabIntpCompuMethod(internal_type=internal_type, physical_type=physical_type, internal_points=internal, physical_points=physical)
 
     # TODO: Implement other categories (never instantiate CompuMethod)
     logger.warning(
