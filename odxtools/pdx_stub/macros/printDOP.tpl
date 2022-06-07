@@ -137,6 +137,19 @@
   {%- endfor %}
 		</COMPU-SCALES>
  </COMPU-INTERNAL-TO-PHYS>
+ {%- elif cm.category == "TAB-INTP" %}
+ <COMPU-INTERNAL-TO-PHYS>
+  <COMPU-SCALES>
+  {%- for idx in range( cm.internal_points | length ) %}
+   <COMPU-SCALE>
+    <LOWER-LIMIT INTERVAL-TYPE="CLOSED">{{ cm.internal_points[idx] }}</LOWER-LIMIT>
+    <COMPU-CONST>
+     <V>{{ cm.physical_points[idx] }}</V>
+    </COMPU-CONST>
+   </COMPU-SCALE>
+  {%- endfor %}
+  </COMPU-SCALES>
+ </COMPU-INTERNAL-TO-PHYS>
  {%- endif %}
 </COMPU-METHOD>
 {%- endmacro -%}
