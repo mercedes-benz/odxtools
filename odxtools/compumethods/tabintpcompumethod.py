@@ -37,10 +37,10 @@ class TabIntpCompuMethod(CompuMethod):
             internal_points=[0, 10, 30],
             physical_points=[-1, 1, 2]
         )
-    
+
     Note that the points are given as two lists. The equivalent odx definition is::
-    
-        <COMPU-METHOD> 
+
+        <COMPU-METHOD>
             <CATEGORY>TAB-INTP</CATEGORY>
             <COMPU-INTERNAL-TO-PHYS>
                 <COMPU-SCALES>
@@ -87,11 +87,11 @@ class TabIntpCompuMethod(CompuMethod):
         self._assert_validity()
 
     @property
-    def physical_lower_limit(self):
+    def physical_lower_limit(self) -> Limit:
         return self._physical_lower_limit
 
     @property
-    def physical_upper_limit(self):
+    def physical_upper_limit(self) -> Limit:
         return self._physical_upper_limit
 
     def _assert_validity(self) -> None:
@@ -109,14 +109,14 @@ class TabIntpCompuMethod(CompuMethod):
     def _piecewise_linear_interpolate(self,
                                       x: Union[int, float],
                                       points: List[Tuple[Union[int, float], Union[int, float]]]) \
-            -> Union[float, int, None]:
+            -> Union[float, None]:
         for ((x0, y0), (x1, y1)) in zip(points[:-1], points[1:]):
             if x0 <= x and x <= x1:
                 return y0 + (x - x0) * (y1 - y0) / (x1 - x0)
 
         return None
 
-    def convert_physical_to_internal(self, physical_value: Union[int, float]):
+    def convert_physical_to_internal(self, physical_value: Union[int, float]) -> Union[int, float]:
         reference_points = list(zip(
             self.physical_points, self.internal_points))
         result = self._piecewise_linear_interpolate(
@@ -125,9 +125,11 @@ class TabIntpCompuMethod(CompuMethod):
         if result is None:
             raise EncodeError(f"Internal value {physical_value} must be inside the range"
                               f" [{min(self.physical_points)}, {max(self.physical_points)}]")
-        return self.internal_type.make_from(result)
+        res = self.internal_type.make_from(result)
+        assert isinstance(res, (int, float))
+        return res
 
-    def convert_internal_to_physical(self, internal_value: Union[int, float]):
+    def convert_internal_to_physical(self, internal_value: Union[int, float]) -> Union[int, float]:
         reference_points = list(zip(
             self.internal_points, self.physical_points))
         result = self._piecewise_linear_interpolate(
@@ -136,10 +138,12 @@ class TabIntpCompuMethod(CompuMethod):
         if result is None:
             raise DecodeError(f"Internal value {internal_value} must be inside the range"
                               f" [{min(self.internal_points)}, {max(self.internal_points)}]")
-        return self.physical_type.make_from(result)
+        res = self.physical_type.make_from(result)
+        assert isinstance(res, (int, float))
+        return res
 
-    def is_valid_physical_value(self, physical_value):
+    def is_valid_physical_value(self, physical_value: Union[int, float]) -> bool:
         return min(self.physical_points) <= physical_value and physical_value <= max(self.physical_points)
 
-    def is_valid_internal_value(self, internal_value):
+    def is_valid_internal_value(self, internal_value: Union[int, float]) -> bool:
         return min(self.internal_points) <= internal_value and internal_value <= max(self.internal_points)
