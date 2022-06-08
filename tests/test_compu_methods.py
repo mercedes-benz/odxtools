@@ -1,13 +1,22 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+import inspect
+import os
 import unittest
+from xml.etree import ElementTree
 
-from odxtools.compumethods import Limit, LinearCompuMethod, IntervalType
+import jinja2
+import odxtools
+
+from odxtools.compumethods import Limit, LinearCompuMethod, IntervalType, TabIntpCompuMethod
+from odxtools.compumethods.readcompumethod import read_compu_method_from_odx
+from odxtools.exceptions import DecodeError, EncodeError
+from odxtools.odxtypes import DataType
 
 
 class TestLinearCompuMethod(unittest.TestCase):
-    def test_linear_compu_method(self):
+    def test_linear_compu_method_type_int_int(self):
         compu_method = LinearCompuMethod(1, 3, "A_INT32", "A_INT32")
 
         self.assertEqual(compu_method.convert_internal_to_physical(4), 13)
@@ -88,6 +97,118 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertTrue(compu_method.is_valid_physical_value(-14))
         self.assertFalse(compu_method.is_valid_physical_value(-75))
         self.assertFalse(compu_method.is_valid_physical_value(-13))
+
+
+class TestTabIntpCompuMethod(unittest.TestCase):
+    def setUp(self) -> None:
+        """Prepares the jinja environment and the sample tab-intp compumethod"""
+
+        def _get_jinja_environment():
+            __module_filname = inspect.getsourcefile(odxtools)
+            assert isinstance(__module_filname, str)
+            stub_dir = os.path.sep.join([os.path.dirname(__module_filname),
+                                        "pdx_stub"])
+
+            jinja_env = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(stub_dir))
+
+            # allows to put XML attributes on a separate line while it is
+            # collapsed with the previous line in the rendering
+            jinja_env.filters["odxtools_collapse_xml_attribute"] = lambda x: " " + \
+                x.strip() if x.strip() else ""
+            return jinja_env
+
+        self.jinja_env = _get_jinja_environment()
+
+        self.compumethod = TabIntpCompuMethod(DataType.A_INT32,
+                                              DataType.A_FLOAT32,
+                                              internal_points=[0, 10, 30],
+                                              physical_points=[-1, 1, 2]
+                                              )
+
+        self.compumethod_odx = f"""
+        <COMPU-METHOD>
+            <CATEGORY>TAB-INTP</CATEGORY>
+            <COMPU-INTERNAL-TO-PHYS>
+                <COMPU-SCALES>
+                    <COMPU-SCALE>
+                        <LOWER-LIMIT INTERVAL-TYPE="CLOSED">{self.compumethod.internal_points[0]}</LOWER-LIMIT>
+                        <COMPU-CONST>
+                            <V>{self.compumethod.physical_points[0]}</V>
+                        </COMPU-CONST>
+                    </COMPU-SCALE>
+                    <COMPU-SCALE>
+                        <LOWER-LIMIT INTERVAL-TYPE="CLOSED">{self.compumethod.internal_points[1]}</LOWER-LIMIT>
+                        <COMPU-CONST>
+                            <V>{self.compumethod.physical_points[1]}</V>
+                        </COMPU-CONST>
+                    </COMPU-SCALE>
+                    <COMPU-SCALE>
+                        <LOWER-LIMIT INTERVAL-TYPE="CLOSED">{self.compumethod.internal_points[2]}</LOWER-LIMIT>
+                        <COMPU-CONST>
+                            <V>{self.compumethod.physical_points[2]}</V>
+                        </COMPU-CONST>
+                    </COMPU-SCALE>
+                </COMPU-SCALES>
+            </COMPU-INTERNAL-TO-PHYS>
+        </COMPU-METHOD>
+        """
+
+    def test_tabintp_convert_type_int_float(self):
+        method = self.compumethod
+
+        for internal, physical in [
+            (0, -1),
+            (2, -0.6),
+            (3, -0.4),
+            (5, 0),
+            (10, 1),
+            (20, 1.5),
+            (25, 1.75),
+            (30, 2)
+        ]:
+            self.assertTrue(method.is_valid_internal_value(internal))
+            self.assertTrue(method.is_valid_physical_value(physical))
+            self.assertEqual(method.convert_internal_to_physical(internal),
+                             physical)
+            self.assertEqual(method.convert_physical_to_internal(physical),
+                             internal)
+
+        self.assertRaises(DecodeError,
+                          method.convert_internal_to_physical, -2)
+        self.assertRaises(DecodeError,
+                          method.convert_internal_to_physical, 31)
+        self.assertRaises(EncodeError,
+                          method.convert_physical_to_internal, -2)
+        self.assertRaises(EncodeError,
+                          method.convert_physical_to_internal, 2.1)
+
+    def test_read_odx(self):
+        expected = self.compumethod
+
+        et_element = ElementTree.fromstring(self.compumethod_odx)
+        actual = read_compu_method_from_odx(et_element,
+                                            expected.internal_type,
+                                            expected.physical_type)
+        self.assertIsInstance(actual, TabIntpCompuMethod)
+        self.assertEqual(expected.physical_type, actual.physical_type)
+        self.assertEqual(expected.internal_type, actual.internal_type)
+        self.assertEqual(expected.internal_points, actual.internal_points)
+        self.assertEqual(expected.physical_points, actual.physical_points)
+
+    def test_write_odx(self):
+        dlc_tpl = self.jinja_env.get_template("macros/printDOP.tpl")
+        module = dlc_tpl.make_module()
+
+        out = module.printCompuMethod(self.compumethod)
+
+        expected_odx = self.compumethod_odx
+
+        # We ignore spaces
+        def remove_spaces(string):
+            return "".join(string.split())
+
+        self.assertEqual(remove_spaces(out), remove_spaces(expected_odx))
 
 
 if __name__ == '__main__':
