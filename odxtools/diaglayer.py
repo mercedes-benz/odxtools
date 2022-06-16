@@ -23,7 +23,7 @@ from .service import DiagService, read_diag_service_from_odx
 from .singleecujob import SingleEcuJob, read_single_ecu_job_from_odx
 from .structures import Request, Response, read_structure_from_odx
 
-# Defines priority of overiding objects
+# Defines priority of overriding objects
 PRIORITY_OF_DIAG_LAYER_TYPE = {
     "PROTOCOL": 1,
     "FUNCTIONAL-GROUP": 2,
@@ -454,7 +454,7 @@ class DiagLayer:
 
             else:
                 # assume the parameter order specified by the COMPARAM
-                # fragment of the the ASAM MCD2-D standard.
+                # fragment of the ASAM MCD2-D standard.
                 return int(com_param.value[1])
 
     def get_send_id(self):
@@ -473,8 +473,24 @@ class DiagLayer:
                 return int(com_param.value[5])
             else:
                 # assume the parameter order specified by the COMPARAM
-                # fragment of the the ASAM MCD2-D standard.
+                # fragment of the ASAM MCD2-D standard.
                 return int(com_param.value[4])
+
+    def get_doip_logical_gateway_address(self):
+        """The logical address of the DoIP gateway."""
+        com_param = self.communication_parameters["ISO_13400_2_DIS_2015__CP_DoIPLogicalGatewayAddress"]
+        if com_param is None:
+            return None
+        else:
+            return int(com_param.value)
+
+    def get_doip_logical_functional_address(self):
+        """The logical functional address of the DoIP gateway."""
+        com_param = self.communication_parameters["ISO_13400_2_DIS_2015__CP_DoIPLogicalFunctionalAddress"]
+        if com_param is None:
+            return None
+        else:
+            return int(com_param.value)
 
     def get_tester_present_time(self):
         """Timeout on inactivity in seconds.
