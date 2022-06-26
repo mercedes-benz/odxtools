@@ -476,6 +476,14 @@ class DiagLayer:
                 # fragment of the ASAM MCD2-D standard.
                 return int(com_param.value[4])
 
+    def get_can_func_req_id(self):
+        """CAN Functional Request Id."""
+        com_param = self.communication_parameters["ISO_15765_2__CP_CanFuncReqId"]
+        if com_param is None:
+            return None
+        else:
+            return int(com_param.value)
+
     def get_doip_logical_gateway_address(self):
         """The logical address of the DoIP gateway."""
         com_param = self.communication_parameters["ISO_13400_2_DIS_2015__CP_DoIPLogicalGatewayAddress"]
