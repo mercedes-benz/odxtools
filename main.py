@@ -1,4 +1,7 @@
+import os
+
 import odxtools
+from logger import get_formatted_logger
 
 
 def list_public_attributes(obj):
@@ -13,7 +16,11 @@ def list_callable_functions(obj):
             callable(getattr(obj, attribute))]
 
 
-db = odxtools.load_file("/Users/smileprem/Downloads/ODX/Volta/AVAS_V2.0.0.pdx")
+os.environ['LOGGER_LEVEL'] = '20'
+logger = get_formatted_logger()
+
+db = odxtools.load_file("/Users/smileprem/Downloads/ODX/Volta/AVAS_V2.0.1.pdx")
+print(db.id_lookup['_New_ECU_1_306'])
 electronicControlUnits = []
 services = []
 for ecu in db.ecus:
