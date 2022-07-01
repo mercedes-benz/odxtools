@@ -26,9 +26,9 @@ somersault_lazy_diag_layer = somersaultecu.database.ecus.somersault_lazy
 # the raw payload data of the telegrams received by the ECU and by the
 # tester when in sterile mode (unittest without a CAN channel)
 sterile_rx_ecu = []
-sterile_rx_ecu_event = asyncio.Event()
+sterile_rx_ecu_event = None
 sterile_rx_tester = []
-sterile_rx_tester_event = asyncio.Event()
+sterile_rx_tester_event = None
 
 def create_isotp_socket(channel, rxid, txid):
     if is_sterile:
@@ -332,7 +332,7 @@ class SomersaultLazyEcu:
         cst = self._auto_close_session_task()
         hrt = self._handle_requests_task()
 
-        await asyncio.wait([cst, hrt])
+        await asyncio.gather(cst, hrt)
 
 
     async def _auto_close_session_task(self):
@@ -458,9 +458,13 @@ async def tester_main():
 
 async def main(args):
     global is_sterile
+    global sterile_rx_ecu_event
+    global sterile_rx_tester_event
 
     if args.mode == "unittest":
         is_sterile = args.channel is None
+        sterile_rx_ecu_event = asyncio.Event()
+        sterile_rx_tester_event = asyncio.Event()
     elif args.channel is None:
         print("A CAN channel must be specified when not in unittest mode.")
         return
@@ -515,6 +519,5 @@ args = parser.parse_args() # deals with the help message handling
 
 can_channel = args.channel
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main(args))
+asyncio.run(main(args))
 

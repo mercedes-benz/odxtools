@@ -15,9 +15,9 @@ def jinja2_odxraise_helper(msg):
     raise Exception(msg)
 
 
-__module_filname = inspect.getsourcefile(odxtools)
-assert isinstance(__module_filname, str)
-__pdx_stub_dir = os.path.sep.join([os.path.dirname(__module_filname),
+__module_filename = inspect.getsourcefile(odxtools)
+assert isinstance(__module_filename, str)
+__pdx_stub_dir = os.path.sep.join([os.path.dirname(__module_filename),
                                   "pdx_stub"])
 def write_pdx_file(output_file_name : str,
                    database : odxtools.Database,
