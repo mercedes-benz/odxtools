@@ -517,6 +517,11 @@ The static type checker can be run via
 python3 -m mypy --ignore-missing-imports odxtools
 ```
 
+The static type checker can be run via
+```
+$ python3 -m mypy --ignore-missing-imports --python-version 3.8 odxtools
+```
+
 ## Contributing
 
 We welcome any contributions.  If you want to contribute to this
