@@ -33,7 +33,7 @@ class TableRow:
     long_name: str
     key: int
     structure_ref: str
-    _structure: Optional[Structure]
+    _structure: Optional[Structure] = None
 
     @property
     def structure(self) -> Optional[Structure]:
@@ -111,7 +111,8 @@ def read_table_row_from_odx(et_element):
         short_name=short_name,
         long_name=long_name,
         key=key,
-        structure_ref=structure_ref
+        structure_ref=structure_ref,
+        _structure=None
     )
 
     return table_row
