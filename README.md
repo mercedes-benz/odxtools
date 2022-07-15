@@ -491,7 +491,7 @@ $ python3 -m mypy --ignore-missing-imports --python-version 3.8 odxtools
 ## Contributing
 
 We welcome any contributions.  If you want to contribute to this
-project, please read the [contributing guide](https://github.com/mercedes-benz/daimler-foss/blob/master/CONTRIBUTING.md).
+project, please read the [contributing guide](https://github.com/mercedes-benz/odxtools/blob/main/CONTRIBUTING.md).
 
 ## Code of Conduct
 
@@ -500,7 +500,7 @@ as it is our base for interaction.
 
 ## License
 
-This project is licensed under the [MIT LICENSE]((https://github.com/mercedes-benz/daimler-foss/blob/master/LICENSE).
+This project is licensed under the [MIT LICENSE](https://github.com/mercedes-benz/odxtools/blob/main/LICENSE).
 
 ## Provider Information
 
