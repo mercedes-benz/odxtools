@@ -483,6 +483,11 @@ The included unit tests can be run via
 $ python -m unittest tests/test_*.py
 ```
 
+The static type checker can be run via
+```
+$ python3 -m mypy --ignore-missing-imports --python-version 3.8 odxtools
+```
+
 ## Contributing
 
 We welcome any contributions.  If you want to contribute to this

@@ -30,10 +30,10 @@ class TableRow:
 
     id: str
     short_name: str
+    long_name: str
     key: int
-    structure_ref: Optional[str] = None
-    long_name: str = None
-    _structure: Structure = None
+    structure_ref: str
+    _structure: Optional[Structure]
 
     @property
     def structure(self) -> Optional[Structure]:
@@ -64,6 +64,13 @@ class Table(TableBase):
     @property
     def key_dop(self) -> Optional[DataObjectProperty]:
         return self._key_dop
+
+    def _build_id_lookup(self):
+        id_lookup = {}
+        id_lookup.update({
+            table_row.id: table_row for table_row in self.table_rows
+        })
+        return id_lookup
 
     def _resolve_references(self, id_lookup):
         """Resolves the reference to the KEY-DOP-REF"""
