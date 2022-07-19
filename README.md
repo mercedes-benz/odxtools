@@ -479,13 +479,13 @@ without the decoded request, and `-s <name>` can be used to find a service by pa
 ## Testing
 
 The included unit tests can be run via
-```
+```bash
 $ python -m unittest tests/test_*.py
 ```
 
 The static type checker can be run via
-```
-$ python3 -m mypy --ignore-missing-imports --python-version 3.8 odxtools
+```bash
+$ python3 -m mypy --ignore-missing-imports odxtools
 ```
 
 ## Contributing

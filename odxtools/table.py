@@ -18,7 +18,7 @@ class TableBase(abc.ABC):
         self.key_dop_ref = key_dop_ref
 
 
-@dataclass()
+@dataclass
 class TableRow:
     """This class represents a TABLE-ROW."""
 
