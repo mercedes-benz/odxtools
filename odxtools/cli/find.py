@@ -5,6 +5,7 @@ import argparse
 from typing import Dict, List
 
 from ._print_utils import print_diagnostic_service
+from .. import SingleEcuJob
 from ..database import Database
 from ..service import DiagService
 from . import _parser_utils
@@ -67,12 +68,18 @@ def print_summary(odxdb: Database,
         print(f"\n{filler}")
         print(f"{', '.join(ecu_names)}")
         print(f"{filler}\n\n")
-        print_diagnostic_service(service,
-                                 print_params=print_params,
-                                 allow_unknown_bit_lengths=allow_unknown_bit_lengths,
-                                 print_pre_condition_states=True,
-                                 print_state_transitions=True,
-                                 print_audiences=True)
+        if isinstance(service, DiagService):
+            print_diagnostic_service(service,
+                                     print_params=print_params,
+                                     allow_unknown_bit_lengths=allow_unknown_bit_lengths,
+                                     print_pre_condition_states=True,
+                                     print_state_transitions=True,
+                                     print_audiences=True)
+        elif isinstance(service, SingleEcuJob):
+            print(f"SingleEcuJob: {service.id}")
+        else:
+            print(f"Unknown service: {service}")
+
         if decode:
             print_decoded_message(service, data)
 
