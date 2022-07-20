@@ -33,6 +33,27 @@ internalizing ODX diagnostic database files as well as de- and
 encoding the data of diagnostic requests and their responses
 send to/received from ECUs in an pythonic manner.
 
+## Table of Contents
+
+- [Use Cases](#use-cases)
+- [Installation](#installation)
+- [Usage Examples](#usage-examples)
+  - [Python snippets](#python-snippets)
+- [Interactive Usage](#interactive-usage)
+  - [Python REPL](#python-repl)
+- [Command line usage](#command-line-usage)
+  - [Generic parameters](#generic-parameters)
+  - [The `list` subcommand](#the-list-subcommand)
+  - [The `browse` subcommand](#the-browse-subcommand)
+  - [The `snoop` subcommand](#the-snoop-subcommand)
+  - [The `find` subcommand](#the-find-subcommand)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [Code of Conduct](#code-of-conduct)
+- [Provider Information](#provider-information)
+- [Acknowledgements](#acknowledgements)
+- [License](#license)
+
 ## Use Cases
 
 Here are some of the intended use cases of `odxtools`:
@@ -108,70 +129,76 @@ python3 -m odxtools list -a "$YOUR_PDX_FILE"
 
 - Load an ODX database from file `somersault.pdx`:
 
-```python
-import odxtools
+  ```python
+  import odxtools
 
-db = odxtools.load_pdx_file("somersault.pdx", enable_candela_workarounds=False)
-```
+  db = odxtools.load_pdx_file("somersault.pdx", enable_candela_workarounds=False)
+  ```
+
 - List the names of all available services of the `somersault_lazy` ECU:
-```python
-# [...]
 
-ecu = db.ecus.somersault_lazy
-print(f"Available services for {ecu.short_name}: {ecu.services}")
-```
+  ```python
+  # [...]
+
+  ecu = db.ecus.somersault_lazy
+  print(f"Available services for {ecu.short_name}: {ecu.services}")
+  ```
 
 - Determine the CAN IDs which the `somersault_lazy` ECU uses to send
   and receive diagnostic messages:
 
-```python
-# [...]
+  ```python
+  # [...]
 
-print(f"ECU {ecu.short_name} listens for requests on CAN ID 0x{ecu.get_receive_id():x}")
-print(f"ECU {ecu.short_name} transmits responses on CAN ID 0x{ecu.get_send_id():x}")
-```
+  print(f"ECU {ecu.short_name} listens for requests on CAN ID 0x{ecu.get_receive_id():x}")
+  print(f"ECU {ecu.short_name} transmits responses on CAN ID 0x{ecu.get_send_id():x}")
+  ```
 
 - Encode a `session_start` request to the `somersault_lazy` ECU:
-```python
-# [...]
 
-raw_request_data = ecu.services.session_start()
+  ```python
+  # [...]
 
-print("Message for session start request of ECU {ecu.short_name}: {raw_request_data}")
-# -> bytearray(b'\x10\x00')
-```
+  raw_request_data = ecu.services.session_start()
+
+  print("Message for session start request of ECU {ecu.short_name}: {raw_request_data}")
+  # -> bytearray(b'\x10\x00')
+  ```
 
 - Encode the positive response to the `start_session` request:
-```python
-# [...]
 
-raw_request_data = ecu.services.session_start()
-raw_response_data = ecu.services.session_start.positive_responses[0].encode(coded_request=raw_request_data)
+  ```python
+  # [...]
 
-print("Positive response to session_start() of ECU {ecu.short_name}: {raw_response_data}")
-# -> bytearray(b'P')
-```
+  raw_request_data = ecu.services.session_start()
+  raw_response_data = ecu.services.session_start.positive_responses[0].encode(coded_request=raw_request_data)
+
+  print("Positive response to session_start() of ECU {ecu.short_name}: {raw_response_data}")
+  # -> bytearray(b'P')
+  ```
 
 - Decode a request:
-```python
-# [...]
 
-raw_data = b"\x10\x00"
-decoded_message = ecu.decode(raw_data)
-print(f"decoded message: {decoded_message}")
-# -> decoded message: [start_session()]
-```
+  ```python
+  # [...]
+
+  raw_data = b"\x10\x00"
+  decoded_message = ecu.decode(raw_data)
+  print(f"decoded message: {decoded_message}")
+  # -> decoded message: [start_session()]
+  ```
 
 - Decode a response to a request:
-```python
-# [...]
 
-raw_request_data = b"\x10\x00"
-raw_response_data = b'P'
-decoded_response = ecu.decode_response(raw_response_data, raw_request_data)
-print(f"decoded response: {decoded_response}")
-# -> decoded response: [session()]
-```
+  ```python
+  # [...]
+
+  raw_request_data = b"\x10\x00"
+  raw_response_data = b'P'
+  decoded_response = ecu.decode_response(raw_response_data, raw_request_data)
+  print(f"decoded response: {decoded_response}")
+  # -> decoded response: [session()]
+  ```
 
 ## Interactive Usage
 
@@ -217,7 +244,7 @@ invoke these utilities is via `python3 -m odxtools SUBCOMMAND
 Available generic parameters and a list of subcommands can be obtained
 using `odxtools --help`:
 
-```
+```bash
 $ odxtools --help
 usage: odxtools [-h] [-c] {list,browse,snoop,find,encode-message,decode-message} ...
 
@@ -248,7 +275,7 @@ optional arguments:
 
 All subcommands accept the `--help` parameter:
 
-```
+```bash
 $ odxtools list --help
 usage: odxtools list [-h] [-v VARIANT [VARIANT ...]] [-s [SERVICE [SERVICE ...]]] [-p] [-d] [-a] PDX_FILE
 [...]
@@ -262,7 +289,7 @@ currently available:
 The `list` subcommand is used to parse a `.pdx` database file and
 print the relevant parts of its content to the terminal.
 
-```
+```bash
 $ odxtools list -h
 usage: odxtools list [-h] [-v VARIANT [VARIANT ...]] [-s [SERVICE [SERVICE ...]]] [-p] [-d] [-a] PDX_FILE
 
@@ -297,7 +324,7 @@ the message layout is printed for all specified variants/services and
 the `--all` parameter prints all data of the file that is recognized
 by `odxtools`. Example:
 
-```
+```bash
 $ odxtools --conformant list $BASE_DIR/odxtools/examples/somersault.pdx --variants somersault_lazy --services do_forward_flips --params
 ECU-VARIANT 'somersault_lazy' (Receive ID: 0x7b, Send ID: 0x1c8)
  num services: 5, num DOPs: 6, num communication parameters: 11.
@@ -357,7 +384,7 @@ navigate through the database of a `.pdx` file. For example, using the
 `browse` subcommand you can select the ECU and service without
 spamming the terminal:
 
-```
+```bash
 $ odxtools --conformant browse $BASE_DIR/odxtools/examples/somersault.pdx
 ? Select a Variant.  somersault_lazy
 ECU-VARIANT 'somersault_lazy' (Receive ID: 0x7b, Send ID: 0x1c8)
@@ -384,7 +411,7 @@ ECU-VARIANT 'somersault_lazy' (Receive ID: 0x7b, Send ID: 0x1c8)
 The `snoop` subcommand can be used to decode a trace of a or a
 currently running diagnostic session:
 
-```
+```bash
 # create a socketcan `vcan0` interface
 sudo ip link add dev vcan0 type vcan
 sudo ip link set vcan0 up
@@ -397,7 +424,8 @@ $BASE_DIR/odxtools/examples/somersaultlazy.py -c vcan0
 ```
 
 The snoop command will then output the following:
-```
+
+```bash
 $ odxtools --conformant snoop -c vcan0 --variant "somersault_lazy" $BASE_DIR/odxtools/examples/somersault.pdx
 Decoding messages on channel vcan0
 Tester: do_forward_flips(forward_soberness_check=18, num_flips=1)
@@ -422,7 +450,7 @@ information by either a hex request, or partial name via cli.
 In addition, it can also decode a hex request and display its parameters 
 mapped to a service. 
 
-```
+```bash
 $ odxtools find $BASE_DIR/odxtools/examples/somersault.pdx -D 10 00
 
 
@@ -479,8 +507,9 @@ without the decoded request, and `-s <name>` can be used to find a service by pa
 ## Testing
 
 The included unit tests can be run via
+
 ```bash
-$ python -m unittest tests/test_*.py
+python -m unittest tests/test_*.py
 ```
 
 The static type checker can be run via
@@ -509,3 +538,14 @@ Please visit <https://mbition.io/en/home/index.html> for information on the prov
 Notice: Before you use the program in productive use, please take all necessary precautions,
 e.g. testing and verifying the program with regard to your specific use.
 The program was tested solely for our own use cases, which might differ from yours.
+
+## Acknowledgements
+
+This work includes research of the project
+[SofDCar](https://sofdcar.de/) (19S21002), which is funded by the
+[German Federal Ministry for Economic Affairs and
+Climate Action](https://www.bmwk.de/).
+
+## License
+
+This project is licensed under the [MIT LICENSE](LICENSE).

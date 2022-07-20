@@ -230,6 +230,9 @@ class SingleEcuJob:
         raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
                           f" You tried to call the job {self.id}.")
 
+    def __hash__(self) -> int:
+        return hash(self.id)
+
 
 def read_prog_code_from_odx(et_element):
     code_file = et_element.find("CODE-FILE").text
