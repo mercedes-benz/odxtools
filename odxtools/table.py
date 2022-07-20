@@ -3,8 +3,9 @@
 
 import abc
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
+from .dataobjectproperty import DopBase
 from .globals import logger
 
 
@@ -27,6 +28,21 @@ class TableRow:
     long_name: str
     key: int
     structure_ref: str
+
+    def __post_init__(self):
+        self._structure: Optional[DopBase] = None
+
+    def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
+        self._structure = id_lookup.get(self.structure_ref)
+        if self._structure is None:
+            logger.warning(
+                f"STRUCTURE-REF '{self.structure_ref!r}' could not be resolved."
+            )
+
+    @property
+    def structure(self) -> Optional[DopBase]:
+        """The data object property describing this parameter."""
+        return self._structure
 
     def __repr__(self) -> str:
         return (
@@ -51,11 +67,24 @@ class Table(TableBase):
             id=id, short_name=short_name, long_name=long_name, key_dop_ref=key_dop_ref
         )
         self.table_rows = table_rows
+        self._key_dop = None
+
+    @property
+    def key_dop(self) -> Optional[DopBase]:
+        """The data object property describing this parameter."""
+        return self._key_dop
 
     def _build_id_lookup(self):
         id_lookup = {}
         id_lookup.update({table_row.id: table_row for table_row in self.table_rows})
         return id_lookup
+
+    def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
+        self._key_dop = id_lookup.get(self.key_dop_ref)
+        if self._key_dop is None:
+            logger.warning(f"KEY-DOP-REF '{self.key_dop_ref!r}' could not be resolved.")
+        for table_row in self.table_rows:
+            table_row._resolve_references(id_lookup)
 
     def __repr__(self) -> str:
         return (

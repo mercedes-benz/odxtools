@@ -73,6 +73,9 @@ class DiagDataDictionarySpec:
                          self.tables):
             id_lookup[obj.id] = obj
 
+        for table in self.tables:
+            id_lookup.update(table._build_id_lookup())
+
         for obj in self.dtc_dops:
             id_lookup.update(obj._build_id_lookup())
 
@@ -84,7 +87,8 @@ class DiagDataDictionarySpec:
     def _resolve_references(self, parent_dl, id_lookup: dict):
         for dop in chain(
                 self.dtc_dops,
-                self.data_object_props
+                self.data_object_props,
+                self.tables,
         ):
             dop._resolve_references(id_lookup)
 
