@@ -7,6 +7,8 @@ from typing import Optional
 
 from .dataobjectproperty import DataObjectProperty, DtcDop, read_data_object_property_from_odx
 from .endofpdufield import EndOfPduField, read_end_of_pdu_field_from_odx
+from .envdata import read_env_data_from_odx, EnvData
+from .envdatadesc import read_env_data_desc_from_odx, EnvDataDesc
 from .globals import logger
 from .nameditemlist import NamedItemList
 from .structures import Structure, read_structure_from_odx
@@ -33,6 +35,12 @@ class DiagDataDictionarySpec:
         default_factory=lambda: _construct_named_item_list([])
     )
     tables: NamedItemList[Table] = field(
+        default_factory=lambda: _construct_named_item_list([])
+    )
+    env_data_descs: NamedItemList[EnvDataDesc] = field(
+        default_factory=lambda: _construct_named_item_list([])
+    )
+    env_datas: NamedItemList[EnvData] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
     unit_spec: Optional[UnitSpec] = None
@@ -65,6 +73,14 @@ class DiagDataDictionarySpec:
             self.tables = _construct_named_item_list(
                 self.tables)
 
+        if not isinstance(self.env_data_descs, NamedItemList):
+            self.env_data_descs = _construct_named_item_list(
+                self.env_data_descs)
+
+        if not isinstance(self.env_datas, NamedItemList):
+            self.env_datas = _construct_named_item_list(
+                self.env_datas)
+
     def _build_id_lookup(self):
         id_lookup = {}
         for obj in chain(self.data_object_props,
@@ -75,6 +91,12 @@ class DiagDataDictionarySpec:
 
         for table in self.tables:
             id_lookup.update(table._build_id_lookup())
+
+        for env_data_desc in self.env_data_descs:
+            id_lookup.update(env_data_desc._build_id_lookup())
+
+        for env_data in self.env_datas:
+            id_lookup.update(env_data._build_id_lookup())
 
         for obj in self.dtc_dops:
             id_lookup.update(obj._build_id_lookup())
@@ -97,6 +119,11 @@ class DiagDataDictionarySpec:
                 self.end_of_pdu_fields
         ):
             struct._resolve_references(parent_dl, id_lookup)
+
+        for env_data in chain(
+                self.env_datas,
+        ):
+            env_data._resolve_references(parent_dl, id_lookup)
 
         if self.unit_spec:
             self.unit_spec._resolve_references(id_lookup)
@@ -123,6 +150,12 @@ def read_diag_data_dictionary_spec_from_odx(et_element):
     tables = [read_table_from_odx(table_element)
               for table_element in et_element.iterfind("TABLES/TABLE")]
 
+    env_data_descs = [read_env_data_desc_from_odx(env_data_desc_element)
+                    for env_data_desc_element in et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC")]
+
+    env_datas = [read_env_data_from_odx(env_data_element)
+                for env_data_element in et_element.iterfind("ENV-DATAS/ENV-DATA")]
+
     if et_element.find("UNIT-SPEC") is not None:
         unit_spec = read_unit_spec_from_odx(et_element.find("UNIT-SPEC"))
     else:
@@ -130,13 +163,11 @@ def read_diag_data_dictionary_spec_from_odx(et_element):
 
     # TODO: Parse different specs.. Which of them are needed?
     for (path, name) in [
-        ('ENV-DATA-DESCS/ENV-DATA-DESC', 'ENV-DATA-DESCs'),
         ('STATIC-FIELDS', 'static fields'),
         ('DYNAMIC-LENGTH-FIELDS/DYNAMIC-LENGTH-FIELD', 'dynamic length fields'),
         ('DYNAMIC-ENDMARKER-FIELDS/DYNAMIC-ENDMARKER-FIELD',
          'dynamic endmarker fields'),
         ('MUXS/MUX', 'MUXs'),
-        ('ENV-DATAS/ENV-DATA', 'ENV-DATAs'),
     ]:
         num = len(list(et_element.iterfind(path)))
         if num > 0:
@@ -148,5 +179,7 @@ def read_diag_data_dictionary_spec_from_odx(et_element):
         end_of_pdu_fields=end_of_pdu_fields,
         dtc_dops=dtc_dops,
         unit_spec=unit_spec,
-        tables=tables
+        tables=tables,
+        env_data_descs=env_data_descs,
+        env_datas=env_datas,
     )
