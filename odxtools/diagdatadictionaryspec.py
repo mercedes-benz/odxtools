@@ -5,12 +5,13 @@ from dataclasses import dataclass, field
 from itertools import chain
 from typing import Optional
 
-from .nameditemlist import NamedItemList
-from .dataobjectproperty import DataObjectProperty, DopBase, DtcDop, read_data_object_property_from_odx
+from .dataobjectproperty import DataObjectProperty, DtcDop, read_data_object_property_from_odx
 from .endofpdufield import EndOfPduField, read_end_of_pdu_field_from_odx
-from .structures import Structure, read_structure_from_odx
-from .units import read_unit_spec_from_odx, UnitSpec
 from .globals import logger
+from .nameditemlist import NamedItemList
+from .structures import Structure, read_structure_from_odx
+from .table import read_table_from_odx, Table
+from .units import read_unit_spec_from_odx, UnitSpec
 
 
 def _construct_named_item_list(iterable):
@@ -31,12 +32,15 @@ class DiagDataDictionarySpec:
     end_of_pdu_fields: NamedItemList[EndOfPduField] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
+    tables: NamedItemList[Table] = field(
+        default_factory=lambda: _construct_named_item_list([])
+    )
     unit_spec: Optional[UnitSpec] = None
 
     def __post_init__(self):
         self._all_data_object_properties = _construct_named_item_list(
             chain(self.data_object_props, self.structures,
-                  self.end_of_pdu_fields, self.dtc_dops)
+                  self.end_of_pdu_fields, self.dtc_dops, self.tables)
         )
 
         # The attributes are already initialized as (most likely normal) lists.
@@ -57,12 +61,20 @@ class DiagDataDictionarySpec:
             self.end_of_pdu_fields = _construct_named_item_list(
                 self.end_of_pdu_fields)
 
+        if not isinstance(self.tables, NamedItemList):
+            self.tables = _construct_named_item_list(
+                self.tables)
+
     def _build_id_lookup(self):
         id_lookup = {}
         for obj in chain(self.data_object_props,
                          self.structures,
-                         self.end_of_pdu_fields):
+                         self.end_of_pdu_fields,
+                         self.tables):
             id_lookup[obj.id] = obj
+
+        for table in self.tables:
+            id_lookup.update(table._build_id_lookup())
 
         for obj in self.dtc_dops:
             id_lookup.update(obj._build_id_lookup())
@@ -75,7 +87,8 @@ class DiagDataDictionarySpec:
     def _resolve_references(self, parent_dl, id_lookup: dict):
         for dop in chain(
                 self.dtc_dops,
-                self.data_object_props
+                self.data_object_props,
+                self.tables,
         ):
             dop._resolve_references(id_lookup)
 
@@ -107,6 +120,9 @@ def read_diag_data_dictionary_spec_from_odx(et_element):
     dtc_dops = [read_data_object_property_from_odx(dop_element)
                 for dop_element in et_element.iterfind("DTC-DOPS/DTC-DOP")]
 
+    tables = [read_table_from_odx(table_element)
+              for table_element in et_element.iterfind("TABLES/TABLE")]
+
     if et_element.find("UNIT-SPEC") is not None:
         unit_spec = read_unit_spec_from_odx(et_element.find("UNIT-SPEC"))
     else:
@@ -121,7 +137,6 @@ def read_diag_data_dictionary_spec_from_odx(et_element):
          'dynamic endmarker fields'),
         ('MUXS/MUX', 'MUXs'),
         ('ENV-DATAS/ENV-DATA', 'ENV-DATAs'),
-        ('TABLES/TABLE', 'tables'),
     ]:
         num = len(list(et_element.iterfind(path)))
         if num > 0:
@@ -132,5 +147,6 @@ def read_diag_data_dictionary_spec_from_odx(et_element):
         structures=structures,
         end_of_pdu_fields=end_of_pdu_fields,
         dtc_dops=dtc_dops,
-        unit_spec=unit_spec
+        unit_spec=unit_spec,
+        tables=tables
     )
