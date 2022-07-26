@@ -17,20 +17,11 @@ class EnvDataDesc:
     param_snref: str
     param_snpathref: str
     env_data_refs: List[str]
-    # TODO: Implement ENV-DATA and resolve references
-
-    def __post_init__(self):
-        pass
 
     def _build_id_lookup(self):
         id_lookup = {}
         id_lookup.update({self.id: self})
         return id_lookup
-
-    def _resolve_references(self, id_lookup):
-        """Recursively resolve any references (odxlinks or sn-refs)
-        """
-        pass
 
     def __repr__(self) -> str:
         return (
