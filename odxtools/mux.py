@@ -145,10 +145,10 @@ class Mux:
 
 def read_switch_key_from_odx(et_element):
     """Reads a SWITCH-KEY."""
-    byte_position = et_element.find("BYTE-POSITION").text
-    bit_position = et_element.find("BIT-POSITION")
-    if bit_position is not None:
-        bit_position = bit_position.text
+    byte_position = int(et_element.find(
+            "BYTE-POSITION").text) if et_element.find("BYTE-POSITION") is not None else None
+    bit_position = int(et_element.find(
+        "BIT-POSITION").text) if et_element.find("BIT-POSITION") is not None else 0
     dop_ref = et_element.find("DATA-OBJECT-PROP-REF").get("ID-REF")
 
     return SwitchKey(
@@ -199,8 +199,8 @@ def read_mux_from_odx(et_element):
     long_name = et_element.find("LONG-NAME")
     if long_name is not None:
         long_name = long_name.text
-    byte_position = et_element.find("BYTE-POSITION").text
-
+    byte_position = int(et_element.find(
+        "BYTE-POSITION").text) if et_element.find("BYTE-POSITION") is not None else None
     switch_key = read_switch_key_from_odx(et_element.find("SWITCH-KEY"))
     default_case = read_default_case_from_odx(et_element.find("DEFAULT-CASE"))
     cases = [read_case_from_odx(el) for el in et_element.find("CASES").iterfind("CASE")]
