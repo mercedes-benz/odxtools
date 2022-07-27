@@ -10,7 +10,7 @@ from .globals import logger
 
 
 class TableBase(abc.ABC):
-    """ Base class for all Tables."""
+    """Base class for all Tables."""
 
     def __init__(self, id: str, short_name: str, key_dop_ref: str, long_name=None):
         self.id = id
@@ -36,7 +36,7 @@ class TableRow:
         self._structure = id_lookup.get(self.structure_ref)
         if self._structure is None:
             logger.warning(
-                f"STRUCTURE-REF '{self.structure_ref!r}' could not be resolved."
+                f"STRUCTURE-REF '{self.structure_ref}' could not be resolved."
             )
 
     @property
