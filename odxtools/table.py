@@ -41,7 +41,7 @@ class TableRow:
 
     @property
     def structure(self) -> Optional[DopBase]:
-        """The structure associated with this table."""
+        """The structure associated with this table row."""
         return self._structure
 
     def __repr__(self) -> str:
@@ -71,7 +71,7 @@ class Table(TableBase):
 
     @property
     def key_dop(self) -> Optional[DopBase]:
-        """The data object property describing this parameter."""
+        """The key data object property associated with this table."""
         return self._key_dop
 
     def _build_id_lookup(self):
