@@ -5,6 +5,7 @@
 -#}
 
 {%- import('macros/printDOP.tpl') as pdop %}
+{%- import('macros/printTable.tpl') as pt %}
 {%- import('macros/printFunctionalClass.tpl') as pfc %}
 {%- import('macros/printStructure.tpl') as pst %}
 {%- import('macros/printEndOfPdu.tpl') as peopdu %}
@@ -43,6 +44,13 @@
   {{ pdop.printDTCDOP(dop)|indent(3) }}
  {%- endfor %}
   </DTC-DOPS>
+{%- endif %}
+{%- if dl.local_diag_data_dictionary_spec.tables  %}
+  <TABLES>
+ {%- for table in dl.local_diag_data_dictionary_spec.tables -%}
+  {{ pt.printTable(table)|indent(3) }}
+ {%- endfor %}
+  </TABLES>
 {%- endif %}
  {%- if dl.local_diag_data_dictionary_spec.data_object_props %}
   <DATA-OBJECT-PROPS>

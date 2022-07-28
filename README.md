@@ -514,7 +514,7 @@ python -m unittest tests/test_*.py
 
 The static type checker can be run via
 ```bash
-$ python3 -m mypy --ignore-missing-imports odxtools
+python3 -m mypy --ignore-missing-imports odxtools
 ```
 
 ## Contributing

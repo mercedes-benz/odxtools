@@ -6,7 +6,7 @@
 from enum import IntEnum
 from itertools import chain
 
-import odxtools
+from odxtools.table import Table, TableRow
 
 from odxtools.nameditemlist import NamedItemList
 
@@ -77,9 +77,6 @@ SID = IntEnum('SID', [(i.name, i.value) for i in chain(uds.SID, SID)])
 ##################
 # Base variant of Somersault ECU
 ##################
-
-# admin data
-somersault_admin_data = None
 
 # company datas
 somersault_team_members = {
@@ -362,6 +359,40 @@ somersault_dops = {
         diag_coded_type=somersault_diagcodedtypes["uint8"],
         physical_type=PhysicalType("A_UNICODE2STRING"),
         compu_method=somersault_compumethods["boolean"]),
+}
+
+# tables
+somersault_tables = {
+    "flip_quality": Table(
+        id="somersault.table.flip_quality",
+        short_name="flip_quality",
+        long_name="Flip Quality",
+        key_dop_ref=somersault_dops["num_flips"].id,
+        table_rows=[
+            TableRow(
+                id="somersault.table.flip_quality.average",
+                short_name="average",
+                long_name="Average",
+                key=3,
+                structure_ref=somersault_dops["num_flips"].id,
+            ),
+            TableRow(
+                id="somersault.table.flip_quality.good",
+                short_name="good",
+                long_name="Good",
+                key=5,
+                structure_ref=somersault_dops["num_flips"].id,
+            ),
+            TableRow(
+                id="somersault.table.flip_quality.best",
+                short_name="best",
+                long_name="Best",
+                key=10,
+                structure_ref=somersault_dops["num_flips"].id,
+            ),
+        ]
+    )
+
 }
 
 # requests
@@ -994,6 +1025,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
         units=list(somersault_units.values()),
         physical_dimensions=list(somersault_physical_dimensions.values()),
     ),
+    tables=list(somersault_tables.values()),
 )
 
 # diagnostics layer
