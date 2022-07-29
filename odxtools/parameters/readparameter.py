@@ -179,6 +179,7 @@ def read_parameter_from_odx(et_element):
 
     elif parameter_type == "TABLE-KEY":
 
+        parameter_id = et_element.get("ID")
         table_ref = et_element.find(
             "TABLE-REF").get("ID-REF") if et_element.find("TABLE-REF") is not None else None
         table_snref = et_element.find(
@@ -193,10 +194,11 @@ def read_parameter_from_odx(et_element):
                                  table_snref=table_snref,
                                  table_row_snref=row_snref,
                                  table_row_ref=row_ref,
+                                 id=parameter_id,
                                  long_name=long_name,
-                                 semantic=semantic,
                                  byte_position=byte_position,
                                  bit_position=bit_position,
+                                 semantic=semantic,
                                  description=description)
 
     elif parameter_type == "TABLE-ENTRY":

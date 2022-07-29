@@ -32,7 +32,7 @@ class TexttableCompuMethod(CompuMethod):
         if scale.lower_limit.value is None:
             return internal_value == scale.lower_limit.value
         else:
-            return scale.lower_limit.value <= internal_value and internal_value <= scale.lower_limit.value
+            return scale.lower_limit.value <= internal_value <= scale.upper_limit.value
 
     def convert_internal_to_physical(self, internal_value):
         try:
