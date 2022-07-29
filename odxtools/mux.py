@@ -124,8 +124,9 @@ class Mux:
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
         self.switch_key._resolve_references(id_lookup)
         self.default_case._resolve_references(id_lookup)
-        for case in self.cases:
-            case._resolve_references(id_lookup)
+        if self.cases is not None:
+            for case in self.cases:
+                case._resolve_references(id_lookup)
 
     def __repr__(self) -> str:
         return (
