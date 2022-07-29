@@ -113,8 +113,8 @@ class Mux:
     long_name: str
     byte_position: int
     switch_key: SwitchKey
-    default_case: DefaultCase
-    cases: List[Case]
+    default_case: Optional[DefaultCase] = None
+    cases: Optional[List[Case]] = None
 
     def _build_id_lookup(self):
         id_lookup = {}
@@ -123,7 +123,8 @@ class Mux:
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
         self.switch_key._resolve_references(id_lookup)
-        self.default_case._resolve_references(id_lookup)
+        if self.default_case is not None:
+            self.default_case._resolve_references(id_lookup)
         if self.cases is not None:
             for case in self.cases:
                 case._resolve_references(id_lookup)
@@ -212,7 +213,9 @@ def read_mux_from_odx(et_element):
         else None
     )
     switch_key = read_switch_key_from_odx(et_element.find("SWITCH-KEY"))
-    default_case = read_default_case_from_odx(et_element.find("DEFAULT-CASE"))
+    default_case = None
+    if et_element.find("DEFAULT-CASE") is not None:
+        default_case = read_default_case_from_odx(et_element.find("DEFAULT-CASE"))
 
     cases = None
     if et_element.find("CASES") is not None:
