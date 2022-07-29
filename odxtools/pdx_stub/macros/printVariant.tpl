@@ -45,13 +45,6 @@
  {%- endfor %}
   </DTC-DOPS>
 {%- endif %}
-{%- if dl.local_diag_data_dictionary_spec.tables  %}
-  <TABLES>
- {%- for table in dl.local_diag_data_dictionary_spec.tables -%}
-  {{ pt.printTable(table)|indent(3) }}
- {%- endfor %}
-  </TABLES>
-{%- endif %}
  {%- if dl.local_diag_data_dictionary_spec.data_object_props %}
   <DATA-OBJECT-PROPS>
  {%- for dop in dl.local_diag_data_dictionary_spec.data_object_props %}
@@ -75,6 +68,13 @@
  {%- endif %}
  {%- if dl.local_diag_data_dictionary_spec.unit_spec %}
   {{ punit.printUnitSpec(dl.local_diag_data_dictionary_spec.unit_spec)|indent(2) }}
+ {%- endif %}
+ {%- if dl.local_diag_data_dictionary_spec.tables  %}
+   <TABLES>
+  {%- for table in dl.local_diag_data_dictionary_spec.tables -%}
+   {{ pt.printTable(table)|indent(3) }}
+  {%- endfor %}
+   </TABLES>
  {%- endif %}
  </DIAG-DATA-DICTIONARY-SPEC>
 {%- endif %}
