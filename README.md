@@ -512,15 +512,24 @@ The included unit tests can be run via
 python -m unittest tests/test_*.py
 ```
 
+The static type checker can be run via
+```bash
+python3 -m mypy --ignore-missing-imports odxtools
+```
+
 ## Contributing
 
 We welcome any contributions.  If you want to contribute to this
-project, please read the [contributing guide](https://github.com/mercedes-benz/daimler-foss/blob/master/CONTRIBUTING.md).
+project, please read the [contributing guide](https://github.com/mercedes-benz/odxtools/blob/main/CONTRIBUTING.md).
 
 ## Code of Conduct
 
 Please read our [Code of Conduct](https://github.com/mercedes-benz/daimler-foss/blob/master/CODE_OF_CONDUCT.md)
 as it is our base for interaction.
+
+## License
+
+This project is licensed under the [MIT LICENSE](https://github.com/mercedes-benz/odxtools/blob/main/LICENSE).
 
 ## Provider Information
 
