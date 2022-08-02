@@ -48,17 +48,18 @@ class DefaultCase:
 
     short_name: str
     long_name: str
-    structure_ref: str
+    structure_ref: Optional[str] = None
 
     def __post_init__(self):
         self._structure: Optional[DopBase] = None
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
-        self._structure = id_lookup.get(self.structure_ref)
-        if self._structure is None:
-            logger.warning(
-                f"STRUCTURE-REF '{self.structure_ref}' could not be resolved."
-            )
+        if self.structure_ref is not None:
+            self._structure = id_lookup.get(self.structure_ref)
+            if self._structure is None:
+                logger.warning(
+                    f"STRUCTURE-REF '{self.structure_ref}' could not be resolved in DEFAULT-CASE."
+                )
 
     def __repr__(self) -> str:
         return (
@@ -87,7 +88,7 @@ class SwitchKey:
         self._dop = id_lookup.get(self.dop_ref)
         if self._dop is None:
             logger.warning(
-                f"DATA-OBJECT-PROP-REF '{self.dop_ref}' could not be resolved."
+                f"DATA-OBJECT-PROP-REF '{self.dop_ref}' could not be resolved in SWITCH-KEY."
             )
 
     def __repr__(self) -> str:
@@ -172,7 +173,10 @@ def read_default_case_from_odx(et_element):
     long_name = et_element.find("LONG-NAME")
     if long_name is not None:
         long_name = long_name.text
-    structure_ref = et_element.find("STRUCTURE-REF").get("ID-REF")
+
+    structure_ref = None
+    if et_element.find("STRUCTURE-REF") is not None:
+        structure_ref = et_element.find("STRUCTURE-REF").get("ID-REF")
 
     return DefaultCase(
         short_name=short_name,
@@ -213,6 +217,7 @@ def read_mux_from_odx(et_element):
         else None
     )
     switch_key = read_switch_key_from_odx(et_element.find("SWITCH-KEY"))
+
     default_case = None
     if et_element.find("DEFAULT-CASE") is not None:
         default_case = read_default_case_from_odx(et_element.find("DEFAULT-CASE"))
