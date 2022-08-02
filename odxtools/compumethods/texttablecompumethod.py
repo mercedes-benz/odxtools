@@ -29,7 +29,7 @@ class TexttableCompuMethod(CompuMethod):
 
     def __is_internal_in_scale(self, internal_value, scale: CompuScale):
         assert scale.lower_limit is not None
-        if scale.lower_limit.value is None:
+        if scale.lower_limit.value is not None:
             return internal_value == scale.lower_limit.value
         else:
             return scale.lower_limit.value <= internal_value <= scale.upper_limit.value

@@ -12,11 +12,10 @@ from .globals import logger
 class TableBase(abc.ABC):
     """Base class for all Tables."""
 
-    def __init__(self, id: str, short_name: str, key_dop_ref: str, long_name=None):
+    def __init__(self, id: str, short_name: str, long_name=None):
         self.id = id
         self.short_name = short_name
         self.long_name = long_name
-        self.key_dop_ref = key_dop_ref
 
 
 @dataclass
@@ -27,27 +26,47 @@ class TableRow:
     short_name: str
     long_name: str
     key: int
-    structure_ref: str
+    structure_ref: Optional[str] = None
+    dop_ref: Optional[str] = None
 
     def __post_init__(self):
         self._structure: Optional[DopBase] = None
+        self._dop: Optional[DopBase] = None
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
-        self._structure = id_lookup.get(self.structure_ref)
-        if self._structure is None:
-            logger.warning(
-                f"STRUCTURE-REF '{self.structure_ref}' could not be resolved."
-            )
+        if self.structure_ref is not None:
+            self._structure = id_lookup.get(self.structure_ref)
+            if self._structure is None:
+                logger.warning(
+                    f"STRUCTURE-REF '{self.structure_ref}' could not be resolved in TABLE-ROW."
+                )
+        if self.dop_ref is not None:
+            self._dop = id_lookup.get(self.dop_ref)
+            if self._dop is None:
+                logger.warning(
+                    f"DATA-OBJECT-PROP-REF '{self.dop_ref}' could not be resolved in TABLE-ROW."
+                )
 
     @property
     def structure(self) -> Optional[DopBase]:
-        """The data object property describing this parameter."""
+        """The structure object resolved by structure_ref."""
         return self._structure
+
+    @property
+    def dop(self) -> Optional[DopBase]:
+        """The dop object resolved by dop_ref."""
+        return self._dop
 
     def __repr__(self) -> str:
         return (
             f"TableRow('{self.short_name}', "
-            + ", ".join([f"key='{self.key}'", f"structure_ref='{self.structure_ref}'"])
+            + ", ".join(
+                [
+                    f"key='{self.key}'",
+                    f"structure_ref='{self.structure_ref}'",
+                    f"dop_ref='{self.dop_ref}'",
+                ]
+            )
             + ")"
         )
 
@@ -59,19 +78,18 @@ class Table(TableBase):
         self,
         id: str,
         short_name: str,
-        key_dop_ref: str,
         table_rows: List[TableRow],
         long_name: Optional[str] = None,
+        key_dop_ref: Optional[str] = None,
     ):
-        super().__init__(
-            id=id, short_name=short_name, long_name=long_name, key_dop_ref=key_dop_ref
-        )
+        super().__init__(id=id, short_name=short_name, long_name=long_name)
         self.table_rows = table_rows
+        self.key_dop_ref = key_dop_ref
         self._key_dop = None
 
     @property
     def key_dop(self) -> Optional[DopBase]:
-        """The data object property describing this parameter."""
+        """The key_dop object resolved by key_dop_ref."""
         return self._key_dop
 
     def _build_id_lookup(self):
@@ -80,9 +98,12 @@ class Table(TableBase):
         return id_lookup
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
-        self._key_dop = id_lookup.get(self.key_dop_ref)
-        if self._key_dop is None:
-            logger.warning(f"KEY-DOP-REF '{self.key_dop_ref!r}' could not be resolved.")
+        if self.key_dop_ref is not None:
+            self._key_dop = id_lookup.get(self.key_dop_ref)
+            if self._key_dop is None:
+                logger.warning(
+                    f"KEY-DOP-REF '{self.key_dop_ref!r}' could not be resolved in TABLE."
+                )
         for table_row in self.table_rows:
             table_row._resolve_references(id_lookup)
 
@@ -102,9 +123,12 @@ def read_table_row_from_odx(et_element):
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME").text
     key = et_element.find("KEY").text
-    structure_ref = ""
+    structure_ref = None
     if et_element.find("STRUCTURE-REF") is not None:
         structure_ref = et_element.find("STRUCTURE-REF").get("ID-REF")
+    dop_ref = None
+    if et_element.find("DATA-OBJECT-PROP-REF") is not None:
+        dop_ref = et_element.find("DATA-OBJECT-PROP-REF").get("ID-REF")
 
     table_row = TableRow(
         id=id,
@@ -112,6 +136,7 @@ def read_table_row_from_odx(et_element):
         long_name=long_name,
         key=key,
         structure_ref=structure_ref,
+        dop_ref=dop_ref,
     )
 
     return table_row
@@ -122,7 +147,7 @@ def read_table_from_odx(et_element):
     id = et_element.get("ID")
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME").text
-    key_dop_ref = ""
+    key_dop_ref = None
     if et_element.find("KEY-DOP-REF") is not None:
         key_dop_ref = et_element.find("KEY-DOP-REF").get("ID-REF")
     logger.debug("Parsing TABLE " + short_name)
