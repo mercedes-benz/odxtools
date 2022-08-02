@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 from .globals import logger
 
@@ -14,9 +14,9 @@ class EnvDataDesc:
     id: str
     short_name: str
     long_name: str
-    param_snref: str
-    param_snpathref: str
     env_data_refs: List[str]
+    param_snref: Optional[str] = None
+    param_snpathref: Optional[str] = None
 
     def _build_id_lookup(self):
         id_lookup = {}
@@ -25,15 +25,16 @@ class EnvDataDesc:
 
     def __repr__(self) -> str:
         return (
-            f"EnvDataDesc('{self.short_name}', "
-            + ", ".join(
-                [
-                    f"id='{self.id}'",
-                    f"param_snref='{self.param_snref}'",
-                    f"env_data_refs='{self.env_data_refs}'",
-                ]
-            )
-            + ")"
+                f"EnvDataDesc('{self.short_name}', "
+                + ", ".join(
+            [
+                f"id='{self.id}'",
+                f"param_snref='{self.param_snref}'",
+                f"param_snpathref='{self.param_snpathref}'",
+                f"env_data_refs='{self.env_data_refs}'",
+            ]
+        )
+                + ")"
         )
 
 
@@ -42,10 +43,10 @@ def read_env_data_desc_from_odx(et_element):
     id = et_element.get("ID")
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME").text
-    param_snref = ""
+    param_snref = None
     if et_element.find("PARAM-SNREF") is not None:
         param_snref = et_element.find("PARAM-SNREF").get("SHORT-NAME")
-    param_snpathref = ""
+    param_snpathref = None
     if et_element.find("PARAM-SNPATHREF") is not None:
         param_snpathref = et_element.find("PARAM-SNPATHREF").get("SHORT-NAME-PATH")
     env_data_refs = None
