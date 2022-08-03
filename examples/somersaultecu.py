@@ -6,6 +6,9 @@
 from enum import IntEnum
 from itertools import chain
 
+from odxtools import PhysicalConstantParameter
+
+from odxtools.envdata import EnvData
 from odxtools.mux import Mux, SwitchKey, DefaultCase, Case
 
 from odxtools.table import Table, TableRow
@@ -27,7 +30,6 @@ from odxtools.structures import Request
 from odxtools.structures import Response
 
 from odxtools.compumethods import CompuScale, IdenticalCompuMethod, Limit
-from odxtools.compumethods import LinearCompuMethod
 from odxtools.compumethods import TexttableCompuMethod
 
 from odxtools.dataobjectproperty import DataObjectProperty
@@ -43,7 +45,6 @@ from odxtools.units import Unit
 from odxtools.units import UnitGroup
 
 from odxtools.parameters import CodedConstParameter
-from odxtools.parameters import ReservedParameter
 from odxtools.parameters import ValueParameter
 from odxtools.parameters import MatchingRequestParameter
 from odxtools.parameters import NrcConstParameter
@@ -53,7 +54,6 @@ from odxtools.communicationparameter import CommunicationParameterRef
 from odxtools.audience import AdditionalAudience, Audience
 from odxtools.functionalclass import FunctionalClass
 
-import odxtools.obd as obd
 import odxtools.uds as uds
 
 
@@ -429,6 +429,32 @@ somersault_muxs = {
                 upper_limit="3",
                 structure_ref=somersault_dops["num_flips"].id,
             )
+        ]
+    )
+}
+
+# env-data
+somersault_env_datas = {
+    "flip_env_data": EnvData(
+        id="somersault.env_data.flip_env_data",
+        short_name="flip_env_data",
+        long_name="Flip Env Data",
+        parameters=[
+            ValueParameter(
+                short_name="flip_speed",
+                long_name="Flip Speed",
+                byte_position=0,
+                semantic="DATA",
+                dop_ref=somersault_dops["num_flips"].id,
+            ),
+            PhysicalConstantParameter(
+                short_name="flip_direction",
+                long_name="Flip Direction",
+                byte_position=1,
+                semantic="DATA",
+                physical_constant_value=1,
+                dop_ref=somersault_dops["num_flips"].id,
+            ),
         ]
     )
 }
@@ -1065,6 +1091,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
     ),
     tables=list(somersault_tables.values()),
     muxs=list(somersault_muxs.values()),
+    env_datas=list(somersault_env_datas.values()),
 )
 
 # diagnostics layer

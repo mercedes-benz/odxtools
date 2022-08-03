@@ -10,6 +10,7 @@
 {%- import('macros/printStructure.tpl') as pst %}
 {%- import('macros/printEndOfPdu.tpl') as peopdu %}
 {%- import('macros/printMux.tpl') as pm %}
+{%- import('macros/printEnvData.tpl') as ped %}
 {%- import('macros/printUnitSpec.tpl') as punit %}
 {%- import('macros/printService.tpl') as ps %}
 {%- import('macros/printSingleEcuJob.tpl') as psej %}
@@ -74,6 +75,13 @@
   {%- endfor %}
    </MUXS>
   {%- endif %}
+   {%- if dl.local_diag_data_dictionary_spec.env_datas %}
+    <ENV-DATAS>
+   {%- for env_data in dl.local_diag_data_dictionary_spec.env_datas %}
+     {{ ped.printEnvData(env_data)|indent(3) }}
+   {%- endfor %}
+    </ENV-DATAS>
+   {%- endif %}
  {%- if dl.local_diag_data_dictionary_spec.unit_spec %}
   {{ punit.printUnitSpec(dl.local_diag_data_dictionary_spec.unit_spec)|indent(2) }}
  {%- endif %}
