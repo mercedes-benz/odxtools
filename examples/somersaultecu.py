@@ -6,6 +6,8 @@
 from enum import IntEnum
 from itertools import chain
 
+from odxtools.mux import Mux, SwitchKey, DefaultCase, Case
+
 from odxtools.table import Table, TableRow
 
 from odxtools.nameditemlist import NamedItemList
@@ -393,6 +395,42 @@ somersault_tables = {
         ]
     )
 
+}
+
+# muxs
+somersault_muxs = {
+    "flip_preference": Mux(
+        id="somersault.mux.flip_preference",
+        short_name="flip_preference",
+        long_name="Flip Preference",
+        byte_position=0,
+        switch_key=SwitchKey(
+            byte_position=0,
+            bit_position=0,
+            dop_ref=somersault_dops["num_flips"].id,
+        ),
+        default_case=DefaultCase(
+            short_name="default_case",
+            long_name="Default Case",
+            structure_ref=somersault_dops["num_flips"].id,
+        ),
+        cases=[
+            Case(
+                short_name="forward_flip",
+                long_name="Forward Flip",
+                lower_limit="1",
+                upper_limit="3",
+                structure_ref=somersault_dops["num_flips"].id,
+            ),
+            Case(
+                short_name="backward_flip",
+                long_name="Backward Flip",
+                lower_limit="1",
+                upper_limit="3",
+                structure_ref=somersault_dops["num_flips"].id,
+            )
+        ]
+    )
 }
 
 # requests
@@ -1026,6 +1064,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
         physical_dimensions=list(somersault_physical_dimensions.values()),
     ),
     tables=list(somersault_tables.values()),
+    muxs=list(somersault_muxs.values()),
 )
 
 # diagnostics layer
