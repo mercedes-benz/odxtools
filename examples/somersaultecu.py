@@ -9,6 +9,7 @@ from itertools import chain
 from odxtools import PhysicalConstantParameter
 
 from odxtools.envdata import EnvData
+from odxtools.envdatadesc import EnvDataDesc
 from odxtools.mux import Mux, SwitchKey, DefaultCase, Case
 
 from odxtools.table import Table, TableRow
@@ -456,6 +457,17 @@ somersault_env_datas = {
                 dop_ref=somersault_dops["num_flips"].id,
             ),
         ]
+    )
+}
+
+# env-data-desc
+somersault_env_data_descs = {
+    "flip_env_data_desc": EnvDataDesc(
+        id="somersault.env_data_desc.flip_env_data_desc",
+        short_name="flip_env_data_desc",
+        long_name="Flip Env Data Desc",
+        param_snref="flip_speed",
+        env_data_refs=["somersault.env_data.flip_env_data"],
     )
 }
 
@@ -1092,6 +1104,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
     tables=list(somersault_tables.values()),
     muxs=list(somersault_muxs.values()),
     env_datas=list(somersault_env_datas.values()),
+    env_data_descs=list(somersault_env_data_descs.values()),
 )
 
 # diagnostics layer

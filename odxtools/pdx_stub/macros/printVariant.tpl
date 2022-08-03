@@ -11,6 +11,7 @@
 {%- import('macros/printEndOfPdu.tpl') as peopdu %}
 {%- import('macros/printMux.tpl') as pm %}
 {%- import('macros/printEnvData.tpl') as ped %}
+{%- import('macros/printEnvDataDesc.tpl') as pedd %}
 {%- import('macros/printUnitSpec.tpl') as punit %}
 {%- import('macros/printService.tpl') as ps %}
 {%- import('macros/printSingleEcuJob.tpl') as psej %}
@@ -46,6 +47,13 @@
   {{ pdop.printDTCDOP(dop)|indent(3) }}
  {%- endfor %}
   </DTC-DOPS>
+{%- endif %}
+{%- if dl.local_diag_data_dictionary_spec.env_data_descs  %}
+  <ENV-DATA-DESCS>
+ {%- for env_data_desc in dl.local_diag_data_dictionary_spec.env_data_descs -%}
+  {{ pedd.printEnvDataDesc(env_data_desc)|indent(3) }}
+ {%- endfor %}
+  </ENV-DATA-DESCS>
 {%- endif %}
  {%- if dl.local_diag_data_dictionary_spec.data_object_props %}
   <DATA-OBJECT-PROPS>
