@@ -15,6 +15,7 @@ from .globals import logger
 @dataclass
 class EnvData(BasicStructure):
     """This class represents a ENV-DATA."""
+
     def __init__(
         self,
         id,

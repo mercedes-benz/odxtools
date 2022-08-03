@@ -25,16 +25,16 @@ class EnvDataDesc:
 
     def __repr__(self) -> str:
         return (
-                f"EnvDataDesc('{self.short_name}', "
-                + ", ".join(
-            [
-                f"id='{self.id}'",
-                f"param_snref='{self.param_snref}'",
-                f"param_snpathref='{self.param_snpathref}'",
-                f"env_data_refs='{self.env_data_refs}'",
-            ]
-        )
-                + ")"
+            f"EnvDataDesc('{self.short_name}', "
+            + ", ".join(
+                [
+                    f"id='{self.id}'",
+                    f"param_snref='{self.param_snref}'",
+                    f"param_snpathref='{self.param_snpathref}'",
+                    f"env_data_refs='{self.env_data_refs}'",
+                ]
+            )
+            + ")"
         )
 
 
