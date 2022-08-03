@@ -161,7 +161,7 @@ python3 -m odxtools list -a "$YOUR_PDX_FILE"
 
   raw_request_data = ecu.services.session_start()
 
-  print("Message for session start request of ECU {ecu.short_name}: {raw_request_data}")
+  print(f"Message for session start request of ECU {ecu.short_name}: {raw_request_data}")
   # -> bytearray(b'\x10\x00')
   ```
 
@@ -173,7 +173,7 @@ python3 -m odxtools list -a "$YOUR_PDX_FILE"
   raw_request_data = ecu.services.session_start()
   raw_response_data = ecu.services.session_start.positive_responses[0].encode(coded_request=raw_request_data)
 
-  print("Positive response to session_start() of ECU {ecu.short_name}: {raw_response_data}")
+  print(f"Positive response to session_start() of ECU {ecu.short_name}: {raw_response_data}")
   # -> bytearray(b'P')
   ```
 
