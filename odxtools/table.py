@@ -89,7 +89,7 @@ class Table(TableBase):
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
         self._key_dop = id_lookup.get(self.key_dop_ref)
-        if self._key_dop is None:
+        if self._key_dop is None and self.key_dop_ref is not None:
             logger.warning(f"KEY-DOP-REF '{self.key_dop_ref!r}' could not be resolved.")
         for table_row in self.table_rows:
             table_row._resolve_references(id_lookup)
@@ -106,11 +106,13 @@ class Table(TableBase):
 
 def _get_common_props(et_element):
     description = read_description_from_odx(et_element.find("DESC"))
+    et_long_name = et_element.find("LONG-NAME")
+    et_semantic = et_element.find("SEMANTIC")
     return dict(
         id=et_element.get("ID"),
-        short_name=et_element.get("SHORT-NAME"),
-        long_name=et_element.get("LONG-NAME"),
-        semantic=et_element.get("SEMANTIC"),
+        short_name=et_element.find("SHORT-NAME").text,
+        long_name=et_long_name.text if et_long_name is not None else None,
+        semantic=et_semantic.text if et_semantic is not None else None,
         description=description,
     )
 
@@ -132,10 +134,10 @@ def read_table_row_from_odx(et_element):
 
 def read_table_from_odx(et_element):
     """Reads a TABLE."""
-    short_name = et_element.get("SHORT-NAME")
+    short_name = et_element.find("SHORT-NAME").text
     logger.debug("Parsing TABLE " + short_name)
 
-    key_dop_ref = ""
+    key_dop_ref = None
     if et_element.find("KEY-DOP-REF") is not None:
         key_dop_ref = et_element.find("KEY-DOP-REF").get("ID-REF")
     
