@@ -107,18 +107,17 @@ class Table(TableBase):
 def _get_common_props(et_element):
     description = read_description_from_odx(et_element.find("DESC"))
     et_long_name = et_element.find("LONG-NAME")
-    et_semantic = et_element.find("SEMANTIC")
     return dict(
         id=et_element.get("ID"),
         short_name=et_element.find("SHORT-NAME").text,
         long_name=et_long_name.text if et_long_name is not None else None,
-        semantic=et_semantic.text if et_semantic is not None else None,
+        semantic=et_element.get("SEMANTIC"),
         description=description,
     )
 
 def read_table_row_from_odx(et_element):
     """Reads a TABLE-ROW."""
-    key = et_element.get("KEY")
+    key = et_element.find("KEY").text
     structure_ref = ""
     if et_element.find("STRUCTURE-REF") is not None:
         structure_ref = et_element.find("STRUCTURE-REF").get("ID-REF")
