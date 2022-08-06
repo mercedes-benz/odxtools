@@ -476,29 +476,10 @@ class DiagLayer:
                 # fragment of the ASAM MCD2-D standard.
                 return int(com_param.value[4])
 
-    def get_can_func_req_id(self):
-        """CAN Functional Request Id."""
-        com_param = self.communication_parameters["ISO_15765_2__CP_CanFuncReqId"]
-        if com_param is None:
-            return None
-        else:
-            return int(com_param.value)
-
-    def get_doip_logical_gateway_address(self):
-        """The logical address of the DoIP gateway."""
-        com_param = self.communication_parameters["ISO_13400_2_DIS_2015__CP_DoIPLogicalGatewayAddress"]
-        if com_param is None:
-            return None
-        else:
-            return int(com_param.value)
-
-    def get_doip_logical_functional_address(self):
-        """The logical functional address of the DoIP gateway."""
-        com_param = self.communication_parameters["ISO_13400_2_DIS_2015__CP_DoIPLogicalFunctionalAddress"]
-        if com_param is None:
-            return None
-        else:
-            return int(com_param.value)
+    def get_doip_logical_ecu_address(self):
+        """The logical ecu address of the DoIP gateway."""
+        com_param = self.communication_parameters["ISO_13400_2_DIS_2015__CP_UniqueRespIdTable"]
+        return int(com_param.value[0]) if com_param is not None else 0
 
     def get_tester_present_time(self):
         """Timeout on inactivity in seconds.
