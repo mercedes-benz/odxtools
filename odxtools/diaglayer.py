@@ -565,7 +565,7 @@ def read_diag_layer_from_odx(et_element, enable_candela_workarounds=True):
     # Parse communication parameter refs
     com_params = [read_communication_param_ref_from_odx(el)
                   for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")]
-    print(f"{short_name} = {com_params}")
+
     # Parse Requests and Responses
     requests = [read_structure_from_odx(rq)
                 for rq in et_element.iterfind("REQUESTS/REQUEST")]
