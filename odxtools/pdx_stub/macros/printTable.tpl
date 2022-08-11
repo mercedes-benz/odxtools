@@ -13,7 +13,6 @@
  {%- endfilter -%}
 >
  <SHORT-NAME>{{table.short_name}}</SHORT-NAME>
- <LONG-NAME>{{table.long_name|e}}</LONG-NAME>
 {%- if table.long_name %}
   <LONG-NAME>{{table.long_name|e}}</LONG-NAME>
 {%- endif %}
