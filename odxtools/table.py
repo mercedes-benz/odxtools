@@ -62,7 +62,7 @@ class TableRowRef(TableRow):
 
     def __init__(self, id: str):
         self._id_ref = id
-        super().__init__(None, None, None, None, None)
+        super().__init__("", "", "", 0, "")
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
         row: TableRow = id_lookup.get(self._id_ref)
