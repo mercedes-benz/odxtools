@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 import abc
-from dataclasses import dataclass
+from dataclasses import dataclass, astuple
 from typing import Optional, List, Dict, Any
 
 from odxtools.utils import read_description_from_odx
@@ -54,6 +54,20 @@ class TableRow:
             + ", ".join([f"key='{self.key}'", f"structure_ref='{self.structure_ref}'"])
             + ")"
         )
+
+
+@dataclass
+class TableRowRef(TableRow):
+    """This class represents a TABLE-ROW-REF."""
+
+    def __init__(self, id: str):
+        self._id_ref = id
+        super().__init__(None, None, None, None, None)
+
+    def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
+        row: TableRow = id_lookup.get(self._id_ref)
+        super().__init__(*astuple(row))
+        super()._resolve_references(id_lookup)
 
 
 class Table(TableBase):
@@ -143,9 +157,13 @@ def read_table_from_odx(et_element):
         read_table_row_from_odx(el) for el in et_element.iterfind("TABLE-ROW")
     ]
 
+    table_row_refs = [
+        TableRowRef(el.get('ID-REF')) for el in et_element.iterfind("TABLE-ROW-REF")
+    ]
+
     table = Table(
         key_dop_ref=key_dop_ref,
-        table_rows=table_rows,
+        table_rows=table_rows + table_row_refs,
         **_get_common_props(et_element)
     )
 
