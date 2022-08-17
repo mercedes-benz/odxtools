@@ -48,9 +48,12 @@ def _read_complex_value_from_odx(et_element):
 
 def read_communication_param_ref_from_odx(et_element):
     id_ref = et_element.get("ID-REF")
-
+    # ODX standard v2.0.0 defined only VALUE
+    # ODX standard v2.0.1 decided to break things and change it to choice between SIMPLE-VALUE and COMPLEX-VALUE
     if et_element.find("SIMPLE-VALUE") is not None:
         value = et_element.find("SIMPLE-VALUE").text
+    elif et_element.find("VALUE"):
+        value = et_element.find("VALUE").text
     else:
         value = _read_complex_value_from_odx(et_element.find("COMPLEX-VALUE"))
 
