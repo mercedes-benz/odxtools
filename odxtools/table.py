@@ -2,8 +2,8 @@
 # Copyright (c) 2022 MBition GmbH
 
 import abc
-from dataclasses import dataclass, astuple
-from typing import Optional, List, Dict, Any
+from dataclasses import dataclass
+from typing import Optional, List, Dict, Any, Tuple
 
 from odxtools.utils import read_description_from_odx
 
@@ -55,21 +55,6 @@ class TableRow:
             + ")"
         )
 
-
-@dataclass
-class TableRowRef(TableRow):
-    """This class represents a TABLE-ROW-REF."""
-
-    def __init__(self, id: str):
-        self._id_ref = id
-        super().__init__("", "", "", 0, "")
-
-    def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
-        row: TableRow = id_lookup.get(self._id_ref)
-        super().__init__(*astuple(row))
-        super()._resolve_references(id_lookup)
-
-
 class Table(TableBase):
     """This class represents a TABLE."""
 
@@ -79,6 +64,7 @@ class Table(TableBase):
         short_name: str,
         key_dop_ref: str,
         table_rows: List[TableRow],
+        table_row_refs: Optional[List[str]] = None,
         long_name: Optional[str] = None,
         description: Optional[str] = None,
         semantic: Optional[str] = None,
@@ -86,7 +72,9 @@ class Table(TableBase):
         super().__init__(
             id=id, short_name=short_name, long_name=long_name, key_dop_ref=key_dop_ref
         )
-        self.table_rows = table_rows
+        self._local_table_rows = table_rows
+        self._ref_table_rows: List[TableRow] = []
+        self._table_row_refs = table_row_refs or []
         self._key_dop = None
         self.description = description
         self.semantic = semantic
@@ -95,6 +83,11 @@ class Table(TableBase):
     def key_dop(self) -> Optional[DopBase]:
         """The key data object property associated with this table."""
         return self._key_dop
+
+    @property
+    def table_rows(self) -> Tuple[DopBase]:
+        """The table rows (both local and referenced) in this table."""
+        return tuple(self._local_table_rows + self._ref_table_rows)
 
     def _build_id_lookup(self):
         id_lookup = {}
@@ -105,8 +98,11 @@ class Table(TableBase):
         self._key_dop = id_lookup.get(self.key_dop_ref)
         if self._key_dop is None and self.key_dop_ref is not None:
             logger.warning(f"KEY-DOP-REF '{self.key_dop_ref!r}' could not be resolved.")
-        for table_row in self.table_rows:
+
+        for table_row in self._local_table_rows:
             table_row._resolve_references(id_lookup)
+
+        self._ref_table_rows = [id_lookup.get(ref) for ref in self._table_row_refs]
 
     def __repr__(self) -> str:
         return (
@@ -158,12 +154,13 @@ def read_table_from_odx(et_element):
     ]
 
     table_row_refs = [
-        TableRowRef(el.get('ID-REF')) for el in et_element.iterfind("TABLE-ROW-REF")
+        el.get('ID-REF') for el in et_element.iterfind("TABLE-ROW-REF")
     ]
 
     table = Table(
         key_dop_ref=key_dop_ref,
-        table_rows=table_rows + table_row_refs,
+        table_rows=table_rows,
+        table_row_refs=table_row_refs,
         **_get_common_props(et_element)
     )
 
