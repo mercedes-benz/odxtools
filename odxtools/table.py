@@ -85,7 +85,7 @@ class Table(TableBase):
         return self._key_dop
 
     @property
-    def table_rows(self) -> Tuple[DopBase]:
+    def table_rows(self) -> Tuple[TableRow]:
         """The table rows (both local and referenced) in this table."""
         return tuple(self._local_table_rows + self._ref_table_rows)
 
@@ -102,7 +102,9 @@ class Table(TableBase):
         for table_row in self._local_table_rows:
             table_row._resolve_references(id_lookup)
 
-        self._ref_table_rows = [id_lookup.get(ref) for ref in self._table_row_refs]
+        self._ref_table_rows = [
+            id_lookup.get(ref) for ref in self._table_row_refs if isinstance(id_lookup.get(ref), TableRow)
+        ]
 
     def __repr__(self) -> str:
         return (
