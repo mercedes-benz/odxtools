@@ -44,7 +44,7 @@ class Database:
 
             tmp = [
                 read_diag_layer_container_from_odx(dlc_el, enable_candela_workarounds=enable_candela_workarounds) \
-                  for dlc_el in dlc_elements
+                  for dlc_el in filter(None, dlc_elements)
             ]
             self._diag_layer_containers = NamedItemList(lambda x: x.short_name, tmp)
             self._diag_layer_containers.sort(key=lambda x: x.short_name)
