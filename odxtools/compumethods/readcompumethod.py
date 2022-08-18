@@ -46,7 +46,8 @@ def _parse_compu_scale_to_linear_compu_method(scale_element,
     nums = coeffs.iterfind("COMPU-NUMERATOR/V")
 
     offset = computation_python_type(next(nums).text)
-    factor = computation_python_type(next(nums).text)
+    factor_el = next(nums, None)
+    factor = computation_python_type(factor_el.text if factor_el else '0')
     if coeffs.find("COMPU-DENOMINATOR/V") is not None:
         kwargs["denominator"] = float(
             coeffs.find("COMPU-DENOMINATOR/V").text)
