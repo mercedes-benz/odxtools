@@ -5,12 +5,14 @@ import abc
 from dataclasses import dataclass
 from typing import Optional, List, Dict, Any
 
+from odxtools.utils import read_description_from_odx
+
 from .dataobjectproperty import DopBase
 from .globals import logger
 
 
 class TableBase(abc.ABC):
-    """Base class for all Tables."""
+    """ Base class for all Tables."""
 
     def __init__(self, id: str, short_name: str, long_name=None):
         self.id = id
@@ -28,6 +30,8 @@ class TableRow:
     key: int
     structure_ref: Optional[str] = None
     dop_ref: Optional[str] = None
+    description: Optional[str] = None
+    semantic: Optional[str] = None
 
     def __post_init__(self):
         self._structure: Optional[DopBase] = None
@@ -49,7 +53,7 @@ class TableRow:
 
     @property
     def structure(self) -> Optional[DopBase]:
-        """The structure object resolved by structure_ref."""
+        """The structure associated with this table row."""
         return self._structure
 
     @property
@@ -81,15 +85,19 @@ class Table(TableBase):
         table_rows: List[TableRow],
         long_name: Optional[str] = None,
         key_dop_ref: Optional[str] = None,
+        description: Optional[str] = None,
+        semantic: Optional[str] = None,
     ):
         super().__init__(id=id, short_name=short_name, long_name=long_name)
         self.table_rows = table_rows
         self.key_dop_ref = key_dop_ref
         self._key_dop = None
+        self.description = description
+        self.semantic = semantic
 
     @property
     def key_dop(self) -> Optional[DopBase]:
-        """The key_dop object resolved by key_dop_ref."""
+        """The key data object property associated with this table."""
         return self._key_dop
 
     def _build_id_lookup(self):
@@ -117,6 +125,17 @@ class Table(TableBase):
         )
 
 
+def _get_common_props(et_element):
+    description = read_description_from_odx(et_element.find("DESC"))
+    return dict(
+        id=et_element.get("ID"),
+        short_name=et_element.findtext("SHORT-NAME"),
+        long_name=et_element.findtext("LONG-NAME"),
+        semantic=et_element.get("SEMANTIC"),
+        description=description,
+    )
+
+
 def read_table_row_from_odx(et_element):
     """Reads a TABLE-ROW."""
     id = et_element.get("ID")
@@ -131,12 +150,10 @@ def read_table_row_from_odx(et_element):
         dop_ref = et_element.find("DATA-OBJECT-PROP-REF").get("ID-REF")
 
     table_row = TableRow(
-        id=id,
-        short_name=short_name,
-        long_name=long_name,
         key=key,
         structure_ref=structure_ref,
         dop_ref=dop_ref,
+        **_get_common_props(et_element)
     )
 
     return table_row
@@ -157,11 +174,9 @@ def read_table_from_odx(et_element):
     ]
 
     table = Table(
-        id=id,
-        short_name=short_name,
-        long_name=long_name,
         key_dop_ref=key_dop_ref,
         table_rows=table_rows,
+        **_get_common_props(et_element)
     )
 
     return table

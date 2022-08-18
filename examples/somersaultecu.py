@@ -370,6 +370,8 @@ somersault_tables = {
         id="somersault.table.flip_quality",
         short_name="flip_quality",
         long_name="Flip Quality",
+        description="<p>The quality the flip (average, good or best)</p>",
+        semantic="QUALITY",
         key_dop_ref=somersault_dops["num_flips"].id,
         table_rows=[
             TableRow(
@@ -378,6 +380,8 @@ somersault_tables = {
                 long_name="Average",
                 key=3,
                 structure_ref=somersault_dops["num_flips"].id,
+                description="<p>The quality of the flip is average</p>",
+                semantic="QUALITY-KEY",
             ),
             TableRow(
                 id="somersault.table.flip_quality.good",
