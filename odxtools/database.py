@@ -39,8 +39,9 @@ class Database:
                     logger.info(f"Processing the file {zip_member}")
                     d = pdx_zip.read(zip_member)
                     root = ElementTree.fromstring(d)
-
-                    dlc_elements.append(root.find("DIAG-LAYER-CONTAINER"))
+                    dlc = root.find("DIAG-LAYER-CONTAINER")
+                    if dlc is not None:
+                        dlc_elements.append(dlc)
 
             tmp = [
                 read_diag_layer_container_from_odx(dlc_el, enable_candela_workarounds=enable_candela_workarounds) \
