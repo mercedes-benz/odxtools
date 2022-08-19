@@ -16,7 +16,7 @@ class CodedConstParameter(Parameter):
                          parameter_type="CODED-CONST", **kwargs)
 
         self._diag_coded_type = diag_coded_type
-        assert isinstance(coded_value, int)
+        assert isinstance(coded_value, (int, bytes, bytearray))
         self.coded_value = coded_value
 
     @property
