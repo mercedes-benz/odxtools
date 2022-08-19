@@ -3,7 +3,7 @@
 
 import abc
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Iterable
 
 from odxtools.utils import read_description_from_odx
 
@@ -74,7 +74,6 @@ class TableRow:
             + ")"
         )
 
-
 class Table(TableBase):
     """This class represents a TABLE."""
 
@@ -83,13 +82,18 @@ class Table(TableBase):
         id: str,
         short_name: str,
         table_rows: List[TableRow],
+        table_row_refs: Optional[List[str]] = None,
         long_name: Optional[str] = None,
         key_dop_ref: Optional[str] = None,
         description: Optional[str] = None,
         semantic: Optional[str] = None,
     ):
-        super().__init__(id=id, short_name=short_name, long_name=long_name)
-        self.table_rows = table_rows
+        super().__init__(
+            id=id, short_name=short_name, long_name=long_name
+        )
+        self._local_table_rows = table_rows
+        self._ref_table_rows: List[TableRow] = []
+        self._table_row_refs = table_row_refs or []
         self.key_dop_ref = key_dop_ref
         self._key_dop = None
         self.description = description
@@ -99,6 +103,11 @@ class Table(TableBase):
     def key_dop(self) -> Optional[DopBase]:
         """The key data object property associated with this table."""
         return self._key_dop
+
+    @property
+    def table_rows(self) -> Iterable[TableRow]:
+        """The table rows (both local and referenced) in this table."""
+        return self._local_table_rows + self._ref_table_rows
 
     def _build_id_lookup(self):
         id_lookup = {}
@@ -112,8 +121,14 @@ class Table(TableBase):
                 logger.warning(
                     f"KEY-DOP-REF '{self.key_dop_ref!r}' could not be resolved in TABLE."
                 )
-        for table_row in self.table_rows:
+        for table_row in self._local_table_rows:
             table_row._resolve_references(id_lookup)
+
+        self._ref_table_rows = []
+        for ref in self._table_row_refs:
+            tr = id_lookup.get(ref)
+            if isinstance(tr, TableRow):
+                self._ref_table_rows.append(tr)
 
     def __repr__(self) -> str:
         return (
@@ -168,9 +183,14 @@ def read_table_from_odx(et_element):
         read_table_row_from_odx(el) for el in et_element.iterfind("TABLE-ROW")
     ]
 
+    table_row_refs = [
+        el.get('ID-REF') for el in et_element.iterfind("TABLE-ROW-REF")
+    ]
+
     table = Table(
         key_dop_ref=key_dop_ref,
         table_rows=table_rows,
+        table_row_refs=table_row_refs,
         **_get_common_props(et_element)
     )
 
