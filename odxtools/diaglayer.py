@@ -476,8 +476,16 @@ class DiagLayer:
                 # fragment of the ASAM MCD2-D standard.
                 return int(com_param.value[4])
 
-    def get_doip_logical_ecu_address(self):
-        """The logical ecu address of the DoIP gateway."""
+    def get_can_func_req_id(self):
+        """CAN Functional Request Id."""
+        com_param = self.communication_parameters["ISO_15765_2__CP_CanFuncReqId"]
+        if com_param is None:
+            return None
+        else:
+            return int(com_param.value)
+
+    def get_logical_doip_address(self):
+        """The logical DoIP address of the ECU."""
         com_param = self.communication_parameters["ISO_13400_2_DIS_2015__CP_UniqueRespIdTable"]
         return int(com_param.value[0]) if com_param is not None else 0
 
