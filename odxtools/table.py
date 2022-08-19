@@ -3,7 +3,7 @@
 
 import abc
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, List, Dict, Any, Iterable
 
 from odxtools.utils import read_description_from_odx
 
@@ -85,9 +85,9 @@ class Table(TableBase):
         return self._key_dop
 
     @property
-    def table_rows(self) -> Tuple[TableRow]:
+    def table_rows(self) -> Iterable[TableRow]:
         """The table rows (both local and referenced) in this table."""
-        return tuple(self._local_table_rows + self._ref_table_rows)
+        return self._local_table_rows + self._ref_table_rows
 
     def _build_id_lookup(self):
         id_lookup = {}
@@ -102,9 +102,11 @@ class Table(TableBase):
         for table_row in self._local_table_rows:
             table_row._resolve_references(id_lookup)
 
-        self._ref_table_rows = [
-            id_lookup.get(ref) for ref in self._table_row_refs if isinstance(id_lookup.get(ref), TableRow)
-        ]
+        self._ref_table_rows = []
+        for ref in self._table_row_refs:
+            tr = id_lookup.get(ref)
+            if isinstance(tr, TableRow):
+                self._ref_table_rows.append(tr)
 
     def __repr__(self) -> str:
         return (
