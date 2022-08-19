@@ -8,8 +8,9 @@ from .globals import logger
 
 
 @dataclass
-class EnvDataDesc:
-    """This class represents a ENV-DATA-DESC."""
+class EnvironmentDataDescription:
+    """This class represents Environment Data Description, which is a complex DOP
+    that is used to define the interpretation of environment data."""
 
     id: str
     short_name: str
@@ -25,7 +26,7 @@ class EnvDataDesc:
 
     def __repr__(self) -> str:
         return (
-            f"EnvDataDesc('{self.short_name}', "
+            f"EnvironmentDataDescription('{self.short_name}', "
             + ", ".join(
                 [
                     f"id='{self.id}'",
@@ -39,7 +40,7 @@ class EnvDataDesc:
 
 
 def read_env_data_desc_from_odx(et_element):
-    """Reads a ENV-DATA-DESC."""
+    """Reads Environment Data Description from Diag Layer."""
     id = et_element.get("ID")
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME").text
@@ -57,7 +58,7 @@ def read_env_data_desc_from_odx(et_element):
         ]
     logger.debug("Parsing ENV-DATA-DESC " + short_name)
 
-    env_data_desc = EnvDataDesc(
+    env_data_desc = EnvironmentDataDescription(
         id=id,
         short_name=short_name,
         long_name=long_name,

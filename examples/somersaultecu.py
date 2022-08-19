@@ -8,9 +8,9 @@ from itertools import chain
 
 from odxtools import PhysicalConstantParameter
 
-from odxtools.envdata import EnvData
-from odxtools.envdatadesc import EnvDataDesc
-from odxtools.mux import Mux, SwitchKey, DefaultCase, Case
+from odxtools.envdata import EnvironmentData
+from odxtools.envdatadesc import EnvironmentDataDescription
+from odxtools.multiplexer import Multiplexer, MultiplexerSwitchKey, MultiplexerDefaultCase, MultiplexerCase
 
 from odxtools.table import Table, TableRow
 
@@ -404,30 +404,30 @@ somersault_tables = {
 
 # muxs
 somersault_muxs = {
-    "flip_preference": Mux(
-        id="somersault.mux.flip_preference",
+    "flip_preference": Multiplexer(
+        id="somersault.multiplexer.flip_preference",
         short_name="flip_preference",
         long_name="Flip Preference",
         byte_position=0,
-        switch_key=SwitchKey(
+        switch_key=MultiplexerSwitchKey(
             byte_position=0,
             bit_position=0,
             dop_ref=somersault_dops["num_flips"].id,
         ),
-        default_case=DefaultCase(
+        default_case=MultiplexerDefaultCase(
             short_name="default_case",
             long_name="Default Case",
             structure_ref=somersault_dops["num_flips"].id,
         ),
         cases=[
-            Case(
+            MultiplexerCase(
                 short_name="forward_flip",
                 long_name="Forward Flip",
                 lower_limit="1",
                 upper_limit="3",
                 structure_ref=somersault_dops["num_flips"].id,
             ),
-            Case(
+            MultiplexerCase(
                 short_name="backward_flip",
                 long_name="Backward Flip",
                 lower_limit="1",
@@ -440,7 +440,7 @@ somersault_muxs = {
 
 # env-data
 somersault_env_datas = {
-    "flip_env_data": EnvData(
+    "flip_env_data": EnvironmentData(
         id="somersault.env_data.flip_env_data",
         short_name="flip_env_data",
         long_name="Flip Env Data",
@@ -466,7 +466,7 @@ somersault_env_datas = {
 
 # env-data-desc
 somersault_env_data_descs = {
-    "flip_env_data_desc": EnvDataDesc(
+    "flip_env_data_desc": EnvironmentDataDescription(
         id="somersault.env_data_desc.flip_env_data_desc",
         short_name="flip_env_data_desc",
         long_name="Flip Env Data Desc",

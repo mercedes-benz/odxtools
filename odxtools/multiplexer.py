@@ -9,8 +9,8 @@ from .globals import logger
 
 
 @dataclass
-class Case:
-    """This class represents a CASE."""
+class MultiplexerCase:
+    """This class represents a Case which represents multiple options in a Multiplexer."""
 
     short_name: str
     long_name: str
@@ -30,7 +30,7 @@ class Case:
 
     def __repr__(self) -> str:
         return (
-            f"Case('{self.short_name}', "
+            f"MultiplexerCase('{self.short_name}', "
             + ", ".join(
                 [
                     f"lower_limit='{self.lower_limit}'",
@@ -43,8 +43,8 @@ class Case:
 
 
 @dataclass
-class DefaultCase:
-    """This class represents a DEFAULT-CASE."""
+class MultiplexerDefaultCase:
+    """This class represents a Default Case, which is selected when there are no cases defined in the Multiplexer."""
 
     short_name: str
     long_name: str
@@ -63,7 +63,7 @@ class DefaultCase:
 
     def __repr__(self) -> str:
         return (
-            f"DefaultCase('{self.short_name}', "
+            f"MultiplexerDefaultCase('{self.short_name}', "
             + ", ".join(
                 [
                     f"structure_ref='{self.structure_ref}'",
@@ -74,8 +74,8 @@ class DefaultCase:
 
 
 @dataclass
-class SwitchKey:
-    """This class represents a SWITCH-KEY."""
+class MultiplexerSwitchKey:
+    """This class represents a Switch Key, which is used to select one of the cases defined in the Multiplexer."""
 
     byte_position: int
     bit_position: int
@@ -93,7 +93,7 @@ class SwitchKey:
 
     def __repr__(self) -> str:
         return (
-            f"SwitchKey("
+            f"MultiplexerSwitchKey("
             + ", ".join(
                 [
                     f"byte_position='{self.byte_position}'",
@@ -106,16 +106,17 @@ class SwitchKey:
 
 
 @dataclass
-class Mux:
-    """This class represents a MUX."""
+class Multiplexer:
+    """This class represents a Multiplexer (MUX) which are used to interpret data stream depending on the value
+    of a switch-key (similar to switch-case statements in programming languages like C or Java)."""
 
     id: str
     short_name: str
     long_name: str
     byte_position: int
-    switch_key: SwitchKey
-    default_case: Optional[DefaultCase] = None
-    cases: Optional[List[Case]] = None
+    switch_key: MultiplexerSwitchKey
+    default_case: Optional[MultiplexerDefaultCase] = None
+    cases: Optional[List[MultiplexerCase]] = None
 
     def _build_id_lookup(self):
         id_lookup = {}
@@ -132,7 +133,7 @@ class Mux:
 
     def __repr__(self) -> str:
         return (
-            f"Mux('{self.short_name}', "
+            f"Multiplexer('{self.short_name}', "
             + ", ".join(
                 [
                     f"id='{self.id}'",
@@ -147,7 +148,7 @@ class Mux:
 
 
 def read_switch_key_from_odx(et_element):
-    """Reads a SWITCH-KEY."""
+    """Reads a Switch Key for a Multiplexer."""
     byte_position = (
         int(et_element.find("BYTE-POSITION").text)
         if et_element.find("BYTE-POSITION") is not None
@@ -160,7 +161,7 @@ def read_switch_key_from_odx(et_element):
     )
     dop_ref = et_element.find("DATA-OBJECT-PROP-REF").get("ID-REF")
 
-    return SwitchKey(
+    return MultiplexerSwitchKey(
         byte_position=byte_position,
         bit_position=bit_position,
         dop_ref=dop_ref,
@@ -168,7 +169,7 @@ def read_switch_key_from_odx(et_element):
 
 
 def read_default_case_from_odx(et_element):
-    """Reads a DEFAULT-CASE."""
+    """Reads a Default Case for a Multiplexer."""
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME")
     if long_name is not None:
@@ -178,7 +179,7 @@ def read_default_case_from_odx(et_element):
     if et_element.find("STRUCTURE-REF") is not None:
         structure_ref = et_element.find("STRUCTURE-REF").get("ID-REF")
 
-    return DefaultCase(
+    return MultiplexerDefaultCase(
         short_name=short_name,
         long_name=long_name,
         structure_ref=structure_ref,
@@ -186,7 +187,7 @@ def read_default_case_from_odx(et_element):
 
 
 def read_case_from_odx(et_element):
-    """Reads a CASE."""
+    """Reads a Case for a Multiplexer."""
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME")
     if long_name is not None:
@@ -195,7 +196,7 @@ def read_case_from_odx(et_element):
     lower_limit = et_element.find("LOWER-LIMIT").text
     upper_limit = et_element.find("UPPER-LIMIT").text
 
-    return Case(
+    return MultiplexerCase(
         short_name=short_name,
         long_name=long_name,
         structure_ref=structure_ref,
@@ -205,7 +206,7 @@ def read_case_from_odx(et_element):
 
 
 def read_mux_from_odx(et_element):
-    """Reads a MUX."""
+    """Reads a Multiplexer from Diag Layer."""
     id = et_element.get("ID")
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME")
@@ -230,7 +231,7 @@ def read_mux_from_odx(et_element):
 
     logger.debug("Parsing MUX " + short_name)
 
-    mux = Mux(
+    mux = Multiplexer(
         id=id,
         short_name=short_name,
         long_name=long_name,

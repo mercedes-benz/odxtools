@@ -13,8 +13,8 @@ from .globals import logger
 
 
 @dataclass
-class EnvData(BasicStructure):
-    """This class represents a ENV-DATA."""
+class EnvironmentData(BasicStructure):
+    """This class represents Environment Data that describes the circumstances in which the error occurred."""
 
     def __init__(
         self,
@@ -35,14 +35,14 @@ class EnvData(BasicStructure):
 
     def __repr__(self) -> str:
         return (
-            f"EnvData('{self.short_name}', "
+            f"EnvironmentData('{self.short_name}', "
             + ", ".join([f"id='{self.id}'", f"parameters='{self.parameters}'"])
             + ")"
         )
 
 
 def read_env_data_from_odx(et_element):
-    """Reads a ENV-DATA."""
+    """Reads Environment Data from Diag Layer."""
     id = et_element.get("ID")
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME")
@@ -55,7 +55,7 @@ def read_env_data_from_odx(et_element):
     ]
     logger.debug("Parsing ENV-DATA " + short_name)
 
-    env_data = EnvData(
+    env_data = EnvironmentData(
         id,
         short_name,
         parameters=parameters,

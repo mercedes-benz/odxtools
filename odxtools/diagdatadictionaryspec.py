@@ -11,10 +11,10 @@ from .dataobjectproperty import (
     read_data_object_property_from_odx,
 )
 from .endofpdufield import EndOfPduField, read_end_of_pdu_field_from_odx
-from .envdata import read_env_data_from_odx, EnvData
-from .envdatadesc import read_env_data_desc_from_odx, EnvDataDesc
+from .envdata import read_env_data_from_odx, EnvironmentData
+from .envdatadesc import read_env_data_desc_from_odx, EnvironmentDataDescription
 from .globals import logger
-from .mux import Mux, read_mux_from_odx
+from .multiplexer import Multiplexer, read_mux_from_odx
 from .nameditemlist import NamedItemList
 from .structures import Structure, read_structure_from_odx
 from .table import read_table_from_odx, Table
@@ -42,13 +42,13 @@ class DiagDataDictionarySpec:
     tables: NamedItemList[Table] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
-    env_data_descs: NamedItemList[EnvDataDesc] = field(
+    env_data_descs: NamedItemList[EnvironmentDataDescription] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
-    env_datas: NamedItemList[EnvData] = field(
+    env_datas: NamedItemList[EnvironmentData] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
-    muxs: NamedItemList[Mux] = field(
+    muxs: NamedItemList[Multiplexer] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
     unit_spec: Optional[UnitSpec] = None
