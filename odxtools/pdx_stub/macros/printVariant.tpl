@@ -9,6 +9,9 @@
 {%- import('macros/printFunctionalClass.tpl') as pfc %}
 {%- import('macros/printStructure.tpl') as pst %}
 {%- import('macros/printEndOfPdu.tpl') as peopdu %}
+{%- import('macros/printMux.tpl') as pm %}
+{%- import('macros/printEnvData.tpl') as ped %}
+{%- import('macros/printEnvDataDesc.tpl') as pedd %}
 {%- import('macros/printUnitSpec.tpl') as punit %}
 {%- import('macros/printService.tpl') as ps %}
 {%- import('macros/printSingleEcuJob.tpl') as psej %}
@@ -45,6 +48,13 @@
  {%- endfor %}
   </DTC-DOPS>
 {%- endif %}
+{%- if dl.local_diag_data_dictionary_spec.env_data_descs  %}
+  <ENV-DATA-DESCS>
+ {%- for env_data_desc in dl.local_diag_data_dictionary_spec.env_data_descs -%}
+  {{ pedd.printEnvDataDesc(env_data_desc)|indent(3) }}
+ {%- endfor %}
+  </ENV-DATA-DESCS>
+{%- endif %}
  {%- if dl.local_diag_data_dictionary_spec.data_object_props %}
   <DATA-OBJECT-PROPS>
  {%- for dop in dl.local_diag_data_dictionary_spec.data_object_props %}
@@ -66,6 +76,20 @@
  {%- endfor %}
   </END-OF-PDU-FIELDS>
  {%- endif %}
+  {%- if dl.local_diag_data_dictionary_spec.muxs %}
+   <MUXS>
+  {%- for mux in dl.local_diag_data_dictionary_spec.muxs %}
+    {{ pm.printMux(mux)|indent(3) }}
+  {%- endfor %}
+   </MUXS>
+  {%- endif %}
+   {%- if dl.local_diag_data_dictionary_spec.env_datas %}
+    <ENV-DATAS>
+   {%- for env_data in dl.local_diag_data_dictionary_spec.env_datas %}
+     {{ ped.printEnvData(env_data)|indent(3) }}
+   {%- endfor %}
+    </ENV-DATAS>
+   {%- endif %}
  {%- if dl.local_diag_data_dictionary_spec.unit_spec %}
   {{ punit.printUnitSpec(dl.local_diag_data_dictionary_spec.unit_spec)|indent(2) }}
  {%- endif %}
