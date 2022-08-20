@@ -43,7 +43,7 @@ class CodedConstParameter(Parameter):
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
         if self.short_name in encode_state.parameter_values \
                 and encode_state.parameter_values[self.short_name] != self.coded_value:
-            raise TypeError(f"The parameter '{self.short_name}' is constant {self.coded_value}"
+            raise TypeError(f"The parameter '{self.short_name}' is constant {self._coded_value_str}"
                             " and thus can not be changed.")
         return self.diag_coded_type.convert_internal_to_bytes(self.coded_value, encode_state, bit_position=self.bit_position)
 
@@ -61,7 +61,7 @@ class CodedConstParameter(Parameter):
         if self.coded_value != coded_val:
             raise DecodeError(
                 f"Coded constant parameter does not match! "
-                f"The parameter {self.short_name} expected coded value {self.coded_value} but got {coded_val} "
+                f"The parameter {self.short_name} expected coded value {self._coded_value_str} but got {coded_val} "
                 f"at byte position {decode_state.next_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}."
             )
@@ -76,7 +76,7 @@ class CodedConstParameter(Parameter):
         return d
 
     def __repr__(self):
-        repr_str = f"CodedConstParameter(short_name='{self.short_name}', coded_value={self.coded_value}"
+        repr_str = f"CodedConstParameter(short_name='{self.short_name}', coded_value={self._coded_value_str}"
         if self.long_name is not None:
             repr_str += f", long_name='{self.long_name}'"
         if self.byte_position is not None:
@@ -96,6 +96,12 @@ class CodedConstParameter(Parameter):
         ]
         return "\n".join(lines)
 
+    @property
+    def _coded_value_str(self):
+        if isinstance(self.coded_value, int):
+            return str(self.coded_value)
+        return self.coded_value.hex()
+
     def get_description_of_valid_values(self) -> str:
         """return a human-understandable description of valid physical values"""
-        return f"Constant internal value: {self.coded_value}"
+        return f"Constant internal value: {self._coded_value_str}"
