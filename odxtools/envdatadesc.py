@@ -42,8 +42,8 @@ class EnvironmentDataDescription:
 def read_env_data_desc_from_odx(et_element):
     """Reads Environment Data Description from Diag Layer."""
     id = et_element.get("ID")
-    short_name = et_element.find("SHORT-NAME").text
-    long_name = et_element.find("LONG-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
+    long_name = et_element.findtext("LONG-NAME")
     param_snref = None
     if et_element.find("PARAM-SNREF") is not None:
         param_snref = et_element.find("PARAM-SNREF").get("SHORT-NAME")

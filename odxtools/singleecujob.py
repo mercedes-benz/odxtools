@@ -235,12 +235,12 @@ class SingleEcuJob:
 
 
 def read_prog_code_from_odx(et_element):
-    code_file = et_element.find("CODE-FILE").text
+    code_file = et_element.findtext("CODE-FILE")
 
     encryption = et_element.findtext("ENCRYPTION")
 
-    syntax = et_element.find("SYNTAX").text
-    revision = et_element.find("REVISION").text
+    syntax = et_element.findtext("SYNTAX")
+    revision = et_element.findtext("REVISION")
 
     entrypoint = et_element.findtext("ENTRYPOINT")
 

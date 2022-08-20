@@ -222,7 +222,7 @@ class DiagService:
 def read_diag_service_from_odx(et_element):
 
     # logger.info(f"Parsing service based on ET DiagService element: {et_element}")
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     id = et_element.get("ID")
 
     request_ref_id = et_element.find("REQUEST-REF").get("ID-REF")
@@ -242,8 +242,7 @@ def read_diag_service_from_odx(et_element):
     state_transition_ref_ids = [
         el.get("ID-REF") for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
     ]
-    long_name = et_element.find(
-        "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
+    long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
     semantic = et_element.get("SEMANTIC")
 

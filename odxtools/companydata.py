@@ -4,7 +4,7 @@
 from .nameditemlist import NamedItemList
 from .utils import read_description_from_odx
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional, List
 
 @dataclass()
@@ -67,7 +67,7 @@ class CompanyData:
         pass
 
 def read_xdoc_from_odx(xdoc):
-    short_name = xdoc.find("SHORT-NAME").text
+    short_name = xdoc.findtext("SHORT-NAME")
 
     long_name = xdoc.find("LONG-NAME")
     if long_name is not None:
@@ -120,7 +120,7 @@ def read_company_datas_from_odx(et_element):
 
     for cd in et_element.iterfind("COMPANY-DATA"):
         id = cd.attrib["ID"]
-        short_name = cd.find("SHORT-NAME").text
+        short_name = cd.findtext("SHORT-NAME")
 
         long_name = cd.find("LONG-NAME")
         if long_name is not None:
@@ -145,7 +145,7 @@ def read_company_datas_from_odx(et_element):
 
             for tm in team_members.iterfind("TEAM-MEMBER"):
                 tm_id = tm.attrib["ID"]
-                tm_short_name = tm.find("SHORT-NAME").text
+                tm_short_name = tm.findtext("SHORT-NAME")
 
                 tm_long_name = tm.find("LONG-NAME")
                 if tm_long_name is not None:

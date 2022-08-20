@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import Any, List, Dict, Iterable, Optional, OrderedDict, Union
+from typing import List, Dict, Iterable, Optional, OrderedDict, Union
 
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState, ParameterValuePair
@@ -424,7 +424,7 @@ class Response(BasicStructure):
 
 def read_structure_from_odx(et_element) -> Union[Structure, Request, Response, None]:
     id = et_element.get("ID")
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     long_name = et_element.find("LONG-NAME")
     if long_name is not None:
         long_name = long_name.text
@@ -451,13 +451,12 @@ def read_structure_from_odx(et_element) -> Union[Structure, Request, Response, N
             description=description
         )
     elif et_element.tag == "STRUCTURE":
-        byte_size = int(et_element.find(
-            "BYTE-SIZE").text) if et_element.find("BYTE-SIZE") is not None else None
+        byte_size = et_element.findtext("BYTE-SIZE")
         res = Structure(
             id,
             short_name,
             parameters=parameters,
-            byte_size=byte_size,
+            byte_size=int(byte_size) if byte_size is not None else None,
             long_name=long_name,
             description=description
         )

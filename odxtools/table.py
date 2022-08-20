@@ -153,7 +153,7 @@ def _get_common_props(et_element):
 
 def read_table_row_from_odx(et_element):
     """Reads a TABLE-ROW."""
-    key = et_element.find("KEY").text
+    key = et_element.findtext("KEY")
     structure_ref = None
     if et_element.find("STRUCTURE-REF") is not None:
         structure_ref = et_element.find("STRUCTURE-REF").get("ID-REF")
@@ -173,7 +173,7 @@ def read_table_row_from_odx(et_element):
 
 def read_table_from_odx(et_element):
     """Reads a TABLE."""
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     key_dop_ref = None
     if et_element.find("KEY-DOP-REF") is not None:
         key_dop_ref = et_element.find("KEY-DOP-REF").get("ID-REF")

@@ -18,11 +18,10 @@ class StateTransition:
 
 
 def read_state_transition_from_odx(et_element):
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     id = et_element.get("ID")
 
-    long_name = et_element.find(
-        "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
+    long_name = et_element.findtext("LONG-NAME")
     source_short_name = et_element.find("SOURCE-SNREF").attrib["SHORT-NAME"] if et_element.find("SOURCE-SNREF") is not None else None
     target_short_name = et_element.find("TARGET-SNREF").attrib["SHORT-NAME"] if et_element.find("TARGET-SNREF") is not None else None
 

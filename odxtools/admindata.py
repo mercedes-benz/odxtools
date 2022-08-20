@@ -1,9 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from .nameditemlist import NamedItemList
 from .companydata import CompanyData, TeamMember
-from .utils import read_description_from_odx
 
 from dataclasses import dataclass, field
 from typing import Optional, List
@@ -68,9 +66,7 @@ def read_admin_data_from_odx(et_element):
     if et_element is None:
         return None
 
-    language = et_element.find("LANGUAGE")
-    if language is not None:
-        language = language.text
+    language = et_element.findtext("LANGUAGE")
 
     company_doc_infos = et_element.find("COMPANY-DOC-INFOS")
     if company_doc_infos is not None:
@@ -109,7 +105,7 @@ def read_admin_data_from_odx(et_element):
             if state is not None:
                 state = state.text
 
-            date = dr.find("DATE").text
+            date = dr.findtext("DATE")
 
             tool = dr.find("TOOL")
             if tool is not None:

@@ -104,9 +104,8 @@ class EndOfPduField(DopBase):
 
 def read_end_of_pdu_field_from_odx(et_element):
     id = et_element.get("ID")
-    short_name = et_element.find("SHORT-NAME").text
-    long_name = et_element.find(
-        "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
+    short_name = et_element.findtext("SHORT-NAME")
+    long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
 
     if et_element.find("BASIC-STRUCTURE-REF") is not None:
@@ -128,13 +127,11 @@ def read_end_of_pdu_field_from_odx(et_element):
         structure_snref = et_element.get("ENV-DATA-DESC-SNREF")
 
     if et_element.find("MIN-NUMBER-OF-ITEMS") is not None:
-        min_number_of_items = int(
-            et_element.find("MIN-NUMBER-OF-ITEMS").text)
+        min_number_of_items = int(et_element.findtext("MIN-NUMBER-OF-ITEMS"))
     else:
         min_number_of_items = None
     if et_element.find("MAX-NUMBER-OF-ITEMS") is not None:
-        max_number_of_items = int(
-            et_element.find("MAX-NUMBER-OF-ITEMS").text)
+        max_number_of_items = int(et_element.findtext("MAX-NUMBER-OF-ITEMS"))
     else:
         max_number_of_items = None
 

@@ -525,21 +525,19 @@ def read_diag_coded_type_from_odx(et_element):
     dct_type = et_element.get(f"{xsi}type")
     bit_length = None
     if dct_type == "LEADING-LENGTH-INFO-TYPE":
-        bit_length = int(et_element.find("BIT-LENGTH").text)
+        bit_length = int(et_element.findtext("BIT-LENGTH"))
         return LeadingLengthInfoType(base_data_type,
                                      bit_length=bit_length,
                                      base_type_encoding=base_type_encoding,
                                      is_highlow_byte_order=is_highlow_byte_order)
     elif dct_type == "MIN-MAX-LENGTH-TYPE":
-        min_length = int(et_element.find("MIN-LENGTH").text)
-        max_length = None
-        if et_element.find("MAX-LENGTH"):
-            max_length = int(et_element.find("MAX-LENGTH").text)
+        min_length = et_element.findtext("MIN-LENGTH")
+        max_length = et_element.findtext("MAX-LENGTH")
         termination = et_element.get("TERMINATION")
 
         return MinMaxLengthType(base_data_type,
-                                min_length=min_length,
-                                max_length=max_length,
+                                min_length=int(min_length) if min_length is not None else None,
+                                max_length=int(max_length) if max_length is not None else None,
                                 termination=termination,
                                 base_type_encoding=base_type_encoding,
                                 is_highlow_byte_order=is_highlow_byte_order)
@@ -552,10 +550,8 @@ def read_diag_coded_type_from_odx(et_element):
                                    base_type_encoding=base_type_encoding,
                                    is_highlow_byte_order=is_highlow_byte_order)
     elif dct_type == "STANDARD-LENGTH-TYPE":
-        bit_length = int(et_element.find("BIT-LENGTH").text)
-        bit_mask = None
-        if et_element.find("BIT-MASK"):
-            bit_mask = et_element.find("BIT-MASK").text
+        bit_length = int(et_element.findtext("BIT-LENGTH"))
+        bit_mask = et_element.findtext("BIT-MASK")
         condensed = et_element.get("CONDENSED") == "true"
         return StandardLengthType(base_data_type,
                                   bit_length,

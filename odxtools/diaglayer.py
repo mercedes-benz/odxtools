@@ -550,10 +550,9 @@ def read_diag_layer_from_odx(et_element, enable_candela_workarounds=True):
     variant_type = et_element.tag
 
     id = et_element.get("ID")
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
 
-    long_name = et_element.find(
-        "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
+    long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
 
     logger.info(f"Parsing {variant_type} '{short_name}' ...")
@@ -695,9 +694,9 @@ class DiagLayerContainer:
 
 def read_diag_layer_container_from_odx(et_element, enable_candela_workarounds=True):
     id = et_element.get("ID")
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     try:
-        long_name = et_element.find("LONG-NAME").text
+        long_name = et_element.findtext("LONG-NAME")
     except:
         long_name = None
     description = read_description_from_odx(et_element.find("DESC"))
