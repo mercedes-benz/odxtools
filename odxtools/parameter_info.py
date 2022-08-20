@@ -23,7 +23,7 @@ def parameter_info(param_list : Iterable[Union[Parameter, EndOfPduField]]) -> st
     result = ""
     for param in param_list:
         if isinstance(param, CodedConstParameter):
-            result += f"{param.short_name} : const = {param.coded_value}\n"
+            result += f"{param.short_name} : const = {param._coded_value_str}\n"
             continue
         elif isinstance(param, MatchingRequestParameter):
             result += f"{param.short_name} : <matches request>\n"
