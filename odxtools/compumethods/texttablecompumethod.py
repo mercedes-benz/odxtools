@@ -28,11 +28,12 @@ class TexttableCompuMethod(CompuMethod):
             return res
 
     def __is_internal_in_scale(self, internal_value, scale: CompuScale):
-        assert scale.lower_limit is not None
-        if scale.lower_limit.value is None:
-            return internal_value == scale.lower_limit.value
-        else:
-            return scale.lower_limit.value <= internal_value and internal_value <= scale.lower_limit.value
+        if scale.lower_limit is not None and not scale.lower_limit.complies_to_lower(internal_value):
+            return False
+        if scale.upper_limit is not None and not scale.upper_limit.complies_to_upper(internal_value):
+            return False
+        # value complies to the defined limits
+        return True
 
     def convert_internal_to_physical(self, internal_value):
         try:

@@ -6,6 +6,12 @@
 from enum import IntEnum
 from itertools import chain
 
+from odxtools import PhysicalConstantParameter
+
+from odxtools.envdata import EnvironmentData
+from odxtools.envdatadesc import EnvironmentDataDescription
+from odxtools.multiplexer import Multiplexer, MultiplexerSwitchKey, MultiplexerDefaultCase, MultiplexerCase
+
 from odxtools.table import Table, TableRow
 
 from odxtools.nameditemlist import NamedItemList
@@ -25,7 +31,6 @@ from odxtools.structures import Request
 from odxtools.structures import Response
 
 from odxtools.compumethods import CompuScale, IdenticalCompuMethod, Limit
-from odxtools.compumethods import LinearCompuMethod
 from odxtools.compumethods import TexttableCompuMethod
 
 from odxtools.dataobjectproperty import DataObjectProperty
@@ -41,7 +46,6 @@ from odxtools.units import Unit
 from odxtools.units import UnitGroup
 
 from odxtools.parameters import CodedConstParameter
-from odxtools.parameters import ReservedParameter
 from odxtools.parameters import ValueParameter
 from odxtools.parameters import MatchingRequestParameter
 from odxtools.parameters import NrcConstParameter
@@ -51,7 +55,6 @@ from odxtools.communicationparameter import CommunicationParameterRef
 from odxtools.audience import AdditionalAudience, Audience
 from odxtools.functionalclass import FunctionalClass
 
-import odxtools.obd as obd
 import odxtools.uds as uds
 
 
@@ -397,6 +400,79 @@ somersault_tables = {
         ]
     )
 
+}
+
+# muxs
+somersault_muxs = {
+    "flip_preference": Multiplexer(
+        id="somersault.multiplexer.flip_preference",
+        short_name="flip_preference",
+        long_name="Flip Preference",
+        byte_position=0,
+        switch_key=MultiplexerSwitchKey(
+            byte_position=0,
+            bit_position=0,
+            dop_ref=somersault_dops["num_flips"].id,
+        ),
+        default_case=MultiplexerDefaultCase(
+            short_name="default_case",
+            long_name="Default Case",
+            structure_ref=somersault_dops["num_flips"].id,
+        ),
+        cases=[
+            MultiplexerCase(
+                short_name="forward_flip",
+                long_name="Forward Flip",
+                lower_limit="1",
+                upper_limit="3",
+                structure_ref=somersault_dops["num_flips"].id,
+            ),
+            MultiplexerCase(
+                short_name="backward_flip",
+                long_name="Backward Flip",
+                lower_limit="1",
+                upper_limit="3",
+                structure_ref=somersault_dops["num_flips"].id,
+            )
+        ]
+    )
+}
+
+# env-data
+somersault_env_datas = {
+    "flip_env_data": EnvironmentData(
+        id="somersault.env_data.flip_env_data",
+        short_name="flip_env_data",
+        long_name="Flip Env Data",
+        parameters=[
+            ValueParameter(
+                short_name="flip_speed",
+                long_name="Flip Speed",
+                byte_position=0,
+                semantic="DATA",
+                dop_ref=somersault_dops["num_flips"].id,
+            ),
+            PhysicalConstantParameter(
+                short_name="flip_direction",
+                long_name="Flip Direction",
+                byte_position=1,
+                semantic="DATA",
+                physical_constant_value=1,
+                dop_ref=somersault_dops["num_flips"].id,
+            ),
+        ]
+    )
+}
+
+# env-data-desc
+somersault_env_data_descs = {
+    "flip_env_data_desc": EnvironmentDataDescription(
+        id="somersault.env_data_desc.flip_env_data_desc",
+        short_name="flip_env_data_desc",
+        long_name="Flip Env Data Desc",
+        param_snref="flip_speed",
+        env_data_refs=["somersault.env_data.flip_env_data"],
+    )
 }
 
 # requests
@@ -1030,6 +1106,9 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
         physical_dimensions=list(somersault_physical_dimensions.values()),
     ),
     tables=list(somersault_tables.values()),
+    muxs=list(somersault_muxs.values()),
+    env_datas=list(somersault_env_datas.values()),
+    env_data_descs=list(somersault_env_data_descs.values()),
 )
 
 # diagnostics layer
