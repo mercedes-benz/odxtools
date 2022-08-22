@@ -3,8 +3,9 @@
 
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Optional, Dict, Any, List, Union
+from typing import Optional, Dict, Any, List
 
+from .structures import BasicStructure
 from .dataobjectproperty import DopBase, DataObjectProperty
 from .decodestate import DecodeState
 from .encodestate import EncodeState
@@ -23,7 +24,7 @@ class MultiplexerCase:
     upper_limit: str
 
     def __post_init__(self):
-        self._structure: Optional[DopBase] = None
+        self._structure: Optional[BasicStructure] = None
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
         self._structure = id_lookup.get(self.structure_ref)
@@ -55,7 +56,7 @@ class MultiplexerDefaultCase:
     structure_ref: Optional[str] = None
 
     def __post_init__(self):
-        self._structure: Optional[DopBase] = None
+        self._structure: Optional[BasicStructure] = None
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
         if self.structure_ref is not None:
@@ -86,7 +87,7 @@ class MultiplexerSwitchKey:
     dop_ref: str
 
     def __post_init__(self):
-        self._dop: Optional[DopBase] = None
+        self._dop: Optional[DataObjectProperty] = None
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
         self._dop = id_lookup.get(self.dop_ref)
@@ -120,15 +121,14 @@ class Multiplexer(DopBase):
     byte_position: int
     switch_key: MultiplexerSwitchKey
     default_case: Optional[MultiplexerDefaultCase] = None
-    cases: List[MultiplexerCase] = None
+    cases: List[MultiplexerCase] = []
 
     @property
     def bit_length(self):
         return None
 
-    def _get_case_limits(self, case: Union[MultiplexerCase, MultiplexerDefaultCase]):
-        key_dop: DataObjectProperty = self.switch_key._dop
-        key_type = key_dop.physical_type.base_data_type
+    def _get_case_limits(self, case: MultiplexerCase):
+        key_type = self.switch_key._dop.physical_type.base_data_type
         lower_limit = key_type.make_from(case.lower_limit)
         upper_limit = key_type.make_from(case.upper_limit)
         return lower_limit, upper_limit
@@ -149,14 +149,10 @@ class Multiplexer(DopBase):
             with only one key equal to the desired case""")
 
         case_name, case_value = next(iter(physical_value.items()))
-        cases = list(self.cases)
-        if self.default_case:
-            cases.append(self.default_case)
-
         key_pos = self.switch_key.byte_position
         case_pos = self.byte_position
 
-        for case in cases:
+        for case in self.cases:
             if case.short_name == case_name:
                 if case._structure:
                     case_bytes = case._structure.convert_physical_to_bytes(
