@@ -90,8 +90,10 @@ class MultiplexerSwitchKey:
         self._dop: DataObjectProperty = None # type: ignore
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
-        self._dop = id_lookup.get(self.dop_ref)
-        if self._dop is None:
+        dop = id_lookup.get(self.dop_ref)
+        if isinstance(dop, DataObjectProperty):
+            self._dop = dop
+        else:
             logger.warning(
                 f"DATA-OBJECT-PROP-REF '{self.dop_ref}' could not be resolved in SWITCH-KEY."
             )
