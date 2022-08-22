@@ -149,8 +149,16 @@ class Multiplexer:
 
 def read_switch_key_from_odx(et_element):
     """Reads a Switch Key for a Multiplexer."""
-    byte_position = int(et_element.findtext("BYTE-POSITION"))
-    bit_position = int(et_element.findtext("BIT-POSITION", 0))
+    byte_position = (
+        int(et_element.findtext("BYTE-POSITION"))
+        if et_element.find("BYTE-POSITION") is not None
+        else None
+    )
+    bit_position = (
+        int(et_element.findtext("BIT-POSITION"))
+        if et_element.find("BIT-POSITION") is not None
+        else 0
+    )
     dop_ref = et_element.find("DATA-OBJECT-PROP-REF").get("ID-REF")
 
     return MultiplexerSwitchKey(
@@ -163,9 +171,7 @@ def read_switch_key_from_odx(et_element):
 def read_default_case_from_odx(et_element):
     """Reads a Default Case for a Multiplexer."""
     short_name = et_element.findtext("SHORT-NAME")
-    long_name = et_element.find("LONG-NAME")
-    if long_name is not None:
-        long_name = long_name.text
+    long_name = et_element.findtext("LONG-NAME")
 
     structure_ref = None
     if et_element.find("STRUCTURE-REF") is not None:
@@ -181,9 +187,7 @@ def read_default_case_from_odx(et_element):
 def read_case_from_odx(et_element):
     """Reads a Case for a Multiplexer."""
     short_name = et_element.findtext("SHORT-NAME")
-    long_name = et_element.find("LONG-NAME")
-    if long_name is not None:
-        long_name = long_name.text
+    long_name = et_element.findtext("LONG-NAME")
     structure_ref = et_element.find("STRUCTURE-REF").get("ID-REF")
     lower_limit = et_element.findtext("LOWER-LIMIT")
     upper_limit = et_element.findtext("UPPER-LIMIT")
@@ -201,10 +205,12 @@ def read_mux_from_odx(et_element):
     """Reads a Multiplexer from Diag Layer."""
     id = et_element.get("ID")
     short_name = et_element.findtext("SHORT-NAME")
-    long_name = et_element.find("LONG-NAME")
-    if long_name is not None:
-        long_name = long_name.text
-    byte_position = int(et_element.findtext("BYTE-POSITION"))
+    long_name = et_element.findtext("LONG-NAME")
+    byte_position = (
+            int(et_element.findtext("BYTE-POSITION"))
+            if et_element.find("BYTE-POSITION") is not None
+            else None
+        )
     switch_key = read_switch_key_from_odx(et_element.find("SWITCH-KEY"))
 
     default_case = None

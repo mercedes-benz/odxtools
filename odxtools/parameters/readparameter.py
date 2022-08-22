@@ -28,8 +28,10 @@ def read_parameter_from_odx(et_element):
 
     semantic = et_element.get("SEMANTIC")
 
-    byte_position = int(et_element.findtext("BYTE-POSITION"))
-    bit_position = int(et_element.findtext("BIT-POSITION", 0))
+    byte_position = int(et_element.findtext(
+        "BYTE-POSITION")) if et_element.find("BYTE-POSITION") is not None else None
+    bit_position = int(et_element.findtext(
+        "BIT-POSITION")) if et_element.find("BIT-POSITION") is not None else 0
 
     parameter_type = et_element.get(f"{xsi}type")
 
