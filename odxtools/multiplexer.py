@@ -121,7 +121,7 @@ class Multiplexer(DopBase):
     byte_position: int
     switch_key: MultiplexerSwitchKey
     default_case: Optional[MultiplexerDefaultCase] = None
-    cases: List[MultiplexerCase] = []
+    cases: Optional[List[MultiplexerCase]] = None
 
     @property
     def bit_length(self):
@@ -152,7 +152,7 @@ class Multiplexer(DopBase):
         key_pos = self.switch_key.byte_position
         case_pos = self.byte_position
 
-        for case in self.cases:
+        for case in (self.cases or []):
             if case.short_name == case_name:
                 if case._structure:
                     case_bytes = case._structure.convert_physical_to_bytes(
@@ -204,7 +204,7 @@ class Multiplexer(DopBase):
         case_found = False
         case_next_byte = 0
         case_value = None
-        for case in self.cases:
+        for case in (self.cases or []):
             lower, upper = self._get_case_limits(case)
             if lower <= key_value and key_value <= upper:
                 case_found = True
