@@ -87,7 +87,7 @@ class MultiplexerSwitchKey:
     dop_ref: str
 
     def __post_init__(self):
-        self._dop: Optional[DataObjectProperty] = None
+        self._dop: DataObjectProperty = None # type: ignore
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
         self._dop = id_lookup.get(self.dop_ref)
@@ -192,8 +192,7 @@ class Multiplexer(DopBase):
             parameter_value_pairs=[],
             next_byte_position=0
         )
-        key_dop: DataObjectProperty = self.switch_key._dop
-        key_value, key_next_byte = key_dop.convert_bytes_to_physical(
+        key_value, key_next_byte = self.switch_key._dop.convert_bytes_to_physical(
             key_decode_state, bit_position=self.switch_key.bit_position)
 
         case_decode_state = DecodeState(
