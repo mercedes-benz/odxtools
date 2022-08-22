@@ -3,6 +3,7 @@
 
 from itertools import chain
 from typing import Optional, Any, Dict, Iterable, List, Union
+import warnings
 
 from .exceptions import *
 from .globals import logger, xsi
@@ -53,8 +54,9 @@ class DiagLayer:
             not_inherited_dops: List[str]
                 short names of not inherited DOPs
             """
-            assert ref_type in ["PROTOCOL-REF", "BASE-VARIANT-REF",
-                                "ECU-SHARED-DATA-REF", "FUNCTIONAL-GROUP-REF"]
+            if ref_type not in ["PROTOCOL-REF", "BASE-VARIANT-REF",
+                                "ECU-SHARED-DATA-REF", "FUNCTIONAL-GROUP-REF"]:
+                warnings.warn(f'Unknown parent ref type {ref_type}', OdxWarning)
             if isinstance(reference, str):
                 self.id_ref = reference
                 self.referenced_diag_layer = None
