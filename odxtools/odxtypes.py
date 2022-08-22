@@ -16,7 +16,9 @@ def parse_int(value: str) -> int:
     try:
         return int(value)
     except ValueError:
-        return int(float(value))
+        v = float(value)
+        assert v.is_integer()
+        return int(v)
 
 _ODX_TYPE_PARSER: Dict[str, Callable[[str], PythonType]] = {
     "A_INT32": parse_int,
