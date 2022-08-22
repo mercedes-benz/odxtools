@@ -9,3 +9,6 @@ class EncodeError(OdxError):
 
 class DecodeError(OdxError):
     """Decoding raw data failed."""
+
+class OdxWarning(Warning):
+    """Any warning that happens during interacting with diagnostic objects."""
