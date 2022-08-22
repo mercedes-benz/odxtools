@@ -4,14 +4,12 @@
 from typing import Iterable, Union
 
 from .dataobjectproperty import DataObjectProperty
-from .endofpdufield import EndOfPduField
 from .parameters import CodedConstParameter
 from .parameters import MatchingRequestParameter
 from .parameters import ReservedParameter
 from .parameters import Parameter
 from .parameters import ParameterWithDOP
 from .endofpdufield import EndOfPduField
-from .compumethods import Limit
 from .compumethods import IntervalType
 from .compumethods import IdenticalCompuMethod
 from .compumethods import LinearCompuMethod
@@ -23,7 +21,7 @@ def parameter_info(param_list : Iterable[Union[Parameter, EndOfPduField]]) -> st
     result = ""
     for param in param_list:
         if isinstance(param, CodedConstParameter):
-            result += f"{param.short_name} : const = {param.coded_value}\n"
+            result += f"{param.short_name} : const = {param._coded_value_str}\n"
             continue
         elif isinstance(param, MatchingRequestParameter):
             result += f"{param.short_name} : <matches request>\n"
