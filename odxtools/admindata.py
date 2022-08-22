@@ -79,9 +79,7 @@ def read_admin_data_from_odx(et_element):
             if team_member_ref is not None:
                 team_member_ref = team_member_ref.attrib["ID-REF"]
 
-            doc_label = cdi.find("DOC-LABEL")
-            if doc_label is not None:
-                doc_label = doc_label.text
+            doc_label = cdi.findtext("DOC-LABEL")
 
             cdilist.append(CompanyDocInfo(company_data_ref=company_data_ref,
                                           team_member_ref=team_member_ref,
@@ -97,33 +95,18 @@ def read_admin_data_from_odx(et_element):
             if team_member_ref is not None:
                 team_member_ref = team_member_ref.attrib["ID-REF"]
 
-            revision_label = dr.find("REVISION-LABEL")
-            if revision_label is not None:
-                revision_label = revision_label.text
-
-            state = dr.find("STATE")
-            if state is not None:
-                state = state.text
-
+            revision_label = dr.findtext("REVISION-LABEL")
+            state = dr.findtext("STATE")
             date = dr.findtext("DATE")
-
-            tool = dr.find("TOOL")
-            if tool is not None:
-                tool = tool.text
+            tool = dr.findtext("TOOL")
 
             modlist = None
             mods = dr.find("MODIFICATIONS")
             if mods is not None:
                 modlist = list()
                 for mod in mods.iterfind("MODIFICATION"):
-                    m_change = mod.find("CHANGE")
-                    if m_change is not None:
-                        m_change = m_change.text
-
-                    m_reason = mod.find("REASON")
-                    if m_reason is not None:
-                        m_reason = m_reason.text
-
+                    m_change = mod.findtext("CHANGE")
+                    m_reason = mod.findtext("REASON")
                     modlist.append(Modification(change=m_change,
                                                 reason=m_reason))
 

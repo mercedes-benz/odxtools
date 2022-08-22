@@ -282,15 +282,8 @@ class DtcDop(DataObjectProperty):
 
 
 def read_dtc_from_odx(et_element):
-    if et_element.find("DISPLAY-TROUBLE-CODE") is not None:
-        display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
-    else:
-        display_trouble_code = None
-
-    if et_element.find("LEVEL") is not None:
-        level = et_element.findtext("LEVEL")
-    else:
-        level = None
+    display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
+    level = et_element.findtext("LEVEL")
 
     return DiagnosticTroubleCode(id=et_element.get("ID"),
                                  short_name=et_element.findtext("SHORT-NAME"),

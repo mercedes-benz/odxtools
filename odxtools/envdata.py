@@ -45,9 +45,7 @@ def read_env_data_from_odx(et_element):
     """Reads Environment Data from Diag Layer."""
     id = et_element.get("ID")
     short_name = et_element.findtext("SHORT-NAME")
-    long_name = et_element.find("LONG-NAME")
-    if long_name is not None:
-        long_name = long_name.text
+    long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
     parameters = [
         read_parameter_from_odx(et_parameter)
