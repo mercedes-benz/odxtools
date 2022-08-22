@@ -241,7 +241,7 @@ class Multiplexer(DopBase):
         if self.default_case is not None:
             self.default_case._resolve_references(id_lookup)
 
-        for case in self.cases:
+        for case in (self.cases or []):
             case._resolve_references(id_lookup)
 
     def __repr__(self) -> str:
