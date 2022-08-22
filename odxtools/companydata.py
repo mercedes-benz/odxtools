@@ -68,38 +68,14 @@ class CompanyData:
 
 def read_xdoc_from_odx(xdoc):
     short_name = xdoc.findtext("SHORT-NAME")
-
-    long_name = xdoc.find("LONG-NAME")
-    if long_name is not None:
-        long_name = long_name.text
-
-    description = xdoc.find("DESC")
-    if description is not None:
-        description = read_description_from_odx(description)
-
-    number = xdoc.find("NUMBER")
-    if number is not None:
-        number = number.text
-
-    state = xdoc.find("STATE")
-    if state is not None:
-        state = state.text
-
-    date = xdoc.find("DATE")
-    if date is not None:
-        date = date.text
-
-    publisher = xdoc.find("PUBLISHER")
-    if publisher is not None:
-        publisher = publisher.text
-
-    url = xdoc.find("URL")
-    if url is not None:
-        url = url.text
-
-    position = xdoc.find("POSITION")
-    if position is not None:
-        position = position.text
+    long_name = xdoc.findtext("LONG-NAME")
+    description = read_description_from_odx(xdoc.find("DESC"))
+    number = xdoc.findtext("NUMBER")
+    state = xdoc.findtext("STATE")
+    date = xdoc.findtext("DATE")
+    publisher = xdoc.findtext("PUBLISHER")
+    url = xdoc.findtext("URL")
+    position = xdoc.findtext("POSITION")
 
     return XDoc(short_name=short_name,
                 long_name=long_name,
@@ -121,14 +97,8 @@ def read_company_datas_from_odx(et_element):
     for cd in et_element.iterfind("COMPANY-DATA"):
         id = cd.attrib["ID"]
         short_name = cd.findtext("SHORT-NAME")
-
-        long_name = cd.find("LONG-NAME")
-        if long_name is not None:
-            long_name = long_name.text
-
-        description = cd.find("DESC")
-        if description is not None:
-            description = read_description_from_odx(description)
+        long_name = cd.findtext("LONG-NAME")
+        description = read_description_from_odx(cd.find("DESC"))
 
         roles = cd.find("ROLES")
         if roles is not None:
@@ -146,14 +116,8 @@ def read_company_datas_from_odx(et_element):
             for tm in team_members.iterfind("TEAM-MEMBER"):
                 tm_id = tm.attrib["ID"]
                 tm_short_name = tm.findtext("SHORT-NAME")
-
-                tm_long_name = tm.find("LONG-NAME")
-                if tm_long_name is not None:
-                    tm_long_name = tm_long_name.text
-
-                tm_description = tm.find("DESC")
-                if tm_description is not None:
-                    tm_description = read_description_from_odx(tm_description)
+                tm_long_name = tm.findtext("LONG-NAME")
+                tm_description = read_description_from_odx(tm.find("DESC"))
 
                 tm_roles = tm.find("ROLES")
                 if tm_roles is not None:
@@ -162,33 +126,13 @@ def read_company_datas_from_odx(et_element):
                         rlist.append(role.text)
                     tm_roles = rlist
 
-                tm_department = tm.find("DEPARTMENT")
-                if tm_department is not None:
-                    tm_department = tm_department.text
-
-                tm_address = tm.find("ADDRESS")
-                if tm_address is not None:
-                    tm_address = tm_address.text
-
-                tm_zip = tm.find("ZIP")
-                if tm_zip is not None:
-                    tm_zip = tm_zip.text
-
-                tm_city = tm.find("CITY")
-                if tm_city is not None:
-                    tm_city = tm_city.text
-
-                tm_phone = tm.find("PHONE")
-                if tm_phone is not None:
-                    tm_phone = tm_phone.text
-
-                tm_fax = tm.find("FAX")
-                if tm_fax is not None:
-                    tm_fax = tm_fax.text
-
-                tm_email = tm.find("EMAIL")
-                if tm_email is not None:
-                    tm_email = tm_email.text
+                tm_department = tm.findtext("DEPARTMENT")
+                tm_address = tm.findtext("ADDRESS")
+                tm_zip = tm.findtext("ZIP")
+                tm_city = tm.findtext("CITY")
+                tm_phone = tm.findtext("PHONE")
+                tm_fax = tm.findtext("FAX")
+                tm_email = tm.findtext("EMAIL")
 
                 tml.append(TeamMember(id=tm_id,
                                       short_name=tm_short_name,
