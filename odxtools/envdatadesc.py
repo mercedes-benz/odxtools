@@ -50,12 +50,16 @@ def read_env_data_desc_from_odx(et_element):
     param_snpathref = None
     if et_element.find("PARAM-SNPATHREF") is not None:
         param_snpathref = et_element.find("PARAM-SNPATHREF").get("SHORT-NAME-PATH")
-    env_data_refs = None
-    if et_element.find("ENV-DATA-REFS") is not None:
-        env_data_refs = [
-            env_data_ref.get("ID-REF")
-            for env_data_ref in et_element.find("ENV-DATA-REFS").findall("ENV-DATA-REF")
-        ]
+    env_data_refs = []
+    env_data_refs.extend([
+        env_data_ref.get("ID-REF")
+        for env_data_ref in et_element.iterfind("ENV-DATA-REFS/ENV-DATA-REF")
+    ])
+    # ODX 2.0.0 says ENV-DATA-DESC could contain a list of ENV-DATAS
+    env_data_refs.extend([
+        env_data.get("ID")
+        for env_data in et_element.iterfind("ENV-DATAS/ENV-DATA")
+    ])
     logger.debug("Parsing ENV-DATA-DESC " + short_name)
 
     env_data_desc = EnvironmentDataDescription(

@@ -178,9 +178,14 @@ def read_diag_data_dictionary_spec_from_odx(et_element):
         for env_data_desc_element in et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC")
     ]
 
+    env_data_elements = chain(
+        et_element.iterfind("ENV-DATAS/ENV-DATA"),
+        # ODX 2.0.0 says ENV-DATA-DESC could contain a list of ENV-DATAS
+        et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC/ENV-DATAS/ENV-DATA"),
+    )
     env_datas = [
         read_env_data_from_odx(env_data_element)
-        for env_data_element in et_element.iterfind("ENV-DATAS/ENV-DATA")
+        for env_data_element in env_data_elements
     ]
 
     muxs = [
