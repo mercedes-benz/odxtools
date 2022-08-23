@@ -140,8 +140,7 @@ class BasicStructure(DopBase):
             bit_length: Optional[int]):
 
         if self._byte_size is not None:
-            # We definetly broke something if we didn't respect the explicit
-            # byte_size
+            # We definitely broke something if we didn't respect the explicit byte_size
             assert len(coded_rpc) == self._byte_size, self._get_encode_error_str('was', coded_rpc, self._byte_size * 8)
             # forget what we calcualted, ODX defined an explicit byte_size
             # if bit_length was less than _byte_size then we have padding or gaps between parameters
