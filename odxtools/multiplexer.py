@@ -1,10 +1,15 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+from collections import OrderedDict
 from dataclasses import dataclass
 from typing import Optional, Dict, Any, List
 
-from odxtools.dataobjectproperty import DopBase
+from .structures import BasicStructure
+from .dataobjectproperty import DopBase, DataObjectProperty
+from .decodestate import DecodeState
+from .encodestate import EncodeState
+from .exceptions import DecodeError, EncodeError
 from .globals import logger
 
 
@@ -19,7 +24,7 @@ class MultiplexerCase:
     upper_limit: str
 
     def __post_init__(self):
-        self._structure: Optional[DopBase] = None
+        self._structure: Optional[BasicStructure] = None
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
         self._structure = id_lookup.get(self.structure_ref)
@@ -51,7 +56,7 @@ class MultiplexerDefaultCase:
     structure_ref: Optional[str] = None
 
     def __post_init__(self):
-        self._structure: Optional[DopBase] = None
+        self._structure: Optional[BasicStructure] = None
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
         if self.structure_ref is not None:
@@ -82,11 +87,13 @@ class MultiplexerSwitchKey:
     dop_ref: str
 
     def __post_init__(self):
-        self._dop: Optional[DopBase] = None
+        self._dop: DataObjectProperty = None # type: ignore
 
     def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
-        self._dop = id_lookup.get(self.dop_ref)
-        if self._dop is None:
+        dop = id_lookup.get(self.dop_ref)
+        if isinstance(dop, DataObjectProperty):
+            self._dop = dop
+        else:
             logger.warning(
                 f"DATA-OBJECT-PROP-REF '{self.dop_ref}' could not be resolved in SWITCH-KEY."
             )
@@ -106,7 +113,7 @@ class MultiplexerSwitchKey:
 
 
 @dataclass
-class Multiplexer:
+class Multiplexer(DopBase):
     """This class represents a Multiplexer (MUX) which are used to interpret data stream depending on the value
     of a switch-key (similar to switch-case statements in programming languages like C or Java)."""
 
@@ -118,6 +125,113 @@ class Multiplexer:
     default_case: Optional[MultiplexerDefaultCase] = None
     cases: Optional[List[MultiplexerCase]] = None
 
+    @property
+    def bit_length(self):
+        return None
+
+    def _get_case_limits(self, case: MultiplexerCase):
+        key_type = self.switch_key._dop.physical_type.base_data_type
+        lower_limit = key_type.make_from(case.lower_limit)
+        upper_limit = key_type.make_from(case.upper_limit)
+        return lower_limit, upper_limit
+
+    def convert_physical_to_bytes(
+            self,
+            physical_value,
+            encode_state: EncodeState,
+            bit_position) -> bytes:
+
+        if bit_position != 0:
+            raise EncodeError(
+                "Multiplexer must be aligned, i.e. bit_position=0, but "
+                f"{self.short_name} was passed the bit position {bit_position}")
+
+        if not isinstance(physical_value, dict) or len(physical_value) != 1:
+            raise EncodeError("""Multiplexer should be defined as a dict
+            with only one key equal to the desired case""")
+
+        case_name, case_value = next(iter(physical_value.items()))
+        key_pos = self.switch_key.byte_position
+        case_pos = self.byte_position
+
+        for case in (self.cases or []):
+            if case.short_name == case_name:
+                if case._structure:
+                    case_bytes = case._structure.convert_physical_to_bytes(
+                        case_value, encode_state, 0)
+                else:
+                    case_bytes = bytes()
+                
+                key_value, _ = self._get_case_limits(case)
+                key_bytes = self.switch_key._dop.convert_physical_to_bytes(
+                    key_value, encode_state, self.switch_key.bit_position)
+
+                mux_len = max(
+                    len(key_bytes) + key_pos,
+                    len(case_bytes) + case_pos
+                )
+                mux_bytes = bytearray(mux_len)
+                mux_bytes[key_pos:key_pos + len(key_bytes)] = key_bytes
+                mux_bytes[case_pos:case_pos + len(case_bytes)] = case_bytes
+
+                return bytes(mux_bytes)
+
+        raise EncodeError(
+            f"The case {case_name} is not found in Multiplexer {self.short_name}")
+
+    def convert_bytes_to_physical(
+            self,
+            decode_state: DecodeState,
+            bit_position: int = 0):
+
+        if bit_position != 0:
+            raise DecodeError(
+                "Multiplexer must be aligned, i.e. bit_position=0, but "
+                f"{self.short_name} was passed the bit position {bit_position}")
+        byte_code = decode_state.coded_message[decode_state.next_byte_position:]
+        key_decode_state = DecodeState(
+            coded_message=byte_code[self.switch_key.byte_position:],
+            parameter_value_pairs=[],
+            next_byte_position=0
+        )
+        key_value, key_next_byte = self.switch_key._dop.convert_bytes_to_physical(
+            key_decode_state, bit_position=self.switch_key.bit_position)
+
+        case_decode_state = DecodeState(
+            coded_message=byte_code[self.byte_position:],
+            parameter_value_pairs=[],
+            next_byte_position=0
+        )
+        case_found = False
+        case_next_byte = 0
+        case_value = None
+        for case in (self.cases or []):
+            lower, upper = self._get_case_limits(case)
+            if lower <= key_value and key_value <= upper:
+                case_found = True
+                if case._structure:
+                    case_value, case_next_byte = case._structure.convert_bytes_to_physical(
+                        case_decode_state)
+                break
+
+        if not case_found and self.default_case is not None:
+            case_found = True
+            if self.default_case._structure:
+                case_value, case_next_byte = self.default_case._structure.convert_bytes_to_physical(
+                    case_decode_state)
+
+        if not case_found:
+            raise DecodeError(
+                f"Failed to find a matching case in {self.short_name} for value {key_value}")
+
+        mux_value = OrderedDict({case.short_name: case_value})
+        mux_next_byte = decode_state.next_byte_position + \
+            max(
+                key_next_byte + self.switch_key.byte_position,
+                case_next_byte + self.byte_position
+            )
+        return mux_value, mux_next_byte
+
     def _build_id_lookup(self):
         id_lookup = {}
         id_lookup.update({self.id: self})
@@ -127,9 +241,9 @@ class Multiplexer:
         self.switch_key._resolve_references(id_lookup)
         if self.default_case is not None:
             self.default_case._resolve_references(id_lookup)
-        if self.cases is not None:
-            for case in self.cases:
-                case._resolve_references(id_lookup)
+
+        for case in (self.cases or []):
+            case._resolve_references(id_lookup)
 
     def __repr__(self) -> str:
         return (
@@ -221,9 +335,10 @@ def read_mux_from_odx(et_element):
 
     default_case = None
     if et_element.find("DEFAULT-CASE") is not None:
-        default_case = read_default_case_from_odx(et_element.find("DEFAULT-CASE"))
+        default_case = read_default_case_from_odx(
+            et_element.find("DEFAULT-CASE"))
 
-    cases = None
+    cases = []
     if et_element.find("CASES") is not None:
         cases = [
             read_case_from_odx(el) for el in et_element.find("CASES").iterfind("CASE")
