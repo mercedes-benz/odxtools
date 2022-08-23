@@ -127,7 +127,7 @@ class BasicStructure(DopBase):
 
         if self._byte_size is not None and len(coded_rpc) < self._byte_size:
             # Padding bytes needed
-            coded_rpc = coded_rpc.ljust(self._byte_size, '\0')
+            coded_rpc = coded_rpc.ljust(self._byte_size, b'\0')
 
         # Assert that length is as expected
         self._validate_coded_rpc(coded_rpc, bit_length)
