@@ -157,9 +157,9 @@ class BasicStructure(DopBase):
                 f"Structure {self.short_name} length {bit_length} is not divisible by 8, i.e. is not a full sequence of bytes.",
                 OdxWarning)
             # Round up so not to trigger double alarms
-            bit_length = math.ceil(bit_length / 8)
+            bit_length = math.ceil(bit_length / 8) * 8
 
-        if len(coded_rpc) != bit_length * 8:
+        if len(coded_rpc) * 8 != bit_length:
             # We may have broke something
             # but it could be that bit_length was mis calculated and not the actual bytes are wrong
             # Could happen with overlapping parameters and parameters with gaps
