@@ -1,17 +1,20 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+import math
 from typing import Any, List, Dict, Iterable, Optional, OrderedDict, Union
+import warnings
 
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState, ParameterValuePair
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError
+from .exceptions import DecodeError, EncodeError, OdxWarning
 from .globals import logger
 from .nameditemlist import NamedItemList
 from .parameters import Parameter, ParameterWithDOP, read_parameter_from_odx
 from .parameters import CodedConstParameter, MatchingRequestParameter, ValueParameter
 from .utils import read_description_from_odx
+
 
 class BasicStructure(DopBase):
     def __init__(self,
@@ -122,13 +125,59 @@ class BasicStructure(DopBase):
             else:
                 bit_length = None
 
+        if self._byte_size is not None and len(coded_rpc) < self._byte_size:
+            # Padding bytes needed
+            coded_rpc = coded_rpc.ljust(self._byte_size, '\0')
+
         # Assert that length is as expected
-        if bit_length is not None:
-            assert bit_length % 8 == 0, f"Length of coded structure is not divisible by 8, i.e. is not a full sequence of bytes."
-            assert len(coded_rpc) == bit_length // 8, f"{self.short_name} can't encode: Actual length is {len(coded_rpc)}, computed byte length is {bit_length // 8}, computed_rpc is {coded_rpc.hex()}, \n" + '\n'.join(
-                self.__message_format_lines())
+        self._validate_coded_rpc(coded_rpc, bit_length)
 
         return bytearray(coded_rpc)
+
+    def _validate_coded_rpc(
+            self,
+            coded_rpc: bytearray,
+            bit_length: Optional[int]):
+
+        if self._byte_size is not None:
+            # We definetly broke something if we didn't respect the explicit
+            # byte_size
+            assert len(coded_rpc) == self._byte_size, self._get_encode_error_str('was', coded_rpc, self._byte_size * 8)
+            # forget what we calcualted, ODX defined an explicit byte_size
+            # if bit_length was less than _byte_size then we have padding or gaps between parameters
+            # if bit_length was more than _byte_size then we over calculated (could happen with overlapping parameters)
+            return
+
+        if bit_length is None:
+            # Nothing to check
+            return
+
+        if bit_length % 8 != 0:
+            warnings.warn(
+                f"Structure {self.short_name} length {bit_length} is not divisible by 8, i.e. is not a full sequence of bytes.",
+                OdxWarning)
+            # Round up so not to trigger double alarms
+            bit_length = math.ceil(bit_length / 8)
+
+        if len(coded_rpc) != bit_length * 8:
+            # We may have broke something
+            # but it could be that bit_length was mis calculated and not the actual bytes are wrong
+            # Could happen with overlapping parameters and parameters with gaps
+            warnings.warn(
+                self._get_encode_error_str('may have been', coded_rpc, bit_length),
+                OdxWarning)
+
+    def _get_encode_error_str(self,
+            verb: str,
+            coded_rpc: bytearray,
+            bit_length: int):
+
+        return str(f"Structure {self.short_name} {verb} encoded uncorrectly:" +
+                f" actual length is {len(coded_rpc)}," +
+                f" computed byte length is {bit_length // 8}," +
+                f" computed_rpc is {coded_rpc.hex()}" +
+                '\n'.join(self.__message_format_lines()))
+
 
     def convert_physical_to_bytes(self, param_values: dict, encode_state: EncodeState, bit_position=0):
         if bit_position != 0:
