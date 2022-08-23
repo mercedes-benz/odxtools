@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+from pathlib import Path
 from typing import Any, Dict
 from xml.etree import ElementTree
 from itertools import chain
@@ -35,7 +36,9 @@ class Database:
             names = list(pdx_zip.namelist())
             names.sort()
             for zip_member in names:
-                if zip_member.endswith(".odx-d"):
+                # file name can end with .odx, .odx-d, .odx-c, .odx-cs, .odx-e, .odx-f, .odx-fd, .odx-m, .odx-v
+                # We could test for all that, or just make sure suffix starts with .odx
+                if Path(zip_member).suffix.startswith(".odx"):
                     logger.info(f"Processing the file {zip_member}")
                     d = pdx_zip.read(zip_member)
                     root = ElementTree.fromstring(d)
