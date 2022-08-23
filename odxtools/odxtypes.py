@@ -12,9 +12,17 @@ def bytefield_to_bytearray(bytefield: str) -> bytearray:
 PythonType = Union[str, int, float, bytearray]
 LiteralPythonType = Type[Union[str, int, float, bytearray]]
 
+def parse_int(value: str) -> int:
+    try:
+        return int(value)
+    except ValueError:
+        v = float(value)
+        assert v.is_integer()
+        return int(v)
+
 _ODX_TYPE_PARSER: Dict[str, Callable[[str], PythonType]] = {
-    "A_INT32": int,
-    "A_UINT32": int,
+    "A_INT32": parse_int,
+    "A_UINT32": parse_int,
     "A_FLOAT32": float,
     "A_FLOAT64": float,
     "A_UNICODE2STRING": str,
