@@ -175,7 +175,7 @@ class BasicStructure(DopBase):
         return str(f"Structure {self.short_name} {verb} encoded uncorrectly:" +
                 f" actual length is {len(coded_rpc)}," +
                 f" computed byte length is {bit_length // 8}," +
-                f" computed_rpc is {coded_rpc.hex()}" +
+                f" computed_rpc is {coded_rpc.hex()}\n" +
                 '\n'.join(self.__message_format_lines()))
 
 
