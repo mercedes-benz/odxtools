@@ -4,9 +4,11 @@
 
 import abc
 from typing import Optional
+import warnings
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
+from ..exceptions import OdxWarning
 from ..globals import logger
 
 
@@ -117,9 +119,13 @@ class Parameter(abc.ABC):
         if len(old_rpc) < min_length:
             # Make byte code longer if necessary
             new_rpc += bytearray([0] * (min_length - len(old_rpc)))
-        for byte_idx_val, byte_idx_rpc in enumerate(range(byte_position, byte_position + len(byte_value))):
+        for byte_idx_val, byte_idx_rpc in enumerate(
+                range(byte_position, byte_position + len(byte_value))):
             # insert byte value
-            assert new_rpc[byte_idx_rpc] & byte_value[byte_idx_val] == 0, "Bytes are already set!"
+            if new_rpc[byte_idx_rpc] & byte_value[byte_idx_val] != 0:
+                warnings.warn(
+                    f"Parameter {self.short_name} overlaps with another parameter (bytes are already set)",
+                    OdxWarning)
             new_rpc[byte_idx_rpc] |= byte_value[byte_idx_val]
 
         logger.debug(f"Param {self.short_name} inserts"
