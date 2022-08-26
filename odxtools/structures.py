@@ -34,7 +34,16 @@ class BasicStructure(DopBase):
         if self._byte_size:
             return 8 * self._byte_size
         elif all(p.bit_length is not None for p in self.parameters):
-            return sum([p.bit_length for p in self.parameters])
+            offset = 0
+            length = 0
+            for param in self.parameters:
+                if param.byte_position is not None:
+                    offset = param.byte_position * 8 + param.bit_position
+
+                offset += param.bit_length
+                length = max(length, offset)
+   
+            return length
         else:
             return None
 
