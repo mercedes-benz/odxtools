@@ -37,6 +37,11 @@ class BasicStructure(DopBase):
             offset = 0
             length = 0
             for param in self.parameters:
+                if isinstance(param, ValueParameter) and hasattr(param.dop, 'min_number_of_items'):
+                    # The param repeats itself, making bit_length calculation invalid
+                    # Temporary workaround
+                    # Can not import EndOfPduField to check on its type due to circular dependency
+                    return None
                 if param.byte_position is not None:
                     offset = param.byte_position * 8 + param.bit_position
 
@@ -113,41 +118,28 @@ class BasicStructure(DopBase):
                                    triggering_request=triggering_coded_request,
                                    is_end_of_pdu=False)
 
-        # Keep track of the expected length. (This is just to double check and not actually needed.)
-        bit_length: Optional[int] = 0
         for param in self.parameters:
             if param == self.parameters[-1]:
                 # The last parameter is at the end of the PDU iff the structure itself is at the end of the PDU
                 encode_state = encode_state._replace(
                     is_end_of_pdu=is_end_of_pdu)
-                if isinstance(param, ValueParameter) and hasattr(param.dop, 'min_number_of_items'):
-                    # The param repeats itself, making bit_length calculation invalid
-                    # Temporary workaround
-                    # Can not import EndOfPduField to check on its type due to circular dependency
-                    bit_length = None
+
             coded_rpc = param.encode_into_pdu(encode_state)
             encode_state = encode_state._replace(coded_message=coded_rpc)
-
-            # Compute expected length
-            if bit_length is not None and param.bit_length is not None:
-                bit_length = bit_length + param.bit_length
-            else:
-                bit_length = None
 
         if self._byte_size is not None and len(coded_rpc) < self._byte_size:
             # Padding bytes needed
             coded_rpc = coded_rpc.ljust(self._byte_size, b'\0')
 
         # Assert that length is as expected
-        self._validate_coded_rpc(coded_rpc, bit_length)
+        self._validate_coded_rpc(coded_rpc)
 
         return bytearray(coded_rpc)
 
     def _validate_coded_rpc(
             self,
-            coded_rpc: bytearray,
-            bit_length: Optional[int]):
-
+            coded_rpc: bytearray):
+        
         if self._byte_size is not None:
             # We definitely broke something if we didn't respect the explicit byte_size
             assert len(coded_rpc) == self._byte_size, self._get_encode_error_str('was', coded_rpc, self._byte_size * 8)
@@ -155,6 +147,8 @@ class BasicStructure(DopBase):
             # if bit_length was less than _byte_size then we have padding or gaps between parameters
             # if bit_length was more than _byte_size then we over calculated (could happen with overlapping parameters)
             return
+
+        bit_length = self.bit_length
 
         if bit_length is None:
             # Nothing to check
