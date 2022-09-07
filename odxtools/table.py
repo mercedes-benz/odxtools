@@ -5,7 +5,7 @@ import abc
 from dataclasses import dataclass
 from typing import Optional, List, Dict, Any, Iterable
 
-from odxtools.utils import read_description_from_odx
+from odxtools.utils import read_description_from_odx, make_ref
 
 from .dataobjectproperty import DopBase
 from .globals import logger
@@ -156,10 +156,10 @@ def read_table_row_from_odx(et_element):
     key = et_element.find("KEY").text
     structure_ref = None
     if et_element.find("STRUCTURE-REF") is not None:
-        structure_ref = et_element.find("STRUCTURE-REF").get("ID-REF")
+        structure_ref = make_ref(et_element.find("STRUCTURE-REF"))
     dop_ref = None
     if et_element.find("DATA-OBJECT-PROP-REF") is not None:
-        dop_ref = et_element.find("DATA-OBJECT-PROP-REF").get("ID-REF")
+        dop_ref = make_ref(et_element.find("DATA-OBJECT-PROP-REF"))
 
     table_row = TableRow(
         key=key,
@@ -176,7 +176,7 @@ def read_table_from_odx(et_element):
     short_name = et_element.find("SHORT-NAME").text
     key_dop_ref = None
     if et_element.find("KEY-DOP-REF") is not None:
-        key_dop_ref = et_element.find("KEY-DOP-REF").get("ID-REF")
+        key_dop_ref = make_ref(et_element.find("KEY-DOP-REF"))
     logger.debug("Parsing TABLE " + short_name)
 
     table_rows = [
@@ -184,7 +184,7 @@ def read_table_from_odx(et_element):
     ]
 
     table_row_refs = [
-        el.get('ID-REF') for el in et_element.iterfind("TABLE-ROW-REF")
+        make_ref(el) for el in et_element.iterfind("TABLE-ROW-REF")
     ]
 
     table = Table(

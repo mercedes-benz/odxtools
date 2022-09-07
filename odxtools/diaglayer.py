@@ -10,7 +10,7 @@ from .globals import logger, xsi
 from .state import read_state_from_odx
 from .state_transition import read_state_transition_from_odx
 
-from .utils import read_description_from_odx
+from .utils import make_ref, read_description_from_odx
 from .nameditemlist import NamedItemList
 from .admindata import AdminData, read_admin_data_from_odx
 from .companydata import CompanyData, read_company_datas_from_odx
@@ -110,7 +110,8 @@ class DiagLayer:
                  additional_audiences=[],
                  functional_classes=[],
                  states=[],
-                 state_transitions=[]
+                 state_transitions=[],
+                 import_refs=[],
                  ):
         logger.info(f"Initializing variant type {variant_type}")
         self.variant_type = variant_type
@@ -156,6 +157,8 @@ class DiagLayer:
             = NamedItemList(lambda s: s.id_ref, [])
         self._data_object_properties: NamedItemList[DopBase]\
             = NamedItemList(lambda s: s.short_name, [])
+
+        self.import_refs = import_refs
 
         if id_lookup is not None:
             self.finalize_init(id_lookup)
@@ -530,7 +533,7 @@ class DiagLayer:
 
 
 def read_parent_ref_from_odx(et_element):
-    id_ref = et_element.get("ID-REF")
+    id_ref = make_ref(et_element)
 
     not_inherited_diag_comms = [el.get("SHORT-NAME")
                                 for el in et_element.iterfind("NOT-INHERITED-DIAG-COMMS/NOT-INHERITED-DIAG-COMM/DIAG-COMM-SNREF")]
@@ -563,7 +566,7 @@ def read_diag_layer_from_odx(et_element, enable_candela_workarounds=True):
     # Parse DiagServices
     services = [read_diag_service_from_odx(service)
                 for service in et_element.iterfind("DIAG-COMMS/DIAG-SERVICE")]
-    diag_comm_refs = [service.get("ID-REF")
+    diag_comm_refs = [make_ref(service)
                       for service in et_element.iterfind("DIAG-COMMS/DIAG-COMM-REF")]
     single_ecu_jobs = [read_single_ecu_job_from_odx(sej)
                        for sej in et_element.iterfind("DIAG-COMMS/SINGLE-ECU-JOB")]
@@ -603,6 +606,8 @@ def read_diag_layer_from_odx(et_element, enable_candela_workarounds=True):
     else:
         diag_data_dictionary_spec = None
 
+    import_refs = [make_ref(ref) for ref in et_element.iterfind("IMPORT-REFS/IMPORT-REF")]
+
     # TODO: Are UNIT-SPEC and SDGS needed?
 
     # Create DiagLayer
@@ -625,6 +630,7 @@ def read_diag_layer_from_odx(et_element, enable_candela_workarounds=True):
                    states=states,
                    state_transitions=state_transitions,
                    enable_candela_workarounds=enable_candela_workarounds,
+                   import_refs=import_refs,
                    )
 
     return dl

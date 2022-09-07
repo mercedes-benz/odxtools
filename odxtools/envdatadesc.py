@@ -4,6 +4,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
+from .utils import make_ref
 from .globals import logger
 
 
@@ -52,7 +53,7 @@ def read_env_data_desc_from_odx(et_element):
         param_snpathref = et_element.find("PARAM-SNPATHREF").get("SHORT-NAME-PATH")
     env_data_refs = []
     env_data_refs.extend([
-        env_data_ref.get("ID-REF")
+        make_ref(env_data_ref)
         for env_data_ref in et_element.iterfind("ENV-DATA-REFS/ENV-DATA-REF")
     ])
     # ODX 2.0.0 says ENV-DATA-DESC could contain a list of ENV-DATAS

@@ -4,7 +4,7 @@
 
 from ..diagcodedtypes import read_diag_coded_type_from_odx
 from ..globals import xsi
-from ..utils import read_element_id
+from ..utils import make_ref, read_element_id
 
 from .codedconstparameter import CodedConstParameter
 from .dynamicparameter import DynamicParameter
@@ -37,8 +37,7 @@ def read_parameter_from_odx(et_element):
 
     # Which attributes are set depends on the type of the parameter.
     if parameter_type in ["VALUE", "PHYS-CONST", "SYSTEM", "LENGTH-KEY"]:
-        dop_ref = et_element.find(
-            "DOP-REF").get("ID-REF") if et_element.find("DOP-REF") is not None else None
+        dop_ref = make_ref(et_element.find("DOP-REF"))
         dop_snref = et_element.find(
             "DOP-SNREF").get("SHORT-NAME") if et_element.find("DOP-SNREF") is not None else None
 
@@ -163,8 +162,7 @@ def read_parameter_from_odx(et_element):
                                 description=description)
 
     elif parameter_type == "TABLE-STRUCT":
-        key_ref = et_element.find(
-            "TABLE-KEY-REF").get("ID-REF") if et_element.find("TABLE-KEY-REF") is not None else None
+        key_ref = make_ref(et_element.find("TABLE-KEY-REF"))
         key_snref = et_element.find(
             "TABLE-KEY-SNREF").get("SHORT-NAME") if et_element.find("TABLE-KEY-SNREF") is not None else None
 
@@ -180,14 +178,12 @@ def read_parameter_from_odx(et_element):
     elif parameter_type == "TABLE-KEY":
 
         parameter_id = et_element.get("ID")
-        table_ref = et_element.find(
-            "TABLE-REF").get("ID-REF") if et_element.find("TABLE-REF") is not None else None
+        table_ref = make_ref(et_element.find("TABLE-REF"))
         table_snref = et_element.find(
             "TABLE-SNREF").get("SHORT-NAME") if et_element.find("TABLE-SNREF") is not None else None
         row_snref = et_element.find(
             "TABLE-ROW-SNREF").get("SHORT-NAME") if et_element.find("TABLE-ROW-SNREF") is not None else None
-        row_ref = et_element.find(
-            "TABLE-ROW-REF").get("ID-REF") if et_element.find("TABLE-ROW-REF") is not None else None
+        row_ref = make_ref(et_element.find("TABLE-ROW-REF"))
 
         return TableKeyParameter(short_name=short_name,
                                  table_ref=table_ref,
@@ -203,7 +199,7 @@ def read_parameter_from_odx(et_element):
 
     elif parameter_type == "TABLE-ENTRY":
         target = et_element.find("TARGET").text
-        table_row_ref = et_element.find("TABLE-ROW-REF").get("ID-REF")
+        table_row_ref = make_ref(et_element.find("TABLE-ROW-REF"))
 
         return TableEntryParameter(short_name=short_name,
                                    target=target,

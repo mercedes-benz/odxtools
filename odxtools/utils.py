@@ -1,10 +1,20 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import Dict, Literal
+from typing import Dict, Literal, Optional
 from xml.etree import ElementTree
 
-import re
+def make_ref(ref_element: ElementTree.Element) -> Optional[str]:
+    if ref_element is None:
+        return None
+    id_ref = ref_element.get("ID-REF")
+    docref = ref_element.get("DOCREF")
+    if id_ref is None:
+        return None
+    if docref is not None:
+        # ">" is not valid in an attribute value, so not likely to be used
+        return docref + ">" + id_ref
+    return id_ref
 
 def read_description_from_odx(et_element: ElementTree.Element):
     """Read a DESCRIPTION element. The element usually has the name DESC."""

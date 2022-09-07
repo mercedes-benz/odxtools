@@ -13,7 +13,7 @@ from .diagcodedtypes import DiagCodedType, StandardLengthType, read_diag_coded_t
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError
-
+from .utils import make_ref
 
 class DopBase(abc.ABC):
     """ Base class for all DOPs.
@@ -319,10 +319,7 @@ def read_data_object_property_from_odx(et_element):
         "COMPU-METHOD"), diag_coded_type.base_data_type, physical_type.base_data_type)
 
     if et_element.tag == "DATA-OBJECT-PROP":
-        if et_element.find("UNIT-REF") is not None:
-            unit_ref = et_element.find("UNIT-REF").get("ID-REF")
-        else:
-            unit_ref = None
+        unit_ref = make_ref(et_element.find("UNIT-REF"))
         dop = DataObjectProperty(id,
                                  short_name,
                                  diag_coded_type,
@@ -334,7 +331,7 @@ def read_data_object_property_from_odx(et_element):
     else:
         dtcs = [read_dtc_from_odx(el)
                 for el in et_element.iterfind("DTCS/DTC")]
-        dtcs += [DtcRef(el.get("ID-REF"))
+        dtcs += [DtcRef(make_ref(el))
                  for el in et_element.iterfind("DTCS/DTC-REF")]
 
         is_visible = et_element.get("IS-VISIBLE") == "true"

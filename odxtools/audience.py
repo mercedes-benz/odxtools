@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass, field
 from typing import Optional
-from odxtools.utils import read_description_from_odx
+from odxtools.utils import make_ref, read_description_from_odx
 
 
 @dataclass()
@@ -43,10 +43,10 @@ class AdditionalAudience:
 
 
 def read_audience_from_odx(et_element):
-    enabled_audience_refs = [ref.get(
-        "ID-REF") for ref in et_element.iterfind("ENABLED-AUDIENCE-REFS/ENABLED-AUDIENCE-REF")]
-    disabled_audience_refs = [ref.get(
-        "ID-REF") for ref in et_element.iterfind("DISABLED-AUDIENCE-REFS/DISABLED-AUDIENCE-REF")]
+    enabled_audience_refs = [make_ref(ref)
+        for ref in et_element.iterfind("ENABLED-AUDIENCE-REFS/ENABLED-AUDIENCE-REF")]
+    disabled_audience_refs = [make_ref(ref)
+        for ref in et_element.iterfind("DISABLED-AUDIENCE-REFS/DISABLED-AUDIENCE-REF")]
     is_supplier = et_element.get(
         "IS-SUPPLIER") == 'true' if et_element.get("IS-SUPPLIER") else True
     is_development = et_element.get(
