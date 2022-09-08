@@ -96,7 +96,10 @@ def read_limit_from_odx(et_element, internal_type: DataType):
                 limit = Limit(float("inf"), interval_type)
         else:
             if internal_type == DataType.A_BYTEFIELD:
-                limit = Limit(bytearray.fromhex(et_element.text), interval_type)
+                hex_text = et_element.text
+                if len(hex_text) % 2 == 1:
+                    hex_text = '0' + hex_text
+                limit = Limit(bytearray.fromhex(hex_text), interval_type)
             else:
                 limit = Limit(internal_type.from_string(et_element.text),
                               interval_type)
