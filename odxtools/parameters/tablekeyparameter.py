@@ -27,11 +27,15 @@ class TableKeyParameter(Parameter):
             semantic=semantic,
             description=description
         )
+        self.table_ref = None
+        self.table_snref = None
+        self.table_row_ref = None
+        self.table_row_snref = None
         if table_ref:
             self.table_ref = table_ref
-            self.table_row_snref = table_row_snref
+            self.table_row_ref = table_row_ref
         elif table_snref:
-            self.table_ref = table_ref
+            self.table_snref = table_snref
             self.table_row_snref = table_row_snref
         elif table_row_ref:
             self.table_row_ref = table_row_ref
@@ -59,3 +63,10 @@ class TableKeyParameter(Parameter):
     def decode_from_pdu(self, coded_message, default_byte_position=None):
         raise NotImplementedError(
             "Decoding a TableKeyParameter is not implemented yet.")
+
+    def resolve_references(self, parent_dl, id_lookup):
+        self.table = None
+        if self.table_snref:
+            self.table = parent_dl.local_diag_data_dictionary_spec.tables[self.table_snref]
+        elif self.table_ref:
+            self.table = id_lookup.get(self.table_ref)
