@@ -32,7 +32,6 @@ def _parse_compu_scale_to_linear_compu_method(scale_element,
                              DataType.A_INT32,
                              DataType.A_UINT32]
 
-    computation_python_type: Union[Type[float], Type[int]]
     if physical_type.as_python_type() == float:
         computation_python_type = physical_type.from_string
     else:
