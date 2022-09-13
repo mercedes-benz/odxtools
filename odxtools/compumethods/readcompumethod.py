@@ -36,7 +36,7 @@ def _parse_compu_scale_to_linear_compu_method(scale_element,
     if internal_type.as_python_type() == float or physical_type.as_python_type() == float:
         computation_python_type = float
     else:
-        computation_python_type = int
+        computation_python_type = physical_type.from_string
 
     kwargs = additional_kwargs.copy()
     kwargs["internal_type"] = internal_type
