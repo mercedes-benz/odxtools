@@ -5,6 +5,8 @@ import math
 from typing import Any, List, Dict, Iterable, Optional, OrderedDict, Union
 import warnings
 
+from odxtools.parameters.tablekeyparameter import TableKeyParameter
+
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState, ParameterValuePair
 from .encodestate import EncodeState
@@ -266,6 +268,8 @@ class BasicStructure(DopBase):
         """
         for p in self.parameters:
             if isinstance(p, ParameterWithDOP):
+                p.resolve_references(parent_dl, id_lookup)
+            if isinstance(p, TableKeyParameter):
                 p.resolve_references(parent_dl, id_lookup)
 
     def __message_format_lines(self, allow_unknown_lengths=False):
