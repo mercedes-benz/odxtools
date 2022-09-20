@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 import abc
+import math
 from typing import Any, Union
 
 from .odxtypes import DataType
@@ -414,7 +415,23 @@ class ParamLengthInfoType(DiagCodedType):
         self.length_key_ref = length_key_ref
 
     def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> bytes:
-        bit_length = encode_state.length_keys[self.length_key_ref]
+        bit_length = encode_state.length_keys.get(self.length_key_ref, None)
+
+        if bit_length is None:
+            if self.base_data_type in [DataType.A_BYTEFIELD, DataType.A_ASCIISTRING, DataType.A_UTF8STRING]:
+                bit_length = 8 * len(internal_value)
+            if self.base_data_type in [DataType.A_UNICODE2STRING]:
+                bit_length = 16 * len(internal_value)
+        
+            if self.base_data_type in [DataType.A_INT32, DataType.A_UINT32]:
+                bit_length = int(internal_value).bit_length()
+                if self.base_data_type == DataType.A_INT32:
+                    bit_length += 1
+                # Round up
+                bit_length = math.ceil(bit_length / 8.0) * 8
+
+        assert bit_length is not None
+        encode_state.length_keys[self.length_key_ref] = bit_length
 
         return self._to_bytes(internal_value,
                               bit_position=bit_position,

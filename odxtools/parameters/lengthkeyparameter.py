@@ -39,21 +39,14 @@ class LengthKeyParameter(ParameterWithDOP):
         self.id = id
 
     def is_required(self):
-        raise NotImplementedError(
-            "LengthKeyParameter.is_required is not implemented yet.")
+        return False
 
     def is_optional(self):
-        raise NotImplementedError(
-            "LengthKeyParameter.is_optional is not implemented yet.")
+        return True
 
     def encode_into_pdu(self, encode_state: EncodeState) -> bytearray:
         physical_value = encode_state.parameter_values.get(self.short_name,)
 
-        # TODO: Maybe it'd be nice if the length key value would default to the minimal needed length,
-        #       instead of raising a TypeError here. But for that we'd
-        #       (1) need to find the parameter that references this length key and determine its bit length
-        #       and (2) make sure that we choose a length is a valid physical value for the DOP.
-        #       (Restrictions may be e.g. multiple of 8 or 16, depending on the compu method.)
         if physical_value is None:
             raise TypeError(f"A value for the length key '{self.short_name}'"
                             f" must be specified.")

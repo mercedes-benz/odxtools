@@ -344,6 +344,10 @@ class TestParamLengthInfoType(unittest.TestCase):
                                         certificateClient=0x123456),
                          coded_request)
 
+        # Automatic bit length calculation
+        self.assertEqual(request.encode(certificateClient=0x123456),
+                         coded_request)
+
 
 class TestMinMaxLengthType(unittest.TestCase):
     def test_decode_min_max_length_type_bytes(self):

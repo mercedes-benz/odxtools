@@ -2,10 +2,11 @@
 # Copyright (c) 2022 MBition GmbH
 
 import math
-from typing import Any, List, Dict, Iterable, Optional, OrderedDict, Union
+from typing import List, Dict, Iterable, OrderedDict, Tuple, Union
 import warnings
 
 from odxtools.parameters.tablekeyparameter import TableKeyParameter
+from odxtools.parameters.lengthkeyparameter import LengthKeyParameter
 
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState, ParameterValuePair
@@ -116,22 +117,47 @@ class BasicStructure(DopBase):
 
         coded_rpc = bytearray()
         encode_state = EncodeState(coded_rpc,
-                                   param_values,
+                                   dict(param_values),
                                    triggering_request=triggering_coded_request,
                                    is_end_of_pdu=False)
 
+        length_encodings: List[Tuple[LengthKeyParameter, EncodeState]] = []
         for param in self.parameters:
             if param == self.parameters[-1]:
-                # The last parameter is at the end of the PDU iff the structure itself is at the end of the PDU
+                # The last parameter is at the end of the PDU if the structure itself is at the end of the PDU
                 encode_state = encode_state._replace(
                     is_end_of_pdu=is_end_of_pdu)
+
+            implicit_length_encoding = isinstance(param, LengthKeyParameter) and param.short_name not in param_values
+            if implicit_length_encoding:
+                # Mark this parameter since we need to re-encode it later on
+                length_encodings.append((param, encode_state))
+                # Give it a default value for now
+                encode_state.parameter_values[param.short_name] = 0
 
             coded_rpc = param.encode_into_pdu(encode_state)
             encode_state = encode_state._replace(coded_message=coded_rpc)
 
+            if implicit_length_encoding:
+                # Undo length_keys changes
+                encode_state.length_keys.pop(param.id)
+
         if self._byte_size is not None and len(coded_rpc) < self._byte_size:
             # Padding bytes needed
             coded_rpc = coded_rpc.ljust(self._byte_size, b'\0')
+
+        for (param, encode_state) in length_encodings:
+            # Same as previous, but all bytes as 0
+            param_value = encode_state.length_keys[param.id]
+            state = encode_state._replace(
+                coded_message=bytearray(len(encode_state.coded_message)),
+                parameter_values={param.short_name: param_value},
+            )
+            # Encode the length into the zeros coded message
+            param_bytes = param.encode_into_pdu(state)
+            # Bits that changed value needs to be updated in coded_rpc
+            for i, b in enumerate(param_bytes):
+                coded_rpc[i] |= b
 
         # Assert that length is as expected
         self._validate_coded_rpc(coded_rpc)
