@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Union
 from xml.etree import ElementTree
 from itertools import chain
 from zipfile import ZipFile
 
-from .diaglayer import DiagLayer, read_diag_layer_container_from_odx
+from .diaglayer import DiagLayer, DiagLayerContainer, read_diag_layer_container_from_odx
 from .globals import logger
 from .nameditemlist import NamedItemList
 
@@ -74,20 +75,47 @@ class Database:
         # Build id_lookup
         self._id_lookup = {}
 
+        @lru_cache(maxsize=None)
+        def get_lookups(layer: Union[DiagLayerContainer, DiagLayer], docnames = None) -> dict:
+            lookup = layer._build_id_lookup()
+            docnames = set(docnames or [])
+            docnames.add(layer.short_name)
+            result = dict(lookup)
+            for key, value in dict(lookup).items():
+                # In case an ID-REF uses a DOCREF
+                for docname in docnames:
+                    result[docname + ">" + key] = value
+            return result
+
         for dlc in self.diag_layer_containers:
-            self.id_lookup.update(dlc._build_id_lookup())
+            self.id_lookup.update(get_lookups(dlc))
 
-        for dl in self.diag_layers:
-            self.id_lookup.update(dl._build_id_lookup())
-
+            for dl in dlc.diag_layers:
+                self.id_lookup.update(get_lookups(dl, tuple([dlc.short_name])))
+        
         # Resolve references
         for dlc in self.diag_layer_containers:
             dlc._resolve_references(self.id_lookup)
 
+        docref_lookup = {k: v for k, v in self.id_lookup.items() if '>' in k}
+
         for dl_type_name in ["ECU-SHARED-DATA", "PROTOCOL", "FUNCTIONAL-GROUP", "BASE-VARIANT", "ECU-VARIANT"]:
+            dl: DiagLayer
             for dl in self.diag_layers:
                 if dl.variant_type == dl_type_name:
-                    dl._resolve_references(self.id_lookup)
+                    dl_lookup = dict(docref_lookup)
+                    for parent_ref in dl.parent_refs:
+                        parent_ref._resolve_references(self.id_lookup)
+                        dl_lookup.update(get_lookups(parent_ref.referenced_diag_layer))
+                    for import_ref in dl.import_refs:
+                        ecu_shared_data: DiagLayer = self.id_lookup.get(import_ref)
+                        dl_lookup.update(get_lookups(ecu_shared_data))
+                    # Locally defined takes precedence
+                    dl_lookup.update(get_lookups(dl))
+                    
+                    dl._resolve_references(dl_lookup)
+
+        get_lookups.cache_clear()
 
     @property
     def id_lookup(self) -> dict:

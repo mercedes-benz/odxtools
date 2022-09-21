@@ -4,6 +4,7 @@
 import abc
 from typing import Any, Union
 
+from .utils import make_ref
 from .odxtypes import DataType
 from .exceptions import DecodeError, EncodeError
 from .globals import xsi, logger
@@ -544,8 +545,7 @@ def read_diag_coded_type_from_odx(et_element):
                                 base_type_encoding=base_type_encoding,
                                 is_highlow_byte_order=is_highlow_byte_order)
     elif dct_type == "PARAM-LENGTH-INFO-TYPE":
-        length_key_ref = et_element.find(
-            "LENGTH-KEY-REF").get("ID-REF")
+        length_key_ref = make_ref(et_element.find("LENGTH-KEY-REF"))
 
         return ParamLengthInfoType(base_data_type,
                                    length_key_ref,

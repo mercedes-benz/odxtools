@@ -5,6 +5,7 @@ from collections import OrderedDict
 from dataclasses import dataclass
 from typing import Optional, Dict, Any, List
 
+from .utils import make_ref
 from .structures import BasicStructure
 from .dataobjectproperty import DopBase, DataObjectProperty
 from .decodestate import DecodeState
@@ -273,7 +274,7 @@ def read_switch_key_from_odx(et_element):
         if et_element.find("BIT-POSITION") is not None
         else 0
     )
-    dop_ref = et_element.find("DATA-OBJECT-PROP-REF").get("ID-REF")
+    dop_ref = make_ref(et_element.find("DATA-OBJECT-PROP-REF"))
 
     return MultiplexerSwitchKey(
         byte_position=byte_position,
@@ -289,9 +290,7 @@ def read_default_case_from_odx(et_element):
     if long_name is not None:
         long_name = long_name.text
 
-    structure_ref = None
-    if et_element.find("STRUCTURE-REF") is not None:
-        structure_ref = et_element.find("STRUCTURE-REF").get("ID-REF")
+    structure_ref = make_ref(et_element.find("STRUCTURE-REF"))
 
     return MultiplexerDefaultCase(
         short_name=short_name,
@@ -306,7 +305,7 @@ def read_case_from_odx(et_element):
     long_name = et_element.find("LONG-NAME")
     if long_name is not None:
         long_name = long_name.text
-    structure_ref = et_element.find("STRUCTURE-REF").get("ID-REF")
+    structure_ref = make_ref(et_element.find("STRUCTURE-REF"))
     lower_limit = et_element.find("LOWER-LIMIT").text
     upper_limit = et_element.find("UPPER-LIMIT").text
 

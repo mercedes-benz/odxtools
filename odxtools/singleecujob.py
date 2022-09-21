@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Literal, Optional, Union, cast
 from .dataobjectproperty import DopBase
 from .audience import Audience, read_audience_from_odx
 from .functionalclass import FunctionalClass
-from .utils import read_element_id
+from .utils import make_ref, read_element_id
 from .nameditemlist import NamedItemList
 from .globals import logger
 from .exceptions import EncodeError, DecodeError
@@ -245,7 +245,7 @@ def read_prog_code_from_odx(et_element):
     entrypoint = et_element.findtext("ENTRYPOINT")
 
     library_refs = [
-        el.get("ID-REF") for el in et_element.iterfind("LIBRARY-REFS/LIBRARY-REF")
+        make_ref(el) for el in et_element.iterfind("LIBRARY-REFS/LIBRARY-REF")
     ]
     return ProgCode(
         code_file=code_file,
@@ -259,7 +259,7 @@ def read_prog_code_from_odx(et_element):
 
 def read_input_param_from_odx(et_element):
     element_id = read_element_id(et_element)
-    dop_base_ref = et_element.find("DOP-BASE-REF").get("ID-REF")
+    dop_base_ref = make_ref(et_element.find("DOP-BASE-REF"))
     physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
 
     # optional attributes
@@ -277,7 +277,7 @@ def read_input_param_from_odx(et_element):
 def read_output_param_from_odx(et_element):
     id = et_element.get("ID")
     element_id = read_element_id(et_element)
-    dop_base_ref = et_element.find("DOP-BASE-REF").get("ID-REF")
+    dop_base_ref = make_ref(et_element.find("DOP-BASE-REF"))
 
     # optional attributes
     semantic = et_element.get("SEMANTIC")
@@ -293,7 +293,7 @@ def read_output_param_from_odx(et_element):
 
 def read_neg_output_param_from_odx(et_element):
     element_id = read_element_id(et_element)
-    dop_base_ref = et_element.find("DOP-BASE-REF").get("ID-REF")
+    dop_base_ref = make_ref(et_element.find("DOP-BASE-REF"))
 
     return NegOutputParam(
         **element_id,
@@ -309,7 +309,7 @@ def read_single_ecu_job_from_odx(et_element):
     semantic = et_element.get("SEMANTIC")
 
     functional_class_ref_ids = [
-        el.attrib["ID-REF"] for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF")
+        make_ref(el) for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF")
     ]
 
     prog_codes = [

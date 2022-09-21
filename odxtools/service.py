@@ -4,7 +4,7 @@
 from odxtools.audience import Audience, read_audience_from_odx
 from odxtools.functionalclass import FunctionalClass
 from odxtools.state import State
-from odxtools.utils import read_description_from_odx
+from odxtools.utils import make_ref, read_description_from_odx
 from odxtools.exceptions import DecodeError
 from typing import List, Optional, Union
 
@@ -225,22 +225,22 @@ def read_diag_service_from_odx(et_element):
     short_name = et_element.find("SHORT-NAME").text
     id = et_element.get("ID")
 
-    request_ref_id = et_element.find("REQUEST-REF").get("ID-REF")
+    request_ref_id = make_ref(et_element.find("REQUEST-REF"))
 
     pos_res_ref_ids = [
-        el.get("ID-REF") for el in et_element.iterfind("POS-RESPONSE-REFS/POS-RESPONSE-REF")
+        make_ref(el) for el in et_element.iterfind("POS-RESPONSE-REFS/POS-RESPONSE-REF")
     ]
     neg_res_ref_ids = [
-        el.get("ID-REF") for el in et_element.iterfind("NEG-RESPONSE-REFS/NEG-RESPONSE-REF")
+        make_ref(el) for el in et_element.iterfind("NEG-RESPONSE-REFS/NEG-RESPONSE-REF")
     ]
     functional_class_ref_ids = [
-        el.get("ID-REF") for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF")
+        make_ref(el) for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF")
     ]
     pre_condition_state_ref_ids = [
-        el.get("ID-REF") for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF")
+        make_ref(el) for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF")
     ]
     state_transition_ref_ids = [
-        el.get("ID-REF") for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
+        make_ref(el) for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
     ]
     long_name = et_element.find(
         "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None

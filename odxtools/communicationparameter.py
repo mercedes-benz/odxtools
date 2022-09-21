@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from odxtools.utils import read_description_from_odx
+from odxtools.utils import make_ref, read_description_from_odx
 
 
 class CommunicationParameterRef:
@@ -47,7 +47,7 @@ def _read_complex_value_from_odx(et_element):
 
 
 def read_communication_param_ref_from_odx(et_element):
-    id_ref = et_element.get("ID-REF")
+    id_ref = make_ref(et_element)
     # ODX standard v2.0.0 defined only VALUE
     # ODX standard v2.0.1 decided to break things and change it to choice between SIMPLE-VALUE and COMPLEX-VALUE
     if et_element.find("VALUE") is not None:

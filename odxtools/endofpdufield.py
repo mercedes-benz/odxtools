@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from typing import List, Union
-from .utils import read_description_from_odx
+from .utils import make_ref, read_description_from_odx
 from .structures import BasicStructure
 from .dataobjectproperty import DopBase
 from .decodestate import DecodeState
@@ -109,10 +109,8 @@ def read_end_of_pdu_field_from_odx(et_element):
         "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
     description = read_description_from_odx(et_element.find("DESC"))
 
-    if et_element.find("BASIC-STRUCTURE-REF") is not None:
-        structure_ref = et_element.find(
-            "BASIC-STRUCTURE-REF").get("ID-REF")
-        structure_snref = None
+    structure_ref = make_ref(et_element.find("BASIC-STRUCTURE-REF"))
+    structure_snref = None
 
     if et_element.find("BASIC-STRUCTURE-SNREF") is not None:
         structure_ref = None
@@ -120,7 +118,7 @@ def read_end_of_pdu_field_from_odx(et_element):
             "BASIC-STRUCTURE-SNREF").get("SHORT-NAME")
 
     if et_element.find("ENV-DATA-DESC-REF") is not None:
-        structure_ref = et_element.get("ENV-DATA-DESC-REF")
+        structure_ref = make_ref(et_element.get("ENV-DATA-DESC-REF"))
         structure_snref = None
 
     if et_element.find("ENV-DATA-DESC-SNREF") is not None:

@@ -3,7 +3,7 @@
 
 from .nameditemlist import NamedItemList
 from .companydata import CompanyData, TeamMember
-from .utils import read_description_from_odx
+from .utils import make_ref, read_description_from_odx
 
 from dataclasses import dataclass, field
 from typing import Optional, List
@@ -77,11 +77,8 @@ def read_admin_data_from_odx(et_element):
         cdilist = list()
         for cdi in company_doc_infos.iterfind("COMPANY-DOC-INFO"):
             # the company data reference is mandatory
-            company_data_ref = cdi.find("COMPANY-DATA-REF").attrib["ID-REF"]
-
-            team_member_ref = cdi.find("TEAM-MEMBER-REF")
-            if team_member_ref is not None:
-                team_member_ref = team_member_ref.attrib["ID-REF"]
+            company_data_ref = make_ref(cdi.find("COMPANY-DATA-REF"))
+            team_member_ref = make_ref(cdi.find("TEAM-MEMBER-REF"))
 
             doc_label = cdi.find("DOC-LABEL")
             if doc_label is not None:
@@ -97,10 +94,7 @@ def read_admin_data_from_odx(et_element):
     if doc_revisions is not None:
         drlist = list()
         for dr in doc_revisions.iterfind("DOC-REVISION"):
-            team_member_ref = dr.find("TEAM-MEMBER-REF")
-            if team_member_ref is not None:
-                team_member_ref = team_member_ref.attrib["ID-REF"]
-
+            team_member_ref = make_ref(cdi.find("TEAM-MEMBER-REF"))
             revision_label = dr.find("REVISION-LABEL")
             if revision_label is not None:
                 revision_label = revision_label.text

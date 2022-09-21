@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import List, Literal, Optional, Union
 
 from .nameditemlist import NamedItemList
-from .utils import read_description_from_odx
+from .utils import make_ref, read_description_from_odx
 
 UnitGroupCategory = Literal["COUNTRY", "EQUIV-UNITS"]
 
@@ -215,12 +215,7 @@ def read_unit_from_odx(et_element):
             return None
     factor_si_to_unit = read_optional_float(et_element, "FACTOR-SI-TO-UNIT")
     offset_si_to_unit = read_optional_float(et_element, "OFFSET-SI-TO-UNIT")
-
-    ref_element = et_element.find("PHYSICAL-DIMENSION-REF")
-    if ref_element is not None:
-        physical_dimension_ref = ref_element.get("ID-REF")
-    else:
-        physical_dimension_ref = None
+    physical_dimension_ref = make_ref(et_element.find("PHYSICAL-DIMENSION-REF"))
 
     return Unit(
         id=id,
@@ -281,7 +276,7 @@ def read_unit_group_from_odx(et_element):
     category = et_element.findtext("CATEGORY")
     assert category in [
         "COUNTRY", "EQUIV-UNITS"], f'A UNIT-GROUP-CATEGORY must be "COUNTRY" or "EQUIV-UNITS". It was {category}.'
-    unit_refs = [el.get("ID-REF")
+    unit_refs = [make_ref(el)
                  for el in et_element.iterfind("UNIT-REFS/UNIT-REF")]
 
     return UnitGroup(
