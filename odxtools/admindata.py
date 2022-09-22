@@ -94,7 +94,7 @@ def read_admin_data_from_odx(et_element):
     if doc_revisions is not None:
         drlist = list()
         for dr in doc_revisions.iterfind("DOC-REVISION"):
-            team_member_ref = make_ref(cdi.find("TEAM-MEMBER-REF"))
+            team_member_ref = make_ref(dr.find("TEAM-MEMBER-REF"))
             revision_label = dr.find("REVISION-LABEL")
             if revision_label is not None:
                 revision_label = revision_label.text
