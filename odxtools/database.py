@@ -84,7 +84,7 @@ class Database:
             for key, value in dict(lookup).items():
                 # In case an ID-REF uses a DOCREF
                 for docname in docnames:
-                    result[docname + ">" + key] = value
+                    result[f"{key}_from_{docname}"] = value
             return result
 
         for dlc in self.diag_layer_containers:

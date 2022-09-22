@@ -12,8 +12,10 @@ def make_ref(ref_element: ElementTree.Element) -> Optional[str]:
     if id_ref is None:
         return None
     if docref is not None:
-        # ">" is not valid in an attribute value, so not likely to be used
-        return docref + ">" + id_ref
+        # Try to make unique identifier which is a valid python name
+        # so that the NamedItemLists work. In some corner cases this
+        # could lead to ID collisions...
+        return f"{id_ref}_from_{docref}"
     return id_ref
 
 def read_description_from_odx(et_element: ElementTree.Element):
