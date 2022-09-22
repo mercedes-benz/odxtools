@@ -10,6 +10,8 @@ from ..database import Database
 from ..service import DiagService
 from . import _parser_utils
 
+# name of the tool
+name = "find"
 
 def get_display_value(v, _param):
     import binascii

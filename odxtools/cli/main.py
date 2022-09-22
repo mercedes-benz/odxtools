@@ -2,13 +2,21 @@
 # Copyright (c) 2021-2022 MBition GmbH
 
 import argparse
-
-from . import list
-from . import browse
-from . import snoop
-from . import find
+import importlib
 
 from ..version import __version__ as odxtools_version
+from .dummy_sub_parser import DummyTool
+
+# import the tool modules which can be loaded. if a tool
+# can't be loaded, add a dummy one
+tool_modules = []
+for tool_name in ["list", "browse", "snoop", "find"]:
+    try:
+        tool_modules.append(
+            importlib.import_module(f".{tool_name}", package="odxtools.cli"))
+    except Exception as e:
+        tool_modules.append(
+            DummyTool(tool_name, e))
 
 def start_cli():
     argparser = argparse.ArgumentParser(
@@ -33,10 +41,8 @@ def start_cli():
         dest="subparser_name"
     )
 
-    list.add_subparser(subparsers)
-    browse.add_subparser(subparsers)
-    snoop.add_subparser(subparsers)
-    find.add_subparser(subparsers)
+    for tool in tool_modules:
+        tool.add_subparser(subparsers)
 
     args = argparser.parse_args()  # deals with the help message handling
 
@@ -47,11 +53,6 @@ def start_cli():
         argparser.print_usage()
         exit()
 
-    if args.subparser_name == "list":
-        list.run(args)
-    elif args.subparser_name == "browse":
-        browse.run(args)
-    elif args.subparser_name == "snoop":
-        snoop.run(args)
-    elif args.subparser_name == "find":
-        find.run(args)
+    for tool in tool_modules:
+        if tool.name == args.subparser_name:
+            tool.run(args)

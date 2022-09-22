@@ -13,6 +13,9 @@ import odxtools
 import odxtools.uds as uds
 import odxtools.isotp_state_machine as ism
 
+# name of the tool
+name = "snoop"
+
 odx_diag_layer = None
 last_request = None
 
