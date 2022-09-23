@@ -11,7 +11,7 @@ from ..service import DiagService
 from . import _parser_utils
 
 # name of the tool
-name = "find"
+_odxtools_tool_name_ = "find"
 
 def get_display_value(v, _param):
     import binascii

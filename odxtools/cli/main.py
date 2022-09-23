@@ -54,5 +54,5 @@ def start_cli():
         exit()
 
     for tool in tool_modules:
-        if tool.name == args.subparser_name:
+        if tool._odxtools_tool_name_ == args.subparser_name:
             tool.run(args)

@@ -12,7 +12,7 @@ from ..service import DiagService
 from ..singleecujob import SingleEcuJob
 
 # name of the tool
-name = "list"
+_odxtools_tool_name_ = "list"
 
 def print_summary(odxdb: Database,
                   print_services=False,
