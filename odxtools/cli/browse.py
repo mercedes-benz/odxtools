@@ -16,6 +16,8 @@ from . import _parser_utils
 import logging
 # logging.basicConfig(level=logging.DEBUG)
 
+# name of the tool
+_odxtools_tool_name_ = "browse"
 
 def _convert_string_to_odx_type(string_value: str, odx_type: DataType):
     """Similar to odx_type.from_string(string_value) but more relaxed to parse user input"""

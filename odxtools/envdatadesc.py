@@ -6,19 +6,27 @@ from typing import List, Optional
 
 from .utils import make_ref
 from .globals import logger
+from .dataobjectproperty import DopBase
 
+from .decodestate import DecodeState
+from .encodestate import EncodeState
+from .exceptions import DecodeError, EncodeError
 
-@dataclass
-class EnvironmentDataDescription:
+class EnvironmentDataDescription(DopBase):
     """This class represents Environment Data Description, which is a complex DOP
     that is used to define the interpretation of environment data."""
 
-    id: str
-    short_name: str
-    long_name: str
-    env_data_refs: List[str]
-    param_snref: Optional[str] = None
-    param_snpathref: Optional[str] = None
+    def __init__(self,
+                 env_data_refs: List[str],
+                 param_snref: Optional[str] = None,
+                 param_snpathref: Optional[str] = None,
+                 **kwargs):
+        super().__init__(**kwargs)
+
+        self.bit_length = None
+        self.env_data_refs = env_data_refs
+        self.param_snref = param_snref
+        self.param_snpathref = param_snpathref
 
     def _build_id_lookup(self):
         id_lookup = {}
@@ -38,6 +46,22 @@ class EnvironmentDataDescription:
             )
             + ")"
         )
+
+    def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState, bit_position: int) -> bytes:
+        """Convert the physical value into bytes.
+
+        Since environmental data is supposed to never appear on the
+        wire, this method just raises an EncodeError exception.
+        """
+        raise EncodeError("EnvironmentDataDescription DOPs cannot be encoded or decoded")
+
+    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
+        """Extract the bytes from the PDU and convert them to the physical value.
+
+        Since environmental data is supposed to never appear on the
+        wire, this method just raises an DecodeError exception.
+        """
+        raise DecodeError("EnvironmentDataDescription DOPs cannot be encoded or decoded")
 
 
 def read_env_data_desc_from_odx(et_element):

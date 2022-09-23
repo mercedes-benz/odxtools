@@ -84,7 +84,7 @@ class Database:
             for key, value in dict(lookup).items():
                 # In case an ID-REF uses a DOCREF
                 for docname in docnames:
-                    result[docname + ">" + key] = value
+                    result[f"{key}_from_{docname}"] = value
             return result
 
         for dlc in self.diag_layer_containers:
@@ -97,7 +97,7 @@ class Database:
         for dlc in self.diag_layer_containers:
             dlc._resolve_references(self.id_lookup)
 
-        docref_lookup = {k: v for k, v in self.id_lookup.items() if '>' in k}
+        docref_lookup = {k: v for k, v in self.id_lookup.items() if '_from_' in k}
 
         for dl_type_name in ["ECU-SHARED-DATA", "PROTOCOL", "FUNCTIONAL-GROUP", "BASE-VARIANT", "ECU-VARIANT"]:
             dl: DiagLayer
