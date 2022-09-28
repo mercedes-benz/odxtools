@@ -3,13 +3,14 @@
 
 import argparse
 import importlib
+from typing import List, Any
 
 from ..version import __version__ as odxtools_version
 from .dummy_sub_parser import DummyTool
 
 # import the tool modules which can be loaded. if a tool
 # can't be loaded, add a dummy one
-tool_modules = []
+tool_modules : List[Any] = []
 for tool_name in ["list", "browse", "snoop", "find"]:
     try:
         tool_modules.append(
