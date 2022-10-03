@@ -37,21 +37,22 @@ class BasicStructure(DopBase):
         if self._byte_size:
             return 8 * self._byte_size
         elif all(p.bit_length is not None for p in self.parameters):
-            offset = 0
-            length = 0
-            for param in self.parameters:
-                if isinstance(param, ValueParameter) and hasattr(param.dop, 'min_number_of_items'):
-                    # The param repeats itself, making bit_length calculation invalid
-                    # Temporary workaround
-                    # Can not import EndOfPduField to check on its type due to circular dependency
-                    return None
-                if param.byte_position is not None:
-                    offset = param.byte_position * 8 + param.bit_position
+            return sum([p.bit_length for p in self.parameters])
+            # offset = 0
+            # length = 0
+            # for param in self.parameters:
+            #     if isinstance(param, ValueParameter) and hasattr(param.dop, 'min_number_of_items'):
+            #         # The param repeats itself, making bit_length calculation invalid
+            #         # Temporary workaround
+            #         # Can not import EndOfPduField to check on its type due to circular dependency
+            #         return None
+            #     if param.byte_position is not None:
+            #         offset = param.byte_position * 8 + param.bit_position
 
-                offset += param.bit_length
-                length = max(length, offset)
+            #     offset += param.bit_length
+            #     length = max(length, offset)
    
-            return length
+            # return length
         else:
             return None
 
