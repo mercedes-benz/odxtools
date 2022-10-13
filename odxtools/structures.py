@@ -70,12 +70,14 @@ class BasicStructure(DopBase):
                 break
         return prefix
 
-    def get_required_parameters(self) -> List[Parameter]:
+    @property
+    def required_parameters(self) -> List[Parameter]:
         """Return the list of parameters which are required for
         encoding the structure."""
         return [p for p in self.parameters if p.is_required()]
 
-    def get_free_parameters(self) -> List[Union[Parameter, "EndOfPduField"]]: # type: ignore
+    @property
+    def free_parameters(self) -> List[Union[Parameter, "EndOfPduField"]]: # type: ignore
         """Return the list of parameters which can be freely specified by
         the user when encoding the structure.
 
@@ -100,13 +102,13 @@ class BasicStructure(DopBase):
 
         return result
 
-    def free_parameters_info(self) -> str:
+    def print_free_parameters_info(self) -> None:
         """Return a human readable description of the structure's
         free parameters.
         """
         from .parameter_info import parameter_info
 
-        return parameter_info(self.get_free_parameters())
+        print(parameter_info(self.free_parameters), end="")
 
     def convert_physical_to_internal(self,
                                      param_values: dict,

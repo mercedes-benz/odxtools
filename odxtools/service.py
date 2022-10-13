@@ -107,6 +107,22 @@ class DiagService:
         return self._request
 
     @property
+    def free_parameters(self) -> Optional[List[Union[Parameter, "EndOfPduField"]]]: # type: ignore
+        """Return the list of parameters which can be freely specified by
+        the user when encoding the service's request.
+        """
+        return self.request.free_parameters if self.request is not None else None
+
+    def print_free_parameters_info(self) -> None:
+        """Return a human readable description of the service's
+        request's free parameters.
+        """
+        if self.request is None:
+            return
+
+        self.request.print_free_parameters_info()
+
+    @property
     def positive_responses(self) -> Optional[NamedItemList[Response]]:
         return self._positive_responses
 
@@ -187,7 +203,7 @@ class DiagService:
         # encoding are specified (parameters which have a default are
         # optional)
         missing_params = set(map(
-            lambda x: x.short_name, self.request.get_required_parameters())).difference(params.keys())
+            lambda x: x.short_name, self.request.required_parameters)).difference(params.keys())
         assert not missing_params, f"The parameters {missing_params} are required but missing!"
 
         # make sure that no unknown parameters are specified

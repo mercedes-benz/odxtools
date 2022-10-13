@@ -94,4 +94,9 @@ def parameter_info(param_list : Iterable[Union[Parameter, EndOfPduField]]) -> st
                 f"{ul.value}" \
                 f"{']' if ul.interval_type == IntervalType.CLOSED else ')'}\n"
 
+            unit = dop.unit
+            unit_str = unit.display_name if unit is not None else None
+            if unit_str is not None:
+                result += f" unit: {unit_str}\n"
+
     return result
