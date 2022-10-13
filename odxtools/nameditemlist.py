@@ -40,6 +40,7 @@ class NamedItemList(Generic[T]):
         self._list.append(item)
 
         item_name = self._item_to_name_fn(item)
+        assert item_name.isidentifier()
         i = 1
         tmp = item_name
         while True:
