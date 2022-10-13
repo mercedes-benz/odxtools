@@ -156,7 +156,7 @@
 
 
 {%- macro printDOP(dop, tag_name) %}
-<{{tag_name}} ID="{{dop.id}}">
+<{{tag_name}} ID="{{dop.id.local_id}}">
  <SHORT-NAME>{{dop.short_name}}</SHORT-NAME>
  <LONG-NAME>{{dop.long_name|e}}</LONG-NAME>
 {%- if dop.compu_method is defined %}
@@ -167,14 +167,14 @@
 {%- endif -%}
  {{ printPhysicalType(dop.physical_type)|indent(1) }}
 {%- if dop.unit_ref %}
- <UNIT-REF ID-REF="{{ dop.unit_ref }}" />
+ <UNIT-REF ID-REF="{{ dop.unit_ref.ref_id }}" />
 {%- endif %}
 </{{tag_name}}>
 {%- endmacro -%}
 
 
 {%- macro printDTCDOP(dop) %}
-<DTC-DOP ID="{{dop.id}}">
+<DTC-DOP ID="{{dop.id.local_id}}">
  <SHORT-NAME>{{dop.short_name}}</SHORT-NAME>
  <LONG-NAME>{{dop.long_name}}</LONG-NAME>
  {{ printDiagCodedType(dop.diag_coded_type)|indent(1) -}}
@@ -183,9 +183,9 @@
  <DTCS>
  {%- for dtc in dop.dtcs %}
  {%- if dtc.dtc_id is defined   %}
-  <DTC-REF ID-REF="{{dop.dtc_id}}" />
+  <DTC-REF ID-REF="{{dop.dtc_id.ref_id}}" />
  {%- else %}
-  <DTC ID="{{dtc.id}}">
+  <DTC ID="{{dtc.id.local_id}}">
    <SHORT-NAME>{{dtc.short_name}}</SHORT-NAME>
    <TROUBLE-CODE>{{dtc.trouble_code}}</TROUBLE-CODE>
   {%- if dtc.display_trouble_code is not none   %}

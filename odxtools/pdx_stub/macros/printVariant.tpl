@@ -22,7 +22,7 @@
 {%- import('macros/printAudience.tpl') as paud %}
 
 {%- macro printVariant(dl, variant_tag) -%}
-<{{variant_tag}} ID="{{dl.id}}">
+<{{variant_tag}} ID="{{dl.id.local_id}}">
  <SHORT-NAME>{{dl.short_name}}</SHORT-NAME>
 {%- if dl.long_name %}
  <LONG-NAME>{{dl.long_name|e}}</LONG-NAME>
@@ -111,7 +111,7 @@
   {{ psej.printSingleEcuJob(job)|indent(2) }}
 {%- endfor %}
 {%- for dcr in dl._diag_comm_refs %}
-  <DIAG-COMM-REF ID-REF="{{dcr}}" />
+  <DIAG-COMM-REF ID-REF="{{dcr.ref_id}}" />
 {%- endfor %}
  </DIAG-COMMS>
 {%- endif %}

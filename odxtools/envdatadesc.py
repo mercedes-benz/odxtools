@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from typing import List, Optional
 
-from .utils import make_ref
+from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
 from .globals import logger
 from .dataobjectproperty import DopBase
 
@@ -17,7 +17,7 @@ class EnvironmentDataDescription(DopBase):
     that is used to define the interpretation of environment data."""
 
     def __init__(self,
-                 env_data_refs: List[str],
+                 env_data_refs: List[OdxLinkRef],
                  param_snref: Optional[str] = None,
                  param_snpathref: Optional[str] = None,
                  **kwargs):
@@ -28,10 +28,12 @@ class EnvironmentDataDescription(DopBase):
         self.param_snref = param_snref
         self.param_snpathref = param_snpathref
 
-    def _build_id_lookup(self):
-        id_lookup = {}
-        id_lookup.update({self.id: self})
-        return id_lookup
+        # TODO: resolve the references!
+
+    def _build_odxlinks(self):
+        odxlinks = {}
+        odxlinks.update({self.id: self})
+        return odxlinks
 
     def __repr__(self) -> str:
         return (
@@ -64,9 +66,9 @@ class EnvironmentDataDescription(DopBase):
         raise DecodeError("EnvironmentDataDescription DOPs cannot be encoded or decoded")
 
 
-def read_env_data_desc_from_odx(et_element):
+def read_env_data_desc_from_odx(et_element, doc_frag):
     """Reads Environment Data Description from Diag Layer."""
-    id = et_element.get("ID")
+    id = OdxLinkId.from_et(et_element, doc_frag)
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME").text
     param_snref = None
@@ -77,12 +79,12 @@ def read_env_data_desc_from_odx(et_element):
         param_snpathref = et_element.find("PARAM-SNPATHREF").get("SHORT-NAME-PATH")
     env_data_refs = []
     env_data_refs.extend([
-        make_ref(env_data_ref)
+        OdxLinkRef.from_et(env_data_ref, doc_frag)
         for env_data_ref in et_element.iterfind("ENV-DATA-REFS/ENV-DATA-REF")
     ])
     # ODX 2.0.0 says ENV-DATA-DESC could contain a list of ENV-DATAS
     env_data_refs.extend([
-        env_data.get("ID")
+        OdxLinkRef.from_et(env_data, doc_frag)
         for env_data in et_element.iterfind("ENV-DATAS/ENV-DATA")
     ])
     logger.debug("Parsing ENV-DATA-DESC " + short_name)

@@ -13,7 +13,7 @@ from .diagcodedtypes import DiagCodedType, StandardLengthType, read_diag_coded_t
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError
-from .utils import make_ref
+from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
 
 class DopBase(abc.ABC):
     """ Base class for all DOPs.
@@ -48,12 +48,12 @@ class DataObjectProperty(DopBase):
     """This class represents a DATA-OBJECT-PROP."""
 
     def __init__(self,
-                 id: str,
+                 id: OdxLinkId,
                  short_name: str,
                  diag_coded_type: DiagCodedType,
                  physical_type: PhysicalType,
                  compu_method: CompuMethod,
-                 unit_ref: Optional[str] = None,
+                 unit_ref: Optional[OdxLinkRef] = None,
                  long_name: Optional[str] = None,
                  description: Optional[str] = None
                  ):
@@ -117,10 +117,10 @@ class DataObjectProperty(DopBase):
     def get_valid_physical_values(self):
         return self.compu_method.get_valid_physical_values()
 
-    def _resolve_references(self, id_lookup):
+    def _resolve_references(self, odxlinks):
         """Resolves the reference to the unit"""
         if self.unit_ref:
-            self._unit = id_lookup[self.unit_ref]
+            self._unit = odxlinks.resolve(self.unit_ref)
 
     def __repr__(self) -> str:
         return \
@@ -148,7 +148,7 @@ class DataObjectProperty(DopBase):
 @dataclass
 class DiagnosticTroubleCode:
     trouble_code: int
-    id: Optional[str] = None
+    id: Optional[OdxLinkId] = None
     short_name: Optional[str] = None
     text: Optional[str] = None
     display_trouble_code: Optional[str] = None
@@ -194,8 +194,8 @@ class DtcRef:
     def is_temporary(self):
         return self.dtc.is_temporary
 
-    def _resolve_references(self, id_lookup):
-        self.dtc: Optional[DiagnosticTroubleCode] = id_lookup.get(self.dtc_id)
+    def _resolve_references(self, odxlinks):
+        self.dtc: Optional[DiagnosticTroubleCode] = odxlinks.resolve(self.dtc_id)
         if self.dtc is None:
             logger.debug(f"DTC-REF {self.dtc_id} could not be resolved.")
         else:
@@ -207,7 +207,7 @@ class DtcDop(DataObjectProperty):
     """ A DOP describing a diagnostic trouble code """
 
     def __init__(self,
-                 id: str,
+                 id: OdxLinkId,
                  short_name: str,
                  diag_coded_type: DiagCodedType,
                  physical_type: PhysicalType,
@@ -267,21 +267,21 @@ class DtcDop(DataObjectProperty):
 
         return super().convert_physical_to_bytes(trouble_code, encode_state, bit_position)
 
-    def _build_id_lookup(self):
-        id_lookup = {}
-        id_lookup[self.id] = self
+    def _build_odxlinks(self):
+        odxlinks = {}
+        odxlinks[self.id] = self
         for dtc in self.dtcs:
             if isinstance(dtc, DiagnosticTroubleCode):
-                id_lookup[dtc.id] = dtc
-        return id_lookup
+                odxlinks[dtc.id] = dtc
+        return odxlinks
 
-    def _resolve_references(self, id_lookup):
+    def _resolve_references(self, odxlinks):
         for dtc in self.dtcs:
             if isinstance(dtc, DtcRef):
-                dtc._resolve_references(id_lookup)
+                dtc._resolve_references(odxlinks)
 
 
-def read_dtc_from_odx(et_element):
+def read_dtc_from_odx(et_element, doc_frag):
     if et_element.find("DISPLAY-TROUBLE-CODE") is not None:
         display_trouble_code = et_element.find("DISPLAY-TROUBLE-CODE").text
     else:
@@ -292,7 +292,7 @@ def read_dtc_from_odx(et_element):
     else:
         level = None
 
-    return DiagnosticTroubleCode(id=et_element.get("ID"),
+    return DiagnosticTroubleCode(id=OdxLinkId.from_et(et_element, doc_frag),
                                  short_name=et_element.find("SHORT-NAME").text,
                                  trouble_code=int(
                                      et_element.find("TROUBLE-CODE").text),
@@ -301,9 +301,9 @@ def read_dtc_from_odx(et_element):
                                  level=level)
 
 
-def read_data_object_property_from_odx(et_element):
+def read_data_object_property_from_odx(et_element, doc_frag):
     """Reads a DATA-OBJECT-PROP or a DTC-DOP."""
-    id = et_element.get("ID")
+    id = OdxLinkId.from_et(et_element, doc_frag)
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME").text
     description = et_element.find("DESCRIPTION").text if et_element.find(
@@ -311,15 +311,15 @@ def read_data_object_property_from_odx(et_element):
     logger.debug('Parsing DOP ' + short_name)
 
     diag_coded_type = read_diag_coded_type_from_odx(
-        et_element.find("DIAG-CODED-TYPE"))
+        et_element.find("DIAG-CODED-TYPE"), doc_frag)
 
     physical_type = read_physical_type_from_odx(
-        et_element.find("PHYSICAL-TYPE"))
+        et_element.find("PHYSICAL-TYPE"), doc_frag)
     compu_method = read_compu_method_from_odx(et_element.find(
-        "COMPU-METHOD"), diag_coded_type.base_data_type, physical_type.base_data_type)
+        "COMPU-METHOD"), doc_frag, diag_coded_type.base_data_type, physical_type.base_data_type)
 
     if et_element.tag == "DATA-OBJECT-PROP":
-        unit_ref = make_ref(et_element.find("UNIT-REF"))
+        unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frag)
         dop = DataObjectProperty(id,
                                  short_name,
                                  diag_coded_type,
@@ -329,9 +329,9 @@ def read_data_object_property_from_odx(et_element):
                                  long_name=long_name,
                                  description=description)
     else:
-        dtcs = [read_dtc_from_odx(el)
+        dtcs = [read_dtc_from_odx(el, doc_frag)
                 for el in et_element.iterfind("DTCS/DTC")]
-        dtcs += [DtcRef(make_ref(el))
+        dtcs += [DtcRef(OdxLinkRef.from_et(el, doc_frag))
                  for el in et_element.iterfind("DTCS/DTC-REF")]
 
         is_visible = et_element.get("IS-VISIBLE") == "true"

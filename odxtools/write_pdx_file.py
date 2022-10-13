@@ -21,7 +21,7 @@ __pdx_stub_dir = os.path.sep.join([os.path.dirname(__module_filename),
                                   "pdx_stub"])
 def write_pdx_file(output_file_name : str,
                    database : odxtools.Database,
-                   auxiliary_content_specifiers : List[Tuple[str, str]] = [],
+                   auxiliary_content_specifiers : List[Tuple[str, bytes]] = [],
                    stub_dir : str = __pdx_stub_dir) -> bool:
     """
     Write an internalized database to a PDX file.

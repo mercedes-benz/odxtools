@@ -64,9 +64,9 @@ class TableKeyParameter(Parameter):
         raise NotImplementedError(
             "Decoding a TableKeyParameter is not implemented yet.")
 
-    def resolve_references(self, parent_dl, id_lookup):
+    def resolve_references(self, parent_dl, odxlinks):
         self.table = None
         if self.table_snref:
             self.table = parent_dl.local_diag_data_dictionary_spec.tables[self.table_snref]
         elif self.table_ref:
-            self.table = id_lookup.get(self.table_ref)
+            self.table = odxlinks.resolve(self.table_ref)

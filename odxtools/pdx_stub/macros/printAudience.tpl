@@ -5,7 +5,7 @@
 -#}
 
 {%- macro printAdditionalAudience(audience) -%}
-<ADDITIONAL-AUDIENCE ID="{{audience.id}}">
+<ADDITIONAL-AUDIENCE ID="{{audience.id.local_id}}">
  <SHORT-NAME>{{audience.short_name}}</SHORT-NAME>
 {%- if audience.long_name %}
  <LONG-NAME>{{audience.long_name}}</LONG-NAME>
@@ -48,14 +48,14 @@
 {%- if audience.enabled_audience_refs %}
  <ENABLED-AUDIENCE-REFS>
 {%- for ref in audience.enabled_audience_refs %}
-  <ENABLED-AUDIENCE-REF ID-REF="{{ref}}" />
+  <ENABLED-AUDIENCE-REF ID-REF="{{ref.ref_id}}" />
 {%- endfor %}
  </ENABLED-AUDIENCE-REFS>
 {%- endif%}
 {%- if audience.disabled_audience_refs %}
  <DISABLED-AUDIENCE-REFS>
 {%- for ref in audience.disabled_audience_refs %}
-  <DISABLED-AUDIENCE-REF ID-REF="{{ref}}" />
+  <DISABLED-AUDIENCE-REF ID-REF="{{ref.ref_id}}" />
 {%- endfor %}
  </DISABLED-AUDIENCE-REFS>
 {%- endif%}

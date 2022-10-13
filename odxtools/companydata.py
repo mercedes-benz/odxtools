@@ -3,6 +3,7 @@
 
 from .nameditemlist import NamedItemList
 from .utils import read_description_from_odx
+from .odxlink import OdxLinkId
 
 from dataclasses import dataclass, field
 from typing import Optional, List
@@ -30,7 +31,7 @@ class CompanySpecificInfo:
 
 @dataclass()
 class TeamMember:
-    id: str
+    id: OdxLinkId
     short_name: str
     long_name: Optional[str] = None
     description: Optional[str] = None
@@ -45,7 +46,7 @@ class TeamMember:
 
 @dataclass()
 class CompanyData:
-    id: str
+    id: OdxLinkId
     short_name: str
     long_name: Optional[str] = None
     description: Optional[str] = None
@@ -53,7 +54,7 @@ class CompanyData:
     team_members: Optional[NamedItemList[TeamMember]] = None
     company_specific_info: Optional[CompanySpecificInfo] = None
 
-    def _build_id_lookup(self):
+    def _build_odxlinks(self):
         result = { self.id: self }
 
         # team members
@@ -63,7 +64,7 @@ class CompanyData:
 
         return result
 
-    def _resolve_references(self, id_lookup):
+    def _resolve_references(self, odxlinks):
         pass
 
 def read_xdoc_from_odx(xdoc):
@@ -112,14 +113,14 @@ def read_xdoc_from_odx(xdoc):
                 position=position,
                 )
 
-def read_company_datas_from_odx(et_element):
+def read_company_datas_from_odx(et_element, doc_frag):
     if et_element is None:
         return None
 
     cdl = NamedItemList(lambda x: x.short_name)
 
     for cd in et_element.iterfind("COMPANY-DATA"):
-        id = cd.attrib["ID"]
+        id = OdxLinkId.from_et(cd, doc_frag)
         short_name = cd.find("SHORT-NAME").text
 
         long_name = cd.find("LONG-NAME")
@@ -144,7 +145,7 @@ def read_company_datas_from_odx(et_element):
             tml = NamedItemList(lambda x: x.short_name)
 
             for tm in team_members.iterfind("TEAM-MEMBER"):
-                tm_id = tm.attrib["ID"]
+                tm_id = OdxLinkId.from_et(tm, doc_frag)
                 tm_short_name = tm.find("SHORT-NAME").text
 
                 tm_long_name = tm.find("LONG-NAME")

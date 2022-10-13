@@ -105,7 +105,7 @@ def read_limit_from_odx(et_element, internal_type: DataType):
     return limit
 
 
-def read_compu_method_from_odx(et_element, internal_type: DataType, physical_type: DataType) -> CompuMethod:
+def read_compu_method_from_odx(et_element, doc_frag, internal_type: DataType, physical_type: DataType) -> CompuMethod:
     compu_category = et_element.find("CATEGORY").text
     assert compu_category in ["IDENTICAL", "LINEAR", "SCALE-LINEAR",
                               "TEXTTABLE", "COMPUCODE", "TAB-INTP",

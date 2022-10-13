@@ -7,7 +7,7 @@
 {%- import('macros/printParam.tpl') as pp %}
 
 {%- macro printResponse(resp, tag_name="POS-RESPONSE") -%}
-<{{tag_name}} ID="{{resp.id}}">
+<{{tag_name}} ID="{{resp.id.local_id}}">
  <SHORT-NAME>{{resp.short_name}}</SHORT-NAME>
  <LONG-NAME>{{resp.long_name|e}}</LONG-NAME>
 {%- if resp.description and resp.description.strip() %}

@@ -2,9 +2,9 @@
 # Copyright (c) 2022 MBition GmbH
 
 from dataclasses import dataclass, field
-from typing import Optional
-from odxtools.utils import make_ref, read_description_from_odx
-
+from typing import Optional, List
+from odxtools.utils import read_description_from_odx
+from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
 
 @dataclass()
 class Audience:
@@ -16,6 +16,9 @@ class Audience:
     is_aftersales: bool = True
     is_aftermarket: bool = True
 
+    _enabled_audiences: Optional[List["Audience"]] = None
+    _disabled_audiences: Optional[List["Audience"]] = None
+
     @property
     def enabled_audiences(self):
         return self._enabled_audiences
@@ -24,10 +27,10 @@ class Audience:
     def disabled_audiences(self):
         return self._disabled_audiences
 
-    def _resolve_references(self, id_lookup):
-        self._enabled_audiences = [id_lookup[ref]
+    def _resolve_references(self, odxlinks):
+        self._enabled_audiences = [odxlinks.resolve(ref)
                                    for ref in self.enabled_audience_refs]
-        self._disabled_audiences = [id_lookup[ref]
+        self._disabled_audiences = [odxlinks.resolve(ref)
                                     for ref in self.disabled_audience_refs]
 
 
@@ -36,27 +39,24 @@ class AdditionalAudience:
     """
     Corresponds to ADDITIONAL-AUDIENCE.
     """
-    id: str
+    id: OdxLinkId
     short_name: str
     long_name: Optional[str] = None
     description: Optional[str] = None
 
 
-def read_audience_from_odx(et_element):
-    enabled_audience_refs = [make_ref(ref)
-        for ref in et_element.iterfind("ENABLED-AUDIENCE-REFS/ENABLED-AUDIENCE-REF")]
-    disabled_audience_refs = [make_ref(ref)
-        for ref in et_element.iterfind("DISABLED-AUDIENCE-REFS/DISABLED-AUDIENCE-REF")]
-    is_supplier = et_element.get(
-        "IS-SUPPLIER") == 'true' if et_element.get("IS-SUPPLIER") else True
-    is_development = et_element.get(
-        "IS-DEVELOPMENT") == 'true' if et_element.get("IS-DEVELOPMENT") else True
-    is_manufacturing = et_element.get(
-        "IS-MANUFACTURING") == 'true' if et_element.get("IS-MANUFACTURING") else True
-    is_aftersales = et_element.get(
-        "IS-AFTERSALES") == 'true' if et_element.get("IS-AFTERSALES") else True
-    is_aftermarket = et_element.get(
-        "IS-AFTERMARKET") == 'true' if et_element.get("IS-AFTERMARKET") else True
+def read_audience_from_odx(et_element, doc_frag):
+    enabled_audience_refs = [OdxLinkRef.from_et(ref, doc_frag)
+        for ref in et_element.iterfind("ENABLED-AUDIENCE-REFS/"
+                                       "ENABLED-AUDIENCE-REF")]
+    disabled_audience_refs = [OdxLinkRef.from_et(ref, doc_frag)
+        for ref in et_element.iterfind("DISABLED-AUDIENCE-REFS/"
+                                       "DISABLED-AUDIENCE-REF")]
+    is_supplier = et_element.get("IS-SUPPLIER", "true") == 'true'
+    is_development = et_element.get("IS-DEVELOPMENT", "true") == 'true'
+    is_manufacturing = et_element.get("IS-MANUFACTURING", "true") == 'true'
+    is_aftersales = et_element.get("IS-AFTERSALES", "true") == 'true'
+    is_aftermarket = et_element.get("IS-AFTERMARKET", "true") == 'true'
 
     return Audience(enabled_audience_refs=enabled_audience_refs,
                     disabled_audience_refs=disabled_audience_refs,
@@ -67,12 +67,11 @@ def read_audience_from_odx(et_element):
                     is_aftermarket=is_aftermarket)
 
 
-def read_additional_audience_from_odx(et_element):
+def read_additional_audience_from_odx(et_element, doc_frag):
     short_name = et_element.find("SHORT-NAME").text
-    id = et_element.get("ID")
+    id = OdxLinkId.from_et(et_element, doc_frag)
 
-    long_name = et_element.find(
-        "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
+    long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
 
     return AdditionalAudience(id=id,

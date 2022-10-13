@@ -3,9 +3,8 @@
 
 from typing import Any, Dict, List, NamedTuple, Union
 
-
 class ParameterValuePair(NamedTuple):
-    parameter: Any  # This should be a Parameter but that would lead to a cyclic import
+    parameter: Any  # This should be "Parameter" but that would lead to cyclic imports
     value: Union[str, int, bytes, bytearray, Dict]
 
 

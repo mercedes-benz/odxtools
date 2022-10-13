@@ -4,22 +4,23 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from .odxlink import OdxLinkId, OdxDocFragment
 
 @dataclass()
 class StateTransition:
     """
     Corresponds to STATE.
     """
-    id: str
+    id: OdxLinkId
     short_name: str
     long_name: Optional[str] = None
     source_short_name: Optional[str] = None
     target_short_name: Optional[str] = None
 
 
-def read_state_transition_from_odx(et_element):
+def read_state_transition_from_odx(et_element, doc_frag):
     short_name = et_element.find("SHORT-NAME").text
-    id = et_element.get("ID")
+    id = OdxLinkId.from_et(et_element, doc_frag)
 
     long_name = et_element.find(
         "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None

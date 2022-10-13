@@ -4,19 +4,7 @@
 from typing import Dict, Literal, Optional
 from xml.etree import ElementTree
 
-def make_ref(ref_element: ElementTree.Element) -> Optional[str]:
-    if ref_element is None:
-        return None
-    id_ref = ref_element.get("ID-REF")
-    docref = ref_element.get("DOCREF")
-    if id_ref is None:
-        return None
-    if docref is not None:
-        # Try to make unique identifier which is a valid python name
-        # so that the NamedItemLists work. In some corner cases this
-        # could lead to ID collisions...
-        return f"{id_ref}_from_{docref}"
-    return id_ref
+from .odxlink import OdxDocFragment
 
 def read_description_from_odx(et_element: ElementTree.Element):
     """Read a DESCRIPTION element. The element usually has the name DESC."""
@@ -24,7 +12,7 @@ def read_description_from_odx(et_element: ElementTree.Element):
     #       This just represents it as XHTML string. 
     if et_element is None:
         return None
- 
+
     raw_string = et_element.text or ''
     for e in et_element:
         raw_string += ElementTree.tostring(e, encoding='unicode')

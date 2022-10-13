@@ -10,7 +10,8 @@ from .globals import logger, xsi
 from .state import read_state_from_odx
 from .state_transition import read_state_transition_from_odx
 
-from .utils import make_ref, read_description_from_odx
+from .odxlink import OdxLinkRef, OdxLinkId,OdxLinkDatabase, OdxDocFragment
+from .utils import read_description_from_odx
 from .nameditemlist import NamedItemList
 from .admindata import AdminData, read_admin_data_from_odx
 from .companydata import CompanyData, read_company_datas_from_odx
@@ -39,15 +40,15 @@ class DiagLayer:
 
     class ParentRef:
         def __init__(self,
-                     reference,  # : Union[str, DiagLayer],
+                     parent : Union[OdxLinkRef, "DiagLayer"],
                      ref_type: str,
                      not_inherited_diag_comms=[],
                      not_inherited_dops=[]):
             """
             Parameters
             ----------
-            reference: str | DiagLayer
-                the ID (string) or the referenced DiagLayer
+            parent: OdxLinkRef | DiagLayer
+                A reference to the or the parent DiagLayer
             ref_type: str
             not_inherited_diag_comms: List[str]
                 short names of not inherited diag comms
@@ -57,37 +58,39 @@ class DiagLayer:
             if ref_type not in ["PROTOCOL-REF", "BASE-VARIANT-REF",
                                 "ECU-SHARED-DATA-REF", "FUNCTIONAL-GROUP-REF"]:
                 warnings.warn(f'Unknown parent ref type {ref_type}', OdxWarning)
-            if isinstance(reference, str):
-                self.id_ref = reference
-                self.referenced_diag_layer = None
+            if isinstance(parent, OdxLinkRef):
+                self.parent_ref = parent
+                self.parent_diag_layer = None
             else:
-                self.id_ref = reference.id
-                self.referenced_diag_layer = reference
+                assert isinstance(parent, DiagLayer)
+
+                self.parent_ref = OdxLinkRef.from_id(parent.id)
+                self.parent_diag_layer = parent
             self.not_inherited_diag_comms = not_inherited_diag_comms
             self.not_inherited_dops = not_inherited_dops
             self.ref_type = ref_type
 
-        def _resolve_references(self, id_lookup):
-            self.referenced_diag_layer = id_lookup.get(self.id_ref)
-            if self.referenced_diag_layer is None:
+        def _resolve_references(self, odxlinks):
+            self.parent_diag_layer = odxlinks.resolve(self.parent_ref)
+            if self.parent_diag_layer is None:
                 logger.warning(
-                    f"Could not resolve parent ref to {self.id_ref}")
+                    f"Could not resolve parent ref to {self.parent_ref}")
 
         def get_inheritance_priority(self):
-            return PRIORITY_OF_DIAG_LAYER_TYPE[self.referenced_diag_layer.variant_type]
+            return PRIORITY_OF_DIAG_LAYER_TYPE[self.parent_diag_layer.variant_type]
 
         def get_inherited_services_by_name(self):
-            services = {service.short_name: service for service in self.referenced_diag_layer._services
+            services = {service.short_name: service for service in self.parent_diag_layer._services
                         if service.short_name not in self.not_inherited_diag_comms}
             return services
 
         def get_inherited_data_object_properties_by_name(self):
-            dops = {dop.short_name: dop for dop in self.referenced_diag_layer._data_object_properties
+            dops = {dop.short_name: dop for dop in self.parent_diag_layer._data_object_properties
                     if dop.short_name not in self.not_inherited_dops}
             return dops
 
         def get_inherited_communication_parameters_by_name(self):
-            return {cp.id_ref: cp for cp in self.referenced_diag_layer._communication_parameters}
+            return {cp.id_ref: cp for cp in self.parent_diag_layer._communication_parameters}
 
     def __init__(self,
                  variant_type,
@@ -106,7 +109,7 @@ class DiagLayer:
                  communication_parameters:
                  List[CommunicationParameterRef] = [],
                  enable_candela_workarounds=True,
-                 id_lookup=None,
+                 odxlinks=None,
                  additional_audiences=[],
                  functional_classes=[],
                  states=[],
@@ -160,8 +163,8 @@ class DiagLayer:
 
         self.import_refs = import_refs
 
-        if id_lookup is not None:
-            self.finalize_init(id_lookup)
+        if odxlinks is not None:
+            self.finalize_init(odxlinks)
 
         # specify whether enable work arounds for bugs of CANdela studio
         self._enable_candela_workarounds = enable_candela_workarounds
@@ -185,21 +188,21 @@ class DiagLayer:
         """All communication parameters including inherited ones."""
         return self._communication_parameters
 
-    def finalize_init(self, id_lookup={}):
+    def finalize_init(self, odxlinks=OdxLinkDatabase()):
         """Resolves all references.
 
         This method should be called whenever the diag layer (or a referenced object) was changed.
         Particularly, this method assumes that all inherited diag layer are correctly initialized,
         i.e., have resolved their references.
         """
-        id_lookup.update(self._build_id_lookup())
-        self._resolve_references(id_lookup)
+        odxlinks.update(self._build_odxlinks())
+        self._resolve_references(odxlinks)
 
-    def _build_id_lookup(self):
+    def _build_odxlinks(self):
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
-        logger.info(f"Adding {self.id} to id_lookup.")
+        logger.info(f"Adding {self.id} to odxlinks.")
 
-        id_lookup = {}
+        odxlinks = {}
         for obj in chain(self._local_services,
                          self._local_single_ecu_jobs,
                          self.requests,
@@ -209,23 +212,23 @@ class DiagLayer:
                          self.functional_classes,
                          self.states,
                          self.state_transitions):
-            id_lookup[obj.id] = obj
+            odxlinks[obj.id] = obj
 
         if self.local_diag_data_dictionary_spec:
-            id_lookup.update(
-                self.local_diag_data_dictionary_spec._build_id_lookup()
+            odxlinks.update(
+                self.local_diag_data_dictionary_spec._build_odxlinks()
             )
 
-        id_lookup[self.id] = self
-        return id_lookup
+        odxlinks[self.id] = self
+        return odxlinks
 
-    def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         """Recursively resolve all references."""
         # Resolve inheritance
         for pr in self.parent_refs:
-            pr._resolve_references(id_lookup)
+            pr._resolve_references(odxlinks)
 
-        services = sorted(self._compute_available_services_by_name(id_lookup).values(),
+        services = sorted(self._compute_available_services_by_name(odxlinks).values(),
                           key=lambda service: service.short_name)
         self._services = NamedItemList[Union[DiagService, SingleEcuJob]](
             lambda s: s.short_name,
@@ -238,7 +241,7 @@ class DiagLayer:
             dops)
 
         comparams = sorted(self._compute_available_commmunication_parameters_by_name().values(),
-                           key=lambda comparam: comparam.id_ref)
+                           key=lambda comparam: comparam.id_ref.ref_id)
         self._communication_parameters = NamedItemList[CommunicationParameterRef](
             lambda cp: cp._python_name(),
             comparams)
@@ -247,23 +250,23 @@ class DiagLayer:
         for struct in chain(self.requests,
                             self.positive_responses,
                             self.negative_responses):
-            struct._resolve_references(self, id_lookup)
+            struct._resolve_references(self, odxlinks)
 
         local_diag_comms: Iterable[Union[DiagService, SingleEcuJob]] \
             = (*self._local_services, *self._local_single_ecu_jobs)
         for service in local_diag_comms:
-            service._resolve_references(id_lookup)
+            service._resolve_references(odxlinks)
 
         if self.local_diag_data_dictionary_spec:
             self.local_diag_data_dictionary_spec._resolve_references(self,
-                                                                     id_lookup)
+                                                                     odxlinks)
 
-    def __local_services_by_name(self, id_lookup) -> Dict[str, Union[DiagService, SingleEcuJob]]:
+    def __local_services_by_name(self, odxlinks) -> Dict[str, Union[DiagService, SingleEcuJob]]:
         services_by_name: Dict[str, Union[DiagService, SingleEcuJob]] = {}
 
         for ref in self._diag_comm_refs:
-            if ref in id_lookup:
-                services_by_name[id_lookup[ref].short_name] = id_lookup[ref]
+            if (obj := odxlinks.resolve_lenient(ref)) is not None:
+                services_by_name[obj.short_name] = obj
             else:
                 logger.warning(f"Diag comm ref {ref!r} could not be resolved.")
 
@@ -275,7 +278,7 @@ class DiagLayer:
         })
         return services_by_name
 
-    def _compute_available_services_by_name(self, id_lookup) -> Dict[str, DiagService]:
+    def _compute_available_services_by_name(self, odxlinks) -> Dict[str, DiagService]:
         """Helper method for initializing the available services.
         This computes the services that are inherited from other diagnostic layers."""
         services_by_name = {}
@@ -286,7 +289,7 @@ class DiagLayer:
             services_by_name.update(
                 parent_ref.get_inherited_services_by_name())
 
-        services_by_name.update(self.__local_services_by_name(id_lookup))
+        services_by_name.update(self.__local_services_by_name(odxlinks))
         return services_by_name
 
     def _compute_available_data_object_properties_by_name(self) -> Dict[str, DopBase]:
@@ -532,8 +535,8 @@ class DiagLayer:
         return f"DiagLayer('{self.short_name}', type='{self.variant_type}')"
 
 
-def read_parent_ref_from_odx(et_element):
-    id_ref = make_ref(et_element)
+def read_parent_ref_from_odx(et_element, doc_frag):
+    parent_ref = OdxLinkRef.from_et(et_element, doc_frag)
 
     not_inherited_diag_comms = [el.get("SHORT-NAME")
                                 for el in et_element.iterfind("NOT-INHERITED-DIAG-COMMS/NOT-INHERITED-DIAG-COMM/DIAG-COMM-SNREF")]
@@ -542,71 +545,78 @@ def read_parent_ref_from_odx(et_element):
     ref_type = et_element.get(f"{xsi}type")
 
     return DiagLayer.ParentRef(
-        id_ref,
+        parent_ref,
         ref_type=ref_type,
         not_inherited_diag_comms=not_inherited_diag_comms,
         not_inherited_dops=not_inherited_dops
     )
 
 
-def read_diag_layer_from_odx(et_element, enable_candela_workarounds=True):
+def read_diag_layer_from_odx(et_element,
+                             doc_frag,
+                             enable_candela_workarounds=True):
 
     # logger.info(et_element)
     variant_type = et_element.tag
 
-    id = et_element.get("ID")
+    id = OdxLinkId.from_et(et_element, doc_frag)
     short_name = et_element.find("SHORT-NAME").text
 
-    long_name = et_element.find(
-        "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
+    long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
 
     logger.info(f"Parsing {variant_type} '{short_name}' ...")
 
     # Parse DiagServices
-    services = [read_diag_service_from_odx(service)
+    services = [read_diag_service_from_odx(service, doc_frag)
                 for service in et_element.iterfind("DIAG-COMMS/DIAG-SERVICE")]
-    diag_comm_refs = [make_ref(service)
+    diag_comm_refs = [OdxLinkRef.from_et(service, doc_frag)
                       for service in et_element.iterfind("DIAG-COMMS/DIAG-COMM-REF")]
-    single_ecu_jobs = [read_single_ecu_job_from_odx(sej)
+    single_ecu_jobs = [read_single_ecu_job_from_odx(sej, doc_frag)
                        for sej in et_element.iterfind("DIAG-COMMS/SINGLE-ECU-JOB")]
 
     # Parse ParentRefs
-    parent_refs = [read_parent_ref_from_odx(pr_el)
+    parent_refs = [read_parent_ref_from_odx(pr_el, doc_frag)
                    for pr_el in et_element.iterfind("PARENT-REFS/PARENT-REF")]
 
     # Parse communication parameter refs
-    com_params = [read_communication_param_ref_from_odx(el)
+    com_params = [read_communication_param_ref_from_odx(el, doc_frag)
                   for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")]
 
     # Parse Requests and Responses
-    requests = [read_structure_from_odx(rq)
+    requests = [read_structure_from_odx(rq, doc_frag)
                 for rq in et_element.iterfind("REQUESTS/REQUEST")]
-    positive_responses = [read_structure_from_odx(pr)
+    positive_responses = [read_structure_from_odx(pr, doc_frag)
                           for pr in et_element.iterfind("POS-RESPONSES/POS-RESPONSE")]
-    negative_responses = [read_structure_from_odx(nr)
+    negative_responses = [read_structure_from_odx(nr, doc_frag)
                           for nr in et_element.iterfind("NEG-RESPONSES/NEG-RESPONSE")]
 
-    additional_audiences = [read_additional_audience_from_odx(el)
+    additional_audiences = [read_additional_audience_from_odx(el, doc_frag)
                             for el in et_element.iterfind("ADDITIONAL-AUDIENCES/ADDITIONAL-AUDIENCE")]
 
     functional_classes = [
-        read_functional_class_from_odx(el) for el in et_element.iterfind("FUNCT-CLASSS/FUNCT-CLASS")]
+        read_functional_class_from_odx(el, doc_frag)
+        for el in et_element.iterfind("FUNCT-CLASSS/FUNCT-CLASS")]
 
     states = [
-        read_state_from_odx(el) for el in et_element.iterfind("STATE-CHARTS/STATE-CHART/STATES/STATE")]
+        read_state_from_odx(el, doc_frag)
+        for el in et_element.iterfind("STATE-CHARTS/STATE-CHART/STATES/STATE")]
 
     state_transitions = [
-        read_state_transition_from_odx(el) for el in
-        et_element.iterfind("STATE-CHARTS/STATE-CHART/STATE-TRANSITIONS/STATE-TRANSITION")]
+        read_state_transition_from_odx(el, doc_frag)
+        for el in et_element.iterfind("STATE-CHARTS/"
+                                      "STATE-CHART/"
+                                      "STATE-TRANSITIONS/"
+                                      "STATE-TRANSITION")]
 
     if et_element.find("DIAG-DATA-DICTIONARY-SPEC"):
         diag_data_dictionary_spec = read_diag_data_dictionary_spec_from_odx(
-            et_element.find("DIAG-DATA-DICTIONARY-SPEC"))
+            et_element.find("DIAG-DATA-DICTIONARY-SPEC"), doc_frag)
     else:
         diag_data_dictionary_spec = None
 
-    import_refs = [make_ref(ref) for ref in et_element.iterfind("IMPORT-REFS/IMPORT-REF")]
+    import_refs = [OdxLinkRef.from_et(ref, doc_frag, doc_frag)
+                   for ref in et_element.iterfind("IMPORT-REFS/IMPORT-REF")]
 
     # TODO: Are UNIT-SPEC and SDGS needed?
 
@@ -667,24 +677,24 @@ class DiagLayerContainer:
             lambda dop: dop.short_name,
             list(chain(self.ecu_shared_datas, self.protocols, self.functional_groups, self.base_variants, self.ecu_variants)))
 
-    def _build_id_lookup(self):
+    def _build_odxlinks(self):
         result = {}
         if self.admin_data is not None:
-            result.update(self.admin_data._build_id_lookup())
+            result.update(self.admin_data._build_odxlinks())
 
         if self.company_datas is not None:
             for cd in self.company_datas:
-                result.update(cd._build_id_lookup())
+                result.update(cd._build_odxlinks())
 
         return result
 
-    def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         if self.admin_data is not None:
-            self.admin_data._resolve_references(id_lookup)
+            self.admin_data._resolve_references(odxlinks)
 
         if self.company_datas is not None:
             for cd in self.company_datas:
-                cd._resolve_references(id_lookup)
+                cd._resolve_references(odxlinks)
 
 
     @property
@@ -702,24 +712,37 @@ class DiagLayerContainer:
 
 
 def read_diag_layer_container_from_odx(et_element, enable_candela_workarounds=True):
-    id = et_element.get("ID")
     short_name = et_element.find("SHORT-NAME").text
-    try:
-        long_name = et_element.find("LONG-NAME").text
-    except:
-        long_name = None
+    long_name = et_element.findtext("LONG-NAME")
+
+    # create the current ODX "document fragment" (description of the
+    # current document for references and IDs)
+    doc_frag = OdxDocFragment(short_name, et_element.tag)
+
+    id = OdxLinkId.from_et(et_element, doc_frag)
+
     description = read_description_from_odx(et_element.find("DESC"))
-    admin_data = read_admin_data_from_odx(et_element.find("ADMIN-DATA"))
-    company_datas = read_company_datas_from_odx(et_element.find("COMPANY-DATAS"))
-    ecu_shared_datas = [read_diag_layer_from_odx(dl_element, enable_candela_workarounds=enable_candela_workarounds)
+    admin_data = read_admin_data_from_odx(et_element.find("ADMIN-DATA"), doc_frag)
+    company_datas = read_company_datas_from_odx(et_element.find("COMPANY-DATAS"), doc_frag)
+    ecu_shared_datas = [read_diag_layer_from_odx(dl_element,
+                                                 doc_frag,
+                                                 enable_candela_workarounds=enable_candela_workarounds)
                         for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")]
-    protocols = [read_diag_layer_from_odx(dl_element, enable_candela_workarounds=enable_candela_workarounds)
+    protocols = [read_diag_layer_from_odx(dl_element,
+                                          doc_frag,
+                                          enable_candela_workarounds=enable_candela_workarounds)
                  for dl_element in et_element.iterfind("PROTOCOLS/PROTOCOL")]
-    functional_groups = [read_diag_layer_from_odx(dl_element, enable_candela_workarounds=enable_candela_workarounds)
+    functional_groups = [read_diag_layer_from_odx(dl_element,
+                                                  doc_frag,
+                                                  enable_candela_workarounds=enable_candela_workarounds)
                          for dl_element in et_element.iterfind("FUNCTIONAL-GROUPS/FUNCTIONAL-GROUP")]
-    base_variants = [read_diag_layer_from_odx(dl_element, enable_candela_workarounds=enable_candela_workarounds)
+    base_variants = [read_diag_layer_from_odx(dl_element,
+                                              doc_frag,
+                                              enable_candela_workarounds=enable_candela_workarounds)
                      for dl_element in et_element.iterfind("BASE-VARIANTS/BASE-VARIANT")]
-    ecu_variants = [read_diag_layer_from_odx(dl_element, enable_candela_workarounds=enable_candela_workarounds)
+    ecu_variants = [read_diag_layer_from_odx(dl_element,
+                                             doc_frag,
+                                             enable_candela_workarounds=enable_candela_workarounds)
                     for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")]
 
     return DiagLayerContainer(id,

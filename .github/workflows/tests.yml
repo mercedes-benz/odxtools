@@ -23,6 +23,6 @@ jobs:
         python3 -m unittest tests/*.py
     - name: Static type checking with mypy
       run: |
-        python3 -m mypy --ignore-missing-imports --python-version 3.8 odxtools
-        python3 -m mypy --ignore-missing-imports --python-version 3.9 odxtools
-        python3 -m mypy --ignore-missing-imports --python-version 3.10 odxtools
+        python3 -m mypy --ignore-missing-imports --python-version 3.8 odxtools tests examples
+        python3 -m mypy --ignore-missing-imports --python-version 3.9 odxtools tests examples
+        python3 -m mypy --ignore-missing-imports --python-version 3.10 odxtools tests examples

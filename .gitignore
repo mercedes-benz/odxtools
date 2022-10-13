@@ -9,7 +9,8 @@ __pycache__/
 # Coverage log
 .coverage
 
-# ide
+# IDEs
+.vscode
 .idea
 /build/
 /dist/

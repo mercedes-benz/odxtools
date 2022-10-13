@@ -17,7 +17,7 @@ from .nameditemlist import NamedItemList
 from .parameters import Parameter, ParameterWithDOP, read_parameter_from_odx
 from .parameters import CodedConstParameter, MatchingRequestParameter, ValueParameter
 from .utils import read_description_from_odx
-
+from .odxlink import OdxLinkId, OdxDocFragment
 
 class BasicStructure(DopBase):
     def __init__(self,
@@ -147,7 +147,7 @@ class BasicStructure(DopBase):
             coded_rpc = coded_rpc.ljust(self._byte_size, b'\0')
 
         for (param, encode_state) in length_encodings:
-            # Same as previous, but all bytes as 0
+            # Same as previous, but all bytes as 0.
             param_value = encode_state.length_keys[param.id]
             state = encode_state._replace(
                 coded_message=bytearray(len(encode_state.coded_message)),
@@ -289,14 +289,14 @@ class BasicStructure(DopBase):
         })
         return param_dict
 
-    def _resolve_references(self, parent_dl, id_lookup):
+    def _resolve_references(self, parent_dl, odxlinks):
         """Recursively resolve any references (odxlinks or sn-refs)
         """
         for p in self.parameters:
             if isinstance(p, ParameterWithDOP):
-                p.resolve_references(parent_dl, id_lookup)
+                p.resolve_references(parent_dl, odxlinks)
             if isinstance(p, TableKeyParameter):
-                p.resolve_references(parent_dl, id_lookup)
+                p.resolve_references(parent_dl, odxlinks)
 
     def __message_format_lines(self, allow_unknown_lengths=False):
         # sort parameters
@@ -503,12 +503,12 @@ class Response(BasicStructure):
         return f"Response('{self.short_name}')"
 
 
-def read_structure_from_odx(et_element) -> Union[Structure, Request, Response, None]:
-    id = et_element.get("ID")
+def read_structure_from_odx(et_element, doc_frag) -> Union[Structure, Request, Response, None]:
+    id = OdxLinkId.from_et(et_element, doc_frag)
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
-    parameters = [read_parameter_from_odx(et_parameter)
+    parameters = [read_parameter_from_odx(et_parameter, doc_frag)
                   for et_parameter in et_element.iterfind("PARAMS/PARAM")]
 
     res: Union[Structure, Request, Response, None]

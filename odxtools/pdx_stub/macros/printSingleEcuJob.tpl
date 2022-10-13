@@ -7,7 +7,7 @@
 {%- import('macros/printAudience.tpl') as paud %}
 
 {%- macro printSingleEcuJob(job) -%}
-<SINGLE-ECU-JOB ID="{{job.id}}"
+<SINGLE-ECU-JOB ID="{{job.id.local_id}}"
  {%- filter odxtools_collapse_xml_attribute %}
   {%- if job.oid %}
                 OID="{{job.oid}}"
@@ -43,7 +43,7 @@
 {%- if job.functional_class_refs %}
  <FUNCT-CLASS-REFS>
 {%- for ref in job.functional_class_refs %}
-  <FUNCT-CLASS-REF ID-REF="{{ref}}" />
+  <FUNCT-CLASS-REF ID-REF="{{ref.ref_id}}" />
 {%- endfor %}
  </FUNCT-CLASS-REFS>
 {%- endif %}
@@ -94,7 +94,7 @@
 {%- if prog.library_refs %}
  <LIBRARY-REFS>
  {%- for ref in prog.library_refs %}
-   <LIBRARY-REF ID-REF="{{ref}}" />
+   <LIBRARY-REF ID-REF="{{ref.ref_id}}" />
  {%- endfor %}
  </LIBRARY-REFS>
 {%- endif %}
@@ -119,12 +119,12 @@
 {%- if param.physical_default_value %}
  <PHYSICAL-DEFAULT-VALUE>{{param.physical_default_value}}</PHYSICAL-DEFAULT-VALUE>
 {%- endif %}
- <DOP-BASE-REF ID-REF="{{param.dop_base_ref}}" />
+ <DOP-BASE-REF ID-REF="{{param.dop_base_ref.ref_id}}" />
 </INPUT-PARAM>
 {%- endmacro -%}
 
 {%- macro printOutputParam(param) -%}
-<OUTPUT-PARAM ID="{{param.id}}"
+<OUTPUT-PARAM ID="{{param.id.local_id}}"
 {%- filter odxtools_collapse_xml_attribute %}
   {%- if param.oid %}
              OID="{{param.oid}}"
@@ -137,7 +137,7 @@
  {%- endfilter -%}
 >
  {{ printElementID(param)|indent(1) }}
- <DOP-BASE-REF ID-REF="{{param.dop_base_ref}}" />
+ <DOP-BASE-REF ID-REF="{{param.dop_base_ref.ref_id}}" />
 </OUTPUT-PARAM>
 {%- endmacro -%}
 
@@ -145,7 +145,7 @@
 {%- macro printNegOutputParam(param) -%}
 <NEG-OUTPUT-PARAM>
  {{ printElementID(param)|indent(1) }}
- <DOP-BASE-REF ID-REF="{{param.dop_base_ref}}" />
+ <DOP-BASE-REF ID-REF="{{param.dop_base_ref.ref_id}}" />
 </NEG-OUTPUT-PARAM>
 {%- endmacro -%}
 

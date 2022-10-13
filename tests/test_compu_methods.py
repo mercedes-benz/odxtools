@@ -13,7 +13,9 @@ from odxtools.compumethods import Limit, LinearCompuMethod, IntervalType, TabInt
 from odxtools.compumethods.readcompumethod import read_compu_method_from_odx
 from odxtools.exceptions import DecodeError, EncodeError
 from odxtools.odxtypes import DataType
+from odxtools.odxlink import OdxDocFragment
 
+doc_frag = OdxDocFragment("UnitTest", "WinneThePoh")
 
 class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_type_int_int(self):
@@ -188,6 +190,7 @@ class TestTabIntpCompuMethod(unittest.TestCase):
 
         et_element = ElementTree.fromstring(self.compumethod_odx)
         actual = read_compu_method_from_odx(et_element,
+                                            doc_frag,
                                             expected.internal_type,
                                             expected.physical_type)
         self.assertIsInstance(actual, TabIntpCompuMethod)

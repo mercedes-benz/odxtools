@@ -3,7 +3,9 @@
 
 from dataclasses import dataclass
 from typing import Optional
-from odxtools.utils import read_description_from_odx
+
+from .utils import read_description_from_odx
+from .odxlink import OdxLinkId, OdxDocFragment
 
 
 @dataclass()
@@ -11,15 +13,15 @@ class FunctionalClass:
     """
     Corresponds to FUNCT-CLASS.
     """
-    id: str
+    id: OdxLinkId
     short_name: str
     long_name: Optional[str] = None
     description: Optional[str] = None
 
 
-def read_functional_class_from_odx(et_element):
+def read_functional_class_from_odx(et_element, doc_frag):
     short_name = et_element.find("SHORT-NAME").text
-    id = et_element.get("ID")
+    id = OdxLinkId.from_et(et_element, doc_frag)
 
     long_name = et_element.find(
         "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None

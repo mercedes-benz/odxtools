@@ -5,9 +5,9 @@
 -#}
 
 {%- macro printEndOfPdu(eopdu) -%}
-<END-OF-PDU-FIELD ID="{{eopdu.id}}">
+<END-OF-PDU-FIELD ID="{{eopdu.id.local_id}}">
  <SHORT-NAME>{{eopdu.short_name}}</SHORT-NAME>
  <LONG-NAME>{{eopdu.long_name|e}}</LONG-NAME>
- <BASIC-STRUCTURE-REF ID-REF="{{eopdu.structure_ref}}" />
+ <BASIC-STRUCTURE-REF ID-REF="{{eopdu.structure_ref.ref_id}}" />
 </END-OF-PDU-FIELD>
 {%- endmacro -%}

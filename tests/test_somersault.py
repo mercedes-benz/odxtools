@@ -4,6 +4,7 @@
 import unittest
 
 from odxtools.load_pdx_file import load_pdx_file
+from odxtools.odxlink import OdxLinkRef
 
 odxdb = load_pdx_file("./examples/somersault.pdx", enable_candela_workarounds=False)
 
@@ -38,9 +39,9 @@ class TestDatabase(unittest.TestCase):
         cdi = ad.company_doc_infos
 
         self.assertEqual(len(cdi), 1)
-        self.assertEqual(cdi[0].company_data_ref, 'CD.Suncus')
+        self.assertEqual(cdi[0].company_data_ref.ref_id, 'CD.Suncus')
         self.assertTrue(cdi[0].company_data is not None)
-        self.assertEqual(cdi[0].team_member_ref, 'TM.Doggy')
+        self.assertEqual(cdi[0].team_member_ref.ref_id, 'TM.Doggy')
         self.assertTrue(cdi[0].team_member is not None)
         self.assertEqual(cdi[0].doc_label, 'A really meaningful label')
 
@@ -54,7 +55,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(mod.reason, 'we needed a new artist')
 
         self.assertEqual(dr.revision_label, '1.0')
-        self.assertEqual(dr.team_member_ref, 'TM.Doggy')
+        self.assertEqual(dr.team_member_ref.ref_id, 'TM.Doggy')
         self.assertTrue(dr.team_member is not None)
         self.assertEqual(dr.tool, 'odxtools 0.0.1')
 
@@ -71,7 +72,7 @@ class TestDatabase(unittest.TestCase):
                          ])
 
         cd = cds.Suncus
-        self.assertEqual(cd.id, 'CD.Suncus')
+        self.assertEqual(cd.id.local_id, 'CD.Suncus')
         self.assertEqual(cd.short_name, 'Suncus')
         self.assertEqual(cd.long_name, 'Circus of the sun')
         self.assertEqual(cd.description, '<p>Prestigious group of performers</p>')
@@ -84,7 +85,7 @@ class TestDatabase(unittest.TestCase):
                          ])
 
         doggy = cd.team_members.Doggy
-        self.assertEqual(doggy.id, 'TM.Doggy')
+        self.assertEqual(doggy.id.local_id, 'TM.Doggy')
         self.assertEqual(doggy.short_name, 'Doggy')
         self.assertEqual(doggy.long_name, 'Doggy the dog')
         self.assertEqual(doggy.description, "<p>Dog is man's best friend</p>")
