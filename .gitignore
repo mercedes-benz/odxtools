@@ -17,3 +17,9 @@ __pycache__/
 /bin/
 /include/
 /lib/
+
+# Virtual Environments
+.env
+.venv
+env
+venv
