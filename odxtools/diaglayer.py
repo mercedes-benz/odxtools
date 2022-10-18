@@ -441,7 +441,7 @@ class DiagLayer:
         """CAN ID to which the ECU listens for diagnostic messages"""
         # TODO (?): When using the dict notation to access comparams,
         #           wouldn't it be prettier to allow the dot in the id?
-        com_param = self.communication_parameters["ISO_15765_2__CP_UniqueRespIdTable"]
+        com_param = self.communication_parameters["ISO_15765_2__CP_UniqueRespIdTable_from_ISO_15765_2"]
         if com_param is None:
             return None
         else:
@@ -464,7 +464,7 @@ class DiagLayer:
 
     def get_send_id(self):
         """CAN ID to which the ECU sends replies to diagnostic messages"""
-        com_param = self.communication_parameters["ISO_15765_2__CP_UniqueRespIdTable"]
+        com_param = self.communication_parameters["ISO_15765_2__CP_UniqueRespIdTable_from_ISO_15765_2"]
         if com_param is None:
             return None
         else:
@@ -491,7 +491,7 @@ class DiagLayer:
 
     def get_logical_doip_address(self):
         """The logical DoIP address of the ECU."""
-        com_param = self.communication_parameters["ISO_13400_2_DIS_2015__CP_UniqueRespIdTable"]
+        com_param = self.communication_parameters["ISO_13400_2_DIS_2015__CP_UniqueRespIdTable_from_ISO_13400_2_DIS_2015"]
         return int(com_param.value[0]) if com_param is not None else 0
 
     def get_tester_present_time(self):
