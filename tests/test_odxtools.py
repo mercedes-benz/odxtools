@@ -51,13 +51,27 @@ class TestComposeUDS(unittest.TestCase):
 class TestNavigation(unittest.TestCase):
 
     def test_find_ecu_by_name(self):
-        # TODO (?): Maybe a KeyError should be raised instead of
-        # returning None if an ECU does not exist? (In this case, the
-        # calling code usually cannot proceed meaingfully anyway.)
-        ecu = odxdb.ecus["somersault_crazy"]
+        with self.assertRaises(KeyError):
+            ecu = odxdb.ecus["somersault_crazy"]
+        with self.assertRaises(KeyError):
+            ecu = odxdb.ecus[len(odxdb.ecus) + 10]
+
+        ecu = odxdb.ecus.get("somersault_crazy")
         self.assertEqual(ecu, None)
 
+        ecu = odxdb.ecus.get(len(odxdb.ecus) + 10)
+        self.assertEqual(ecu, None)
+
+        # make sure that NamedItemLists support slicing
+        ecus = odxdb.ecus[-2:]
+        self.assertEqual(len(ecus), 2)
+        self.assertEqual(ecus[0].id.local_id, "somersault_lazy")
+        self.assertEqual(ecus[1].id.local_id, "somersault_assiduous")
+
         ecu = odxdb.ecus["somersault_lazy"]
+        self.assertEqual(ecu.id.local_id, "somersault_lazy")
+
+        ecu = odxdb.ecus[0]
         self.assertEqual(ecu.id.local_id, "somersault_lazy")
 
     def test_find_service_by_name(self):

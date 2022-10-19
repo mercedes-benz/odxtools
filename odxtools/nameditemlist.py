@@ -58,8 +58,27 @@ class NamedItemList(Generic[T]):
     def __len__(self):
         return len(self._list)
 
-    def __getitem__(self, key: Union[int, str]) -> Optional[T]:
+    def __getitem__(self, key: Union[int, str]) -> T:
         if isinstance(key, int):
+            if abs(key) < -len(self._list) or key >= len(self._list):
+                # we want to raise a KeyError instead of an IndexError
+                # if the index is out of range...
+                raise KeyError(f"Tried to access item {key} of a NamedItemList "
+                               f"of length {len(self)}")
+
+            return self._list[key]
+        elif isinstance(key, slice):
+            return self._list[key]
+        else:
+            return self._typed_dict[key]
+
+    def get(self, key: Union[int, str], default: Optional[T] = None) \
+        -> Optional[T]:
+
+        if isinstance(key, int):
+            if abs(key) < -len(self._list) or key >= len(self._list):
+                return None
+
             return self._list[key]
         else:
             return self._typed_dict.get(key)
