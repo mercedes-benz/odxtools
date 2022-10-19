@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from dataclasses import dataclass, field
-from typing import List, Literal, Optional, Union
+from typing import Dict, List, Any, Literal, Optional, Union
 
 from .nameditemlist import NamedItemList
 from .utils import read_description_from_odx
@@ -147,7 +147,7 @@ class UnitGroup:
     def __post_init__(self):
         self._units = NamedItemList[Unit](lambda unit: unit.short_name)
 
-    def _resolve_references(self, odxlinks):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
         self._units = NamedItemList[Unit](
             lambda unit: unit.short_name,
             [odxlinks.resolve(ref) for ref in self.unit_refs]
@@ -184,7 +184,7 @@ class UnitSpec:
         self.physical_dimensions = NamedItemList(lambda x: x.short_name,
                                                  self.physical_dimensions)
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
         odxlinks.update({
             unit.id: unit for unit in self.units
@@ -194,7 +194,7 @@ class UnitSpec:
         })
         return odxlinks
 
-    def _resolve_references(self, odxlinks):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
         for unit in self.units:
             unit._resolve_references(odxlinks)
         for group in self.unit_groups:

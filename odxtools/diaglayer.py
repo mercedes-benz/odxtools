@@ -70,7 +70,7 @@ class DiagLayer:
             self.not_inherited_dops = not_inherited_dops
             self.ref_type = ref_type
 
-        def _resolve_references(self, odxlinks):
+        def _resolve_references(self, odxlinks: OdxLinkDatabase):
             self.parent_diag_layer = odxlinks.resolve(self.parent_ref)
             if self.parent_diag_layer is None:
                 logger.warning(
@@ -103,7 +103,7 @@ class DiagLayer:
                  negative_responses: List[Response] = [],
                  services: List[DiagService] = [],
                  single_ecu_jobs: List[SingleEcuJob] = [],
-                 diag_comm_refs: List[str] = [],
+                 diag_comm_refs: List[OdxLinkRef] = [],
                  parent_refs: List[ParentRef] = [],
                  diag_data_dictionary_spec: DiagDataDictionarySpec = None,
                  communication_parameters:
@@ -188,17 +188,21 @@ class DiagLayer:
         """All communication parameters including inherited ones."""
         return self._communication_parameters
 
-    def finalize_init(self, odxlinks=OdxLinkDatabase()):
+    def finalize_init(self, odxlinks: Optional[OdxLinkDatabase] = None):
         """Resolves all references.
 
         This method should be called whenever the diag layer (or a referenced object) was changed.
         Particularly, this method assumes that all inherited diag layer are correctly initialized,
         i.e., have resolved their references.
         """
+
+        if odxlinks is None:
+            odxlinks = OdxLinkDatabase()
+
         odxlinks.update(self._build_odxlinks())
         self._resolve_references(odxlinks)
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
         logger.info(f"Adding {self.id} to odxlinks.")
 
@@ -261,7 +265,7 @@ class DiagLayer:
             self.local_diag_data_dictionary_spec._resolve_references(self,
                                                                      odxlinks)
 
-    def __local_services_by_name(self, odxlinks) -> Dict[str, Union[DiagService, SingleEcuJob]]:
+    def __local_services_by_name(self, odxlinks: OdxLinkDatabase) -> Dict[str, Union[DiagService, SingleEcuJob]]:
         services_by_name: Dict[str, Union[DiagService, SingleEcuJob]] = {}
 
         for ref in self._diag_comm_refs:
@@ -278,7 +282,7 @@ class DiagLayer:
         })
         return services_by_name
 
-    def _compute_available_services_by_name(self, odxlinks) -> Dict[str, DiagService]:
+    def _compute_available_services_by_name(self, odxlinks: OdxLinkDatabase) -> Dict[str, DiagService]:
         """Helper method for initializing the available services.
         This computes the services that are inherited from other diagnostic layers."""
         services_by_name = {}
@@ -615,7 +619,7 @@ def read_diag_layer_from_odx(et_element,
     else:
         diag_data_dictionary_spec = None
 
-    import_refs = [OdxLinkRef.from_et(ref, doc_frag, doc_frag)
+    import_refs = [OdxLinkRef.from_et(ref, doc_frag)
                    for ref in et_element.iterfind("IMPORT-REFS/IMPORT-REF")]
 
     # TODO: Are UNIT-SPEC and SDGS needed?

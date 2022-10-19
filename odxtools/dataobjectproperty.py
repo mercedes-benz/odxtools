@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 import abc
-from typing import List, Optional, Union
+from typing import List, Dict, Optional, Any, Union
 from dataclasses import dataclass
 
 from .physicaltype import PhysicalType, read_physical_type_from_odx
@@ -13,7 +13,7 @@ from .diagcodedtypes import DiagCodedType, StandardLengthType, read_diag_coded_t
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError
-from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
+from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
 class DopBase(abc.ABC):
     """ Base class for all DOPs.
@@ -117,7 +117,7 @@ class DataObjectProperty(DopBase):
     def get_valid_physical_values(self):
         return self.compu_method.get_valid_physical_values()
 
-    def _resolve_references(self, odxlinks):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
         """Resolves the reference to the unit"""
         if self.unit_ref:
             self._unit = odxlinks.resolve(self.unit_ref)
@@ -194,8 +194,8 @@ class DtcRef:
     def is_temporary(self):
         return self.dtc.is_temporary
 
-    def _resolve_references(self, odxlinks):
-        self.dtc: Optional[DiagnosticTroubleCode] = odxlinks.resolve(self.dtc_id)
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+        self.dtc: Optional[DiagnosticTroubleCode] = odxlinks.resolve(self.dtc_id) # type: ignore
         if self.dtc is None:
             logger.debug(f"DTC-REF {self.dtc_id} could not be resolved.")
         else:
@@ -267,15 +267,16 @@ class DtcDop(DataObjectProperty):
 
         return super().convert_physical_to_bytes(trouble_code, encode_state, bit_position)
 
-    def _build_odxlinks(self):
-        odxlinks = {}
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        odxlinks: Dict[OdxLinkId, Any] = {}
         odxlinks[self.id] = self
         for dtc in self.dtcs:
             if isinstance(dtc, DiagnosticTroubleCode):
+                assert dtc.id is not None
                 odxlinks[dtc.id] = dtc
         return odxlinks
 
-    def _resolve_references(self, odxlinks):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
         for dtc in self.dtcs:
             if isinstance(dtc, DtcRef):
                 dtc._resolve_references(odxlinks)

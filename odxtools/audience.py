@@ -4,7 +4,7 @@
 from dataclasses import dataclass, field
 from typing import Optional, List
 from odxtools.utils import read_description_from_odx
-from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
+from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
 @dataclass()
 class Audience:
@@ -27,7 +27,7 @@ class Audience:
     def disabled_audiences(self):
         return self._disabled_audiences
 
-    def _resolve_references(self, odxlinks):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
         self._enabled_audiences = [odxlinks.resolve(ref)
                                    for ref in self.enabled_audience_refs]
         self._disabled_audiences = [odxlinks.resolve(ref)

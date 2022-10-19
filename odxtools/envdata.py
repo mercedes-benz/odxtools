@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from dataclasses import dataclass
+from typing import Dict, Any
 
 from .parameters import read_parameter_from_odx
 from .utils import read_description_from_odx
@@ -25,7 +26,7 @@ class EnvironmentData(BasicStructure):
             id, short_name, parameters, long_name=long_name, description=description
         )
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
         odxlinks.update({self.id: self})
         return odxlinks

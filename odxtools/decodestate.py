@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import Any, Dict, List, NamedTuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, NamedTuple, Union
+
+if TYPE_CHECKING:
+    from .parameters.parameterbase import Parameter
 
 class ParameterValuePair(NamedTuple):
-    parameter: Any  # This should be "Parameter" but that would lead to cyclic imports
+    parameter: "Parameter"
     value: Union[str, int, bytes, bytearray, Dict]
-
 
 class DecodeState(NamedTuple):
     """Utility class to be used while decoding a message."""

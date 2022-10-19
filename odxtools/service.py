@@ -9,7 +9,7 @@ from .state import State
 from .utils import read_description_from_odx
 from .exceptions import DecodeError
 from .parameters import Parameter
-from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
+from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 from .state_transition import StateTransition
 from .structures import Request, Response
 from .nameditemlist import NamedItemList
@@ -142,7 +142,7 @@ class DiagService:
     def state_transitions(self):
         return self._state_transitions
 
-    def _resolve_references(self, odxlinks):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
         self._request = odxlinks.resolve(self.request_ref)
         self._positive_responses = \
             NamedItemList(

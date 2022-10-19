@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Dict, Optional, Any
 
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
 from .globals import logger
@@ -30,7 +30,7 @@ class EnvironmentDataDescription(DopBase):
 
         # TODO: resolve the references!
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
         odxlinks.update({self.id: self})
         return odxlinks

@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Optional
+from typing import TYPE_CHECKING, Optional, Any, Dict
 
 from .dataobjectproperty import (
     DataObjectProperty,
@@ -19,8 +19,10 @@ from .nameditemlist import NamedItemList
 from .structures import Structure, read_structure_from_odx
 from .table import read_table_from_odx, Table
 from .units import read_unit_spec_from_odx, UnitSpec
-from .odxlink import OdxLinkDatabase
+from .odxlink import OdxLinkId, OdxLinkDatabase
 
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 def _construct_named_item_list(iterable):
     return NamedItemList(lambda x: x.short_name, iterable)
@@ -91,7 +93,7 @@ class DiagDataDictionarySpec:
         if not isinstance(self.muxs, NamedItemList):
             self.muxs = _construct_named_item_list(self.muxs)
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
         for obj in chain(
             self.data_object_props, self.structures, self.end_of_pdu_fields, self.tables
@@ -118,7 +120,9 @@ class DiagDataDictionarySpec:
 
         return odxlinks
 
-    def _resolve_references(self, parent_dl, odxlinks: OdxLinkDatabase):
+    def _resolve_references(self,
+                            parent_dl: "DiagLayer",
+                            odxlinks: OdxLinkDatabase):
         for dop in chain(
             self.dtc_dops,
             self.data_object_props,

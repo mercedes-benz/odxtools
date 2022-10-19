@@ -110,7 +110,7 @@ class Table(TableBase):
         """The table rows (both local and referenced) in this table."""
         return self._local_table_rows + self._ref_table_rows
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
         odxlinks.update({table_row.id: table_row for table_row in self.table_rows})
         return odxlinks

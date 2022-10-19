@@ -1,13 +1,17 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import List, Union
+from typing import TYPE_CHECKING, Any, List, Union
+
 from .utils import read_description_from_odx
-from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
+from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 from .structures import BasicStructure
 from .dataobjectproperty import DopBase
 from .decodestate import DecodeState
 from .encodestate import EncodeState
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 
 class EndOfPduField(DopBase):
@@ -84,7 +88,10 @@ class EndOfPduField(DopBase):
 
         return value, next_byte_position
 
-    def _resolve_references(self, parent_dl, odxlinks):
+    def _resolve_references(self,
+                            parent_dl: "DiagLayer",
+                            odxlinks: OdxLinkDatabase) \
+     -> None:
         """Recursively resolve any references (odxlinks or sn-refs)
         """
         if self.structure_ref is not None:

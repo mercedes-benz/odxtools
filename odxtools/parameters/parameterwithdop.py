@@ -9,7 +9,7 @@ from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..physicaltype import PhysicalType
 from ..globals import logger
-from ..odxlink import OdxLinkRef
+from ..odxlink import OdxLinkRef, OdxLinkDatabase
 
 from .parameterbase import Parameter
 
@@ -44,7 +44,7 @@ class ParameterWithDOP(Parameter):
         else:
             self.dop_snref = dop.short_name
 
-    def resolve_references(self, parent_dl, odxlinks):
+    def resolve_references(self, parent_dl, odxlinks: OdxLinkDatabase):
         dop = self.dop
         if self.dop_snref:
             dop = parent_dl.data_object_properties.get(self.dop_snref)

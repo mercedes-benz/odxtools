@@ -3,10 +3,10 @@
 
 from .nameditemlist import NamedItemList
 from .utils import read_description_from_odx
-from .odxlink import OdxLinkId
+from .odxlink import OdxLinkId, OdxLinkDatabase
 
 from dataclasses import dataclass, field
-from typing import Optional, List
+from typing import Optional, Any, Dict, List
 
 @dataclass()
 class XDoc:
@@ -54,7 +54,7 @@ class CompanyData:
     team_members: Optional[NamedItemList[TeamMember]] = None
     company_specific_info: Optional[CompanySpecificInfo] = None
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = { self.id: self }
 
         # team members
@@ -64,7 +64,7 @@ class CompanyData:
 
         return result
 
-    def _resolve_references(self, odxlinks):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
         pass
 
 def read_xdoc_from_odx(xdoc):

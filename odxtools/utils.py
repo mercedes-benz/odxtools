@@ -6,10 +6,10 @@ from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment
 
-def read_description_from_odx(et_element: ElementTree.Element):
+def read_description_from_odx(et_element: Optional[ElementTree.Element]):
     """Read a DESCRIPTION element. The element usually has the name DESC."""
     # TODO: Invent a better representation of a DESC element.
-    #       This just represents it as XHTML string. 
+    #       This just represents it as XHTML string.
     if et_element is None:
         return None
 

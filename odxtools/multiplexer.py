@@ -233,7 +233,7 @@ class Multiplexer(DopBase):
             )
         return mux_value, mux_next_byte
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
         odxlinks.update({self.id: self})
         return odxlinks

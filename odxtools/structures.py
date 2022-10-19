@@ -2,11 +2,11 @@
 # Copyright (c) 2022 MBition GmbH
 
 import math
-from typing import List, Dict, Iterable, OrderedDict, Tuple, Union
+from typing import TYPE_CHECKING, Any, List, Dict, Iterable, OrderedDict, Tuple, Union
 import warnings
 
-from odxtools.parameters.tablekeyparameter import TableKeyParameter
-from odxtools.parameters.lengthkeyparameter import LengthKeyParameter
+from .parameters.tablekeyparameter import TableKeyParameter
+from .parameters.lengthkeyparameter import LengthKeyParameter
 
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState, ParameterValuePair
@@ -17,18 +17,22 @@ from .nameditemlist import NamedItemList
 from .parameters import Parameter, ParameterWithDOP, read_parameter_from_odx
 from .parameters import CodedConstParameter, MatchingRequestParameter, ValueParameter
 from .utils import read_description_from_odx
-from .odxlink import OdxLinkId, OdxDocFragment
+from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
+    from .endofpdufield import EndOfPduField
 
 class BasicStructure(DopBase):
     def __init__(self,
                  id,
                  short_name,
-                 parameters: Iterable[Union[Parameter, "EndOfPduField"]], # type: ignore
+                 parameters: Iterable[Union[Parameter, "EndOfPduField"]],
                  long_name=None,
                  byte_size=None,
                  description=None):
         super().__init__(id, short_name, long_name=long_name, description=description)
-        self.parameters : NamedItemList[Union[Parameter, "EndOfPduField"]] = NamedItemList(lambda par: par.short_name, parameters) # type: ignore
+        self.parameters : NamedItemList[Union["Parameter", "EndOfPduField"]] = NamedItemList(lambda par: par.short_name, parameters)
 
         self._byte_size = byte_size
 
@@ -291,7 +295,9 @@ class BasicStructure(DopBase):
         })
         return param_dict
 
-    def _resolve_references(self, parent_dl, odxlinks):
+    def _resolve_references(self,
+                            parent_dl: "DiagLayer",
+                            odxlinks: OdxLinkDatabase):
         """Recursively resolve any references (odxlinks or sn-refs)
         """
         for p in self.parameters:

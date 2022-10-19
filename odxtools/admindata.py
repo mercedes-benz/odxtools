@@ -3,11 +3,11 @@
 
 from .nameditemlist import NamedItemList
 from .companydata import CompanyData, TeamMember
-from .odxlink import OdxLinkRef
+from .odxlink import OdxLinkId, OdxLinkRef, OdxLinkDatabase
 from .utils import read_description_from_odx
 
 from dataclasses import dataclass, field
-from typing import Optional, List
+from typing import Optional, Any, Dict, List
 
 @dataclass()
 class CompanyDocInfo:
@@ -17,7 +17,7 @@ class CompanyDocInfo:
     team_member: Optional[TeamMember] = None
     doc_label: Optional[str] = None
 
-    def _resolve_references(self, odxlinks):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
         self.company_data = odxlinks.resolve(self.company_data_ref)
 
         if self.team_member_ref is not None:
@@ -41,7 +41,7 @@ class DocRevision:
     tool: Optional[str] = None
     modifications: List[Modification] = field(default_factory=list)
 
-    def _resolve_references(self, odxlinks):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
         if self.team_member_ref is not None:
             self.team_member = odxlinks.resolve(self.team_member_ref)
 
@@ -51,12 +51,12 @@ class AdminData:
     company_doc_infos: Optional[List[CompanyDocInfo]] = None
     doc_revisions: Optional[List[DocRevision]] = None
 
-    def _build_odxlinks(self):
-        result = {}
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result: Dict[OdxLinkId, Any] = {}
 
         return result
 
-    def _resolve_references(self, odxlinks):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
         if self.company_doc_infos is not None:
             for cdi in self.company_doc_infos:
                 cdi._resolve_references(odxlinks)
