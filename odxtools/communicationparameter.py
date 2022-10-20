@@ -33,8 +33,11 @@ class CommunicationParameterRef:
 
         return f"CommunicationParameter('{self.id_ref}', value={val})"
 
-    def _python_name(self):
-        return self.id_ref.ref_id.replace(".", "__")
+    def _python_name(self) -> str:
+        # ODXLINK IDs allow dots and hyphens, but python identifiers
+        # do not. since _python_name() must return the latter, we have
+        # to replace these characters...
+        return self.id_ref.ref_id.replace(".", "__").replace("-", "_")
 
 
 def _read_complex_value_from_odx(et_element):
