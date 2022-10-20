@@ -90,7 +90,7 @@ class DiagLayer:
             return dops
 
         def get_inherited_communication_parameters_by_name(self):
-            return {cp.id_ref: cp for cp in self.parent_diag_layer._communication_parameters}
+            return {cp.id_ref.ref_id: cp for cp in self.parent_diag_layer._communication_parameters}
 
     def __init__(self,
                  variant_type,
@@ -444,11 +444,11 @@ class DiagLayer:
                 f"None of the services {possible_services} could parse {response.hex()}.")
         return decoded_messages
 
-    def get_receive_id(self):
+    def get_receive_id(self) -> Optional[int]:
         """CAN ID to which the ECU listens for diagnostic messages"""
         # TODO (?): When using the dict notation to access comparams,
         #           wouldn't it be prettier to allow the dot in the id?
-        com_param = self.communication_parameters["ISO_15765_2__CP_UniqueRespIdTable"]
+        com_param = self.communication_parameters.get("ISO_15765_2__CP_UniqueRespIdTable")
         if com_param is None:
             return None
         else:
@@ -469,39 +469,36 @@ class DiagLayer:
                 # fragment of the ASAM MCD2-D standard.
                 return int(com_param.value[1])
 
-    def get_send_id(self):
+    def get_send_id(self) -> Optional[int]:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
-        com_param = self.communication_parameters["ISO_15765_2__CP_UniqueRespIdTable"]
+        com_param = self.communication_parameters.get("ISO_15765_2__CP_UniqueRespIdTable")
         if com_param is None:
             return None
-        else:
-            if self._enable_candela_workarounds:
-                # assume the parameter order used by CANdela studio.
-                # note that the parameter odering actually used
-                # differs from the one of the COMPARAM fragment
-                # delivered by CANdela generated PDX files and that
-                # both are different from the one of the COMPARAM
-                # fragment included in the MCD2-D standard
-                return int(com_param.value[5])
-            else:
-                # assume the parameter order specified by the COMPARAM
-                # fragment of the ASAM MCD2-D standard.
-                return int(com_param.value[4])
 
-    def get_can_func_req_id(self):
+        if self._enable_candela_workarounds:
+            # assume the parameter order used by CANdela studio.
+            # note that the parameter odering actually used
+            # differs from the one of the COMPARAM fragment
+            # delivered by CANdela generated PDX files and that
+            # both are different from the one of the COMPARAM
+            # fragment included in the MCD2-D standard
+            return int(com_param.value[5])
+        else:
+            # assume the parameter order specified by the COMPARAM
+            # fragment of the ASAM MCD2-D standard.
+            return int(com_param.value[4])
+
+    def get_can_func_req_id(self) -> Optional[int]:
         """CAN Functional Request Id."""
-        com_param = self.communication_parameters["ISO_15765_2__CP_CanFuncReqId"]
-        if com_param is None:
-            return None
-        else:
-            return int(com_param.value)
+        com_param = self.communication_parameters.get("ISO_15765_2__CP_CanFuncReqId")
+        return int(com_param.value) if com_param is not None else None
 
-    def get_logical_doip_address(self):
+    def get_logical_doip_address(self) -> Optional[int]:
         """The logical DoIP address of the ECU."""
-        com_param = self.communication_parameters["ISO_13400_2_DIS_2015__CP_UniqueRespIdTable"]
+        com_param = self.communication_parameters.get("ISO_13400_2_DIS_2015__CP_UniqueRespIdTable")
         return int(com_param.value[0]) if com_param is not None else 0
 
-    def get_tester_present_time(self):
+    def get_tester_present_time(self) -> Optional[float]:
         """Timeout on inactivity in seconds.
 
         This is defined by the communication parameter "ISO_14230_3.CP_TesterPresentTime".
@@ -510,7 +507,7 @@ class DiagLayer:
         Description of the comparam: "Time between a response and the next subsequent tester present message
         (if no other request is sent to this ECU) in case of physically addressed requests."
         """
-        cps = list(filter(lambda x: x.id_ref == "ISO_14230_3.CP_TesterPresentTime",
+        cps = list(filter(lambda x: x.id_ref.ref_id == "ISO_14230_3.CP_TesterPresentTime",
                           self.communication_parameters))
         if len(cps):
             assert len(cps) == 1
