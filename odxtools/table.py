@@ -141,10 +141,10 @@ class Table(TableBase):
         )
 
 
-def _get_common_props(et_element, doc_frag):
+def _get_common_props(et_element, doc_frags: List[OdxDocFragment]):
     description = read_description_from_odx(et_element.find("DESC"))
     return dict(
-        id=OdxLinkId.from_et(et_element, doc_frag),
+        id=OdxLinkId.from_et(et_element, doc_frags),
         short_name=et_element.findtext("SHORT-NAME"),
         long_name=et_element.findtext("LONG-NAME"),
         semantic=et_element.get("SEMANTIC"),
@@ -152,47 +152,47 @@ def _get_common_props(et_element, doc_frag):
     )
 
 
-def read_table_row_from_odx(et_element, doc_frag):
+def read_table_row_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
+    -> TableRow:
     """Reads a TABLE-ROW."""
     key = et_element.find("KEY").text
     structure_ref = None
     if et_element.find("STRUCTURE-REF") is not None:
-        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frag)
+        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
     dop_ref = None
     if et_element.find("DATA-OBJECT-PROP-REF") is not None:
-        dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frag)
+        dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
 
-    table_row = TableRow(
+    return TableRow(
         key=key,
         structure_ref=structure_ref,
         dop_ref=dop_ref,
-        **_get_common_props(et_element, doc_frag)
+        **_get_common_props(et_element, doc_frags)
     )
 
-    return table_row
 
-
-def read_table_from_odx(et_element, doc_frag):
+def read_table_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
+    -> Table:
     """Reads a TABLE."""
     short_name = et_element.find("SHORT-NAME").text
     key_dop_ref = None
     if et_element.find("KEY-DOP-REF") is not None:
-        key_dop_ref = OdxLinkRef.from_et(et_element.find("KEY-DOP-REF"), doc_frag)
+        key_dop_ref = OdxLinkRef.from_et(et_element.find("KEY-DOP-REF"), doc_frags)
     logger.debug("Parsing TABLE " + short_name)
 
     table_rows = [
-        read_table_row_from_odx(el, doc_frag) for el in et_element.iterfind("TABLE-ROW")
+        read_table_row_from_odx(el, doc_frags) for el in et_element.iterfind("TABLE-ROW")
     ]
 
-    table_row_refs = [
-        OdxLinkRef.from_et(el, doc_frag) for el in et_element.iterfind("TABLE-ROW-REF")
-    ]
+    table_row_refs = [ ]
+    for el in et_element.iterfind("TABLE-ROW-REF"):
+        ref = OdxLinkRef.from_et(el, doc_frags)
+        assert ref is not None
+        table_row_refs.append(ref)
 
-    table = Table(
+    return Table(
         key_dop_ref=key_dop_ref,
         table_rows=table_rows,
         table_row_refs=table_row_refs,
-        **_get_common_props(et_element, doc_frag)
+        **_get_common_props(et_element, doc_frags)
     )
-
-    return table

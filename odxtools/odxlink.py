@@ -5,7 +5,9 @@ import typing
 
 from dataclasses import dataclass, field
 from xml.etree.ElementTree import Element
-from typing import Optional, Any
+from typing import Optional, Any, List
+
+from .globals import logger
 
 @dataclass(frozen=True)
 class OdxDocFragment:
@@ -22,7 +24,7 @@ class OdxDocFragment:
 
     def __hash__(self) -> int:
         # only the document name is relevant for the hash value
-        return self.doc_name.__hash__()
+        return hash(self.doc_name) + hash(self.doc_type)
 
 @dataclass(frozen=True)
 class OdxLinkId:
@@ -41,24 +43,25 @@ class OdxLinkId:
 
     #: The name and type of the document fragment to which the
     #: `local_id` is relative to
-    doc_fragment : Optional[OdxDocFragment]
+    doc_fragments : List[OdxDocFragment]
 
     def __hash__(self) -> int:
-        return self.local_id.__hash__()
+        # we do not hash about the document fragment here, because
+        # document fragments are handled using separate sub-databases,
+        # i.e. the same OdxId object can be put into all of them.
+        return hash(self.local_id)
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, OdxLinkId):
             return False
 
-        if self.doc_fragment is None or other.doc_fragment is None:
-            return self.local_id == other.local_id
-
-        return \
-            self.local_id == other.local_id and \
-            self.doc_fragment == other.doc_fragment
+        # we do take the document fragment into consideration here, because
+        # document fragments are handled using separate sub-databases,
+        # i.e. the same OdxId object can be put into all of them.
+        return self.local_id == other.local_id
 
     @staticmethod
-    def from_et(et: Element, doc_fragment: OdxDocFragment) -> Optional["OdxLinkId"]:
+    def from_et(et: Element, doc_fragments: List[OdxDocFragment]) -> Optional["OdxLinkId"]:
         """Construct an OdxLinkId for a given XML node (ElementTree object).
 
         Returns None if the given XML node does not exhibit an ID.
@@ -68,7 +71,7 @@ class OdxLinkId:
         if local_id is None:
             return None
 
-        return OdxLinkId(local_id, doc_fragment)
+        return OdxLinkId(local_id, doc_fragments)
 
 from typing import Dict, Union, Optional, Any
 from dataclasses import dataclass, field, replace
@@ -86,11 +89,11 @@ class OdxLinkRef:
     #: The local identifier of the object which is referred to
     ref_id : str
 
-    #: The name of the document to which the `ref_id` refers to.
-    ref_doc : Optional[OdxDocFragment] = None
+    #: The document fragments to which the `ref_id` refers to (in reverse order)
+    ref_docs : List[OdxDocFragment]
 
     @staticmethod
-    def from_et(et: Optional[Element], source_doc: OdxDocFragment) -> Optional["OdxLinkRef"]:
+    def from_et(et: Optional[Element], source_doc_frags: List[OdxDocFragment]) -> Optional["OdxLinkRef"]:
         """Construct an OdxLinkRef for a given XML node (ElementTree object).
 
         Returns None if the given XML node does not represent a reference.
@@ -115,29 +118,30 @@ class OdxLinkRef:
         # reference, use it, else use the document fragment containing
         # the reference.
         if doc_ref is not None:
-            doc_frag = OdxDocFragment(doc_ref, doc_type)
+            doc_frags = [OdxDocFragment(doc_ref, doc_type)]
         else:
-            doc_frag = source_doc
+            doc_frags = source_doc_frags
 
-        return OdxLinkRef(id_ref, doc_frag)
+        return OdxLinkRef(id_ref, doc_frags)
 
     @staticmethod
     def from_id(odxid: OdxLinkId) -> "OdxLinkRef":
         """Construct an OdxLinkRef for a given OdxLinkId.
         """
-        return OdxLinkRef(odxid.local_id, odxid.doc_fragment)
+        return OdxLinkRef(odxid.local_id, odxid.doc_fragments)
 
     def __contains__(self, id: OdxLinkId) -> bool:
         """
         Returns true iff a given OdxLinkId object is referenced.
         """
 
-        if self.ref_doc is None or id.doc_fragment is None:
-            return id.local_id == self.ref_id
+        # we must reference at to at least of the ID's document
+        # fragments
+        if not any([ref_doc in id.doc_fragments for ref_doc in self.ref_docs]):
+            return False
 
-        return \
-            id.local_id == self.ref_id and \
-            id.doc_fragment == self.ref_doc
+        # the local ID of the reference and the object ID must match
+        return id.local_id == self.ref_id
 
 class OdxLinkDatabase:
     """
@@ -147,7 +151,7 @@ class OdxLinkDatabase:
     """
 
     def __init__(self):
-        self._db = {}
+        self._db: Dict[OdxDocFragment, Dict[OdxLinkId, Any]] = {}
 
     def resolve(self, ref: OdxLinkRef) -> Any:
         """
@@ -158,10 +162,23 @@ class OdxLinkDatabase:
         """
         assert isinstance(ref, OdxLinkRef)
 
-        id = OdxLinkId(local_id=ref.ref_id,
-                       doc_fragment=ref.ref_doc)
+        odx_link_id = OdxLinkId(ref.ref_id, ref.ref_docs)
+        for ref_frag in reversed(ref.ref_docs):
+            doc_frag_db = self._db.get(ref_frag)
+            if doc_frag_db is None:
+                # No object featured by the database uses the document
+                # fragment mentioned by the reference. This should not
+                # happen for correct databases...
+                logger.info(f"Warning: Unknown document fragment {ref_frag} "
+                            f"when resolving reference {ref}")
+                continue
 
-        return self._db[id]
+            obj = doc_frag_db.get(odx_link_id)
+            if obj is not None:
+                return obj
+
+        raise KeyError(f"ODXLINK reference {ref} could not be resolved for any "
+                       f"of the document fragments {ref.ref_docs}")
 
     def resolve_lenient(self, ref: OdxLinkRef) -> Optional[Any]:
         """
@@ -172,10 +189,22 @@ class OdxLinkDatabase:
         """
         assert isinstance(ref, OdxLinkRef)
 
-        id = OdxLinkId(local_id=ref.ref_id,
-                       doc_fragment=ref.ref_doc)
+        odx_link_id = OdxLinkId(ref.ref_id, ref.ref_docs)
+        for ref_frag in reversed(ref.ref_docs):
+            doc_frag_db = self._db.get(ref_frag)
+            if doc_frag_db is None:
+                # No object featured by the database uses the document
+                # fragment mentioned by the reference. This should not
+                # happen for correct databases...
+                logger.info(f"Warning: Unknown document fragment {ref_frag} "
+                            f"when resolving reference {ref}")
+                continue
 
-        return self._db.get(id)
+            obj = doc_frag_db.get(odx_link_id)
+            if obj is not None:
+                return obj
+
+        return None
 
     def update(self, new_entries : Dict[OdxLinkId, Any]) -> None:
         """
@@ -183,4 +212,12 @@ class OdxLinkDatabase:
 
         The argument needs to be an OdxLinkId -> object dictionary.
         """
-        self._db.update(new_entries)
+
+        # put all new objects into the databases for the document
+        # fragments which it specifies
+        for odx_link_id, obj in new_entries.items():
+            for doc_frag in odx_link_id.doc_fragments:
+                if doc_frag not in self._db:
+                    self._db[doc_frag] = dict()
+
+                doc_frag_db = self._db[doc_frag][odx_link_id] = obj

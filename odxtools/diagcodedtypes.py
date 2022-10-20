@@ -3,14 +3,14 @@
 
 import abc
 import math
-from typing import Any, Union
+from typing import Any, Union, List
 
 from .odxtypes import DataType
 from .exceptions import DecodeError, EncodeError
 from .globals import xsi, logger
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .odxlink import OdxLinkId
+from .odxlink import OdxLinkId, OdxDocFragment
 
 import bitstruct
 
@@ -524,7 +524,7 @@ class StandardLengthType(DiagCodedType):
         return self.__repr__()
 
 
-def read_diag_coded_type_from_odx(et_element, doc_frag):
+def read_diag_coded_type_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     base_type_encoding = et_element.get("BASE-TYPE-ENCODING")
 
     base_data_type = et_element.get("BASE-DATA-TYPE")
@@ -570,7 +570,7 @@ def read_diag_coded_type_from_odx(et_element, doc_frag):
         # between document fragments, the encoding process will go
         # wrong...
         length_key_elem = et_element.find("LENGTH-KEY-REF")
-        length_key_id = OdxLinkId(length_key_elem.attrib["ID-REF"], None)
+        length_key_id = OdxLinkId(length_key_elem.attrib["ID-REF"], doc_frags)
 
         return ParamLengthInfoType(base_data_type,
                                    length_key_id,

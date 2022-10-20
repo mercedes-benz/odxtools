@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 
 from .utils import read_description_from_odx
 from .odxlink import OdxLinkId, OdxDocFragment
@@ -19,9 +19,10 @@ class FunctionalClass:
     description: Optional[str] = None
 
 
-def read_functional_class_from_odx(et_element, doc_frag):
+def read_functional_class_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     short_name = et_element.find("SHORT-NAME").text
-    id = OdxLinkId.from_et(et_element, doc_frag)
+    id = OdxLinkId.from_et(et_element, doc_frags)
+    assert id is not None
 
     long_name = et_element.find(
         "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None

@@ -282,7 +282,7 @@ class DtcDop(DataObjectProperty):
                 dtc._resolve_references(odxlinks)
 
 
-def read_dtc_from_odx(et_element, doc_frag):
+def read_dtc_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     if et_element.find("DISPLAY-TROUBLE-CODE") is not None:
         display_trouble_code = et_element.find("DISPLAY-TROUBLE-CODE").text
     else:
@@ -293,7 +293,7 @@ def read_dtc_from_odx(et_element, doc_frag):
     else:
         level = None
 
-    return DiagnosticTroubleCode(id=OdxLinkId.from_et(et_element, doc_frag),
+    return DiagnosticTroubleCode(id=OdxLinkId.from_et(et_element, doc_frags),
                                  short_name=et_element.find("SHORT-NAME").text,
                                  trouble_code=int(
                                      et_element.find("TROUBLE-CODE").text),
@@ -302,9 +302,11 @@ def read_dtc_from_odx(et_element, doc_frag):
                                  level=level)
 
 
-def read_data_object_property_from_odx(et_element, doc_frag):
+def read_data_object_property_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
+    -> DataObjectProperty:
     """Reads a DATA-OBJECT-PROP or a DTC-DOP."""
-    id = OdxLinkId.from_et(et_element, doc_frag)
+    id = OdxLinkId.from_et(et_element, doc_frags)
+    assert id is not None
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME").text
     description = et_element.find("DESCRIPTION").text if et_element.find(
@@ -312,15 +314,15 @@ def read_data_object_property_from_odx(et_element, doc_frag):
     logger.debug('Parsing DOP ' + short_name)
 
     diag_coded_type = read_diag_coded_type_from_odx(
-        et_element.find("DIAG-CODED-TYPE"), doc_frag)
+        et_element.find("DIAG-CODED-TYPE"), doc_frags)
 
     physical_type = read_physical_type_from_odx(
-        et_element.find("PHYSICAL-TYPE"), doc_frag)
+        et_element.find("PHYSICAL-TYPE"), doc_frags)
     compu_method = read_compu_method_from_odx(et_element.find(
-        "COMPU-METHOD"), doc_frag, diag_coded_type.base_data_type, physical_type.base_data_type)
+        "COMPU-METHOD"), doc_frags, diag_coded_type.base_data_type, physical_type.base_data_type)
 
     if et_element.tag == "DATA-OBJECT-PROP":
-        unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frag)
+        unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
         dop = DataObjectProperty(id,
                                  short_name,
                                  diag_coded_type,
@@ -330,9 +332,9 @@ def read_data_object_property_from_odx(et_element, doc_frag):
                                  long_name=long_name,
                                  description=description)
     else:
-        dtcs = [read_dtc_from_odx(el, doc_frag)
+        dtcs = [read_dtc_from_odx(el, doc_frags)
                 for el in et_element.iterfind("DTCS/DTC")]
-        dtcs += [DtcRef(OdxLinkRef.from_et(el, doc_frag))
+        dtcs += [DtcRef(OdxLinkRef.from_et(el, doc_frags))
                  for el in et_element.iterfind("DTCS/DTC-REF")]
 
         is_visible = et_element.get("IS-VISIBLE") == "true"

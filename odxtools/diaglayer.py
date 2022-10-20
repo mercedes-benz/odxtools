@@ -3,6 +3,7 @@
 
 from itertools import chain
 from typing import Optional, Any, Dict, Iterable, List, Union
+from copy import copy
 import warnings
 
 from .exceptions import *
@@ -204,9 +205,8 @@ class DiagLayer:
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
-        logger.info(f"Adding {self.id} to odxlinks.")
-
         odxlinks = {}
+
         for obj in chain(self._local_services,
                          self._local_single_ecu_jobs,
                          self.requests,
@@ -322,7 +322,7 @@ class DiagLayer:
                 parent_ref.get_inherited_communication_parameters_by_name())
 
         com_params_by_name.update(
-            {cp.id_ref: cp for cp in self._local_communication_parameters})
+            {cp.id_ref.ref_id: cp for cp in self._local_communication_parameters})
         return com_params_by_name
 
     def _get_parent_refs_sorted_by_priority(self, reverse=False):
@@ -536,8 +536,10 @@ class DiagLayer:
         return f"DiagLayer('{self.short_name}', type='{self.variant_type}')"
 
 
-def read_parent_ref_from_odx(et_element, doc_frag):
-    parent_ref = OdxLinkRef.from_et(et_element, doc_frag)
+def read_parent_ref_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
+    -> DiagLayer.ParentRef:
+    parent_ref = OdxLinkRef.from_et(et_element, doc_frags)
+    assert parent_ref is not None
 
     not_inherited_diag_comms = [el.get("SHORT-NAME")
                                 for el in et_element.iterfind("NOT-INHERITED-DIAG-COMMS/NOT-INHERITED-DIAG-COMM/DIAG-COMM-SNREF")]
@@ -554,57 +556,77 @@ def read_parent_ref_from_odx(et_element, doc_frag):
 
 
 def read_diag_layer_from_odx(et_element,
-                             doc_frag,
-                             enable_candela_workarounds=True):
+                             doc_frags: List[OdxDocFragment],
+                             enable_candela_workarounds=True) \
+    -> DiagLayer:
 
-    # logger.info(et_element)
     variant_type = et_element.tag
-
-    id = OdxLinkId.from_et(et_element, doc_frag)
     short_name = et_element.find("SHORT-NAME").text
-
     long_name = et_element.findtext("LONG-NAME")
+
+    logger.info(f"Parsing diagnostic layer '{short_name}' "
+                f"of type {variant_type} ...")
+
+    # extend the applicable ODX "document fragments" for the diag layer objects
+    doc_frags = copy(doc_frags)
+    doc_frags.append(OdxDocFragment(short_name, "LAYER"))
+
+    id = OdxLinkId.from_et(et_element, doc_frags)
+
     description = read_description_from_odx(et_element.find("DESC"))
 
-    logger.info(f"Parsing {variant_type} '{short_name}' ...")
-
     # Parse DiagServices
-    services = [read_diag_service_from_odx(service, doc_frag)
+    services = [read_diag_service_from_odx(service, doc_frags)
                 for service in et_element.iterfind("DIAG-COMMS/DIAG-SERVICE")]
-    diag_comm_refs = [OdxLinkRef.from_et(service, doc_frag)
-                      for service in et_element.iterfind("DIAG-COMMS/DIAG-COMM-REF")]
-    single_ecu_jobs = [read_single_ecu_job_from_odx(sej, doc_frag)
+    diag_comm_refs = []
+    for service in et_element.iterfind("DIAG-COMMS/DIAG-COMM-REF"):
+        ref = OdxLinkRef.from_et(service, doc_frags)
+        assert ref is not None
+        diag_comm_refs.append(ref)
+
+    single_ecu_jobs = [read_single_ecu_job_from_odx(sej, doc_frags)
                        for sej in et_element.iterfind("DIAG-COMMS/SINGLE-ECU-JOB")]
 
     # Parse ParentRefs
-    parent_refs = [read_parent_ref_from_odx(pr_el, doc_frag)
+    parent_refs = [read_parent_ref_from_odx(pr_el, doc_frags)
                    for pr_el in et_element.iterfind("PARENT-REFS/PARENT-REF")]
 
     # Parse communication parameter refs
-    com_params = [read_communication_param_ref_from_odx(el, doc_frag)
+    com_params = [read_communication_param_ref_from_odx(el, doc_frags)
                   for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")]
 
     # Parse Requests and Responses
-    requests = [read_structure_from_odx(rq, doc_frag)
-                for rq in et_element.iterfind("REQUESTS/REQUEST")]
-    positive_responses = [read_structure_from_odx(pr, doc_frag)
-                          for pr in et_element.iterfind("POS-RESPONSES/POS-RESPONSE")]
-    negative_responses = [read_structure_from_odx(nr, doc_frag)
-                          for nr in et_element.iterfind("NEG-RESPONSES/NEG-RESPONSE")]
+    requests = []
+    for rq_elem in et_element.iterfind("REQUESTS/REQUEST"):
+        rq = read_structure_from_odx(rq_elem, doc_frags)
+        assert isinstance(rq, Request)
+        requests.append(rq)
 
-    additional_audiences = [read_additional_audience_from_odx(el, doc_frag)
+    positive_responses = []
+    for pr_elem in et_element.iterfind("POS-RESPONSES/POS-RESPONSE"):
+        pr = read_structure_from_odx(pr_elem, doc_frags)
+        assert isinstance(pr, Response)
+        positive_responses.append(pr)
+
+    negative_responses = []
+    for nr_elem in et_element.iterfind("NEG-RESPONSES/NEG-RESPONSE"):
+        nr = read_structure_from_odx(nr_elem, doc_frags)
+        assert isinstance(nr, Response)
+        negative_responses.append(nr)
+
+    additional_audiences = [read_additional_audience_from_odx(el, doc_frags)
                             for el in et_element.iterfind("ADDITIONAL-AUDIENCES/ADDITIONAL-AUDIENCE")]
 
     functional_classes = [
-        read_functional_class_from_odx(el, doc_frag)
+        read_functional_class_from_odx(el, doc_frags)
         for el in et_element.iterfind("FUNCT-CLASSS/FUNCT-CLASS")]
 
     states = [
-        read_state_from_odx(el, doc_frag)
+        read_state_from_odx(el, doc_frags)
         for el in et_element.iterfind("STATE-CHARTS/STATE-CHART/STATES/STATE")]
 
     state_transitions = [
-        read_state_transition_from_odx(el, doc_frag)
+        read_state_transition_from_odx(el, doc_frags)
         for el in et_element.iterfind("STATE-CHARTS/"
                                       "STATE-CHART/"
                                       "STATE-TRANSITIONS/"
@@ -612,11 +634,11 @@ def read_diag_layer_from_odx(et_element,
 
     if et_element.find("DIAG-DATA-DICTIONARY-SPEC"):
         diag_data_dictionary_spec = read_diag_data_dictionary_spec_from_odx(
-            et_element.find("DIAG-DATA-DICTIONARY-SPEC"), doc_frag)
+            et_element.find("DIAG-DATA-DICTIONARY-SPEC"), doc_frags)
     else:
         diag_data_dictionary_spec = None
 
-    import_refs = [OdxLinkRef.from_et(ref, doc_frag)
+    import_refs = [OdxLinkRef.from_et(ref, doc_frags)
                    for ref in et_element.iterfind("IMPORT-REFS/IMPORT-REF")]
 
     # TODO: Are UNIT-SPEC and SDGS needed?
@@ -680,6 +702,8 @@ class DiagLayerContainer:
 
     def _build_odxlinks(self):
         result = {}
+        result[self.id] = self
+
         if self.admin_data is not None:
             result.update(self.admin_data._build_odxlinks())
 
@@ -718,31 +742,31 @@ def read_diag_layer_container_from_odx(et_element, enable_candela_workarounds=Tr
 
     # create the current ODX "document fragment" (description of the
     # current document for references and IDs)
-    doc_frag = OdxDocFragment(short_name, et_element.tag)
+    doc_frags = [ OdxDocFragment(short_name, "CONTAINER") ]
 
-    id = OdxLinkId.from_et(et_element, doc_frag)
+    id = OdxLinkId.from_et(et_element, doc_frags)
 
     description = read_description_from_odx(et_element.find("DESC"))
-    admin_data = read_admin_data_from_odx(et_element.find("ADMIN-DATA"), doc_frag)
-    company_datas = read_company_datas_from_odx(et_element.find("COMPANY-DATAS"), doc_frag)
+    admin_data = read_admin_data_from_odx(et_element.find("ADMIN-DATA"), doc_frags)
+    company_datas = read_company_datas_from_odx(et_element.find("COMPANY-DATAS"), doc_frags)
     ecu_shared_datas = [read_diag_layer_from_odx(dl_element,
-                                                 doc_frag,
+                                                 doc_frags,
                                                  enable_candela_workarounds=enable_candela_workarounds)
                         for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")]
     protocols = [read_diag_layer_from_odx(dl_element,
-                                          doc_frag,
+                                          doc_frags,
                                           enable_candela_workarounds=enable_candela_workarounds)
                  for dl_element in et_element.iterfind("PROTOCOLS/PROTOCOL")]
     functional_groups = [read_diag_layer_from_odx(dl_element,
-                                                  doc_frag,
+                                                  doc_frags,
                                                   enable_candela_workarounds=enable_candela_workarounds)
                          for dl_element in et_element.iterfind("FUNCTIONAL-GROUPS/FUNCTIONAL-GROUP")]
     base_variants = [read_diag_layer_from_odx(dl_element,
-                                              doc_frag,
+                                              doc_frags,
                                               enable_candela_workarounds=enable_candela_workarounds)
                      for dl_element in et_element.iterfind("BASE-VARIANTS/BASE-VARIANT")]
     ecu_variants = [read_diag_layer_from_odx(dl_element,
-                                             doc_frag,
+                                             doc_frags,
                                              enable_candela_workarounds=enable_candela_workarounds)
                     for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")]
 

@@ -20,7 +20,7 @@ from odxtools.physicaltype import PhysicalType
 from odxtools.odxlink import OdxLinkId, OdxLinkRef, OdxDocFragment
 
 # the document fragment which is used throughout the test
-doc_frag = OdxDocFragment("UnitTest", "unit_test_doc")
+doc_frags = [ OdxDocFragment("UnitTest", "unit_test_doc") ]
 
 class TestDiagDataDictionarySpec(unittest.TestCase):
     def test_initialization(self):

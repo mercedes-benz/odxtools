@@ -45,11 +45,11 @@ class AdditionalAudience:
     description: Optional[str] = None
 
 
-def read_audience_from_odx(et_element, doc_frag):
-    enabled_audience_refs = [OdxLinkRef.from_et(ref, doc_frag)
+def read_audience_from_odx(et_element, doc_frags: List[OdxDocFragment]):
+    enabled_audience_refs = [OdxLinkRef.from_et(ref, doc_frags)
         for ref in et_element.iterfind("ENABLED-AUDIENCE-REFS/"
                                        "ENABLED-AUDIENCE-REF")]
-    disabled_audience_refs = [OdxLinkRef.from_et(ref, doc_frag)
+    disabled_audience_refs = [OdxLinkRef.from_et(ref, doc_frags)
         for ref in et_element.iterfind("DISABLED-AUDIENCE-REFS/"
                                        "DISABLED-AUDIENCE-REF")]
     is_supplier = et_element.get("IS-SUPPLIER", "true") == 'true'
@@ -67,9 +67,10 @@ def read_audience_from_odx(et_element, doc_frag):
                     is_aftermarket=is_aftermarket)
 
 
-def read_additional_audience_from_odx(et_element, doc_frag):
+def read_additional_audience_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     short_name = et_element.find("SHORT-NAME").text
-    id = OdxLinkId.from_et(et_element, doc_frag)
+    id = OdxLinkId.from_et(et_element, doc_frags)
+    assert id is not None
 
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))

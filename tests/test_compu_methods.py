@@ -15,7 +15,7 @@ from odxtools.exceptions import DecodeError, EncodeError
 from odxtools.odxtypes import DataType
 from odxtools.odxlink import OdxDocFragment
 
-doc_frag = OdxDocFragment("UnitTest", "WinneThePoh")
+doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
 class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_type_int_int(self):
@@ -190,7 +190,7 @@ class TestTabIntpCompuMethod(unittest.TestCase):
 
         et_element = ElementTree.fromstring(self.compumethod_odx)
         actual = read_compu_method_from_odx(et_element,
-                                            doc_frag,
+                                            doc_frags,
                                             expected.internal_type,
                                             expected.physical_type)
         self.assertIsInstance(actual, TabIntpCompuMethod)

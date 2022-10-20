@@ -79,12 +79,12 @@ SID: Any = IntEnum('SID', tmp) # type: ignore
 dlc_short_name = "somersault"
 
 # document fragment for everything except the communication parameters
-doc_frag = OdxDocFragment(dlc_short_name, "DIAG-LAYER-CONTAINER")
+doc_frags = [ OdxDocFragment(dlc_short_name, "CONTAINER") ]
 
 # document fragments for communication parameters
-cp_dwcan_doc_frag = OdxDocFragment("ISO_11898_2_DWCAN", "COMPARAM-SUBSET")
-cp_iso15765_2_doc_frag = OdxDocFragment("ISO_15765_2", "COMPARAM-SUBSET")
-cp_iso15765_3_doc_frag = OdxDocFragment("ISO_15765_3", "COMPARAM-SUBSET")
+cp_dwcan_doc_frags = [ OdxDocFragment("ISO_11898_2_DWCAN", "COMPARAM-SPEC") ]
+cp_iso15765_2_doc_frags = [ OdxDocFragment("ISO_15765_2", "COMPARAM-SPEC") ]
+cp_iso15765_3_doc_frags = [ OdxDocFragment("ISO_15765_3", "COMPARAM-SPEC") ]
 
 ##################
 # Base variant of Somersault ECU
@@ -93,7 +93,7 @@ cp_iso15765_3_doc_frag = OdxDocFragment("ISO_15765_3", "COMPARAM-SUBSET")
 # company datas
 somersault_team_members = {
     "doggy":
-    TeamMember(id=OdxLinkId("TM.Doggy", doc_frag),
+    TeamMember(id=OdxLinkId("TM.Doggy", doc_frags),
                short_name="Doggy",
                long_name="Doggy the dog",
                description="<p>Dog is man's best friend</p>",
@@ -107,7 +107,7 @@ somersault_team_members = {
                email="info@suncus.com"),
 
     "horsey":
-    TeamMember(id=OdxLinkId("TM.Horsey", doc_frag),
+    TeamMember(id=OdxLinkId("TM.Horsey", doc_frags),
                short_name="Horsey",
                long_name="Horsey the horse",
                description="<p>Trustworthy worker</p>",
@@ -121,13 +121,13 @@ somersault_team_members = {
                email="info@suncus.com"),
 
     "slothy":
-    TeamMember(id=OdxLinkId("TM.Slothy", doc_frag),
+    TeamMember(id=OdxLinkId("TM.Slothy", doc_frags),
                short_name="Slothy")
 }
 
 somersault_company_datas = {
     "suncus":
-    CompanyData(id=OdxLinkId("CD.Suncus", doc_frag),
+    CompanyData(id=OdxLinkId("CD.Suncus", doc_frags),
                 short_name="Suncus",
                 long_name="Circus of the sun",
                 description="<p>Prestigious group of performers</p>",
@@ -154,7 +154,7 @@ somersault_company_datas = {
                 ),
 
     "acme":
-    CompanyData(id=OdxLinkId("CD.ACME", doc_frag),
+    CompanyData(id=OdxLinkId("CD.ACME", doc_frags),
                 short_name="ACME_Corporation",
                 team_members=NamedItemList(lambda x: x.short_name,
                                            [
@@ -168,13 +168,13 @@ somersault_admin_data = \
     AdminData(language="en-US",
               company_doc_infos=\
               [
-                  CompanyDocInfo(company_data_ref=OdxLinkRef("CD.Suncus", doc_frag),
-                                 team_member_ref=OdxLinkRef("TM.Doggy", doc_frag),
+                  CompanyDocInfo(company_data_ref=OdxLinkRef("CD.Suncus", doc_frags),
+                                 team_member_ref=OdxLinkRef("TM.Doggy", doc_frags),
                                  doc_label="A really meaningful label"),
               ],
               doc_revisions=\
               [
-                  DocRevision(team_member_ref=OdxLinkRef("TM.Doggy", doc_frag),
+                  DocRevision(team_member_ref=OdxLinkRef("TM.Doggy", doc_frags),
                               revision_label="1.0",
                               state="draft",
                               date="1926-07-18T11:11:11+01:00",
@@ -185,7 +185,7 @@ somersault_admin_data = \
                                   Modification(change="increase robustness to dizzyness",
                                                reason="No alcohol anymore"),
                               ]),
-                  DocRevision(team_member_ref=OdxLinkRef("TM.Horsey", doc_frag),
+                  DocRevision(team_member_ref=OdxLinkRef("TM.Horsey", doc_frags),
                               revision_label="1.1",
                               state="released",
                               date="2020-08-19T12:12:12+08:00",
@@ -194,7 +194,7 @@ somersault_admin_data = \
                                   Modification(change="rename somersault ECU to somersault_assiduous to enable slothy to add somersault_lazy"),
                               ]),
 
-                  DocRevision(team_member_ref=OdxLinkRef("TM.Slothy", doc_frag),
+                  DocRevision(team_member_ref=OdxLinkRef("TM.Slothy", doc_frags),
                               revision_label="1.0.3.2.1.5.6",
                               date="1900-01-01T00:00:00+00:00"),
               ])
@@ -203,13 +203,13 @@ somersault_admin_data = \
 somersault_functional_classes = {
     "flip":
     FunctionalClass(
-        id=OdxLinkId("somersault.FNC.flip", doc_frag),
+        id=OdxLinkId("somersault.FNC.flip", doc_frags),
         short_name="flip",
         long_name="Flip"),
 
     "session":
     FunctionalClass(
-        id=OdxLinkId("somersault.FNC.session", doc_frag),
+        id=OdxLinkId("somersault.FNC.session", doc_frags),
         short_name="session",
         long_name="Session"),
 }
@@ -218,13 +218,13 @@ somersault_functional_classes = {
 somersault_additional_audiences = {
     "attentive_admirer":
     AdditionalAudience(
-        id=OdxLinkId("somersault.AA.attentive_admirer", doc_frag),
+        id=OdxLinkId("somersault.AA.attentive_admirer", doc_frags),
         short_name="attentive_admirer",
         long_name="Attentive Admirer"),
 
     "anyone":
     AdditionalAudience(
-        id=OdxLinkId("somersault.AA.anyone", doc_frag),
+        id=OdxLinkId("somersault.AA.anyone", doc_frags),
         short_name="anyone",
         long_name="Anyone"),
 }
@@ -249,7 +249,7 @@ somersault_diagcodedtypes = {
 
 somersault_physical_dimensions = {
     "second": PhysicalDimension(
-        id=OdxLinkId("somersault.PD.second", doc_frag),
+        id=OdxLinkId("somersault.PD.second", doc_frags),
         short_name="second",
         long_name="Second",
         time_exp=1
@@ -259,7 +259,7 @@ somersault_physical_dimensions = {
 somersault_units = {
     "second":
         Unit(
-            id=OdxLinkId("somersault.unit.second", doc_frag),
+            id=OdxLinkId("somersault.unit.second", doc_frags),
             short_name="second",
             display_name="s",
             long_name="Second",
@@ -270,7 +270,7 @@ somersault_units = {
         ),
     "minute":
         Unit(
-            id=OdxLinkId("somersault.unit.minute", doc_frag),
+            id=OdxLinkId("somersault.unit.minute", doc_frags),
             short_name="minute",
             display_name="min",
             long_name="Minute",
@@ -319,7 +319,7 @@ somersault_compumethods = {
 somersault_dops = {
     "num_flips":
     DataObjectProperty(
-        id=OdxLinkId("somersault.DOP.num_flips", doc_frag),
+        id=OdxLinkId("somersault.DOP.num_flips", doc_frags),
         short_name="num_flips",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
         physical_type=PhysicalType(DataType.A_UINT32),
@@ -327,7 +327,7 @@ somersault_dops = {
 
     "soberness_check":
     DataObjectProperty(
-        id=OdxLinkId("somersault.DOP.soberness_check", doc_frag),
+        id=OdxLinkId("somersault.DOP.soberness_check", doc_frags),
         short_name="soberness_check",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
         physical_type=PhysicalType(DataType.A_UINT32),
@@ -335,7 +335,7 @@ somersault_dops = {
 
     "dizzyness_level":
     DataObjectProperty(
-        id=OdxLinkId("somersault.DOP.dizzyness_level", doc_frag),
+        id=OdxLinkId("somersault.DOP.dizzyness_level", doc_frags),
         short_name="dizzyness_level",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
         physical_type=PhysicalType(DataType.A_UINT32),
@@ -343,7 +343,7 @@ somersault_dops = {
 
     "happiness_level":
     DataObjectProperty(
-        id=OdxLinkId("somersault.DOP.happiness_level", doc_frag),
+        id=OdxLinkId("somersault.DOP.happiness_level", doc_frags),
         short_name="happiness_level",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
         physical_type=PhysicalType(DataType.A_UINT32),
@@ -351,7 +351,7 @@ somersault_dops = {
 
     "duration":
     DataObjectProperty(
-        id=OdxLinkId("somersault.DOP.duration", doc_frag),
+        id=OdxLinkId("somersault.DOP.duration", doc_frags),
         short_name="duration",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
         physical_type=PhysicalType(DataType.A_UINT32),
@@ -360,7 +360,7 @@ somersault_dops = {
 
     "error_code":
     DataObjectProperty(
-        id=OdxLinkId("somersault.DOP.error_code", doc_frag),
+        id=OdxLinkId("somersault.DOP.error_code", doc_frags),
         short_name="error_code",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
         physical_type=PhysicalType(DataType.A_UINT32),
@@ -368,7 +368,7 @@ somersault_dops = {
 
     "boolean":
     DataObjectProperty(
-        id=OdxLinkId("somersault.DOP.boolean", doc_frag),
+        id=OdxLinkId("somersault.DOP.boolean", doc_frags),
         short_name="boolean",
         diag_coded_type=somersault_diagcodedtypes["uint8"],
         physical_type=PhysicalType(DataType.A_UNICODE2STRING),
@@ -378,7 +378,7 @@ somersault_dops = {
 # tables
 somersault_tables = {
     "flip_quality": Table(
-        id=OdxLinkId("somersault.table.flip_quality", doc_frag),
+        id=OdxLinkId("somersault.table.flip_quality", doc_frags),
         short_name="flip_quality",
         long_name="Flip Quality",
         description="<p>The quality the flip (average, good or best)</p>",
@@ -386,7 +386,7 @@ somersault_tables = {
         key_dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].id),
         table_rows=[
             TableRow(
-                id=OdxLinkId("somersault.table.flip_quality.average", doc_frag),
+                id=OdxLinkId("somersault.table.flip_quality.average", doc_frags),
                 short_name="average",
                 long_name="Average",
                 key=3,
@@ -395,14 +395,14 @@ somersault_tables = {
                 semantic="QUALITY-KEY",
             ),
             TableRow(
-                id=OdxLinkId("somersault.table.flip_quality.good", doc_frag),
+                id=OdxLinkId("somersault.table.flip_quality.good", doc_frags),
                 short_name="good",
                 long_name="Good",
                 key=5,
                 structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].id),
             ),
             TableRow(
-                id=OdxLinkId("somersault.table.flip_quality.best", doc_frag),
+                id=OdxLinkId("somersault.table.flip_quality.best", doc_frags),
                 short_name="best",
                 long_name="Best",
                 key=10,
@@ -416,7 +416,7 @@ somersault_tables = {
 # muxs
 somersault_muxs = {
     "flip_preference": Multiplexer(
-        id=OdxLinkId("somersault.multiplexer.flip_preference", doc_frag),
+        id=OdxLinkId("somersault.multiplexer.flip_preference", doc_frags),
         short_name="flip_preference",
         long_name="Flip Preference",
         byte_position=0,
@@ -452,7 +452,7 @@ somersault_muxs = {
 # env-data
 somersault_env_datas = {
     "flip_env_data": EnvironmentData(
-        id=OdxLinkId("somersault.env_data.flip_env_data", doc_frag),
+        id=OdxLinkId("somersault.env_data.flip_env_data", doc_frags),
         short_name="flip_env_data",
         long_name="Flip Env Data",
         parameters=[
@@ -478,11 +478,11 @@ somersault_env_datas = {
 # env-data-desc
 somersault_env_data_descs = {
     "flip_env_data_desc": EnvironmentDataDescription(
-        id=OdxLinkId("somersault.env_data_desc.flip_env_data_desc", doc_frag),
+        id=OdxLinkId("somersault.env_data_desc.flip_env_data_desc", doc_frags),
         short_name="flip_env_data_desc",
         long_name="Flip Env Data Desc",
         param_snref="flip_speed",
-        env_data_refs=[OdxLinkRef("somersault.env_data.flip_env_data", doc_frag)],
+        env_data_refs=[OdxLinkRef("somersault.env_data.flip_env_data", doc_frags)],
     )
 }
 
@@ -490,7 +490,7 @@ somersault_env_data_descs = {
 somersault_requests = {
     "start_session":
     Request(
-        id=OdxLinkId("somersault.RQ.start_session", doc_frag),
+        id=OdxLinkId("somersault.RQ.start_session", doc_frags),
         short_name="start_session",
         long_name="Start the diagnostic session & do some mischief",
         parameters=[
@@ -511,7 +511,7 @@ somersault_requests = {
 
     "stop_session":
     Request(
-        id=OdxLinkId("somersault.RQ.stop_session", doc_frag),
+        id=OdxLinkId("somersault.RQ.stop_session", doc_frags),
         short_name="stop_session",
         long_name="Terminate the current diagnostic session",
         parameters=[
@@ -532,7 +532,7 @@ somersault_requests = {
 
     "tester_present":
     Request(
-        id=OdxLinkId("somersault.RQ.tester_present", doc_frag),
+        id=OdxLinkId("somersault.RQ.tester_present", doc_frags),
         short_name="tester_present",
         long_name="Prevent the current diagnostic session from timing out",
         parameters=[
@@ -553,7 +553,7 @@ somersault_requests = {
 
     "set_operation_params":
     Request(
-        id=OdxLinkId("somersault.RQ.set_operation_params", doc_frag),
+        id=OdxLinkId("somersault.RQ.set_operation_params", doc_frags),
         short_name="set_operation_params",
         long_name=\
         "Specify the mode of operation for the ECU; e.g. if rings "
@@ -568,7 +568,7 @@ somersault_requests = {
             ValueParameter(
                 short_name="use_fire_ring",
                 byte_position=1,
-                dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frag),
+                dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),
             ),
 
         ]
@@ -576,7 +576,7 @@ somersault_requests = {
 
     "forward_flips":
     Request(
-        id=OdxLinkId("somersault.RQ.do_forward_flips", doc_frag),
+        id=OdxLinkId("somersault.RQ.do_forward_flips", doc_frags),
         short_name="do_forward_flips",
         long_name="Do forward somersaults & some other mischief",
         parameters=[
@@ -588,20 +588,20 @@ somersault_requests = {
             ),
             ValueParameter(
                 short_name="forward_soberness_check",
-                dop_ref=OdxLinkRef("somersault.DOP.soberness_check", doc_frag),
+                dop_ref=OdxLinkRef("somersault.DOP.soberness_check", doc_frags),
                 byte_position=1,
                 #value must be 0x12 for the request to be accepted
             ),
             ValueParameter(
                 short_name="num_flips",
                 byte_position=2,
-                dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frag)),
+                dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frags)),
         ]
     ),
 
     "backward_flips":
     Request(
-        id=OdxLinkId("somersault.RQ.do_backward_flips", doc_frag),
+        id=OdxLinkId("somersault.RQ.do_backward_flips", doc_frags),
         short_name="do_backward_flips",
         long_name="Do a backward somersault & some other mischief",
         parameters=[
@@ -613,21 +613,21 @@ somersault_requests = {
             ),
             ValueParameter(
                 short_name="backward_soberness_check",
-                dop_ref=OdxLinkRef("somersault.DOP.soberness_check", doc_frag),
+                dop_ref=OdxLinkRef("somersault.DOP.soberness_check", doc_frags),
                 byte_position=1,
                 #value must be 0x21 for the request to be accepted
             ),
             ValueParameter(
                 short_name="num_flips",
                 byte_position=2,
-                dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frag),
+                dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frags),
             ),
         ]
     ),
 
     "report_status":
     Request(
-        id=OdxLinkId("somersault.RQ.report_status", doc_frag),
+        id=OdxLinkId("somersault.RQ.report_status", doc_frags),
         short_name="report_status",
         long_name="Report back the current level of dizzy- & happiness.",
         parameters=[
@@ -651,7 +651,7 @@ somersault_requests = {
 # positive responses
 somersault_positive_responses = {
     "session":
-    Response(id=OdxLinkId("somersault.PR.session_start", doc_frag),
+    Response(id=OdxLinkId("somersault.PR.session_start", doc_frags),
              short_name="session",
              response_type="POS-RESPONSE",
              parameters=[
@@ -664,12 +664,12 @@ somersault_positive_responses = {
                  ValueParameter(
                      short_name="can_do_backward_flips",
                      byte_position=1,
-                     dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frag),
+                     dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),
                  ),
              ]),
 
     "tester_ok":
-    Response(id=OdxLinkId("somersault.PR.tester_present", doc_frag),
+    Response(id=OdxLinkId("somersault.PR.tester_present", doc_frags),
              short_name="tester_present",
              response_type="POS-RESPONSE",
              parameters=[
@@ -688,7 +688,7 @@ somersault_positive_responses = {
              ]),
 
     "forward_flips_grudgingly_done":
-    Response(id=OdxLinkId("somersault.PR.grudging_forward", doc_frag),
+    Response(id=OdxLinkId("somersault.PR.grudging_forward", doc_frags),
              short_name="grudging_forward",
              response_type="POS-RESPONSE",
              parameters=[
@@ -706,7 +706,7 @@ somersault_positive_responses = {
              ]),
 
     "forward_flips_happily_done":
-    Response(id=OdxLinkId("somersault.PR.happy_forward", doc_frag),
+    Response(id=OdxLinkId("somersault.PR.happy_forward", doc_frags),
              short_name="happy_forward",
              response_type="POS-RESPONSE",
              parameters=[
@@ -724,11 +724,11 @@ somersault_positive_responses = {
                  ValueParameter(
                      short_name="yeha_level",
                      byte_position=2,
-                     dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frag)),
+                     dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frags)),
              ]),
 
     "backward_flips_grudgingly_done":
-    Response(id=OdxLinkId("somersault.PR.grudging_backward", doc_frag),
+    Response(id=OdxLinkId("somersault.PR.grudging_backward", doc_frags),
              short_name="grudging_backward",
              response_type="POS-RESPONSE",
              parameters=[
@@ -748,7 +748,7 @@ somersault_positive_responses = {
     # Note that there is no such thing as a "backwards flip done happily"!
 
     "status_report":
-    Response(id=OdxLinkId("somersault.PR.status_report", doc_frag),
+    Response(id=OdxLinkId("somersault.PR.status_report", doc_frags),
              short_name="status_report",
              response_type="POS-RESPONSE",
              parameters=[
@@ -761,15 +761,15 @@ somersault_positive_responses = {
                  ValueParameter(
                      short_name="dizzyness_level",
                      byte_position=1,
-                     dop_ref=OdxLinkRef("somersault.DOP.dizzyness_level", doc_frag)),
+                     dop_ref=OdxLinkRef("somersault.DOP.dizzyness_level", doc_frags)),
                  ValueParameter(
                      short_name="happiness_level",
                      byte_position=2,
-                     dop_ref=OdxLinkRef("somersault.DOP.happiness_level", doc_frag)),
+                     dop_ref=OdxLinkRef("somersault.DOP.happiness_level", doc_frags)),
              ]),
 
     "set_operation_params":
-    Response(id=OdxLinkId("somersault.PR.set_operation_params", doc_frag),
+    Response(id=OdxLinkId("somersault.PR.set_operation_params", doc_frags),
              short_name="set_operation_params",
              response_type="POS-RESPONSE",
              parameters=[
@@ -785,7 +785,7 @@ somersault_positive_responses = {
 # negative responses
 somersault_negative_responses = {
     "general":
-    Response(id=OdxLinkId("somersault.NR.general_negative_response", doc_frag),
+    Response(id=OdxLinkId("somersault.NR.general_negative_response", doc_frags),
              short_name="general_negative_response",
              response_type="NEG-RESPONSE",
              parameters=[
@@ -802,14 +802,14 @@ somersault_negative_responses = {
                  ValueParameter(
                      short_name="response_code",
                      byte_position=2,
-                     dop_ref=OdxLinkRef("somersault.DOP.error_code", doc_frag)),
+                     dop_ref=OdxLinkRef("somersault.DOP.error_code", doc_frags)),
              ]),
 
     # the tester present request needs separate negative and positive
     # responses because it must be fully specified a-priory to be able
     # to extract it for the COMPARAMS.
     "tester_nok":
-    Response(id=OdxLinkId("somersault.NR.tester_nok", doc_frag),
+    Response(id=OdxLinkId("somersault.NR.tester_nok", doc_frags),
              short_name="tester_nok",
              response_type="NEG-RESPONSE",
              parameters=[
@@ -828,7 +828,7 @@ somersault_negative_responses = {
              ]),
 
     "flips_not_done":
-    Response(id=OdxLinkId("somersault.NR.flips_not_done", doc_frag),
+    Response(id=OdxLinkId("somersault.NR.flips_not_done", doc_frags),
              short_name="flips_not_done",
              response_type="NEG-RESPONSE",
              parameters=[
@@ -854,7 +854,7 @@ somersault_negative_responses = {
                  ),
                  ValueParameter(
                      short_name="flips_successfully_done",
-                     dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frag),
+                     dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frags),
                      byte_position=3,
                  ),
              ]),
@@ -863,7 +863,7 @@ somersault_negative_responses = {
 # services
 somersault_services = {
     "start_session":
-    DiagService(id=OdxLinkId("somersault.service.session_start", doc_frag),
+    DiagService(id=OdxLinkId("somersault.service.session_start", doc_frags),
                 short_name="session_start",
                 request=OdxLinkRef.from_id(somersault_requests["start_session"].id),
                 semantic="SESSION",
@@ -879,7 +879,7 @@ somersault_services = {
                 ),
 
     "stop_session":
-    DiagService(id=OdxLinkId("somersault.service.session_stop", doc_frag),
+    DiagService(id=OdxLinkId("somersault.service.session_stop", doc_frags),
                 short_name="session_stop",
                 semantic="SESSION",
                 request=OdxLinkRef.from_id(somersault_requests["stop_session"].id),
@@ -895,7 +895,7 @@ somersault_services = {
                 ),
 
     "tester_present":
-    DiagService(id=OdxLinkId("somersault.service.tester_present", doc_frag),
+    DiagService(id=OdxLinkId("somersault.service.tester_present", doc_frags),
                 short_name="tester_present",
                 semantic="TESTERPRESENT",
                 request=OdxLinkRef.from_id(somersault_requests["tester_present"].id),
@@ -914,7 +914,7 @@ somersault_services = {
                 ),
 
     "set_operation_params":
-    DiagService(id=OdxLinkId("somersault.service.set_operation_params", doc_frag),
+    DiagService(id=OdxLinkId("somersault.service.set_operation_params", doc_frags),
                 short_name="set_operation_params",
                 semantic="FUNCTION",
                 request=OdxLinkRef.from_id(somersault_requests["set_operation_params"].id),
@@ -927,7 +927,7 @@ somersault_services = {
                 ),
 
     "forward_flips":
-    DiagService(id=OdxLinkId("somersault.service.do_forward_flips", doc_frag),
+    DiagService(id=OdxLinkId("somersault.service.do_forward_flips", doc_frags),
                 short_name="do_forward_flips",
                 description="<p>Do a forward flip.</p>",
                 semantic="FUNCTION",
@@ -953,7 +953,7 @@ somersault_services = {
                 ),
 
     "backward_flips":
-    DiagService(id=OdxLinkId("somersault.service.do_backward_flips", doc_frag),
+    DiagService(id=OdxLinkId("somersault.service.do_backward_flips", doc_frags),
                 short_name="do_backward_flips",
                 semantic="FUNCTION",
                 request=OdxLinkRef.from_id(somersault_requests["backward_flips"].id),
@@ -972,7 +972,7 @@ somersault_services = {
                 ),
 
     "report_status":
-    DiagService(id=OdxLinkId("somersault.service.report_status", doc_frag),
+    DiagService(id=OdxLinkId("somersault.service.report_status", doc_frags),
                 short_name="report_status",
                 semantic="CURRENTDATA",
                 request=OdxLinkRef.from_id(somersault_requests["report_status"].id),
@@ -992,7 +992,7 @@ somersault_services = {
 
 somersault_single_ecu_jobs = {
     "compulsory_program":
-    SingleEcuJob(id=OdxLinkId("somersault.service.compulsory_program", doc_frag),
+    SingleEcuJob(id=OdxLinkId("somersault.service.compulsory_program", doc_frags),
                  short_name="compulsory_program",
                  long_name="Compulsory Program",
                  description="<p>Do several fancy moves.</p>",
@@ -1021,12 +1021,12 @@ somersault_communication_parameters = [
 
     # bus speed
     CommunicationParameterRef(
-        id_ref=OdxLinkRef("ISO_11898_2_DWCAN.CP_Baudrate", cp_dwcan_doc_frag),
+        id_ref=OdxLinkRef("ISO_11898_2_DWCAN.CP_Baudrate", cp_dwcan_doc_frags),
         value="500000"),
 
     # parameters of the CAN diagnostics frames
     CommunicationParameterRef(
-        id_ref=OdxLinkRef('ISO_15765_2.CP_UniqueRespIdTable', cp_iso15765_2_doc_frag),
+        id_ref=OdxLinkRef('ISO_15765_2.CP_UniqueRespIdTable', cp_iso15765_2_doc_frags),
         value=[
             # CP_CanPhysReqFormat
             'normal segmented 11-bit transmit with FC',
@@ -1055,7 +1055,7 @@ somersault_communication_parameters = [
 
     # timeout for responses [us]
     CommunicationParameterRef(
-        id_ref=OdxLinkRef("ISO_15765_3.CP_RC21CompletionTimeout", cp_iso15765_3_doc_frag),
+        id_ref=OdxLinkRef("ISO_15765_3.CP_RC21CompletionTimeout", cp_iso15765_3_doc_frags),
         value="1000000"),
 
     ###
@@ -1064,38 +1064,38 @@ somersault_communication_parameters = [
 
     # expected "tester present" message
     CommunicationParameterRef(
-        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentMessage", cp_iso15765_3_doc_frag),
+        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentMessage", cp_iso15765_3_doc_frags),
         value=f'{tester_present_value}'),
 
     # a response is mandatory
     CommunicationParameterRef(
-        id_ref=OdxLinkRef("ISO_15765_3.ISO_15765_3.CP_TesterPresentReqRsp", cp_iso15765_3_doc_frag),
+        id_ref=OdxLinkRef("ISO_15765_3.ISO_15765_3.CP_TesterPresentReqRsp", cp_iso15765_3_doc_frags),
         value='Response expected'),
 
     # positive response to "tester present"
     CommunicationParameterRef(
-        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentExpPosResp", cp_iso15765_3_doc_frag),
+        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentExpPosResp", cp_iso15765_3_doc_frags),
         value=f'{tester_pr_value}'),
 
     # negative response to "tester present"
     CommunicationParameterRef(
-        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentExpNegResp", cp_iso15765_3_doc_frag),
+        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentExpNegResp", cp_iso15765_3_doc_frags),
         value=f'{tester_nr_value}'),
 
     # when a tester present message must be send
     CommunicationParameterRef(
-        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentSendType", cp_iso15765_3_doc_frag),
+        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentSendType", cp_iso15765_3_doc_frags),
         value='On idle'),
 
     # "tester present" messages are send directly to the CAN IDs
     # (i.e., they are not embedded in the ISO-TP telegram?)
     CommunicationParameterRef(
-        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentAddrMode", cp_iso15765_3_doc_frag),
+        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentAddrMode", cp_iso15765_3_doc_frags),
         value='Physical'),
 
     # is a response from the ECU to "tester present" messages expected
     CommunicationParameterRef(
-        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentReqRsp", cp_iso15765_3_doc_frag),
+        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentReqRsp", cp_iso15765_3_doc_frags),
         value='Response expected'),
 
     ###
@@ -1104,7 +1104,7 @@ somersault_communication_parameters = [
 
     # maximum number of frames between flow control ACKs
     CommunicationParameterRef(
-        id_ref=OdxLinkRef("ISO_15765_2.CP_BlockSize", cp_iso15765_2_doc_frag),
+        id_ref=OdxLinkRef("ISO_15765_2.CP_BlockSize", cp_iso15765_2_doc_frags),
         value='4'
     ),
 ]
@@ -1125,7 +1125,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
 # diagnostics layer
 somersault_diaglayer = DiagLayer(
     variant_type="BASE-VARIANT",
-    id=OdxLinkId("somersault", doc_frag),
+    id=OdxLinkId("somersault", doc_frags),
     short_name="somersault",
     long_name="Somersault base variant",
     description="<p>Base variant of the somersault ECU &amp; cetera</p>",
@@ -1146,7 +1146,7 @@ somersault_diaglayer = DiagLayer(
 # TODO: inheritance (without too much code duplication)
 somersault_lazy_diaglayer = DiagLayer(
     variant_type="ECU-VARIANT",
-    id=OdxLinkId("somersault_lazy", doc_frag),
+    id=OdxLinkId("somersault_lazy", doc_frags),
     short_name="somersault_lazy",
     long_name="Somersault lazy ECU",
     description="<p>Sloppy variant of the somersault ECU (lazy &lt; assiduous)</p>",
@@ -1172,7 +1172,7 @@ somersault_lazy_diaglayer = DiagLayer(
 # TODO: inheritance (without too much code duplication)
 somersault_assiduous_diaglayer = DiagLayer(
     variant_type="ECU-VARIANT",
-    id=OdxLinkId("somersault_assiduous", doc_frag),
+    id=OdxLinkId("somersault_assiduous", doc_frags),
     short_name="somersault_assiduous",
     long_name="Somersault assiduous ECU",
     description="<p>Hard-working variant of the somersault ECU (lazy &lt; assiduous)</p>",
@@ -1191,7 +1191,7 @@ somersault_assiduous_diaglayer = DiagLayer(
 somersault_assiduous_requests = {
     "headstand":
     Request(
-        id=OdxLinkId("somersault_assiduous.RQ.do_headstand", doc_frag),
+        id=OdxLinkId("somersault_assiduous.RQ.do_headstand", doc_frags),
         short_name="do_headstand",
         long_name="Do a headstand & whatever else is required to entertain the customer",
         parameters=[
@@ -1204,7 +1204,7 @@ somersault_assiduous_requests = {
             ValueParameter(
                 short_name="duration",
                 byte_position=1,
-                dop_ref=OdxLinkRef("somersault.DOP.duration", doc_frag)),
+                dop_ref=OdxLinkRef("somersault.DOP.duration", doc_frags)),
         ]
     ),
 }
@@ -1212,7 +1212,7 @@ somersault_assiduous_requests = {
 # positive responses
 somersault_assiduous_positive_responses = {
     "headstand_done":
-    Response(id=OdxLinkId("somersault_assiduous.PR.headstand_done", doc_frag),
+    Response(id=OdxLinkId("somersault_assiduous.PR.headstand_done", doc_frags),
              short_name="headstand_done",
              parameters=[
                  CodedConstParameter(
@@ -1232,7 +1232,7 @@ somersault_assiduous_positive_responses = {
 # negative responses
 somersault_assiduous_negative_responses = {
     "fell_over":
-    Response(id=OdxLinkId("somersault_assiduous.NR.fell_over", doc_frag),
+    Response(id=OdxLinkId("somersault_assiduous.NR.fell_over", doc_frags),
              short_name="fell_over",
              parameters=[
                  CodedConstParameter(
@@ -1253,7 +1253,7 @@ somersault_assiduous_negative_responses = {
 # services
 somersault_assiduous_services = {
     "headstand":
-    DiagService(id=OdxLinkId("somersault_assiduous.service.headstand", doc_frag),
+    DiagService(id=OdxLinkId("somersault_assiduous.service.headstand", doc_frags),
                 short_name="headstand",
                 request=OdxLinkRef.from_id(somersault_assiduous_requests["headstand"].id),
                 positive_responses=[
@@ -1278,7 +1278,7 @@ somersault_assiduous_diaglayer.negative_responses = NamedItemList(lambda x: x.sh
 
 # create a "diagnosis layer container" object
 somersault_dlc = DiagLayerContainer(
-    id=OdxLinkId("DLC.somersault", doc_frag),
+    id=OdxLinkId("DLC.somersault", doc_frags),
     short_name=dlc_short_name,
     long_name="Collect all saults in the summer",
     description="<p>This contains ECUs which do somersaults &amp; cetera</p>",

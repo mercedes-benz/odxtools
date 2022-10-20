@@ -3,7 +3,7 @@
 
 from .nameditemlist import NamedItemList
 from .utils import read_description_from_odx
-from .odxlink import OdxLinkId, OdxLinkDatabase
+from .odxlink import OdxLinkId, OdxLinkDatabase, OdxDocFragment
 
 from dataclasses import dataclass, field
 from typing import Optional, Any, Dict, List
@@ -113,14 +113,15 @@ def read_xdoc_from_odx(xdoc):
                 position=position,
                 )
 
-def read_company_datas_from_odx(et_element, doc_frag):
+def read_company_datas_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     if et_element is None:
         return None
 
-    cdl = NamedItemList(lambda x: x.short_name)
+    cdl = NamedItemList(lambda x: x.short_name) # type: ignore
 
     for cd in et_element.iterfind("COMPANY-DATA"):
-        id = OdxLinkId.from_et(cd, doc_frag)
+        id = OdxLinkId.from_et(cd, doc_frags)
+        assert id is not None
         short_name = cd.find("SHORT-NAME").text
 
         long_name = cd.find("LONG-NAME")
@@ -142,10 +143,11 @@ def read_company_datas_from_odx(et_element, doc_frag):
 
         team_members = cd.find("TEAM-MEMBERS")
         if team_members is not None:
-            tml = NamedItemList(lambda x: x.short_name)
+            tml = NamedItemList(lambda x: x.short_name) # type: ignore
 
             for tm in team_members.iterfind("TEAM-MEMBER"):
-                tm_id = OdxLinkId.from_et(tm, doc_frag)
+                tm_id = OdxLinkId.from_et(tm, doc_frags)
+                assert tm_id is not None
                 tm_short_name = tm.find("SHORT-NAME").text
 
                 tm_long_name = tm.find("LONG-NAME")

@@ -262,19 +262,12 @@ class Multiplexer(DopBase):
         )
 
 
-def read_switch_key_from_odx(et_element, doc_frag):
+def read_switch_key_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     """Reads a Switch Key for a Multiplexer."""
-    byte_position = (
-        int(et_element.find("BYTE-POSITION").text)
-        if et_element.find("BYTE-POSITION") is not None
-        else None
-    )
-    bit_position = (
-        int(et_element.find("BIT-POSITION").text)
-        if et_element.find("BIT-POSITION") is not None
-        else 0
-    )
-    dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frag)
+    byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
+    bit_position = int(et_element.findtext("BIT-POSITION", "0"))
+    dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
+    assert dop_ref is not None
 
     return MultiplexerSwitchKey(
         byte_position=byte_position,
@@ -283,14 +276,14 @@ def read_switch_key_from_odx(et_element, doc_frag):
     )
 
 
-def read_default_case_from_odx(et_element, doc_frag):
+def read_default_case_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     """Reads a Default Case for a Multiplexer."""
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME")
     if long_name is not None:
         long_name = long_name.text
 
-    structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frag)
+    structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
 
     return MultiplexerDefaultCase(
         short_name=short_name,
@@ -299,13 +292,14 @@ def read_default_case_from_odx(et_element, doc_frag):
     )
 
 
-def read_case_from_odx(et_element, doc_frag):
+def read_case_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     """Reads a Case for a Multiplexer."""
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME")
     if long_name is not None:
         long_name = long_name.text
-    structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frag)
+    structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
+    assert structure_ref is not None
     lower_limit = et_element.find("LOWER-LIMIT").text
     upper_limit = et_element.find("UPPER-LIMIT").text
 
@@ -318,33 +312,31 @@ def read_case_from_odx(et_element, doc_frag):
     )
 
 
-def read_mux_from_odx(et_element, doc_frag):
+def read_mux_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
+    -> Multiplexer:
     """Reads a Multiplexer from Diag Layer."""
-    id = OdxLinkId.from_et(et_element, doc_frag)
+    id = OdxLinkId.from_et(et_element, doc_frags)
+    assert id is not None
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.findtext("LONG-NAME")
-    byte_position = (
-        int(et_element.find("BYTE-POSITION").text)
-        if et_element.find("BYTE-POSITION") is not None
-        else None
-    )
+    byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
     switch_key = read_switch_key_from_odx(et_element.find("SWITCH-KEY"),
-                                          doc_frag)
+                                          doc_frags)
 
     default_case = None
     if et_element.find("DEFAULT-CASE") is not None:
         default_case = read_default_case_from_odx(
-            et_element.find("DEFAULT-CASE"), doc_frag)
+            et_element.find("DEFAULT-CASE"), doc_frags)
 
     cases = []
     if et_element.find("CASES") is not None:
         cases = [
-            read_case_from_odx(el, doc_frag) for el in et_element.find("CASES").iterfind("CASE")
+            read_case_from_odx(el, doc_frags) for el in et_element.find("CASES").iterfind("CASE")
         ]
 
     logger.debug("Parsing MUX " + short_name)
 
-    mux = Multiplexer(
+    return Multiplexer(
         id=id,
         short_name=short_name,
         long_name=long_name,
@@ -353,5 +345,3 @@ def read_mux_from_odx(et_element, doc_frag):
         default_case=default_case,
         cases=cases,
     )
-
-    return mux

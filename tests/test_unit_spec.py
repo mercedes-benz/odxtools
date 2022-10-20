@@ -16,7 +16,7 @@ from odxtools.structures import Request
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.odxlink import OdxLinkId, OdxLinkRef, OdxDocFragment
 
-doc_frag = OdxDocFragment("UnitTest", "WinneThePoh")
+doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
 class TestUnitSpec(unittest.TestCase):
 
@@ -24,17 +24,17 @@ class TestUnitSpec(unittest.TestCase):
         expected = UnitSpec(
             physical_dimensions=[
                 PhysicalDimension(
-                    id=OdxLinkId("ID.metre", doc_frag),
+                    id=OdxLinkId("ID.metre", doc_frags),
                     short_name="metre",
                     length_exp=1
                 )
             ],
             units=[
                 Unit(
-                    id=OdxLinkId("ID.kilometre", doc_frag),
+                    id=OdxLinkId("ID.kilometre", doc_frags),
                     short_name="Kilometre",
                     display_name="km",
-                    physical_dimension_ref=OdxLinkRef("ID.metre", doc_frag),
+                    physical_dimension_ref=OdxLinkRef("ID.metre", doc_frags),
                     factor_si_to_unit=1000,
                     offset_si_to_unit=0
                 )
@@ -61,7 +61,7 @@ class TestUnitSpec(unittest.TestCase):
             </UNIT-SPEC>
         """
         et_element = ElementTree.fromstring(sample_unit_spec_odx)
-        spec = read_unit_spec_from_odx(et_element, doc_frag=doc_frag)
+        spec = read_unit_spec_from_odx(et_element, doc_frags=doc_frags)
         self.assertEqual(
             expected.units,
             spec.units
@@ -80,12 +80,12 @@ class TestUnitSpec(unittest.TestCase):
         )
 
     def test_resolve_references(self):
-        unit = Unit(id=OdxLinkId("unit_time_id", doc_frag),
+        unit = Unit(id=OdxLinkId("unit_time_id", doc_frags),
                     short_name="second",
                     display_name="s")
         dct = StandardLengthType("A_UINT32", 8)
         dop = DataObjectProperty(
-            id=OdxLinkId("dop_id", doc_frag),
+            id=OdxLinkId("dop_id", doc_frags),
             short_name="dop_sn",
             diag_coded_type=dct,
             physical_type=PhysicalType("A_UINT32"),
@@ -94,9 +94,9 @@ class TestUnitSpec(unittest.TestCase):
         )
         dl = DiagLayer(
             "BASE-VARIANT",
-            id=OdxLinkId("BV_id", doc_frag),
+            id=OdxLinkId("BV_id", doc_frags),
             short_name="BaseVariant",
-            requests=[Request(OdxLinkId("rq_id", doc_frag), "rq_sn", [
+            requests=[Request(OdxLinkId("rq_id", doc_frags), "rq_sn", [
                 CodedConstParameter(short_name="sid",
                                     diag_coded_type=dct,
                                     coded_value=0x12),

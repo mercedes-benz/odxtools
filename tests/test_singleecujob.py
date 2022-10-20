@@ -22,7 +22,7 @@ from odxtools.singleecujob import read_single_ecu_job_from_odx, SingleEcuJob, Pr
 from odxtools.write_pdx_file import jinja2_odxraise_helper
 from odxtools.odxlink import OdxLinkId, OdxLinkRef, OdxLinkDatabase, OdxDocFragment
 
-doc_frag = OdxDocFragment("UnitTest", "WinneThePoh")
+doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
 class TestSingleEcuJob(unittest.TestCase):
 
@@ -46,13 +46,13 @@ class TestSingleEcuJob(unittest.TestCase):
         self.context = Context(
 
             extensiveTask=FunctionalClass(
-                id=OdxLinkId("ID.extensiveTask", doc_frag), short_name="extensiveTask"),
+                id=OdxLinkId("ID.extensiveTask", doc_frags), short_name="extensiveTask"),
 
             specialAudience=AdditionalAudience(
-                id=OdxLinkId("ID.specialAudience", doc_frag), short_name="specialAudience"),
+                id=OdxLinkId("ID.specialAudience", doc_frags), short_name="specialAudience"),
 
             inputDOP=DataObjectProperty(
-                id=OdxLinkId("ID.inputDOP", doc_frag),
+                id=OdxLinkId("ID.inputDOP", doc_frags),
                 short_name="inputDOP",
                 diag_coded_type=StandardLengthType(
                     DataType.A_INT32, bit_length=1),
@@ -69,7 +69,7 @@ class TestSingleEcuJob(unittest.TestCase):
             ),
 
             outputDOP=DataObjectProperty(
-                id=OdxLinkId("ID.outputDOP", doc_frag),
+                id=OdxLinkId("ID.outputDOP", doc_frags),
                 short_name="outputDOP",
                 diag_coded_type=StandardLengthType(
                     DataType.A_INT32, bit_length=1),
@@ -79,7 +79,7 @@ class TestSingleEcuJob(unittest.TestCase):
             ),
 
             negOutputDOP=DataObjectProperty(
-                id=OdxLinkId("ID.negOutputDOP", doc_frag),
+                id=OdxLinkId("ID.negOutputDOP", doc_frags),
                 short_name="negOutputDOP",
                 diag_coded_type=StandardLengthType(
                     DataType.A_INT32, bit_length=1),
@@ -98,7 +98,7 @@ class TestSingleEcuJob(unittest.TestCase):
         ]
         output_params=[
             OutputParam(
-                id=OdxLinkId("ID.outputParam", doc_frag),
+                id=OdxLinkId("ID.outputParam", doc_frags),
                 semantic="DATA",
                 short_name="outputParam",
                 long_name="The Output Param",
@@ -115,7 +115,7 @@ class TestSingleEcuJob(unittest.TestCase):
         ]
 
         self.singleecujob_object = SingleEcuJob(
-            id=OdxLinkId("ID.JumpStart", doc_frag),
+            id=OdxLinkId("ID.JumpStart", doc_frags),
             short_name="JumpStart",
             functional_class_refs=[OdxLinkRef.from_id(self.context.extensiveTask.id)],
             audience=Audience(
@@ -129,7 +129,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     revision="0.12.34",
                     entrypoint="CalledClass",
                     library_refs=[
-                        OdxLinkRef("my.favourite.lib", doc_frag)
+                        OdxLinkRef("my.favourite.lib", doc_frags)
                     ]
                 )
             ],
@@ -190,7 +190,7 @@ class TestSingleEcuJob(unittest.TestCase):
         expected = self.singleecujob_object
         sample_single_ecu_job_odx = self.singleecujob_odx
         et_element = ElementTree.fromstring(sample_single_ecu_job_odx)
-        sej = read_single_ecu_job_from_odx(et_element, doc_frag=doc_frag)
+        sej = read_single_ecu_job_from_odx(et_element, doc_frags=doc_frags)
         self.assertEqual(expected.prog_codes, sej.prog_codes)
         self.assertEqual(expected.output_params, sej.output_params)
         self.assertEqual(expected.neg_output_params,
@@ -227,13 +227,13 @@ class TestSingleEcuJob(unittest.TestCase):
 
         # Assert equality of objects
         # This tests the idempotency of read-write
-        sej = read_single_ecu_job_from_odx(ElementTree.fromstring(rawodx), doc_frag=doc_frag)
+        sej = read_single_ecu_job_from_odx(ElementTree.fromstring(rawodx), doc_frags=doc_frags)
         self.assertEqual(self.singleecujob_object, sej)
 
     def test_default_lists(self):
         """Test that empty lists are assigned to list-attributes if no explicit value is passed."""
         sej = SingleEcuJob(
-            id=OdxLinkId("ID.SomeID", doc_frag),
+            id=OdxLinkId("ID.SomeID", doc_frags),
             short_name="SN.SomeShortName",
             prog_codes=[
                 ProgCode(
@@ -254,7 +254,7 @@ class TestSingleEcuJob(unittest.TestCase):
 
     def test_resolve_references(self):
         dl = DiagLayer(variant_type="BASE-VARIANT",
-                       id=OdxLinkId("ID.bv", doc_frag),
+                       id=OdxLinkId("ID.bv", doc_frags),
                        short_name="bv",
                        single_ecu_jobs=[self.singleecujob_object])
         odxlinks = OdxLinkDatabase()

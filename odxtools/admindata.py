@@ -3,7 +3,7 @@
 
 from .nameditemlist import NamedItemList
 from .companydata import CompanyData, TeamMember
-from .odxlink import OdxLinkId, OdxLinkRef, OdxLinkDatabase
+from .odxlink import OdxLinkId, OdxLinkRef, OdxLinkDatabase, OdxDocFragment
 from .utils import read_description_from_odx
 
 from dataclasses import dataclass, field
@@ -65,7 +65,7 @@ class AdminData:
             for dr in self.doc_revisions:
                 dr._resolve_references(odxlinks)
 
-def read_admin_data_from_odx(et_element, doc_frag):
+def read_admin_data_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     if et_element is None:
         return None
 
@@ -78,12 +78,12 @@ def read_admin_data_from_odx(et_element, doc_frag):
         cdilist = list()
         for cdi in company_doc_infos.iterfind("COMPANY-DOC-INFO"):
             # the company data reference is mandatory
-            company_data_ref = OdxLinkRef.from_et(cdi.find("COMPANY-DATA-REF"), doc_frag)
-            team_member_ref = OdxLinkRef.from_et(cdi.find("TEAM-MEMBER-REF"), doc_frag)
+            company_data_ref = OdxLinkRef.from_et(cdi.find("COMPANY-DATA-REF"), doc_frags)
+            assert company_data_ref is not None
+            team_member_ref = OdxLinkRef.from_et(cdi.find("TEAM-MEMBER-REF"), doc_frags)
+            assert team_member_ref is not None
 
-            doc_label = cdi.find("DOC-LABEL")
-            if doc_label is not None:
-                doc_label = doc_label.text
+            doc_label = cdi.findtext("DOC-LABEL")
 
             cdilist.append(CompanyDocInfo(company_data_ref=company_data_ref,
                                           team_member_ref=team_member_ref,
@@ -95,7 +95,7 @@ def read_admin_data_from_odx(et_element, doc_frag):
     if doc_revisions is not None:
         drlist = list()
         for dr in doc_revisions.iterfind("DOC-REVISION"):
-            team_member_ref = OdxLinkRef.from_et(dr.find("TEAM-MEMBER-REF"), doc_frag)
+            team_member_ref = OdxLinkRef.from_et(dr.find("TEAM-MEMBER-REF"), doc_frags)
             revision_label = dr.find("REVISION-LABEL")
             if revision_label is not None:
                 revision_label = revision_label.text

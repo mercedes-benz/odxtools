@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import TYPE_CHECKING, Optional, Any, Dict
+from typing import TYPE_CHECKING, Optional, Any, Dict, List
 
 from .dataobjectproperty import (
     DataObjectProperty,
@@ -16,10 +16,10 @@ from .envdatadesc import read_env_data_desc_from_odx, EnvironmentDataDescription
 from .globals import logger
 from .multiplexer import Multiplexer, read_mux_from_odx
 from .nameditemlist import NamedItemList
-from .structures import Structure, read_structure_from_odx
+from .structures import BasicStructure, read_structure_from_odx
 from .table import read_table_from_odx, Table
 from .units import read_unit_spec_from_odx, UnitSpec
-from .odxlink import OdxLinkId, OdxLinkDatabase
+from .odxlink import OdxLinkId, OdxLinkDatabase, OdxDocFragment
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -36,7 +36,7 @@ class DiagDataDictionarySpec:
     data_object_props: NamedItemList[DataObjectProperty] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
-    structures: NamedItemList[Structure] = field(
+    structures: NamedItemList[BasicStructure] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
     end_of_pdu_fields: NamedItemList[EndOfPduField] = field(
@@ -151,35 +151,37 @@ class DiagDataDictionarySpec:
         return self._all_data_object_properties
 
 
-def read_diag_data_dictionary_spec_from_odx(et_element, doc_frag):
+def read_diag_data_dictionary_spec_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     # Parse DOP-BASEs
     data_object_props = [
-        read_data_object_property_from_odx(dop_element, doc_frag)
+        read_data_object_property_from_odx(dop_element, doc_frags)
         for dop_element in et_element.iterfind("DATA-OBJECT-PROPS/DATA-OBJECT-PROP")
     ]
 
-    structures = [
-        read_structure_from_odx(structure_element, doc_frag)
-        for structure_element in et_element.iterfind("STRUCTURES/STRUCTURE")
-    ]
+    structures = []
+    for structure_element in et_element.iterfind("STRUCTURES/STRUCTURE"):
+        structure = read_structure_from_odx(structure_element, doc_frags)
+        assert structure is not None
+        structures.append(structure)
 
     end_of_pdu_fields = [
-        read_end_of_pdu_field_from_odx(eofp_element, doc_frag)
+        read_end_of_pdu_field_from_odx(eofp_element, doc_frags)
         for eofp_element in et_element.iterfind("END-OF-PDU-FIELDS/END-OF-PDU-FIELD")
     ]
 
-    dtc_dops = [
-        read_data_object_property_from_odx(dop_element, doc_frag)
-        for dop_element in et_element.iterfind("DTC-DOPS/DTC-DOP")
-    ]
+    dtc_dops = []
+    for dop_element in et_element.iterfind("DTC-DOPS/DTC-DOP"):
+        dop = read_data_object_property_from_odx(dop_element, doc_frags)
+        assert isinstance(dop, DtcDop)
+        dtc_dops.append(dop)
 
     tables = [
-        read_table_from_odx(table_element, doc_frag)
+        read_table_from_odx(table_element, doc_frags)
         for table_element in et_element.iterfind("TABLES/TABLE")
     ]
 
     env_data_descs = [
-        read_env_data_desc_from_odx(env_data_desc_element, doc_frag)
+        read_env_data_desc_from_odx(env_data_desc_element, doc_frags)
         for env_data_desc_element in et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC")
     ]
 
@@ -189,17 +191,17 @@ def read_diag_data_dictionary_spec_from_odx(et_element, doc_frag):
         et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC/ENV-DATAS/ENV-DATA"),
     )
     env_datas = [
-        read_env_data_from_odx(env_data_element, doc_frag)
+        read_env_data_from_odx(env_data_element, doc_frags)
         for env_data_element in env_data_elements
     ]
 
     muxs = [
-        read_mux_from_odx(mux_element, doc_frag)
+        read_mux_from_odx(mux_element, doc_frags)
         for mux_element in et_element.iterfind("MUXS/MUX")
     ]
 
     if et_element.find("UNIT-SPEC") is not None:
-        unit_spec = read_unit_spec_from_odx(et_element.find("UNIT-SPEC"), doc_frag)
+        unit_spec = read_unit_spec_from_odx(et_element.find("UNIT-SPEC"), doc_frags)
     else:
         unit_spec = None
 
@@ -217,13 +219,13 @@ def read_diag_data_dictionary_spec_from_odx(et_element, doc_frag):
             logger.info(f"Not implemented: Did not parse {num} {name}.")
 
     return DiagDataDictionarySpec(
-        data_object_props=data_object_props,
-        structures=structures,
-        end_of_pdu_fields=end_of_pdu_fields,
-        dtc_dops=dtc_dops,
+        data_object_props=NamedItemList(lambda x: x.short_name, data_object_props),
+        structures=NamedItemList(lambda x: x.short_name, structures),
+        end_of_pdu_fields=NamedItemList(lambda x: x.short_name, end_of_pdu_fields),
+        dtc_dops=NamedItemList(lambda x: x.short_name, dtc_dops),
         unit_spec=unit_spec,
-        tables=tables,
-        env_data_descs=env_data_descs,
-        env_datas=env_datas,
-        muxs=muxs,
+        tables=NamedItemList(lambda x: x.short_name, tables),
+        env_data_descs=NamedItemList(lambda x: x.short_name, env_data_descs),
+        env_datas=NamedItemList(lambda x: x.short_name, env_datas),
+        muxs=NamedItemList(lambda x: x.short_name, muxs),
     )

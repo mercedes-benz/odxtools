@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from dataclasses import dataclass
-from typing import Dict, Any
+from typing import Any, Dict, List
 
 from .parameters import read_parameter_from_odx
 from .utils import read_description_from_odx
@@ -39,16 +39,17 @@ class EnvironmentData(BasicStructure):
         )
 
 
-def read_env_data_from_odx(et_element, doc_frag):
+def read_env_data_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
+    -> EnvironmentData:
     """Reads Environment Data from Diag Layer."""
-    id = OdxLinkId.from_et(et_element, doc_frag)
+    id = OdxLinkId.from_et(et_element, doc_frags)
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME")
     if long_name is not None:
         long_name = long_name.text
     description = read_description_from_odx(et_element.find("DESC"))
     parameters = [
-        read_parameter_from_odx(et_parameter, doc_frag)
+        read_parameter_from_odx(et_parameter, doc_frags)
         for et_parameter in et_element.iterfind("PARAMS/PARAM")
     ]
     logger.debug("Parsing ENV-DATA " + short_name)

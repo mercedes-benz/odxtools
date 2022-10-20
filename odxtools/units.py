@@ -87,15 +87,15 @@ class Unit:
 
     ```
     Unit(
-        id=OdxLinkId("ID.kilometre", doc_frag),
+        id=OdxLinkId("ID.kilometre", doc_frags),
         short_name="Kilometre",
         display_name="km",
-        physical_dimension_ref=OdxLinkRef("ID.metre", doc_frag),
+        physical_dimension_ref=OdxLinkRef("ID.metre", doc_frags),
         factor_si_to_unit=1000,
         offset_si_to_unit=0
     )
     # where the physical_dimension_ref references, e.g.:
-    PhysicalDimension(id=OdxLinkId("ID.metre", doc_frag), short_name="metre", length_exp=1)
+    PhysicalDimension(id=OdxLinkId("ID.metre", doc_frags), short_name="metre", length_exp=1)
     ```
     """
     id: OdxLinkId
@@ -201,8 +201,9 @@ class UnitSpec:
             group._resolve_references(odxlinks)
 
 
-def read_unit_from_odx(et_element, doc_frag):
-    id = OdxLinkId.from_et(et_element, doc_frag)
+def read_unit_from_odx(et_element, doc_frags: List[OdxDocFragment]):
+    id = OdxLinkId.from_et(et_element, doc_frags)
+    assert id is not None
     oid = et_element.get("OID")
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.findtext("LONG-NAME")
@@ -216,7 +217,7 @@ def read_unit_from_odx(et_element, doc_frag):
             return None
     factor_si_to_unit = read_optional_float(et_element, "FACTOR-SI-TO-UNIT")
     offset_si_to_unit = read_optional_float(et_element, "OFFSET-SI-TO-UNIT")
-    physical_dimension_ref = OdxLinkRef.from_et(et_element.find("PHYSICAL-DIMENSION-REF"), doc_frag)
+    physical_dimension_ref = OdxLinkRef.from_et(et_element.find("PHYSICAL-DIMENSION-REF"), doc_frags)
 
     return Unit(
         id=id,
@@ -231,8 +232,9 @@ def read_unit_from_odx(et_element, doc_frag):
     )
 
 
-def read_physical_dimension_from_odx(et_element, doc_frag):
-    id = OdxLinkId.from_et(et_element, doc_frag)
+def read_physical_dimension_from_odx(et_element, doc_frags: List[OdxDocFragment]):
+    id = OdxLinkId.from_et(et_element, doc_frags)
+    assert id is not None
     oid = et_element.get("OID")
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.findtext("LONG-NAME")
@@ -269,7 +271,7 @@ def read_physical_dimension_from_odx(et_element, doc_frag):
     )
 
 
-def read_unit_group_from_odx(et_element, doc_frag):
+def read_unit_group_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     oid = et_element.get("OID")
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.findtext("LONG-NAME")
@@ -277,8 +279,12 @@ def read_unit_group_from_odx(et_element, doc_frag):
     category = et_element.findtext("CATEGORY")
     assert category in [
         "COUNTRY", "EQUIV-UNITS"], f'A UNIT-GROUP-CATEGORY must be "COUNTRY" or "EQUIV-UNITS". It was {category}.'
-    unit_refs = [OdxLinkRef.from_et(el, doc_frag)
-                 for el in et_element.iterfind("UNIT-REFS/UNIT-REF")]
+    unit_refs = []
+
+    for el in et_element.iterfind("UNIT-REFS/UNIT-REF"):
+        ref = OdxLinkRef.from_et(el, doc_frags)
+        assert isinstance(ref, OdxLinkRef)
+        unit_refs.append(ref)
 
     return UnitGroup(
         short_name=short_name,
@@ -290,13 +296,13 @@ def read_unit_group_from_odx(et_element, doc_frag):
     )
 
 
-def read_unit_spec_from_odx(et_element, doc_frag):
+def read_unit_spec_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 
-    unit_groups = [read_unit_group_from_odx(el, doc_frag)
+    unit_groups = [read_unit_group_from_odx(el, doc_frags)
                    for el in et_element.iterfind("UNIT-GROUPS/UNIT-GROUP")]
-    units = [read_unit_from_odx(el, doc_frag)
+    units = [read_unit_from_odx(el, doc_frags)
              for el in et_element.iterfind("UNITS/UNIT")]
-    physical_dimensions = [read_physical_dimension_from_odx(el, doc_frag)
+    physical_dimensions = [read_physical_dimension_from_odx(el, doc_frags)
                            for el in et_element.iterfind("PHYSICAL-DIMENSIONS/PHYSICAL-DIMENSION")]
     return UnitSpec(
         unit_groups=unit_groups,

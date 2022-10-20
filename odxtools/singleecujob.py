@@ -235,7 +235,7 @@ class SingleEcuJob:
         return hash(self.id)
 
 
-def read_prog_code_from_odx(et_element, doc_frag):
+def read_prog_code_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     code_file = et_element.find("CODE-FILE").text
 
     encryption = et_element.findtext("ENCRYPTION")
@@ -245,9 +245,12 @@ def read_prog_code_from_odx(et_element, doc_frag):
 
     entrypoint = et_element.findtext("ENTRYPOINT")
 
-    library_refs = [
-        OdxLinkRef.from_et(el, doc_frag) for el in et_element.iterfind("LIBRARY-REFS/LIBRARY-REF")
-    ]
+    library_refs = []
+    for el in et_element.iterfind("LIBRARY-REFS/LIBRARY-REF"):
+        ref = OdxLinkRef.from_et(el, doc_frags)
+        assert ref is not None
+        library_refs.append(ref)
+
     return ProgCode(
         code_file=code_file,
         syntax=syntax,
@@ -258,16 +261,17 @@ def read_prog_code_from_odx(et_element, doc_frag):
     )
 
 
-def read_input_param_from_odx(et_element, doc_frag):
+def read_input_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     element_id = read_element_id(et_element)
-    dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frag)
+    dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags)
+    assert dop_base_ref is not None
     physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
 
     # optional attributes
     semantic = et_element.get("SEMANTIC")
     oid = et_element.get("OID")
     return InputParam(
-        **element_id,
+        **element_id, # type: ignore
         dop_base_ref=dop_base_ref,
         physical_default_value=physical_default_value,
         semantic=semantic,
@@ -275,61 +279,67 @@ def read_input_param_from_odx(et_element, doc_frag):
     )
 
 
-def read_output_param_from_odx(et_element, doc_frag):
-    id = OdxLinkId.from_et(et_element, doc_frag)
+def read_output_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
+    id = OdxLinkId.from_et(et_element, doc_frags)
+    assert id is not None
     element_id = read_element_id(et_element)
-    dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frag)
+    dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags)
+    assert dop_base_ref is not None
 
     # optional attributes
     semantic = et_element.get("SEMANTIC")
     oid = et_element.get("OID")
     return OutputParam(
         id=id,
-        **element_id,
+        **element_id, # type: ignore
         dop_base_ref=dop_base_ref,
         semantic=semantic,
         oid=oid
     )
 
 
-def read_neg_output_param_from_odx(et_element, doc_frag):
+def read_neg_output_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     element_id = read_element_id(et_element)
-    dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frag)
+    dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags)
+    assert dop_base_ref is not None
 
     return NegOutputParam(
-        **element_id,
+        **element_id, # type: ignore
         dop_base_ref=dop_base_ref
     )
 
 
-def read_single_ecu_job_from_odx(et_element, doc_frag):
+def read_single_ecu_job_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     logger.info(
         f"Parsing service based on ET DiagService element: {et_element}")
-    id = OdxLinkId.from_et(et_element, doc_frag)
+    id = OdxLinkId.from_et(et_element, doc_frags)
+    assert id is not None
     element_id = read_element_id(et_element)
     semantic = et_element.get("SEMANTIC")
 
-    functional_class_refs = [
-        OdxLinkRef.from_et(el, doc_frag) for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF")
-    ]
+    functional_class_refs = []
+    for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF"):
+        ref = OdxLinkRef.from_et(el, doc_frags)
+        assert ref is not None
+        functional_class_refs.append(ref)
 
     prog_codes = [
-        read_prog_code_from_odx(el, doc_frag) for el in et_element.iterfind("PROG-CODES/PROG-CODE")
+        read_prog_code_from_odx(el, doc_frags) for el in et_element.iterfind("PROG-CODES/PROG-CODE")
     ]
 
     if et_element.find("AUDIENCE"):
-        audience = read_audience_from_odx(et_element.find("AUDIENCE"), doc_frag)
+        audience = read_audience_from_odx(et_element.find("AUDIENCE"), doc_frags)
     else:
         audience = None
 
     input_params = [
-        read_input_param_from_odx(el, doc_frag) for el in et_element.iterfind("INPUT-PARAMS/INPUT-PARAM")
+        read_input_param_from_odx(el, doc_frags) for el in et_element.iterfind("INPUT-PARAMS/INPUT-PARAM")
     ]
     output_params = [
-        read_output_param_from_odx(el, doc_frag) for el in et_element.iterfind("OUTPUT-PARAMS/OUTPUT-PARAM")
+        read_output_param_from_odx(el, doc_frags) for el in et_element.iterfind("OUTPUT-PARAMS/OUTPUT-PARAM")
     ]
     neg_output_params = [
-        read_neg_output_param_from_odx(el, doc_frag) for el in et_element.iterfind("NEG-OUTPUT-PARAMS/NEG-OUTPUT-PARAM")
+        read_neg_output_param_from_odx(el, doc_frags) for el in et_element.iterfind("NEG-OUTPUT-PARAMS/NEG-OUTPUT-PARAM")
     ]
 
     # Read boolean flags. Note that the "else" clause contains the default value.
@@ -339,7 +349,7 @@ def read_single_ecu_job_from_odx(et_element, doc_frag):
     is_final = True if et_element.get("IS-FINAL") == "true" else False
 
     diag_service = SingleEcuJob(id,
-                                **element_id,
+                                **element_id, # type: ignore
                                 prog_codes=prog_codes,
                                 semantic=semantic,
                                 audience=audience,

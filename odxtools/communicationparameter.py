@@ -1,18 +1,19 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from .odxlink import OdxLinkRef
-from .utils import read_description_from_odx
+from typing import List
 
+from .odxlink import OdxLinkRef, OdxDocFragment
+from .utils import read_description_from_odx
 
 class CommunicationParameterRef:
 
     def __init__(self,
                  value,
-                 id_ref,
-                 description=None,
-                 protocol_sn_ref=None,
-                 prot_stack_sn_ref=None):
+                 id_ref: OdxLinkRef,
+                 description: str = None,
+                 protocol_sn_ref: str = None,
+                 prot_stack_sn_ref: str = None):
         self.value = value
         self.id_ref = id_ref
         self.description = description
@@ -50,8 +51,8 @@ def _read_complex_value_from_odx(et_element):
     return result
 
 
-def read_communication_param_ref_from_odx(et_element, doc_frag):
-    id_ref = OdxLinkRef.from_et(et_element, doc_frag)
+def read_communication_param_ref_from_odx(et_element, doc_frags: List[OdxDocFragment]):
+    id_ref = OdxLinkRef.from_et(et_element, doc_frags)
     # ODX standard v2.0.0 defined only VALUE
     # ODX standard v2.0.1 decided to break things and change it to choice between SIMPLE-VALUE and COMPLEX-VALUE
     if et_element.find("VALUE") is not None:

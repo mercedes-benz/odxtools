@@ -13,7 +13,7 @@ from odxtools.physicaltype import PhysicalType
 from odxtools.structures import Request, Response
 from odxtools.odxlink import OdxLinkId, OdxLinkRef, OdxLinkDatabase, OdxDocFragment
 
-doc_frag = OdxDocFragment("UnitTest", "WinneThePoh")
+doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
 class TestEncodeRequest(unittest.TestCase):
     def test_encode_coded_const_infer_order(self):
@@ -38,7 +38,7 @@ class TestEncodeRequest(unittest.TestCase):
         diag_coded_type = StandardLengthType("A_UINT32", 8)
         # This CompuMethod represents the linear function: decode(x) = 2*x + 8 and encode(x) = (x-8)/2
         compu_method = LinearCompuMethod(8, 2, "A_UINT32", "A_UINT32")
-        dop = DataObjectProperty(OdxLinkId("dop-id", doc_frag), "example dop", diag_coded_type,
+        dop = DataObjectProperty(OdxLinkId("dop-id", doc_frags), "example dop", diag_coded_type,
                                  physical_type=PhysicalType("A_UINT32"), compu_method=compu_method)
         param1 = ValueParameter("linear_value_parameter",
                                 dop=dop)

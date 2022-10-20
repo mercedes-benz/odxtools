@@ -66,9 +66,11 @@ class EnvironmentDataDescription(DopBase):
         raise DecodeError("EnvironmentDataDescription DOPs cannot be encoded or decoded")
 
 
-def read_env_data_desc_from_odx(et_element, doc_frag):
+def read_env_data_desc_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
+    -> EnvironmentDataDescription:
     """Reads Environment Data Description from Diag Layer."""
-    id = OdxLinkId.from_et(et_element, doc_frag)
+    id = OdxLinkId.from_et(et_element, doc_frags)
+    assert id is not None
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME").text
     param_snref = None
@@ -78,18 +80,20 @@ def read_env_data_desc_from_odx(et_element, doc_frag):
     if et_element.find("PARAM-SNPATHREF") is not None:
         param_snpathref = et_element.find("PARAM-SNPATHREF").get("SHORT-NAME-PATH")
     env_data_refs = []
-    env_data_refs.extend([
-        OdxLinkRef.from_et(env_data_ref, doc_frag)
-        for env_data_ref in et_element.iterfind("ENV-DATA-REFS/ENV-DATA-REF")
-    ])
+    for env_data_ref in et_element.iterfind("ENV-DATA-REFS/ENV-DATA-REF"):
+        ref = OdxLinkRef.from_et(env_data_ref, doc_frags)
+        assert ref is not None
+        env_data_refs.append(ref)
+
     # ODX 2.0.0 says ENV-DATA-DESC could contain a list of ENV-DATAS
-    env_data_refs.extend([
-        OdxLinkRef.from_et(env_data, doc_frag)
-        for env_data in et_element.iterfind("ENV-DATAS/ENV-DATA")
-    ])
+    for env_data in et_element.iterfind("ENV-DATAS/ENV-DATA"):
+        ref = OdxLinkRef.from_et(env_data, doc_frags)
+        assert ref is not None
+        env_data_refs.append(ref)
+
     logger.debug("Parsing ENV-DATA-DESC " + short_name)
 
-    env_data_desc = EnvironmentDataDescription(
+    return EnvironmentDataDescription(
         id=id,
         short_name=short_name,
         long_name=long_name,
@@ -97,5 +101,3 @@ def read_env_data_desc_from_odx(et_element, doc_frag):
         param_snpathref=param_snpathref,
         env_data_refs=env_data_refs,
     )
-
-    return env_data_desc

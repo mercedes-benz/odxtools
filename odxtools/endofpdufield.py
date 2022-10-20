@@ -110,14 +110,16 @@ class EndOfPduField(DopBase):
         ])
 
 
-def read_end_of_pdu_field_from_odx(et_element, doc_frag):
-    id = OdxLinkId.from_et(et_element, doc_frag)
+def read_end_of_pdu_field_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
+    -> EndOfPduField:
+    id = OdxLinkId.from_et(et_element, doc_frags)
+    assert id is not None
     short_name = et_element.find("SHORT-NAME").text
-    long_name = et_element.find(
-        "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
+    long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
 
-    structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frag)
+    structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
+    assert structure_ref is not None
     structure_snref = None
 
     if et_element.find("BASIC-STRUCTURE-SNREF") is not None:
@@ -126,7 +128,7 @@ def read_end_of_pdu_field_from_odx(et_element, doc_frag):
             "BASIC-STRUCTURE-SNREF").get("SHORT-NAME")
 
     if et_element.find("ENV-DATA-DESC-REF") is not None:
-        structure_ref = OdxLinkRef.from_et(et_element.get("ENV-DATA-DESC-REF"), doc_frag)
+        structure_ref = OdxLinkRef.from_et(et_element.get("ENV-DATA-DESC-REF"), doc_frags)
         structure_snref = None
 
     if et_element.find("ENV-DATA-DESC-SNREF") is not None:
