@@ -42,14 +42,16 @@ def print_summary(odxdb: Database,
         data_object_properties = dl.data_object_properties
         com_params = dl.communication_parameters
 
-        if dl.get_receive_id() is not None:
-            recv_id = hex(dl.get_receive_id())
+        if (rx_id := dl.get_receive_id()) is not None:
+            recv_id = hex(rx_id)
         else:
             recv_id = "None"
-        if dl.get_send_id() is not None:
-            send_id = hex(dl.get_send_id())
+
+        if (tx_id := dl.get_send_id()) is not None:
+            send_id = hex(tx_id)
         else:
             send_id = "None"
+
         print(
             f"{dl.variant_type} '{dl.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
         )

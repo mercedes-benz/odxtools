@@ -158,9 +158,9 @@ class DiagLayer:
         self._services: NamedItemList[Union[DiagService, SingleEcuJob]]\
             = NamedItemList(lambda s: s.short_name, [])
         self._communication_parameters: NamedItemList[CommunicationParameterRef]\
-            = NamedItemList(lambda s: s.id_ref, [])
+            = NamedItemList(lambda cp: cp._python_name(), [])
         self._data_object_properties: NamedItemList[DopBase]\
-            = NamedItemList(lambda s: s.short_name, [])
+            = NamedItemList(lambda dop: dop.short_name, [])
 
         self.import_refs = import_refs
 

@@ -230,10 +230,17 @@ def browse(odxdb: Database):
 
         variant = odxdb.diag_layers[answer.get("variant")]
         assert variant is not None
-        recv_id = hex(variant.get_receive_id()
-                      ) if variant.get_receive_id() is not None else "None"
-        send_id = hex(variant.get_send_id()
-                      ) if variant.get_send_id() is not None else "None"
+
+        if (rx_id := variant.get_receive_id()) is not None:
+            recv_id = hex(rx_id)
+        else:
+            recv_id = "None"
+
+        if (tx_id := variant.get_send_id()) is not None:
+            send_id = hex(tx_id)
+        else:
+            send_id = "None"
+
         print(
             f"{variant.variant_type} '{variant.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
         )
