@@ -482,6 +482,7 @@ somersault_env_data_descs = {
         short_name="flip_env_data_desc",
         long_name="Flip Env Data Desc",
         param_snref="flip_speed",
+        env_datas=[],
         env_data_refs=[OdxLinkRef("somersault.env_data.flip_env_data", doc_frags)],
     )
 }

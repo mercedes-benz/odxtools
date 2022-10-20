@@ -8,6 +8,7 @@ from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
 from .globals import logger
 from .dataobjectproperty import DopBase
 
+from .envdata import EnvironmentData, read_env_data_from_odx
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError
@@ -17,6 +18,7 @@ class EnvironmentDataDescription(DopBase):
     that is used to define the interpretation of environment data."""
 
     def __init__(self,
+                 env_datas: List[EnvironmentData],
                  env_data_refs: List[OdxLinkRef],
                  param_snref: Optional[str] = None,
                  param_snpathref: Optional[str] = None,
@@ -24,6 +26,7 @@ class EnvironmentDataDescription(DopBase):
         super().__init__(**kwargs)
 
         self.bit_length = None
+        self.env_datas = env_datas
         self.env_data_refs = env_data_refs
         self.param_snref = param_snref
         self.param_snpathref = param_snpathref
@@ -32,7 +35,11 @@ class EnvironmentDataDescription(DopBase):
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
-        odxlinks.update({self.id: self})
+        odxlinks[self.id] = self
+
+        for ed in self.env_datas:
+            odxlinks.update(ed._build_odxlinks())
+
         return odxlinks
 
     def __repr__(self) -> str:
@@ -86,10 +93,10 @@ def read_env_data_desc_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
         env_data_refs.append(ref)
 
     # ODX 2.0.0 says ENV-DATA-DESC could contain a list of ENV-DATAS
-    for env_data in et_element.iterfind("ENV-DATAS/ENV-DATA"):
-        ref = OdxLinkRef.from_et(env_data, doc_frags)
-        assert ref is not None
-        env_data_refs.append(ref)
+    env_datas = []
+    for env_data_elem in et_element.iterfind("ENV-DATAS/ENV-DATA"):
+        env_data = read_env_data_from_odx(env_data_elem, doc_frags)
+        env_datas.append(env_data)
 
     logger.debug("Parsing ENV-DATA-DESC " + short_name)
 
@@ -99,5 +106,6 @@ def read_env_data_desc_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
         long_name=long_name,
         param_snref=param_snref,
         param_snpathref=param_snpathref,
+        env_datas=env_datas,
         env_data_refs=env_data_refs,
     )

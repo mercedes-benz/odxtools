@@ -27,8 +27,7 @@ class EnvironmentData(BasicStructure):
         )
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        odxlinks = {}
-        odxlinks.update({self.id: self})
+        odxlinks = {self.id: self}
         return odxlinks
 
     def __repr__(self) -> str:
