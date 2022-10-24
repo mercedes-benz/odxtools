@@ -37,9 +37,6 @@ class InputParam:
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         self._dop = odxlinks.resolve(self.dop_base_ref)
-        if self._dop is None:
-            logger.warning(
-                f"DOP-BASE-REF '{self.dop_base_ref!r}' could not be resolved.")
 
     @property
     def dop(self) -> Optional[DopBase]:
@@ -62,9 +59,6 @@ class OutputParam:
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         self._dop = odxlinks.resolve(self.dop_base_ref)
-        if self._dop is None:
-            logger.warning(
-                f"DOP-BASE-REF '{self.dop_base_ref!r}' could not be resolved.")
 
     @property
     def dop(self) -> Optional[DopBase]:
@@ -84,9 +78,6 @@ class NegOutputParam:
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         self._dop = odxlinks.resolve(self.dop_base_ref)
-        if self._dop is None:
-            logger.warning(
-                f"DOP-BASE-REF '{self.dop_base_ref!r}' could not be resolved.")
 
     @property
     def dop(self) -> Optional[DopBase]:

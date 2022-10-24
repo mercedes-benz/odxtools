@@ -196,11 +196,9 @@ class DtcRef:
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         self.dtc: Optional[DiagnosticTroubleCode] = odxlinks.resolve(self.dtc_id) # type: ignore
-        if self.dtc is None:
-            logger.debug(f"DTC-REF {self.dtc_id} could not be resolved.")
-        else:
-            assert isinstance(self.dtc, DiagnosticTroubleCode),\
-                f"DTC-REF {self.dtc_id} does not reference a DTC but a {type(self.dtc)}."
+
+        assert isinstance(self.dtc, DiagnosticTroubleCode),\
+            f"DTC-REF {self.dtc_id} does not reference a DTC but a {type(self.dtc)}."
 
 
 class DtcDop(DataObjectProperty):

@@ -73,9 +73,6 @@ class DiagLayer:
 
         def _resolve_references(self, odxlinks: OdxLinkDatabase):
             self.parent_diag_layer = odxlinks.resolve(self.parent_ref)
-            if self.parent_diag_layer is None:
-                logger.warning(
-                    f"Could not resolve parent ref to {self.parent_ref}")
 
         def get_inheritance_priority(self):
             return PRIORITY_OF_DIAG_LAYER_TYPE[self.parent_diag_layer.variant_type]

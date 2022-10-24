@@ -41,16 +41,8 @@ class TableRow:
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         if self.structure_ref is not None:
             self._structure = odxlinks.resolve(self.structure_ref)
-            if self._structure is None:
-                logger.warning(
-                    f"STRUCTURE-REF '{self.structure_ref}' could not be resolved in TABLE-ROW."
-                )
         if self.dop_ref is not None:
             self._dop = odxlinks.resolve(self.dop_ref)
-            if self._dop is None:
-                logger.warning(
-                    f"DATA-OBJECT-PROP-REF '{self.dop_ref}' could not be resolved in TABLE-ROW."
-                )
 
     @property
     def structure(self) -> Optional[DopBase]:
@@ -118,10 +110,7 @@ class Table(TableBase):
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         if self.key_dop_ref is not None:
             self._key_dop = odxlinks.resolve(self.key_dop_ref)
-            if self._key_dop is None:
-                logger.warning(
-                    f"KEY-DOP-REF '{self.key_dop_ref!r}' could not be resolved in TABLE."
-                )
+
         for table_row in self._local_table_rows:
             table_row._resolve_references(odxlinks)
 
