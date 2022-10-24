@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+import warnings
 from typing import Callable, Dict, Iterable, List, Optional, Union, Generic, TypeVar
 
 T = TypeVar('T')
@@ -40,7 +41,13 @@ class NamedItemList(Generic[T]):
         self._list.append(item)
 
         item_name = self._item_to_name_fn(item)
-        assert item_name.isidentifier()
+
+        if not item_name.isidentifier():
+            warnings.warn(f"For NamedItemList objects to work properly, all "
+                          f"item names must be valid python identifiers."
+                          f"Encountered name '{item_name}' which is not an "
+                          f"identifier!")
+
         i = 1
         tmp = item_name
         while True:
