@@ -2,12 +2,12 @@
 # Copyright (c) 2022 MBition GmbH
 
 import typing
+import warnings
 
 from dataclasses import dataclass, field
 from xml.etree.ElementTree import Element
 from typing import Optional, Any, List
-
-from .globals import logger
+from .exceptions import OdxWarning
 
 @dataclass(frozen=True)
 class OdxDocFragment:
@@ -169,8 +169,8 @@ class OdxLinkDatabase:
                 # No object featured by the database uses the document
                 # fragment mentioned by the reference. This should not
                 # happen for correct databases...
-                logger.info(f"Warning: Unknown document fragment {ref_frag} "
-                            f"when resolving reference {ref}")
+                warnings.warn(f"Warning: Unknown document fragment {ref_frag} "
+                              f"when resolving reference {ref}", OdxWarning)
                 continue
 
             obj = doc_frag_db.get(odx_link_id)
@@ -196,8 +196,8 @@ class OdxLinkDatabase:
                 # No object featured by the database uses the document
                 # fragment mentioned by the reference. This should not
                 # happen for correct databases...
-                logger.info(f"Warning: Unknown document fragment {ref_frag} "
-                            f"when resolving reference {ref}")
+                warnings.warn(f"Warning: Unknown document fragment {ref_frag} "
+                              f"when resolving reference {ref}", OdxWarning)
                 continue
 
             obj = doc_frag_db.get(odx_link_id)
