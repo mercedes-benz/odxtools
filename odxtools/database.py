@@ -24,7 +24,6 @@ class Database:
                  odx_d_file_name: str = None,
                  enable_candela_workarounds: bool = True):
 
-        self._odxlinks: Dict[str, Any] = {}
         dlc_elements = []
 
         if pdx_zip is None and odx_d_file_name is None:

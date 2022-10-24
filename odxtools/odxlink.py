@@ -220,4 +220,4 @@ class OdxLinkDatabase:
                 if doc_frag not in self._db:
                     self._db[doc_frag] = dict()
 
-                doc_frag_db = self._db[doc_frag][odx_link_id] = obj
+                self._db[doc_frag][odx_link_id] = obj
