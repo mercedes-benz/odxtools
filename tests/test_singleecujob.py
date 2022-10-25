@@ -9,6 +9,7 @@ from xml.etree import ElementTree
 import jinja2
 
 import odxtools
+from odxtools.utils import short_name_as_id
 from odxtools.audience import AdditionalAudience, Audience
 from odxtools.compumethods import CompuScale, Limit, LinearCompuMethod, TexttableCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
@@ -244,12 +245,9 @@ class TestSingleEcuJob(unittest.TestCase):
             ]
         )
         self.assertEqual(sej.functional_class_refs, [])
-        self.assertEqual(sej.input_params, NamedItemList(
-            lambda x: x.short_name, []))
-        self.assertEqual(sej.output_params, NamedItemList(
-            lambda x: x.short_name, []))
-        self.assertEqual(sej.neg_output_params,
-                         NamedItemList(lambda x: x.short_name, []))
+        self.assertEqual(sej.input_params, NamedItemList(short_name_as_id, []))
+        self.assertEqual(sej.output_params, NamedItemList(short_name_as_id, []))
+        self.assertEqual(sej.neg_output_params, NamedItemList(short_name_as_id, []))
         self.assertEqual(sej.prog_codes[0].library_refs, [])
 
     def test_resolve_references(self):

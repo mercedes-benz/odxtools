@@ -215,7 +215,7 @@ def browse(odxdb: Database):
     if not sys.__stdin__.isatty() or not sys.__stdout__.isatty():
         raise SystemError(
             "This command can only be used in an interactive shell!")
-    dl_names = list(map(lambda dl: dl.short_name, odxdb.diag_layers))
+    dl_names = [ dl.short_name for dl in odxdb.diag_layers ]
     while True:
         # Select an ECU
         selection = [{

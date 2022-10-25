@@ -8,6 +8,7 @@ from xml.etree import ElementTree
 from itertools import chain
 from zipfile import ZipFile
 
+from .utils import short_name_as_id
 from .odxlink import OdxLinkDatabase
 from .diaglayer import DiagLayer, DiagLayerContainer, read_diag_layer_container_from_odx
 from .globals import logger
@@ -52,25 +53,25 @@ class Database:
                                                    enable_candela_workarounds=enable_candela_workarounds) \
                   for dlc_el in dlc_elements
             ]
-            self._diag_layer_containers = NamedItemList(lambda x: x.short_name, tmp)
-            self._diag_layer_containers.sort(key=lambda x: x.short_name)
+            self._diag_layer_containers = NamedItemList(short_name_as_id, tmp)
+            self._diag_layer_containers.sort(key=short_name_as_id)
             self.finalize_init()
 
         elif odx_d_file_name is not None:
             dlc_element = ElementTree.parse(odx_d_file_name).find("DIAG-LAYER-CONTAINER")
 
             self._diag_layer_containers = \
-                NamedItemList(lambda x: x.short_name,
+                NamedItemList(short_name_as_id,
                               [read_diag_layer_container_from_odx(dlc_element)])
             self.finalize_init()
 
     def finalize_init(self):
         # Create wrapper objects
         self._diag_layers = NamedItemList(
-            lambda dl: dl.short_name,
+            short_name_as_id,
             chain(*(dlc.diag_layers for dlc in self.diag_layer_containers)))
         self._ecus = NamedItemList(
-            lambda ecu: ecu.short_name,
+            short_name_as_id,
             chain(*(dlc.ecu_variants for dlc in self.diag_layer_containers)))
 
         # Build odxlinks

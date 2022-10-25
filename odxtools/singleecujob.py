@@ -4,6 +4,7 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Optional, Union, cast
 
+from .utils import short_name_as_id
 from .dataobjectproperty import DopBase
 from .audience import Audience, read_audience_from_odx
 from .functionalclass import FunctionalClass
@@ -152,11 +153,11 @@ class SingleEcuJob:
 
         # Replace None attributes by empty lists
         if not self.input_params:
-            self.input_params = NamedItemList(lambda x: x.short_name, [])
+            self.input_params = NamedItemList(short_name_as_id, [])
         if not self.output_params:
-            self.output_params = NamedItemList(lambda x: x.short_name, [])
+            self.output_params = NamedItemList(short_name_as_id, [])
         if not self.neg_output_params:
-            self.neg_output_params = NamedItemList(lambda x: x.short_name, [])
+            self.neg_output_params = NamedItemList(short_name_as_id, [])
 
     @property
     def functional_classes(self) -> Optional[NamedItemList[FunctionalClass]]:
@@ -168,7 +169,7 @@ class SingleEcuJob:
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         # Resolve references to functional classes
         self._functional_classes = NamedItemList[FunctionalClass](
-            lambda fc: fc.short_name, [])
+            short_name_as_id, [])
         for fc_ref in self.functional_class_refs:
             fc = odxlinks.resolve(fc_ref)
             if isinstance(fc, FunctionalClass):

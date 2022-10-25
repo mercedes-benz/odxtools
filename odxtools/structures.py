@@ -5,9 +5,9 @@ import math
 from typing import TYPE_CHECKING, Any, List, Dict, Iterable, OrderedDict, Tuple, Union
 import warnings
 
+from .utils import short_name_as_id
 from .parameters.tablekeyparameter import TableKeyParameter
 from .parameters.lengthkeyparameter import LengthKeyParameter
-
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState, ParameterValuePair
 from .encodestate import EncodeState
@@ -32,7 +32,8 @@ class BasicStructure(DopBase):
                  byte_size=None,
                  description=None):
         super().__init__(id, short_name, long_name=long_name, description=description)
-        self.parameters : NamedItemList[Union["Parameter", "EndOfPduField"]] = NamedItemList(lambda par: par.short_name, parameters)
+        self.parameters : NamedItemList[Union["Parameter", "EndOfPduField"]] = \
+            NamedItemList(short_name_as_id, parameters)
 
         self._byte_size = byte_size
 
@@ -310,8 +311,7 @@ class BasicStructure(DopBase):
         # sort parameters
         sorted_params: list = list(self.parameters)  # copy list
         if all(p.byte_position is not None for p in self.parameters):
-            sorted_params.sort(key=lambda p: (
-                p.byte_position, 8 - p.bit_position))
+            sorted_params.sort(key=lambda p: (p.byte_position, 8 - p.bit_position))
 
         # replace structure parameters by their sub parameters
         params = []

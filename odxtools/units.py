@@ -4,6 +4,7 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Any, Literal, Optional, Union
 
+from .utils import short_name_as_id
 from .nameditemlist import NamedItemList
 from .utils import read_description_from_odx
 from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
@@ -145,11 +146,11 @@ class UnitGroup:
     description: Optional[str] = None
 
     def __post_init__(self):
-        self._units = NamedItemList[Unit](lambda unit: unit.short_name)
+        self._units = NamedItemList[Unit](short_name_as_id)
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         self._units = NamedItemList[Unit](
-            lambda unit: unit.short_name,
+            short_name_as_id,
             [odxlinks.resolve(ref) for ref in self.unit_refs]
         )
 
@@ -178,11 +179,9 @@ class UnitSpec:
                                List[PhysicalDimension]] = field(default_factory=list)  # type: ignore
 
     def __post_init__(self):
-        self.unit_groups = NamedItemList(lambda x: x.short_name,
-                                         self.unit_groups)
-        self.units = NamedItemList(lambda x: x.short_name, self.units)
-        self.physical_dimensions = NamedItemList(lambda x: x.short_name,
-                                                 self.physical_dimensions)
+        self.unit_groups = NamedItemList(short_name_as_id, self.unit_groups)
+        self.units = NamedItemList(short_name_as_id, self.units)
+        self.physical_dimensions = NamedItemList(short_name_as_id, self.physical_dimensions)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}

@@ -3,6 +3,7 @@
 
 from typing import List, Iterable, Optional, Union
 
+from .utils import short_name_as_id
 from .audience import Audience, read_audience_from_odx
 from .functionalclass import FunctionalClass
 from .state import State
@@ -78,7 +79,7 @@ class DiagService:
         if all(isinstance(x, Response) for x in positive_responses):
             # TODO (?): Can we tell mypy that positive_responses is definitely of type Iterable[Response]
             self._positive_responses = \
-                NamedItemList[Response](lambda pr: pr.short_name,
+                NamedItemList[Response](short_name_as_id,
                                         positive_responses)  # type: ignore
             self.pos_res_refs = [
                 OdxLinkRef.from_id(pr.id) for pr in positive_responses]  # type: ignore
@@ -91,7 +92,7 @@ class DiagService:
 
         if all(isinstance(x, Response) for x in negative_responses):
             self._negative_responses = \
-                NamedItemList[Response](lambda nr: nr.short_name,
+                NamedItemList[Response](short_name_as_id,
                                         negative_responses)  # type: ignore
             self.neg_res_refs = [
                 OdxLinkRef.from_id(nr.id) for nr in negative_responses]  # type: ignore
@@ -146,23 +147,23 @@ class DiagService:
         self._request = odxlinks.resolve(self.request_ref)
         self._positive_responses = \
             NamedItemList(
-                lambda pr: pr.short_name,
+                short_name_as_id,
                 [odxlinks.resolve(pr_id) for pr_id in self.pos_res_refs])
         self._negative_responses = \
             NamedItemList(
-                lambda nr: nr.short_name,
+                short_name_as_id,
                 [odxlinks.resolve(nr_id) for nr_id in self.neg_res_refs])
         self._functional_classes = \
             NamedItemList(
-                lambda fc: fc.short_name,
+                short_name_as_id,
                 [odxlinks.resolve(fc_id) for fc_id in self.functional_class_refs])
         self._pre_condition_states = \
             NamedItemList(
-                lambda st: st.short_name,
+                short_name_as_id,
                 [odxlinks.resolve(st_id) for st_id in self.pre_condition_state_refs])
         self._state_transitions = \
             NamedItemList(
-                lambda st: st.short_name,
+                short_name_as_id,
                 [odxlinks.resolve(stt_id) for stt_id in self.state_transition_refs])
         if self.audience:
             self.audience._resolve_references(odxlinks)
@@ -202,13 +203,14 @@ class DiagService:
         # make sure that all parameters which are required for
         # encoding are specified (parameters which have a default are
         # optional)
-        missing_params = set(map(
-            lambda x: x.short_name, self.request.required_parameters)).difference(params.keys())
+        missing_params = {
+            x.short_name
+            for x in self.request.required_parameters
+        }.difference(params.keys())
         assert not missing_params, f"The parameters {missing_params} are required but missing!"
 
         # make sure that no unknown parameters are specified
-        rq_all_param_names = set(
-            map(lambda x: x.short_name, self.request.parameters))
+        rq_all_param_names = { x.short_name for x in self.request.parameters }
         assert set(params.keys()).issubset(rq_all_param_names), \
             f"Unknown parameters specified for encoding: {params.keys()}, known parameters are: {rq_all_param_names}"
         return self.request.encode(**params)

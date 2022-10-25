@@ -7,57 +7,31 @@ from enum import IntEnum
 from itertools import chain
 from typing import Any
 
+from odxtools.utils import short_name_as_id
 from odxtools import PhysicalConstantParameter
-
 from odxtools.envdata import EnvironmentData
 from odxtools.envdatadesc import EnvironmentDataDescription
 from odxtools.multiplexer import Multiplexer, MultiplexerSwitchKey, MultiplexerDefaultCase, MultiplexerCase
-
 from odxtools.table import Table, TableRow
-
 from odxtools.nameditemlist import NamedItemList
-
 from odxtools.database import Database
-
 from odxtools.companydata import XDoc, RelatedDoc, CompanySpecificInfo, TeamMember, CompanyData
 from odxtools.admindata import CompanyDocInfo, Modification, DocRevision, AdminData
-
-from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayer import DiagLayerContainer
-
+from odxtools.diaglayer import DiagLayer, DiagLayerContainer
 from odxtools.service import DiagService
 from odxtools.singleecujob import SingleEcuJob, ProgCode
-
-from odxtools.structures import Request
-from odxtools.structures import Response
-
-from odxtools.compumethods import CompuScale, IdenticalCompuMethod, Limit
-from odxtools.compumethods import TexttableCompuMethod
-
+from odxtools.structures import Request, Response
+from odxtools.compumethods import IdenticalCompuMethod, TexttableCompuMethod, CompuScale, Limit
 from odxtools.dataobjectproperty import DataObjectProperty
-
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-
 from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.physicaltype import PhysicalType
-
-from odxtools.units import UnitSpec
-from odxtools.units import PhysicalDimension
-from odxtools.units import Unit
-from odxtools.units import UnitGroup
-
-from odxtools.parameters import CodedConstParameter
-from odxtools.parameters import ValueParameter
-from odxtools.parameters import MatchingRequestParameter
-from odxtools.parameters import NrcConstParameter
-
+from odxtools.units import UnitSpec, Unit, UnitGroup, PhysicalDimension
+from odxtools.parameters import CodedConstParameter, ValueParameter, MatchingRequestParameter, NrcConstParameter
 from odxtools.communicationparameter import CommunicationParameterRef
-
 from odxtools.audience import AdditionalAudience, Audience
 from odxtools.functionalclass import FunctionalClass
-
 import odxtools.uds as uds
-
 from odxtools.odxtypes import DataType
 from odxtools.odxlink import OdxLinkId, OdxLinkRef, OdxDocFragment
 
@@ -132,7 +106,7 @@ somersault_company_datas = {
                 long_name="Circus of the sun",
                 description="<p>Prestigious group of performers</p>",
                 roles=["circus", "gym"],
-                team_members=NamedItemList(lambda x: x.short_name,
+                team_members=NamedItemList(short_name_as_id,
                                            [
                                                somersault_team_members["doggy"],
                                                somersault_team_members["horsey"],
@@ -156,7 +130,7 @@ somersault_company_datas = {
     "acme":
     CompanyData(id=OdxLinkId("CD.ACME", doc_frags),
                 short_name="ACME_Corporation",
-                team_members=NamedItemList(lambda x: x.short_name,
+                team_members=NamedItemList(short_name_as_id,
                                            [
                                                somersault_team_members["slothy"],
                                            ]),
@@ -1009,9 +983,9 @@ somersault_single_ecu_jobs = {
 
 # communication parameters
 def extract_constant_bytes(params):
-    return bytes(map(lambda x: x.coded_value,
-                     filter(lambda y: isinstance(y, CodedConstParameter),
-                            params))).hex()
+    const_params = [ x.coded_value for x in params if isinstance(x, CodedConstParameter) ]
+    return bytes(const_params).hex()
+
 tester_present_value = extract_constant_bytes(somersault_requests["tester_present"].parameters)
 tester_pr_value = extract_constant_bytes(somersault_positive_responses["tester_ok"].parameters)
 tester_nr_value = extract_constant_bytes(somersault_negative_responses["tester_nok"].parameters)
@@ -1111,16 +1085,16 @@ somersault_communication_parameters = [
 ]
 
 somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
-    data_object_props=NamedItemList(lambda x: x.short_name, somersault_dops.values()),
+    data_object_props=NamedItemList(short_name_as_id, somersault_dops.values()),
     unit_spec=UnitSpec(
         unit_groups=list(somersault_unit_groups.values()),
         units=list(somersault_units.values()),
         physical_dimensions=list(somersault_physical_dimensions.values()),
     ),
-    tables=NamedItemList(lambda x: x.short_name, somersault_tables.values()),
-    muxs=NamedItemList(lambda x: x.short_name, somersault_muxs.values()),
-    env_datas=NamedItemList(lambda x: x.short_name, somersault_env_datas.values()),
-    env_data_descs=NamedItemList(lambda x: x.short_name, somersault_env_data_descs.values()),
+    tables=NamedItemList(short_name_as_id, somersault_tables.values()),
+    muxs=NamedItemList(short_name_as_id, somersault_muxs.values()),
+    env_datas=NamedItemList(short_name_as_id, somersault_env_datas.values()),
+    env_data_descs=NamedItemList(short_name_as_id, somersault_env_data_descs.values()),
 )
 
 # diagnostics layer
@@ -1269,9 +1243,9 @@ somersault_assiduous_services = {
 
 # fill the diagnostics layer object
 somersault_assiduous_diaglayer.requests = list(somersault_assiduous_requests.values())
-somersault_assiduous_diaglayer._local_services = NamedItemList(lambda x: x.short_name, somersault_assiduous_services.values())
-somersault_assiduous_diaglayer.positive_responses = NamedItemList(lambda x: x.short_name, somersault_assiduous_positive_responses.values())
-somersault_assiduous_diaglayer.negative_responses = NamedItemList(lambda x: x.short_name, somersault_assiduous_negative_responses.values())
+somersault_assiduous_diaglayer._local_services = NamedItemList(short_name_as_id, somersault_assiduous_services.values())
+somersault_assiduous_diaglayer.positive_responses = NamedItemList(short_name_as_id, somersault_assiduous_positive_responses.values())
+somersault_assiduous_diaglayer.negative_responses = NamedItemList(short_name_as_id, somersault_assiduous_negative_responses.values())
 
 ##################
 # Container with all ECUs
@@ -1284,7 +1258,7 @@ somersault_dlc = DiagLayerContainer(
     long_name="Collect all saults in the summer",
     description="<p>This contains ECUs which do somersaults &amp; cetera</p>",
     admin_data=somersault_admin_data,
-    company_datas=NamedItemList(lambda x: x.short_name,
+    company_datas=NamedItemList(short_name_as_id,
                                 [
                                     somersault_company_datas["suncus"],
                                     somersault_company_datas["acme"],
@@ -1295,7 +1269,7 @@ somersault_dlc = DiagLayerContainer(
 
 # create a database object
 database = Database()
-database.diag_layer_containers = NamedItemList(lambda x: x.short_name,
+database.diag_layer_containers = NamedItemList(short_name_as_id,
                                                [somersault_dlc])
 
 # Create ID mapping and resolve references

@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from itertools import chain
 from typing import TYPE_CHECKING, Optional, Any, Dict, List
 
+from .utils import short_name_as_id
 from .dataobjectproperty import (
     DataObjectProperty,
     DtcDop,
@@ -25,7 +26,7 @@ if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 def _construct_named_item_list(iterable):
-    return NamedItemList(lambda x: x.short_name, iterable)
+    return NamedItemList(short_name_as_id, iterable)
 
 
 @dataclass()
@@ -219,13 +220,13 @@ def read_diag_data_dictionary_spec_from_odx(et_element, doc_frags: List[OdxDocFr
             logger.info(f"Not implemented: Did not parse {num} {name}.")
 
     return DiagDataDictionarySpec(
-        data_object_props=NamedItemList(lambda x: x.short_name, data_object_props),
-        structures=NamedItemList(lambda x: x.short_name, structures),
-        end_of_pdu_fields=NamedItemList(lambda x: x.short_name, end_of_pdu_fields),
-        dtc_dops=NamedItemList(lambda x: x.short_name, dtc_dops),
+        data_object_props=NamedItemList(short_name_as_id, data_object_props),
+        structures=NamedItemList(short_name_as_id, structures),
+        end_of_pdu_fields=NamedItemList(short_name_as_id, end_of_pdu_fields),
+        dtc_dops=NamedItemList(short_name_as_id, dtc_dops),
         unit_spec=unit_spec,
-        tables=NamedItemList(lambda x: x.short_name, tables),
-        env_data_descs=NamedItemList(lambda x: x.short_name, env_data_descs),
-        env_datas=NamedItemList(lambda x: x.short_name, env_datas),
-        muxs=NamedItemList(lambda x: x.short_name, muxs),
+        tables=NamedItemList(short_name_as_id, tables),
+        env_data_descs=NamedItemList(short_name_as_id, env_data_descs),
+        env_datas=NamedItemList(short_name_as_id, env_datas),
+        muxs=NamedItemList(short_name_as_id, muxs),
     )
