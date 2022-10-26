@@ -5,6 +5,7 @@ import abc
 from typing import List, Dict, Optional, Any, Union
 from dataclasses import dataclass
 
+from .utils import read_description_from_odx
 from .physicaltype import PhysicalType, read_physical_type_from_odx
 from .globals import logger
 from .compumethods import CompuMethod, read_compu_method_from_odx
@@ -306,9 +307,8 @@ def read_data_object_property_from_odx(et_element, doc_frags: List[OdxDocFragmen
     id = OdxLinkId.from_et(et_element, doc_frags)
     assert id is not None
     short_name = et_element.find("SHORT-NAME").text
-    long_name = et_element.find("LONG-NAME").text
-    description = et_element.find("DESCRIPTION").text if et_element.find(
-        "DESCRIPTION") is not None else None
+    long_name = et_element.findtext("LONG-NAME")
+    description = read_description_from_odx(et_element.find("DESC"))
     logger.debug('Parsing DOP ' + short_name)
 
     diag_coded_type = read_diag_coded_type_from_odx(

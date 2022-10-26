@@ -6,12 +6,20 @@ from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment
 
-def read_description_from_odx(et_element: Optional[ElementTree.Element]):
-    """Read a DESCRIPTION element. The element usually has the name DESC."""
+def read_description_from_odx(et_element: Optional[ElementTree.Element]) \
+ -> Optional[str]:
+    """Read a description of an XML element.
+
+    The description is located underneath the DESC sub-tag."""
+
     # TODO: Invent a better representation of a DESC element.
     #       This just represents it as XHTML string.
     if et_element is None:
         return None
+
+    if et_element.tag != "DESC":
+        raise TypeError(f"Attempted to extract ODX desctiption from "
+                        f"{et_element.tag} XML node. (Must be a DESC node!)")
 
     raw_string = et_element.text or ''
     for e in et_element:
@@ -19,38 +27,6 @@ def read_description_from_odx(et_element: Optional[ElementTree.Element]):
 
     return raw_string.strip()
 
-
-def read_element_id(et_element) -> Dict[Literal["short_name", "long_name", "description"], str]:
-    """Read the elements "SHORT-NAME", "LONG-NAME" and "DESCRIPTION".
-
-    Returns the dict
-    ```python
-    {
-        "short_name": et_element.find("SHORT-NAME"),
-        "long_name": et_element.find("LONG-NAME"),
-        "description": read_description_from_odx(et_element.find("DESC"))
-    }
-    ```
-    If `et_element` does not contain the elements "LONG-NAME" and "DESC",
-    the returned dict does not contain the correspondig keys.
-
-    A typical use for this function is reading an odx element
-    that contains the group "ELEMENT-ID", e.g.,
-    ```python
-    def read_type_with_element_id_from_odx(et_element):
-        element_id = read_element_id(et_element)
-        return TypeWithElementID(**element_id)
-    ```
-
-    """
-    d: Dict[Literal["short_name", "long_name", "description"], str] = {
-        "short_name": et_element.findtext("SHORT-NAME")
-    }
-    if et_element.find("LONG-NAME") is not None:
-        d["long_name"] = et_element.findtext("LONG-NAME")
-    if et_element.find("DESC") is not None:
-        d["description"] = read_description_from_odx(et_element.find("DESC"))
-    return d
 
 def short_name_as_id(obj: Any) -> str:
     """Retrieve an object's `short_name` attribute into a valid python identifier.

@@ -5,7 +5,7 @@ from typing import List
 
 from ..diagcodedtypes import read_diag_coded_type_from_odx
 from ..globals import xsi
-from ..utils import read_element_id
+from ..utils import read_description_from_odx
 from ..odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
 
 from .codedconstparameter import CodedConstParameter
@@ -22,19 +22,13 @@ from .tablestructparameter import TableStructParameter
 from .valueparameter import ValueParameter
 
 
-def read_parameter_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    element_id = read_element_id(et_element)
-    short_name = element_id["short_name"]
-    long_name = element_id.get("long_name")
-    description = element_id.get("description")
-
+def read_parameter_from_odx(et_element, doc_frags):
+    short_name = et_element.find("SHORT-NAME").text
+    long_name = et_element.findtext("LONG-NAME")
+    description = read_description_from_odx(et_element.find("DESC"))
     semantic = et_element.get("SEMANTIC")
-
-    byte_position = int(et_element.find(
-        "BYTE-POSITION").text) if et_element.find("BYTE-POSITION") is not None else None
-    bit_position = int(et_element.find(
-        "BIT-POSITION").text) if et_element.find("BIT-POSITION") is not None else 0
-
+    byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
+    bit_position = int(et_element.findtext("BIT-POSITION", "0"))
     parameter_type = et_element.get(f"{xsi}type")
 
     # Which attributes are set depends on the type of the parameter.
