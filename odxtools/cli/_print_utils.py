@@ -23,7 +23,7 @@ def format_desc(desc, ident=0):
 
 def print_diagnostic_service(service: DiagService, print_params=False, print_pre_condition_states=False,
                              print_state_transitions=False, print_audiences=False, allow_unknown_bit_lengths=False):
-    print(f" {service.short_name} <ID: {service.id}>")
+    print(f" {service.short_name} <ID: {service.odx_link_id}>")
 
     if service.description:
         desc = format_desc(service.description, ident=3)
@@ -75,4 +75,4 @@ def print_diagnostic_service(service: DiagService, print_params=False, print_pre
             or (service.negative_responses and len(service.negative_responses) > 1)):
         # Does this ever happen?
         raise NotImplementedError(
-            f"The diagnostic service {service.id} offers more than one response!")
+            f"The diagnostic service {service.odx_link_id} offers more than one response!")

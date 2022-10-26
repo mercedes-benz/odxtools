@@ -37,14 +37,14 @@ class PhysicalDimension:
     The unit `m/s` (or `m**1 * s**(-1)`) can be represented as
     ```
     PhysicalDimension(
-        id="velocity",
+        odx_link_id="velocity",
         short_name="metre_per_second",
         length_exp=1,
         time_exp=-1
     )
     ```
     """
-    id: OdxLinkId
+    odx_link_id: OdxLinkId
     short_name: str
     oid: Optional[str] = None
     long_name: Optional[str] = None
@@ -78,7 +78,7 @@ class Unit:
 
     ```
     Unit(
-        id="kilometre",
+        odx_link_id="kilometre",
         short_name="kilometre",
         display_name="km"
     )
@@ -88,7 +88,7 @@ class Unit:
 
     ```
     Unit(
-        id=OdxLinkId("ID.kilometre", doc_frags),
+        odx_link_id=OdxLinkId("ID.kilometre", doc_frags),
         short_name="Kilometre",
         display_name="km",
         physical_dimension_ref=OdxLinkRef("ID.metre", doc_frags),
@@ -96,10 +96,10 @@ class Unit:
         offset_si_to_unit=0
     )
     # where the physical_dimension_ref references, e.g.:
-    PhysicalDimension(id=OdxLinkId("ID.metre", doc_frags), short_name="metre", length_exp=1)
+    PhysicalDimension(odx_link_id=OdxLinkId("ID.metre", doc_frags), short_name="metre", length_exp=1)
     ```
     """
-    id: OdxLinkId
+    odx_link_id: OdxLinkId
     short_name: str
     display_name: str
     oid: Optional[str] = None
@@ -186,10 +186,10 @@ class UnitSpec:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
         odxlinks.update({
-            unit.id: unit for unit in self.units
+            unit.odx_link_id: unit for unit in self.units
         })
         odxlinks.update({
-            dim.id: dim for dim in self.physical_dimensions
+            dim.odx_link_id: dim for dim in self.physical_dimensions
         })
         return odxlinks
 
@@ -201,8 +201,8 @@ class UnitSpec:
 
 
 def read_unit_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    id = OdxLinkId.from_et(et_element, doc_frags)
-    assert id is not None
+    odx_link_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_link_id is not None
     oid = et_element.get("OID")
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.findtext("LONG-NAME")
@@ -219,7 +219,7 @@ def read_unit_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     physical_dimension_ref = OdxLinkRef.from_et(et_element.find("PHYSICAL-DIMENSION-REF"), doc_frags)
 
     return Unit(
-        id=id,
+        odx_link_id=odx_link_id,
         short_name=short_name,
         display_name=display_name,
         oid=oid,
@@ -232,8 +232,8 @@ def read_unit_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 
 
 def read_physical_dimension_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    id = OdxLinkId.from_et(et_element, doc_frags)
-    assert id is not None
+    odx_link_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_link_id is not None
     oid = et_element.get("OID")
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.findtext("LONG-NAME")
@@ -255,7 +255,7 @@ def read_physical_dimension_from_odx(et_element, doc_frags: List[OdxDocFragment]
                                                "LUMINOUS-INTENSITY-EXP")
 
     return PhysicalDimension(
-        id=id,
+        odx_link_id=odx_link_id,
         short_name=short_name,
         oid=oid,
         long_name=long_name,

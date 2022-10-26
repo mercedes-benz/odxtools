@@ -130,18 +130,18 @@ class OdxLinkRef:
         """
         return OdxLinkRef(odxid.local_id, odxid.doc_fragments)
 
-    def __contains__(self, id: OdxLinkId) -> bool:
+    def __contains__(self, odx_link_id: OdxLinkId) -> bool:
         """
         Returns true iff a given OdxLinkId object is referenced.
         """
 
         # we must reference at to at least of the ID's document
         # fragments
-        if not any([ref_doc in id.doc_fragments for ref_doc in self.ref_docs]):
+        if not any([ref_doc in odx_link_id.doc_fragments for ref_doc in self.ref_docs]):
             return False
 
         # the local ID of the reference and the object ID must match
-        return id.local_id == self.ref_id
+        return odx_link_id.local_id == self.ref_id
 
 class OdxLinkDatabase:
     """

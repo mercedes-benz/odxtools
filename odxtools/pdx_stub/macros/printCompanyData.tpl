@@ -5,7 +5,7 @@
 -#}
 
 {%- macro printCompanyData(company_data) -%}
-<COMPANY-DATA ID="{{company_data.id.local_id}}">
+<COMPANY-DATA ID="{{company_data.odx_link_id.local_id}}">
  <SHORT-NAME>{{company_data.short_name|e}}</SHORT-NAME>
  {%- if company_data.long_name is not none %}
  <LONG-NAME>{{company_data.long_name|e}}</LONG-NAME>
@@ -25,7 +25,7 @@
  {%- if company_data.team_members is not none %}
  <TEAM-MEMBERS>
   {%- for team_member in company_data.team_members %}
-  <TEAM-MEMBER ID="{{team_member.id.local_id}}">
+  <TEAM-MEMBER ID="{{team_member.odx_link_id.local_id}}">
    <SHORT-NAME>{{team_member.short_name|e}}</SHORT-NAME>
    {%- if company_data.long_name is not none %}
    <LONG-NAME>{{team_member.long_name|e}}</LONG-NAME>

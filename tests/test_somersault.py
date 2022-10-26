@@ -82,7 +82,7 @@ class TestDatabase(unittest.TestCase):
                          ])
 
         cd = cds.Suncus
-        self.assertEqual(cd.id.local_id, 'CD.Suncus')
+        self.assertEqual(cd.odx_link_id.local_id, 'CD.Suncus')
         self.assertEqual(cd.short_name, 'Suncus')
         self.assertEqual(cd.long_name, 'Circus of the sun')
         self.assertEqual(cd.description, '<p>Prestigious group of performers</p>')
@@ -95,7 +95,7 @@ class TestDatabase(unittest.TestCase):
                          ])
 
         doggy = cd.team_members.Doggy
-        self.assertEqual(doggy.id.local_id, 'TM.Doggy')
+        self.assertEqual(doggy.odx_link_id.local_id, 'TM.Doggy')
         self.assertEqual(doggy.short_name, 'Doggy')
         self.assertEqual(doggy.long_name, 'Doggy the dog')
         self.assertEqual(doggy.description, "<p>Dog is man's best friend</p>")

@@ -447,12 +447,12 @@ class ParamLengthInfoType(DiagCodedType):
             # if isinstance(param_value.parameter, LengthKeyParameter) would be prettier,
             # but leads to cyclic import...
             if parameter.parameter_type == "LENGTH-KEY" \
-                    and parameter.id == self.length_key_id: # type: ignore
+                    and parameter.odx_link_id == self.length_key_id: # type: ignore
                 # The bit length of the parameter to be extracted is given by the length key.
                 bit_length = value
                 break
 
-        assert bit_length is not None, f"Did not find any length key with ID {self.length_key_id}"
+        assert bit_length is not None, f"Dodx_link_id not find any length key with ID {self.length_key_id}"
 
         # Extract the internal value and return.
         return self._extract_internal(decode_state.coded_message,

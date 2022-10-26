@@ -6,7 +6,7 @@
 -#}
 
 {%- macro printFunctionalClass(fc) -%}
-<FUNCT-CLASS ID="{{fc.id.local_id}}">
+<FUNCT-CLASS ID="{{fc.odx_link_id.local_id}}">
  <SHORT-NAME>{{fc.short_name}}</SHORT-NAME>
 {%- if fc.long_name is string and fc.long_name.strip() %}
  <LONG-NAME>{{fc.long_name}}</LONG-NAME>

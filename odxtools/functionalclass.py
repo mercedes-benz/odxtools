@@ -13,7 +13,7 @@ class FunctionalClass:
     """
     Corresponds to FUNCT-CLASS.
     """
-    id: OdxLinkId
+    odx_link_id: OdxLinkId
     short_name: str
     long_name: Optional[str] = None
     description: Optional[str] = None
@@ -21,14 +21,14 @@ class FunctionalClass:
 
 def read_functional_class_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     short_name = et_element.find("SHORT-NAME").text
-    id = OdxLinkId.from_et(et_element, doc_frags)
-    assert id is not None
+    odx_link_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_link_id is not None
 
     long_name = et_element.find(
         "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
     description = read_description_from_odx(et_element.find("DESC"))
 
-    return FunctionalClass(id=id,
+    return FunctionalClass(odx_link_id=odx_link_id,
                            short_name=short_name,
                            long_name=long_name,
                            description=description)

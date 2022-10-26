@@ -5,7 +5,7 @@
 -#}
 
 {%- macro printTable(table) %}
-<TABLE ID="{{table.id.local_id}}"
+<TABLE ID="{{table.odx_link_id.local_id}}"
  {%- filter odxtools_collapse_xml_attribute %}
   {%- if table.semantic %}
     SEMANTIC="{{table.semantic}}"
@@ -23,7 +23,7 @@
  <KEY-DOP-REF ID-REF="{{ table.key_dop_ref.ref_id }}" />
 {%- endif %}
 {%- for table_row in table.table_rows %}
- <TABLE-ROW ID="{{table_row.id.local_id}}"
+ <TABLE-ROW ID="{{table_row.odx_link_id.local_id}}"
   {%- filter odxtools_collapse_xml_attribute %}
   {%- if table_row.semantic %}
     SEMANTIC="{{table_row.semantic}}"

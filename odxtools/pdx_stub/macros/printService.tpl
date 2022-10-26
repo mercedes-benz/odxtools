@@ -12,7 +12,7 @@
 {%- else %}
 {%-  set semattrib = " SEMANTIC=\"UNKNOWN\"" -%}
 {%- endif -%}
-<DIAG-SERVICE ID="{{service.id.local_id}}" {{semattrib}}>
+<DIAG-SERVICE ID="{{service.odx_link_id.local_id}}" {{semattrib}}>
  <SHORT-NAME>{{service.short_name}}</SHORT-NAME>
 {%- if service.long_name and service.long_name.strip() %}
  <LONG-NAME>{{service.long_name|e}}</LONG-NAME>

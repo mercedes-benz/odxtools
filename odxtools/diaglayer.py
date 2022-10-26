@@ -66,7 +66,7 @@ class DiagLayer:
             else:
                 assert isinstance(parent, DiagLayer)
 
-                self.parent_ref = OdxLinkRef.from_id(parent.id)
+                self.parent_ref = OdxLinkRef.from_id(parent.odx_link_id)
                 self.parent_diag_layer = parent
             self.not_inherited_diag_comms = not_inherited_diag_comms
             self.not_inherited_dops = not_inherited_dops
@@ -93,7 +93,7 @@ class DiagLayer:
 
     def __init__(self,
                  variant_type,
-                 id,
+                 odx_link_id,
                  short_name,
                  long_name=None,
                  description=None,
@@ -118,7 +118,7 @@ class DiagLayer:
         logger.info(f"Initializing variant type {variant_type}")
         self.variant_type = variant_type
 
-        self.id = id
+        self.odx_link_id = odx_link_id
         self.short_name = short_name
         self.long_name = long_name
         self.description = description
@@ -203,6 +203,8 @@ class DiagLayer:
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
+        logger.info(f"Adding {self.odx_link_id} to odxlinks.")
+
         odxlinks = {}
 
         for obj in chain(self._local_services,
@@ -214,14 +216,14 @@ class DiagLayer:
                          self.functional_classes,
                          self.states,
                          self.state_transitions):
-            odxlinks[obj.id] = obj
+            odxlinks[obj.odx_link_id] = obj
 
         if self.local_diag_data_dictionary_spec:
             odxlinks.update(
                 self.local_diag_data_dictionary_spec._build_odxlinks()
             )
 
-        odxlinks[self.id] = self
+        odxlinks[self.odx_link_id] = self
         return odxlinks
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -532,7 +534,7 @@ class DiagLayer:
 
     def __repr__(self) -> str:
         return f"""DiagLayer(variant_type={self.variant_type},
-          id={repr(self.id)},
+          odx_link_id={repr(self.odx_link_id)},
           short_name={repr(self.short_name)},
           long_name={repr(self.long_name)},
           description={repr(self.description)},
@@ -575,8 +577,10 @@ def read_diag_layer_from_odx(et_element,
     -> DiagLayer:
 
     variant_type = et_element.tag
+
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.findtext("LONG-NAME")
+    description = read_description_from_odx(et_element.find("DESC"))
 
     logger.info(f"Parsing diagnostic layer '{short_name}' "
                 f"of type {variant_type} ...")
@@ -585,9 +589,7 @@ def read_diag_layer_from_odx(et_element,
     doc_frags = copy(doc_frags)
     doc_frags.append(OdxDocFragment(short_name, "LAYER"))
 
-    id = OdxLinkId.from_et(et_element, doc_frags)
-
-    description = read_description_from_odx(et_element.find("DESC"))
+    odx_link_id = OdxLinkId.from_et(et_element, doc_frags)
 
     # Parse DiagServices
     services = [read_diag_service_from_odx(service, doc_frags)
@@ -659,7 +661,7 @@ def read_diag_layer_from_odx(et_element,
 
     # Create DiagLayer
     dl = DiagLayer(variant_type,
-                   id,
+                   odx_link_id,
                    short_name,
                    long_name=long_name,
                    description=description,
@@ -685,7 +687,7 @@ def read_diag_layer_from_odx(et_element,
 
 class DiagLayerContainer:
     def __init__(self,
-                 id,
+                 odx_link_id,
                  short_name,
                  long_name=None,
                  description=None,
@@ -697,7 +699,7 @@ class DiagLayerContainer:
                  base_variants=[],
                  ecu_variants=[]
                  ):
-        self.id = id
+        self.odx_link_id = odx_link_id
         self.short_name = short_name
         self.long_name = long_name
         self.description = description
@@ -716,7 +718,7 @@ class DiagLayerContainer:
 
     def _build_odxlinks(self):
         result = {}
-        result[self.id] = self
+        result[self.odx_link_id] = self
 
         if self.admin_data is not None:
             result.update(self.admin_data._build_odxlinks())
@@ -751,15 +753,16 @@ class DiagLayerContainer:
 
 
 def read_diag_layer_container_from_odx(et_element, enable_candela_workarounds=True):
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
+    assert short_name is not None
     long_name = et_element.findtext("LONG-NAME")
 
     # create the current ODX "document fragment" (description of the
     # current document for references and IDs)
     doc_frags = [ OdxDocFragment(short_name, "CONTAINER") ]
 
-    id = OdxLinkId.from_et(et_element, doc_frags)
-
+    odx_link_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_link_id is not None
     description = read_description_from_odx(et_element.find("DESC"))
     admin_data = read_admin_data_from_odx(et_element.find("ADMIN-DATA"), doc_frags)
     company_datas = read_company_datas_from_odx(et_element.find("COMPANY-DATAS"), doc_frags)
@@ -784,7 +787,7 @@ def read_diag_layer_container_from_odx(et_element, enable_candela_workarounds=Tr
                                              enable_candela_workarounds=enable_candela_workarounds)
                     for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")]
 
-    return DiagLayerContainer(id,
+    return DiagLayerContainer(odx_link_id,
                               short_name,
                               long_name=long_name,
                               description=description,

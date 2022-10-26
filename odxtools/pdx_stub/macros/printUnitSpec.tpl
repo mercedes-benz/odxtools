@@ -34,7 +34,7 @@
 
 
 {%- macro printUnit(unit) -%}
-<UNIT ID="{{unit.id.local_id}}"
+<UNIT ID="{{unit.odx_link_id.local_id}}"
  {%- filter odxtools_collapse_xml_attribute %}
   {%- if unit.oid %}
                 OID="{{unit.oid}}"
@@ -69,7 +69,7 @@
 {%- endmacro -%}
 
 {%- macro printPhysicalDimesion(dim) -%}
-<PHYSICAL-DIMENSION ID="{{dim.id.local_id}}"
+<PHYSICAL-DIMENSION ID="{{dim.odx_link_id.local_id}}"
  {%- filter odxtools_collapse_xml_attribute %}
   {%- if dim.oid %}
                 OID="{{dim.oid}}"

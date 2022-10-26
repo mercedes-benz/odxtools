@@ -47,7 +47,7 @@ class InputParam:
 
 @dataclass
 class OutputParam:
-    id: OdxLinkId
+    odx_link_id: OdxLinkId
     short_name: str
     dop_base_ref: OdxLinkRef
     long_name: Optional[str] = None
@@ -121,7 +121,7 @@ class SingleEcuJob:
     TODO: The following xml attributes are not internalized yet:
           ADMIN-DATA, SDGS, PROTOCOL-SNREFS, RELATED-DIAG-COMM-REFS, PRE-CONDITION-STATE-REFS, STATE-TRANSITION-REFS
     """
-    id: OdxLinkId
+    odx_link_id: OdxLinkId
     short_name: str
     prog_codes: List[ProgCode]
     """Pointers to the code that is executed when calling this job."""
@@ -196,35 +196,35 @@ class SingleEcuJob:
         and only raises an informative error.
         """
         raise DecodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be decoded."
-                          f" You tried to decode a response for the job {self.id}.")
+                          f" You tried to decode a response for the job {self.odx_link_id}.")
 
     def encode_request(self, **params):
         """This function's signature matches `DiagService.encode_request`
         and only raises an informative error.
         """
         raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
-                          f" You tried to encode a request for the job {self.id}.")
+                          f" You tried to encode a request for the job {self.odx_link_id}.")
 
     def encode_positive_response(self, coded_request, response_index=0, **params):
         """This function's signature matches `DiagService.encode_positive_response`
         and only raises an informative error.
         """
         raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
-                          f" You tried to encode a response for the job {self.id}.")
+                          f" You tried to encode a response for the job {self.odx_link_id}.")
 
     def encode_negative_response(self, coded_request, response_index=0, **params):
         """This function's signature matches `DiagService.encode_negative_response`
         and only raises an informative error.
         """
         raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
-                          f" You tried to encode the job {self.id}.")
+                          f" You tried to encode the job {self.odx_link_id}.")
 
     def __call__(self, **params) -> bytes:
         raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
-                          f" You tried to call the job {self.id}.")
+                          f" You tried to call the job {self.odx_link_id}.")
 
     def __hash__(self) -> int:
-        return hash(self.id)
+        return hash(self.odx_link_id)
 
 
 def read_prog_code_from_odx(et_element, doc_frags: List[OdxDocFragment]):
@@ -277,8 +277,8 @@ def read_input_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 
 
 def read_output_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    id = OdxLinkId.from_et(et_element, doc_frags)
-    assert id is not None
+    odx_link_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_link_id is not None
     short_name = et_element.find("SHORT-NAME").text
     assert short_name is not None
     long_name = et_element.findtext("LONG-NAME")
@@ -290,7 +290,7 @@ def read_output_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     oid = et_element.get("OID")
 
     return OutputParam(
-        id=id,
+        odx_link_id=odx_link_id,
         short_name=short_name,
         long_name=long_name,
         description=description,
@@ -319,8 +319,8 @@ def read_neg_output_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 def read_single_ecu_job_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     logger.info(
         f"Parsing service based on ET DiagService element: {et_element}")
-    id = OdxLinkId.from_et(et_element, doc_frags)
-    assert id is not None
+    odx_link_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_link_id is not None
     short_name = et_element.find("SHORT-NAME").text
     assert short_name is not None
     long_name = et_element.findtext("LONG-NAME")
@@ -358,7 +358,7 @@ def read_single_ecu_job_from_odx(et_element, doc_frags: List[OdxDocFragment]):
                      else True)
     is_final = True if et_element.get("IS-FINAL") == "true" else False
 
-    diag_service = SingleEcuJob(id=id,
+    diag_service = SingleEcuJob(odx_link_id=odx_link_id,
                                 short_name=short_name,
                                 long_name=long_name,
                                 description=description,

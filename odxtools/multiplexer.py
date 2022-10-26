@@ -110,7 +110,7 @@ class Multiplexer(DopBase):
     """This class represents a Multiplexer (MUX) which are used to interpret data stream depending on the value
     of a switch-key (similar to switch-case statements in programming languages like C or Java)."""
 
-    id: OdxLinkId
+    odx_link_id: OdxLinkId
     short_name: str
     long_name: str
     byte_position: int
@@ -227,7 +227,7 @@ class Multiplexer(DopBase):
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
-        odxlinks.update({self.id: self})
+        odxlinks.update({self.odx_link_id: self})
         return odxlinks
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -243,7 +243,7 @@ class Multiplexer(DopBase):
             f"Multiplexer('{self.short_name}', "
             + ", ".join(
                 [
-                    f"id='{self.id}'",
+                    f"odx_link_id='{self.odx_link_id}'",
                     f"byte_position='{self.byte_position}'",
                     f"switch_key='{self.switch_key}'",
                     f"default_case='{self.default_case}'",
@@ -307,8 +307,8 @@ def read_case_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 def read_mux_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     -> Multiplexer:
     """Reads a Multiplexer from Diag Layer."""
-    id = OdxLinkId.from_et(et_element, doc_frags)
-    assert id is not None
+    odx_link_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_link_id is not None
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.findtext("LONG-NAME")
     byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
@@ -329,7 +329,7 @@ def read_mux_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     logger.debug("Parsing MUX " + short_name)
 
     return Multiplexer(
-        id=id,
+        odx_link_id=odx_link_id,
         short_name=short_name,
         long_name=long_name,
         byte_position=byte_position,

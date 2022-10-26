@@ -99,7 +99,7 @@ class DiagDataDictionarySpec:
         for obj in chain(
             self.data_object_props, self.structures, self.end_of_pdu_fields, self.tables
         ):
-            odxlinks[obj.id] = obj
+            odxlinks[obj.odx_link_id] = obj
 
         for table in self.tables:
             odxlinks.update(table._build_odxlinks())
@@ -217,7 +217,7 @@ def read_diag_data_dictionary_spec_from_odx(et_element, doc_frags: List[OdxDocFr
     ]:
         num = len(list(et_element.iterfind(path)))
         if num > 0:
-            logger.info(f"Not implemented: Did not parse {num} {name}.")
+            logger.info(f"Not implemented: Dodx_link_id not parse {num} {name}.")
 
     return DiagDataDictionarySpec(
         data_object_props=NamedItemList(short_name_as_id, data_object_props),
