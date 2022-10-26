@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+import warnings
 from typing import Callable, Dict, Iterable, List, Optional, Union, Generic, TypeVar
 
 T = TypeVar('T')
@@ -40,6 +41,13 @@ class NamedItemList(Generic[T]):
         self._list.append(item)
 
         item_name = self._item_to_name_fn(item)
+
+        if not item_name.isidentifier():
+            warnings.warn(f"For NamedItemList objects to work properly, all "
+                          f"item names must be valid python identifiers."
+                          f"Encountered name '{item_name}' which is not an "
+                          f"identifier!")
+
         i = 1
         tmp = item_name
         while True:
@@ -57,8 +65,27 @@ class NamedItemList(Generic[T]):
     def __len__(self):
         return len(self._list)
 
-    def __getitem__(self, key: Union[int, str]) -> Optional[T]:
+    def __getitem__(self, key: Union[int, str]) -> T:
         if isinstance(key, int):
+            if abs(key) < -len(self._list) or key >= len(self._list):
+                # we want to raise a KeyError instead of an IndexError
+                # if the index is out of range...
+                raise KeyError(f"Tried to access item {key} of a NamedItemList "
+                               f"of length {len(self)}")
+
+            return self._list[key]
+        elif isinstance(key, slice):
+            return self._list[key]
+        else:
+            return self._typed_dict[key]
+
+    def get(self, key: Union[int, str], default: Optional[T] = None) \
+        -> Optional[T]:
+
+        if isinstance(key, int):
+            if abs(key) < -len(self._list) or key >= len(self._list):
+                return None
+
             return self._list[key]
         else:
             return self._typed_dict.get(key)

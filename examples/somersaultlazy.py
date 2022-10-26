@@ -15,19 +15,20 @@ import time
 import argparse
 import logging
 import random
+from typing import List
 
 tester_logger = logging.getLogger('somersault_lazy_tester')
 ecu_logger = logging.getLogger('somersault_lazy_ecu')
 
 is_sterile = False
 can_channel = None
-somersault_lazy_diag_layer = somersaultecu.database.ecus.somersault_lazy
+somersault_lazy_diag_layer = somersaultecu.database.ecus.somersault_lazy # type:ignore
 
 # the raw payload data of the telegrams received by the ECU and by the
 # tester when in sterile mode (unittest without a CAN channel)
-sterile_rx_ecu = []
+sterile_rx_ecu: List[bytes] = []
 sterile_rx_ecu_event = None
-sterile_rx_tester = []
+sterile_rx_tester: List[bytes] = []
 sterile_rx_tester_event = None
 
 def create_isotp_socket(channel, rxid, txid):

@@ -1,30 +1,18 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import Dict, Literal, Optional
+from typing import Dict, Literal, Optional, Any
 from xml.etree import ElementTree
 
-def make_ref(ref_element: ElementTree.Element) -> Optional[str]:
-    if ref_element is None:
-        return None
-    id_ref = ref_element.get("ID-REF")
-    docref = ref_element.get("DOCREF")
-    if id_ref is None:
-        return None
-    if docref is not None:
-        # Try to make unique identifier which is a valid python name
-        # so that the NamedItemLists work. In some corner cases this
-        # could lead to ID collisions...
-        return f"{id_ref}_from_{docref}"
-    return id_ref
+from .odxlink import OdxDocFragment
 
-def read_description_from_odx(et_element: ElementTree.Element):
+def read_description_from_odx(et_element: Optional[ElementTree.Element]):
     """Read a DESCRIPTION element. The element usually has the name DESC."""
     # TODO: Invent a better representation of a DESC element.
-    #       This just represents it as XHTML string. 
+    #       This just represents it as XHTML string.
     if et_element is None:
         return None
- 
+
     raw_string = et_element.text or ''
     for e in et_element:
         raw_string += ElementTree.tostring(e, encoding='unicode')
@@ -63,3 +51,19 @@ def read_element_id(et_element) -> Dict[Literal["short_name", "long_name", "desc
     if et_element.find("DESC") is not None:
         d["description"] = read_description_from_odx(et_element.find("DESC"))
     return d
+
+def short_name_as_id(obj: Any) -> str:
+    """Retrieve an object's `short_name` attribute into a valid python identifier.
+
+    Although short names are almost identical to python identifiers,
+    their first character is allowed to be a number. This method
+    prepends an underscore to such such shortnames.
+    """
+
+    sn = obj.short_name
+    assert isinstance(sn, str)
+
+    if sn[0].isdigit():
+        return f"_{sn}"
+
+    return sn

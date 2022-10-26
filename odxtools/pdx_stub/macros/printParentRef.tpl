@@ -14,9 +14,9 @@ empty. TODO: provide the xsi:type in the parent ref
 
 -#}
 {%- if not par.not_inherited_diag_comms and not  not par.not_inherited_dops %}
-<PARENT-REF ID-REF="{{par.id_ref}}" DOCREF="TODO" DOCTYPE="CONTAINER" xsi:type="FUNCTIONAL-GROUP-REF"/>
+<PARENT-REF ID-REF="{{par.parent_ref.ref_id}}" DOCREF="TODO" DOCTYPE="CONTAINER" xsi:type="FUNCTIONAL-GROUP-REF"/>
 {%- else %}
-<PARENT-REF ID-REF="{{par.id_ref}}" xsi:type="BASE-VARIANT-REF">
+<PARENT-REF ID-REF="{{par.parent_ref.ref_id}}" xsi:type="BASE-VARIANT-REF">
 {%- if par.not_inherited_diag_comms %}
  <NOT-INHERITED-DIAG-COMMS>
 {%-  for nidc in par.not_inherited_diag_comms %}

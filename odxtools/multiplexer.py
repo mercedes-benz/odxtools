@@ -5,7 +5,7 @@ from collections import OrderedDict
 from dataclasses import dataclass
 from typing import Optional, Dict, Any, List
 
-from .utils import make_ref
+from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
 from .structures import BasicStructure
 from .dataobjectproperty import DopBase, DataObjectProperty
 from .decodestate import DecodeState
@@ -20,19 +20,15 @@ class MultiplexerCase:
 
     short_name: str
     long_name: str
-    structure_ref: str
+    structure_ref: OdxLinkRef
     lower_limit: str
     upper_limit: str
 
     def __post_init__(self):
         self._structure: Optional[BasicStructure] = None
 
-    def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
-        self._structure = id_lookup.get(self.structure_ref)
-        if self._structure is None:
-            logger.warning(
-                f"STRUCTURE-REF '{self.structure_ref}' could not be resolved."
-            )
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+        self._structure = odxlinks.resolve(self.structure_ref)
 
     def __repr__(self) -> str:
         return (
@@ -54,18 +50,14 @@ class MultiplexerDefaultCase:
 
     short_name: str
     long_name: str
-    structure_ref: Optional[str] = None
+    structure_ref: Optional[OdxLinkRef] = None
 
     def __post_init__(self):
         self._structure: Optional[BasicStructure] = None
 
-    def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         if self.structure_ref is not None:
-            self._structure = id_lookup.get(self.structure_ref)
-            if self._structure is None:
-                logger.warning(
-                    f"STRUCTURE-REF '{self.structure_ref}' could not be resolved in DEFAULT-CASE."
-                )
+            self._structure = odxlinks.resolve(self.structure_ref)
 
     def __repr__(self) -> str:
         return (
@@ -85,13 +77,13 @@ class MultiplexerSwitchKey:
 
     byte_position: int
     bit_position: int
-    dop_ref: str
+    dop_ref: OdxLinkRef
 
     def __post_init__(self):
         self._dop: DataObjectProperty = None # type: ignore
 
-    def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
-        dop = id_lookup.get(self.dop_ref)
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+        dop = odxlinks.resolve(self.dop_ref)
         if isinstance(dop, DataObjectProperty):
             self._dop = dop
         else:
@@ -118,7 +110,7 @@ class Multiplexer(DopBase):
     """This class represents a Multiplexer (MUX) which are used to interpret data stream depending on the value
     of a switch-key (similar to switch-case statements in programming languages like C or Java)."""
 
-    id: str
+    id: OdxLinkId
     short_name: str
     long_name: str
     byte_position: int
@@ -233,18 +225,18 @@ class Multiplexer(DopBase):
             )
         return mux_value, mux_next_byte
 
-    def _build_id_lookup(self):
-        id_lookup = {}
-        id_lookup.update({self.id: self})
-        return id_lookup
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        odxlinks = {}
+        odxlinks.update({self.id: self})
+        return odxlinks
 
-    def _resolve_references(self, id_lookup: Dict[str, Any]) -> None:
-        self.switch_key._resolve_references(id_lookup)
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+        self.switch_key._resolve_references(odxlinks)
         if self.default_case is not None:
-            self.default_case._resolve_references(id_lookup)
+            self.default_case._resolve_references(odxlinks)
 
         for case in (self.cases or []):
-            case._resolve_references(id_lookup)
+            case._resolve_references(odxlinks)
 
     def __repr__(self) -> str:
         return (
@@ -262,19 +254,12 @@ class Multiplexer(DopBase):
         )
 
 
-def read_switch_key_from_odx(et_element):
+def read_switch_key_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     """Reads a Switch Key for a Multiplexer."""
-    byte_position = (
-        int(et_element.find("BYTE-POSITION").text)
-        if et_element.find("BYTE-POSITION") is not None
-        else None
-    )
-    bit_position = (
-        int(et_element.find("BIT-POSITION").text)
-        if et_element.find("BIT-POSITION") is not None
-        else 0
-    )
-    dop_ref = make_ref(et_element.find("DATA-OBJECT-PROP-REF"))
+    byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
+    bit_position = int(et_element.findtext("BIT-POSITION", "0"))
+    dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
+    assert dop_ref is not None
 
     return MultiplexerSwitchKey(
         byte_position=byte_position,
@@ -283,14 +268,14 @@ def read_switch_key_from_odx(et_element):
     )
 
 
-def read_default_case_from_odx(et_element):
+def read_default_case_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     """Reads a Default Case for a Multiplexer."""
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME")
     if long_name is not None:
         long_name = long_name.text
 
-    structure_ref = make_ref(et_element.find("STRUCTURE-REF"))
+    structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
 
     return MultiplexerDefaultCase(
         short_name=short_name,
@@ -299,13 +284,14 @@ def read_default_case_from_odx(et_element):
     )
 
 
-def read_case_from_odx(et_element):
+def read_case_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     """Reads a Case for a Multiplexer."""
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME")
     if long_name is not None:
         long_name = long_name.text
-    structure_ref = make_ref(et_element.find("STRUCTURE-REF"))
+    structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
+    assert structure_ref is not None
     lower_limit = et_element.find("LOWER-LIMIT").text
     upper_limit = et_element.find("UPPER-LIMIT").text
 
@@ -318,34 +304,31 @@ def read_case_from_odx(et_element):
     )
 
 
-def read_mux_from_odx(et_element):
+def read_mux_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
+    -> Multiplexer:
     """Reads a Multiplexer from Diag Layer."""
-    id = et_element.get("ID")
+    id = OdxLinkId.from_et(et_element, doc_frags)
+    assert id is not None
     short_name = et_element.find("SHORT-NAME").text
-    long_name = et_element.find("LONG-NAME")
-    if long_name is not None:
-        long_name = long_name.text
-    byte_position = (
-        int(et_element.find("BYTE-POSITION").text)
-        if et_element.find("BYTE-POSITION") is not None
-        else None
-    )
-    switch_key = read_switch_key_from_odx(et_element.find("SWITCH-KEY"))
+    long_name = et_element.findtext("LONG-NAME")
+    byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
+    switch_key = read_switch_key_from_odx(et_element.find("SWITCH-KEY"),
+                                          doc_frags)
 
     default_case = None
     if et_element.find("DEFAULT-CASE") is not None:
         default_case = read_default_case_from_odx(
-            et_element.find("DEFAULT-CASE"))
+            et_element.find("DEFAULT-CASE"), doc_frags)
 
     cases = []
     if et_element.find("CASES") is not None:
         cases = [
-            read_case_from_odx(el) for el in et_element.find("CASES").iterfind("CASE")
+            read_case_from_odx(el, doc_frags) for el in et_element.find("CASES").iterfind("CASE")
         ]
 
     logger.debug("Parsing MUX " + short_name)
 
-    mux = Multiplexer(
+    return Multiplexer(
         id=id,
         short_name=short_name,
         long_name=long_name,
@@ -354,5 +337,3 @@ def read_mux_from_odx(et_element):
         default_case=default_case,
         cases=cases,
     )
-
-    return mux

@@ -8,7 +8,7 @@
 {%- import('macros/printParam.tpl') as pp %}
 
 {%- macro printRequest(request) -%}
-<REQUEST ID="{{request.id}}">
+<REQUEST ID="{{request.id.local_id}}">
  <SHORT-NAME>{{request.short_name}}</SHORT-NAME>
 {%- if request.long_name %}
  <LONG-NAME>{{request.long_name|e}}</LONG-NAME>

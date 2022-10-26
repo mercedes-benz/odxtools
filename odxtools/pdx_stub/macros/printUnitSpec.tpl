@@ -34,7 +34,7 @@
 
 
 {%- macro printUnit(unit) -%}
-<UNIT ID="{{unit.id}}"
+<UNIT ID="{{unit.id.local_id}}"
  {%- filter odxtools_collapse_xml_attribute %}
   {%- if unit.oid %}
                 OID="{{unit.oid}}"
@@ -49,7 +49,7 @@
  <OFFSET-SI-TO-UNIT>{{ unit.offset_si_to_unit }}</OFFSET-SI-TO-UNIT>
  {%- endif %}
  {%- if unit.physical_dimension_ref %}
- <PHYSICAL-DIMENSION-REF ID-REF="{{ unit.physical_dimension_ref }}" />
+ <PHYSICAL-DIMENSION-REF ID-REF="{{ unit.physical_dimension_ref.ref_id }}" />
  {%- endif %}
 </UNIT>
 {%- endmacro -%}
@@ -61,7 +61,7 @@
  {%- if group.unit_refs %}
  <UNIT-REFS>
  {%- for ref in group.unit_refs %}
-  <UNIT-REF ID-REF="{{ ref }}" />
+  <UNIT-REF ID-REF="{{ ref.ref_id }}" />
  {%- endfor %}
  </UNIT-REFS>
  {%- endif %}
@@ -69,7 +69,7 @@
 {%- endmacro -%}
 
 {%- macro printPhysicalDimesion(dim) -%}
-<PHYSICAL-DIMENSION ID="{{dim.id}}"
+<PHYSICAL-DIMENSION ID="{{dim.id.local_id}}"
  {%- filter odxtools_collapse_xml_attribute %}
   {%- if dim.oid %}
                 OID="{{dim.oid}}"

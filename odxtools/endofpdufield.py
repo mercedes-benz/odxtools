@@ -1,12 +1,17 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import List, Union
-from .utils import make_ref, read_description_from_odx
+from typing import TYPE_CHECKING, Any, List, Union
+
+from .utils import read_description_from_odx
+from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 from .structures import BasicStructure
 from .dataobjectproperty import DopBase
 from .decodestate import DecodeState
 from .encodestate import EncodeState
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 
 class EndOfPduField(DopBase):
@@ -31,7 +36,7 @@ class EndOfPduField(DopBase):
 
         self._structure = structure
         if structure:
-            self.structure_ref = structure.id
+            self.structure_ref = OdxLinkRef.from_id(structure.id)
         assert self.structure_ref or self.structure_snref
 
         self.min_number_of_items = min_number_of_items
@@ -83,11 +88,14 @@ class EndOfPduField(DopBase):
 
         return value, next_byte_position
 
-    def _resolve_references(self, parent_dl, id_lookup):
+    def _resolve_references(self,
+                            parent_dl: "DiagLayer",
+                            odxlinks: OdxLinkDatabase) \
+     -> None:
         """Recursively resolve any references (odxlinks or sn-refs)
         """
         if self.structure_ref is not None:
-            self._structure = id_lookup[self.structure_ref]
+            self._structure = odxlinks.resolve(self.structure_ref)
         else:
             self._structure = parent_dl.data_object_properties[self.structure_snref]
 
@@ -102,14 +110,16 @@ class EndOfPduField(DopBase):
         ])
 
 
-def read_end_of_pdu_field_from_odx(et_element):
-    id = et_element.get("ID")
+def read_end_of_pdu_field_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
+    -> EndOfPduField:
+    id = OdxLinkId.from_et(et_element, doc_frags)
+    assert id is not None
     short_name = et_element.find("SHORT-NAME").text
-    long_name = et_element.find(
-        "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
+    long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
 
-    structure_ref = make_ref(et_element.find("BASIC-STRUCTURE-REF"))
+    structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
+    assert structure_ref is not None
     structure_snref = None
 
     if et_element.find("BASIC-STRUCTURE-SNREF") is not None:
@@ -118,7 +128,7 @@ def read_end_of_pdu_field_from_odx(et_element):
             "BASIC-STRUCTURE-SNREF").get("SHORT-NAME")
 
     if et_element.find("ENV-DATA-DESC-REF") is not None:
-        structure_ref = make_ref(et_element.get("ENV-DATA-DESC-REF"))
+        structure_ref = OdxLinkRef.from_et(et_element.get("ENV-DATA-DESC-REF"), doc_frags)
         structure_snref = None
 
     if et_element.find("ENV-DATA-DESC-SNREF") is not None:

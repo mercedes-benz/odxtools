@@ -5,6 +5,7 @@
 
 from setuptools import setup
 from setuptools import find_packages
+import sys
 import pathlib
 import re
 
@@ -20,9 +21,14 @@ requires_list = [
     "can-isotp",
     "markdownify",
 ]
-version_string = re.search(r"^__version__ = '(.*)'$",
-                           (cwd / "odxtools" / "version.py").read_text(),
-                           re.MULTILINE).group(1)
+
+version_match = re.search(r"^__version__ = '(.*)'$",
+                          (cwd / "odxtools" / "version.py").read_text(),
+                          re.MULTILINE)
+if version_match is None:
+    print(f"Could not determine the odxtools version!")
+    sys.exit(1)
+version_string = version_match.group(1)
 
 setup(name='odxtools',
       version=version_string,

@@ -13,7 +13,7 @@
 {%-  set semattrib = "" -%}
 {%- endif -%}
 {%- if param.parameter_type == "TABLE-KEY" and param.id is not none  %}
-<PARAM {{semattrib}} ID="{{param.id}}" xsi:type="{{param.parameter_type}}">
+<PARAM {{semattrib}} ID="{{param.id.local_id}}" xsi:type="{{param.parameter_type}}">
 {%- elif param.parameter_type == "SYSTEM" %}
 <PARAM SYSPARAM="{{param.sysparam}}" xsi:type="{{param.parameter_type}}">
 {%- else %}
@@ -46,7 +46,7 @@
  </CODED-VALUES>
 {%- endif %}
 {%- if param.dop_ref %}
- <DOP-REF ID-REF="{{param.dop_ref}}"/>
+ <DOP-REF ID-REF="{{param.dop_ref.ref_id}}"/>
 {%- elif param.dop is defined and param.dop is not none %}
  {{pdop.printDOP(param.dop)|indent(2)}}
 {%- elif param.diag_coded_type is defined %}
@@ -58,7 +58,7 @@
 {%- endif %}
 {%- if param.parameter_type == "TABLE-KEY" %}
  {%- if param.table_ref %}
- <TABLE-REF ID-REF="{{param.table_ref}}"/>
+ <TABLE-REF ID-REF="{{param.table_ref.ref_id}}"/>
  {%- endif %}
  {%- if param.table_snref %}
  <TABLE-SNREF SHORT-NAME="{{param.table_snref}}"/>
@@ -67,12 +67,12 @@
  <TABLE-ROW-SNREF SHORT-NAME="{{param.table_row_snref}}"/>
  {%- endif %}
  {%- if param.table_row_ref %}
- <TABLE-ROW-REF ID-REF="{{param.table_row_ref}}"/>
+ <TABLE-ROW-REF ID-REF="{{param.table_row_ref.ref_id}}"/>
  {%- endif %}
 {%- endif %}
 {%- if param.parameter_type == "TABLE-STRUCT" %}
  {%- if param.table_key_ref %}
- <TABLE-KEY-REF ID-REF="{{param.table_key_ref}}"/>
+ <TABLE-KEY-REF ID-REF="{{param.table_key_ref.ref_id}}"/>
  {%- endif %}
  {%- if param.table_key_snref %}
  <TABLE-KEY-SNREF SHORT-NAME="{{param.table_ref}}"/>

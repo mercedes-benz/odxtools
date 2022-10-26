@@ -9,10 +9,17 @@ __pycache__/
 # Coverage log
 .coverage
 
-# ide
+# IDEs
+.vscode
 .idea
 /build/
 /dist/
 /bin/
 /include/
 /lib/
+
+# Virtual Environments
+.env
+.venv
+env
+venv

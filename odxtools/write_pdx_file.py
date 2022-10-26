@@ -21,7 +21,7 @@ __pdx_stub_dir = os.path.sep.join([os.path.dirname(__module_filename),
                                   "pdx_stub"])
 def write_pdx_file(output_file_name : str,
                    database : odxtools.Database,
-                   auxiliary_content_specifiers : List[Tuple[str, str]] = [],
+                   auxiliary_content_specifiers : List[Tuple[str, bytes]] = [],
                    stub_dir : str = __pdx_stub_dir) -> bool:
     """
     Write an internalized database to a PDX file.
@@ -90,7 +90,7 @@ def write_pdx_file(output_file_name : str,
         # allows to put XML attributes on a separate line while it is
         # collapsed with the previous line in the rendering
         jinja_env.filters["odxtools_collapse_xml_attribute"] = lambda x: " "+x.strip() if x.strip() else ""
-        
+
         vars: Dict[str, Any] = {}
         vars["odxtools_version"] = odxtools.__version__
         vars["database"] = database

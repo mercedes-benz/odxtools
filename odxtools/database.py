@@ -8,6 +8,8 @@ from xml.etree import ElementTree
 from itertools import chain
 from zipfile import ZipFile
 
+from .utils import short_name_as_id
+from .odxlink import OdxLinkDatabase
 from .diaglayer import DiagLayer, DiagLayerContainer, read_diag_layer_container_from_odx
 from .globals import logger
 from .nameditemlist import NamedItemList
@@ -23,7 +25,6 @@ class Database:
                  odx_d_file_name: str = None,
                  enable_candela_workarounds: bool = True):
 
-        self._id_lookup: Dict[str, Any] = {}
         dlc_elements = []
 
         if pdx_zip is None and odx_d_file_name is None:
@@ -48,79 +49,53 @@ class Database:
                         dlc_elements.append(dlc)
 
             tmp = [
-                read_diag_layer_container_from_odx(dlc_el, enable_candela_workarounds=enable_candela_workarounds) \
+                read_diag_layer_container_from_odx(dlc_el,
+                                                   enable_candela_workarounds=enable_candela_workarounds) \
                   for dlc_el in dlc_elements
             ]
-            self._diag_layer_containers = NamedItemList(lambda x: x.short_name, tmp)
-            self._diag_layer_containers.sort(key=lambda x: x.short_name)
+            self._diag_layer_containers = NamedItemList(short_name_as_id, tmp)
+            self._diag_layer_containers.sort(key=short_name_as_id)
             self.finalize_init()
 
         elif odx_d_file_name is not None:
             dlc_element = ElementTree.parse(odx_d_file_name).find("DIAG-LAYER-CONTAINER")
 
             self._diag_layer_containers = \
-                NamedItemList(lambda x: x.short_name,
+                NamedItemList(short_name_as_id,
                               [read_diag_layer_container_from_odx(dlc_element)])
             self.finalize_init()
 
     def finalize_init(self):
         # Create wrapper objects
         self._diag_layers = NamedItemList(
-            lambda dl: dl.short_name,
+            short_name_as_id,
             chain(*(dlc.diag_layers for dlc in self.diag_layer_containers)))
         self._ecus = NamedItemList(
-            lambda ecu: ecu.short_name,
+            short_name_as_id,
             chain(*(dlc.ecu_variants for dlc in self.diag_layer_containers)))
 
-        # Build id_lookup
-        self._id_lookup = {}
-
-        @lru_cache(maxsize=None)
-        def get_lookups(layer: Union[DiagLayerContainer, DiagLayer], docnames = None) -> dict:
-            lookup = layer._build_id_lookup()
-            docnames = set(docnames or [])
-            docnames.add(layer.short_name)
-            result = dict(lookup)
-            for key, value in dict(lookup).items():
-                # In case an ID-REF uses a DOCREF
-                for docname in docnames:
-                    result[f"{key}_from_{docname}"] = value
-            return result
+        # Build odxlinks
+        self._odxlinks = OdxLinkDatabase()
 
         for dlc in self.diag_layer_containers:
-            self.id_lookup.update(get_lookups(dlc))
+            self.odxlinks.update(dlc._build_odxlinks())
 
-            for dl in dlc.diag_layers:
-                self.id_lookup.update(get_lookups(dl, tuple([dlc.short_name])))
-        
+        for dl in self.diag_layers:
+            self.odxlinks.update(dl._build_odxlinks())
+
         # Resolve references
         for dlc in self.diag_layer_containers:
-            dlc._resolve_references(self.id_lookup)
-
-        docref_lookup = {k: v for k, v in self.id_lookup.items() if '_from_' in k}
+            dlc._resolve_references(self.odxlinks)
 
         for dl_type_name in ["ECU-SHARED-DATA", "PROTOCOL", "FUNCTIONAL-GROUP", "BASE-VARIANT", "ECU-VARIANT"]:
-            dl: DiagLayer
             for dl in self.diag_layers:
                 if dl.variant_type == dl_type_name:
-                    dl_lookup = dict(docref_lookup)
-                    for parent_ref in dl.parent_refs:
-                        parent_ref._resolve_references(self.id_lookup)
-                        dl_lookup.update(get_lookups(parent_ref.referenced_diag_layer))
-                    for import_ref in dl.import_refs:
-                        ecu_shared_data: DiagLayer = self.id_lookup.get(import_ref)
-                        dl_lookup.update(get_lookups(ecu_shared_data))
-                    # Locally defined takes precedence
-                    dl_lookup.update(get_lookups(dl))
-                    
-                    dl._resolve_references(dl_lookup)
-
-        get_lookups.cache_clear()
+                    dl._resolve_references(self.odxlinks)
 
     @property
-    def id_lookup(self) -> dict:
+    def odxlinks(self) -> dict:
         """A map from id to object"""
-        return self._id_lookup
+        return self._odxlinks
 
     @property
     def ecus(self) -> NamedItemList[DiagLayer]:

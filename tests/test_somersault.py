@@ -4,6 +4,17 @@
 import unittest
 
 from odxtools.load_pdx_file import load_pdx_file
+from odxtools.odxlink import OdxLinkRef
+
+try:
+    from unittest.mock import patch # type: ignore
+except ImportError:
+    from mock import patch # type: ignore
+
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 odxdb = load_pdx_file("./examples/somersault.pdx", enable_candela_workarounds=False)
 
@@ -38,9 +49,9 @@ class TestDatabase(unittest.TestCase):
         cdi = ad.company_doc_infos
 
         self.assertEqual(len(cdi), 1)
-        self.assertEqual(cdi[0].company_data_ref, 'CD.Suncus')
+        self.assertEqual(cdi[0].company_data_ref.ref_id, 'CD.Suncus')
         self.assertTrue(cdi[0].company_data is not None)
-        self.assertEqual(cdi[0].team_member_ref, 'TM.Doggy')
+        self.assertEqual(cdi[0].team_member_ref.ref_id, 'TM.Doggy')
         self.assertTrue(cdi[0].team_member is not None)
         self.assertEqual(cdi[0].doc_label, 'A really meaningful label')
 
@@ -54,7 +65,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(mod.reason, 'we needed a new artist')
 
         self.assertEqual(dr.revision_label, '1.0')
-        self.assertEqual(dr.team_member_ref, 'TM.Doggy')
+        self.assertEqual(dr.team_member_ref.ref_id, 'TM.Doggy')
         self.assertTrue(dr.team_member is not None)
         self.assertEqual(dr.tool, 'odxtools 0.0.1')
 
@@ -71,7 +82,7 @@ class TestDatabase(unittest.TestCase):
                          ])
 
         cd = cds.Suncus
-        self.assertEqual(cd.id, 'CD.Suncus')
+        self.assertEqual(cd.id.local_id, 'CD.Suncus')
         self.assertEqual(cd.short_name, 'Suncus')
         self.assertEqual(cd.long_name, 'Circus of the sun')
         self.assertEqual(cd.description, '<p>Prestigious group of performers</p>')
@@ -84,7 +95,7 @@ class TestDatabase(unittest.TestCase):
                          ])
 
         doggy = cd.team_members.Doggy
-        self.assertEqual(doggy.id, 'TM.Doggy')
+        self.assertEqual(doggy.id.local_id, 'TM.Doggy')
         self.assertEqual(doggy.short_name, 'Doggy')
         self.assertEqual(doggy.long_name, 'Doggy the dog')
         self.assertEqual(doggy.description, "<p>Dog is man's best friend</p>")
@@ -137,7 +148,7 @@ class TestDatabase(unittest.TestCase):
                              'forward_soberness_check',
                              'num_flips'
                          ])
-        self.assertEqual([x.short_name for x in service.request.get_required_parameters()],
+        self.assertEqual([x.short_name for x in service.request.required_parameters],
                          [
                              'forward_soberness_check',
                              'num_flips'
@@ -159,7 +170,7 @@ class TestDatabase(unittest.TestCase):
                              'sid',
                              'num_flips_done'
                          ])
-        self.assertEqual([x.short_name for x in pr.get_required_parameters()],
+        self.assertEqual([x.short_name for x in pr.required_parameters],
                          [
                              'num_flips_done'
                          ])
@@ -209,14 +220,24 @@ class TestDecode(unittest.TestCase):
         pos_response = service.positive_responses.grudging_forward
         neg_response = service.negative_responses.flips_not_done
 
-        free_param_info = request.free_parameters_info()
-        self.assertEqual(free_param_info, 'forward_soberness_check: uint8\nnum_flips: uint8\n')
+        stdout = StringIO()
+        with patch('sys.stdout', stdout):
+            request.print_free_parameters_info()
+            expected_output = 'forward_soberness_check: uint8\nnum_flips: uint8\n'
+            actual_output = stdout.getvalue()
+            self.assertEqual(actual_output, expected_output)
 
-        free_param_info = pos_response.free_parameters_info()
-        self.assertEqual(free_param_info, '')
+        with patch('sys.stdout', stdout):
+            pos_response.print_free_parameters_info()
+            expected_output = 'forward_soberness_check: uint8\nnum_flips: uint8\n'
+            actual_output = stdout.getvalue()
+            self.assertEqual(actual_output, expected_output)
 
-        free_param_info = neg_response.free_parameters_info()
-        self.assertEqual(free_param_info, 'flips_successfully_done: uint8\n')
+        with patch('sys.stdout', stdout):
+            neg_response.print_free_parameters_info()
+            expected_output = 'forward_soberness_check: uint8\nnum_flips: uint8\nflips_successfully_done: uint8\n'
+            actual_output = stdout.getvalue()
+            self.assertEqual(actual_output, expected_output)
 
     def test_decode_response(self):
         ecu = odxdb.ecus.somersault_lazy

@@ -13,7 +13,9 @@ from odxtools.compumethods import Limit, LinearCompuMethod, IntervalType, TabInt
 from odxtools.compumethods.readcompumethod import read_compu_method_from_odx
 from odxtools.exceptions import DecodeError, EncodeError
 from odxtools.odxtypes import DataType
+from odxtools.odxlink import OdxDocFragment
 
+doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
 class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_type_int_int(self):
@@ -114,8 +116,8 @@ class TestTabIntpCompuMethod(unittest.TestCase):
 
             # allows to put XML attributes on a separate line while it is
             # collapsed with the previous line in the rendering
-            jinja_env.filters["odxtools_collapse_xml_attribute"] = lambda x: " " + \
-                x.strip() if x.strip() else ""
+            jinja_env.filters["odxtools_collapse_xml_attribute"] = \
+                lambda x: " " + x.strip() if x.strip() else ""
             return jinja_env
 
         self.jinja_env = _get_jinja_environment()
@@ -188,6 +190,7 @@ class TestTabIntpCompuMethod(unittest.TestCase):
 
         et_element = ElementTree.fromstring(self.compumethod_odx)
         actual = read_compu_method_from_odx(et_element,
+                                            doc_frags,
                                             expected.internal_type,
                                             expected.physical_type)
         self.assertIsInstance(actual, TabIntpCompuMethod)

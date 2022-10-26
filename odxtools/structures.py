@@ -2,12 +2,12 @@
 # Copyright (c) 2022 MBition GmbH
 
 import math
-from typing import List, Dict, Iterable, OrderedDict, Tuple, Union
+from typing import TYPE_CHECKING, Any, List, Dict, Iterable, OrderedDict, Tuple, Union
 import warnings
 
-from odxtools.parameters.tablekeyparameter import TableKeyParameter
-from odxtools.parameters.lengthkeyparameter import LengthKeyParameter
-
+from .utils import short_name_as_id
+from .parameters.tablekeyparameter import TableKeyParameter
+from .parameters.lengthkeyparameter import LengthKeyParameter
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState, ParameterValuePair
 from .encodestate import EncodeState
@@ -17,18 +17,23 @@ from .nameditemlist import NamedItemList
 from .parameters import Parameter, ParameterWithDOP, read_parameter_from_odx
 from .parameters import CodedConstParameter, MatchingRequestParameter, ValueParameter
 from .utils import read_description_from_odx
+from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
+    from .endofpdufield import EndOfPduField
 
 class BasicStructure(DopBase):
     def __init__(self,
                  id,
                  short_name,
-                 parameters: Iterable[Union[Parameter, "EndOfPduField"]], # type: ignore
+                 parameters: Iterable[Union[Parameter, "EndOfPduField"]],
                  long_name=None,
                  byte_size=None,
                  description=None):
         super().__init__(id, short_name, long_name=long_name, description=description)
-        self.parameters : NamedItemList[Union[Parameter, "EndOfPduField"]] = NamedItemList(lambda par: par.short_name, parameters) # type: ignore
+        self.parameters : NamedItemList[Union["Parameter", "EndOfPduField"]] = \
+            NamedItemList(short_name_as_id, parameters)
 
         self._byte_size = byte_size
 
@@ -70,12 +75,14 @@ class BasicStructure(DopBase):
                 break
         return prefix
 
-    def get_required_parameters(self) -> List[Parameter]:
+    @property
+    def required_parameters(self) -> List[Parameter]:
         """Return the list of parameters which are required for
         encoding the structure."""
         return [p for p in self.parameters if p.is_required()]
 
-    def get_free_parameters(self) -> List[Union[Parameter, "EndOfPduField"]]: # type: ignore
+    @property
+    def free_parameters(self) -> List[Union[Parameter, "EndOfPduField"]]: # type: ignore
         """Return the list of parameters which can be freely specified by
         the user when encoding the structure.
 
@@ -100,13 +107,13 @@ class BasicStructure(DopBase):
 
         return result
 
-    def free_parameters_info(self) -> str:
+    def print_free_parameters_info(self) -> None:
         """Return a human readable description of the structure's
         free parameters.
         """
         from .parameter_info import parameter_info
 
-        return parameter_info(self.get_free_parameters())
+        print(parameter_info(self.free_parameters), end="")
 
     def convert_physical_to_internal(self,
                                      param_values: dict,
@@ -147,7 +154,7 @@ class BasicStructure(DopBase):
             coded_rpc = coded_rpc.ljust(self._byte_size, b'\0')
 
         for (param, encode_state) in length_encodings:
-            # Same as previous, but all bytes as 0
+            # Same as previous, but all bytes as 0.
             param_value = encode_state.length_keys[param.id]
             state = encode_state._replace(
                 coded_message=bytearray(len(encode_state.coded_message)),
@@ -289,21 +296,22 @@ class BasicStructure(DopBase):
         })
         return param_dict
 
-    def _resolve_references(self, parent_dl, id_lookup):
+    def _resolve_references(self,
+                            parent_dl: "DiagLayer",
+                            odxlinks: OdxLinkDatabase):
         """Recursively resolve any references (odxlinks or sn-refs)
         """
         for p in self.parameters:
             if isinstance(p, ParameterWithDOP):
-                p.resolve_references(parent_dl, id_lookup)
+                p.resolve_references(parent_dl, odxlinks)
             if isinstance(p, TableKeyParameter):
-                p.resolve_references(parent_dl, id_lookup)
+                p.resolve_references(parent_dl, odxlinks)
 
     def __message_format_lines(self, allow_unknown_lengths=False):
         # sort parameters
         sorted_params: list = list(self.parameters)  # copy list
         if all(p.byte_position is not None for p in self.parameters):
-            sorted_params.sort(key=lambda p: (
-                p.byte_position, 8 - p.bit_position))
+            sorted_params.sort(key=lambda p: (p.byte_position, 8 - p.bit_position))
 
         # replace structure parameters by their sub parameters
         params = []
@@ -503,14 +511,12 @@ class Response(BasicStructure):
         return f"Response('{self.short_name}')"
 
 
-def read_structure_from_odx(et_element) -> Union[Structure, Request, Response, None]:
-    id = et_element.get("ID")
+def read_structure_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> Union[Structure, Request, Response, None]:
+    id = OdxLinkId.from_et(et_element, doc_frags)
     short_name = et_element.find("SHORT-NAME").text
-    long_name = et_element.find("LONG-NAME")
-    if long_name is not None:
-        long_name = long_name.text
+    long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
-    parameters = [read_parameter_from_odx(et_parameter)
+    parameters = [read_parameter_from_odx(et_parameter, doc_frags)
                   for et_parameter in et_element.iterfind("PARAMS/PARAM")]
 
     res: Union[Structure, Request, Response, None]

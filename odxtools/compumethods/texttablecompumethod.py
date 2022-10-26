@@ -45,10 +45,10 @@ class TexttableCompuMethod(CompuMethod):
         return scale.compu_const
 
     def is_valid_physical_value(self, physical_value):
-        return physical_value in map(lambda x: x.compu_const, self.internal_to_phys)
+        return physical_value in [ x.compu_const for x in self.internal_to_phys ]
 
     def is_valid_internal_value(self, internal_value):
         return any(self.__is_internal_in_scale(internal_value, scale) for scale in self.internal_to_phys)
 
     def get_valid_physical_values(self):
-        return list(map(lambda x: x.compu_const, self.internal_to_phys))
+        return [ x.compu_const for x in self.internal_to_phys ]

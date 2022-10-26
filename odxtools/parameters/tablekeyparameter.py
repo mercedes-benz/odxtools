@@ -1,9 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-
+from ..odxlink import OdxLinkDatabase
 from .parameterbase import Parameter
 
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 class TableKeyParameter(Parameter):
     def __init__(self,
@@ -64,9 +68,11 @@ class TableKeyParameter(Parameter):
         raise NotImplementedError(
             "Decoding a TableKeyParameter is not implemented yet.")
 
-    def resolve_references(self, parent_dl, id_lookup):
+    def resolve_references(self,
+                           parent_dl: "DiagLayer",
+                           odxlinks: OdxLinkDatabase):
         self.table = None
         if self.table_snref:
             self.table = parent_dl.local_diag_data_dictionary_spec.tables[self.table_snref]
         elif self.table_ref:
-            self.table = id_lookup.get(self.table_ref)
+            self.table = odxlinks.resolve(self.table_ref)

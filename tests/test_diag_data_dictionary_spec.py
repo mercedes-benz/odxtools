@@ -17,6 +17,10 @@ from odxtools.dataobjectproperty import DataObjectProperty, DiagnosticTroubleCod
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.physicaltype import PhysicalType
 
+from odxtools.odxlink import OdxLinkId, OdxLinkRef, OdxDocFragment
+
+# the document fragment which is used throughout the test
+doc_frags = [ OdxDocFragment("UnitTest", "unit_test_doc") ]
 
 class TestDiagDataDictionarySpec(unittest.TestCase):
     def test_initialization(self):
@@ -105,6 +109,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             short_name="flip_env_data_desc",
             long_name="Flip Env Data Desc",
             param_snref="flip_speed",
+            env_datas=[],
             env_data_refs=["somersault.env_data.flip_env_data"],
         )
 
