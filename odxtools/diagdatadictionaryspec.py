@@ -99,7 +99,7 @@ class DiagDataDictionarySpec:
         for obj in chain(
             self.data_object_props, self.structures, self.end_of_pdu_fields, self.tables
         ):
-            odxlinks[obj.odx_link_id] = obj
+            odxlinks[obj.odx_id] = obj
 
         for table in self.tables:
             odxlinks.update(table._build_odxlinks())

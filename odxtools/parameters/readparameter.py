@@ -138,10 +138,10 @@ def read_parameter_from_odx(et_element, doc_frags):
                                description=description)
 
     elif parameter_type == "LENGTH-KEY":
-        odx_link_id = OdxLinkId.from_et(et_element, doc_frags)
+        odx_id = OdxLinkId.from_et(et_element, doc_frags)
 
         return LengthKeyParameter(short_name=short_name,
-                                  odx_link_id=odx_link_id,
+                                  odx_id=odx_id,
                                   long_name=long_name,
                                   semantic=semantic,
                                   byte_position=byte_position,
@@ -188,7 +188,7 @@ def read_parameter_from_odx(et_element, doc_frags):
                                  table_snref=table_snref,
                                  table_row_snref=row_snref,
                                  table_row_ref=row_ref,
-                                 odx_link_id=parameter_id,
+                                 odx_id=parameter_id,
                                  long_name=long_name,
                                  byte_position=byte_position,
                                  bit_position=bit_position,

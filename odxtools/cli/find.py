@@ -78,7 +78,7 @@ def print_summary(odxdb: Database,
                                      print_state_transitions=True,
                                      print_audiences=True)
         elif isinstance(service, SingleEcuJob):
-            print(f"SingleEcuJob: {service.odx_link_id}")
+            print(f"SingleEcuJob: {service.odx_id}")
         else:
             print(f"Unknown service: {service}")
 

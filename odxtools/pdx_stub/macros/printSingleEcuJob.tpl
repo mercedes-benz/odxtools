@@ -7,7 +7,7 @@
 {%- import('macros/printAudience.tpl') as paud %}
 
 {%- macro printSingleEcuJob(job) -%}
-<SINGLE-ECU-JOB ID="{{job.odx_link_id.local_id}}"
+<SINGLE-ECU-JOB ID="{{job.odx_id.local_id}}"
  {%- filter odxtools_collapse_xml_attribute %}
   {%- if job.oid %}
                 OID="{{job.oid}}"
@@ -124,7 +124,7 @@
 {%- endmacro -%}
 
 {%- macro printOutputParam(param) -%}
-<OUTPUT-PARAM ID="{{param.odx_link_id.local_id}}"
+<OUTPUT-PARAM ID="{{param.odx_id.local_id}}"
 {%- filter odxtools_collapse_xml_attribute %}
   {%- if param.oid %}
              OID="{{param.oid}}"

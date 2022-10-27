@@ -11,7 +11,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
  <!-- Written by the odxtools python module, version {{odxtools_version}} -->
- <DIAG-LAYER-CONTAINER ID="{{dlc.odx_link_id}}">
+ <DIAG-LAYER-CONTAINER ID="{{dlc.odx_id}}">
   <SHORT-NAME>{{dlc.short_name}}</SHORT-NAME>
 {%- if dlc.long_name %}
   <LONG-NAME>{{dlc.long_name|e}}</LONG-NAME>

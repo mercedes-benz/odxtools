@@ -94,7 +94,7 @@ class Database:
 
     @property
     def odxlinks(self) -> dict:
-        """A map from odx_link_id to object"""
+        """A map from odx_id to object"""
         return self._odxlinks
 
     @property

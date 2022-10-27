@@ -16,24 +16,24 @@ class EnvironmentData(BasicStructure):
 
     def __init__(
         self,
-        odx_link_id,
+        odx_id,
         short_name,
         parameters,
         long_name=None,
         description=None,
     ):
         super().__init__(
-            odx_link_id, short_name, parameters, long_name=long_name, description=description
+            odx_id, short_name, parameters, long_name=long_name, description=description
         )
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        odxlinks = {self.odx_link_id: self}
+        odxlinks = {self.odx_id: self}
         return odxlinks
 
     def __repr__(self) -> str:
         return (
             f"EnvironmentData('{self.short_name}', "
-            + ", ".join([f"odx_link_id='{self.odx_link_id}'", f"parameters='{self.parameters}'"])
+            + ", ".join([f"odx_id='{self.odx_id}'", f"parameters='{self.parameters}'"])
             + ")"
         )
 
@@ -41,7 +41,7 @@ class EnvironmentData(BasicStructure):
 def read_env_data_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     -> EnvironmentData:
     """Reads Environment Data from Diag Layer."""
-    odx_link_id = OdxLinkId.from_et(et_element, doc_frags)
+    odx_id = OdxLinkId.from_et(et_element, doc_frags)
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME")
     if long_name is not None:
@@ -54,7 +54,7 @@ def read_env_data_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     logger.debug("Parsing ENV-DATA " + short_name)
 
     env_data = EnvironmentData(
-        odx_link_id,
+        odx_id,
         short_name,
         parameters=parameters,
         long_name=long_name,

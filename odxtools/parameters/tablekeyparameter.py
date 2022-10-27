@@ -16,7 +16,7 @@ class TableKeyParameter(Parameter):
                  table_snref=None,
                  table_row_snref=None,
                  table_row_ref=None,
-                 odx_link_id=None,
+                 odx_id=None,
                  long_name=None,
                  byte_position=None,
                  bit_position=None,
@@ -46,7 +46,7 @@ class TableKeyParameter(Parameter):
         else:
             raise ValueError(
                 "Either table_key_ref or table_key_snref must be defined.")
-        self.odx_link_id = odx_link_id
+        self.odx_id = odx_id
 
     def is_required(self):
         raise NotImplementedError(

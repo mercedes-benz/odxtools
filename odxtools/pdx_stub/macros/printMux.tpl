@@ -5,7 +5,7 @@
 -#}
 
 {%- macro printMux(mux) %}
-<MUX ID="{{mux.odx_link_id.local_id}}">
+<MUX ID="{{mux.odx_id.local_id}}">
   <SHORT-NAME>{{mux.short_name}}</SHORT-NAME>
   <LONG-NAME>{{mux.long_name|e}}</LONG-NAME>
   <BYTE-POSITION>{{mux.byte_position}}</BYTE-POSITION>

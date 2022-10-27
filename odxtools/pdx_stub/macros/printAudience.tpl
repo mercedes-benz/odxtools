@@ -5,7 +5,7 @@
 -#}
 
 {%- macro printAdditionalAudience(audience) -%}
-<ADDITIONAL-AUDIENCE ID="{{audience.odx_link_id.local_id}}">
+<ADDITIONAL-AUDIENCE ID="{{audience.odx_id.local_id}}">
  <SHORT-NAME>{{audience.short_name}}</SHORT-NAME>
 {%- if audience.long_name %}
  <LONG-NAME>{{audience.long_name}}</LONG-NAME>

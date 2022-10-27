@@ -28,7 +28,7 @@ class ParameterWithDOP(Parameter):
 
         self._dop = dop
         if dop and not dop_ref and not dop_snref:
-            self.dop_ref = OdxLinkRef.from_id(dop.odx_link_id)
+            self.dop_ref = OdxLinkRef.from_id(dop.odx_id)
         assert self.dop_ref or self.dop_snref
 
     @property
@@ -40,7 +40,7 @@ class ParameterWithDOP(Parameter):
     def dop(self, dop: DopBase):
         self._dop = dop
         if not self.dop_snref:
-            self.dop_ref = OdxLinkRef.from_id(dop.odx_link_id)
+            self.dop_ref = OdxLinkRef.from_id(dop.odx_id)
         else:
             self.dop_snref = dop.short_name
 
@@ -107,7 +107,7 @@ class ParameterWithDOP(Parameter):
         if self.dop is not None:
             if self.bit_length is not None:
                 d["bit_length"] = self.bit_length
-            d["dop_ref"] = OdxLinkRef.from_id(self.dop.odx_link_id)
+            d["dop_ref"] = OdxLinkRef.from_id(self.dop.odx_id)
         elif self.dop_ref is not None:
             d["dop_ref"] = self.dop_ref
         elif self.dop_snref is not None:

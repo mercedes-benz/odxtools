@@ -32,7 +32,7 @@ class CompanySpecificInfo:
 
 @dataclass()
 class TeamMember:
-    odx_link_id: OdxLinkId
+    odx_id: OdxLinkId
     short_name: str
     long_name: Optional[str] = None
     description: Optional[str] = None
@@ -47,7 +47,7 @@ class TeamMember:
 
 @dataclass()
 class CompanyData:
-    odx_link_id: OdxLinkId
+    odx_id: OdxLinkId
     short_name: str
     long_name: Optional[str] = None
     description: Optional[str] = None
@@ -56,12 +56,12 @@ class CompanyData:
     company_specific_info: Optional[CompanySpecificInfo] = None
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result = { self.odx_link_id: self }
+        result = { self.odx_id: self }
 
         # team members
         if self.team_members is not None:
             for tm in self.team_members:
-                result[tm.odx_link_id] = tm
+                result[tm.odx_id] = tm
 
         return result
 
@@ -121,8 +121,8 @@ def read_company_datas_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     cdl = NamedItemList(short_name_as_id) # type: ignore
 
     for cd in et_element.iterfind("COMPANY-DATA"):
-        odx_link_id = OdxLinkId.from_et(cd, doc_frags)
-        assert odx_link_id is not None
+        odx_id = OdxLinkId.from_et(cd, doc_frags)
+        assert odx_id is not None
         short_name = cd.find("SHORT-NAME").text
 
         long_name = cd.find("LONG-NAME")
@@ -194,7 +194,7 @@ def read_company_datas_from_odx(et_element, doc_frags: List[OdxDocFragment]):
                 if tm_email is not None:
                     tm_email = tm_email.text
 
-                tml.append(TeamMember(odx_link_id=tm_id,
+                tml.append(TeamMember(odx_id=tm_id,
                                       short_name=tm_short_name,
                                       long_name=tm_long_name,
                                       description=tm_description,
@@ -231,7 +231,7 @@ def read_company_datas_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 
             company_specific_info = CompanySpecificInfo(related_docs=related_docs)
 
-        cdl.append(CompanyData(odx_link_id=odx_link_id,
+        cdl.append(CompanyData(odx_id=odx_id,
                                short_name=short_name,
                                long_name=long_name,
                                description=description,

@@ -79,7 +79,7 @@ def print_summary(odxdb: Database,
                             allow_unknown_bit_lengths=allow_unknown_bit_lengths
                         )
                     elif isinstance(service, SingleEcuJob):
-                        print(f" Single ECU job: {service.odx_link_id}")
+                        print(f" Single ECU job: {service.odx_id}")
                     else:
                         print(f" Unidentifiable service: {service}")
 

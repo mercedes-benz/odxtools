@@ -12,8 +12,8 @@
 {%- else %}
 {%-  set semattrib = "" -%}
 {%- endif -%}
-{%- if param.parameter_type == "TABLE-KEY" and param.odx_link_id is not none  %}
-<PARAM {{semattrib}} ID="{{param.odx_link_id.local_id}}" xsi:type="{{param.parameter_type}}">
+{%- if param.parameter_type == "TABLE-KEY" and param.odx_id is not none  %}
+<PARAM {{semattrib}} ID="{{param.odx_id.local_id}}" xsi:type="{{param.parameter_type}}">
 {%- elif param.parameter_type == "SYSTEM" %}
 <PARAM SYSPARAM="{{param.sysparam}}" xsi:type="{{param.parameter_type}}">
 {%- else %}

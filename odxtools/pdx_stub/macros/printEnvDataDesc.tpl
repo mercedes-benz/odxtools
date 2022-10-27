@@ -5,7 +5,7 @@
 -#}
 
 {%- macro printEnvDataDesc(env_data_desc) %}
-<ENV-DATA-DESC ID="{{env_data_desc.odx_link_id.local_id}}">
+<ENV-DATA-DESC ID="{{env_data_desc.odx_id.local_id}}">
   <SHORT-NAME>{{env_data_desc.short_name}}</SHORT-NAME>
   <LONG-NAME>{{env_data_desc.long_name}}</LONG-NAME>
   <PARAM-SNREF SHORT-NAME="{{env_data_desc.param_snref}}"/>
