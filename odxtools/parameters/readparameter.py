@@ -30,7 +30,9 @@ def read_parameter_from_odx(et_element, doc_frags):
     byte_position_str = et_element.findtext("BYTE-POSITION")
     byte_position = int(byte_position_str) if byte_position_str is not None else None
     bit_position_str = et_element.findtext("BIT-POSITION")
-    bit_position = int(bit_position_str) if bit_position_str is not None else None
+    bit_position = None
+    if bit_position_str is not None:
+        bit_position = int(bit_position_str)
     parameter_type = et_element.get(f"{xsi}type")
 
     # Which attributes are set depends on the type of the parameter.

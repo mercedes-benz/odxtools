@@ -28,7 +28,7 @@
 {%- endif %}
 {%- if param.parameter_type == "MATCHING-REQUEST-PARAM" and param.request_byte_position is defined %}
  <REQUEST-BYTE-POS>{{param.request_byte_position}}</REQUEST-BYTE-POS>
-{%- elif param.bit_position != 0 %}
+{%- elif param.bit_position is not none %}
  <BIT-POSITION>{{param.bit_position}}</BIT-POSITION>
 {%- endif %}
 {%- if param.byte_length is defined and param.byte_length is not none %}

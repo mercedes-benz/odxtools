@@ -11,7 +11,9 @@
   <BYTE-POSITION>{{mux.byte_position}}</BYTE-POSITION>
   <SWITCH-KEY>
     <BYTE-POSITION>{{mux.switch_key.byte_position}}</BYTE-POSITION>
+    {%- if mux.switch_key.bit_position is not none %}
     <BIT-POSITION>{{mux.switch_key.bit_position}}</BIT-POSITION>
+    {%- endif %}
     <DATA-OBJECT-PROP-REF ID-REF="{{mux.switch_key.dop_ref.ref_id}}"/>
   </SWITCH-KEY>
   <DEFAULT-CASE>
