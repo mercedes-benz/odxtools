@@ -18,16 +18,28 @@ class Parameter(abc.ABC):
                  parameter_type,
                  long_name=None,
                  byte_position=None,
-                 bit_position=0,
+                 bit_position=None,
                  semantic=None,
                  description=None):
         self.short_name: str = short_name
         self.long_name: Optional[str] = long_name
         self.byte_position: Optional[int] = byte_position
-        self.bit_position: int = bit_position
+        self.bit_position: Optional[int] = bit_position
         self.parameter_type: str = parameter_type
         self.semantic: Optional[str] = semantic
         self.description: Optional[str] = description
+
+    @property
+    def byte_position_int(self) -> int:
+        if self.byte_position is None:
+            return 0
+        return self.byte_position
+
+    @property
+    def bit_position_int(self) -> int:
+        if self.bit_position is None:
+            return 0
+        return self.bit_position
 
     @property
     def bit_length(self) -> Optional[int]:
@@ -143,7 +155,7 @@ class Parameter(abc.ABC):
         }
         if self.byte_position is not None:
             d['byte_position'] = self.byte_position
-        if self.bit_position:
+        if self.bit_position is not None:
             d['bit_position'] = self.bit_position
         return d
 
@@ -153,7 +165,7 @@ class Parameter(abc.ABC):
             repr_str += f", long_name='{self.long_name}'"
         if self.byte_position is not None:
             repr_str += f", byte_position='{self.byte_position}'"
-        if self.bit_position:
+        if self.bit_position is not None:
             repr_str += f", bit_position='{self.bit_position}'"
         if self.semantic is not None:
             repr_str += f", semantic='{self.semantic}'"

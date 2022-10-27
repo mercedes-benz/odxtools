@@ -27,8 +27,10 @@ def read_parameter_from_odx(et_element, doc_frags):
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
     semantic = et_element.get("SEMANTIC")
-    byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
-    bit_position = int(et_element.findtext("BIT-POSITION", "0"))
+    byte_position_str = et_element.findtext("BYTE-POSITION")
+    byte_position = int(byte_position_str) if byte_position_str is not None else None
+    bit_position_str = et_element.findtext("BIT-POSITION")
+    bit_position = int(bit_position_str) if bit_position_str is not None else None
     parameter_type = et_element.get(f"{xsi}type")
 
     # Which attributes are set depends on the type of the parameter.

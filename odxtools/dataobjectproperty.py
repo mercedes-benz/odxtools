@@ -229,8 +229,9 @@ class DtcDop(DataObjectProperty):
         self.linked_dtc_dops = linked_dtc_dops
 
     def convert_bytes_to_physical(self, decode_state, bit_position: int = 0):
-        trouble_code, next_byte = super().convert_bytes_to_physical(decode_state,
-                                                                    bit_position=bit_position)
+        trouble_code, next_byte = \
+            super().convert_bytes_to_physical(decode_state,
+                                              bit_position=bit_position)
 
         dtcs = [ x for x in self.dtcs if x.trouble_code == trouble_code ]
 

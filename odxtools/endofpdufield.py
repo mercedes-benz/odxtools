@@ -56,7 +56,7 @@ class EndOfPduField(DopBase):
     def convert_physical_to_internal(self, physical_value):
         return self.structure.convert_physical_to_internal(physical_value)
 
-    def convert_physical_to_bytes(self, physical_value: Union[dict, List[dict]], encode_state: EncodeState, bit_position=0):
+    def convert_physical_to_bytes(self, physical_value: Union[dict, List[dict]], encode_state: EncodeState, bit_position: int = 0):
         assert bit_position == 0, "End of PDU field must be byte aligned. Is there an error in reading the .odx?"
         if isinstance(physical_value, dict):
             # If the value is given as a dict, the End of PDU field behaves like the underlying structure.
@@ -70,7 +70,7 @@ class EndOfPduField(DopBase):
                 coded_rpc += self.structure.convert_physical_to_bytes(value, encode_state)
             return coded_rpc
 
-    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position=0):
+    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
         next_byte_position = decode_state.next_byte_position
         byte_code = decode_state.coded_message
 

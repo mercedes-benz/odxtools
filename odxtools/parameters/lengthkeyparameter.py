@@ -24,7 +24,7 @@ class LengthKeyParameter(ParameterWithDOP):
                  dop_snref=None,
                  long_name=None,
                  byte_position=None,
-                 bit_position=0,
+                 bit_position=None,
                  semantic=None,
                  description=None):
         super().__init__(short_name,

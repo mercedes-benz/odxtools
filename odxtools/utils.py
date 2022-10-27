@@ -8,19 +8,19 @@ from .odxlink import OdxDocFragment
 
 def read_description_from_odx(et_element: Optional[ElementTree.Element]) \
  -> Optional[str]:
-    """Read a description of an XML element.
+    """Read a description tag.
 
-    The description is located underneath the DESC sub-tag."""
+    The description is located underneath the DESC tag of an an ODX
+    element."""
 
-    # TODO: Invent a better representation of a DESC element.
-    #       This just represents it as XHTML string.
     if et_element is None:
         return None
 
     if et_element.tag != "DESC":
-        raise TypeError(f"Attempted to extract ODX desctiption from "
-                        f"{et_element.tag} XML node. (Must be a DESC node!)")
+        raise TypeError(f"Attempted to extract an ODX description from a "
+                        f"'{et_element.tag}' XML node. (Must be a 'DESC' node!)")
 
+    # Extract the contents of the tag as a XHTML string.
     raw_string = et_element.text or ''
     for e in et_element:
         raw_string += ElementTree.tostring(e, encoding='unicode')

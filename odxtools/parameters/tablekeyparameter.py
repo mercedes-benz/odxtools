@@ -19,7 +19,7 @@ class TableKeyParameter(Parameter):
                  odx_link_id=None,
                  long_name=None,
                  byte_position=None,
-                 bit_position=0,
+                 bit_position=None,
                  semantic=None,
                  description=None):
         super().__init__(

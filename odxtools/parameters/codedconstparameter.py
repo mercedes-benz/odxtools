@@ -45,7 +45,9 @@ class CodedConstParameter(Parameter):
                 and encode_state.parameter_values[self.short_name] != self.coded_value:
             raise TypeError(f"The parameter '{self.short_name}' is constant {self._coded_value_str}"
                             " and thus can not be changed.")
-        return self.diag_coded_type.convert_internal_to_bytes(self.coded_value, encode_state, bit_position=self.bit_position)
+        return self.diag_coded_type.convert_internal_to_bytes(self.coded_value,
+                                                              encode_state=encode_state,
+                                                              bit_position=self.bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState):
         if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
@@ -54,8 +56,9 @@ class CodedConstParameter(Parameter):
                 next_byte_position=self.byte_position)
 
         # Extract coded values
-        coded_val, next_byte_position = self.diag_coded_type.convert_bytes_to_internal(decode_state,
-                                                                                       bit_position=self.bit_position)
+        coded_val, next_byte_position = \
+            self.diag_coded_type.convert_bytes_to_internal(decode_state,
+                                                           bit_position=self.bit_position_int)
 
         # Check if the coded value in the message is correct.
         if self.coded_value != coded_val:
@@ -80,9 +83,9 @@ class CodedConstParameter(Parameter):
         if self.long_name is not None:
             repr_str += f", long_name='{self.long_name}'"
         if self.byte_position is not None:
-            repr_str += f", byte_position='{self.byte_position}'"
-        if self.bit_position:
-            repr_str += f", bit_position='{self.bit_position}'"
+            repr_str += f", byte_position={self.byte_position}"
+        if self.bit_position is not None:
+            repr_str += f", bit_position={self.bit_position}"
         if self.semantic is not None:
             repr_str += f", semantic='{self.semantic}'"
         repr_str += f", diag_coded_type={repr(self.diag_coded_type)}"

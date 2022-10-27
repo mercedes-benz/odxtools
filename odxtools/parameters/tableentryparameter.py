@@ -11,7 +11,7 @@ class TableEntryParameter(Parameter):
                  table_row_ref,
                  long_name=None,
                  byte_position=None,
-                 bit_position=0,
+                 bit_position=None,
                  semantic=None,
                  description=None):
         super().__init__(

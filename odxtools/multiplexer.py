@@ -76,8 +76,14 @@ class MultiplexerSwitchKey:
     """This class represents a Switch Key, which is used to select one of the cases defined in the Multiplexer."""
 
     byte_position: int
-    bit_position: int
+    bit_position: Optional[int]
     dop_ref: OdxLinkRef
+
+    @property
+    def bit_position_int(self) -> int:
+        if self.bit_position is None:
+            return 0
+        return self.bit_position
 
     def __post_init__(self):
         self._dop: DataObjectProperty = None # type: ignore
@@ -96,9 +102,9 @@ class MultiplexerSwitchKey:
             f"MultiplexerSwitchKey("
             + ", ".join(
                 [
-                    f"byte_position='{self.byte_position}'",
-                    f"bit_position='{self.bit_position}'",
-                    f"dop_ref='{self.dop_ref}'",
+                    f"byte_position={self.byte_position}",
+                    f"bit_position={self.bit_position}",
+                    f"dop_ref={self.dop_ref}",
                 ]
             )
             + ")"
@@ -132,7 +138,7 @@ class Multiplexer(DopBase):
             self,
             physical_value,
             encode_state: EncodeState,
-            bit_position) -> bytes:
+            bit_position: int) -> bytes:
 
         if bit_position != 0:
             raise EncodeError(
@@ -187,8 +193,9 @@ class Multiplexer(DopBase):
             parameter_value_pairs=[],
             next_byte_position=0
         )
-        key_value, key_next_byte = self.switch_key._dop.convert_bytes_to_physical(
-            key_decode_state, bit_position=self.switch_key.bit_position)
+        key_value, key_next_byte = \
+            self.switch_key._dop.convert_bytes_to_physical(key_decode_state,
+                                                           bit_position=self.switch_key.bit_position_int)
 
         case_decode_state = DecodeState(
             coded_message=byte_code[self.byte_position:],
@@ -257,7 +264,9 @@ class Multiplexer(DopBase):
 def read_switch_key_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     """Reads a Switch Key for a Multiplexer."""
     byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
-    bit_position = int(et_element.findtext("BIT-POSITION", "0"))
+    assert byte_position is not None
+    bit_position_str = et_element.findtext("BIT-POSITION")
+    bit_position = int(bit_position_str) if bit_position_str is not None else None
     dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
     assert dop_ref is not None
 

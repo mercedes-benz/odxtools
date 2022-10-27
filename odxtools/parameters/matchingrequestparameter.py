@@ -47,8 +47,9 @@ class MatchingRequestParameter(Parameter):
 
     def decode_from_pdu(self, decode_state: DecodeState):
         byte_position = self.byte_position if self.byte_position is not None else decode_state.next_byte_position
-        byte_length = (self.bit_length + self.bit_position + 7) // 8
-        val_as_bytes = decode_state.coded_message[byte_position:byte_position+byte_length]
+        byte_length = (self.bit_length + self.bit_position_int + 7) // 8
+        val_as_bytes = decode_state.coded_message[byte_position:
+                                                  byte_position+byte_length]
 
         return val_as_bytes, byte_position + byte_length
 
@@ -58,7 +59,7 @@ class MatchingRequestParameter(Parameter):
             repr_str += f", long_name='{self.long_name}'"
         if self.byte_position is not None:
             repr_str += f", byte_position='{self.byte_position}'"
-        if self.bit_position:
+        if self.bit_position is not None:
             repr_str += f", bit_position='{self.bit_position}'"
         if self.semantic is not None:
             repr_str += f", semantic='{self.semantic}'"

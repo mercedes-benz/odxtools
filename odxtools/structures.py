@@ -32,9 +32,7 @@ class BasicStructure(DopBase):
                  byte_size=None,
                  description=None):
         super().__init__(odx_link_id, short_name, long_name=long_name, description=description)
-        self.parameters : NamedItemList[Union[Parameter, "EndOfPduField"]] = NamedItemList(lambda par: par.short_name, parameters) # type: ignore
-            NamedItemList(short_name_as_id, parameters)
-
+        self.parameters : NamedItemList[Union[Parameter, "EndOfPduField"]] = NamedItemList(short_name_as_id, parameters)
         self._byte_size = byte_size
 
     @property
@@ -50,12 +48,13 @@ class BasicStructure(DopBase):
                     # Temporary workaround
                     # Can not import EndOfPduField to check on its type due to circular dependency
                     return None
-                if param.byte_position is not None:
-                    offset = param.byte_position * 8 + param.bit_position
 
+                if param.byte_position is not None:
+                    offset = param.byte_position_int * 8 + param.bit_position_int
                 offset += param.bit_length
+
                 length = max(length, offset)
-   
+
             return length
         else:
             return None
@@ -216,7 +215,7 @@ class BasicStructure(DopBase):
                 '\n'.join(self.__message_format_lines()))
 
 
-    def convert_physical_to_bytes(self, param_values: dict, encode_state: EncodeState, bit_position=0):
+    def convert_physical_to_bytes(self, param_values: dict, encode_state: EncodeState, bit_position: int = 0):
         if bit_position != 0:
             raise EncodeError("Structures must be aligned, i.e. bit_position=0, but "
                               f"{self.short_name} was passed the bit position {bit_position}")
@@ -225,7 +224,7 @@ class BasicStructure(DopBase):
                                                  is_end_of_pdu=encode_state.is_end_of_pdu
                                                  )
 
-    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position=0):
+    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
         if bit_position != 0:
             raise DecodeError("Structures must be aligned, i.e. bit_position=0, but "
                               f"{self.short_name} was passed the bit position {bit_position}")
@@ -310,8 +309,7 @@ class BasicStructure(DopBase):
     def __message_format_lines(self, allow_unknown_lengths=False):
         # sort parameters
         sorted_params: list = list(self.parameters)  # copy list
-        if all(p.byte_position is not None for p in self.parameters):
-            sorted_params.sort(key=lambda p: (p.byte_position, 8 - p.bit_position))
+        sorted_params.sort(key=lambda p: (p.byte_position_int, 8 - p.bit_position_int))
 
         # replace structure parameters by their sub parameters
         params = []
@@ -551,5 +549,5 @@ def read_structure_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> Unio
     else:
         res = None
         logger.critical(
-            f"Dodx_link_id not recognize structure {et_element.tag} {short_name}")
+            f"Did not recognize structure {et_element.tag} {short_name}")
     return res
