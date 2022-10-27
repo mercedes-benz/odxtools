@@ -50,7 +50,9 @@ class BasicStructure(DopBase):
                     return None
 
                 if param.byte_position is not None:
-                    offset = param.byte_position_int * 8 + param.bit_position_int
+                    bit_position_int = param.bit_position if param.bit_position is not None else 0
+                    byte_position_int = param.byte_position if param.byte_position is not None else 0
+                    offset = byte_position_int * 8 + bit_position_int
                 offset += param.bit_length
 
                 length = max(length, offset)
@@ -309,7 +311,18 @@ class BasicStructure(DopBase):
     def __message_format_lines(self, allow_unknown_lengths=False):
         # sort parameters
         sorted_params: list = list(self.parameters)  # copy list
-        sorted_params.sort(key=lambda p: (p.byte_position_int, 8 - p.bit_position_int))
+
+        def param_sort_key(param: Union[Parameter, "EndOfPduField"]) \
+                -> Tuple[int, int]:
+            if not isinstance(param, Parameter):
+                # -> EndOfPduField should come last!
+                return (1000*1000, 0)
+
+            byte_position_int = param.byte_position if param.byte_position is not None else 0
+            bit_position_int = param.bit_position if param.bit_position is not None else 0
+            return (byte_position_int, 8 - bit_position_int)
+
+        sorted_params.sort(key=param_sort_key)
 
         # replace structure parameters by their sub parameters
         params = []

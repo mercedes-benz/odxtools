@@ -79,12 +79,6 @@ class MultiplexerSwitchKey:
     bit_position: Optional[int]
     dop_ref: OdxLinkRef
 
-    @property
-    def bit_position_int(self) -> int:
-        if self.bit_position is None:
-            return 0
-        return self.bit_position
-
     def __post_init__(self):
         self._dop: DataObjectProperty = None # type: ignore
 
@@ -193,9 +187,10 @@ class Multiplexer(DopBase):
             parameter_value_pairs=[],
             next_byte_position=0
         )
+        bit_position_int = self.switch_key.bit_position if self.switch_key.bit_position is not None else 0
         key_value, key_next_byte = \
             self.switch_key._dop.convert_bytes_to_physical(key_decode_state,
-                                                           bit_position=self.switch_key.bit_position_int)
+                                                           bit_position=bit_position_int)
 
         case_decode_state = DecodeState(
             coded_message=byte_code[self.byte_position:],

@@ -50,7 +50,10 @@ class ValueParameter(ParameterWithDOP):
                             f" as the parameter does not exhibit a default.")
         assert self.dop is not None, f"Param {self.short_name} does not have a DOP. Maybe resolving references failed?"
 
-        return self.dop.convert_physical_to_bytes(physical_value, encode_state=encode_state, bit_position=self.bit_position_int)
+        bit_position_int = self.bit_position if self.bit_position is not None else 0
+        return self.dop.convert_physical_to_bytes(physical_value,
+                                                  encode_state=encode_state,
+                                                  bit_position=bit_position_int)
 
     def get_valid_physical_values(self):
         if isinstance(self.dop, DataObjectProperty):

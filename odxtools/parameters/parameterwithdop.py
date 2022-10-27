@@ -85,9 +85,10 @@ class ParameterWithDOP(Parameter):
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
         assert self.dop is not None, "Reference to DOP is not resolved"
         physical_value = encode_state.parameter_values[self.short_name]
+        bit_position_int = self.bit_position if self.bit_position is not None else 0
         return self.dop.convert_physical_to_bytes(physical_value,
                                                   encode_state,
-                                                  bit_position=self.bit_position_int)
+                                                  bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState):
         assert self.dop is not None, "Reference to DOP is not resolved"
@@ -96,9 +97,10 @@ class ParameterWithDOP(Parameter):
                 next_byte_position=self.byte_position)
 
         # Use DOP to decode
+        bit_position_int = self.bit_position if self.bit_position is not None else 0
         phys_val, next_byte_position = \
             self.dop.convert_bytes_to_physical(decode_state,
-                                               bit_position=self.bit_position_int)
+                                               bit_position=bit_position_int)
 
         return phys_val, next_byte_position
 

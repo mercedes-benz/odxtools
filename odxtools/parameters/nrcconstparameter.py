@@ -64,9 +64,10 @@ class NrcConstParameter(Parameter):
             # I think it does not matter ...
             coded_value = self.coded_values[0]
 
+        bit_position_int = self.bit_position if self.bit_position is not None else 0
         return self.diag_coded_type.convert_internal_to_bytes(coded_value,
                                                               encode_state,
-                                                              bit_position=self.bit_position_int)
+                                                              bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState):
         if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
@@ -75,9 +76,10 @@ class NrcConstParameter(Parameter):
                 next_byte_position=self.byte_position)
 
         # Extract coded values
+        bit_position_int = self.bit_position if self.bit_position is not None else 0
         coded_value, next_byte_position = \
             self.diag_coded_type.convert_bytes_to_internal(decode_state,
-                                                           bit_position=self.bit_position_int)
+                                                           bit_position=bit_position_int)
 
         # Check if the coded value in the message is correct.
         if coded_value not in self.coded_values:

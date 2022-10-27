@@ -40,9 +40,10 @@ class PhysicalConstantParameter(ParameterWithDOP):
             raise TypeError(f"The parameter '{self.short_name}' is constant {self.physical_constant_value}"
                             " and thus can not be changed.")
 
+        bit_position_int = self.bit_position if self.bit_position is not None else 0
         return self.dop.convert_physical_to_bytes(self.physical_constant_value,
                                                   encode_state,
-                                                  bit_position=self.bit_position_int)
+                                                  bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState):
         # Decode value

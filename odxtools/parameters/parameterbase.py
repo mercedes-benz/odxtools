@@ -30,18 +30,6 @@ class Parameter(abc.ABC):
         self.description: Optional[str] = description
 
     @property
-    def byte_position_int(self) -> int:
-        if self.byte_position is None:
-            return 0
-        return self.byte_position
-
-    @property
-    def bit_position_int(self) -> int:
-        if self.bit_position is None:
-            return 0
-        return self.bit_position
-
-    @property
     def bit_length(self) -> Optional[int]:
         return None
 
