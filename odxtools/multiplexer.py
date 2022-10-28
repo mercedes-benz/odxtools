@@ -156,8 +156,10 @@ class Multiplexer(DopBase):
                     case_bytes = bytes()
                 
                 key_value, _ = self._get_case_limits(case)
+                sk_bit_position = self.switch_key.bit_position
+                sk_bit_position = sk_bit_position if sk_bit_position is not None else 0
                 key_bytes = self.switch_key._dop.convert_physical_to_bytes(
-                    key_value, encode_state, self.switch_key.bit_position)
+                    key_value, encode_state, sk_bit_position)
 
                 mux_len = max(
                     len(key_bytes) + key_pos,
