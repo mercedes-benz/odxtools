@@ -8,7 +8,7 @@ from .utils import short_name_as_id
 from .dataobjectproperty import DopBase
 from .audience import Audience, read_audience_from_odx
 from .functionalclass import FunctionalClass
-from .utils import read_element_id
+from .utils import read_description_from_odx
 from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
 from .nameditemlist import NamedItemList
 from .globals import logger
@@ -47,7 +47,7 @@ class InputParam:
 
 @dataclass
 class OutputParam:
-    id: OdxLinkId
+    odx_id: OdxLinkId
     short_name: str
     dop_base_ref: OdxLinkRef
     long_name: Optional[str] = None
@@ -121,7 +121,7 @@ class SingleEcuJob:
     TODO: The following xml attributes are not internalized yet:
           ADMIN-DATA, SDGS, PROTOCOL-SNREFS, RELATED-DIAG-COMM-REFS, PRE-CONDITION-STATE-REFS, STATE-TRANSITION-REFS
     """
-    id: OdxLinkId
+    odx_id: OdxLinkId
     short_name: str
     prog_codes: List[ProgCode]
     """Pointers to the code that is executed when calling this job."""
@@ -196,35 +196,35 @@ class SingleEcuJob:
         and only raises an informative error.
         """
         raise DecodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be decoded."
-                          f" You tried to decode a response for the job {self.id}.")
+                          f" You tried to decode a response for the job {self.odx_id}.")
 
     def encode_request(self, **params):
         """This function's signature matches `DiagService.encode_request`
         and only raises an informative error.
         """
         raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
-                          f" You tried to encode a request for the job {self.id}.")
+                          f" You tried to encode a request for the job {self.odx_id}.")
 
     def encode_positive_response(self, coded_request, response_index=0, **params):
         """This function's signature matches `DiagService.encode_positive_response`
         and only raises an informative error.
         """
         raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
-                          f" You tried to encode a response for the job {self.id}.")
+                          f" You tried to encode a response for the job {self.odx_id}.")
 
     def encode_negative_response(self, coded_request, response_index=0, **params):
         """This function's signature matches `DiagService.encode_negative_response`
         and only raises an informative error.
         """
         raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
-                          f" You tried to encode the job {self.id}.")
+                          f" You tried to encode the job {self.odx_id}.")
 
     def __call__(self, **params) -> bytes:
         raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
-                          f" You tried to call the job {self.id}.")
+                          f" You tried to call the job {self.odx_id}.")
 
     def __hash__(self) -> int:
-        return hash(self.id)
+        return hash(self.odx_id)
 
 
 def read_prog_code_from_odx(et_element, doc_frags: List[OdxDocFragment]):
@@ -254,16 +254,21 @@ def read_prog_code_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 
 
 def read_input_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    element_id = read_element_id(et_element)
+    short_name = et_element.findtext("SHORT-NAME")
+    assert short_name is not None
+    long_name = et_element.findtext("LONG-NAME")
+    description = read_description_from_odx(et_element.find("DESC"))
     dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags)
     assert dop_base_ref is not None
     physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
 
-    # optional attributes
     semantic = et_element.get("SEMANTIC")
     oid = et_element.get("OID")
+
     return InputParam(
-        **element_id, # type: ignore
+        short_name=short_name,
+        long_name=long_name,
+        description=description,
         dop_base_ref=dop_base_ref,
         physical_default_value=physical_default_value,
         semantic=semantic,
@@ -272,18 +277,23 @@ def read_input_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 
 
 def read_output_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    id = OdxLinkId.from_et(et_element, doc_frags)
-    assert id is not None
-    element_id = read_element_id(et_element)
+    odx_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_id is not None
+    short_name = et_element.find("SHORT-NAME").text
+    assert short_name is not None
+    long_name = et_element.findtext("LONG-NAME")
+    description = read_description_from_odx(et_element.find("DESC"))
     dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags)
     assert dop_base_ref is not None
 
-    # optional attributes
     semantic = et_element.get("SEMANTIC")
     oid = et_element.get("OID")
+
     return OutputParam(
-        id=id,
-        **element_id, # type: ignore
+        odx_id=odx_id,
+        short_name=short_name,
+        long_name=long_name,
+        description=description,
         dop_base_ref=dop_base_ref,
         semantic=semantic,
         oid=oid
@@ -291,12 +301,17 @@ def read_output_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 
 
 def read_neg_output_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    element_id = read_element_id(et_element)
+    short_name = et_element.find("SHORT-NAME").text
+    assert short_name is not None
+    long_name = et_element.findtext("LONG-NAME")
+    description = read_description_from_odx(et_element.find("DESC"))
     dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags)
     assert dop_base_ref is not None
 
     return NegOutputParam(
-        **element_id, # type: ignore
+        short_name=short_name,
+        long_name=long_name,
+        description=description,
         dop_base_ref=dop_base_ref
     )
 
@@ -304,9 +319,12 @@ def read_neg_output_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 def read_single_ecu_job_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     logger.info(
         f"Parsing service based on ET DiagService element: {et_element}")
-    id = OdxLinkId.from_et(et_element, doc_frags)
-    assert id is not None
-    element_id = read_element_id(et_element)
+    odx_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_id is not None
+    short_name = et_element.find("SHORT-NAME").text
+    assert short_name is not None
+    long_name = et_element.findtext("LONG-NAME")
+    description = read_description_from_odx(et_element.find("DESC"))
     semantic = et_element.get("SEMANTIC")
 
     functional_class_refs = []
@@ -340,8 +358,10 @@ def read_single_ecu_job_from_odx(et_element, doc_frags: List[OdxDocFragment]):
                      else True)
     is_final = True if et_element.get("IS-FINAL") == "true" else False
 
-    diag_service = SingleEcuJob(id,
-                                **element_id, # type: ignore
+    diag_service = SingleEcuJob(odx_id=odx_id,
+                                short_name=short_name,
+                                long_name=long_name,
+                                description=description,
                                 prog_codes=prog_codes,
                                 semantic=semantic,
                                 audience=audience,

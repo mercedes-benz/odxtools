@@ -52,27 +52,27 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                                    compu_method=ident_compu_method)
 
         table = Table(
-                id="somersault.table.flip_quality",
+                odx_id="somersault.table.flip_quality",
                 short_name="flip_quality",
                 long_name="Flip Quality",
                 key_dop_ref="",
                 table_rows=[
                     TableRow(
-                        id="somersault.table.flip_quality.average",
+                        odx_id="somersault.table.flip_quality.average",
                         short_name="average",
                         long_name="Average",
                         key=3,
                         structure_ref="",
                     ),
                     TableRow(
-                        id="somersault.table.flip_quality.good",
+                        odx_id="somersault.table.flip_quality.good",
                         short_name="good",
                         long_name="Good",
                         key=5,
                         structure_ref="",
                     ),
                     TableRow(
-                        id="somersault.table.flip_quality.best",
+                        odx_id="somersault.table.flip_quality.best",
                         short_name="best",
                         long_name="Best",
                         key=10,
@@ -82,7 +82,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             )
 
         env_data = EnvironmentData(
-            id="somersault.env_data.flip_env_data",
+            odx_id="somersault.env_data.flip_env_data",
             short_name="flip_env_data",
             long_name="Flip Env Data",
             parameters=[
@@ -105,7 +105,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         )
 
         env_data_desc = EnvironmentDataDescription(
-            id="somersault.env_data_desc.flip_env_data_desc",
+            odx_id="somersault.env_data_desc.flip_env_data_desc",
             short_name="flip_env_data_desc",
             long_name="Flip Env Data Desc",
             param_snref="flip_speed",
@@ -114,7 +114,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         )
 
         mux = Multiplexer(
-            id="somersault.multiplexer.flip_preference",
+            odx_id="somersault.multiplexer.flip_preference",
             short_name="flip_preference",
             long_name="Flip Preference",
             byte_position=0,

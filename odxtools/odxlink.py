@@ -130,18 +130,18 @@ class OdxLinkRef:
         """
         return OdxLinkRef(odxid.local_id, odxid.doc_fragments)
 
-    def __contains__(self, id: OdxLinkId) -> bool:
+    def __contains__(self, odx_id: OdxLinkId) -> bool:
         """
         Returns true iff a given OdxLinkId object is referenced.
         """
 
         # we must reference at to at least of the ID's document
         # fragments
-        if not any([ref_doc in id.doc_fragments for ref_doc in self.ref_docs]):
+        if not any([ref_doc in odx_id.doc_fragments for ref_doc in self.ref_docs]):
             return False
 
         # the local ID of the reference and the object ID must match
-        return id.local_id == self.ref_id
+        return odx_id.local_id == self.ref_id
 
 class OdxLinkDatabase:
     """
@@ -162,7 +162,7 @@ class OdxLinkDatabase:
         """
         assert isinstance(ref, OdxLinkRef)
 
-        odx_link_id = OdxLinkId(ref.ref_id, ref.ref_docs)
+        odx_id = OdxLinkId(ref.ref_id, ref.ref_docs)
         for ref_frag in reversed(ref.ref_docs):
             doc_frag_db = self._db.get(ref_frag)
             if doc_frag_db is None:
@@ -173,7 +173,7 @@ class OdxLinkDatabase:
                               f"when resolving reference {ref}", OdxWarning)
                 continue
 
-            obj = doc_frag_db.get(odx_link_id)
+            obj = doc_frag_db.get(odx_id)
             if obj is not None:
                 return obj
 
@@ -189,7 +189,7 @@ class OdxLinkDatabase:
         """
         assert isinstance(ref, OdxLinkRef)
 
-        odx_link_id = OdxLinkId(ref.ref_id, ref.ref_docs)
+        odx_id = OdxLinkId(ref.ref_id, ref.ref_docs)
         for ref_frag in reversed(ref.ref_docs):
             doc_frag_db = self._db.get(ref_frag)
             if doc_frag_db is None:
@@ -200,7 +200,7 @@ class OdxLinkDatabase:
                               f"when resolving reference {ref}", OdxWarning)
                 continue
 
-            obj = doc_frag_db.get(odx_link_id)
+            obj = doc_frag_db.get(odx_id)
             if obj is not None:
                 return obj
 
@@ -215,9 +215,9 @@ class OdxLinkDatabase:
 
         # put all new objects into the databases for the document
         # fragments which it specifies
-        for odx_link_id, obj in new_entries.items():
-            for doc_frag in odx_link_id.doc_fragments:
+        for odx_id, obj in new_entries.items():
+            for doc_frag in odx_id.doc_fragments:
                 if doc_frag not in self._db:
                     self._db[doc_frag] = dict()
 
-                self._db[doc_frag][odx_link_id] = obj
+                self._db[doc_frag][odx_id] = obj

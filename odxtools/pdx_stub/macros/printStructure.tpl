@@ -7,7 +7,7 @@
 {%- import('macros/printParam.tpl') as pp %}
 
 {%- macro printStructure(st) -%}
-<STRUCTURE ID="{{st.id.local_id}}">
+<STRUCTURE ID="{{st.odx_id.local_id}}">
  <SHORT-NAME>{{st.short_name}}</SHORT-NAME>
 {%- if st.long_name %}
  <LONG-NAME>{{st.long_name|e}}</LONG-NAME>

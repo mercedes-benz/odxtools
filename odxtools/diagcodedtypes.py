@@ -3,7 +3,7 @@
 
 import abc
 import math
-from typing import Any, Union, List
+from typing import Any, Optional, Union, List
 
 from .odxtypes import DataType
 from .exceptions import DecodeError, EncodeError
@@ -38,13 +38,13 @@ class DiagCodedType(abc.ABC):
         self.is_highlow_byte_order = is_highlow_byte_order
 
     def _extract_internal(self,
-                          coded_message,
-                          byte_position,
-                          bit_position,
-                          bit_length,
+                          coded_message: bytes,
+                          byte_position: int,
+                          bit_position: int,
+                          bit_length: int,
                           base_data_type: DataType,
-                          is_highlow_byte_order,
-                          bit_mask=None):
+                          is_highlow_byte_order: bool,
+                          bit_mask: Optional[int] = None):
         """Extract the internal value.
 
         Helper method for `DiagCodedType.convert_bytes_to_internal`.
@@ -442,13 +442,14 @@ class ParamLengthInfoType(DiagCodedType):
 
     def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
         # Find length key with matching ID.
-        bit_length = None
+        bit_length = 0
         for parameter, value in decode_state.parameter_value_pairs:
             # if isinstance(param_value.parameter, LengthKeyParameter) would be prettier,
             # but leads to cyclic import...
             if parameter.parameter_type == "LENGTH-KEY" \
-                    and parameter.id == self.length_key_id: # type: ignore
+                    and parameter.odx_id == self.length_key_id: # type: ignore
                 # The bit length of the parameter to be extracted is given by the length key.
+                assert isinstance(value, int)
                 bit_length = value
                 break
 

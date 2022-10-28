@@ -28,7 +28,7 @@ class ParameterWithDOP(Parameter):
 
         self._dop = dop
         if dop and not dop_ref and not dop_snref:
-            self.dop_ref = OdxLinkRef.from_id(dop.id)
+            self.dop_ref = OdxLinkRef.from_id(dop.odx_id)
         assert self.dop_ref or self.dop_snref
 
     @property
@@ -40,7 +40,7 @@ class ParameterWithDOP(Parameter):
     def dop(self, dop: DopBase):
         self._dop = dop
         if not self.dop_snref:
-            self.dop_ref = OdxLinkRef.from_id(dop.id)
+            self.dop_ref = OdxLinkRef.from_id(dop.odx_id)
         else:
             self.dop_snref = dop.short_name
 
@@ -85,7 +85,10 @@ class ParameterWithDOP(Parameter):
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
         assert self.dop is not None, "Reference to DOP is not resolved"
         physical_value = encode_state.parameter_values[self.short_name]
-        return self.dop.convert_physical_to_bytes(physical_value, encode_state, bit_position=self.bit_position)
+        bit_position_int = self.bit_position if self.bit_position is not None else 0
+        return self.dop.convert_physical_to_bytes(physical_value,
+                                                  encode_state,
+                                                  bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState):
         assert self.dop is not None, "Reference to DOP is not resolved"
@@ -94,8 +97,10 @@ class ParameterWithDOP(Parameter):
                 next_byte_position=self.byte_position)
 
         # Use DOP to decode
-        phys_val, next_byte_position = self.dop.convert_bytes_to_physical(
-            decode_state, bit_position=self.bit_position)
+        bit_position_int = self.bit_position if self.bit_position is not None else 0
+        phys_val, next_byte_position = \
+            self.dop.convert_bytes_to_physical(decode_state,
+                                               bit_position=bit_position_int)
 
         return phys_val, next_byte_position
 
@@ -104,7 +109,7 @@ class ParameterWithDOP(Parameter):
         if self.dop is not None:
             if self.bit_length is not None:
                 d["bit_length"] = self.bit_length
-            d["dop_ref"] = OdxLinkRef.from_id(self.dop.id)
+            d["dop_ref"] = OdxLinkRef.from_id(self.dop.odx_id)
         elif self.dop_ref is not None:
             d["dop_ref"] = self.dop_ref
         elif self.dop_snref is not None:

@@ -5,7 +5,7 @@
 -#}
 
 {%- macro printEnvData(env_data) %}
-<ENV-DATA ID="{{env_data.id.local_id}}">
+<ENV-DATA ID="{{env_data.odx_id.local_id}}">
     <SHORT-NAME>{{env_data.short_name}}</SHORT-NAME>
     <LONG-NAME>{{env_data.long_name}}</LONG-NAME>
     <PARAMS>

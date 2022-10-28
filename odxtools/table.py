@@ -15,8 +15,8 @@ from .globals import logger
 class TableBase(abc.ABC):
     """ Base class for all Tables."""
 
-    def __init__(self, id: OdxLinkId, short_name: str, long_name=None):
-        self.id = id
+    def __init__(self, odx_id: OdxLinkId, short_name: str, long_name=None):
+        self.odx_id = odx_id
         self.short_name = short_name
         self.long_name = long_name
 
@@ -25,7 +25,7 @@ class TableBase(abc.ABC):
 class TableRow:
     """This class represents a TABLE-ROW."""
 
-    id: OdxLinkId
+    odx_id: OdxLinkId
     short_name: str
     long_name: str
     key: int
@@ -72,7 +72,7 @@ class Table(TableBase):
 
     def __init__(
         self,
-        id: OdxLinkId,
+        odx_id: OdxLinkId,
         short_name: str,
         table_rows: List[TableRow],
         table_row_refs: Optional[List[OdxLinkRef]] = None,
@@ -82,7 +82,7 @@ class Table(TableBase):
         semantic: Optional[str] = None,
     ):
         super().__init__(
-            id=id, short_name=short_name, long_name=long_name
+            odx_id=odx_id, short_name=short_name, long_name=long_name
         )
         self._local_table_rows = table_rows
         self._ref_table_rows: List[TableRow] = []
@@ -104,7 +104,7 @@ class Table(TableBase):
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
-        odxlinks.update({table_row.id: table_row for table_row in self.table_rows})
+        odxlinks.update({table_row.odx_id: table_row for table_row in self.table_rows})
         return odxlinks
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -133,7 +133,7 @@ class Table(TableBase):
 def _get_common_props(et_element, doc_frags: List[OdxDocFragment]):
     description = read_description_from_odx(et_element.find("DESC"))
     return dict(
-        id=OdxLinkId.from_et(et_element, doc_frags),
+        odx_id=OdxLinkId.from_et(et_element, doc_frags),
         short_name=et_element.findtext("SHORT-NAME"),
         long_name=et_element.findtext("LONG-NAME"),
         semantic=et_element.get("SEMANTIC"),

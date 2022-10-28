@@ -5,7 +5,7 @@ from typing import List
 
 from ..diagcodedtypes import read_diag_coded_type_from_odx
 from ..globals import xsi
-from ..utils import read_element_id
+from ..utils import read_description_from_odx
 from ..odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
 
 from .codedconstparameter import CodedConstParameter
@@ -22,19 +22,17 @@ from .tablestructparameter import TableStructParameter
 from .valueparameter import ValueParameter
 
 
-def read_parameter_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    element_id = read_element_id(et_element)
-    short_name = element_id["short_name"]
-    long_name = element_id.get("long_name")
-    description = element_id.get("description")
-
+def read_parameter_from_odx(et_element, doc_frags):
+    short_name = et_element.find("SHORT-NAME").text
+    long_name = et_element.findtext("LONG-NAME")
+    description = read_description_from_odx(et_element.find("DESC"))
     semantic = et_element.get("SEMANTIC")
-
-    byte_position = int(et_element.find(
-        "BYTE-POSITION").text) if et_element.find("BYTE-POSITION") is not None else None
-    bit_position = int(et_element.find(
-        "BIT-POSITION").text) if et_element.find("BIT-POSITION") is not None else 0
-
+    byte_position_str = et_element.findtext("BYTE-POSITION")
+    byte_position = int(byte_position_str) if byte_position_str is not None else None
+    bit_position_str = et_element.findtext("BIT-POSITION")
+    bit_position = None
+    if bit_position_str is not None:
+        bit_position = int(bit_position_str)
     parameter_type = et_element.get(f"{xsi}type")
 
     # Which attributes are set depends on the type of the parameter.
@@ -142,10 +140,10 @@ def read_parameter_from_odx(et_element, doc_frags: List[OdxDocFragment]):
                                description=description)
 
     elif parameter_type == "LENGTH-KEY":
-        id = OdxLinkId.from_et(et_element, doc_frags)
+        odx_id = OdxLinkId.from_et(et_element, doc_frags)
 
         return LengthKeyParameter(short_name=short_name,
-                                  id=id,
+                                  odx_id=odx_id,
                                   long_name=long_name,
                                   semantic=semantic,
                                   byte_position=byte_position,
@@ -192,7 +190,7 @@ def read_parameter_from_odx(et_element, doc_frags: List[OdxDocFragment]):
                                  table_snref=table_snref,
                                  table_row_snref=row_snref,
                                  table_row_ref=row_ref,
-                                 id=parameter_id,
+                                 odx_id=parameter_id,
                                  long_name=long_name,
                                  byte_position=byte_position,
                                  bit_position=bit_position,

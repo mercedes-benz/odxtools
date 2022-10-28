@@ -18,7 +18,7 @@ class EndOfPduField(DopBase):
     """ End of PDU fields are structures that are repeated until the end of the PDU """
 
     def __init__(self,
-                 id,
+                 odx_id,
                  short_name,
                  structure=None,
                  structure_ref=None,
@@ -28,7 +28,7 @@ class EndOfPduField(DopBase):
                  is_visible=False,
                  long_name=None,
                  description=None):
-        super().__init__(id, short_name, long_name=long_name,
+        super().__init__(odx_id, short_name, long_name=long_name,
                          description=description, is_visible=is_visible)
 
         self.structure_snref = structure_snref
@@ -36,7 +36,7 @@ class EndOfPduField(DopBase):
 
         self._structure = structure
         if structure:
-            self.structure_ref = OdxLinkRef.from_id(structure.id)
+            self.structure_ref = OdxLinkRef.from_id(structure.odx_id)
         assert self.structure_ref or self.structure_snref
 
         self.min_number_of_items = min_number_of_items
@@ -56,7 +56,7 @@ class EndOfPduField(DopBase):
     def convert_physical_to_internal(self, physical_value):
         return self.structure.convert_physical_to_internal(physical_value)
 
-    def convert_physical_to_bytes(self, physical_value: Union[dict, List[dict]], encode_state: EncodeState, bit_position=0):
+    def convert_physical_to_bytes(self, physical_value: Union[dict, List[dict]], encode_state: EncodeState, bit_position: int = 0):
         assert bit_position == 0, "End of PDU field must be byte aligned. Is there an error in reading the .odx?"
         if isinstance(physical_value, dict):
             # If the value is given as a dict, the End of PDU field behaves like the underlying structure.
@@ -70,7 +70,7 @@ class EndOfPduField(DopBase):
                 coded_rpc += self.structure.convert_physical_to_bytes(value, encode_state)
             return coded_rpc
 
-    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position=0):
+    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
         next_byte_position = decode_state.next_byte_position
         byte_code = decode_state.coded_message
 
@@ -100,11 +100,11 @@ class EndOfPduField(DopBase):
             self._structure = parent_dl.data_object_properties[self.structure_snref]
 
     def __repr__(self) -> str:
-        return f"EndOfPduField(short_name='{self.short_name}', ref='{self.structure.id}')"
+        return f"EndOfPduField(short_name='{self.short_name}', ref='{self.structure.odx_id}')"
 
     def __str__(self):
         return "\n".join([
-            f"EndOfPduField(short_name='{self.short_name}', ref='{self.structure.id}')"
+            f"EndOfPduField(short_name='{self.short_name}', ref='{self.structure.odx_id}')"
         ] + [
             " " + str(self.structure).replace("\n", "\n ")
         ])
@@ -112,8 +112,8 @@ class EndOfPduField(DopBase):
 
 def read_end_of_pdu_field_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     -> EndOfPduField:
-    id = OdxLinkId.from_et(et_element, doc_frags)
-    assert id is not None
+    odx_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_id is not None
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
@@ -152,7 +152,7 @@ def read_end_of_pdu_field_from_odx(et_element, doc_frags: List[OdxDocFragment]) 
         is_visible = is_visible == "true"
     else:
         is_visible = False
-    eopf = EndOfPduField(id,
+    eopf = EndOfPduField(odx_id,
                          short_name,
                          long_name=long_name,
                          description=description,

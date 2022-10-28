@@ -76,7 +76,7 @@ class MultiplexerSwitchKey:
     """This class represents a Switch Key, which is used to select one of the cases defined in the Multiplexer."""
 
     byte_position: int
-    bit_position: int
+    bit_position: Optional[int]
     dop_ref: OdxLinkRef
 
     def __post_init__(self):
@@ -96,9 +96,9 @@ class MultiplexerSwitchKey:
             f"MultiplexerSwitchKey("
             + ", ".join(
                 [
-                    f"byte_position='{self.byte_position}'",
-                    f"bit_position='{self.bit_position}'",
-                    f"dop_ref='{self.dop_ref}'",
+                    f"byte_position={self.byte_position}",
+                    f"bit_position={self.bit_position}",
+                    f"dop_ref={self.dop_ref}",
                 ]
             )
             + ")"
@@ -110,7 +110,7 @@ class Multiplexer(DopBase):
     """This class represents a Multiplexer (MUX) which are used to interpret data stream depending on the value
     of a switch-key (similar to switch-case statements in programming languages like C or Java)."""
 
-    id: OdxLinkId
+    odx_id: OdxLinkId
     short_name: str
     long_name: str
     byte_position: int
@@ -132,7 +132,7 @@ class Multiplexer(DopBase):
             self,
             physical_value,
             encode_state: EncodeState,
-            bit_position) -> bytes:
+            bit_position: int) -> bytes:
 
         if bit_position != 0:
             raise EncodeError(
@@ -156,8 +156,10 @@ class Multiplexer(DopBase):
                     case_bytes = bytes()
                 
                 key_value, _ = self._get_case_limits(case)
+                sk_bit_position = self.switch_key.bit_position
+                sk_bit_position = sk_bit_position if sk_bit_position is not None else 0
                 key_bytes = self.switch_key._dop.convert_physical_to_bytes(
-                    key_value, encode_state, self.switch_key.bit_position)
+                    key_value, encode_state, sk_bit_position)
 
                 mux_len = max(
                     len(key_bytes) + key_pos,
@@ -187,8 +189,10 @@ class Multiplexer(DopBase):
             parameter_value_pairs=[],
             next_byte_position=0
         )
-        key_value, key_next_byte = self.switch_key._dop.convert_bytes_to_physical(
-            key_decode_state, bit_position=self.switch_key.bit_position)
+        bit_position_int = self.switch_key.bit_position if self.switch_key.bit_position is not None else 0
+        key_value, key_next_byte = \
+            self.switch_key._dop.convert_bytes_to_physical(key_decode_state,
+                                                           bit_position=bit_position_int)
 
         case_decode_state = DecodeState(
             coded_message=byte_code[self.byte_position:],
@@ -227,7 +231,7 @@ class Multiplexer(DopBase):
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
-        odxlinks.update({self.id: self})
+        odxlinks.update({self.odx_id: self})
         return odxlinks
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -243,7 +247,7 @@ class Multiplexer(DopBase):
             f"Multiplexer('{self.short_name}', "
             + ", ".join(
                 [
-                    f"id='{self.id}'",
+                    f"odx_id='{self.odx_id}'",
                     f"byte_position='{self.byte_position}'",
                     f"switch_key='{self.switch_key}'",
                     f"default_case='{self.default_case}'",
@@ -257,7 +261,9 @@ class Multiplexer(DopBase):
 def read_switch_key_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     """Reads a Switch Key for a Multiplexer."""
     byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
-    bit_position = int(et_element.findtext("BIT-POSITION", "0"))
+    assert byte_position is not None
+    bit_position_str = et_element.findtext("BIT-POSITION")
+    bit_position = int(bit_position_str) if bit_position_str is not None else None
     dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
     assert dop_ref is not None
 
@@ -307,8 +313,8 @@ def read_case_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 def read_mux_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     -> Multiplexer:
     """Reads a Multiplexer from Diag Layer."""
-    id = OdxLinkId.from_et(et_element, doc_frags)
-    assert id is not None
+    odx_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_id is not None
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.findtext("LONG-NAME")
     byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
@@ -329,7 +335,7 @@ def read_mux_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     logger.debug("Parsing MUX " + short_name)
 
     return Multiplexer(
-        id=id,
+        odx_id=odx_id,
         short_name=short_name,
         long_name=long_name,
         byte_position=byte_position,

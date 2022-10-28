@@ -22,7 +22,7 @@
 {%- import('macros/printAudience.tpl') as paud %}
 
 {%- macro printVariant(dl, variant_tag) -%}
-<{{variant_tag}} ID="{{dl.id.local_id}}">
+<{{variant_tag}} ID="{{dl.odx_id.local_id}}">
  <SHORT-NAME>{{dl.short_name}}</SHORT-NAME>
 {%- if dl.long_name %}
  <LONG-NAME>{{dl.long_name|e}}</LONG-NAME>

@@ -11,7 +11,7 @@ odxdb = load_pdx_file("./examples/somersault.pdx",
 
 # use the diag layer container's document fragments as the default for
 # resolving references
-container_doc_frags = odxdb.diag_layer_containers.somersault.id.doc_fragments
+container_doc_frags = odxdb.diag_layer_containers.somersault.odx_id.doc_fragments
 
 class TestDataObjectProperty(unittest.TestCase):
 
@@ -65,14 +65,14 @@ class TestNavigation(unittest.TestCase):
         # make sure that NamedItemLists support slicing
         ecus = odxdb.ecus[-2:]
         self.assertEqual(len(ecus), 2)
-        self.assertEqual(ecus[0].id.local_id, "somersault_lazy")
-        self.assertEqual(ecus[1].id.local_id, "somersault_assiduous")
+        self.assertEqual(ecus[0].odx_id.local_id, "somersault_lazy")
+        self.assertEqual(ecus[1].odx_id.local_id, "somersault_assiduous")
 
         ecu = odxdb.ecus["somersault_lazy"]
-        self.assertEqual(ecu.id.local_id, "somersault_lazy")
+        self.assertEqual(ecu.odx_id.local_id, "somersault_lazy")
 
         ecu = odxdb.ecus[0]
-        self.assertEqual(ecu.id.local_id, "somersault_lazy")
+        self.assertEqual(ecu.odx_id.local_id, "somersault_lazy")
 
     def test_find_service_by_name(self):
         ecu = odxdb.ecus["somersault_lazy"]
@@ -86,7 +86,7 @@ class TestNavigation(unittest.TestCase):
         self.assertIn("report_status", service_names)
 
         service = ecu.services.session_start
-        self.assertEqual(service.id.local_id, "somersault.service.session_start")
+        self.assertEqual(service.odx_id.local_id, "somersault.service.session_start")
         self.assertEqual(service.semantic, "SESSION")
 
 

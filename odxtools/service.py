@@ -19,7 +19,7 @@ from .message import Message
 
 class DiagService:
     def __init__(self,
-                 id: OdxLinkId,
+                 odx_id: OdxLinkId,
                  short_name: str,
                  request: Union[OdxLinkRef, Request],
                  positive_responses: Union[Iterable[OdxLinkRef], Iterable[Response]],
@@ -35,7 +35,7 @@ class DiagService:
 
         Parameters:
         ----------
-        id: OdxLinkId
+        odx_id: OdxLinkId
         short_name: str
             the short name of this DIAG-SERVICE
         request: OdxLinkRef | Request
@@ -43,7 +43,7 @@ class DiagService:
         positive_responses: List[OdxLinkRef] | List[Response]
         negative_responses: List[OdxLinkRef] | List[Response]
         """
-        self.id: OdxLinkId = id
+        self.odx_id: OdxLinkId = odx_id
         self.short_name: str = short_name
         self.long_name: Optional[str] = long_name
         self.description: Optional[str] = description
@@ -71,7 +71,7 @@ class DiagService:
             self.request_ref = request
         elif isinstance(request, Request):
             self._request = request
-            self.request_ref = OdxLinkRef.from_id(request.id)
+            self.request_ref = OdxLinkRef.from_id(request.odx_id)
         else:
             raise ValueError(
                 "request must be a reference to a request or a Request object")
@@ -82,7 +82,7 @@ class DiagService:
                 NamedItemList[Response](short_name_as_id,
                                         positive_responses)  # type: ignore
             self.pos_res_refs = [
-                OdxLinkRef.from_id(pr.id) for pr in positive_responses]  # type: ignore
+                OdxLinkRef.from_id(pr.odx_id) for pr in positive_responses]  # type: ignore
         elif all(isinstance(x, OdxLinkRef) for x in positive_responses):
             self._positive_responses = None
             self.pos_res_refs = positive_responses  # type: ignore
@@ -95,7 +95,7 @@ class DiagService:
                 NamedItemList[Response](short_name_as_id,
                                         negative_responses)  # type: ignore
             self.neg_res_refs = [
-                OdxLinkRef.from_id(nr.id) for nr in negative_responses]  # type: ignore
+                OdxLinkRef.from_id(nr.odx_id) for nr in negative_responses]  # type: ignore
         elif all(isinstance(x, OdxLinkRef) for x in negative_responses):
             self._negative_responses = None
             self.neg_res_refs = negative_responses  # type: ignore
@@ -227,24 +227,24 @@ class DiagService:
         return self.encode_request(**params)
 
     def __str__(self):
-        return f"DiagService(id={self.id}, semantic={self.semantic})"
+        return f"DiagService(odx_id={self.odx_id}, semantic={self.semantic})"
 
     def __repr__(self):
         return self.__str__()
 
     def __hash__(self) -> int:
-        return hash(self.id)
+        return hash(self.odx_id)
 
     def __eq__(self, o: object) -> bool:
-        return isinstance(o, DiagService) and self.id == o.id
+        return isinstance(o, DiagService) and self.odx_id == o.odx_id
 
 
 def read_diag_service_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 
     # logger.info(f"Parsing service based on ET DiagService element: {et_element}")
     short_name = et_element.find("SHORT-NAME").text
-    id = OdxLinkId.from_et(et_element, doc_frags)
-    assert id is not None
+    odx_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_id is not None
 
     request_ref = OdxLinkRef.from_et(et_element.find("REQUEST-REF"), doc_frags)
     assert request_ref is not None
@@ -288,7 +288,7 @@ def read_diag_service_from_odx(et_element, doc_frags: List[OdxDocFragment]):
         audience = read_audience_from_odx(et_element.find(
             "AUDIENCE"), doc_frags)
 
-    diag_service = DiagService(id,
+    diag_service = DiagService(odx_id,
                                short_name,
                                request_ref,
                                pos_res_refs,

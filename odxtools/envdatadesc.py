@@ -35,7 +35,7 @@ class EnvironmentDataDescription(DopBase):
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
-        odxlinks[self.id] = self
+        odxlinks[self.odx_id] = self
 
         for ed in self.env_datas:
             odxlinks.update(ed._build_odxlinks())
@@ -47,7 +47,7 @@ class EnvironmentDataDescription(DopBase):
             f"EnvironmentDataDescription('{self.short_name}', "
             + ", ".join(
                 [
-                    f"id='{self.id}'",
+                    f"odx_id='{self.odx_id}'",
                     f"param_snref='{self.param_snref}'",
                     f"param_snpathref='{self.param_snpathref}'",
                     f"env_data_refs='{self.env_data_refs}'",
@@ -76,8 +76,8 @@ class EnvironmentDataDescription(DopBase):
 def read_env_data_desc_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     -> EnvironmentDataDescription:
     """Reads Environment Data Description from Diag Layer."""
-    id = OdxLinkId.from_et(et_element, doc_frags)
-    assert id is not None
+    odx_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_id is not None
     short_name = et_element.find("SHORT-NAME").text
     long_name = et_element.find("LONG-NAME").text
     param_snref = None
@@ -101,7 +101,7 @@ def read_env_data_desc_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     logger.debug("Parsing ENV-DATA-DESC " + short_name)
 
     return EnvironmentDataDescription(
-        id=id,
+        odx_id=odx_id,
         short_name=short_name,
         long_name=long_name,
         param_snref=param_snref,

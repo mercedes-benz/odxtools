@@ -13,7 +13,7 @@ class SystemParameter(ParameterWithDOP):
                  dop_snref=None,
                  long_name=None,
                  byte_position=None,
-                 bit_position=0,
+                 bit_position=None,
                  semantic=None,
                  description=None):
         super().__init__(short_name,
@@ -52,9 +52,9 @@ class SystemParameter(ParameterWithDOP):
         if self.long_name is not None:
             repr_str += f", long_name='{self.long_name}'"
         if self.byte_position is not None:
-            repr_str += f", byte_position='{self.byte_position}'"
-        if self.bit_position:
-            repr_str += f", bit_position='{self.bit_position}'"
+            repr_str += f", byte_position={self.byte_position}"
+        if self.bit_position is not None:
+            repr_str += f", bit_position={self.bit_position}"
         if self.semantic is not None:
             repr_str += f", semantic='{self.semantic}'"
         if self.dop_ref is not None:

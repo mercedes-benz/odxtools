@@ -131,7 +131,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         dops = {
             "certificateClient":
             DataObjectProperty(
-                id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
+                odx_id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
                 short_name="certificateClient",
                 diag_coded_type=diagcodedtypes["certificateClient"],
                 physical_type=PhysicalType("A_BYTEFIELD"),
@@ -140,7 +140,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
         # Request
         request = Request(
-            id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate", doc_frags),
+            odx_id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate", doc_frags),
             short_name="sendCertificate",
             parameters=[
                 CodedConstParameter(
@@ -155,7 +155,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     description=("The certificate to verify."),
                     byte_position=1,
                     # This DOP references the above parameter lengthOfCertificateClient for the bit length.
-                    dop_ref=OdxLinkRef.from_id(dops["certificateClient"].id)
+                    dop_ref=OdxLinkRef.from_id(dops["certificateClient"].odx_id)
                 ),
             ]
         )
@@ -220,7 +220,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         state = DecodeState(bytes([0x10, 0x12, 0x34, 0x56]),
                             [ParameterValuePair(
                                 parameter=LengthKeyParameter(short_name="length_key",
-                                                             id=length_key_id,
+                                                             odx_id=length_key_id,
                                                              dop_ref=OdxLinkRef("some_dop", doc_frags)),
                                 value=16
                             )],
@@ -273,7 +273,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         dops = {
             "uint8_times_8":
             DataObjectProperty(
-                id=OdxLinkId("BV.dummy_DL.DOP.uint8_times_8", doc_frags),
+                odx_id=OdxLinkId("BV.dummy_DL.DOP.uint8_times_8", doc_frags),
                 short_name="uint8_times_8",
                 diag_coded_type=diagcodedtypes["uint8"],
                 physical_type=PhysicalType("A_UINT32"),
@@ -281,7 +281,7 @@ class TestParamLengthInfoType(unittest.TestCase):
 
             "certificateClient":
             DataObjectProperty(
-                id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
+                odx_id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
                 short_name="certificateClient",
                 diag_coded_type=diagcodedtypes["length_key_id_to_lengthOfCertificateClient"],
                 physical_type=PhysicalType("A_UINT32"),
@@ -290,7 +290,7 @@ class TestParamLengthInfoType(unittest.TestCase):
 
         # Request using LengthKeyParameter and ParamLengthInfoType
         request = Request(
-            id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate", doc_frags),
+            odx_id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate", doc_frags),
             short_name="sendCertificate",
             parameters=[
                 CodedConstParameter(
@@ -303,18 +303,18 @@ class TestParamLengthInfoType(unittest.TestCase):
                 LengthKeyParameter(
                     short_name="lengthOfCertificateClient",
                     # LengthKeyParams have an ID to be referenced by a ParamLengthInfoType (which is a diag coded type)
-                    id=diagcodedtypes["length_key_id_to_lengthOfCertificateClient"].length_key_id,
+                    odx_id=diagcodedtypes["length_key_id_to_lengthOfCertificateClient"].length_key_id,
                     description=("Length parameter for certificateClient."),
                     byte_position=1,
                     # The DOP multiplies the coded value by 8, since the length key ref expects the number of bits.
-                    dop_ref=OdxLinkRef.from_id(dops["uint8_times_8"].id)
+                    dop_ref=OdxLinkRef.from_id(dops["uint8_times_8"].odx_id)
                 ),
                 ValueParameter(
                     short_name="certificateClient",
                     description=("The certificate to verify."),
                     byte_position=2,
                     # This DOP references the above parameter lengthOfCertificateClient for the bit length.
-                    dop_ref=OdxLinkRef.from_id(dops["certificateClient"].id)
+                    dop_ref=OdxLinkRef.from_id(dops["certificateClient"].odx_id)
                 ),
             ]
         )
@@ -488,7 +488,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         dops = {
             "certificateClient":
             DataObjectProperty(
-                id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
+                odx_id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
                 short_name="certificateClient",
                 diag_coded_type=diagcodedtypes["certificateClient"],
                 physical_type=PhysicalType("A_BYTEFIELD"),
@@ -497,7 +497,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
         # Request
         request = Request(
-            id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate", doc_frags),
+            odx_id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate", doc_frags),
             short_name="sendCertificate",
             parameters=[
                 CodedConstParameter(
@@ -512,7 +512,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     description=("The certificate to verify."),
                     byte_position=1,
                     # This DOP references the above parameter lengthOfCertificateClient for the bit length.
-                    dop_ref=OdxLinkRef.from_id(dops["certificateClient"].id)
+                    dop_ref=OdxLinkRef.from_id(dops["certificateClient"].odx_id)
                 ),
                 CodedConstParameter(
                     short_name="dummy",
