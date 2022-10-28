@@ -37,9 +37,11 @@ class BasicStructure(DopBase):
 
     @property
     def bit_length(self):
+        # Explicit size was specified
         if self._byte_size:
             return 8 * self._byte_size
-        elif all(p.bit_length is not None for p in self.parameters):
+
+        if all(p.bit_length is not None for p in self.parameters):
             offset = 0
             length = 0
             for param in self.parameters:
@@ -57,9 +59,11 @@ class BasicStructure(DopBase):
 
                 length = max(length, offset)
 
-            return length
-        else:
-            return None
+            # Round up to account for padding bits
+            return math.ceil(length / 8) * 8
+
+        # We were not able to calculate a static bit length
+        return None
 
     def coded_const_prefix(self, request_prefix: Union[bytes, bytearray] = bytes()):
         prefix = bytearray()
@@ -189,13 +193,6 @@ class BasicStructure(DopBase):
         if bit_length is None:
             # Nothing to check
             return
-
-        if bit_length % 8 != 0:
-            warnings.warn(
-                f"Structure {self.short_name} length {bit_length} is not divisible by 8, i.e. is not a full sequence of bytes.",
-                OdxWarning)
-            # Round up so not to trigger double alarms
-            bit_length = math.ceil(bit_length / 8) * 8
 
         if len(coded_rpc) * 8 != bit_length:
             # We may have broke something
