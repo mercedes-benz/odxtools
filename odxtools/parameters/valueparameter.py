@@ -49,7 +49,11 @@ class ValueParameter(ParameterWithDOP):
             raise TypeError(f"A value for parameter '{self.short_name}' must be specified"
                             f" as the parameter does not exhibit a default.")
         assert self.dop is not None, f"Param {self.short_name} does not have a DOP. Maybe resolving references failed?"
-        return self.dop.convert_physical_to_bytes(physical_value, encode_state=encode_state, bit_position=self.bit_position)
+
+        bit_position_int = self.bit_position if self.bit_position is not None else 0
+        return self.dop.convert_physical_to_bytes(physical_value,
+                                                  encode_state=encode_state,
+                                                  bit_position=bit_position_int)
 
     def get_valid_physical_values(self):
         if isinstance(self.dop, DataObjectProperty):
@@ -61,7 +65,7 @@ class ValueParameter(ParameterWithDOP):
             repr_str += f", long_name='{self.long_name}'"
         if self.byte_position is not None:
             repr_str += f", byte_position='{self.byte_position}'"
-        if self.bit_position:
+        if self.bit_position is not None:
             repr_str += f", bit_position='{self.bit_position}'"
         if self.semantic is not None:
             repr_str += f", semantic='{self.semantic}'"

@@ -314,11 +314,11 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         super().on_consecutive_frame(telegram_idx, segment_idx, frame_payload)
 
 
-    def _send_can_message(self, id, payload):
+    def _send_can_message(self, can_tx_id, payload):
         if len(payload) < self._padding_size:
             payload = bytes(payload)+bytes([self._padding_value]*(self._padding_size - len(payload)))
 
-        msg = can.Message(arbitration_id=id,
+        msg = can.Message(arbitration_id=can_tx_id,
                           data=payload,
                           is_extended_id=False)
 

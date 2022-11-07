@@ -3,8 +3,9 @@
 
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import Optional
+from typing import TYPE_CHECKING, Optional, Any, Dict, List
 
+from .utils import short_name_as_id
 from .dataobjectproperty import (
     DataObjectProperty,
     DtcDop,
@@ -16,13 +17,16 @@ from .envdatadesc import read_env_data_desc_from_odx, EnvironmentDataDescription
 from .globals import logger
 from .multiplexer import Multiplexer, read_mux_from_odx
 from .nameditemlist import NamedItemList
-from .structures import Structure, read_structure_from_odx
+from .structures import BasicStructure, read_structure_from_odx
 from .table import read_table_from_odx, Table
 from .units import read_unit_spec_from_odx, UnitSpec
+from .odxlink import OdxLinkId, OdxLinkDatabase, OdxDocFragment
 
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 def _construct_named_item_list(iterable):
-    return NamedItemList(lambda x: x.short_name, iterable)
+    return NamedItemList(short_name_as_id, iterable)
 
 
 @dataclass()
@@ -33,7 +37,7 @@ class DiagDataDictionarySpec:
     data_object_props: NamedItemList[DataObjectProperty] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
-    structures: NamedItemList[Structure] = field(
+    structures: NamedItemList[BasicStructure] = field(
         default_factory=lambda: _construct_named_item_list([])
     )
     end_of_pdu_fields: NamedItemList[EndOfPduField] = field(
@@ -90,91 +94,95 @@ class DiagDataDictionarySpec:
         if not isinstance(self.muxs, NamedItemList):
             self.muxs = _construct_named_item_list(self.muxs)
 
-    def _build_id_lookup(self):
-        id_lookup = {}
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        odxlinks = {}
         for obj in chain(
             self.data_object_props, self.structures, self.end_of_pdu_fields, self.tables
         ):
-            id_lookup[obj.id] = obj
+            odxlinks[obj.odx_id] = obj
 
         for table in self.tables:
-            id_lookup.update(table._build_id_lookup())
+            odxlinks.update(table._build_odxlinks())
 
         for env_data_desc in self.env_data_descs:
-            id_lookup.update(env_data_desc._build_id_lookup())
+            odxlinks.update(env_data_desc._build_odxlinks())
 
         for env_data in self.env_datas:
-            id_lookup.update(env_data._build_id_lookup())
+            odxlinks.update(env_data._build_odxlinks())
 
         for mux in self.muxs:
-            id_lookup.update(mux._build_id_lookup())
+            odxlinks.update(mux._build_odxlinks())
 
         for obj in self.dtc_dops:
-            id_lookup.update(obj._build_id_lookup())
+            odxlinks.update(obj._build_odxlinks())
 
         if self.unit_spec:
-            id_lookup.update(self.unit_spec._build_id_lookup())
+            odxlinks.update(self.unit_spec._build_odxlinks())
 
-        return id_lookup
+        return odxlinks
 
-    def _resolve_references(self, parent_dl, id_lookup: dict):
+    def _resolve_references(self,
+                            parent_dl: "DiagLayer",
+                            odxlinks: OdxLinkDatabase):
         for dop in chain(
             self.dtc_dops,
             self.data_object_props,
             self.tables,
         ):
-            dop._resolve_references(id_lookup)
+            dop._resolve_references(odxlinks)
 
         for struct in chain(self.structures, self.end_of_pdu_fields):
-            struct._resolve_references(parent_dl, id_lookup)
+            struct._resolve_references(parent_dl, odxlinks)
 
         for env_data in chain(
             self.env_datas,
         ):
-            env_data._resolve_references(parent_dl, id_lookup)
+            env_data._resolve_references(parent_dl, odxlinks)
 
         for mux in chain(
             self.muxs,
         ):
-            mux._resolve_references(id_lookup)
+            mux._resolve_references(odxlinks)
 
         if self.unit_spec:
-            self.unit_spec._resolve_references(id_lookup)
+            self.unit_spec._resolve_references(odxlinks)
 
     @property
     def all_data_object_properties(self):
         return self._all_data_object_properties
 
 
-def read_diag_data_dictionary_spec_from_odx(et_element):
+def read_diag_data_dictionary_spec_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     # Parse DOP-BASEs
     data_object_props = [
-        read_data_object_property_from_odx(dop_element)
+        read_data_object_property_from_odx(dop_element, doc_frags)
         for dop_element in et_element.iterfind("DATA-OBJECT-PROPS/DATA-OBJECT-PROP")
     ]
 
-    structures = [
-        read_structure_from_odx(structure_element)
-        for structure_element in et_element.iterfind("STRUCTURES/STRUCTURE")
-    ]
+    structures = []
+    for structure_element in et_element.iterfind("STRUCTURES/STRUCTURE"):
+        structure = read_structure_from_odx(structure_element, doc_frags)
+        assert structure is not None
+        structures.append(structure)
 
     end_of_pdu_fields = [
-        read_end_of_pdu_field_from_odx(eopf_element)
-        for eopf_element in et_element.iterfind("END-OF-PDU-FIELDS/END-OF-PDU-FIELD")
+        read_end_of_pdu_field_from_odx(eofp_element, doc_frags)
+        for eofp_element in et_element.iterfind("END-OF-PDU-FIELDS/END-OF-PDU-FIELD")
     ]
 
-    dtc_dops = [
-        read_data_object_property_from_odx(dop_element)
-        for dop_element in et_element.iterfind("DTC-DOPS/DTC-DOP")
-    ]
+    dtc_dops = []
+    for dop_element in et_element.iterfind("DTC-DOPS/DTC-DOP"):
+        dop = read_data_object_property_from_odx(dop_element, doc_frags)
+        assert isinstance(dop, DtcDop)
+        dtc_dops.append(dop)
 
     tables = [
-        read_table_from_odx(table_element)
+        read_table_from_odx(table_element, doc_frags)
         for table_element in et_element.iterfind("TABLES/TABLE")
     ]
 
     env_data_descs = [
-        read_env_data_desc_from_odx(env_data_desc_element)
+        read_env_data_desc_from_odx(env_data_desc_element, doc_frags)
         for env_data_desc_element in et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC")
     ]
 
@@ -184,17 +192,17 @@ def read_diag_data_dictionary_spec_from_odx(et_element):
         et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC/ENV-DATAS/ENV-DATA"),
     )
     env_datas = [
-        read_env_data_from_odx(env_data_element)
+        read_env_data_from_odx(env_data_element, doc_frags)
         for env_data_element in env_data_elements
     ]
 
     muxs = [
-        read_mux_from_odx(mux_element)
+        read_mux_from_odx(mux_element, doc_frags)
         for mux_element in et_element.iterfind("MUXS/MUX")
     ]
 
     if et_element.find("UNIT-SPEC") is not None:
-        unit_spec = read_unit_spec_from_odx(et_element.find("UNIT-SPEC"))
+        unit_spec = read_unit_spec_from_odx(et_element.find("UNIT-SPEC"), doc_frags)
     else:
         unit_spec = None
 
@@ -212,13 +220,13 @@ def read_diag_data_dictionary_spec_from_odx(et_element):
             logger.info(f"Not implemented: Did not parse {num} {name}.")
 
     return DiagDataDictionarySpec(
-        data_object_props=data_object_props,
-        structures=structures,
-        end_of_pdu_fields=end_of_pdu_fields,
-        dtc_dops=dtc_dops,
+        data_object_props=NamedItemList(short_name_as_id, data_object_props),
+        structures=NamedItemList(short_name_as_id, structures),
+        end_of_pdu_fields=NamedItemList(short_name_as_id, end_of_pdu_fields),
+        dtc_dops=NamedItemList(short_name_as_id, dtc_dops),
         unit_spec=unit_spec,
-        tables=tables,
-        env_data_descs=env_data_descs,
-        env_datas=env_datas,
-        muxs=muxs,
+        tables=NamedItemList(short_name_as_id, tables),
+        env_data_descs=NamedItemList(short_name_as_id, env_data_descs),
+        env_datas=NamedItemList(short_name_as_id, env_datas),
+        muxs=NamedItemList(short_name_as_id, muxs),
     )

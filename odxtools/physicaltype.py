@@ -3,10 +3,10 @@
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
 from .odxtypes import DataType
-
+from .odxlink import OdxDocFragment
 
 class Radix(Enum):
     HEX = "HEX"
@@ -56,7 +56,7 @@ class PhysicalType:
             self.display_radix = Radix(self.display_radix)
 
 
-def read_physical_type_from_odx(et_element):
+def read_physical_type_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     base_data_type = et_element.get("BASE-DATA-TYPE")
     assert base_data_type in ["A_INT32", "A_UINT32", "A_FLOAT32", "A_FLOAT64",
                               "A_ASCIISTRING", "A_UTF8STRING", "A_UNICODE2STRING", "A_BYTEFIELD"]

@@ -4,7 +4,6 @@
 from enum import Enum
 from typing import Any, Callable, Dict, Literal, Type, Union
 
-
 def bytefield_to_bytearray(bytefield: str) -> bytearray:
     bytes_string = [bytefield[i:i+2] for i in range(0, len(bytefield), 2)]
     return bytearray(map(lambda x: int(x, 16), bytes_string))

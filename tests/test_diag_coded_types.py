@@ -18,6 +18,9 @@ from odxtools.dataobjectproperty import DataObjectProperty
 
 import odxtools.uds as uds
 
+from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
+
+doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
 class TestLeadingLengthInfoType(unittest.TestCase):
     def test_decode_leading_length_info_type_bytefield(self):
@@ -54,7 +57,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                                                  bit_position=1)
         self.assertEqual(internal, bytes([0x2, 0x3]))
 
-    def test_decode_leading_length_info_type_zero_length(self):
+    def test_decode_leading_length_info_type_bytefield2(self):
         dct = LeadingLengthInfoType("A_BYTEFIELD", 8)
         state = EncodeState(bytes([0x12, 0x34]), {})
         byte_val = dct.convert_internal_to_bytes(
@@ -128,7 +131,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         dops = {
             "certificateClient":
             DataObjectProperty(
-                id="BV.dummy_DL.DOP.certificateClient",
+                odx_id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
                 short_name="certificateClient",
                 diag_coded_type=diagcodedtypes["certificateClient"],
                 physical_type=PhysicalType("A_BYTEFIELD"),
@@ -137,7 +140,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
         # Request
         request = Request(
-            id="BV.dummy_DL.RQ.sendCertificate",
+            odx_id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate", doc_frags),
             short_name="sendCertificate",
             parameters=[
                 CodedConstParameter(
@@ -152,7 +155,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     description=("The certificate to verify."),
                     byte_position=1,
                     # This DOP references the above parameter lengthOfCertificateClient for the bit length.
-                    dop_ref=dops["certificateClient"].id
+                    dop_ref=OdxLinkRef.from_id(dops["certificateClient"].odx_id)
                 ),
             ]
         )
@@ -160,7 +163,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         # Dummy diag layer to resolve references from request parameters to DOPs
         diag_layer = DiagLayer(
             "BASE-VARIANT",
-            "BV.dummy_DL",
+            OdxLinkId("BV.dummy_DL", doc_frags),
             "dummy_DL",
             requests=[request],
             diag_data_dictionary_spec=DiagDataDictionarySpec(
@@ -211,14 +214,14 @@ class TestStandardLengthType(unittest.TestCase):
 
 class TestParamLengthInfoType(unittest.TestCase):
     def test_decode_param_info_length_type_uint(self):
-        length_key_id = "param.length_key"
+        length_key_id = OdxLinkId("param.length_key", doc_frags)
         dct = ParamLengthInfoType("A_UINT32",
-                                  length_key_ref=length_key_id)
+                                  length_key_id=length_key_id)
         state = DecodeState(bytes([0x10, 0x12, 0x34, 0x56]),
                             [ParameterValuePair(
                                 parameter=LengthKeyParameter(short_name="length_key",
-                                                             id=length_key_id,
-                                                             dop_ref="some_dop"),
+                                                             odx_id=length_key_id,
+                                                             dop_ref=OdxLinkRef("some_dop", doc_frags)),
                                 value=16
                             )],
                             next_byte_position=1)
@@ -228,9 +231,9 @@ class TestParamLengthInfoType(unittest.TestCase):
         self.assertEqual(next_byte, 3)
 
     def test_encode_param_info_length_type_uint(self):
-        length_key_id = "param.length_key"
+        length_key_id = OdxLinkId("param.length_key", doc_frags)
         dct = ParamLengthInfoType("A_UINT32",
-                                  length_key_ref=length_key_id)
+                                  length_key_id=length_key_id)
         state = EncodeState(bytes([0x10]), {}, length_keys={length_key_id: 40})
         byte_val = dct.convert_internal_to_bytes(0x12345,
                                                  state,
@@ -245,9 +248,9 @@ class TestParamLengthInfoType(unittest.TestCase):
                 base_data_type="A_UINT32",
                 bit_length=8),
 
-            "length_key_ref_to_lengthOfCertificateClient":
+            "length_key_id_to_lengthOfCertificateClient":
             ParamLengthInfoType(base_data_type="A_UINT32",
-                                length_key_ref="BV.dummy_DL.RQ.sendCertificate.lengthOfCertificateClient")
+                                length_key_id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate.lengthOfCertificateClient", doc_frags))
         }
 
         # computation methods
@@ -270,7 +273,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         dops = {
             "uint8_times_8":
             DataObjectProperty(
-                id="BV.dummy_DL.DOP.uint8_times_8",
+                odx_id=OdxLinkId("BV.dummy_DL.DOP.uint8_times_8", doc_frags),
                 short_name="uint8_times_8",
                 diag_coded_type=diagcodedtypes["uint8"],
                 physical_type=PhysicalType("A_UINT32"),
@@ -278,16 +281,16 @@ class TestParamLengthInfoType(unittest.TestCase):
 
             "certificateClient":
             DataObjectProperty(
-                id="BV.dummy_DL.DOP.certificateClient",
+                odx_id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
                 short_name="certificateClient",
-                diag_coded_type=diagcodedtypes["length_key_ref_to_lengthOfCertificateClient"],
+                diag_coded_type=diagcodedtypes["length_key_id_to_lengthOfCertificateClient"],
                 physical_type=PhysicalType("A_UINT32"),
                 compu_method=compumethods["uint_passthrough"]),
         }
 
         # Request using LengthKeyParameter and ParamLengthInfoType
         request = Request(
-            id="BV.dummy_DL.RQ.sendCertificate",
+            odx_id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate", doc_frags),
             short_name="sendCertificate",
             parameters=[
                 CodedConstParameter(
@@ -300,18 +303,18 @@ class TestParamLengthInfoType(unittest.TestCase):
                 LengthKeyParameter(
                     short_name="lengthOfCertificateClient",
                     # LengthKeyParams have an ID to be referenced by a ParamLengthInfoType (which is a diag coded type)
-                    id=diagcodedtypes["length_key_ref_to_lengthOfCertificateClient"].length_key_ref,
+                    odx_id=diagcodedtypes["length_key_id_to_lengthOfCertificateClient"].length_key_id,
                     description=("Length parameter for certificateClient."),
                     byte_position=1,
                     # The DOP multiplies the coded value by 8, since the length key ref expects the number of bits.
-                    dop_ref=dops["uint8_times_8"].id
+                    dop_ref=OdxLinkRef.from_id(dops["uint8_times_8"].odx_id)
                 ),
                 ValueParameter(
                     short_name="certificateClient",
                     description=("The certificate to verify."),
                     byte_position=2,
                     # This DOP references the above parameter lengthOfCertificateClient for the bit length.
-                    dop_ref=dops["certificateClient"].id
+                    dop_ref=OdxLinkRef.from_id(dops["certificateClient"].odx_id)
                 ),
             ]
         )
@@ -319,7 +322,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         # Dummy diag layer to resolve references from request parameters to DOPs
         diag_layer = DiagLayer(
             "BASE-VARIANT",
-            "BV.dummy_DL",
+            OdxLinkId("BV.dummy_DL", doc_frags),
             "dummy_DL",
             requests=[request],
             diag_data_dictionary_spec=DiagDataDictionarySpec(
@@ -485,7 +488,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         dops = {
             "certificateClient":
             DataObjectProperty(
-                id="BV.dummy_DL.DOP.certificateClient",
+                odx_id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
                 short_name="certificateClient",
                 diag_coded_type=diagcodedtypes["certificateClient"],
                 physical_type=PhysicalType("A_BYTEFIELD"),
@@ -494,7 +497,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
         # Request
         request = Request(
-            id="BV.dummy_DL.RQ.sendCertificate",
+            odx_id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate", doc_frags),
             short_name="sendCertificate",
             parameters=[
                 CodedConstParameter(
@@ -509,7 +512,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     description=("The certificate to verify."),
                     byte_position=1,
                     # This DOP references the above parameter lengthOfCertificateClient for the bit length.
-                    dop_ref=dops["certificateClient"].id
+                    dop_ref=OdxLinkRef.from_id(dops["certificateClient"].odx_id)
                 ),
                 CodedConstParameter(
                     short_name="dummy",
@@ -522,7 +525,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         # Dummy diag layer to resolve references from request parameters to DOPs
         diag_layer = DiagLayer(
             "BASE-VARIANT",
-            "BV.dummy_DL",
+            OdxLinkId("BV.dummy_DL", doc_frags),
             "dummy_DL",
             requests=[request],
             diag_data_dictionary_spec=DiagDataDictionarySpec(

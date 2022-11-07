@@ -6,7 +6,9 @@ from xml.etree import ElementTree
 
 from odxtools.odxtypes import DataType
 from odxtools.parameters import NrcConstParameter, read_parameter_from_odx
+from odxtools.odxlink import OdxDocFragment
 
+doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
 class TestReadNrcParam(unittest.TestCase):
     def test_read_nrcconst_from_odx(self):
@@ -25,7 +27,7 @@ class TestReadNrcParam(unittest.TestCase):
         </PARAM>
         """
         root = ElementTree.fromstring(ODX)
-        param = read_parameter_from_odx(root)
+        param = read_parameter_from_odx(root, doc_frags=doc_frags)
 
         self.assertIsInstance(param, NrcConstParameter)
         self.assertEqual("SUBFUNCTION-ID", param.semantic)

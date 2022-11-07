@@ -7,6 +7,7 @@ from typing import Any, Dict, List, Optional, Union, Type
 from ..odxtypes import DataType
 from ..utils import read_description_from_odx
 from ..globals import logger
+from ..odxlink import OdxDocFragment
 
 from .compumethodbase import CompuMethod
 from .compuscale import CompuScale
@@ -105,7 +106,10 @@ def read_limit_from_odx(et_element, internal_type: DataType):
     return limit
 
 
-def read_compu_method_from_odx(et_element, internal_type: DataType, physical_type: DataType) -> CompuMethod:
+def read_compu_method_from_odx(et_element,
+                               doc_frags: List[OdxDocFragment],
+                               internal_type: DataType,
+                               physical_type: DataType) -> CompuMethod:
     compu_category = et_element.find("CATEGORY").text
     assert compu_category in ["IDENTICAL", "LINEAR", "SCALE-LINEAR",
                               "TEXTTABLE", "COMPUCODE", "TAB-INTP",

@@ -3,14 +3,14 @@
 
 import abc
 import math
-from typing import Any, Union
+from typing import Any, Optional, Union, List
 
-from .utils import make_ref
 from .odxtypes import DataType
 from .exceptions import DecodeError, EncodeError
 from .globals import xsi, logger
 from .decodestate import DecodeState
 from .encodestate import EncodeState
+from .odxlink import OdxLinkId, OdxDocFragment
 
 import bitstruct
 
@@ -38,13 +38,13 @@ class DiagCodedType(abc.ABC):
         self.is_highlow_byte_order = is_highlow_byte_order
 
     def _extract_internal(self,
-                          coded_message,
-                          byte_position,
-                          bit_position,
-                          bit_length,
+                          coded_message: bytes,
+                          byte_position: int,
+                          bit_position: int,
+                          bit_length: int,
                           base_data_type: DataType,
-                          is_highlow_byte_order,
-                          bit_mask=None):
+                          is_highlow_byte_order: bool,
+                          bit_mask: Optional[int] = None):
         """Extract the internal value.
 
         Helper method for `DiagCodedType.convert_bytes_to_internal`.
@@ -164,7 +164,7 @@ class DiagCodedType(abc.ABC):
             the value to be encoded
         bit_position : int 
 
-        length_keys : Dict[str, int]
+        length_keys : Dict[OdxLinkId, int]
             mapping from ID (of the length key) to bit length
             (only needed for ParamLengthInfoType) 
         """
@@ -406,17 +406,17 @@ class MinMaxLengthType(DiagCodedType):
 class ParamLengthInfoType(DiagCodedType):
     def __init__(self,
                  base_data_type: Union[str, DataType],
-                 length_key_ref: str,
+                 length_key_id: OdxLinkId,
                  base_type_encoding=None,
                  is_highlow_byte_order=True):
         super().__init__(base_data_type,
                          dct_type="PARAM-LENGTH-INFO-TYPE",
                          base_type_encoding=base_type_encoding,
                          is_highlow_byte_order=is_highlow_byte_order)
-        self.length_key_ref = length_key_ref
+        self.length_key_id = length_key_id
 
     def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> bytes:
-        bit_length = encode_state.length_keys.get(self.length_key_ref, None)
+        bit_length = encode_state.length_keys.get(self.length_key_id, None)
 
         if bit_length is None:
             if self.base_data_type in [DataType.A_BYTEFIELD, DataType.A_ASCIISTRING, DataType.A_UTF8STRING]:
@@ -432,7 +432,7 @@ class ParamLengthInfoType(DiagCodedType):
                 bit_length = math.ceil(bit_length / 8.0) * 8
 
         assert bit_length is not None
-        encode_state.length_keys[self.length_key_ref] = bit_length
+        encode_state.length_keys[self.length_key_id] = bit_length
 
         return self._to_bytes(internal_value,
                               bit_position=bit_position,
@@ -442,17 +442,18 @@ class ParamLengthInfoType(DiagCodedType):
 
     def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
         # Find length key with matching ID.
-        bit_length = None
+        bit_length = 0
         for parameter, value in decode_state.parameter_value_pairs:
             # if isinstance(param_value.parameter, LengthKeyParameter) would be prettier,
             # but leads to cyclic import...
             if parameter.parameter_type == "LENGTH-KEY" \
-                    and parameter.id == self.length_key_ref:
+                    and parameter.odx_id == self.length_key_id: # type: ignore
                 # The bit length of the parameter to be extracted is given by the length key.
+                assert isinstance(value, int)
                 bit_length = value
                 break
 
-        assert value is not None, f"Did not find any length key with ID {self.length_key_ref}"
+        assert bit_length is not None, f"Did not find any length key with ID {self.length_key_id}"
 
         # Extract the internal value and return.
         return self._extract_internal(decode_state.coded_message,
@@ -463,7 +464,7 @@ class ParamLengthInfoType(DiagCodedType):
                                       self.is_highlow_byte_order)
 
     def __repr__(self) -> str:
-        repr_str = f"ParamLengthInfoType(base_data_type='{self.base_data_type}', length_key_ref={self.length_key_ref}"
+        repr_str = f"ParamLengthInfoType(base_data_type='{self.base_data_type}', length_key_id={self.length_key_id}"
         if self.base_type_encoding is not None:
             repr_str += f", base_type_encoding={self.base_type_encoding}"
         if not self.is_highlow_byte_order:
@@ -524,7 +525,7 @@ class StandardLengthType(DiagCodedType):
         return self.__repr__()
 
 
-def read_diag_coded_type_from_odx(et_element):
+def read_diag_coded_type_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     base_type_encoding = et_element.get("BASE-TYPE-ENCODING")
 
     base_data_type = et_element.get("BASE-DATA-TYPE")
@@ -562,10 +563,18 @@ def read_diag_coded_type_from_odx(et_element):
                                 base_type_encoding=base_type_encoding,
                                 is_highlow_byte_order=is_highlow_byte_order)
     elif dct_type == "PARAM-LENGTH-INFO-TYPE":
-        length_key_ref = make_ref(et_element.find("LENGTH-KEY-REF"))
+        # TODO: This is a bit hacky: we make an ID where the data
+        # specifies a reference. The reason is that we need to store
+        # the result in an associative array which is not possible
+        # with references. Note that we currently ignore the DOCREF
+        # attribute of the reference, so if there are any ID conflicts
+        # between document fragments, the encoding process will go
+        # wrong...
+        length_key_elem = et_element.find("LENGTH-KEY-REF")
+        length_key_id = OdxLinkId(length_key_elem.attrib["ID-REF"], doc_frags)
 
         return ParamLengthInfoType(base_data_type,
-                                   length_key_ref,
+                                   length_key_id,
                                    base_type_encoding=base_type_encoding,
                                    is_highlow_byte_order=is_highlow_byte_order)
     elif dct_type == "STANDARD-LENGTH-TYPE":

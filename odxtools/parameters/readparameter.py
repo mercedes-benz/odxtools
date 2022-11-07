@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+from typing import List
 
 from ..diagcodedtypes import read_diag_coded_type_from_odx
 from ..globals import xsi
-from ..utils import make_ref, read_element_id
+from ..utils import read_description_from_odx
+from ..odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
 
 from .codedconstparameter import CodedConstParameter
 from .dynamicparameter import DynamicParameter
@@ -20,24 +22,22 @@ from .tablestructparameter import TableStructParameter
 from .valueparameter import ValueParameter
 
 
-def read_parameter_from_odx(et_element):
-    element_id = read_element_id(et_element)
-    short_name = element_id["short_name"]
-    long_name = element_id.get("long_name")
-    description = element_id.get("description")
-
+def read_parameter_from_odx(et_element, doc_frags):
+    short_name = et_element.find("SHORT-NAME").text
+    long_name = et_element.findtext("LONG-NAME")
+    description = read_description_from_odx(et_element.find("DESC"))
     semantic = et_element.get("SEMANTIC")
-
-    byte_position = int(et_element.find(
-        "BYTE-POSITION").text) if et_element.find("BYTE-POSITION") is not None else None
-    bit_position = int(et_element.find(
-        "BIT-POSITION").text) if et_element.find("BIT-POSITION") is not None else 0
-
+    byte_position_str = et_element.findtext("BYTE-POSITION")
+    byte_position = int(byte_position_str) if byte_position_str is not None else None
+    bit_position_str = et_element.findtext("BIT-POSITION")
+    bit_position = None
+    if bit_position_str is not None:
+        bit_position = int(bit_position_str)
     parameter_type = et_element.get(f"{xsi}type")
 
     # Which attributes are set depends on the type of the parameter.
     if parameter_type in ["VALUE", "PHYS-CONST", "SYSTEM", "LENGTH-KEY"]:
-        dop_ref = make_ref(et_element.find("DOP-REF"))
+        dop_ref = OdxLinkRef.from_et(et_element.find("DOP-REF"), doc_frags)
         dop_snref = et_element.find(
             "DOP-SNREF").get("SHORT-NAME") if et_element.find("DOP-SNREF") is not None else None
 
@@ -75,7 +75,7 @@ def read_parameter_from_odx(et_element):
 
     elif parameter_type == "CODED-CONST":
         diag_coded_type = read_diag_coded_type_from_odx(
-            et_element.find("DIAG-CODED-TYPE"))
+            et_element.find("DIAG-CODED-TYPE"), doc_frags)
         coded_value = diag_coded_type.base_data_type.from_string(
             et_element.find("CODED-VALUE").text)
 
@@ -90,7 +90,7 @@ def read_parameter_from_odx(et_element):
 
     elif parameter_type == "NRC-CONST":
         diag_coded_type = read_diag_coded_type_from_odx(
-            et_element.find("DIAG-CODED-TYPE"))
+            et_element.find("DIAG-CODED-TYPE"), doc_frags)
         coded_values = [diag_coded_type.base_data_type.from_string(val.text)
                         for val in et_element.iterfind("CODED-VALUES/CODED-VALUE")]
 
@@ -140,10 +140,10 @@ def read_parameter_from_odx(et_element):
                                description=description)
 
     elif parameter_type == "LENGTH-KEY":
-        id = et_element.get("ID")
+        odx_id = OdxLinkId.from_et(et_element, doc_frags)
 
         return LengthKeyParameter(short_name=short_name,
-                                  id=id,
+                                  odx_id=odx_id,
                                   long_name=long_name,
                                   semantic=semantic,
                                   byte_position=byte_position,
@@ -162,7 +162,7 @@ def read_parameter_from_odx(et_element):
                                 description=description)
 
     elif parameter_type == "TABLE-STRUCT":
-        key_ref = make_ref(et_element.find("TABLE-KEY-REF"))
+        key_ref = OdxLinkRef.from_et(et_element.find("TABLE-KEY-REF"), doc_frags)
         key_snref = et_element.find(
             "TABLE-KEY-SNREF").get("SHORT-NAME") if et_element.find("TABLE-KEY-SNREF") is not None else None
 
@@ -177,20 +177,20 @@ def read_parameter_from_odx(et_element):
 
     elif parameter_type == "TABLE-KEY":
 
-        parameter_id = et_element.get("ID")
-        table_ref = make_ref(et_element.find("TABLE-REF"))
+        parameter_id = OdxLinkId.from_et(et_element, doc_frags)
+        table_ref = OdxLinkRef.from_et(et_element.find("TABLE-REF"), doc_frags)
         table_snref = et_element.find(
             "TABLE-SNREF").get("SHORT-NAME") if et_element.find("TABLE-SNREF") is not None else None
         row_snref = et_element.find(
             "TABLE-ROW-SNREF").get("SHORT-NAME") if et_element.find("TABLE-ROW-SNREF") is not None else None
-        row_ref = make_ref(et_element.find("TABLE-ROW-REF"))
+        row_ref = OdxLinkRef.from_et(et_element.find("TABLE-ROW-REF"), doc_frags)
 
         return TableKeyParameter(short_name=short_name,
                                  table_ref=table_ref,
                                  table_snref=table_snref,
                                  table_row_snref=row_snref,
                                  table_row_ref=row_ref,
-                                 id=parameter_id,
+                                 odx_id=parameter_id,
                                  long_name=long_name,
                                  byte_position=byte_position,
                                  bit_position=bit_position,
@@ -199,7 +199,7 @@ def read_parameter_from_odx(et_element):
 
     elif parameter_type == "TABLE-ENTRY":
         target = et_element.find("TARGET").text
-        table_row_ref = make_ref(et_element.find("TABLE-ROW-REF"))
+        table_row_ref = OdxLinkRef.from_et(et_element.find("TABLE-ROW-REF"), doc_frags)
 
         return TableEntryParameter(short_name=short_name,
                                    target=target,

@@ -5,7 +5,7 @@
 -#}
 
 {%- macro printEnvData(env_data) %}
-<ENV-DATA ID="{{env_data.id}}">
+<ENV-DATA ID="{{env_data.odx_id.local_id}}">
     <SHORT-NAME>{{env_data.short_name}}</SHORT-NAME>
     <LONG-NAME>{{env_data.long_name}}</LONG-NAME>
     <PARAMS>
@@ -17,7 +17,7 @@
           {%- if param.physical_constant_value %}
           <PHYS-CONSTANT-VALUE>{{param.physical_constant_value}}</PHYS-CONSTANT-VALUE>
           {%- endif %}
-          <DOP-REF ID-REF="{{param.dop_ref}}"/>
+          <DOP-REF ID-REF="{{param.dop_ref.ref_id}}"/>
         </PARAM>
         {%- endfor %}
     </PARAMS>

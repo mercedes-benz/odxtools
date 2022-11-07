@@ -13,9 +13,9 @@
  <COMPANY-DOC-INFOS>
   {%- for cdi in admin_data.company_doc_infos %}
   <COMPANY-DOC-INFO>
-    <COMPANY-DATA-REF ID-REF="{{cdi.company_data_ref}}" />
+    <COMPANY-DATA-REF ID-REF="{{cdi.company_data_ref.ref_id}}" />
    {%- if cdi.team_member_ref is not none %}
-    <TEAM-MEMBER-REF ID-REF="{{cdi.team_member_ref}}" />
+    <TEAM-MEMBER-REF ID-REF="{{cdi.team_member_ref.ref_id}}" />
    {%- endif %}
    {%- if cdi.doc_label is not none %}
     <DOC-LABEL>{{cdi.doc_label|e}}</DOC-LABEL>
@@ -29,7 +29,7 @@
   {%- for doc_revision in admin_data.doc_revisions %}
   <DOC-REVISION>
    {%- if doc_revision.team_member_ref is not none %}
-   <TEAM-MEMBER-REF ID-REF="{{doc_revision.team_member_ref}}" />
+   <TEAM-MEMBER-REF ID-REF="{{doc_revision.team_member_ref.ref_id}}" />
    {%- endif %}
    {%- if doc_revision.revision_label is not none %}
    <REVISION-LABEL>{{doc_revision.revision_label|e}}</REVISION-LABEL>

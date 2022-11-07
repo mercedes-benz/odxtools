@@ -3,24 +3,25 @@
 
 from .nameditemlist import NamedItemList
 from .companydata import CompanyData, TeamMember
-from .utils import make_ref, read_description_from_odx
+from .odxlink import OdxLinkId, OdxLinkRef, OdxLinkDatabase, OdxDocFragment
+from .utils import read_description_from_odx
 
 from dataclasses import dataclass, field
-from typing import Optional, List
+from typing import Optional, Any, Dict, List
 
 @dataclass()
 class CompanyDocInfo:
-    company_data_ref: str
+    company_data_ref: OdxLinkRef
     company_data: Optional[CompanyData] = None
-    team_member_ref: Optional[str] = None
+    team_member_ref: Optional[OdxLinkRef] = None
     team_member: Optional[TeamMember] = None
     doc_label: Optional[str] = None
 
-    def _resolve_references(self, id_lookup):
-        self.company_data = id_lookup[self.company_data_ref]
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+        self.company_data = odxlinks.resolve(self.company_data_ref)
 
         if self.team_member_ref is not None:
-            self.team_member = id_lookup[self.team_member_ref]
+            self.team_member = odxlinks.resolve(self.team_member_ref)
 
 @dataclass()
 class Modification:
@@ -33,16 +34,16 @@ class DocRevision:
     Representation of a single revision of the relevant object.
     """
     date: str
-    team_member_ref: Optional[str] = None
+    team_member_ref: Optional[OdxLinkRef] = None
     team_member: Optional[TeamMember] = None
     revision_label: Optional[str] = None
     state: Optional[str] = None
     tool: Optional[str] = None
     modifications: List[Modification] = field(default_factory=list)
 
-    def _resolve_references(self, id_lookup):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
         if self.team_member_ref is not None:
-            self.team_member = id_lookup[self.team_member_ref]
+            self.team_member = odxlinks.resolve(self.team_member_ref)
 
 @dataclass()
 class AdminData:
@@ -50,21 +51,21 @@ class AdminData:
     company_doc_infos: Optional[List[CompanyDocInfo]] = None
     doc_revisions: Optional[List[DocRevision]] = None
 
-    def _build_id_lookup(self):
-        result = {}
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result: Dict[OdxLinkId, Any] = {}
 
         return result
 
-    def _resolve_references(self, id_lookup):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
         if self.company_doc_infos is not None:
             for cdi in self.company_doc_infos:
-                cdi._resolve_references(id_lookup)
+                cdi._resolve_references(odxlinks)
 
         if self.doc_revisions is not None:
             for dr in self.doc_revisions:
-                dr._resolve_references(id_lookup)
+                dr._resolve_references(odxlinks)
 
-def read_admin_data_from_odx(et_element):
+def read_admin_data_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     if et_element is None:
         return None
 
@@ -77,12 +78,12 @@ def read_admin_data_from_odx(et_element):
         cdilist = list()
         for cdi in company_doc_infos.iterfind("COMPANY-DOC-INFO"):
             # the company data reference is mandatory
-            company_data_ref = make_ref(cdi.find("COMPANY-DATA-REF"))
-            team_member_ref = make_ref(cdi.find("TEAM-MEMBER-REF"))
+            company_data_ref = OdxLinkRef.from_et(cdi.find("COMPANY-DATA-REF"), doc_frags)
+            assert company_data_ref is not None
+            team_member_ref = OdxLinkRef.from_et(cdi.find("TEAM-MEMBER-REF"), doc_frags)
+            assert team_member_ref is not None
 
-            doc_label = cdi.find("DOC-LABEL")
-            if doc_label is not None:
-                doc_label = doc_label.text
+            doc_label = cdi.findtext("DOC-LABEL")
 
             cdilist.append(CompanyDocInfo(company_data_ref=company_data_ref,
                                           team_member_ref=team_member_ref,
@@ -94,7 +95,7 @@ def read_admin_data_from_odx(et_element):
     if doc_revisions is not None:
         drlist = list()
         for dr in doc_revisions.iterfind("DOC-REVISION"):
-            team_member_ref = make_ref(dr.find("TEAM-MEMBER-REF"))
+            team_member_ref = OdxLinkRef.from_et(dr.find("TEAM-MEMBER-REF"), doc_frags)
             revision_label = dr.find("REVISION-LABEL")
             if revision_label is not None:
                 revision_label = revision_label.text

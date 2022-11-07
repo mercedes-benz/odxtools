@@ -9,6 +9,7 @@ from xml.etree import ElementTree
 import jinja2
 
 import odxtools
+from odxtools.utils import short_name_as_id
 from odxtools.audience import AdditionalAudience, Audience
 from odxtools.compumethods import CompuScale, Limit, LinearCompuMethod, TexttableCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
@@ -20,7 +21,9 @@ from odxtools.odxtypes import DataType
 from odxtools.physicaltype import PhysicalType
 from odxtools.singleecujob import read_single_ecu_job_from_odx, SingleEcuJob, ProgCode, InputParam, OutputParam, NegOutputParam
 from odxtools.write_pdx_file import jinja2_odxraise_helper
+from odxtools.odxlink import OdxLinkId, OdxLinkRef, OdxLinkDatabase, OdxDocFragment
 
+doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
 class TestSingleEcuJob(unittest.TestCase):
 
@@ -34,7 +37,7 @@ class TestSingleEcuJob(unittest.TestCase):
         super().setUp()
 
         class Context(NamedTuple):
-            """odx elements referenced by the tested single ECU job, i.e., elements needed in the `id_lookup` when resolving references"""
+            """odx elements referenced by the tested single ECU job, i.e., elements needed in the `odxlinks` when resolving references"""
             extensiveTask: FunctionalClass
             specialAudience: AdditionalAudience
             inputDOP: DataObjectProperty
@@ -44,13 +47,13 @@ class TestSingleEcuJob(unittest.TestCase):
         self.context = Context(
 
             extensiveTask=FunctionalClass(
-                id="ID.extensiveTask", short_name="extensiveTask"),
+                odx_id=OdxLinkId("ID.extensiveTask", doc_frags), short_name="extensiveTask"),
 
             specialAudience=AdditionalAudience(
-                id="ID.specialAudience", short_name="specialAudience"),
+                odx_id=OdxLinkId("ID.specialAudience", doc_frags), short_name="specialAudience"),
 
             inputDOP=DataObjectProperty(
-                id="ID.inputDOP",
+                odx_id=OdxLinkId("ID.inputDOP", doc_frags),
                 short_name="inputDOP",
                 diag_coded_type=StandardLengthType(
                     DataType.A_INT32, bit_length=1),
@@ -67,7 +70,7 @@ class TestSingleEcuJob(unittest.TestCase):
             ),
 
             outputDOP=DataObjectProperty(
-                id="ID.outputDOP",
+                odx_id=OdxLinkId("ID.outputDOP", doc_frags),
                 short_name="outputDOP",
                 diag_coded_type=StandardLengthType(
                     DataType.A_INT32, bit_length=1),
@@ -77,7 +80,7 @@ class TestSingleEcuJob(unittest.TestCase):
             ),
 
             negOutputDOP=DataObjectProperty(
-                id="ID.negOutputDOP",
+                odx_id=OdxLinkId("ID.negOutputDOP", doc_frags),
                 short_name="negOutputDOP",
                 diag_coded_type=StandardLengthType(
                     DataType.A_INT32, bit_length=1),
@@ -87,12 +90,37 @@ class TestSingleEcuJob(unittest.TestCase):
             )
         )
 
+        input_params=[
+            InputParam(
+                short_name="inputParam",
+                physical_default_value="Yes!",
+                dop_base_ref=OdxLinkRef.from_id(self.context.inputDOP.odx_id)
+            )
+        ]
+        output_params=[
+            OutputParam(
+                odx_id=OdxLinkId("ID.outputParam", doc_frags),
+                semantic="DATA",
+                short_name="outputParam",
+                long_name="The Output Param",
+                description="<p>The one and only output of this job.</p>",
+                dop_base_ref=OdxLinkRef.from_id(self.context.outputDOP.odx_id)
+            )
+        ]
+        neg_output_params=[
+            NegOutputParam(
+                short_name="NegativeOutputParam",
+                description="<p>The one and only output of this job.</p>",
+                dop_base_ref=OdxLinkRef.from_id(self.context.negOutputDOP.odx_id)
+            )
+        ]
+
         self.singleecujob_object = SingleEcuJob(
-            id="ID.JumpStart",
+            odx_id=OdxLinkId("ID.JumpStart", doc_frags),
             short_name="JumpStart",
-            functional_class_refs=[self.context.extensiveTask.id],
+            functional_class_refs=[OdxLinkRef.from_id(self.context.extensiveTask.odx_id)],
             audience=Audience(
-                enabled_audience_refs=[self.context.specialAudience.id]
+                enabled_audience_refs=[OdxLinkRef.from_id(self.context.specialAudience.odx_id)]
             ),
             prog_codes=[
                 ProgCode(
@@ -102,45 +130,24 @@ class TestSingleEcuJob(unittest.TestCase):
                     revision="0.12.34",
                     entrypoint="CalledClass",
                     library_refs=[
-                        "my.favourite.lib"
+                        OdxLinkRef("my.favourite.lib", doc_frags)
                     ]
                 )
             ],
-            input_params=[
-                InputParam(
-                    short_name="inputParam",
-                    physical_default_value="Yes!",
-                    dop_base_ref=self.context.inputDOP.id
-                )
-            ],
-            output_params=[
-                OutputParam(
-                    id="ID.outputParam",
-                    semantic="DATA",
-                    short_name="outputParam",
-                    long_name="The Output Param",
-                    description="<p>The one and only output of this job.</p>",
-                    dop_base_ref=self.context.outputDOP.id
-                )
-            ],
-            neg_output_params=[
-                NegOutputParam(
-                    short_name="NegativeOutputParam",
-                    description="<p>The one and only output of this job.</p>",
-                    dop_base_ref=self.context.negOutputDOP.id
-                )
-            ]
+            input_params=input_params,
+            output_params=output_params,
+            neg_output_params=neg_output_params,
         )
 
         self.singleecujob_odx = f"""
-            <SINGLE-ECU-JOB ID="{self.singleecujob_object.id}">
+            <SINGLE-ECU-JOB ID="{self.singleecujob_object.odx_id.local_id}">
                 <SHORT-NAME>{self.singleecujob_object.short_name}</SHORT-NAME>
                 <FUNCT-CLASS-REFS>
-                    <FUNCT-CLASS-REF ID-REF="{self.singleecujob_object.functional_class_refs[0]}"/>
+                    <FUNCT-CLASS-REF ID-REF="{self.singleecujob_object.functional_class_refs[0].ref_id}"/>
                 </FUNCT-CLASS-REFS>
                 <AUDIENCE>
                     <ENABLED-AUDIENCE-REFS>
-                        <ENABLED-AUDIENCE-REF ID-REF="{cast(Audience, self.singleecujob_object.audience).enabled_audience_refs[0]}"/>
+                        <ENABLED-AUDIENCE-REF ID-REF="{cast(Audience, self.singleecujob_object.audience).enabled_audience_refs[0].ref_id}"/>
                     </ENABLED-AUDIENCE-REFS>
                 </AUDIENCE>
                 <PROG-CODES>
@@ -151,30 +158,30 @@ class TestSingleEcuJob(unittest.TestCase):
                         <REVISION>{self.singleecujob_object.prog_codes[0].revision}</REVISION>
                         <ENTRYPOINT>{self.singleecujob_object.prog_codes[0].entrypoint}</ENTRYPOINT>
                         <LIBRARY-REFS>
-                            <LIBRARY-REF ID-REF="{self.singleecujob_object.prog_codes[0].library_refs[0]}"/>
+                            <LIBRARY-REF ID-REF="{self.singleecujob_object.prog_codes[0].library_refs[0].ref_id}"/>
                         </LIBRARY-REFS>
                     </PROG-CODE>
                 </PROG-CODES>
                 <INPUT-PARAMS>
                     <INPUT-PARAM>
-                        <SHORT-NAME>{self.singleecujob_object.input_params[0].short_name}</SHORT-NAME>
-                        <PHYSICAL-DEFAULT-VALUE>{self.singleecujob_object.input_params[0].physical_default_value}</PHYSICAL-DEFAULT-VALUE>
-                        <DOP-BASE-REF ID-REF="{self.singleecujob_object.input_params[0].dop_base_ref}"/>
+                        <SHORT-NAME>{input_params[0].short_name}</SHORT-NAME>
+                        <PHYSICAL-DEFAULT-VALUE>{input_params[0].physical_default_value}</PHYSICAL-DEFAULT-VALUE>
+                        <DOP-BASE-REF ID-REF="{input_params[0].dop_base_ref.ref_id}"/>
                     </INPUT-PARAM>
                 </INPUT-PARAMS>
                 <OUTPUT-PARAMS>
-                    <OUTPUT-PARAM ID="{self.singleecujob_object.output_params[0].id}" SEMANTIC="{self.singleecujob_object.output_params[0].semantic}">
-                        <SHORT-NAME>{self.singleecujob_object.output_params[0].short_name}</SHORT-NAME>
-                        <LONG-NAME>{self.singleecujob_object.output_params[0].long_name}</LONG-NAME>
-                        <DESC>\n{self.singleecujob_object.output_params[0].description}\n</DESC>
-                        <DOP-BASE-REF ID-REF="{self.singleecujob_object.output_params[0].dop_base_ref}"/>
+                    <OUTPUT-PARAM ID="{output_params[0].odx_id.local_id}" SEMANTIC="{output_params[0].semantic}">
+                        <SHORT-NAME>{output_params[0].short_name}</SHORT-NAME>
+                        <LONG-NAME>{output_params[0].long_name}</LONG-NAME>
+                        <DESC>\n{output_params[0].description}\n</DESC>
+                        <DOP-BASE-REF ID-REF="{output_params[0].dop_base_ref.ref_id}"/>
                     </OUTPUT-PARAM>
                 </OUTPUT-PARAMS>
                 <NEG-OUTPUT-PARAMS>
                     <NEG-OUTPUT-PARAM>
-                        <SHORT-NAME>{self.singleecujob_object.neg_output_params[0].short_name}</SHORT-NAME>
-                        <DESC>\n{self.singleecujob_object.neg_output_params[0].description}\n</DESC>
-                        <DOP-BASE-REF ID-REF="{self.singleecujob_object.neg_output_params[0].dop_base_ref}"/>
+                        <SHORT-NAME>{neg_output_params[0].short_name}</SHORT-NAME>
+                        <DESC>\n{neg_output_params[0].description}\n</DESC>
+                        <DOP-BASE-REF ID-REF="{neg_output_params[0].dop_base_ref.ref_id}"/>
                     </NEG-OUTPUT-PARAM>
                 </NEG-OUTPUT-PARAMS>
             </SINGLE-ECU-JOB>
@@ -184,18 +191,19 @@ class TestSingleEcuJob(unittest.TestCase):
         expected = self.singleecujob_object
         sample_single_ecu_job_odx = self.singleecujob_odx
         et_element = ElementTree.fromstring(sample_single_ecu_job_odx)
-        sej = read_single_ecu_job_from_odx(et_element)
+        sej = read_single_ecu_job_from_odx(et_element, doc_frags=doc_frags)
         self.assertEqual(expected.prog_codes, sej.prog_codes)
         self.assertEqual(expected.output_params, sej.output_params)
         self.assertEqual(expected.neg_output_params,
                          sej.neg_output_params)
+
         self.assertEqual(expected, sej)
 
     def test_write_odx(self):
         # Setup jinja environment
-        __module_filname = inspect.getsourcefile(odxtools)
-        assert isinstance(__module_filname, str)
-        stub_dir = os.path.sep.join([os.path.dirname(__module_filname),
+        __module_filename = inspect.getsourcefile(odxtools)
+        assert isinstance(__module_filename, str)
+        stub_dir = os.path.sep.join([os.path.dirname(__module_filename),
                                      "pdx_stub"])
         jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(stub_dir))
@@ -220,13 +228,13 @@ class TestSingleEcuJob(unittest.TestCase):
 
         # Assert equality of objects
         # This tests the idempotency of read-write
-        sej = read_single_ecu_job_from_odx(ElementTree.fromstring(rawodx))
+        sej = read_single_ecu_job_from_odx(ElementTree.fromstring(rawodx), doc_frags=doc_frags)
         self.assertEqual(self.singleecujob_object, sej)
 
     def test_default_lists(self):
         """Test that empty lists are assigned to list-attributes if no explicit value is passed."""
         sej = SingleEcuJob(
-            id="ID.SomeID",
+            odx_id=OdxLinkId("ID.SomeID", doc_frags),
             short_name="SN.SomeShortName",
             prog_codes=[
                 ProgCode(
@@ -237,22 +245,20 @@ class TestSingleEcuJob(unittest.TestCase):
             ]
         )
         self.assertEqual(sej.functional_class_refs, [])
-        self.assertEqual(sej.input_params, NamedItemList(
-            lambda x: x.short_name, []))
-        self.assertEqual(sej.output_params, NamedItemList(
-            lambda x: x.short_name, []))
-        self.assertEqual(sej.neg_output_params,
-                         NamedItemList(lambda x: x.short_name, []))
+        self.assertEqual(sej.input_params, NamedItemList(short_name_as_id, []))
+        self.assertEqual(sej.output_params, NamedItemList(short_name_as_id, []))
+        self.assertEqual(sej.neg_output_params, NamedItemList(short_name_as_id, []))
         self.assertEqual(sej.prog_codes[0].library_refs, [])
 
     def test_resolve_references(self):
         dl = DiagLayer(variant_type="BASE-VARIANT",
-                       id="ID.bv",
+                       odx_id=OdxLinkId("ID.bv", doc_frags),
                        short_name="bv",
                        single_ecu_jobs=[self.singleecujob_object])
-        id_lookup = {val.id: val for val in self.context}
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update({val.odx_id: val for val in self.context})
 
-        dl._resolve_references(id_lookup)
+        dl._resolve_references(odxlinks)
 
         self.assertEqual(self.context.extensiveTask,
                          self.singleecujob_object.functional_classes.extensiveTask)
