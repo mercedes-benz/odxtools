@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import TYPE_CHECKING, Any, List, Union
+from typing import TYPE_CHECKING, List, Union
 
 from .utils import read_description_from_odx
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
@@ -119,13 +119,12 @@ def read_end_of_pdu_field_from_odx(et_element, doc_frags: List[OdxDocFragment]) 
     description = read_description_from_odx(et_element.find("DESC"))
 
     structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
-    assert structure_ref is not None
-    structure_snref = None
 
+    structure_snref = None
     if et_element.find("BASIC-STRUCTURE-SNREF") is not None:
-        structure_ref = None
         structure_snref = et_element.find(
             "BASIC-STRUCTURE-SNREF").get("SHORT-NAME")
+    assert (structure_ref is not None) or (structure_snref is not None)
 
     if et_element.find("ENV-DATA-DESC-REF") is not None:
         structure_ref = OdxLinkRef.from_et(et_element.get("ENV-DATA-DESC-REF"), doc_frags)
