@@ -3,7 +3,7 @@
 
 from enum import IntEnum
 from itertools import chain
-from typing import Union
+from typing import Optional, Union, ByteString
 
 import odxtools.obd as obd
 
@@ -93,7 +93,7 @@ def negative_response_id(service_id: int) -> int:
     assert service_id != 0x7f - 0x40  # TODO: What is this assert supposed to do?
     return NegativeResponseId
 
-def is_reponse_pending(telegram_payload: Union[bytes, bytearray], request_sid: int = None) -> bool:
+def is_reponse_pending(telegram_payload: ByteString, request_sid: Optional[int] = None) -> bool:
     # "response pending" responses exhibit at least three bytes
     if len(telegram_payload) < 3:
         return False

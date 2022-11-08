@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 import abc
-from typing import List, Dict, Optional, Any, Union
+from typing import cast, List, Dict, Optional, Any, Union
 from dataclasses import dataclass
 
 from .utils import read_description_from_odx
@@ -163,8 +163,8 @@ class DtcRef:
     is resolved after loading the pdx database.
     """
 
-    def __init__(self, dtc_id):
-        self.dtc_id = dtc_id
+    def __init__(self, dtc_ref: OdxLinkRef):
+        self.dtc_ref = dtc_ref
         self.dtc: Optional[DiagnosticTroubleCode] = None
 
     @property
@@ -196,10 +196,10 @@ class DtcRef:
         return self.dtc.is_temporary
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
-        self.dtc: Optional[DiagnosticTroubleCode] = odxlinks.resolve(self.dtc_id) # type: ignore
+        self.dtc: Optional[DiagnosticTroubleCode] = odxlinks.resolve(self.dtc_ref) # type: ignore
 
         assert isinstance(self.dtc, DiagnosticTroubleCode),\
-            f"DTC-REF {self.dtc_id} does not reference a DTC but a {type(self.dtc)}."
+            f"DTC-REF {self.dtc_ref} does not reference a DTC but a {type(self.dtc)}."
 
 
 class DtcDop(DataObjectProperty):
@@ -212,10 +212,10 @@ class DtcDop(DataObjectProperty):
                  physical_type: PhysicalType,
                  compu_method: CompuMethod,
                  dtcs: List[Union[DiagnosticTroubleCode, DtcRef]],
-                 is_visible=False,
-                 linked_dtc_dops=False,
-                 long_name: str = None,
-                 description: str = None
+                 is_visible: bool = False,
+                 linked_dtc_dops: bool = False,
+                 long_name: Optional[str] = None,
+                 description: Optional[str] = None
                  ):
         super().__init__(odx_id=odx_id,
                          short_name=short_name,
@@ -333,7 +333,7 @@ def read_data_object_property_from_odx(et_element, doc_frags: List[OdxDocFragmen
     else:
         dtcs = [read_dtc_from_odx(el, doc_frags)
                 for el in et_element.iterfind("DTCS/DTC")]
-        dtcs += [DtcRef(OdxLinkRef.from_et(el, doc_frags))
+        dtcs += [DtcRef(cast(OdxLinkRef, OdxLinkRef.from_et(el, doc_frags)))
                  for el in et_element.iterfind("DTCS/DTC-REF")]
 
         is_visible = et_element.get("IS-VISIBLE") == "true"

@@ -150,7 +150,7 @@ class OdxLinkDatabase:
     This can resolve references to such.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._db: Dict[OdxDocFragment, Dict[OdxLinkId, Any]] = {}
 
     def resolve(self, ref: OdxLinkRef) -> Any:

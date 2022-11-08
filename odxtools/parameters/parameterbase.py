@@ -3,7 +3,7 @@
 
 
 import abc
-from typing import Optional
+from typing import Optional, Union
 import warnings
 
 from ..decodestate import DecodeState
@@ -11,16 +11,15 @@ from ..encodestate import EncodeState
 from ..exceptions import OdxWarning
 from ..globals import logger
 
-
 class Parameter(abc.ABC):
     def __init__(self,
-                 short_name,
-                 parameter_type,
-                 long_name=None,
-                 byte_position=None,
-                 bit_position=None,
-                 semantic=None,
-                 description=None):
+                 short_name: str,
+                 parameter_type: str,
+                 long_name: Optional[str] = None,
+                 byte_position: Optional[int] = None,
+                 bit_position: Optional[int] = None,
+                 semantic: Optional[str] = None,
+                 description: Optional[str] = None) -> None:
         self.short_name: str = short_name
         self.long_name: Optional[str] = long_name
         self.byte_position: Optional[int] = byte_position

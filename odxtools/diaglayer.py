@@ -104,9 +104,9 @@ class DiagLayer:
                  single_ecu_jobs: List[SingleEcuJob] = [],
                  diag_comm_refs: List[OdxLinkRef] = [],
                  parent_refs: List[ParentRef] = [],
-                 diag_data_dictionary_spec: DiagDataDictionarySpec = None,
+                 diag_data_dictionary_spec: Optional[DiagDataDictionarySpec] = None,
                  communication_parameters:
-                 List[CommunicationParameterRef] = [],
+                 Iterable[CommunicationParameterRef] = [],
                  enable_candela_workarounds=True,
                  odxlinks=None,
                  additional_audiences=[],
@@ -687,18 +687,18 @@ def read_diag_layer_from_odx(et_element,
 
 class DiagLayerContainer:
     def __init__(self,
-                 odx_id,
-                 short_name,
-                 long_name=None,
-                 description=None,
+                 odx_id: OdxLinkId,
+                 short_name: str,
+                 long_name: Optional[str] = None,
+                 description: Optional[str] = None,
                  admin_data: Optional[AdminData] = None,
                  company_datas: Optional[NamedItemList[CompanyData]] = None,
-                 ecu_shared_datas=[],
-                 protocols=[],
-                 functional_groups=[],
-                 base_variants=[],
-                 ecu_variants=[]
-                 ):
+                 ecu_shared_datas: List[DiagLayer] = [],
+                 protocols: List[DiagLayer] = [],
+                 functional_groups: List[DiagLayer] = [],
+                 base_variants: List[DiagLayer] = [],
+                 ecu_variants: List[DiagLayer] = []
+                 ) -> None:
         self.odx_id = odx_id
         self.short_name = short_name
         self.long_name = long_name

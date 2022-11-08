@@ -7,9 +7,10 @@ from typing import Dict, List, Union
 import PyInquirer
 
 from ..database import Database
+from ..diaglayer import DiagLayer
 from ..service import DiagService
 from ..structures import Request, Response
-from ..parameters import ParameterWithDOP
+from ..parameters import Parameter, ParameterWithDOP
 from ..odxtypes import DataType
 from . import _parser_utils
 
@@ -168,8 +169,11 @@ def encode_message_from_string_values(sub_service: Union[Request, Response],
             # parameter_value refers to a structure (represented as dict of params)
             for simple_param_sn, simple_param in parameter.items():
                 structured_value = parameter_values.get(parameter_sn)
-                if simple_param.is_required() and (not isinstance(structured_value, dict)
-                                                   or structured_value.get(simple_param_sn) is None):
+                if not isinstance(simple_param, Parameter):
+                    continue
+                if simple_param.is_required() and \
+                   (not isinstance(structured_value, dict)
+                    or structured_value.get(simple_param_sn) is None):
                     missing_parameter_names.append(
                         f"{parameter_sn} :: {simple_param_sn}")
         else:
@@ -187,14 +191,14 @@ def encode_message_from_string_values(sub_service: Union[Request, Response],
             typed_dict = parameter_value.copy()
             for simple_param_sn, simple_val in parameter_value.items():
                 try:
-                    parameter = param_dict[parameter_sn][simple_param_sn]
+                    parameter = param_dict[parameter_sn][simple_param_sn] # type: ignore
                 except:
                     print(f"I don't know the parameter {simple_param_sn}")
                     continue
-                typed_dict[simple_param_sn] = _convert_string_to_odx_type(
-                    simple_val,
-                    parameter.physical_type.base_data_type
-                )
+
+                typed_dict[simple_param_sn] = \
+                    _convert_string_to_odx_type(simple_val,
+                                                parameter.physical_type.base_data_type) # type: ignore
                 parameter_values[parameter_sn] = typed_dict
         else:
             try:
@@ -202,11 +206,18 @@ def encode_message_from_string_values(sub_service: Union[Request, Response],
             except:
                 print(f"I don't know the parameter {parameter_sn}")
                 continue
-            parameter_values[parameter_sn] = _convert_string_to_odx_type(
-                parameter_value,
-                parameter.physical_type.base_data_type if parameter.parameter_type != "MATCHING-REQUEST-PARAM"
-                else DataType.A_BYTEFIELD
-            )
+
+            assert isinstance(parameter, Parameter)
+
+            if parameter.parameter_type != "MATCHING-REQUEST-PARAM":
+                parameter_values[parameter_sn] = \
+                    _convert_string_to_odx_type(parameter_value,
+                                                parameter.physical_type.base_data_type) # type: ignore
+            else:
+                parameter_values[parameter_sn] = \
+                    _convert_string_to_odx_type(parameter_value,
+                                                DataType.A_BYTEFIELD)
+
     payload = sub_service.encode(**parameter_values) # type: ignore
     print(f"Message payload: 0x{bytes(payload).hex()}")
 
@@ -229,7 +240,7 @@ def browse(odxdb: Database):
             return
 
         variant = odxdb.diag_layers[answer.get("variant")]
-        assert variant is not None
+        assert isinstance(variant, DiagLayer)
 
         if (rx_id := variant.get_receive_id()) is not None:
             recv_id = hex(rx_id)
@@ -262,7 +273,7 @@ def browse(odxdb: Database):
             service_sn = answer.get("service")
 
             service = variant.services[service_sn]
-            assert service is not None and isinstance(service, DiagService)
+            assert isinstance(service, DiagService)
             assert service.request is not None
             assert service.positive_responses is not None
             assert service.negative_responses is not None

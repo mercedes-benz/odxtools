@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import List
+from typing import Optional, List
 
 from .odxlink import OdxLinkRef, OdxDocFragment
 from .utils import read_description_from_odx
@@ -11,9 +11,9 @@ class CommunicationParameterRef:
     def __init__(self,
                  value,
                  id_ref: OdxLinkRef,
-                 description: str = None,
-                 protocol_sn_ref: str = None,
-                 prot_stack_sn_ref: str = None):
+                 description: Optional[str] = None,
+                 protocol_sn_ref: Optional[str] = None,
+                 prot_stack_sn_ref: Optional[str] = None):
         self.value = value
         self.id_ref = id_ref
         self.description = description

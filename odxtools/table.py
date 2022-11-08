@@ -34,7 +34,7 @@ class TableRow:
     description: Optional[str] = None
     semantic: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._structure: Optional[DopBase] = None
         self._dop: Optional[DopBase] = None
 

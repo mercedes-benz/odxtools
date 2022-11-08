@@ -5,7 +5,7 @@ import re
 import markdownify
 
 from odxtools import DiagService
-
+from odxtools.structures import Request, Response
 
 def format_desc(desc, ident=0):
     # Collapse whitespaces
@@ -54,22 +54,20 @@ def print_diagnostic_service(service: DiagService, print_params=False, print_pre
         print(
             f"  Number of positive responses: {len(service.positive_responses)}")
         if len(service.positive_responses) == 1:
-            assert service.positive_responses[0] is not None
+            resp = service.positive_responses[0]
 
             print(f"  Message format of a positive response:")
-            service.positive_responses[0].print_message_format(
-                indent=3,
-                allow_unknown_lengths=allow_unknown_bit_lengths)
+            resp.print_message_format(indent=3,
+                                      allow_unknown_lengths=allow_unknown_bit_lengths)
 
         print(
             f"  Number of negative responses: {len(service.negative_responses)}")
         if len(service.negative_responses) == 1:
-            assert service.negative_responses[0] is not None
+            resp = service.negative_responses[0]
 
             print(f"  Message format of a negative response:")
-            service.negative_responses[0].print_message_format(
-                indent=3,
-                allow_unknown_lengths=allow_unknown_bit_lengths)
+            resp.print_message_format(indent=3,
+                                      allow_unknown_lengths=allow_unknown_bit_lengths)
 
     if ((service.positive_responses and len(service.positive_responses) > 1)
             or (service.negative_responses and len(service.negative_responses) > 1)):
