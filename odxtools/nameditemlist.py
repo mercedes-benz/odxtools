@@ -65,7 +65,7 @@ class NamedItemList(Generic[T]):
     def __len__(self):
         return len(self._list)
 
-    def __getitem__(self, key: Union[int, str]) -> T:
+    def __getitem__(self, key: Union[int, str, slice]) -> T:
         if isinstance(key, int):
             if abs(key) < -len(self._list) or key >= len(self._list):
                 # we want to raise a KeyError instead of an IndexError
@@ -75,7 +75,12 @@ class NamedItemList(Generic[T]):
 
             return self._list[key]
         elif isinstance(key, slice):
-            return self._list[key]
+            # for slices, we unfortunately have to ignore the typing
+            # because if the key is a slice, we cannot return a single
+            # item. (alternatively, the return type of this method
+            # could be defined as Union[T, List[T]], but this leads
+            # mypy to produce *many* spurious and hard to fix errors.
+            return self._list[key] # type: ignore
         else:
             return self._typed_dict[key]
 

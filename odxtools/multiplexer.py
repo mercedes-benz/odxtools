@@ -24,7 +24,7 @@ class MultiplexerCase:
     lower_limit: str
     upper_limit: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._structure: Optional[BasicStructure] = None
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -52,7 +52,7 @@ class MultiplexerDefaultCase:
     long_name: str
     structure_ref: Optional[OdxLinkRef] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._structure: Optional[BasicStructure] = None
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:

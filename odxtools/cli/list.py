@@ -2,12 +2,13 @@
 # Copyright (c) 2022 MBition GmbH
 
 import argparse
-from typing import List, Union
+from typing import cast, List, Union
 
 from ._print_utils import print_diagnostic_service, format_desc
 from . import _parser_utils
 
 from ..database import Database
+from ..diaglayer import DiagLayer
 from ..service import DiagService
 from ..singleecujob import SingleEcuJob
 
@@ -36,8 +37,10 @@ def print_summary(odxdb: Database,
             print(f"The variant '{dl_sn}' could not be found!")
             continue
 
+        assert isinstance(dl, DiagLayer)
         all_services: List[Union[DiagService, SingleEcuJob]] \
-            = sorted(dl.services, key=lambda x: x.short_name)
+            = sorted(dl.services,
+                     key=lambda x: x.short_name)
 
         data_object_properties = dl.data_object_properties
         com_params = dl.communication_parameters

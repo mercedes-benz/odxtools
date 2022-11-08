@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 import math
-from typing import TYPE_CHECKING, Any, List, Dict, Iterable, OrderedDict, Tuple, Union
+from typing import TYPE_CHECKING, Any, Optional, List, Dict, Iterable, ByteString, OrderedDict, Tuple, Union
 import warnings
 
 from .utils import short_name_as_id
@@ -22,6 +22,8 @@ from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
     from .endofpdufield import EndOfPduField
+
+ParameterDict = Dict[str, Union[Parameter, "ParameterDict"]]
 
 class BasicStructure(DopBase):
     def __init__(self,
@@ -253,7 +255,7 @@ class BasicStructure(DopBase):
 
         return param_dict, decode_state.next_byte_position + inner_decode_state.next_byte_position
 
-    def encode(self, coded_request=None, **params) -> bytearray:
+    def encode(self, coded_request: Optional[ByteString] = None, **params) -> ByteString:
         """
         Composes an UDS message as bytes for this service.
         Parameters:
@@ -279,21 +281,25 @@ class BasicStructure(DopBase):
                 f"The message {message.hex()} is longer than could be parsed. Expected {next_byte_position} but got {len(message)}.")
         return param_values
 
-    def parameter_dict(self):
+    def parameter_dict(self) -> ParameterDict:
         """
         Returns a dict with parameter short names as keys.
         The values are parameters for simple types or a nested dict for structures.
         """
-        params = self.parameters
-        assert all(not isinstance(p, ParameterWithDOP) or isinstance(
-            p.dop, DataObjectProperty) or isinstance(p.dop, Structure) for p in self.parameters)
-        param_dict: Dict[str, Union[Parameter, Dict[str, Parameter]]] = {
-            p.short_name: p for p in params
-            if not isinstance(p, ParameterWithDOP) or not isinstance(p.dop, Structure)
+        assert all(not isinstance(p, ParameterWithDOP) or \
+                   isinstance(p.dop, DataObjectProperty) or \
+                   isinstance(p.dop, Structure) for p in self.parameters)
+        param_dict: ParameterDict = {
+            p.short_name: p \
+              for p in self.parameters \
+                if not isinstance(p, ParameterWithDOP) or \
+                   not isinstance(p.dop, Structure)
         }
         param_dict.update({
-            struct_param.short_name: struct_param.dop.parameter_dict()
-            for struct_param in params if isinstance(struct_param, ParameterWithDOP) and isinstance(struct_param.dop, BasicStructure)
+            struct_param.short_name: struct_param.dop.parameter_dict() \
+              for struct_param in self.parameters \
+                if isinstance(struct_param, ParameterWithDOP) and \
+                   isinstance(struct_param.dop, BasicStructure)
         })
         return param_dict
 
@@ -308,7 +314,8 @@ class BasicStructure(DopBase):
             if isinstance(p, TableKeyParameter):
                 p.resolve_references(parent_dl, odxlinks)
 
-    def __message_format_lines(self, allow_unknown_lengths=False):
+    def __message_format_lines(self, allow_unknown_lengths: bool = False) \
+            -> List[str]:
         # sort parameters
         sorted_params: list = list(self.parameters)  # copy list
 
@@ -325,7 +332,7 @@ class BasicStructure(DopBase):
         sorted_params.sort(key=param_sort_key)
 
         # replace structure parameters by their sub parameters
-        params = []
+        params: List[Parameter] = []
         for p in sorted_params:
             if isinstance(p, ValueParameter) and isinstance(p.dop, BasicStructure):
                 params += p.dop.parameters
@@ -368,7 +375,7 @@ class BasicStructure(DopBase):
                     # length, so they need special treatment here
                     dct = None
                     if hasattr(params[i], 'dop'):
-                        dop = params[i].dop
+                        dop = params[i].dop # type: ignore
                         if hasattr(dop, 'diag_coded_type'):
                             dct = dop.diag_coded_type
 
@@ -440,7 +447,7 @@ class BasicStructure(DopBase):
             formatted_lines.append(divide_string)
             return formatted_lines
         else:
-            return None
+            return []
 
     def print_message_format(self, indent: int = 5, allow_unknown_lengths=False):
         """
@@ -499,7 +506,7 @@ class Response(BasicStructure):
                          long_name=long_name, description=description)
         self.response_type = "POS-RESPONSE" if response_type == "POS-RESPONSE" else "NEG-RESPONSE"
 
-    def encode(self, coded_request: bytearray = None, **params):
+    def encode(self, coded_request: Optional[ByteString] = None, **params) -> ByteString:
         logger.info(f"Compose response message to the request {coded_request}")
         if coded_request is not None:
             # Extract MATCHING-REQUEST-PARAMs from the coded request

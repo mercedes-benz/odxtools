@@ -182,8 +182,8 @@
  {{ printCompuMethod(dop.compu_method)|indent(1) }}
  <DTCS>
  {%- for dtc in dop.dtcs %}
- {%- if dtc.dtc_id is defined   %}
-  <DTC-REF ID-REF="{{dop.dtc_id.ref_id}}" />
+ {%- if dtc.dtc_ref is defined   %}
+  <DTC-REF ID-REF="{{dop.dtc_ref.ref_id}}" />
  {%- else %}
   <DTC ID="{{dtc.odx_id.local_id}}">
    <SHORT-NAME>{{dtc.short_name}}</SHORT-NAME>

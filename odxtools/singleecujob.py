@@ -33,7 +33,7 @@ class InputParam:
     semantic: Optional[str] = None
     physical_default_value: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._dop: Optional[DopBase] = None
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -55,7 +55,7 @@ class OutputParam:
     oid: Optional[str] = None
     semantic: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._dop: Optional[DopBase] = None
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -74,7 +74,7 @@ class NegOutputParam:
     long_name: Optional[str] = None
     description: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._dop: Optional[DopBase] = None
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:

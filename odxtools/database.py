@@ -3,7 +3,7 @@
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Optional, Dict, Union
 from xml.etree import ElementTree
 from itertools import chain
 from zipfile import ZipFile
@@ -21,8 +21,8 @@ class Database:
     """
 
     def __init__(self,
-                 pdx_zip: ZipFile = None,
-                 odx_d_file_name: str = None,
+                 pdx_zip: Optional[ZipFile] = None,
+                 odx_d_file_name: Optional[str] = None,
                  enable_candela_workarounds: bool = True):
 
         dlc_elements = []
@@ -65,14 +65,14 @@ class Database:
                               [read_diag_layer_container_from_odx(dlc_element)])
             self.finalize_init()
 
-    def finalize_init(self):
+    def finalize_init(self) -> None:
         # Create wrapper objects
         self._diag_layers = NamedItemList(
             short_name_as_id,
-            chain(*(dlc.diag_layers for dlc in self.diag_layer_containers)))
+            chain(*[dlc.diag_layers for dlc in self.diag_layer_containers]))
         self._ecus = NamedItemList(
             short_name_as_id,
-            chain(*(dlc.ecu_variants for dlc in self.diag_layer_containers)))
+            chain(*[dlc.ecu_variants for dlc in self.diag_layer_containers]))
 
         # Build odxlinks
         self._odxlinks = OdxLinkDatabase()
@@ -93,7 +93,7 @@ class Database:
                     dl._resolve_references(self.odxlinks)
 
     @property
-    def odxlinks(self) -> dict:
+    def odxlinks(self) -> OdxLinkDatabase:
         """A map from odx_id to object"""
         return self._odxlinks
 
