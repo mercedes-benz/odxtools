@@ -526,7 +526,7 @@ class Response(BasicStructure):
 
 def read_structure_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> Union[Structure, Request, Response, None]:
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
     parameters = [read_parameter_from_odx(et_parameter, doc_frags)
@@ -551,8 +551,8 @@ def read_structure_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> Unio
             description=description
         )
     elif et_element.tag == "STRUCTURE":
-        byte_size = int(et_element.find(
-            "BYTE-SIZE").text) if et_element.find("BYTE-SIZE") is not None else None
+        byte_size_text = et_element.findtext("BYTE-SIZE")
+        byte_size = int(byte_size_text) if byte_size_text is not None else None
         res = Structure(
             odx_id,
             short_name,

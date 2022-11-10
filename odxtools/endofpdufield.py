@@ -114,7 +114,7 @@ def read_end_of_pdu_field_from_odx(et_element, doc_frags: List[OdxDocFragment]) 
     -> EndOfPduField:
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     assert odx_id is not None
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
 
@@ -136,12 +136,12 @@ def read_end_of_pdu_field_from_odx(et_element, doc_frags: List[OdxDocFragment]) 
 
     if et_element.find("MIN-NUMBER-OF-ITEMS") is not None:
         min_number_of_items = int(
-            et_element.find("MIN-NUMBER-OF-ITEMS").text)
+            et_element.findtext("MIN-NUMBER-OF-ITEMS"))
     else:
         min_number_of_items = None
     if et_element.find("MAX-NUMBER-OF-ITEMS") is not None:
         max_number_of_items = int(
-            et_element.find("MAX-NUMBER-OF-ITEMS").text)
+            et_element.findtext("MAX-NUMBER-OF-ITEMS"))
     else:
         max_number_of_items = None
 

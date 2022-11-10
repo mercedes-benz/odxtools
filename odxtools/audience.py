@@ -68,7 +68,7 @@ def read_audience_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 
 
 def read_additional_audience_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     assert odx_id is not None
 

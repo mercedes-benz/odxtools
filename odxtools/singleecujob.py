@@ -228,12 +228,12 @@ class SingleEcuJob:
 
 
 def read_prog_code_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    code_file = et_element.find("CODE-FILE").text
+    code_file = et_element.findtext("CODE-FILE")
 
     encryption = et_element.findtext("ENCRYPTION")
 
-    syntax = et_element.find("SYNTAX").text
-    revision = et_element.find("REVISION").text
+    syntax = et_element.findtext("SYNTAX")
+    revision = et_element.findtext("REVISION")
 
     entrypoint = et_element.findtext("ENTRYPOINT")
 
@@ -279,7 +279,7 @@ def read_input_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 def read_output_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     assert odx_id is not None
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     assert short_name is not None
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
@@ -301,7 +301,7 @@ def read_output_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 
 
 def read_neg_output_param_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     assert short_name is not None
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
@@ -321,7 +321,7 @@ def read_single_ecu_job_from_odx(et_element, doc_frags: List[OdxDocFragment]):
         f"Parsing service based on ET DiagService element: {et_element}")
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     assert odx_id is not None
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     assert short_name is not None
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))

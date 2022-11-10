@@ -69,9 +69,7 @@ def read_admin_data_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     if et_element is None:
         return None
 
-    language = et_element.find("LANGUAGE")
-    if language is not None:
-        language = language.text
+    language = language.findtext("LANGUAGE")
 
     company_doc_infos = et_element.find("COMPANY-DOC-INFOS")
     if company_doc_infos is not None:
@@ -96,32 +94,18 @@ def read_admin_data_from_odx(et_element, doc_frags: List[OdxDocFragment]):
         drlist = list()
         for dr in doc_revisions.iterfind("DOC-REVISION"):
             team_member_ref = OdxLinkRef.from_et(dr.find("TEAM-MEMBER-REF"), doc_frags)
-            revision_label = dr.find("REVISION-LABEL")
-            if revision_label is not None:
-                revision_label = revision_label.text
-
-            state = dr.find("STATE")
-            if state is not None:
-                state = state.text
-
-            date = dr.find("DATE").text
-
-            tool = dr.find("TOOL")
-            if tool is not None:
-                tool = tool.text
+            revision_label = dr.findtext("REVISION-LABEL")
+            state = dr.findtext("STATE")
+            date = dr.findtext("DATE")
+            tool = dr.findtext("TOOL")
 
             modlist = None
             mods = dr.find("MODIFICATIONS")
             if mods is not None:
                 modlist = list()
                 for mod in mods.iterfind("MODIFICATION"):
-                    m_change = mod.find("CHANGE")
-                    if m_change is not None:
-                        m_change = m_change.text
-
-                    m_reason = mod.find("REASON")
-                    if m_reason is not None:
-                        m_reason = m_reason.text
+                    m_change = mod.findtext("CHANGE")
+                    m_reason = mod.findtext("REASON")
 
                     modlist.append(Modification(change=m_change,
                                                 reason=m_reason))

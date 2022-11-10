@@ -242,7 +242,7 @@ class DiagService:
 def read_diag_service_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 
     # logger.info(f"Parsing service based on ET DiagService element: {et_element}")
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     assert odx_id is not None
 

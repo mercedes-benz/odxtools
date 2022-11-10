@@ -50,7 +50,7 @@ def _parse_compu_scale_to_linear_compu_method(scale_element,
     factor = computation_python_type(factor_el.text if factor_el is not None else '0')
     if coeffs.find("COMPU-DENOMINATOR/V") is not None:
         kwargs["denominator"] = float(
-            coeffs.find("COMPU-DENOMINATOR/V").text)
+            coeffs.findtext("COMPU-DENOMINATOR/V"))
         assert kwargs["denominator"] > 0
 
     # Read lower limit
@@ -110,7 +110,7 @@ def read_compu_method_from_odx(et_element,
                                doc_frags: List[OdxDocFragment],
                                internal_type: DataType,
                                physical_type: DataType) -> CompuMethod:
-    compu_category = et_element.find("CATEGORY").text
+    compu_category = et_element.findtext("CATEGORY")
     assert compu_category in ["IDENTICAL", "LINEAR", "SCALE-LINEAR",
                               "TEXTTABLE", "COMPUCODE", "TAB-INTP",
                               "RAT-FUNC", "SCALE-RAT-FUNC"]
@@ -147,13 +147,13 @@ def read_compu_method_from_odx(et_element,
                 compu_inverse_value = None
 
             internal_to_phys.append(CompuScale(
-                short_label=(scale.find("SHORT-LABEL").text
+                short_label=(scale.findtext("SHORT-LABEL")
                              if scale.find("SHORT-LABEL") is not None else None),
                 description=read_description_from_odx(scale.find("DESC")),
                 lower_limit=lower_limit,
                 upper_limit=upper_limit,
                 compu_inverse_value=compu_inverse_value,
-                compu_const=scale.find("COMPU-CONST").find("VT").text
+                compu_const=scale.findtext("COMPU-CONST").find("VT")
             ))
 
         kwargs["internal_to_phys"] = internal_to_phys
