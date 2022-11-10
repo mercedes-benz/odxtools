@@ -153,7 +153,7 @@ def read_compu_method_from_odx(et_element,
                 lower_limit=lower_limit,
                 upper_limit=upper_limit,
                 compu_inverse_value=compu_inverse_value,
-                compu_const=scale.findtext("COMPU-CONST").find("VT")
+                compu_const=scale.find("COMPU-CONST").findtext("VT")
             ))
 
         kwargs["internal_to_phys"] = internal_to_phys
