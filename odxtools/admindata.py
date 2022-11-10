@@ -69,7 +69,7 @@ def read_admin_data_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     if et_element is None:
         return None
 
-    language = language.findtext("LANGUAGE")
+    language = et_element.findtext("LANGUAGE")
 
     company_doc_infos = et_element.find("COMPANY-DOC-INFOS")
     if company_doc_infos is not None:
