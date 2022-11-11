@@ -284,20 +284,20 @@ class DtcDop(DataObjectProperty):
 
 def read_dtc_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     if et_element.find("DISPLAY-TROUBLE-CODE") is not None:
-        display_trouble_code = et_element.find("DISPLAY-TROUBLE-CODE").text
+        display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
     else:
         display_trouble_code = None
 
     if et_element.find("LEVEL") is not None:
-        level = et_element.find("LEVEL").text
+        level = et_element.findtext("LEVEL")
     else:
         level = None
 
     return DiagnosticTroubleCode(odx_id=OdxLinkId.from_et(et_element, doc_frags),
-                                 short_name=et_element.find("SHORT-NAME").text,
+                                 short_name=et_element.findtext("SHORT-NAME"),
                                  trouble_code=int(
-                                     et_element.find("TROUBLE-CODE").text),
-                                 text=et_element.find("TEXT").text,
+                                     et_element.findtext("TROUBLE-CODE")),
+                                 text=et_element.findtext("TEXT"),
                                  display_trouble_code=display_trouble_code,
                                  level=level)
 
@@ -307,7 +307,7 @@ def read_data_object_property_from_odx(et_element, doc_frags: List[OdxDocFragmen
     """Reads a DATA-OBJECT-PROP or a DTC-DOP."""
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     assert odx_id is not None
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
     logger.debug('Parsing DOP ' + short_name)

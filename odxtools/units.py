@@ -204,10 +204,10 @@ def read_unit_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     assert odx_id is not None
     oid = et_element.get("OID")
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
-    display_name = et_element.find("DISPLAY-NAME").text
+    display_name = et_element.findtext("DISPLAY-NAME")
 
     def read_optional_float(element, name):
         if element.findtext(name):
@@ -235,7 +235,7 @@ def read_physical_dimension_from_odx(et_element, doc_frags: List[OdxDocFragment]
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     assert odx_id is not None
     oid = et_element.get("OID")
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
 
@@ -272,7 +272,7 @@ def read_physical_dimension_from_odx(et_element, doc_frags: List[OdxDocFragment]
 
 def read_unit_group_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     oid = et_element.get("OID")
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
     category = et_element.findtext("CATEGORY")

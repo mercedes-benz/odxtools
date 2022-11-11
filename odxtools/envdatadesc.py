@@ -78,8 +78,8 @@ def read_env_data_desc_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     """Reads Environment Data Description from Diag Layer."""
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     assert odx_id is not None
-    short_name = et_element.find("SHORT-NAME").text
-    long_name = et_element.find("LONG-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
+    long_name = et_element.findtext("LONG-NAME")
     param_snref = None
     if et_element.find("PARAM-SNREF") is not None:
         param_snref = et_element.find("PARAM-SNREF").get("SHORT-NAME")

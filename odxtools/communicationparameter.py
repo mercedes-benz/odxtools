@@ -65,10 +65,8 @@ def read_communication_param_ref_from_odx(et_element, doc_frags: List[OdxDocFrag
         value = _read_complex_value_from_odx(et_element.find("COMPLEX-VALUE"))
 
     description = read_description_from_odx(et_element.find("DESC"))
-    protocol_sn_ref = et_element.find(
-        "PROTOCOL-SNREF").text if et_element.find("PROTOCOL-SNREF") is not None else None
-    prot_stack_sn_ref = et_element.find(
-        "PROT-STACK-SNREF").text if et_element.find("PROT-STACK-SNREF") is not None else None
+    protocol_sn_ref = et_element.findtext("PROTOCOL-SNREF")
+    prot_stack_sn_ref = et_element.findtext("PROT-STACK-SNREF")
     return CommunicationParameterRef(value,
                                      id_ref,
                                      description=description,

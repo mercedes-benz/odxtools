@@ -19,12 +19,11 @@ class State:
 
 
 def read_state_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     assert odx_id is not None
 
-    long_name = et_element.find(
-        "LONG-NAME").text if et_element.find("LONG-NAME") is not None else None
+    long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
 
     return State(odx_id=odx_id,

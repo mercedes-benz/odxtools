@@ -23,7 +23,7 @@ from .valueparameter import ValueParameter
 
 
 def read_parameter_from_odx(et_element, doc_frags):
-    short_name = et_element.find("SHORT-NAME").text
+    short_name = et_element.findtext("SHORT-NAME")
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
     semantic = et_element.get("SEMANTIC")
@@ -46,7 +46,7 @@ def read_parameter_from_odx(et_element, doc_frags):
                 f"A parameter of type {parameter_type} must reference a DOP! {dop_ref}, {dop_snref}")
 
     if parameter_type == "VALUE":
-        physical_default_value = et_element.find("PHYSICAL-DEFAULT-VALUE").text \
+        physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE") \
             if et_element.find("PHYSICAL-DEFAULT-VALUE") is not None else None
 
         return ValueParameter(short_name=short_name,
@@ -60,8 +60,8 @@ def read_parameter_from_odx(et_element, doc_frags):
                               description=description)
 
     elif parameter_type == "PHYS-CONST":
-        physical_constant_value = et_element.find(
-            "PHYS-CONSTANT-VALUE").text
+        physical_constant_value = et_element.findtext(
+            "PHYS-CONSTANT-VALUE")
 
         return PhysicalConstantParameter(short_name,
                                          long_name=long_name,
@@ -77,7 +77,7 @@ def read_parameter_from_odx(et_element, doc_frags):
         diag_coded_type = read_diag_coded_type_from_odx(
             et_element.find("DIAG-CODED-TYPE"), doc_frags)
         coded_value = diag_coded_type.base_data_type.from_string(
-            et_element.find("CODED-VALUE").text)
+            et_element.findtext("CODED-VALUE"))
 
         return CodedConstParameter(short_name,
                                    long_name=long_name,
@@ -104,7 +104,7 @@ def read_parameter_from_odx(et_element, doc_frags):
                                  description=description)
 
     elif parameter_type == "RESERVED":
-        bit_length = int(et_element.find("BIT-LENGTH").text)
+        bit_length = int(et_element.findtext("BIT-LENGTH"))
 
         return ReservedParameter(short_name,
                                  long_name=long_name,
@@ -115,9 +115,9 @@ def read_parameter_from_odx(et_element, doc_frags):
                                  description=description)
 
     elif parameter_type == "MATCHING-REQUEST-PARAM":
-        byte_length = int(et_element.find("BYTE-LENGTH").text)
+        byte_length = int(et_element.findtext("BYTE-LENGTH"))
         request_byte_pos = int(
-            et_element.find("REQUEST-BYTE-POS").text)
+            et_element.findtext("REQUEST-BYTE-POS"))
 
         return MatchingRequestParameter(short_name,
                                         long_name=long_name,
@@ -198,7 +198,7 @@ def read_parameter_from_odx(et_element, doc_frags):
                                  description=description)
 
     elif parameter_type == "TABLE-ENTRY":
-        target = et_element.find("TARGET").text
+        target = et_element.findtext("TARGET")
         table_row_ref = OdxLinkRef.from_et(et_element.find("TABLE-ROW-REF"), doc_frags)
 
         return TableEntryParameter(short_name=short_name,

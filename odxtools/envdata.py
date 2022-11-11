@@ -42,10 +42,8 @@ def read_env_data_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     -> EnvironmentData:
     """Reads Environment Data from Diag Layer."""
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
-    short_name = et_element.find("SHORT-NAME").text
-    long_name = et_element.find("LONG-NAME")
-    if long_name is not None:
-        long_name = long_name.text
+    short_name = et_element.findtext("SHORT-NAME")
+    long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
     parameters = [
         read_parameter_from_odx(et_parameter, doc_frags)
