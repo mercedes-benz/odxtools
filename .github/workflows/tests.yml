@@ -1,4 +1,4 @@
-name: Tests
+name: Run Tests
 
 on: [push, pull_request, workflow_dispatch]
 
@@ -11,7 +11,7 @@ jobs:
       run: |
         python3 -m pip install --upgrade pip
         python3 -m pip install -r requirements.txt
-        python3 -m pip install coveralls mypy
+        python3 -m pip install coveralls mypy pytest pytest-cov
     - name: Create somersault.pdx
       run: |
         export PYTHONPATH=$PYTHONPATH:$PWD
@@ -20,7 +20,7 @@ jobs:
     - name: Run unit tests
       run: |
         export PYTHONPATH=$PYTHONPATH:$PWD
-        python3 -m unittest tests/*.py
+        pytest --tb=native --cov=odxtools --cov-report=term --cov-report=lcov .
     - name: Static type checking with mypy
       run: |
         python3 -m mypy --ignore-missing-imports --python-version 3.8 odxtools tests examples
