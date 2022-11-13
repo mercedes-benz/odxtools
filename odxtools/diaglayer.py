@@ -445,12 +445,12 @@ class DiagLayer:
                 f"None of the services {possible_services} could parse {response.hex()}.")
         return decoded_messages
 
-    def get_communication_parameter(self, cp_id: str) \
+    def get_communication_parameter(self, name: str) \
             -> Optional[CommunicationParameterRef]:
 
-        cps = [cp for cp in self.communication_parameters if cp.id_ref.ref_id == cp_id]
+        cps = [cp for cp in self.communication_parameters if cp.short_name == name]
         if len(cps) > 1:
-            warnings.warn(f"Communication parameter `{cp_id}` specified more "
+            warnings.warn(f"Communication parameter `{name}` specified more "
                           f"than once. Using first occurence.", OdxWarning)
         elif len(cps) == 0:
             return None
@@ -459,50 +459,29 @@ class DiagLayer:
 
     def get_receive_id(self) -> Optional[int]:
         """CAN ID to which the ECU listens for diagnostic messages"""
-        com_param = self.get_communication_parameter("ISO_15765_2.CP_UniqueRespIdTable")
-
+        com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
         if com_param is None:
             return None
-
-        if self._enable_candela_workarounds:
-            # assume the parameter order used by CANdela studio.
-            # note that the parameter ordering actually used
-            # differs from the one of the COMPARAM fragment
-            # delivered by CANdela generated PDX files and that
-            # both are different from the one of the COMPARAM
-            # fragment included in the MCD2-D standard
-            try:
-                return int(com_param.value[2])
-            except ValueError:
-                return None
-        else:
-            # assume the parameter order specified by the COMPARAM
-            # fragment of the ASAM MCD2-D standard.
-            return int(com_param.value[1])
+        value = com_param.value
+        if not isinstance(value, dict):
+            return None
+            
+        return value.get('CP_CanRespUSDTId', None)
 
     def get_send_id(self) -> Optional[int]:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
-        com_param = self.get_communication_parameter("ISO_15765_2.CP_UniqueRespIdTable")
-
+        com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
         if com_param is None:
             return None
+        value = com_param.value
+        if not isinstance(value, dict):
+            return None
 
-        if self._enable_candela_workarounds:
-            # assume the parameter order used by CANdela studio.
-            # note that the parameter odering actually used
-            # differs from the one of the COMPARAM fragment
-            # delivered by CANdela generated PDX files and that
-            # both are different from the one of the COMPARAM
-            # fragment included in the MCD2-D standard
-            return int(com_param.value[5])
-        else:
-            # assume the parameter order specified by the COMPARAM
-            # fragment of the ASAM MCD2-D standard.
-            return int(com_param.value[4])
+        return value.get('CP_CanPhysReqId', None)
 
     def get_can_func_req_id(self) -> Optional[int]:
         """CAN Functional Request Id."""
-        com_param = self.get_communication_parameter("ISO_15765_2.CP_CanFuncReqId")
+        com_param = self.get_communication_parameter("CP_CanFuncReqId")
 
         if com_param is None:
             return None
@@ -511,23 +490,27 @@ class DiagLayer:
 
     def get_logical_doip_address(self) -> Optional[int]:
         """The logical DoIP address of the ECU."""
-        com_param = self.get_communication_parameter("ISO_13400_2_DIS_2015.CP_UniqueRespIdTable")
+        com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
 
         if com_param is None:
             return None
 
-        return int(com_param.value[0])
+        value = com_param.value
+        if not isinstance(value, dict):
+            return None
+
+        return value.get('CP_CanPhysReqExtAddr', None)
 
     def get_tester_present_time(self) -> Optional[float]:
         """Timeout on inactivity in seconds.
 
-        This is defined by the communication parameter "ISO_15765_3.CP_TesterPresentTime".
+        This is defined by the communication parameter "CP_TesterPresentTime".
         If the variant does not define this parameter, the default value 3.0 is returned.
 
         Description of the comparam: "Time between a response and the next subsequent tester present message
         (if no other request is sent to this ECU) in case of physically addressed requests."
         """
-        com_param = self.get_communication_parameter("ISO_15765_3.CP_TesterPresentTime")
+        com_param = self.get_communication_parameter("CP_TesterPresentTime")
 
         if com_param is None:
             return 3.0  # default specified by the standard
