@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Optional
+from xml.etree.ElementTree import Element
 
 from odxtools.dataobjectproperty import DataObjectProperty, read_data_object_property_from_odx
 from odxtools.nameditemlist import NamedItemList
@@ -172,10 +173,12 @@ def read_comparam_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> BaseC
     return comparam
 
 
-def read_comparam_subset_from_odx(et_element) -> ComparamSubset:
+def read_comparam_subset_from_odx(et_element: Element) -> ComparamSubset:
 
     short_name = et_element.findtext("SHORT-NAME")
-    doc_frags = [OdxDocFragment(short_name, "COMPARAM-SUBSET")]
+    assert short_name is not None
+    
+    doc_frags = [OdxDocFragment(short_name, str(et_element.tag))]
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))

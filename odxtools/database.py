@@ -4,6 +4,7 @@
 from pathlib import Path
 from typing import List, Optional
 from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 from itertools import chain
 from zipfile import ZipFile
 
@@ -14,6 +15,8 @@ from .comparam_subset import ComparamSubset, read_comparam_subset_from_odx
 from .globals import logger
 from .nameditemlist import NamedItemList
 
+def version(v: str):
+    return tuple(map(int, (v.split("."))))
 
 class Database:
     """This class internalizes the diagnostic database for various ECUs
@@ -35,7 +38,7 @@ class Database:
         if pdx_zip is not None and odx_d_file_name is not None:
             raise TypeError("The 'pdx_zip' and 'odx_d_file_name' parameters are mutually exclusive")
 
-        documents = []
+        documents: List[Element] = []
         if pdx_zip is not None:
             names = list(pdx_zip.namelist())
             names.sort()
@@ -54,15 +57,26 @@ class Database:
         dlcs: List[DiagLayerContainer] = []
         comparam_subsets: List[ComparamSubset] = []
         for root in documents:
+            # ODX spec version
+            model_version = version(root.attrib.get('MODEL-VERSION', '2.0'))
             dlc = root.find("DIAG-LAYER-CONTAINER")
             if dlc is not None:
                 dlcs.append(read_diag_layer_container_from_odx(
                     dlc,
                     enable_candela_workarounds=enable_candela_workarounds
                 ))
-            subset = root.find("COMPARAM-SUBSET")
-            if subset is not None:
-                comparam_subsets.append(read_comparam_subset_from_odx(subset))
+            # In ODX 2.0 there was only COMPARAM-SPEC
+            # In ODX 2.2 content of COMPARAM-SPEC was renamed to COMPARAM-SUBSET
+            # and COMPARAM-SPEC becomes a container for PROT-STACKS
+            # and a PROT-STACK references a list of COMPARAM-SUBSET
+            if model_version >= version('2.2'):
+                subset = root.find("COMPARAM-SUBSET")
+                if subset is not None:
+                    comparam_subsets.append(read_comparam_subset_from_odx(subset))
+            else:
+                subset = root.find("COMPARAM-SPEC")
+                if subset is not None:
+                    comparam_subsets.append(read_comparam_subset_from_odx(subset))
 
         self._diag_layer_containers = NamedItemList(short_name_as_id, dlcs)
         self._diag_layer_containers.sort(key=short_name_as_id)
