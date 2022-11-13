@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from functools import lru_cache
 from pathlib import Path
-from typing import Any, Optional, Dict, Union
+from typing import List, Optional
 from xml.etree import ElementTree
 from itertools import chain
 from zipfile import ZipFile
@@ -11,8 +10,10 @@ from zipfile import ZipFile
 from .utils import short_name_as_id
 from .odxlink import OdxLinkDatabase
 from .diaglayer import DiagLayer, DiagLayerContainer, read_diag_layer_container_from_odx
+from .comparam_subset import ComparamSubset, read_comparam_subset_from_odx
 from .globals import logger
 from .nameditemlist import NamedItemList
+
 
 class Database:
     """This class internalizes the diagnostic database for various ECUs
@@ -25,8 +26,6 @@ class Database:
                  odx_d_file_name: Optional[str] = None,
                  enable_candela_workarounds: bool = True):
 
-        dlc_elements = []
-
         if pdx_zip is None and odx_d_file_name is None:
             # create an empty database object
             return
@@ -34,6 +33,7 @@ class Database:
         if pdx_zip is not None and odx_d_file_name is not None:
             raise TypeError("The 'pdx_zip' and 'odx_d_file_name' parameters are mutually exclusive")
 
+        documents = []
         if pdx_zip is not None:
             names = list(pdx_zip.namelist())
             names.sort()
@@ -44,26 +44,29 @@ class Database:
                     logger.info(f"Processing the file {zip_member}")
                     d = pdx_zip.read(zip_member)
                     root = ElementTree.fromstring(d)
-                    dlc = root.find("DIAG-LAYER-CONTAINER")
-                    if dlc is not None:
-                        dlc_elements.append(dlc)
-
-            tmp = [
-                read_diag_layer_container_from_odx(dlc_el,
-                                                   enable_candela_workarounds=enable_candela_workarounds) \
-                  for dlc_el in dlc_elements
-            ]
-            self._diag_layer_containers = NamedItemList(short_name_as_id, tmp)
-            self._diag_layer_containers.sort(key=short_name_as_id)
-            self.finalize_init()
+                    documents.append(root)
 
         elif odx_d_file_name is not None:
-            dlc_element = ElementTree.parse(odx_d_file_name).find("DIAG-LAYER-CONTAINER")
+            documents.append(ElementTree.parse(odx_d_file_name))
 
-            self._diag_layer_containers = \
-                NamedItemList(short_name_as_id,
-                              [read_diag_layer_container_from_odx(dlc_element)])
-            self.finalize_init()
+        dlcs: List[DiagLayerContainer] = []
+        comparam_subsets: List[ComparamSubset] = []
+        for root in documents:
+            dlc = root.find("DIAG-LAYER-CONTAINER")
+            if dlc is not None:
+                dlcs.append(read_diag_layer_container_from_odx(
+                    dlc,
+                    enable_candela_workarounds=enable_candela_workarounds
+                ))
+            subset = root.find("COMPARAM-SUBSET")
+            if subset is not None:
+                comparam_subsets.append(read_comparam_subset_from_odx(subset))
+
+        self._diag_layer_containers = NamedItemList(short_name_as_id, dlcs)
+        self._diag_layer_containers.sort(key=short_name_as_id)
+        self._comparam_subsets = NamedItemList(short_name_as_id, comparam_subsets)
+        self._comparam_subsets.sort(key=short_name_as_id)
+        self.finalize_init()
 
     def finalize_init(self) -> None:
         # Create wrapper objects
@@ -77,6 +80,9 @@ class Database:
         # Build odxlinks
         self._odxlinks = OdxLinkDatabase()
 
+        for subset in self.comparam_subsets:
+            self.odxlinks.update(subset._build_odxlinks())
+
         for dlc in self.diag_layer_containers:
             self.odxlinks.update(dlc._build_odxlinks())
 
@@ -84,6 +90,8 @@ class Database:
             self.odxlinks.update(dl._build_odxlinks())
 
         # Resolve references
+        for subset in self.comparam_subsets:
+            subset._resolve_references(self.odxlinks)
         for dlc in self.diag_layer_containers:
             dlc._resolve_references(self.odxlinks)
 
@@ -114,3 +122,7 @@ class Database:
     @diag_layer_containers.setter
     def diag_layer_containers(self, value):
         self._diag_layer_containers = value
+
+    @property
+    def comparam_subsets(self):
+        return self._comparam_subsets

@@ -3,11 +3,13 @@
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Any, Literal, Optional, Union
+import warnings
 
 from .utils import short_name_as_id
 from .nameditemlist import NamedItemList
 from .utils import read_description_from_odx
 from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
+from .exceptions import OdxWarning
 
 UnitGroupCategory = Literal["COUNTRY", "EQUIV-UNITS"]
 
@@ -113,10 +115,12 @@ class Unit:
         self._physical_dimension = None
 
         if self.factor_si_to_unit is not None or self.offset_si_to_unit is not None or self.physical_dimension_ref is not None:
-            assert self.factor_si_to_unit is not None and self.offset_si_to_unit is not None and self.physical_dimension_ref is not None, (
-                f"Error 54: If one of factor_si_to_unit, offset_si_to_unit and physical_dimension_ref is defined,"
-                f" all of them must be defined: {self.factor_si_to_unit} and {self.offset_si_to_unit} and {self.physical_dimension_ref}"
-            )
+            if self.factor_si_to_unit is not None and self.offset_si_to_unit is not None and self.physical_dimension_ref is not None:
+                warnings.warn(
+                    f"Error 54: If one of factor_si_to_unit, offset_si_to_unit and physical_dimension_ref is defined,"
+                    f" all of them must be defined: {self.factor_si_to_unit} and {self.offset_si_to_unit} and {self.physical_dimension_ref}",
+                    OdxWarning
+                )
 
     @property
     def physical_dimension(self) -> PhysicalDimension:

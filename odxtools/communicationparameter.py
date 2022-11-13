@@ -1,10 +1,34 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
+import warnings
 
-from .odxlink import OdxLinkRef, OdxDocFragment
+from odxtools.exceptions import OdxWarning
+
+from .odxlink import OdxLinkDatabase, OdxLinkRef, OdxDocFragment
 from .utils import read_description_from_odx
+from .comparam_subset import BaseComparam, Comparam, ComplexComparam, read_complex_value_from_odx
+
+
+def _get_comparam_value(comparam: BaseComparam, value):
+    if not comparam:
+        return value
+    if value is None:
+        value = comparam.physical_default_value
+
+    if isinstance(comparam, Comparam):
+        return comparam.dop.physical_type.base_data_type.from_string(value)
+
+    if isinstance(comparam, ComplexComparam) and isinstance(value, list):
+        value = value + [None] * (len(comparam.comparams) - len(value))
+        result = dict()
+        for i, cp in enumerate(comparam.comparams):
+            result[cp.short_name] = _get_comparam_value(cp, value[i])
+        return result
+
+    return value
+
 
 class CommunicationParameterRef:
 
@@ -14,41 +38,39 @@ class CommunicationParameterRef:
                  description: Optional[str] = None,
                  protocol_sn_ref: Optional[str] = None,
                  prot_stack_sn_ref: Optional[str] = None):
-        self.value = value
+        self._value = value
         self.id_ref = id_ref
         self.description = description
         self.protocol_sn_ref = protocol_sn_ref
         self.prot_stack_sn_ref = prot_stack_sn_ref
+        self.comparam: Optional[BaseComparam] = None
 
     def __repr__(self) -> str:
         val = self.value
-        if not isinstance(self.value, list):
+        if isinstance(val, str):
             val = f"'{val}'"
-
-        return f"CommunicationParameter('{self.id_ref}', value={val})"
+        return f"CommunicationParameter('{self.short_name}', value={val})"
 
     def __str__(self) -> str:
-        val = self.value
-        if not isinstance(self.value, list):
-            val = f"'{val}'"
+        return self.__repr__()
 
-        return f"CommunicationParameter('{self.id_ref}', value={val})"
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+        # Temporary lenient until tests are updated
+        self.comparam = odxlinks.resolve_lenient(self.id_ref)
+        if not self.comparam:
+            warnings.warn(f"Could not resolve COMPARAM '{self.id_ref}'", OdxWarning)
 
-    def _python_name(self) -> str:
-        # ODXLINK IDs allow dots and hyphens, but python identifiers
-        # do not. since _python_name() must return the latter, we have
-        # to replace these characters...
+    @property
+    def short_name(self):
+        if self.comparam:
+            return self.comparam.short_name
+        # ODXLINK IDs allow dots and hyphens, but python identifiers do not.
+        # This should not happen anyway in a correct PDX
         return self.id_ref.ref_id.replace(".", "__").replace("-", "_")
 
-
-def _read_complex_value_from_odx(et_element):
-    result = []
-    for el in et_element.findall("*"):
-        if el.tag == "SIMPLE-VALUE":
-            result.append('' if el.text is None else el.text)
-        else:
-            result.append(_read_complex_value_from_odx(el))
-    return result
+    @property
+    def value(self):
+        return _get_comparam_value(self.comparam, self._value)
 
 
 def read_communication_param_ref_from_odx(et_element, doc_frags: List[OdxDocFragment]):
@@ -62,7 +84,7 @@ def read_communication_param_ref_from_odx(et_element, doc_frags: List[OdxDocFrag
     elif et_element.find("SIMPLE-VALUE") is not None:
         value = et_element.findtext("SIMPLE-VALUE")
     else:
-        value = _read_complex_value_from_odx(et_element.find("COMPLEX-VALUE"))
+        value = read_complex_value_from_odx(et_element.find("COMPLEX-VALUE"))
 
     description = read_description_from_odx(et_element.find("DESC"))
     protocol_sn_ref = et_element.findtext("PROTOCOL-SNREF")
