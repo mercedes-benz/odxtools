@@ -24,6 +24,7 @@ Usage = Literal[
     "TESTER",
 ]
 
+
 def read_complex_value_from_odx(et_element):
     result = []
     for el in et_element.findall("*"):
@@ -32,6 +33,7 @@ def read_complex_value_from_odx(et_element):
         else:
             result.append(read_complex_value_from_odx(el))
     return result
+
 
 @dataclass
 class BaseComparam:
@@ -86,7 +88,7 @@ class Comparam(BaseComparam):
 
 @dataclass()
 class ComparamSubset:
-    odx_id: OdxLinkId
+    odx_id: Optional[OdxLinkId]
     short_name: str
     data_object_props: NamedItemList[DataObjectProperty]
     comparams: NamedItemList[BaseComparam]
@@ -95,7 +97,9 @@ class ComparamSubset:
     description: Optional[str] = None
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        odxlinks = {self.odx_id: self}
+        odxlinks: Dict[OdxLinkId, Any] = {}
+        if self.odx_id is not None:
+            odxlinks[self.odx_id] = self
 
         for dop in self.data_object_props:
             odxlinks[dop.odx_id] = dop
@@ -118,8 +122,10 @@ class ComparamSubset:
         if self.unit_spec:
             self.unit_spec._resolve_references(odxlinks)
 
+
 def read_comparam_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> BaseComparam:
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
+    assert odx_id is not None
     short_name = et_element.findtext("SHORT-NAME")
     param_class = et_element.attrib.get("PARAM-CLASS")
     cptype = et_element.attrib.get("CPTYPE")
@@ -128,6 +134,7 @@ def read_comparam_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> BaseC
     comparam: BaseComparam
     if et_element.tag == "COMPARAM":
         dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
+        assert dop_ref is not None
         comparam = Comparam(
             odx_id=odx_id,
             short_name=short_name,

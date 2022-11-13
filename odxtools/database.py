@@ -28,6 +28,8 @@ class Database:
 
         if pdx_zip is None and odx_d_file_name is None:
             # create an empty database object
+            self._diag_layer_containers = NamedItemList(short_name_as_id, [])
+            self._comparam_subsets = NamedItemList(short_name_as_id, [])
             return
 
         if pdx_zip is not None and odx_d_file_name is not None:
@@ -47,7 +49,7 @@ class Database:
                     documents.append(root)
 
         elif odx_d_file_name is not None:
-            documents.append(ElementTree.parse(odx_d_file_name))
+            documents.append(ElementTree.parse(odx_d_file_name).getroot())
 
         dlcs: List[DiagLayerContainer] = []
         comparam_subsets: List[ComparamSubset] = []
