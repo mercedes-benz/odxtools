@@ -477,7 +477,7 @@ class DiagLayer:
         if not isinstance(value, dict):
             return None
 
-        return value.get('CP_CanPhysReqId', None)
+        return value.get('CP_CanRespUSDTId', None)
 
     def get_can_func_req_id(self) -> Optional[int]:
         """CAN Functional Request Id."""
