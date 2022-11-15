@@ -7,6 +7,8 @@ from enum import IntEnum
 from itertools import chain
 from typing import Any
 from xml.etree import ElementTree
+import pathlib
+import odxtools
 
 from odxtools.utils import short_name_as_id
 from odxtools import PhysicalConstantParameter
@@ -1271,11 +1273,12 @@ somersault_dlc = DiagLayerContainer(
 
 # read the communication parameters
 comparam_subsets = []
+odx_cs_dir = pathlib.Path(odxtools.__file__).parent / "pdx_stub"
 for odx_cs_filename in ("ISO_11898_2_DWCAN.odx-cs",
                         "ISO_11898_3_DWFTCAN.odx-cs",
                         "ISO_15765_2.odx-cs",
                         "ISO_15765_3_CPSS.odx-cs"):
-    odx_cs_root = ElementTree.parse(odx_cs_filename).getroot()
+    odx_cs_root = ElementTree.parse(odx_cs_dir/odx_cs_filename).getroot()
     subset = odx_cs_root.find("COMPARAM-SUBSET")
     if subset is not None:
         comparam_subsets.append(read_comparam_subset_from_odx(subset))
