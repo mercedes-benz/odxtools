@@ -466,7 +466,7 @@ class DiagLayer:
         if not isinstance(value, dict):
             return None
             
-        return value.get('CP_CanRespUSDTId', None)
+        return value.get('CP_CanPhysReqId', None)
 
     def get_send_id(self) -> Optional[int]:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
