@@ -3,13 +3,11 @@
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Any, Literal, Optional, Union
-import warnings
 
 from .utils import short_name_as_id
 from .nameditemlist import NamedItemList
 from .utils import read_description_from_odx
 from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
-from .exceptions import OdxWarning
 
 UnitGroupCategory = Literal["COUNTRY", "EQUIV-UNITS"]
 
