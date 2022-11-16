@@ -12,7 +12,7 @@ from .globals import logger, xsi
 from .state import read_state_from_odx
 from .state_transition import read_state_transition_from_odx
 
-from .odxlink import OdxLinkRef, OdxLinkId,OdxLinkDatabase, OdxDocFragment
+from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
 from .utils import read_description_from_odx
 from .nameditemlist import NamedItemList
 from .admindata import AdminData, read_admin_data_from_odx
@@ -42,7 +42,7 @@ class DiagLayer:
 
     class ParentRef:
         def __init__(self,
-                     parent : Union[OdxLinkRef, "DiagLayer"],
+                     parent: Union[OdxLinkRef, "DiagLayer"],
                      ref_type: str,
                      not_inherited_diag_comms=[],
                      not_inherited_dops=[]):
@@ -144,8 +144,7 @@ class DiagLayer:
         self.local_diag_data_dictionary_spec = diag_data_dictionary_spec
 
         # Communication parameters, e.g. CAN-IDs
-        self._local_communication_parameters = NamedItemList[CommunicationParameterRef](lambda cp: cp._python_name(),
-                                                                                        communication_parameters)
+        self._local_communication_parameters = communication_parameters
 
         self.additional_audiences = additional_audiences
         self.functional_classes = functional_classes
@@ -156,7 +155,7 @@ class DiagLayer:
         self._services: NamedItemList[Union[DiagService, SingleEcuJob]]\
             = NamedItemList(short_name_as_id, [])
         self._communication_parameters: NamedItemList[CommunicationParameterRef]\
-            = NamedItemList(lambda cp: cp._python_name(), [])
+            = NamedItemList(short_name_as_id, [])
         self._data_object_properties: NamedItemList[DopBase]\
             = NamedItemList(short_name_as_id, [])
 
@@ -243,12 +242,13 @@ class DiagLayer:
         self._data_object_properties = NamedItemList[DopBase](
             short_name_as_id,
             dops)
+        for comparam in self._local_communication_parameters:
+            comparam._resolve_references(odxlinks)
 
-        comparams = sorted(self._compute_available_commmunication_parameters_by_name().values(),
-                           key=lambda comparam: comparam.id_ref.ref_id)
         self._communication_parameters = NamedItemList[CommunicationParameterRef](
-            lambda cp: cp._python_name(),
-            comparams)
+            short_name_as_id,
+             list(self._compute_available_commmunication_parameters_by_name().values())
+        )
 
         # Resolve all other references
         for struct in chain(self.requests,
@@ -353,7 +353,7 @@ class DiagLayer:
         (a) SIDs for different services are the same like for service 1 and 2 (thus each leaf node is a list) and
         (b) one SID is the prefix of another SID like for service 3 and 4 (thus the constant `-1` key).
         """
-        services = [ s for s in self._services if isinstance(s, DiagService) ]
+        services = [s for s in self._services if isinstance(s, DiagService)]
         prefix_tree = {}
         for s in services:
             # Compute prefixes for the request and all responses
@@ -418,7 +418,9 @@ class DiagLayer:
                 f"None of the services {possible_services} could parse {message.hex()}.")
         return decoded_messages
 
-    def decode_response(self, response: Union[bytes, bytearray], request: Union[bytes, bytearray, Message]) -> Iterable[Message]:
+    def decode_response(
+            self, response: Union[bytes, bytearray],
+            request: Union[bytes, bytearray, Message]) -> Iterable[Message]:
         if isinstance(request, Message):
             possible_services = [request.service]
         else:
@@ -443,12 +445,12 @@ class DiagLayer:
                 f"None of the services {possible_services} could parse {response.hex()}.")
         return decoded_messages
 
-    def get_communication_parameter(self, cp_id: str) \
-        -> Optional[CommunicationParameterRef]:
+    def get_communication_parameter(self, name: str) \
+            -> Optional[CommunicationParameterRef]:
 
-        cps = [ cp for cp in self.communication_parameters if cp.id_ref.ref_id == cp_id ]
+        cps = [cp for cp in self.communication_parameters if cp.short_name == name]
         if len(cps) > 1:
-            warnings.warn(f"Communication parameter `{cp_id}` specified more "
+            warnings.warn(f"Communication parameter `{name}` specified more "
                           f"than once. Using first occurence.", OdxWarning)
         elif len(cps) == 0:
             return None
@@ -457,50 +459,29 @@ class DiagLayer:
 
     def get_receive_id(self) -> Optional[int]:
         """CAN ID to which the ECU listens for diagnostic messages"""
-        com_param = self.get_communication_parameter("ISO_15765_2.CP_UniqueRespIdTable")
-
+        com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
         if com_param is None:
             return None
-
-        if self._enable_candela_workarounds:
-            # assume the parameter order used by CANdela studio.
-            # note that the parameter ordering actually used
-            # differs from the one of the COMPARAM fragment
-            # delivered by CANdela generated PDX files and that
-            # both are different from the one of the COMPARAM
-            # fragment included in the MCD2-D standard
-            try:
-                return int(com_param.value[2])
-            except ValueError:
-                return None
-        else:
-            # assume the parameter order specified by the COMPARAM
-            # fragment of the ASAM MCD2-D standard.
-            return int(com_param.value[1])
+        value = com_param.value
+        if not isinstance(value, dict):
+            return None
+            
+        return value.get('CP_CanPhysReqId', None)
 
     def get_send_id(self) -> Optional[int]:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
-        com_param = self.get_communication_parameter("ISO_15765_2.CP_UniqueRespIdTable")
-
+        com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
         if com_param is None:
             return None
+        value = com_param.value
+        if not isinstance(value, dict):
+            return None
 
-        if self._enable_candela_workarounds:
-            # assume the parameter order used by CANdela studio.
-            # note that the parameter odering actually used
-            # differs from the one of the COMPARAM fragment
-            # delivered by CANdela generated PDX files and that
-            # both are different from the one of the COMPARAM
-            # fragment included in the MCD2-D standard
-            return int(com_param.value[5])
-        else:
-            # assume the parameter order specified by the COMPARAM
-            # fragment of the ASAM MCD2-D standard.
-            return int(com_param.value[4])
+        return value.get('CP_CanRespUSDTId', None)
 
     def get_can_func_req_id(self) -> Optional[int]:
         """CAN Functional Request Id."""
-        com_param = self.get_communication_parameter("ISO_15765_2.CP_CanFuncReqId")
+        com_param = self.get_communication_parameter("CP_CanFuncReqId")
 
         if com_param is None:
             return None
@@ -509,23 +490,27 @@ class DiagLayer:
 
     def get_logical_doip_address(self) -> Optional[int]:
         """The logical DoIP address of the ECU."""
-        com_param = self.get_communication_parameter("ISO_13400_2_DIS_2015.CP_UniqueRespIdTable")
+        com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
 
         if com_param is None:
             return None
 
-        return int(com_param.value[0])
+        value = com_param.value
+        if not isinstance(value, dict):
+            return None
+
+        return value.get('CP_CanPhysReqExtAddr', None)
 
     def get_tester_present_time(self) -> Optional[float]:
         """Timeout on inactivity in seconds.
 
-        This is defined by the communication parameter "ISO_15765_3.CP_TesterPresentTime".
+        This is defined by the communication parameter "CP_TesterPresentTime".
         If the variant does not define this parameter, the default value 3.0 is returned.
 
         Description of the comparam: "Time between a response and the next subsequent tester present message
         (if no other request is sent to this ECU) in case of physically addressed requests."
         """
-        com_param = self.get_communication_parameter("ISO_15765_3.CP_TesterPresentTime")
+        com_param = self.get_communication_parameter("CP_TesterPresentTime")
 
         if com_param is None:
             return 3.0  # default specified by the standard
@@ -553,12 +538,13 @@ class DiagLayer:
 
 
 def read_parent_ref_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
-    -> DiagLayer.ParentRef:
+        -> DiagLayer.ParentRef:
     parent_ref = OdxLinkRef.from_et(et_element, doc_frags)
     assert parent_ref is not None
 
     not_inherited_diag_comms = [el.get("SHORT-NAME")
-                                for el in et_element.iterfind("NOT-INHERITED-DIAG-COMMS/NOT-INHERITED-DIAG-COMM/DIAG-COMM-SNREF")]
+                                for el in et_element.iterfind(
+                                    "NOT-INHERITED-DIAG-COMMS/NOT-INHERITED-DIAG-COMM/DIAG-COMM-SNREF")]
     not_inherited_dops = [el.get("SHORT-NAME")
                           for el in et_element.iterfind("NOT-INHERITED-DOPS/NOT-INHERITED-DOP/DOP-BASE-SNREF")]
     ref_type = et_element.get(f"{xsi}type")
@@ -574,7 +560,7 @@ def read_parent_ref_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
 def read_diag_layer_from_odx(et_element,
                              doc_frags: List[OdxDocFragment],
                              enable_candela_workarounds=True) \
-    -> DiagLayer:
+        -> DiagLayer:
 
     variant_type = et_element.tag
 
@@ -712,9 +698,8 @@ class DiagLayerContainer:
         self.base_variants = base_variants
         self.ecu_variants = ecu_variants
 
-        self._diag_layers = NamedItemList[DiagLayer](
-            short_name_as_id,
-            list(chain(self.ecu_shared_datas, self.protocols, self.functional_groups, self.base_variants, self.ecu_variants)))
+        self._diag_layers = NamedItemList[DiagLayer](short_name_as_id, list(
+            chain(self.ecu_shared_datas, self.protocols, self.functional_groups, self.base_variants, self.ecu_variants)))
 
     def _build_odxlinks(self):
         result = {}
@@ -737,7 +722,6 @@ class DiagLayerContainer:
             for cd in self.company_datas:
                 cd._resolve_references(odxlinks)
 
-
     @property
     def diag_layers(self):
         return self._diag_layers
@@ -759,7 +743,7 @@ def read_diag_layer_container_from_odx(et_element, enable_candela_workarounds=Tr
 
     # create the current ODX "document fragment" (description of the
     # current document for references and IDs)
-    doc_frags = [ OdxDocFragment(short_name, "CONTAINER") ]
+    doc_frags = [OdxDocFragment(short_name, "CONTAINER")]
 
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     assert odx_id is not None

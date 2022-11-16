@@ -6,6 +6,9 @@
 from enum import IntEnum
 from itertools import chain
 from typing import Any
+from xml.etree import ElementTree
+import pathlib
+import odxtools
 
 from odxtools.utils import short_name_as_id
 from odxtools import PhysicalConstantParameter
@@ -34,6 +37,7 @@ from odxtools.functionalclass import FunctionalClass
 import odxtools.uds as uds
 from odxtools.odxtypes import DataType
 from odxtools.odxlink import OdxLinkId, OdxLinkRef, OdxDocFragment
+from odxtools.comparam_subset import ComparamSubset, read_comparam_subset_from_odx
 
 class SomersaultSID(IntEnum):
     """The Somersault-ECU specific service IDs.
@@ -56,9 +60,9 @@ dlc_short_name = "somersault"
 doc_frags = [ OdxDocFragment(dlc_short_name, "CONTAINER") ]
 
 # document fragments for communication parameters
-cp_dwcan_doc_frags = [ OdxDocFragment("ISO_11898_2_DWCAN", "COMPARAM-SPEC") ]
-cp_iso15765_2_doc_frags = [ OdxDocFragment("ISO_15765_2", "COMPARAM-SPEC") ]
-cp_iso15765_3_doc_frags = [ OdxDocFragment("ISO_15765_3", "COMPARAM-SPEC") ]
+cp_dwcan_doc_frags = [ OdxDocFragment("ISO_11898_2_DWCAN", "COMPARAM-SUBSET") ]
+cp_iso15765_2_doc_frags = [ OdxDocFragment("ISO_15765_2", "COMPARAM-SUBSET") ]
+cp_iso15765_3_doc_frags = [ OdxDocFragment("ISO_15765_3", "COMPARAM-SUBSET") ]
 
 ##################
 # Base variant of Somersault ECU
@@ -1044,7 +1048,7 @@ somersault_communication_parameters = [
 
     # a response is mandatory
     CommunicationParameterRef(
-        id_ref=OdxLinkRef("ISO_15765_3.ISO_15765_3.CP_TesterPresentReqRsp", cp_iso15765_3_doc_frags),
+        id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentReqRsp", cp_iso15765_3_doc_frags),
         value='Response expected'),
 
     # positive response to "tester present"
@@ -1267,10 +1271,22 @@ somersault_dlc = DiagLayerContainer(
     ecu_variants=[somersault_lazy_diaglayer, somersault_assiduous_diaglayer]
 )
 
+# read the communication parameters
+comparam_subsets = []
+odx_cs_dir = pathlib.Path(odxtools.__file__).parent / "pdx_stub"
+for odx_cs_filename in ("ISO_11898_2_DWCAN.odx-cs",
+                        "ISO_11898_3_DWFTCAN.odx-cs",
+                        "ISO_15765_2.odx-cs",
+                        "ISO_15765_3_CPSS.odx-cs"):
+    odx_cs_root = ElementTree.parse(odx_cs_dir/odx_cs_filename).getroot()
+    subset = odx_cs_root.find("COMPARAM-SUBSET")
+    if subset is not None:
+        comparam_subsets.append(read_comparam_subset_from_odx(subset))
+
 # create a database object
 database = Database()
-database.diag_layer_containers = NamedItemList(short_name_as_id,
-                                               [somersault_dlc])
+database._diag_layer_containers = NamedItemList(short_name_as_id, [somersault_dlc])
+database._comparam_subsets = NamedItemList(short_name_as_id, comparam_subsets)
 
 # Create ID mapping and resolve references
 database.finalize_init()
