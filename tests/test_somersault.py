@@ -16,7 +16,7 @@ try:
 except ImportError:
     from io import StringIO
 
-odxdb = load_pdx_file("./examples/somersault.pdx", enable_candela_workarounds=False)
+odxdb = load_pdx_file("./examples/somersault.pdx")
 
 class TestDatabase(unittest.TestCase):
 

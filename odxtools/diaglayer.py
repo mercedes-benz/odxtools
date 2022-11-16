@@ -5,6 +5,7 @@ from itertools import chain
 from typing import Optional, Any, Dict, Iterable, List, Union
 from copy import copy
 import warnings
+from xml.etree import ElementTree
 
 from .utils import short_name_as_id
 from .exceptions import DecodeError, OdxWarning
@@ -107,7 +108,6 @@ class DiagLayer:
                  diag_data_dictionary_spec: Optional[DiagDataDictionarySpec] = None,
                  communication_parameters:
                  Iterable[CommunicationParameterRef] = [],
-                 enable_candela_workarounds=True,
                  odxlinks=None,
                  additional_audiences=[],
                  functional_classes=[],
@@ -163,9 +163,6 @@ class DiagLayer:
 
         if odxlinks is not None:
             self.finalize_init(odxlinks)
-
-        # specify whether enable work arounds for bugs of CANdela studio
-        self._enable_candela_workarounds = enable_candela_workarounds
 
     @property
     def services(self) -> NamedItemList[Union[DiagService, SingleEcuJob]]:
@@ -465,7 +462,7 @@ class DiagLayer:
         value = com_param.value
         if not isinstance(value, dict):
             return None
-            
+
         return value.get('CP_CanPhysReqId', None)
 
     def get_send_id(self) -> Optional[int]:
@@ -530,8 +527,7 @@ class DiagLayer:
           diag_comm_refs={self._diag_comm_refs},
           parent_refs={self.parent_refs},
           diag_data_dictionary_spec={self.local_diag_data_dictionary_spec},
-          communication_parameters={self._local_communication_parameters},
-          enable_candela_workarounds={self._enable_candela_workarounds})"""
+          communication_parameters={self._local_communication_parameters})"""
 
     def __str__(self) -> str:
         return f"DiagLayer('{self.short_name}', type='{self.variant_type}')"
@@ -557,14 +553,14 @@ def read_parent_ref_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     )
 
 
-def read_diag_layer_from_odx(et_element,
-                             doc_frags: List[OdxDocFragment],
-                             enable_candela_workarounds=True) \
+def read_diag_layer_from_odx(et_element: ElementTree.Element,
+                             doc_frags: List[OdxDocFragment]) \
         -> DiagLayer:
 
     variant_type = et_element.tag
 
     short_name = et_element.findtext("SHORT-NAME")
+    assert short_name is not None
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
 
@@ -664,12 +660,10 @@ def read_diag_layer_from_odx(et_element,
                    functional_classes=functional_classes,
                    states=states,
                    state_transitions=state_transitions,
-                   enable_candela_workarounds=enable_candela_workarounds,
                    import_refs=import_refs,
                    )
 
     return dl
-
 
 class DiagLayerContainer:
     def __init__(self,
@@ -736,7 +730,7 @@ class DiagLayerContainer:
         return f"DiagLayerContainer('{self.short_name}')"
 
 
-def read_diag_layer_container_from_odx(et_element, enable_candela_workarounds=True):
+def read_diag_layer_container_from_odx(et_element):
     short_name = et_element.findtext("SHORT-NAME")
     assert short_name is not None
     long_name = et_element.findtext("LONG-NAME")
@@ -751,24 +745,19 @@ def read_diag_layer_container_from_odx(et_element, enable_candela_workarounds=Tr
     admin_data = read_admin_data_from_odx(et_element.find("ADMIN-DATA"), doc_frags)
     company_datas = read_company_datas_from_odx(et_element.find("COMPANY-DATAS"), doc_frags)
     ecu_shared_datas = [read_diag_layer_from_odx(dl_element,
-                                                 doc_frags,
-                                                 enable_candela_workarounds=enable_candela_workarounds)
+                                                 doc_frags)
                         for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")]
     protocols = [read_diag_layer_from_odx(dl_element,
-                                          doc_frags,
-                                          enable_candela_workarounds=enable_candela_workarounds)
+                                          doc_frags)
                  for dl_element in et_element.iterfind("PROTOCOLS/PROTOCOL")]
     functional_groups = [read_diag_layer_from_odx(dl_element,
-                                                  doc_frags,
-                                                  enable_candela_workarounds=enable_candela_workarounds)
+                                                  doc_frags)
                          for dl_element in et_element.iterfind("FUNCTIONAL-GROUPS/FUNCTIONAL-GROUP")]
     base_variants = [read_diag_layer_from_odx(dl_element,
-                                              doc_frags,
-                                              enable_candela_workarounds=enable_candela_workarounds)
+                                              doc_frags)
                      for dl_element in et_element.iterfind("BASE-VARIANTS/BASE-VARIANT")]
     ecu_variants = [read_diag_layer_from_odx(dl_element,
-                                             doc_frags,
-                                             enable_candela_workarounds=enable_candela_workarounds)
+                                             doc_frags)
                     for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")]
 
     return DiagLayerContainer(odx_id,
