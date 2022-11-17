@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+import warnings
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..diagcodedtypes import DiagCodedType
@@ -64,14 +65,15 @@ class CodedConstParameter(Parameter):
 
         # Check if the coded value in the message is correct.
         if self.coded_value != coded_val:
-            raise DecodeError(
+            warnings.warn(
                 f"Coded constant parameter does not match! "
                 f"The parameter {self.short_name} expected coded value {self._coded_value_str} but got {coded_val} "
                 f"at byte position {decode_state.next_byte_position} "
-                f"in coded message {decode_state.coded_message.hex()}."
+                f"in coded message {decode_state.coded_message.hex()}.",
+                DecodeError
             )
 
-        return self.coded_value, next_byte_position
+        return coded_val, next_byte_position
 
     def _as_dict(self):
         d = super()._as_dict()

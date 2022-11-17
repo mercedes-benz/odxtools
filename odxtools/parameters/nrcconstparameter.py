@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from typing import List
+import warnings
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..diagcodedtypes import DiagCodedType
@@ -83,12 +84,12 @@ class NrcConstParameter(Parameter):
 
         # Check if the coded value in the message is correct.
         if coded_value not in self.coded_values:
-            raise DecodeError(
+            warnings.warn(
                 f"Coded constant parameter does not match! "
                 f"The parameter {self.short_name} expected a coded value in {self.coded_values} but got {coded_value} "
                 f"at byte position {decode_state.next_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}."
-            )
+            , DecodeError)
 
         return coded_value, next_byte_position
 

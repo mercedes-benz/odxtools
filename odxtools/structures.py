@@ -272,8 +272,11 @@ class BasicStructure(DopBase):
         param_values, next_byte_position = self.convert_bytes_to_physical(
             decode_state)
         if len(message) != next_byte_position:
-            raise DecodeError(
-                f"The message {message.hex()} is longer than could be parsed. Expected {next_byte_position} but got {len(message)}.")
+            warnings.warn(
+                f"The message {message.hex()} is longer than could be parsed."
+                f" Expected {next_byte_position} but got {len(message)}.",
+                DecodeError
+            )
         return param_values
 
     def parameter_dict(self) -> ParameterDict:
