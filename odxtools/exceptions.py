@@ -9,7 +9,7 @@ class OdxError(Exception):
 class EncodeError(OdxError):
     """Encoding of a message to raw data failed."""
 
-class DecodeError(OdxError):
+class DecodeError(Warning, OdxError):
     """Decoding raw data failed."""
 
 class OdxWarning(Warning):
