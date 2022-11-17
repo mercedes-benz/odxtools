@@ -4,11 +4,13 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Optional
 from xml.etree.ElementTree import Element
 
-from odxtools.dataobjectproperty import DataObjectProperty, read_data_object_property_from_odx
-from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from odxtools.units import UnitSpec, read_unit_spec_from_odx
-from odxtools.utils import read_description_from_odx, short_name_as_id
+from .dataobjectproperty import DataObjectProperty, read_data_object_property_from_odx
+from .nameditemlist import NamedItemList
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .units import UnitSpec, read_unit_spec_from_odx
+from .admindata import AdminData, read_admin_data_from_odx
+from .companydata import CompanyData, read_company_datas_from_odx
+from .utils import read_description_from_odx, short_name_as_id
 
 
 StandardizationLevel = Literal[
@@ -96,6 +98,8 @@ class ComparamSubset:
     unit_spec: Optional[UnitSpec] = None
     long_name: Optional[str] = None
     description: Optional[str] = None
+    admin_data: Optional[AdminData] = None
+    company_datas: Optional[NamedItemList[CompanyData]] = None
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks: Dict[OdxLinkId, Any] = {}
@@ -178,11 +182,16 @@ def read_comparam_subset_from_odx(et_element: Element) -> ComparamSubset:
 
     short_name = et_element.findtext("SHORT-NAME")
     assert short_name is not None
-    
+
     doc_frags = [OdxDocFragment(short_name, str(et_element.tag))]
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
+
+    admin_data = \
+        read_admin_data_from_odx(et_element.find("ADMIN-DATA"), doc_frags)
+    company_datas = \
+        read_company_datas_from_odx(et_element.find("COMPANY-DATAS"), doc_frags)
 
     data_object_props = [
         read_data_object_property_from_odx(el, doc_frags)
@@ -207,6 +216,8 @@ def read_comparam_subset_from_odx(et_element: Element) -> ComparamSubset:
         short_name=short_name,
         long_name=long_name,
         description=description,
+        admin_data=admin_data,
+        company_datas=company_datas,
         data_object_props=NamedItemList(short_name_as_id, data_object_props),
         comparams=NamedItemList(short_name_as_id, comparams),
         unit_spec=unit_spec,
