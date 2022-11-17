@@ -58,7 +58,7 @@ class BaseComparam:
 @dataclass()
 class ComplexComparam(BaseComparam):
     comparams: NamedItemList[BaseComparam]
-    allow_multiple_values: bool = False
+    allow_multiple_values: Optional[bool] = None
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         for comparam in self.comparams:
@@ -160,7 +160,8 @@ def read_comparam_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> BaseC
         )
         complex_values = et_element.iterfind("COMPLEX-PHYSICAL-DEFAULT-VALUE/COMPLEX-VALUES/COMPLEX-VALUE")
         comparam.physical_default_value = list(map(read_complex_value_from_odx, complex_values))
-        comparam.allow_multiple_values = et_element.get("ALLOW-MULTIPLE-VALUES", "false") == 'true'
+        tmp = et_element.get("ALLOW-MULTIPLE-VALUES")
+        comparam.allow_multiple_values = (tmp == "true") if tmp is not None else None
     else:
         assert False, f"Failed to parse COMPARAM {short_name}"
 
