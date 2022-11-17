@@ -1140,7 +1140,6 @@ somersault_lazy_diaglayer = DiagLayer(
             ],
         )],
     communication_parameters=somersault_communication_parameters,
-    enable_candela_workarounds=False,
     )
 
 ##################
@@ -1163,7 +1162,6 @@ somersault_assiduous_diaglayer = DiagLayer(
             # this variant does everything which the base variant does
         )],
     communication_parameters=somersault_communication_parameters,
-    enable_candela_workarounds=False,
     )
 
 # the assiduous ECU also does headstands...

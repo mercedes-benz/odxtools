@@ -26,8 +26,7 @@ class Database:
 
     def __init__(self,
                  pdx_zip: Optional[ZipFile] = None,
-                 odx_d_file_name: Optional[str] = None,
-                 enable_candela_workarounds: bool = True):
+                 odx_d_file_name: Optional[str] = None):
 
         if pdx_zip is None and odx_d_file_name is None:
             # create an empty database object
@@ -62,8 +61,7 @@ class Database:
             dlc = root.find("DIAG-LAYER-CONTAINER")
             if dlc is not None:
                 dlcs.append(read_diag_layer_container_from_odx(
-                    dlc,
-                    enable_candela_workarounds=enable_candela_workarounds
+                    dlc
                 ))
             # In ODX 2.0 there was only COMPARAM-SPEC
             # In ODX 2.2 content of COMPARAM-SPEC was renamed to COMPARAM-SUBSET

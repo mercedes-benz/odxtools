@@ -6,8 +6,7 @@ import unittest
 from odxtools.load_pdx_file import load_pdx_file
 from odxtools.odxlink import OdxLinkRef, OdxDocFragment
 
-odxdb = load_pdx_file("./examples/somersault.pdx",
-                      enable_candela_workarounds=False)
+odxdb = load_pdx_file("./examples/somersault.pdx")
 
 # use the diag layer container's document fragments as the default for
 # resolving references
