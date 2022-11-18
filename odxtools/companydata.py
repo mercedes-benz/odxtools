@@ -90,9 +90,10 @@ def read_xdoc_from_odx(xdoc):
                 position=position,
                 )
 
-def read_company_datas_from_odx(et_element, doc_frags: List[OdxDocFragment]):
+def read_company_datas_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
+        -> NamedItemList[CompanyData]:
     if et_element is None:
-        return None
+        return NamedItemList(short_name_as_id)
 
     cdl = NamedItemList(short_name_as_id) # type: ignore
 

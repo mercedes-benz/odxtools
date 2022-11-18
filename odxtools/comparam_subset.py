@@ -4,11 +4,13 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Optional
 from xml.etree.ElementTree import Element
 
-from odxtools.dataobjectproperty import DataObjectProperty, read_data_object_property_from_odx
-from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from odxtools.units import UnitSpec, read_unit_spec_from_odx
-from odxtools.utils import read_description_from_odx, short_name_as_id
+from .dataobjectproperty import DataObjectProperty, read_data_object_property_from_odx
+from .nameditemlist import NamedItemList
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .units import UnitSpec, read_unit_spec_from_odx
+from .admindata import AdminData, read_admin_data_from_odx
+from .companydata import CompanyData, read_company_datas_from_odx
+from .utils import read_description_from_odx, short_name_as_id
 
 
 StandardizationLevel = Literal[
@@ -58,7 +60,7 @@ class BaseComparam:
 @dataclass()
 class ComplexComparam(BaseComparam):
     comparams: NamedItemList[BaseComparam]
-    allow_multiple_values: bool = False
+    allow_multiple_values: Optional[bool] = None
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         for comparam in self.comparams:
@@ -96,6 +98,8 @@ class ComparamSubset:
     unit_spec: Optional[UnitSpec] = None
     long_name: Optional[str] = None
     description: Optional[str] = None
+    admin_data: Optional[AdminData] = None
+    company_datas: Optional[NamedItemList[CompanyData]] = None
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks: Dict[OdxLinkId, Any] = {}
@@ -160,7 +164,8 @@ def read_comparam_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> BaseC
         )
         complex_values = et_element.iterfind("COMPLEX-PHYSICAL-DEFAULT-VALUE/COMPLEX-VALUES/COMPLEX-VALUE")
         comparam.physical_default_value = list(map(read_complex_value_from_odx, complex_values))
-        comparam.allow_multiple_values = et_element.get("ALLOW-MULTIPLE-VALUES", "false") == 'true'
+        tmp = et_element.get("ALLOW-MULTIPLE-VALUES")
+        comparam.allow_multiple_values = (tmp == "true") if tmp is not None else None
     else:
         assert False, f"Failed to parse COMPARAM {short_name}"
 
@@ -177,11 +182,16 @@ def read_comparam_subset_from_odx(et_element: Element) -> ComparamSubset:
 
     short_name = et_element.findtext("SHORT-NAME")
     assert short_name is not None
-    
+
     doc_frags = [OdxDocFragment(short_name, str(et_element.tag))]
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
+
+    admin_data = \
+        read_admin_data_from_odx(et_element.find("ADMIN-DATA"), doc_frags)
+    company_datas = \
+        read_company_datas_from_odx(et_element.find("COMPANY-DATAS"), doc_frags)
 
     data_object_props = [
         read_data_object_property_from_odx(el, doc_frags)
@@ -206,6 +216,8 @@ def read_comparam_subset_from_odx(et_element: Element) -> ComparamSubset:
         short_name=short_name,
         long_name=long_name,
         description=description,
+        admin_data=admin_data,
+        company_datas=company_datas,
         data_object_props=NamedItemList(short_name_as_id, data_object_props),
         comparams=NamedItemList(short_name_as_id, comparams),
         unit_spec=unit_spec,

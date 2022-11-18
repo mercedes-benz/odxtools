@@ -6,7 +6,7 @@
 {%- import('macros/printVariant.tpl') as pv -%}
 {%- import('macros/printAdminData.tpl') as pad -%}
 {%- import('macros/printCompanyData.tpl') as pcd -%}
-
+{#- -#}
 
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
