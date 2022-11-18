@@ -11,9 +11,27 @@ import inspect
 
 from typing import Any, Dict, List, Tuple
 
-def jinja2_odxraise_helper(msg):
+from .exceptions import OdxError
+from .comparam_subset import BaseComparam
+
+odxdatabase = None
+
+def jinja2_odxraise_helper(msg: str) -> None:
     raise Exception(msg)
 
+def comparam_subset_name(x: BaseComparam) -> str:
+    """Find the short name of the comparam subset which contains a
+    given communication parameter"""
+    global odxdatabase
+
+    assert odxdatabase is not None
+
+    for cps in odxdatabase.comparam_subsets:
+        for cp in cps.comparams:
+            if cp.short_name == x.short_name:
+                return cps.short_name
+
+    raise OdxError(f"Communication parameter {x.short_name} is not defined.")
 
 __module_filename = inspect.getsourcefile(odxtools)
 assert isinstance(__module_filename, str)
@@ -26,9 +44,11 @@ def write_pdx_file(output_file_name : str,
     """
     Write an internalized database to a PDX file.
     """
+    global odxdatabase
+
+    odxdatabase = database
 
     file_index = list()
-
     with zipfile.ZipFile(output_file_name,
                          mode="w",
                          compression=zipfile.ZIP_DEFLATED) as zf:
@@ -47,6 +67,10 @@ def write_pdx_file(output_file_name : str,
                 elif stub_file_name.endswith(".bak"):
                     continue
                 elif stub_file_name.endswith(".tpl"):
+                    continue
+                elif stub_file_name.endswith(".odx-cs"):
+                    # we don't copy the comparam subset files (they
+                    # are written based on the database)
                     continue
 
                 stub_file_mime_type = "text/plain"
@@ -85,7 +109,9 @@ def write_pdx_file(output_file_name : str,
                 out_file.write(data)  # type: ignore
 
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(stub_dir))
+        jinja_env.globals['hasattr'] = hasattr
         jinja_env.globals['odxraise'] = jinja2_odxraise_helper
+        jinja_env.globals['comparam_subset_name'] = comparam_subset_name
 
         # allows to put XML attributes on a separate line while it is
         # collapsed with the previous line in the rendering
@@ -94,7 +120,22 @@ def write_pdx_file(output_file_name : str,
         vars: Dict[str, Any] = {}
         vars["odxtools_version"] = odxtools.__version__
         vars["database"] = database
-        vars["dlc"] = None
+
+        # write the communication parameter subsets
+        comparam_subset_tpl = jinja_env.get_template("comparam-subset.odx-cs.tpl")
+        for comparam_subset in database.comparam_subsets:
+            zf_file_name = f"{comparam_subset.short_name}.odx-cs"
+            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            zf_mime_type = "application/x-asam.odx.odx-cs"
+
+            vars["comparam_subset"] = comparam_subset
+
+            file_index.append( (zf_file_name,
+                                zf_file_cdate,
+                                zf_mime_type) )
+
+            zf.writestr(zf_file_name, comparam_subset_tpl.render(**vars))
+        del vars["comparam_subset"]
 
         # write the actual diagnostic data.
         dlc_tpl = jinja_env.get_template("diag_layer_container.odx-d.tpl")
@@ -102,13 +143,12 @@ def write_pdx_file(output_file_name : str,
             vars["dlc"] = dlc
 
             file_name = f"{dlc.short_name}.odx-d"
-            file_cdate = datetime.datetime.fromtimestamp(time.time())
+            file_cdate = datetime.datetime.now()
             creation_date = file_cdate.strftime("%Y-%m-%dT%H:%M:%S")
             mime_type = "application/x-asam.odx.odx-d"
 
             file_index.append( (file_name, creation_date, mime_type) )
             zf.writestr(file_name, dlc_tpl.render(**vars))
-
         del vars["dlc"]
 
         # write the index.xml file

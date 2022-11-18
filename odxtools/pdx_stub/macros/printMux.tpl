@@ -16,11 +16,15 @@
     {%- endif %}
     <DATA-OBJECT-PROP-REF ID-REF="{{mux.switch_key.dop_ref.ref_id}}"/>
   </SWITCH-KEY>
+  {%- if mux.default_case is not none %}
   <DEFAULT-CASE>
     <SHORT-NAME>{{mux.default_case.short_name}}</SHORT-NAME>
     <LONG-NAME>{{mux.default_case.long_name}}</LONG-NAME>
+    {%- if mux.default_case.structure_ref is not none %}
     <STRUCTURE-REF ID-REF="{{mux.default_case.structure_ref.ref_id}}"/>
+    {%- endif %}
   </DEFAULT-CASE>
+  {%- endif %}
   <CASES>
     {%- for case in mux.cases %}
     <CASE>

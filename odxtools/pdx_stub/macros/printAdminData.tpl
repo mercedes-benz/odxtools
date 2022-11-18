@@ -4,7 +4,7 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
-{%- macro printAdminData(admin_data) -%}
+{%- macro printAdminData(admin_data) %}
 <ADMIN-DATA>
  {%- if admin_data.language is not none %}
  <LANGUAGE>{{admin_data.language|e}}</LANGUAGE>
@@ -60,4 +60,4 @@
  </DOC-REVISIONS>
  {%- endif %}
 </ADMIN-DATA>
-{%- endmacro -%}
+{%- endmacro %}

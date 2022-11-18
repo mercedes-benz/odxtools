@@ -5,17 +5,9 @@
 -#}
 
 {%- macro printComparamRef(cp) -%}
- {%- if cp.id_ref.ref_id.startswith("ISO_15765_2.") %}
- {%-  set doc_ref = "ISO_11898_2_DWCAN" %}
- {%- elif cp.id_ref.ref_id.startswith("ISO_15765_2.") %}
- {%-  set doc_ref = "ISO_15765_2" %}
- {%- elif cp.id_ref.ref_id.startswith("ISO_15765_3.") %}
- {%-  set doc_ref = "ISO_15765_3" %}
- {%- else %}
- {%-  set doc_ref = "TODOUNKNOWN" %}
- {%- endif %}
-{#- TODO: internalize and dump the communication parameters #}
-<COMPARAM-REF ID-REF="{{cp.id_ref.ref_id}}" DOCREF="{{doc_ref}}" DOCTYPE="COMPARAM-SUBSET">
+<COMPARAM-REF ID-REF="{{cp.id_ref.ref_id}}"
+              DOCREF="{{comparam_subset_name(cp)}}"
+              DOCTYPE="COMPARAM-SUBSET">
  {%- if cp.value is iterable and cp.value is not string %}
  <COMPLEX-VALUE>
   {%- for val in cp.value %}

@@ -1271,7 +1271,7 @@ somersault_dlc = DiagLayerContainer(
 
 # read the communication parameters
 comparam_subsets = []
-odx_cs_dir = pathlib.Path(odxtools.__file__).parent / "pdx_stub"
+odx_cs_dir = pathlib.Path(__file__).parent / "data"
 for odx_cs_filename in ("ISO_11898_2_DWCAN.odx-cs",
                         "ISO_11898_3_DWFTCAN.odx-cs",
                         "ISO_15765_2.odx-cs",

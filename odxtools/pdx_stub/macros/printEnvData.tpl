@@ -4,23 +4,25 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
+{%- import('macros/printParam.tpl') as pparam %}
+
 {%- macro printEnvData(env_data) %}
 <ENV-DATA ID="{{env_data.odx_id.local_id}}">
     <SHORT-NAME>{{env_data.short_name}}</SHORT-NAME>
     <LONG-NAME>{{env_data.long_name}}</LONG-NAME>
     <PARAMS>
-        {%- for param in env_data.parameters %}
-        <PARAM SEMANTIC="{{param.semantic}}" xsi:type="{{param.parameter_type}}">
-          <SHORT-NAME>{{param.short_name}}</SHORT-NAME>
-          <LONG-NAME>{{param.long_name}}</LONG-NAME>
-          <BYTE-POSITION>{{param.byte_position}}</BYTE-POSITION>
-          {%- if param.physical_constant_value %}
-          <PHYS-CONSTANT-VALUE>{{param.physical_constant_value}}</PHYS-CONSTANT-VALUE>
-          {%- endif %}
-          <DOP-REF ID-REF="{{param.dop_ref.ref_id}}"/>
-        </PARAM>
-        {%- endfor %}
+      {%- for param in env_data.parameters %}
+      {{pparam.printParam(param) | indent(6, first=True) }}
+      {%- endfor %}
     </PARAMS>
+    {%- if env_data.dtc_values is none %}
     <ALL-VALUE/>
+    {%- else %}
+    <DTC-VALUES>
+      {%- for dtcv in env_data.dtc_values %}
+      <DTC-VALUE>{{dtcv}}</DTC-VALUE>
+      {%- endfor %}
+    </DTC-VALUES>
+    {%- endif %}
 </ENV-DATA>
 {%- endmacro -%}
