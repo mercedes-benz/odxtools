@@ -19,20 +19,6 @@ odxdatabase = None
 def jinja2_odxraise_helper(msg: str) -> None:
     raise Exception(msg)
 
-def comparam_subset_name(x: BaseComparam) -> str:
-    """Find the short name of the comparam subset which contains a
-    given communication parameter"""
-    global odxdatabase
-
-    assert odxdatabase is not None
-
-    for cps in odxdatabase.comparam_subsets:
-        for cp in cps.comparams:
-            if cp.short_name == x.short_name:
-                return cps.short_name
-
-    raise OdxError(f"Communication parameter {x.short_name} is not defined.")
-
 __module_filename = inspect.getsourcefile(odxtools)
 assert isinstance(__module_filename, str)
 __templates_dir = os.path.sep.join([os.path.dirname(__module_filename),
@@ -111,7 +97,6 @@ def write_pdx_file(output_file_name : str,
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
         jinja_env.globals['hasattr'] = hasattr
         jinja_env.globals['odxraise'] = jinja2_odxraise_helper
-        jinja_env.globals['comparam_subset_name'] = comparam_subset_name
 
         # allows to put XML attributes on a separate line while it is
         # collapsed with the previous line in the rendering

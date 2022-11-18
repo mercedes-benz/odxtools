@@ -44,7 +44,6 @@ class BaseComparam:
     short_name: str
     long_name: Optional[str] = field(default=None, init=False)
     description: Optional[str] = field(default=None, init=False)
-    physical_default_value: Any = field(default=None, init=False)
     param_class: str
     cptype: StandardizationLevel
     cpusage: Usage
@@ -60,6 +59,7 @@ class BaseComparam:
 @dataclass()
 class ComplexComparam(BaseComparam):
     comparams: NamedItemList[BaseComparam]
+    complex_physical_default_value: Any = field(default=None, init=False)
     allow_multiple_values: Optional[bool] = None
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
@@ -76,6 +76,7 @@ class ComplexComparam(BaseComparam):
 @dataclass()
 class Comparam(BaseComparam):
     dop_ref: OdxLinkRef
+    physical_default_value: Any = field(default=None, init=False)
     _dop: Optional[DataObjectProperty] = field(default=None, init=False)
 
     @property
@@ -163,8 +164,11 @@ def read_comparam_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> BaseC
             cpusage=cpusage,
             comparams=NamedItemList(short_name_as_id, comparams),
         )
-        complex_values = et_element.iterfind("COMPLEX-PHYSICAL-DEFAULT-VALUE/COMPLEX-VALUES/COMPLEX-VALUE")
-        comparam.physical_default_value = list(map(read_complex_value_from_odx, complex_values))
+        if (cpdv_elem := et_element.find("COMPLEX-PHYSICAL-DEFAULT-VALUE")) is not None:
+            complex_value_elems = cpdv_elem.iterfind("COMPLEX-VALUES/COMPLEX-VALUE")
+            cpdv_value = [ read_complex_value_from_odx(val) for val in complex_value_elems ]
+            comparam.complex_physical_default_value=cpdv_value
+
         tmp = et_element.get("ALLOW-MULTIPLE-VALUES")
         comparam.allow_multiple_values = (tmp == "true") if tmp is not None else None
     else:

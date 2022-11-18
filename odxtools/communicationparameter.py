@@ -15,7 +15,12 @@ def _get_comparam_value(comparam: BaseComparam, value):
     if not comparam:
         return value
     if value is None:
-        value = comparam.physical_default_value
+        if isinstance(comparam, Comparam):
+            value = comparam.physical_default_value
+        elif isinstance(comparam, ComplexComparam):
+            value = comparam.complex_physical_default_value
+        else:
+            raise Exception("Encountered unknown comparam type")
 
     if isinstance(comparam, Comparam):
         return comparam.dop.physical_type.base_data_type.from_string(value)

@@ -3,21 +3,15 @@
  # SPDX-License-Identifier: MIT
  # Copyright (c) 2022 MBition GmbH
 -#}
+{%- import('macros/printComparam.xml.jinja2') as pcp %}
+{#- -#}
 
-{%- macro printComparamRef(cp) -%}
+{%- macro printComparamRef(cp) %}
 <COMPARAM-REF ID-REF="{{cp.id_ref.ref_id}}"
-              DOCREF="{{comparam_subset_name(cp)}}"
+              DOCREF="{{cp.id_ref.ref_docs[0]}}"
               DOCTYPE="COMPARAM-SUBSET">
  {%- if cp.value is iterable and cp.value is not string %}
- <COMPLEX-VALUE>
-  {%- for val in cp.value %}
-   {%- if val is not none %}
-  <SIMPLE-VALUE>{{val}}</SIMPLE-VALUE>
-   {%- else %}
-  <SIMPLE-VALUE />
-   {%- endif %}
-  {%- endfor %}
- </COMPLEX-VALUE>
+ {{ pcp.printComplexValue(cp.value)|indent(1) }}
  {%- else %}
  <SIMPLE-VALUE>{{cp.value}}</SIMPLE-VALUE>
   {%- if cp.description is string and cp.description.strip() %}
@@ -28,4 +22,4 @@
  {%- endif %}
  <PROTOCOL-SNREF SHORT-NAME="TODO"/>
 </COMPARAM-REF>
-{%- endmacro -%}
+{%- endmacro %}

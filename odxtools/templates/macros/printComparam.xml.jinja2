@@ -4,6 +4,23 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
+{%- macro printComplexValue(cv) %}
+<COMPLEX-VALUE>
+  {%- for val in cv %}
+  {%- if val is none %}
+  <SIMPLE-VALUE />
+  {%- elif hasattr(val, "append")  %}
+  {#- we check if the value object has an append() method, and if this
+   #  is the case, we assume that it is a nested complex value.
+   #}
+  {{ printComplexValue(val) | indent(2) }}
+  {%- else %}
+  <SIMPLE-VALUE>{{val}}</SIMPLE-VALUE>
+  {%- endif %}
+  {%- endfor %}
+</COMPLEX-VALUE>
+{%- endmacro %}
+
 {# print either a simple or a complex comparam
  #}
 {%- macro printGenericComparam(cp) %}
@@ -18,7 +35,6 @@
 {{- printSimpleComparam(cp) }}
 {%- endif %}
 {%- endmacro %}
-
 
 {%- macro printSimpleComparam(cp) %}
 <COMPARAM ID="{{cp.odx_id.local_id}}"
@@ -68,8 +84,10 @@
  {%- for sub_cp in cp.comparams %}
  {{- printGenericComparam(sub_cp) | indent(1, first=True) }}
  {%- endfor %}
- {%- if cp.physical_default_value is not none %}
- <COMPLEX-PHYSICAL-DEFAULT-VALUE>{{cp.physical_default_value}}</COMPLEX-PHYSICAL-DEFAULT-VALUE>
+ {%- if cp.complex_physical_default_value is not none %}
+ <COMPLEX-PHYSICAL-DEFAULT-VALUE>
+   {{ printComplexValue(cp.complex_physical_default_value) | indent(3) }}
+ </COMPLEX-PHYSICAL-DEFAULT-VALUE>
  {%- endif %}
 </COMPLEX-COMPARAM>
 {%- endmacro %}
