@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 
+import warnings
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError
@@ -51,11 +52,12 @@ class PhysicalConstantParameter(ParameterWithDOP):
 
         # Check if decoded value matches expected value
         if phys_val != self.physical_constant_value:
-            raise DecodeError(
+            warnings.warn(
                 f"Physical constant parameter does not match! "
                 f"The parameter {self.short_name} expected physical value {self.physical_constant_value!r} but got {phys_val!r} "
                 f"at byte position {next_byte_position} "
-                f"in coded message {decode_state.coded_message.hex()}."
+                f"in coded message {decode_state.coded_message.hex()}.",
+                DecodeError
             )
         return phys_val, next_byte_position
 
