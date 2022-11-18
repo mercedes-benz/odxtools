@@ -4,7 +4,7 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
-{%- import('macros/printParam.tpl') as pparam %}
+{%- import('macros/printParam.xml.jinja2') as pparam %}
 
 {%- macro printEnvData(env_data) %}
 <ENV-DATA ID="{{env_data.odx_id.local_id}}">

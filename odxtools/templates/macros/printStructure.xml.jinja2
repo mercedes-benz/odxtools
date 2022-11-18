@@ -4,7 +4,7 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
-{%- import('macros/printParam.tpl') as pp %}
+{%- import('macros/printParam.xml.jinja2') as pp %}
 
 {%- macro printStructure(st) -%}
 <STRUCTURE ID="{{st.odx_id.local_id}}">

@@ -6,12 +6,12 @@
  # This template writes an .odx-cs file for a communication
  # parameter subset.
 -#}
-{%- import('macros/printVariant.tpl') as pv -%}
-{%- import('macros/printComparam.tpl') as pcp -%}
-{%- import('macros/printAdminData.tpl') as pad -%}
-{%- import('macros/printCompanyData.tpl') as pcd -%}
-{%- import('macros/printDOP.tpl') as pdop %}
-{%- import('macros/printUnitSpec.tpl') as pus %}
+{%- import('macros/printVariant.xml.jinja2') as pv -%}
+{%- import('macros/printComparam.xml.jinja2') as pcp -%}
+{%- import('macros/printAdminData.xml.jinja2') as pad -%}
+{%- import('macros/printCompanyData.xml.jinja2') as pcd -%}
+{%- import('macros/printDOP.xml.jinja2') as pdop %}
+{%- import('macros/printUnitSpec.xml.jinja2') as pus %}
 {#- -#}
 
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -38,46 +38,17 @@
      {%- endfor %}
    </COMPANY-DATAS>
    {%- endif %}
-   {% set num_simple_cps = 0 %}
-   {% set num_complex_cps = 0 %}
-   {%- for cp in comparam_subset.comparams %}
-   {#
-    # This is slightly hacky: To distinguish complex and simple
-    # communication parameters, we check if the 'cp' object has a
-    # 'comparams' attribute. If it does, it is a complex parameter.
-    #}
-   {%- if not hasattr(cp, 'comparams') %}
-   {%- set num_simple_cps = num_simple_cps + 1 %}
-   {%- else %}
-   {%- set num_complex_cps = num_complex_cps + 1 %}
-   {%- endif %}
-   {%- endfor %}
-
-   {%- if num_simple_cps > 0 %}
+   {%- if simple_comparams | length > 0 %}
    <COMPARAMS>
-     {%- for cp in comparam_subset.comparams %}
-     {#
-      # This is slightly hacky: To distinguish complex and simple
-      # communication parameters, we check if the 'cp' object has a
-      # 'comparams' attribute. If it does, it is a complex parameter.
-      #}
-     {%- if not hasattr(cp, 'comparams') %}
+     {%- for cp in simple_comparams %}
      {{- pcp.printSimpleComparam(cp) | indent(5, first=True) }}
-     {%- endif %}
      {%- endfor %}
    </COMPARAMS>
    {%- endif %}
-   {%- if num_complex_cps > 0 %}
+   {%- if complex_comparams | length > 0 %}
    <COMPLEX-COMPARAMS>
-     {%- for cp in comparam_subset.comparams %}
-     {#
-      # This is slightly hacky: To distinguish complex and simple
-      # communication parameters, we check if the 'cp' object has a
-      # 'comparams' attribute. If it does, it is a complex parameter.
-      #}
-     {%- if hasattr(cp, 'comparams') %}
+     {%- for cp in complex_comparams %}
      {{- pcp.printComplexComparam(cp) | indent(5, first=True) }}
-     {%- endif %}
      {%- endfor %}
    </COMPLEX-COMPARAMS>
    {%- endif %}
