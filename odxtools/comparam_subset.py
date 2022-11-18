@@ -93,6 +93,7 @@ class Comparam(BaseComparam):
 class ComparamSubset:
     odx_id: Optional[OdxLinkId]
     short_name: str
+    category: str
     data_object_props: NamedItemList[DataObjectProperty]
     comparams: NamedItemList[BaseComparam]
     unit_spec: Optional[UnitSpec] = None
@@ -180,6 +181,9 @@ def read_comparam_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> BaseC
 
 def read_comparam_subset_from_odx(et_element: Element) -> ComparamSubset:
 
+    category = et_element.get("CATEGORY")
+    assert category is not None
+
     short_name = et_element.findtext("SHORT-NAME")
     assert short_name is not None
 
@@ -213,6 +217,7 @@ def read_comparam_subset_from_odx(et_element: Element) -> ComparamSubset:
 
     return ComparamSubset(
         odx_id=odx_id,
+        category=category,
         short_name=short_name,
         long_name=long_name,
         description=description,
