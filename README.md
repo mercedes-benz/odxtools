@@ -132,7 +132,7 @@ python3 -m odxtools list -a "$YOUR_PDX_FILE"
   ```python
   import odxtools
 
-  db = odxtools.load_pdx_file("somersault.pdx", enable_candela_workarounds=False)
+  db = odxtools.load_pdx_file("somersault.pdx")
   ```
 
 - List the names of all available services of the `somersault_lazy` ECU:
