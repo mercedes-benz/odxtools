@@ -1,7 +1,7 @@
 
 
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Union, Dict, List, Literal, Optional
 from xml.etree.ElementTree import Element
 
 from .dataobjectproperty import DataObjectProperty, read_data_object_property_from_odx
@@ -27,16 +27,16 @@ Usage = Literal[
     "TESTER",
 ]
 
+ComplexValue = List[ Union[str, "ComplexValue"] ]
 
-def read_complex_value_from_odx(et_element):
+def read_complex_value_from_odx(et_element) -> ComplexValue:
     result = []
-    for el in et_element.findall("*"):
+    for el in et_element:
         if el.tag == "SIMPLE-VALUE":
             result.append('' if el.text is None else el.text)
         else:
             result.append(read_complex_value_from_odx(el))
     return result
-
 
 @dataclass
 class BaseComparam:
@@ -59,7 +59,7 @@ class BaseComparam:
 @dataclass()
 class ComplexComparam(BaseComparam):
     comparams: NamedItemList[BaseComparam]
-    complex_physical_default_value: Any = field(default=None, init=False)
+    complex_physical_default_value: Optional[ComplexValue] = field(default=None, init=False)
     allow_multiple_values: Optional[bool] = None
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
@@ -76,7 +76,7 @@ class ComplexComparam(BaseComparam):
 @dataclass()
 class Comparam(BaseComparam):
     dop_ref: OdxLinkRef
-    physical_default_value: Any = field(default=None, init=False)
+    physical_default_value: Optional[str] = field(default=None, init=False)
     _dop: Optional[DataObjectProperty] = field(default=None, init=False)
 
     @property
@@ -164,10 +164,8 @@ def read_comparam_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> BaseC
             cpusage=cpusage,
             comparams=NamedItemList(short_name_as_id, comparams),
         )
-        if (cpdv_elem := et_element.find("COMPLEX-PHYSICAL-DEFAULT-VALUE")) is not None:
-            complex_value_elems = cpdv_elem.iterfind("COMPLEX-VALUES/COMPLEX-VALUE")
-            cpdv_value = [ read_complex_value_from_odx(val) for val in complex_value_elems ]
-            comparam.complex_physical_default_value=cpdv_value
+        if cpdv_elem := et_element.find("COMPLEX-PHYSICAL-DEFAULT-VALUE"):
+            comparam.complex_physical_default_value=read_complex_value_from_odx(cpdv_elem)
 
         tmp = et_element.get("ALLOW-MULTIPLE-VALUES")
         comparam.allow_multiple_values = (tmp == "true") if tmp is not None else None
@@ -214,8 +212,8 @@ def read_comparam_subset_from_odx(et_element: Element) -> ComparamSubset:
         read_comparam_from_odx(el, doc_frags)
         for el in et_element.iterfind("COMPLEX-COMPARAMS/COMPLEX-COMPARAM")
     ]
-    if et_element.find("UNIT-SPEC") is not None:
-        unit_spec = read_unit_spec_from_odx(et_element.find("UNIT-SPEC"), doc_frags)
+    if unit_spec_elem := et_element.find("UNIT-SPEC"):
+        unit_spec = read_unit_spec_from_odx(unit_spec_elem, doc_frags)
     else:
         unit_spec = None
 

@@ -9,8 +9,8 @@
   {%- for val in cv %}
   {%- if val is none %}
   <SIMPLE-VALUE />
-  {%- elif hasattr(val, "append")  %}
-  {#- we check if the value object has an append() method, and if this
+  {%- elif hasattr(val, "extend")  %}
+  {#- we check if the value has an extend() method, and if this
    #  is the case, we assume that it is a nested complex value.
    #}
   {{ printComplexValue(val) | indent(2) }}

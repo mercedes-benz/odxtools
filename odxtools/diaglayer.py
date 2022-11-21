@@ -18,6 +18,7 @@ from .utils import read_description_from_odx
 from .nameditemlist import NamedItemList
 from .admindata import AdminData, read_admin_data_from_odx
 from .companydata import CompanyData, read_company_datas_from_odx
+from .comparam_subset import Comparam, ComplexComparam
 from .communicationparameter import CommunicationParameterRef, read_communication_param_ref_from_odx
 from .diagdatadictionaryspec import DiagDataDictionarySpec, read_diag_data_dictionary_spec_from_odx
 from .dataobjectproperty import DopBase
@@ -454,49 +455,115 @@ class DiagLayer:
 
         return cps[0]
 
+    def _get_comparam_value(self,
+                            com_param : CommunicationParameterRef) \
+            -> Optional[str]:
+        """Retrieve the value of a simple communication parameter
+
+        This takes the default value of the comparam (if any) into
+        account.
+        """
+
+        assert isinstance(com_param.comparam, Comparam)
+
+        result: Any = None
+        if com_param.value:
+            result = com_param.value
+        else:
+            result = com_param.comparam.physical_default_value
+
+        assert isinstance(result, str)
+
+        return result
+
+    def _get_comparam_subvalue(self,
+                               com_param : CommunicationParameterRef,
+                               subparam_name: str) \
+            -> Optional[str]:
+        """Retrieve the value of a complex communication parameter's sub-parameter by name
+
+        This takes the default value of the comparam (if any) into
+        account.
+        """
+        comparam_spec = com_param.comparam
+        assert isinstance(comparam_spec, ComplexComparam)
+
+        value_list = com_param.value
+        if not isinstance(value_list, list):
+            warnings.warn(f"The values of complex communication parameter "
+                          f"'{com_param.short_name}' are not specified "
+                          f"correctly.", OdxWarning)
+            return None
+
+        name_list = [ cp.short_name for cp in comparam_spec.comparams ]
+        try:
+            idx = name_list.index(subparam_name)
+        except ValueError:
+            warnings.warn(f"Communication parameter '{com_param.short_name}' "
+                          f"does not specify a '{subparam_name}' sub-parameter.",
+                          OdxWarning)
+            return None
+
+        result = value_list[idx]
+        if not result and \
+           (default_values := comparam_spec.complex_physical_default_value):
+            result = default_values[idx]
+        assert isinstance(result, str)
+
+        return result
+
     def get_receive_id(self) -> Optional[int]:
         """CAN ID to which the ECU listens for diagnostic messages"""
         com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
         if com_param is None:
             return None
-        value = com_param.value
-        if not isinstance(value, dict):
-            return None
 
-        return value.get('CP_CanPhysReqId', None)
+        result = self._get_comparam_subvalue(com_param, "CP_CanPhysReqId")
+        if not result:
+            return None
+        assert isinstance(result, str)
+
+        return int(result)
+
 
     def get_send_id(self) -> Optional[int]:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
         com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
         if com_param is None:
             return None
-        value = com_param.value
-        if not isinstance(value, dict):
-            return None
 
-        return value.get('CP_CanRespUSDTId', None)
+        result = self._get_comparam_subvalue(com_param, "CP_CanRespUSDTId")
+        if not result:
+            return None
+        assert isinstance(result, str)
+
+        return int(result)
 
     def get_can_func_req_id(self) -> Optional[int]:
         """CAN Functional Request Id."""
         com_param = self.get_communication_parameter("CP_CanFuncReqId")
-
         if com_param is None:
             return None
 
-        return int(com_param.value)
+        result = self._get_comparam_value(com_param)
+        if not result:
+            return None
+        assert isinstance(result, str)
+
+        return int(result)
 
     def get_logical_doip_address(self) -> Optional[int]:
         """The logical DoIP address of the ECU."""
         com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
-
         if com_param is None:
             return None
 
-        value = com_param.value
-        if not isinstance(value, dict):
+        result = self._get_comparam_subvalue(com_param, "CP_CanPhysReqExtAddr")
+        if not result:
             return None
+        assert isinstance(result, str)
 
-        return value.get('CP_CanPhysReqExtAddr', None)
+        return int(result)
 
     def get_tester_present_time(self) -> Optional[float]:
         """Timeout on inactivity in seconds.
@@ -508,11 +575,15 @@ class DiagLayer:
         (if no other request is sent to this ECU) in case of physically addressed requests."
         """
         com_param = self.get_communication_parameter("CP_TesterPresentTime")
-
         if com_param is None:
-            return 3.0  # default specified by the standard
+            return None
 
-        return int(com_param.value) / 1e6
+        result = self._get_comparam_value(com_param)
+        if not result:
+            return None
+        assert isinstance(result, str)
+
+        return int(float(result)/1e6)
 
     def __repr__(self) -> str:
         return f"""DiagLayer(variant_type={self.variant_type},
