@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import Optional, Union, List, TYPE_CHECKING
+from typing import Optional, Any, Union, List, TYPE_CHECKING
 import warnings
 
 from odxtools.exceptions import OdxWarning
@@ -40,6 +40,60 @@ class CommunicationParameterRef:
         self.comparam = odxlinks.resolve_lenient(self.id_ref)
         if not self.comparam:
             warnings.warn(f"Could not resolve COMPARAM '{self.id_ref}'", OdxWarning)
+
+    def get_value(self) \
+            -> Optional[str]:
+        """Retrieve the value of a simple communication parameter
+
+        This takes the default value of the comparam (if any) into
+        account.
+        """
+
+        assert isinstance(self.comparam, Comparam)
+
+        result: Any = None
+        if self.value:
+            result = self.value
+        else:
+            result = self.comparam.physical_default_value
+
+        assert isinstance(result, str)
+
+        return result
+
+    def get_subvalue(self, subparam_name: str) \
+            -> Optional[str]:
+        """Retrieve the value of a complex communication parameter's sub-parameter by name
+
+        This takes the default value of the comparam (if any) into
+        account.
+        """
+        comparam_spec = self.comparam
+        assert isinstance(comparam_spec, ComplexComparam)
+
+        value_list = self.value
+        if not isinstance(value_list, list):
+            warnings.warn(f"The values of complex communication parameter "
+                          f"'{self.short_name}' are not specified "
+                          f"correctly.", OdxWarning)
+            return None
+
+        name_list = [ cp.short_name for cp in comparam_spec.comparams ]
+        try:
+            idx = name_list.index(subparam_name)
+        except ValueError:
+            warnings.warn(f"Communication parameter '{self.short_name}' "
+                          f"does not specify a '{subparam_name}' sub-parameter.",
+                          OdxWarning)
+            return None
+
+        result = value_list[idx]
+        if not result and \
+           (default_values := comparam_spec.complex_physical_default_value):
+            result = default_values[idx]
+        assert isinstance(result, str)
+
+        return result
 
     @property
     def short_name(self):
