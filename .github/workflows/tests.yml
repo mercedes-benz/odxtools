@@ -11,7 +11,7 @@ jobs:
       run: |
         python3 -m pip install --upgrade pip
         python3 -m pip install -r requirements.txt
-        python3 -m pip install coveralls mypy pytest pytest-cov
+        python3 -m pip install types-Deprecated coveralls mypy pytest pytest-cov
     - name: Create somersault.pdx
       run: |
         export PYTHONPATH=$PYTHONPATH:$PWD

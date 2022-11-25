@@ -4,7 +4,7 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
-{%- import('macros/printParam.tpl') as pp %}
+{%- import('macros/printParam.xml.jinja2') as pp %}
 
 {%- macro printResponse(resp, tag_name="POS-RESPONSE") -%}
 <{{tag_name}} ID="{{resp.odx_id.local_id}}">

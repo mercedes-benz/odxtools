@@ -4,22 +4,22 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
-{%- import('macros/printDOP.tpl') as pdop %}
-{%- import('macros/printTable.tpl') as pt %}
-{%- import('macros/printFunctionalClass.tpl') as pfc %}
-{%- import('macros/printStructure.tpl') as pst %}
-{%- import('macros/printEndOfPdu.tpl') as peopdu %}
-{%- import('macros/printMux.tpl') as pm %}
-{%- import('macros/printEnvData.tpl') as ped %}
-{%- import('macros/printEnvDataDesc.tpl') as pedd %}
-{%- import('macros/printUnitSpec.tpl') as punit %}
-{%- import('macros/printService.tpl') as ps %}
-{%- import('macros/printSingleEcuJob.tpl') as psej %}
-{%- import('macros/printRequest.tpl') as prq %}
-{%- import('macros/printResponse.tpl') as presp %}
-{%- import('macros/printComparamRef.tpl') as pcom %}
-{%- import('macros/printParentRef.tpl') as pparref %}
-{%- import('macros/printAudience.tpl') as paud %}
+{%- import('macros/printDOP.xml.jinja2') as pdop %}
+{%- import('macros/printTable.xml.jinja2') as pt %}
+{%- import('macros/printFunctionalClass.xml.jinja2') as pfc %}
+{%- import('macros/printStructure.xml.jinja2') as pst %}
+{%- import('macros/printEndOfPdu.xml.jinja2') as peopdu %}
+{%- import('macros/printMux.xml.jinja2') as pm %}
+{%- import('macros/printEnvData.xml.jinja2') as ped %}
+{%- import('macros/printEnvDataDesc.xml.jinja2') as pedd %}
+{%- import('macros/printUnitSpec.xml.jinja2') as punit %}
+{%- import('macros/printService.xml.jinja2') as ps %}
+{%- import('macros/printSingleEcuJob.xml.jinja2') as psej %}
+{%- import('macros/printRequest.xml.jinja2') as prq %}
+{%- import('macros/printResponse.xml.jinja2') as presp %}
+{%- import('macros/printComparamRef.xml.jinja2') as pcom %}
+{%- import('macros/printParentRef.xml.jinja2') as pparref %}
+{%- import('macros/printAudience.xml.jinja2') as paud %}
 
 {%- macro printVariant(dl, variant_tag) -%}
 <{{variant_tag}} ID="{{dl.odx_id.local_id}}">

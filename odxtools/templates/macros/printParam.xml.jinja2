@@ -4,7 +4,7 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
-{%- import('macros/printDOP.tpl') as pdop %}
+{%- import('macros/printDOP.xml.jinja2') as pdop %}
 
 {%- macro printParam(param) -%}
 {%- if param.semantic is not none %}

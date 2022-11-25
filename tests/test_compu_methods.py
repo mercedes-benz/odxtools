@@ -108,16 +108,18 @@ class TestTabIntpCompuMethod(unittest.TestCase):
         def _get_jinja_environment():
             __module_filname = inspect.getsourcefile(odxtools)
             assert isinstance(__module_filname, str)
-            stub_dir = os.path.sep.join([os.path.dirname(__module_filname),
-                                        "pdx_stub"])
+            templates_dir = os.path.sep.join([os.path.dirname(__module_filname),
+                                        "templates"])
 
             jinja_env = jinja2.Environment(
-                loader=jinja2.FileSystemLoader(stub_dir))
+                loader=jinja2.FileSystemLoader(templates_dir))
 
             # allows to put XML attributes on a separate line while it is
             # collapsed with the previous line in the rendering
             jinja_env.filters["odxtools_collapse_xml_attribute"] = \
                 lambda x: " " + x.strip() if x.strip() else ""
+
+            jinja_env.globals['hasattr'] = hasattr
             return jinja_env
 
         self.jinja_env = _get_jinja_environment()
@@ -200,7 +202,7 @@ class TestTabIntpCompuMethod(unittest.TestCase):
         self.assertEqual(expected.physical_points, actual.physical_points)
 
     def test_write_odx(self):
-        dlc_tpl = self.jinja_env.get_template("macros/printDOP.tpl")
+        dlc_tpl = self.jinja_env.get_template("macros/printDOP.xml.jinja2")
         module = dlc_tpl.make_module()
 
         out = module.printCompuMethod(self.compumethod)

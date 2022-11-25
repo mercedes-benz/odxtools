@@ -50,6 +50,14 @@
 {%- endif %}
 {%- endmacro -%}
 
+{%- macro printLimitValue(lv) -%}
+{%- if hasattr(lv, 'hex') %}
+{#- bytes or bytarray limit #}
+{{lv.hex()}}
+{%- else %}
+{{lv}}
+{%- endif %}
+{%- endmacro -%}
 
 {%- macro printCompuMethod(cm) -%}
 <COMPU-METHOD>
@@ -68,10 +76,10 @@
     </DESC>
    {%- endif %}
    {%- if cs.lower_limit is not none %}
-    <LOWER-LIMIT>{{cs.lower_limit.value}}</LOWER-LIMIT>
+    <LOWER-LIMIT>{{printLimitValue(cs.lower_limit.value)}}</LOWER-LIMIT>
    {%- endif %}
    {%- if cs.upper_limit is not none %}
-    <UPPER-LIMIT>{{cs.upper_limit.value}}</UPPER-LIMIT>
+    <UPPER-LIMIT>{{printLimitValue(cs.upper_limit.value)}}</UPPER-LIMIT>
    {%- endif %}
    {%- if cs.compu_inverse_value is not none %}
     <COMPU-INVERSE-VALUE>
@@ -89,11 +97,11 @@
  <COMPU-INTERNAL-TO-PHYS>
 		<COMPU-SCALES>
 			<COMPU-SCALE>
-   {%- if cm.internal_lower_limit.interval_type.value != "INFINITE" and cm.internal_lower_limit is not none %}
-				<LOWER-LIMIT>{{cm.internal_lower_limit.value}}</LOWER-LIMIT>
+   {%- if cm.internal_lower_limit is not none and cm.internal_lower_limit.interval_type.value != "INFINITE" %}
+				<LOWER-LIMIT>{{printLimitValue(cm.internal_lower_limit.value)}}</LOWER-LIMIT>
    {%- endif %}
-   {%- if cm.internal_upper_limit.interval_type.value != "INFINITE" and cm.internal_upper_limit is not none %}
-				<UPPER-LIMIT>{{cm.internal_upper_limit.value}}</UPPER-LIMIT>
+   {%- if cm.internal_upper_limit is not none and cm.internal_upper_limit.interval_type.value != "INFINITE" %}
+				<UPPER-LIMIT>{{printLimitValue(cm.internal_upper_limit.value)}}</UPPER-LIMIT>
    {%- endif %}
 				<COMPU-RATIONAL-COEFFS>
 					<COMPU-NUMERATOR>
@@ -115,11 +123,11 @@
 		<COMPU-SCALES>
   {%- for lm in cm.linear_methods %}
  		<COMPU-SCALE>
-   {%- if lm.internal_lower_limit.interval_type.value != "INFINITE" and lm.internal_lower_limit is not none %}
-				<LOWER-LIMIT>{{lm.internal_lower_limit.value}}</LOWER-LIMIT>
+   {%- if lm.internal_lower_limit is not none and lm.internal_lower_limit.interval_type.value != "INFINITE" %}
+				<LOWER-LIMIT>{{printLimitValue(lm.internal_lower_limit.value)}}</LOWER-LIMIT>
    {%- endif %}
-   {%- if lm.internal_upper_limit.interval_type.value != "INFINITE" and lm.internal_upper_limit is not none %}
-				<UPPER-LIMIT>{{lm.internal_upper_limit.value}}</UPPER-LIMIT>
+   {%- if lm.internal_upper_limit is not none and lm.internal_upper_limit.interval_type.value != "INFINITE" %}
+				<UPPER-LIMIT>{{printLimitValue(lm.internal_upper_limit.value)}}</UPPER-LIMIT>
    {%- endif %}
 				<COMPU-RATIONAL-COEFFS>
 					<COMPU-NUMERATOR>
@@ -142,7 +150,7 @@
   <COMPU-SCALES>
   {%- for idx in range( cm.internal_points | length ) %}
    <COMPU-SCALE>
-    <LOWER-LIMIT INTERVAL-TYPE="CLOSED">{{ cm.internal_points[idx] }}</LOWER-LIMIT>
+    <LOWER-LIMIT INTERVAL-TYPE="CLOSED">{{ printLimitValue(cm.internal_points[idx]) }}</LOWER-LIMIT>
     <COMPU-CONST>
      <V>{{ cm.physical_points[idx] }}</V>
     </COMPU-CONST>
@@ -182,8 +190,8 @@
  {{ printCompuMethod(dop.compu_method)|indent(1) }}
  <DTCS>
  {%- for dtc in dop.dtcs %}
- {%- if dtc.dtc_ref is defined   %}
-  <DTC-REF ID-REF="{{dop.dtc_ref.ref_id}}" />
+ {%- if hasattr(dtc, "dtc_ref") %}
+  <DTC-REF ID-REF="{{dtc.dtc_ref.ref_id}}" />
  {%- else %}
   <DTC ID="{{dtc.odx_id.local_id}}">
    <SHORT-NAME>{{dtc.short_name}}</SHORT-NAME>

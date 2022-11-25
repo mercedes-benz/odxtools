@@ -1,0 +1,44 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+ # Copyright (c) 2022 MBition GmbH
+-#}
+{%- import('macros/printComparam.xml.jinja2') as pcp %}
+{#- -#}
+
+{%- macro printComparamRef(cp) %}
+<COMPARAM-REF ID-REF="{{cp.id_ref.ref_id}}"
+              DOCREF="{{cp.id_ref.ref_docs[0].doc_name}}"
+              DOCTYPE="COMPARAM-SUBSET">
+  {%- if cp.value is string %}
+  <SIMPLE-VALUE>{{cp.value}}</SIMPLE-VALUE>
+  {%- if cp.description %}
+  <DESC>{{cp.description}}</DESC>
+  {%- endif %}
+  {%- elif cp.value is iterable %}
+  {%- if hasattr(cp.value, "hex") %}
+  {#- the value has a hex() method. assume that is a bytes or bytestring #}
+  <SIMPLE-VALUE>{{cp.value.hex().upper()}}</SIMPLE-VALUE>
+  {%- if cp.description %}
+  <DESC>{{cp.description}}</DESC>
+  {%- endif %}
+  {%- else %}
+  {{ pcp.printComplexValue(cp.value)|indent(1) }}
+  {%- if cp.description %}
+  <DESC>{{cp.description}}</DESC>
+  {%- endif %}
+  {%- endif %}
+  {%- else %}
+  <SIMPLE-VALUE>{{cp.value}}</SIMPLE-VALUE>
+  {%- if cp.description %}
+  <DESC>{{cp.description}}</DESC>
+  {%- endif %}
+  {%- endif %}
+  {%- if cp.prot_stack_snref is not none %}
+  <PROT-STACK-SNREF SHORT-NAME="{{cp.prot_stack_snref}}"/>
+  {%- endif %}
+  {%- if cp.prot_stack_snref is not none %}
+  <PROTOCOL-SNREF SHORT-NAME="{{cp.protocol_snref}}"/>
+  {%- endif %}
+</COMPARAM-REF>
+{%- endmacro %}

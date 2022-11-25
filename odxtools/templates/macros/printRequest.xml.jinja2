@@ -4,8 +4,8 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
-{%- import('macros/printDOP.tpl') as pdop %}
-{%- import('macros/printParam.tpl') as pp %}
+{%- import('macros/printDOP.xml.jinja2') as pdop %}
+{%- import('macros/printParam.xml.jinja2') as pp %}
 
 {%- macro printRequest(request) -%}
 <REQUEST ID="{{request.odx_id.local_id}}">

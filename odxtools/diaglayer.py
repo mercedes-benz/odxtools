@@ -6,6 +6,7 @@ from typing import Optional, Any, Dict, Iterable, List, Union
 from copy import copy
 import warnings
 from xml.etree import ElementTree
+from deprecated import deprecated
 
 from .utils import short_name_as_id
 from .exceptions import DecodeError, OdxWarning
@@ -18,6 +19,7 @@ from .utils import read_description_from_odx
 from .nameditemlist import NamedItemList
 from .admindata import AdminData, read_admin_data_from_odx
 from .companydata import CompanyData, read_company_datas_from_odx
+from .comparam_subset import Comparam, ComplexComparam
 from .communicationparameter import CommunicationParameterRef, read_communication_param_ref_from_odx
 from .diagdatadictionaryspec import DiagDataDictionarySpec, read_diag_data_dictionary_spec_from_odx
 from .dataobjectproperty import DopBase
@@ -454,49 +456,65 @@ class DiagLayer:
 
         return cps[0]
 
-    def get_receive_id(self) -> Optional[int]:
+    def get_can_receive_id(self) -> Optional[int]:
         """CAN ID to which the ECU listens for diagnostic messages"""
         com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
         if com_param is None:
             return None
-        value = com_param.value
-        if not isinstance(value, dict):
+
+        result = com_param.get_subvalue("CP_CanPhysReqId")
+        if not result:
             return None
+        assert isinstance(result, str)
 
-        return value.get('CP_CanPhysReqId', None)
+        return int(result)
 
-    def get_send_id(self) -> Optional[int]:
+    @deprecated(reason="use get_can_receive_id()")
+    def get_receive_id(self) -> Optional[int]:
+        return self.get_can_receive_id()
+
+    def get_can_send_id(self) -> Optional[int]:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
         com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
         if com_param is None:
             return None
-        value = com_param.value
-        if not isinstance(value, dict):
-            return None
 
-        return value.get('CP_CanRespUSDTId', None)
+        result = com_param.get_subvalue("CP_CanRespUSDTId")
+        if not result:
+            return None
+        assert isinstance(result, str)
+
+        return int(result)
+
+    @deprecated(reason="use get_can_send_id()")
+    def get_send_id(self) -> Optional[int]:
+        return self.get_can_send_id()
 
     def get_can_func_req_id(self) -> Optional[int]:
         """CAN Functional Request Id."""
         com_param = self.get_communication_parameter("CP_CanFuncReqId")
-
         if com_param is None:
             return None
 
-        return int(com_param.value)
+        result = com_param.get_value()
+        if not result:
+            return None
+        assert isinstance(result, str)
+
+        return int(result)
 
     def get_logical_doip_address(self) -> Optional[int]:
         """The logical DoIP address of the ECU."""
         com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
-
         if com_param is None:
             return None
 
-        value = com_param.value
-        if not isinstance(value, dict):
+        result = com_param.get_subvalue("CP_CanPhysReqExtAddr")
+        if not result:
             return None
+        assert isinstance(result, str)
 
-        return value.get('CP_CanPhysReqExtAddr', None)
+        return int(result)
 
     def get_tester_present_time(self) -> Optional[float]:
         """Timeout on inactivity in seconds.
@@ -508,11 +526,15 @@ class DiagLayer:
         (if no other request is sent to this ECU) in case of physically addressed requests."
         """
         com_param = self.get_communication_parameter("CP_TesterPresentTime")
-
         if com_param is None:
-            return 3.0  # default specified by the standard
+            return None
 
-        return int(com_param.value) / 1e6
+        result = com_param.get_value()
+        if not result:
+            return None
+        assert isinstance(result, str)
+
+        return float(result)/1e6
 
     def __repr__(self) -> str:
         return f"""DiagLayer(variant_type={self.variant_type},

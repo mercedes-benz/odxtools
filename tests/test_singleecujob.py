@@ -203,17 +203,18 @@ class TestSingleEcuJob(unittest.TestCase):
         # Setup jinja environment
         __module_filename = inspect.getsourcefile(odxtools)
         assert isinstance(__module_filename, str)
-        stub_dir = os.path.sep.join([os.path.dirname(__module_filename),
-                                     "pdx_stub"])
+        templates_dir = os.path.sep.join([os.path.dirname(__module_filename),
+                                     "templates"])
         jinja_env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(stub_dir))
+            loader=jinja2.FileSystemLoader(templates_dir))
         jinja_env.globals['odxraise'] = jinja2_odxraise_helper
+        jinja_env.globals['hasattr'] = hasattr
         jinja_env.filters["odxtools_collapse_xml_attribute"] = (
             lambda x: " " + x.strip() if x.strip() else "")
 
         # Small template
         template = jinja_env.from_string("""
-            {%- import('macros/printSingleEcuJob.tpl') as psej %}
+            {%- import('macros/printSingleEcuJob.xml.jinja2') as psej %}
             {{psej.printSingleEcuJob(singleecujob)}}
         """)
 

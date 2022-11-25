@@ -4,7 +4,7 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
-{%- import('macros/printAudience.tpl') as paud %}
+{%- import('macros/printAudience.xml.jinja2') as paud %}
 
 {%- macro printService(service) -%}
 {%- if service.semantic is not none %}
