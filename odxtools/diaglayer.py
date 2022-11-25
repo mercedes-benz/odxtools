@@ -444,10 +444,14 @@ class DiagLayer:
                 f"None of the services {possible_services} could parse {response.hex()}.")
         return decoded_messages
 
-    def get_communication_parameter(self, name: str) \
+    def get_communication_parameter(self,
+                                    name: str,
+                                    protocol_name: Optional[str] = None) \
             -> Optional[CommunicationParameterRef]:
 
         cps = [cp for cp in self.communication_parameters if cp.short_name == name]
+        if protocol_name:
+            cps = [cp for cp in cps if cp.protocol_sn_ref in (None, protocol_name)]
         if len(cps) > 1:
             warnings.warn(f"Communication parameter `{name}` specified more "
                           f"than once. Using first occurence.", OdxWarning)
@@ -456,9 +460,11 @@ class DiagLayer:
 
         return cps[0]
 
-    def get_can_receive_id(self) -> Optional[int]:
+    def get_can_receive_id(self, protocol_name: Optional[str] = None) \
+            -> Optional[int]:
         """CAN ID to which the ECU listens for diagnostic messages"""
-        com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
+        com_param = self.get_communication_parameter("CP_UniqueRespIdTable",
+                                                     protocol_name)
         if com_param is None:
             return None
 
@@ -473,9 +479,11 @@ class DiagLayer:
     def get_receive_id(self) -> Optional[int]:
         return self.get_can_receive_id()
 
-    def get_can_send_id(self) -> Optional[int]:
+    def get_can_send_id(self, protocol_name: Optional[str] = None) \
+            -> Optional[int]:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
-        com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
+        com_param = self.get_communication_parameter("CP_UniqueRespIdTable",
+                                                     protocol_name)
         if com_param is None:
             return None
 
@@ -490,9 +498,11 @@ class DiagLayer:
     def get_send_id(self) -> Optional[int]:
         return self.get_can_send_id()
 
-    def get_can_func_req_id(self) -> Optional[int]:
+    def get_can_func_req_id(self, protocol_name: Optional[str] = None) \
+            -> Optional[int]:
         """CAN Functional Request Id."""
-        com_param = self.get_communication_parameter("CP_CanFuncReqId")
+        com_param = self.get_communication_parameter("CP_CanFuncReqId",
+                                                     protocol_name)
         if com_param is None:
             return None
 
@@ -503,20 +513,83 @@ class DiagLayer:
 
         return int(result)
 
-    def get_logical_doip_address(self) -> Optional[int]:
-        """The logical DoIP address of the ECU."""
-        com_param = self.get_communication_parameter("CP_UniqueRespIdTable")
+    def get_doip_logical_gateway_address(self, protocol_name: Optional[str] = None) \
+            -> Optional[int]:
+        """DoIp logical gateway address"""
+        com_param = self.get_communication_parameter("CP_DoIPLogicalGatewayAddress",
+                                                     protocol_name)
         if com_param is None:
             return None
 
-        result = com_param.get_subvalue("CP_CanPhysReqExtAddr")
+        result = com_param.get_value()
         if not result:
             return None
         assert isinstance(result, str)
 
         return int(result)
 
-    def get_tester_present_time(self) -> Optional[float]:
+    def get_doip_logical_tester_address(self, protocol_name: Optional[str] = None) \
+            -> Optional[int]:
+        """DoIp logical gateway address"""
+        com_param = self.get_communication_parameter("CP_DoIPLogicalTesterAddress",
+                                                     protocol_name)
+        if com_param is None:
+            return None
+
+        result = com_param.get_value()
+        if not result:
+            return None
+        assert isinstance(result, str)
+
+        return int(result)
+
+    def get_doip_logical_functional_address(self, protocol_name: Optional[str] = None) \
+            -> Optional[int]:
+        """The logical functional DoIP address of the ECU."""
+        com_param = self.get_communication_parameter("CP_DoIPLogicalFunctionalAddress",
+                                                     protocol_name)
+        if com_param is None:
+            return None
+
+        result = com_param.get_value()
+        if not result:
+            return None
+        assert isinstance(result, str)
+
+        return int(result)
+
+    def get_doip_routing_activation_timeout(self, protocol_name: Optional[str] = None) \
+            -> Optional[float]:
+        """The timout for the DoIP routing activation request in seconds"""
+        com_param = self.get_communication_parameter("CP_DoIPRoutingActivationTimeout",
+                                                     protocol_name)
+        if com_param is None:
+            return None
+
+        result = com_param.get_value()
+        if not result:
+            return None
+        assert isinstance(result, str)
+
+        return float(result)/1e6
+
+    def get_doip_routing_activation_type(self, protocol_name: Optional[str] = None) \
+            -> Optional[int]:
+        """The  DoIP routing type"""
+        com_param = self.get_communication_parameter("CP_DoIPRoutingActivationType",
+                                                     protocol_name)
+        if com_param is None:
+            return None
+
+        result = com_param.get_value()
+        if not result:
+            return None
+        assert isinstance(result, str)
+
+        return int(result)
+
+    def get_tester_present_time(self, protocol_name: Optional[str] = None) \
+            -> Optional[float]:
         """Timeout on inactivity in seconds.
 
         This is defined by the communication parameter "CP_TesterPresentTime".
@@ -525,7 +598,8 @@ class DiagLayer:
         Description of the comparam: "Time between a response and the next subsequent tester present message
         (if no other request is sent to this ECU) in case of physically addressed requests."
         """
-        com_param = self.get_communication_parameter("CP_TesterPresentTime")
+        com_param = self.get_communication_parameter("CP_TesterPresentTime",
+                                                     protocol_name)
         if com_param is None:
             return None
 
