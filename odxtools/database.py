@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Set, Optional
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 from itertools import chain
@@ -140,3 +140,15 @@ class Database:
     @property
     def comparam_subsets(self):
         return self._comparam_subsets
+
+    @property
+    def protocol_names(self) -> Set[str]:
+        """
+        The names of all protocols defined for this database
+        """
+        result = set()
+        for dlc in self.diag_layer_containers:
+            for prot in dlc.protocols:
+                result.add(prot.short_name)
+
+        return result
