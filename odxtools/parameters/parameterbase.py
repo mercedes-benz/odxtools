@@ -3,13 +3,15 @@
 
 
 import abc
-from typing import Optional, Union
+from typing import Optional, Union, List
 import warnings
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import OdxWarning
+from ..odxlink import OdxLinkDatabase
 from ..globals import logger
+from ..specialdata import SpecialDataGroup, read_sdgs_from_odx
 
 class Parameter(abc.ABC):
     def __init__(self,
@@ -19,7 +21,8 @@ class Parameter(abc.ABC):
                  byte_position: Optional[int] = None,
                  bit_position: Optional[int] = None,
                  semantic: Optional[str] = None,
-                 description: Optional[str] = None) -> None:
+                 description: Optional[str] = None,
+                 sdgs: List[SpecialDataGroup] = []) -> None:
         self.short_name: str = short_name
         self.long_name: Optional[str] = long_name
         self.byte_position: Optional[int] = byte_position
@@ -27,6 +30,19 @@ class Parameter(abc.ABC):
         self.parameter_type: str = parameter_type
         self.semantic: Optional[str] = semantic
         self.description: Optional[str] = description
+        self.sdgs = sdgs
+
+    def _build_odxlinks(self):
+        result = {}
+
+        for sdg in self.sdgs:
+            result.update(sdg._build_odxlinks())
+
+        return result
+
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+        for sdg in self.sdgs:
+            sdg._resolve_references(odxlinks)
 
     @property
     def bit_length(self) -> Optional[int]:

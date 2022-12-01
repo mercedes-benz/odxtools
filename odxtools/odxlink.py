@@ -152,6 +152,7 @@ class OdxLinkDatabase:
 
     def __init__(self) -> None:
         self._db: Dict[OdxDocFragment, Dict[OdxLinkId, Any]] = {}
+        self._stupid_sdg_resolved = False
 
     def resolve(self, ref: OdxLinkRef) -> Any:
         """
@@ -175,6 +176,9 @@ class OdxLinkDatabase:
 
             obj = doc_frag_db.get(odx_id)
             if obj is not None:
+                if odx_id.local_id == "stupid.sdg.caption":
+                    self._stupid_sdg_resolved = True
+
                 return obj
 
         raise KeyError(f"ODXLINK reference {ref} could not be resolved for any "

@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Literal, Optional, Union, cast
 
 from .utils import short_name_as_id
 from .dataobjectproperty import DopBase
+from .admindata import read_admin_data_from_odx, AdminData
 from .audience import Audience, read_audience_from_odx
 from .functionalclass import FunctionalClass
 from .utils import read_description_from_odx
@@ -14,6 +15,7 @@ from .nameditemlist import NamedItemList
 from .globals import logger
 from .exceptions import EncodeError, DecodeError
 from .message import Message
+from .specialdata import SpecialDataGroup, read_sdgs_from_odx
 
 DiagClassType = Literal["STARTCOMM",
                         "STOPCOMM",
@@ -119,7 +121,7 @@ class SingleEcuJob:
     Single ECU jobs are defined in section 7.3.5.7 of the ASAM MCD-2 standard.
 
     TODO: The following xml attributes are not internalized yet:
-          ADMIN-DATA, SDGS, PROTOCOL-SNREFS, RELATED-DIAG-COMM-REFS, PRE-CONDITION-STATE-REFS, STATE-TRANSITION-REFS
+          PROTOCOL-SNREFS, RELATED-DIAG-COMM-REFS, PRE-CONDITION-STATE-REFS, STATE-TRANSITION-REFS
     """
     odx_id: OdxLinkId
     short_name: str
@@ -129,6 +131,7 @@ class SingleEcuJob:
     oid: Optional[str] = None
     long_name: Optional[str] = None
     description: Optional[str] = None
+    admin_data: Optional[AdminData] = None
     functional_class_refs: List[OdxLinkRef] = field(default_factory=list)
     audience: Optional[Audience] = None
     # optional xsd:elements specific to SINGLE-ECU-JOB
@@ -145,6 +148,7 @@ class SingleEcuJob:
     is_mandatory: bool = False
     is_executable: bool = True
     is_final: bool = False
+    sdgs: List[SpecialDataGroup] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         if not self.functional_class_refs:
@@ -165,6 +169,14 @@ class SingleEcuJob:
         This is None iff the references were not resolved.
         """
         return self._functional_classes
+
+    def _build_odxlinks(self):
+        result = {}
+
+        for sdg in self.sdgs:
+            result.update(sdg._build_odxlinks())
+
+        return result
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         # Resolve references to functional classes
@@ -190,6 +202,9 @@ class SingleEcuJob:
 
         for code in self.prog_codes:
             code._resolve_references(odxlinks)
+
+        for sdg in self.sdgs:
+            sdg._resolve_references(odxlinks)
 
     def decode_message(self, message: Union[bytes, bytearray]) -> Message:
         """This function's signature matches `DiagService.decode_message`
@@ -325,6 +340,7 @@ def read_single_ecu_job_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     assert short_name is not None
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
+    admin_data = read_admin_data_from_odx(et_element.find("ADMIN-DATA"), doc_frags)
     semantic = et_element.get("SEMANTIC")
 
     functional_class_refs = []
@@ -358,10 +374,13 @@ def read_single_ecu_job_from_odx(et_element, doc_frags: List[OdxDocFragment]):
                      else True)
     is_final = True if et_element.get("IS-FINAL") == "true" else False
 
+    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+
     diag_service = SingleEcuJob(odx_id=odx_id,
                                 short_name=short_name,
                                 long_name=long_name,
                                 description=description,
+                                admin_data=admin_data,
                                 prog_codes=prog_codes,
                                 semantic=semantic,
                                 audience=audience,
@@ -371,5 +390,6 @@ def read_single_ecu_job_from_odx(et_element, doc_frags: List[OdxDocFragment]):
                                 neg_output_params=neg_output_params,
                                 is_mandatory=is_mandatory,
                                 is_executable=is_executable,
-                                is_final=is_final)
+                                is_final=is_final,
+                                sdgs=sdgs)
     return diag_service

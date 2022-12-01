@@ -1,0 +1,58 @@
+{#- -*- mode: sgml; tab-width: 1; sgml-basic-offset: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+ # Copyright (c) 2022 MBition GmbH
+-#}
+
+{%- import('macros/printElementID.xml.jinja2') as peid %}
+
+{%- macro printSpecialData(sd) %}
+<SD
+ {%- if sd.semantic_info is not none %}
+{#- #} SI="{{sd.semantic_info}}"
+ {%- endif %}
+ {%- if sd.text_identifier is not none %}
+{#- #} TI="{{sd.text_identifier}}"
+ {%- endif %}
+ {#- -#}>{{sd.value|e}}</SD>
+{%- endmacro %}
+
+{%- macro printSdgCaption(sdg_caption) %}
+<SDG-CAPTION ID="{{sdg_caption.odx_id.local_id}}">
+ {{ peid.printElementID(sdg_caption) | indent(1) }}
+</SDG-CAPTION>
+{%- endmacro %}
+
+{%- macro printSpecialDataGroup(sdg) %}
+<SDG
+ {%- if sdg.semantic_info is not none %}
+ SI="{{sdg.semantic_info}}"
+ {%- endif %}
+ {#- -#}>
+ {%- if sdg._local_sdg_caption %}
+ {{- printSdgCaption(sdg._local_sdg_caption) | indent(1, first=True) }}
+ {%- endif %}
+ {%- if sdg._sdg_caption_ref %}
+ <SDG-CAPTION-REF ID-REF="{{sdg._sdg_caption_ref.ref_id}}" />
+ {%- endif %}
+ {%- for sd in sdg.values %}
+ {%- if hasattr(sd, "values") %}
+ {#- -> nested SDG #}
+ {{- printSpecialDataGroup(sd) | indent(1, first=True) }}
+ {%- else %}
+ {{- printSpecialData(sd) | indent(1, first=True) }}
+ {%- endif %}
+ {%- endfor %}
+</SDG>
+{%- endmacro %}
+
+
+{%- macro printSpecialDataGroups(sdgs) %}
+{%- if sdgs %}
+<SDGS>
+ {%- for sdg in sdgs %}
+ {{- printSpecialDataGroup(sdg) | indent(1, first=True) }}
+ {%- endfor %}
+</SDGS>
+{%- endif %}
+{%- endmacro %}

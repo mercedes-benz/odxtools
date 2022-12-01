@@ -4,7 +4,9 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
+{%- import('macros/printElementID.xml.jinja2') as peid %}
 {%- import('macros/printAudience.xml.jinja2') as paud %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printSingleEcuJob(job) -%}
 <SINGLE-ECU-JOB ID="{{job.odx_id.local_id}}"
@@ -39,7 +41,9 @@
   {%- endif %}
  {%- endfilter -%}
  >
- {{ printElementID(job)|indent(1) }}
+
+ {{ peid.printElementID(job)|indent(1) }}
+ {{- psd.printSpecialDataGroups(job.sdgs)|indent(1, first=True) }}
 {%- if job.functional_class_refs %}
  <FUNCT-CLASS-REFS>
 {%- for ref in job.functional_class_refs %}
@@ -115,7 +119,7 @@
   {%- endif %}
  {%- endfilter -%}
 >
- {{ printElementID(param)|indent(1) }}
+ {{ peid.printElementID(param)|indent(1) }}
 {%- if param.physical_default_value %}
  <PHYSICAL-DEFAULT-VALUE>{{param.physical_default_value}}</PHYSICAL-DEFAULT-VALUE>
 {%- endif %}
@@ -136,7 +140,7 @@
   {%- endif %}
  {%- endfilter -%}
 >
- {{ printElementID(param)|indent(1) }}
+ {{ peid.printElementID(param)|indent(1) }}
  <DOP-BASE-REF ID-REF="{{param.dop_base_ref.ref_id}}" />
 </OUTPUT-PARAM>
 {%- endmacro -%}
@@ -144,20 +148,7 @@
 
 {%- macro printNegOutputParam(param) -%}
 <NEG-OUTPUT-PARAM>
- {{ printElementID(param)|indent(1) }}
+ {{ peid.printElementID(param)|indent(1) }}
  <DOP-BASE-REF ID-REF="{{param.dop_base_ref.ref_id}}" />
 </NEG-OUTPUT-PARAM>
-{%- endmacro -%}
-
-
-{%- macro printElementID(element) -%}
- <SHORT-NAME>{{element.short_name}}</SHORT-NAME>
-{%- if element.long_name and element.long_name.strip() %}
- <LONG-NAME>{{element.long_name|e}}</LONG-NAME>
-{%- endif %}
-{%- if element.description and element.description.strip() %}
- <DESC>
- {{element.description}}
- </DESC>
-{%- endif %}
 {%- endmacro -%}

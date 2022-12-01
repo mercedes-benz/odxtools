@@ -4,6 +4,8 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
 {%- macro printTable(table) %}
 <TABLE ID="{{table.odx_id.local_id}}"
  {%- filter odxtools_collapse_xml_attribute %}
@@ -41,7 +43,9 @@
   {%- if table_row.structure_ref %}
   <STRUCTURE-REF ID-REF="{{ table_row.structure_ref.ref_id }}" />
   {%- endif %}
+  {{- psd.printSpecialDataGroups(table_row.sdgs)|indent(2, first=True) }}
  </TABLE-ROW>
 {%- endfor %}
+ {{- psd.printSpecialDataGroups(table.sdgs)|indent(1, first=True) }}
 </TABLE>
 {%- endmacro -%}

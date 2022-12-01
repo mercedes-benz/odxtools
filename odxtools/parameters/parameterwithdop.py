@@ -45,6 +45,8 @@ class ParameterWithDOP(Parameter):
             self.dop_snref = dop.short_name
 
     def resolve_references(self, parent_dl, odxlinks: OdxLinkDatabase):
+        super()._resolve_references(odxlinks)
+
         dop = self.dop
         if self.dop_snref:
             dop = parent_dl.data_object_properties.get(self.dop_snref)

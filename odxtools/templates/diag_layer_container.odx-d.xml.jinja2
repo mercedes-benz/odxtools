@@ -6,6 +6,7 @@
 {%- import('macros/printVariant.xml.jinja2') as pv -%}
 {%- import('macros/printAdminData.xml.jinja2') as pad -%}
 {%- import('macros/printCompanyData.xml.jinja2') as pcd -%}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
 {#- -#}
 
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -31,6 +32,7 @@
  {%- endfor %}
   </COMPANY-DATAS>
 {%- endif %}
+  {{- psd.printSpecialDataGroups(dlc.sdgs)|indent(2, first=True) }}
 {%- if dlc.protocols %}
   <PROTOCOLS>
  {%- for dl in dlc.protocols %}

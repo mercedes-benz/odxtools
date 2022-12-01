@@ -95,24 +95,24 @@ class Database:
         self._odxlinks = OdxLinkDatabase()
 
         for subset in self.comparam_subsets:
-            self.odxlinks.update(subset._build_odxlinks())
+            self._odxlinks.update(subset._build_odxlinks())
 
         for dlc in self.diag_layer_containers:
-            self.odxlinks.update(dlc._build_odxlinks())
+            self._odxlinks.update(dlc._build_odxlinks())
 
         for dl in self.diag_layers:
-            self.odxlinks.update(dl._build_odxlinks())
+            self._odxlinks.update(dl._build_odxlinks())
 
         # Resolve references
         for subset in self.comparam_subsets:
-            subset._resolve_references(self.odxlinks)
+            subset._resolve_references(self._odxlinks)
         for dlc in self.diag_layer_containers:
-            dlc._resolve_references(self.odxlinks)
+            dlc._resolve_references(self._odxlinks)
 
         for dl_type_name in ["ECU-SHARED-DATA", "PROTOCOL", "FUNCTIONAL-GROUP", "BASE-VARIANT", "ECU-VARIANT"]:
             for dl in self.diag_layers:
                 if dl.variant_type == dl_type_name:
-                    dl._resolve_references(self.odxlinks)
+                    dl._resolve_references(self._odxlinks)
 
     @property
     def odxlinks(self) -> OdxLinkDatabase:

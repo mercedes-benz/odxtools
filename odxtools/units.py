@@ -8,6 +8,7 @@ from .utils import short_name_as_id
 from .nameditemlist import NamedItemList
 from .utils import read_description_from_odx
 from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
+from .specialdata import SpecialDataGroup, read_sdgs_from_odx
 
 UnitGroupCategory = Literal["COUNTRY", "EQUIV-UNITS"]
 
@@ -171,6 +172,7 @@ class UnitSpec:
         default_factory=list)  # type: ignore
     physical_dimensions: Union[NamedItemList[PhysicalDimension],
                                List[PhysicalDimension]] = field(default_factory=list)  # type: ignore
+    sdgs: List[SpecialDataGroup] = field(default_factory=list)
 
     def __post_init__(self):
         self.unit_groups = NamedItemList(short_name_as_id, self.unit_groups)
@@ -185,6 +187,10 @@ class UnitSpec:
         odxlinks.update({
             dim.odx_id: dim for dim in self.physical_dimensions
         })
+
+        for sdg in self.sdgs:
+            odxlinks.update(sdg._build_odxlinks())
+
         return odxlinks
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
@@ -192,7 +198,8 @@ class UnitSpec:
             unit._resolve_references(odxlinks)
         for group in self.unit_groups:
             group._resolve_references(odxlinks)
-
+        for sdg in self.sdgs:
+            sdg._resolve_references(odxlinks)
 
 def read_unit_from_odx(et_element, doc_frags: List[OdxDocFragment]):
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
@@ -221,7 +228,7 @@ def read_unit_from_odx(et_element, doc_frags: List[OdxDocFragment]):
         description=description,
         factor_si_to_unit=factor_si_to_unit,
         offset_si_to_unit=offset_si_to_unit,
-        physical_dimension_ref=physical_dimension_ref
+        physical_dimension_ref=physical_dimension_ref,
     )
 
 
@@ -297,8 +304,11 @@ def read_unit_spec_from_odx(et_element, doc_frags: List[OdxDocFragment]):
              for el in et_element.iterfind("UNITS/UNIT")]
     physical_dimensions = [read_physical_dimension_from_odx(el, doc_frags)
                            for el in et_element.iterfind("PHYSICAL-DIMENSIONS/PHYSICAL-DIMENSION")]
+    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+
     return UnitSpec(
         unit_groups=unit_groups,
         units=units,
-        physical_dimensions=physical_dimensions
+        physical_dimensions=physical_dimensions,
+        sdgs=sdgs,
     )

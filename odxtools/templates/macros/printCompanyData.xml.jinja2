@@ -4,6 +4,8 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
 {%- macro printCompanyData(company_data) -%}
 <COMPANY-DATA ID="{{company_data.odx_id.local_id}}">
  <SHORT-NAME>{{company_data.short_name|e}}</SHORT-NAME>
@@ -111,6 +113,7 @@
    </RELATED-DOC>
   {%- endfor %}
   </RELATED-DOCS>
+  {{- psd.printSpecialDataGroups(company_data.company_specific_info.sdgs)|indent(2, first=True) }}
  </COMPANY-SPECIFIC-INFO>
  {%- endif %}
 </COMPANY-DATA>

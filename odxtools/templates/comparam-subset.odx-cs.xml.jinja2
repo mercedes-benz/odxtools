@@ -12,11 +12,12 @@
 {%- import('macros/printCompanyData.xml.jinja2') as pcd -%}
 {%- import('macros/printDOP.xml.jinja2') as pdop %}
 {%- import('macros/printUnitSpec.xml.jinja2') as pus %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
 {#- -#}
 
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
- <!-- Written using odxtools {{odxtools_version}} -->
+<!-- Written using odxtools {{odxtools_version}} -->
  <COMPARAM-SUBSET ID="{{comparam_subset.odx_id.local_id}}"
                   CATEGORY="{{comparam_subset.category}}" >
    <SHORT-NAME>{{comparam_subset.short_name}}</SHORT-NAME>
@@ -38,6 +39,7 @@
      {%- endfor %}
    </COMPANY-DATAS>
    {%- endif %}
+   {{- psd.printSpecialDataGroups(comparam_subset.sdgs)|indent(3, first=True) }}
    {%- if simple_comparams | length > 0 %}
    <COMPARAMS>
      {%- for cp in simple_comparams %}

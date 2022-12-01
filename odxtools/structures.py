@@ -18,6 +18,7 @@ from .parameters import Parameter, ParameterWithDOP, read_parameter_from_odx
 from .parameters import CodedConstParameter, MatchingRequestParameter, ValueParameter
 from .utils import read_description_from_odx
 from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
+from .specialdata import SpecialDataGroup, read_sdgs_from_odx
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -32,8 +33,13 @@ class BasicStructure(DopBase):
                  parameters: Iterable[Union[Parameter, "EndOfPduField"]],
                  long_name=None,
                  byte_size=None,
-                 description=None):
-        super().__init__(odx_id, short_name, long_name=long_name, description=description)
+                 description=None,
+                 sdgs=[]):
+        super().__init__(odx_id,
+                         short_name,
+                         long_name=long_name,
+                         description=description,
+                         sdgs=sdgs)
         self.parameters : NamedItemList[Union[Parameter, "EndOfPduField"]] = NamedItemList(short_name_as_id, parameters)
         self._byte_size = byte_size
 
@@ -181,7 +187,7 @@ class BasicStructure(DopBase):
     def _validate_coded_rpc(
             self,
             coded_rpc: bytearray):
-        
+
         if self._byte_size is not None:
             # We definitely broke something if we didn't respect the explicit byte_size
             assert len(coded_rpc) == self._byte_size, self._get_encode_error_str('was', coded_rpc, self._byte_size * 8)
@@ -301,16 +307,28 @@ class BasicStructure(DopBase):
         })
         return param_dict
 
+    def _build_odxlinks(self):
+        result = super()._build_odxlinks()
+
+        for param in self.parameters:
+            result.update(param._build_odxlinks())
+
+        return result
+
     def _resolve_references(self,
                             parent_dl: "DiagLayer",
                             odxlinks: OdxLinkDatabase):
         """Recursively resolve any references (odxlinks or sn-refs)
         """
+        super()._resolve_references(odxlinks)
+
         for p in self.parameters:
             if isinstance(p, ParameterWithDOP):
                 p.resolve_references(parent_dl, odxlinks)
-            if isinstance(p, TableKeyParameter):
+            elif isinstance(p, TableKeyParameter):
                 p.resolve_references(parent_dl, odxlinks)
+            else:
+                p._resolve_references(odxlinks)
 
     def __message_format_lines(self, allow_unknown_lengths: bool = False) \
             -> List[str]:
@@ -465,13 +483,22 @@ class BasicStructure(DopBase):
 
 
 class Structure(BasicStructure):
-    def __init__(self, odx_id, short_name, parameters, long_name=None, byte_size=None, description=None):
-        super().__init__(odx_id, short_name, parameters,
-                         long_name=long_name, description=description)
+    def __init__(self,
+                 odx_id,
+                 short_name,
+                 parameters,
+                 long_name=None,
+                 byte_size=None,
+                 description=None,
+                 sdgs=[]):
+        super().__init__(odx_id,
+                         short_name,
+                         parameters,
+                         long_name=long_name,
+                         description=description,
+                         sdgs=sdgs)
 
         self.parameters = parameters
-        self.basic_structure = BasicStructure(odx_id, short_name, parameters,
-                                              long_name=long_name, byte_size=byte_size, description=description)
 
     def __repr__(self) -> str:
         return f"Structure('{self.short_name}', byte_size={self._byte_size})"
@@ -487,9 +514,19 @@ class Structure(BasicStructure):
 
 
 class Request(BasicStructure):
-    def __init__(self, odx_id, short_name, parameters, long_name=None, description=None):
-        super().__init__(odx_id, short_name, parameters,
-                         long_name=long_name, description=description)
+    def __init__(self,
+                 odx_id,
+                 short_name,
+                 parameters,
+                 long_name=None,
+                 description=None,
+                 sdgs=[]):
+        super().__init__(odx_id,
+                         short_name,
+                         parameters,
+                         long_name=long_name,
+                         description=description,
+                         sdgs=sdgs)
 
     def __repr__(self) -> str:
         return f"Request('{self.short_name}')"
@@ -499,9 +536,20 @@ class Request(BasicStructure):
 
 
 class Response(BasicStructure):
-    def __init__(self, odx_id, short_name, parameters, long_name=None, response_type=None, description=None):
-        super().__init__(odx_id, short_name, parameters,
-                         long_name=long_name, description=description)
+    def __init__(self,
+                 odx_id,
+                 short_name,
+                 parameters,
+                 long_name=None,
+                 response_type=None,
+                 description=None,
+                 sdgs=[]):
+        super().__init__(odx_id,
+                         short_name,
+                         parameters,
+                         long_name=long_name,
+                         description=description,
+                         sdgs=sdgs)
         self.response_type = "POS-RESPONSE" if response_type == "POS-RESPONSE" else "NEG-RESPONSE"
 
     def encode(self, coded_request: Optional[ByteString] = None, **params) -> ByteString:
@@ -534,6 +582,7 @@ def read_structure_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> Unio
     description = read_description_from_odx(et_element.find("DESC"))
     parameters = [read_parameter_from_odx(et_parameter, doc_frags)
                   for et_parameter in et_element.iterfind("PARAMS/PARAM")]
+    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
 
     res: Union[Structure, Request, Response, None]
     if et_element.tag == "REQUEST":
@@ -542,7 +591,8 @@ def read_structure_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> Unio
             short_name,
             parameters=parameters,
             long_name=long_name,
-            description=description
+            description=description,
+            sdgs=sdgs,
         )
     elif et_element.tag in ["POS-RESPONSE", "NEG-RESPONSE"]:
         res = Response(
@@ -551,7 +601,8 @@ def read_structure_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> Unio
             response_type=et_element.tag,
             parameters=parameters,
             long_name=long_name,
-            description=description
+            description=description,
+            sdgs=sdgs,
         )
     elif et_element.tag == "STRUCTURE":
         byte_size_text = et_element.findtext("BYTE-SIZE")
@@ -562,7 +613,8 @@ def read_structure_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> Unio
             parameters=parameters,
             byte_size=byte_size,
             long_name=long_name,
-            description=description
+            description=description,
+            sdgs=sdgs,
         )
     else:
         res = None
