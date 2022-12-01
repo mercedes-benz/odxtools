@@ -66,7 +66,7 @@ class DocRevision:
 @dataclass()
 class AdminData:
     language: Optional[str] = None
-    company_doc_infos: List[CompanyDocInfo] = None
+    company_doc_infos: List[CompanyDocInfo] = field(default_factory=list)
     doc_revisions: Optional[List[DocRevision]] = None
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -120,6 +120,7 @@ def read_admin_data_from_odx(et_element: Optional[ElementTree.Element],
             revision_label = dr.findtext("REVISION-LABEL")
             state = dr.findtext("STATE")
             date = dr.findtext("DATE")
+            assert date is not None
             tool = dr.findtext("TOOL")
 
             modlist = None

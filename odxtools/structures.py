@@ -315,9 +315,10 @@ class BasicStructure(DopBase):
 
         return result
 
-    def _resolve_references(self,
+    def _resolve_references(self, # type: ignore[override]
                             parent_dl: "DiagLayer",
-                            odxlinks: OdxLinkDatabase):
+                            odxlinks: OdxLinkDatabase) \
+            -> None:
         """Recursively resolve any references (odxlinks or sn-refs)
         """
         super()._resolve_references(odxlinks)

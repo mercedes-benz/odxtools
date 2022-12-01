@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from dataclasses import dataclass
-from typing import Optional, Any, Dict, List
+from typing import TYPE_CHECKING, Optional, Any, Dict, List
 
 from .parameters import read_parameter_from_odx
 from .utils import read_description_from_odx
@@ -10,6 +10,9 @@ from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
 from .structures import BasicStructure
 from .parameters.parameterbase import Parameter
 from .globals import logger
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 @dataclass
 class EnvironmentData(BasicStructure):
@@ -36,10 +39,11 @@ class EnvironmentData(BasicStructure):
 
         return odxlinks
 
-    def _resolve_references(self,
+    def _resolve_references(self,  # type: ignore[override]
                             parent_dl: "DiagLayer",
-                            odxlinks: OdxLinkDatabase) -> None:
-        odxlinks = super()._resolve_references(parent_dl, odxlinks)
+                            odxlinks: OdxLinkDatabase) \
+            -> None:
+        super()._resolve_references(parent_dl, odxlinks)
 
     def __repr__(self) -> str:
         return (

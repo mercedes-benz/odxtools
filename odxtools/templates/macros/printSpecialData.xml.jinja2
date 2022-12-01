@@ -29,11 +29,10 @@
  SI="{{sdg.semantic_info}}"
  {%- endif %}
  {#- -#}>
- {%- if sdg._local_sdg_caption %}
- {{- printSdgCaption(sdg._local_sdg_caption) | indent(1, first=True) }}
- {%- endif %}
- {%- if sdg._sdg_caption_ref %}
- <SDG-CAPTION-REF ID-REF="{{sdg._sdg_caption_ref.ref_id}}" />
+ {%- if sdg.sdg_caption_ref %}
+ <SDG-CAPTION-REF ID-REF="{{sdg.sdg_caption_ref.ref_id}}" />
+ {%- elif sdg.sdg_caption %}
+ {{- printSdgCaption(sdg.sdg_caption) | indent(1, first=True) }}
  {%- endif %}
  {%- for sd in sdg.values %}
  {%- if hasattr(sd, "values") %}

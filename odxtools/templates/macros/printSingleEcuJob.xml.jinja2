@@ -41,7 +41,6 @@
   {%- endif %}
  {%- endfilter -%}
  >
-
  {{ peid.printElementID(job)|indent(1) }}
  {{- psd.printSpecialDataGroups(job.sdgs)|indent(1, first=True) }}
 {%- if job.functional_class_refs %}

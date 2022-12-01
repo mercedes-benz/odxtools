@@ -56,7 +56,7 @@ class SpecialData:
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) \
-            -> SpecialDataGroupCaption:
+            -> "SpecialData":
         semantic_info = et_element.get("SI")
         text_identifier = et_element.get("TI")
         value = et_element.text or ""
@@ -67,16 +67,15 @@ class SpecialData:
 
 @dataclass
 class SpecialDataGroup:
-    _local_sdg_caption: Optional[SpecialDataGroupCaption]
-    _sdg_caption_ref: Optional[OdxLinkRef]
-
+    sdg_caption: Optional[SpecialDataGroupCaption]
+    sdg_caption_ref: Optional[OdxLinkRef]
     semantic_info: Optional[str] # the "SI" attribute
     values: List[Union["SpecialDataGroup", SpecialData]]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) \
-            -> SpecialDataGroupCaption:
+            -> "SpecialDataGroup":
         sdg_caption = None
         if caption_elem := et_element.find("SDG-CAPTION"):
             sdg_caption = SpecialDataGroupCaption.from_et(caption_elem, doc_frags)
@@ -87,9 +86,9 @@ class SpecialDataGroup:
 
         semantic_info = et_element.get("SI")
 
-        values = []
+        values: List[Union[SpecialData, SpecialDataGroup]] = []
         for value_elem in et_element:
-            next_entry = None
+            next_entry: Optional[Union[SpecialData, SpecialDataGroup]] = None
             if value_elem.tag == "SDG":
                 next_entry = SpecialDataGroup.from_et(value_elem, doc_frags)
             elif value_elem.tag == "SD":
@@ -98,16 +97,16 @@ class SpecialDataGroup:
             if next_entry is not None:
                 values.append(next_entry)
 
-        return SpecialDataGroup(_local_sdg_caption=sdg_caption,
-                                _sdg_caption_ref=sdg_caption_ref,
+        return SpecialDataGroup(sdg_caption=sdg_caption,
+                                sdg_caption_ref=sdg_caption_ref,
                                 semantic_info=semantic_info,
                                 values=values)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
 
-        if self._local_sdg_caption is not None:
-            result.update(self._local_sdg_caption._build_odxlinks())
+        if self.sdg_caption is not None:
+            result.update(self.sdg_caption._build_odxlinks())
 
         for val in self.values:
             result.update(val._build_odxlinks())
@@ -115,12 +114,10 @@ class SpecialDataGroup:
         return result
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
-        if self._sdg_caption_ref is not None:
-            caption = odxlinks.resolve(self._sdg_caption_ref)
+        if self.sdg_caption_ref is not None:
+            caption = odxlinks.resolve(self.sdg_caption_ref)
             assert isinstance(caption, SpecialDataGroupCaption)
             self.sdg_caption = caption
-        else:
-            self.sdg_caption = self._local_sdg_caption
 
         for val in self.values:
             val._resolve_references(odxlinks)
