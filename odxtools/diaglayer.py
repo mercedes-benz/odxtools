@@ -1,35 +1,36 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from itertools import chain
-from typing import Optional, Any, Dict, Iterable, List, Union
-from copy import copy
 import warnings
+from copy import copy
+from itertools import chain
+from typing import Any, Dict, Iterable, List, Optional, Union
 from xml.etree import ElementTree
+
 from deprecated import deprecated
 
-from .utils import short_name_as_id
-from .exceptions import DecodeError, OdxWarning
-from .globals import logger, xsi
-from .state import read_state_from_odx
-from .state_transition import read_state_transition_from_odx
-
-from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
-from .utils import read_description_from_odx
-from .nameditemlist import NamedItemList
 from .admindata import AdminData, read_admin_data_from_odx
+from .audience import read_additional_audience_from_odx
+from .communicationparameter import (CommunicationParameterRef,
+                                     read_communication_param_ref_from_odx)
 from .companydata import CompanyData, read_company_datas_from_odx
 from .comparam_subset import Comparam, ComplexComparam
-from .communicationparameter import CommunicationParameterRef, read_communication_param_ref_from_odx
-from .diagdatadictionaryspec import DiagDataDictionarySpec, read_diag_data_dictionary_spec_from_odx
 from .dataobjectproperty import DopBase
+from .diagdatadictionaryspec import (DiagDataDictionarySpec,
+                                     read_diag_data_dictionary_spec_from_odx)
+from .exceptions import DecodeError, OdxWarning
 from .functionalclass import read_functional_class_from_odx
-from .audience import read_additional_audience_from_odx
+from .globals import logger, xsi
 from .message import Message
+from .nameditemlist import NamedItemList
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .service import DiagService, read_diag_service_from_odx
 from .singleecujob import SingleEcuJob, read_single_ecu_job_from_odx
-from .structures import Request, Response, read_structure_from_odx
 from .specialdata import SpecialDataGroup, read_sdgs_from_odx
+from .state import read_state_from_odx
+from .state_transition import read_state_transition_from_odx
+from .structures import Request, Response, read_structure_from_odx
+from .utils import read_description_from_odx, short_name_as_id
 
 # Defines priority of overriding objects
 PRIORITY_OF_DIAG_LAYER_TYPE = {
@@ -92,8 +93,8 @@ class DiagLayer:
                     if dop.short_name not in self.not_inherited_dops}
             return dops
 
-        def get_inherited_communication_parameters_by_name(self):
-            return {cp.id_ref.ref_id: cp for cp in self.parent_diag_layer._communication_parameters}
+        def get_inherited_communication_parameters(self) -> List[CommunicationParameterRef]:
+            return list(self.parent_diag_layer._communication_parameters)
 
     def __init__(self,
                  variant_type,
@@ -261,7 +262,7 @@ class DiagLayer:
 
         self._communication_parameters = NamedItemList[CommunicationParameterRef](
             short_name_as_id,
-             list(self._compute_available_commmunication_parameters_by_name().values())
+             list(self._compute_available_commmunication_parameters())
         )
 
         # Resolve all other references
@@ -327,18 +328,16 @@ class DiagLayer:
             })
         return data_object_properties_by_name
 
-    def _compute_available_commmunication_parameters_by_name(self) -> dict:
-        com_params_by_name = {}
+    def _compute_available_commmunication_parameters(self) -> List[CommunicationParameterRef]:
+        com_params = list()
 
         # Look in parent refs for inherited services
         # Fetch services from low priority parents first, then update with increasing priority
         for parent_ref in self._get_parent_refs_sorted_by_priority():
-            com_params_by_name.update(
-                parent_ref.get_inherited_communication_parameters_by_name())
+            com_params.extend(parent_ref.get_inherited_communication_parameters())
+        com_params.extend(self._local_communication_parameters)
 
-        com_params_by_name.update(
-            {cp.id_ref.ref_id: cp for cp in self._local_communication_parameters})
-        return com_params_by_name
+        return com_params
 
     def _get_parent_refs_sorted_by_priority(self, reverse=False):
         return sorted(self.parent_refs, key=lambda pr: pr.get_inheritance_priority(), reverse=reverse)
@@ -462,12 +461,17 @@ class DiagLayer:
 
     def get_communication_parameter(self,
                                     name: str,
+                                    functional: bool = None,
                                     protocol_name: Optional[str] = None) \
             -> Optional[CommunicationParameterRef]:
 
         cps = [cp for cp in self.communication_parameters if cp.short_name == name]
+
+        if functional is not None:
+            cps = [cp for cp in cps if cp.is_functional == functional]
         if protocol_name:
-            cps = [cp for cp in cps if cp.protocol_sn_ref in (None, protocol_name)]
+            cps = [cp for cp in cps if cp.protocol_sn_ref == protocol_name]
+        
         if len(cps) > 1:
             warnings.warn(f"Communication parameter `{name}` specified more "
                           f"than once. Using first occurence.", OdxWarning)
@@ -480,7 +484,7 @@ class DiagLayer:
             -> Optional[int]:
         """CAN ID to which the ECU listens for diagnostic messages"""
         com_param = self.get_communication_parameter("CP_UniqueRespIdTable",
-                                                     protocol_name)
+                                                     protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -499,7 +503,7 @@ class DiagLayer:
             -> Optional[int]:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
         com_param = self.get_communication_parameter("CP_UniqueRespIdTable",
-                                                     protocol_name)
+                                                     protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -518,7 +522,7 @@ class DiagLayer:
             -> Optional[int]:
         """CAN Functional Request Id."""
         com_param = self.get_communication_parameter("CP_CanFuncReqId",
-                                                     protocol_name)
+                                                     protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -529,11 +533,12 @@ class DiagLayer:
 
         return int(result)
 
-    def get_doip_logical_gateway_address(self, protocol_name: Optional[str] = None) \
+    def get_doip_logical_gateway_address(self, functional: Optional[bool] = False, protocol_name: Optional[str] = None) \
             -> Optional[int]:
         """DoIp logical gateway address"""
-        com_param = self.get_communication_parameter("CP_DoIPLogicalGatewayAddress",
-                                                     protocol_name)
+        com_param = self.get_communication_parameter("CP_DoIPLogicalGatewayAddress", 
+                                                     functional=functional,
+                                                     protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -544,11 +549,12 @@ class DiagLayer:
 
         return int(result)
 
-    def get_doip_logical_tester_address(self, protocol_name: Optional[str] = None) \
+    def get_doip_logical_tester_address(self, functional: Optional[bool] = False, protocol_name: Optional[str] = None) \
             -> Optional[int]:
         """DoIp logical gateway address"""
         com_param = self.get_communication_parameter("CP_DoIPLogicalTesterAddress",
-                                                     protocol_name)
+                                                     functional=functional,
+                                                     protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -559,11 +565,12 @@ class DiagLayer:
 
         return int(result)
 
-    def get_doip_logical_functional_address(self, protocol_name: Optional[str] = None) \
+    def get_doip_logical_functional_address(self, functional: Optional[bool] = False, protocol_name: Optional[str] = None) \
             -> Optional[int]:
         """The logical functional DoIP address of the ECU."""
         com_param = self.get_communication_parameter("CP_DoIPLogicalFunctionalAddress",
-                                                     protocol_name)
+                                                     functional=functional,
+                                                     protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -578,7 +585,7 @@ class DiagLayer:
             -> Optional[float]:
         """The timout for the DoIP routing activation request in seconds"""
         com_param = self.get_communication_parameter("CP_DoIPRoutingActivationTimeout",
-                                                     protocol_name)
+                                                     protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -593,7 +600,7 @@ class DiagLayer:
             -> Optional[int]:
         """The  DoIP routing type"""
         com_param = self.get_communication_parameter("CP_DoIPRoutingActivationType",
-                                                     protocol_name)
+                                                     protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -615,7 +622,7 @@ class DiagLayer:
         (if no other request is sent to this ECU) in case of physically addressed requests."
         """
         com_param = self.get_communication_parameter("CP_TesterPresentTime",
-                                                     protocol_name)
+                                                     protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -702,7 +709,7 @@ def read_diag_layer_from_odx(et_element: ElementTree.Element,
                    for pr_el in et_element.iterfind("PARENT-REFS/PARENT-REF")]
 
     # Parse communication parameter refs
-    com_params = [read_communication_param_ref_from_odx(el, doc_frags)
+    com_params = [read_communication_param_ref_from_odx(el, doc_frags, variant_type)
                   for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")]
 
     # Parse Requests and Responses

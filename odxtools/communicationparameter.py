@@ -1,14 +1,15 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import Optional, Any, Union, List, TYPE_CHECKING
 import warnings
+from typing import Any, List, Optional, Union
 
 from odxtools.exceptions import OdxWarning
 
-from .odxlink import OdxLinkDatabase, OdxLinkRef, OdxDocFragment
+from .comparam_subset import (BaseComparam, Comparam, ComplexComparam,
+                              ComplexValue, read_complex_value_from_odx)
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from .utils import read_description_from_odx
-from .comparam_subset import BaseComparam, Comparam, ComplexComparam, ComplexValue, read_complex_value_from_odx
 
 
 class CommunicationParameterRef:
@@ -16,11 +17,13 @@ class CommunicationParameterRef:
     def __init__(self,
                  value : Union[str, ComplexValue],
                  id_ref: OdxLinkRef,
+                 is_functional = False,
                  description: Optional[str] = None,
                  protocol_sn_ref: Optional[str] = None,
                  prot_stack_sn_ref: Optional[str] = None) -> None:
         self.value = value
         self.id_ref = id_ref
+        self.is_functional = is_functional
         self.description = description
         self.protocol_sn_ref = protocol_sn_ref
         self.prot_stack_sn_ref = prot_stack_sn_ref
@@ -103,7 +106,7 @@ class CommunicationParameterRef:
         # This should not happen anyway in a correct PDX
         return self.id_ref.ref_id.replace(".", "__").replace("-", "_")
 
-def read_communication_param_ref_from_odx(et_element, doc_frags: List[OdxDocFragment]):
+def read_communication_param_ref_from_odx(et_element, doc_frags: List[OdxDocFragment], dl_variant_type): # TODO argument type annotation
     id_ref = OdxLinkRef.from_et(et_element, doc_frags)
     assert id_ref is not None
 
@@ -115,6 +118,8 @@ def read_communication_param_ref_from_odx(et_element, doc_frags: List[OdxDocFrag
         value = et_element.findtext("SIMPLE-VALUE")
     else:
         value = read_complex_value_from_odx(et_element.find("COMPLEX-VALUE"))
+
+    is_functional = dl_variant_type == "FUNCTIONAL-GROUP"
 
     description = read_description_from_odx(et_element.find("DESC"))
 
@@ -128,6 +133,7 @@ def read_communication_param_ref_from_odx(et_element, doc_frags: List[OdxDocFrag
 
     return CommunicationParameterRef(value,
                                      id_ref,
+                                     is_functional=is_functional,
                                      description=description,
                                      protocol_sn_ref=protocol_snref,
                                      prot_stack_sn_ref=prot_stack_snref
