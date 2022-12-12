@@ -93,7 +93,7 @@ class DiagLayer:
                     if dop.short_name not in self.not_inherited_dops}
             return dops
 
-        def get_inherited_communication_parameters(self) -> List[CommunicationParameterRef]:
+        def get_inherited_communication_parameters(self):
             return list(self.parent_diag_layer._communication_parameters)
 
     def __init__(self,
@@ -461,7 +461,7 @@ class DiagLayer:
 
     def get_communication_parameter(self,
                                     name: str,
-                                    functional: bool = None,
+                                    functional: Optional[bool] = None,
                                     protocol_name: Optional[str] = None) \
             -> Optional[CommunicationParameterRef]:
 
