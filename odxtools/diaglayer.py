@@ -29,6 +29,7 @@ from .message import Message
 from .service import DiagService, read_diag_service_from_odx
 from .singleecujob import SingleEcuJob, read_single_ecu_job_from_odx
 from .structures import Request, Response, read_structure_from_odx
+from .specialdata import SpecialDataGroup, read_sdgs_from_odx
 
 # Defines priority of overriding objects
 PRIORITY_OF_DIAG_LAYER_TYPE = {
@@ -116,6 +117,7 @@ class DiagLayer:
                  states=[],
                  state_transitions=[],
                  import_refs=[],
+                 sdgs=[],
                  ):
         logger.info(f"Initializing variant type {variant_type}")
         self.variant_type = variant_type
@@ -124,6 +126,7 @@ class DiagLayer:
         self.short_name = short_name
         self.long_name = long_name
         self.description = description
+        self.sdgs = sdgs
 
         # Requests and Responses
         self.requests = requests
@@ -203,7 +206,7 @@ class DiagLayer:
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
         logger.info(f"Adding {self.odx_id} to odxlinks.")
 
-        odxlinks = {}
+        odxlinks = { self.odx_id: self }
 
         for obj in chain(self._local_services,
                          self._local_single_ecu_jobs,
@@ -216,12 +219,21 @@ class DiagLayer:
                          self.state_transitions):
             odxlinks[obj.odx_id] = obj
 
-        if self.local_diag_data_dictionary_spec:
-            odxlinks.update(
-                self.local_diag_data_dictionary_spec._build_odxlinks()
-            )
+        for obj in chain(self._local_services,
+                         self._local_single_ecu_jobs,
+                         self.requests,
+                         self.positive_responses,
+                         self.negative_responses,
+                         self.additional_audiences,
+                         self.functional_classes,
+                         self.sdgs,
+                         self.states,
+                         self.state_transitions):
+            odxlinks.update(obj._build_odxlinks())
 
-        odxlinks[self.odx_id] = self
+        if self.local_diag_data_dictionary_spec:
+            odxlinks.update(self.local_diag_data_dictionary_spec._build_odxlinks())
+
         return odxlinks
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -229,6 +241,9 @@ class DiagLayer:
         # Resolve inheritance
         for pr in self.parent_refs:
             pr._resolve_references(odxlinks)
+
+        for sdg in self.sdgs:
+            sdg._resolve_references(odxlinks)
 
         services = sorted(self._compute_available_services_by_name(odxlinks).values(),
                           key=short_name_as_id)
@@ -256,13 +271,14 @@ class DiagLayer:
             struct._resolve_references(self, odxlinks)
 
         local_diag_comms: Iterable[Union[DiagService, SingleEcuJob]] \
-            = (*self._local_services, *self._local_single_ecu_jobs)
-        for service in local_diag_comms:
-            service._resolve_references(odxlinks)
+            = [*self._local_services, *self._local_single_ecu_jobs]
+        for ldc in local_diag_comms:
+            ldc._resolve_references(odxlinks)
 
         if self.local_diag_data_dictionary_spec:
             self.local_diag_data_dictionary_spec._resolve_references(self,
                                                                      odxlinks)
+
 
     def __local_services_by_name(self, odxlinks: OdxLinkDatabase) -> Dict[str, Union[DiagService, SingleEcuJob]]:
         services_by_name: Dict[str, Union[DiagService, SingleEcuJob]] = {}
@@ -735,31 +751,30 @@ def read_diag_layer_from_odx(et_element: ElementTree.Element,
     import_refs = [OdxLinkRef.from_et(ref, doc_frags)
                    for ref in et_element.iterfind("IMPORT-REFS/IMPORT-REF")]
 
-    # TODO: Are UNIT-SPEC and SDGS needed?
+    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
 
     # Create DiagLayer
-    dl = DiagLayer(variant_type,
-                   odx_id,
-                   short_name,
-                   long_name=long_name,
-                   description=description,
-                   requests=requests,
-                   positive_responses=positive_responses,
-                   negative_responses=negative_responses,
-                   services=services,
-                   diag_comm_refs=diag_comm_refs,
-                   single_ecu_jobs=single_ecu_jobs,
-                   parent_refs=parent_refs,
-                   diag_data_dictionary_spec=diag_data_dictionary_spec,
-                   communication_parameters=com_params,
-                   additional_audiences=additional_audiences,
-                   functional_classes=functional_classes,
-                   states=states,
-                   state_transitions=state_transitions,
-                   import_refs=import_refs,
-                   )
-
-    return dl
+    return DiagLayer(variant_type,
+                     odx_id,
+                     short_name,
+                     long_name=long_name,
+                     description=description,
+                     requests=requests,
+                     positive_responses=positive_responses,
+                     negative_responses=negative_responses,
+                     services=services,
+                     diag_comm_refs=diag_comm_refs,
+                     single_ecu_jobs=single_ecu_jobs,
+                     parent_refs=parent_refs,
+                     diag_data_dictionary_spec=diag_data_dictionary_spec,
+                     communication_parameters=com_params,
+                     additional_audiences=additional_audiences,
+                     functional_classes=functional_classes,
+                     states=states,
+                     state_transitions=state_transitions,
+                     import_refs=import_refs,
+                     sdgs=sdgs,
+                     )
 
 class DiagLayerContainer:
     def __init__(self,
@@ -773,7 +788,8 @@ class DiagLayerContainer:
                  protocols: List[DiagLayer] = [],
                  functional_groups: List[DiagLayer] = [],
                  base_variants: List[DiagLayer] = [],
-                 ecu_variants: List[DiagLayer] = []
+                 ecu_variants: List[DiagLayer] = [],
+                 sdgs: List[SpecialDataGroup] = [],
                  ) -> None:
         self.odx_id = odx_id
         self.short_name = short_name
@@ -787,6 +803,7 @@ class DiagLayerContainer:
         self.functional_groups = functional_groups
         self.base_variants = base_variants
         self.ecu_variants = ecu_variants
+        self.sdgs = sdgs
 
         self._diag_layers = NamedItemList[DiagLayer](short_name_as_id, list(
             chain(self.ecu_shared_datas, self.protocols, self.functional_groups, self.base_variants, self.ecu_variants)))
@@ -802,6 +819,16 @@ class DiagLayerContainer:
             for cd in self.company_datas:
                 result.update(cd._build_odxlinks())
 
+        for dl in chain(self.ecu_shared_datas,
+                        self.protocols,
+                        self.functional_groups,
+                        self.base_variants,
+                        self.ecu_variants):
+            result.update(dl._build_odxlinks())
+
+        for sdg in self.sdgs:
+            result.update(sdg._build_odxlinks())
+
         return result
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -811,6 +838,16 @@ class DiagLayerContainer:
         if self.company_datas is not None:
             for cd in self.company_datas:
                 cd._resolve_references(odxlinks)
+
+        for dl in chain(self.ecu_shared_datas,
+                        self.protocols,
+                        self.functional_groups,
+                        self.base_variants,
+                        self.ecu_variants):
+            dl._resolve_references(odxlinks)
+
+        for sdg in self.sdgs:
+            sdg._resolve_references(odxlinks)
 
     @property
     def diag_layers(self):

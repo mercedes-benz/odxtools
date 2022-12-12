@@ -5,6 +5,7 @@ from .nameditemlist import NamedItemList
 from .utils import read_description_from_odx
 from .odxlink import OdxLinkId, OdxLinkDatabase, OdxDocFragment
 from .utils import short_name_as_id
+from .specialdata import SpecialDataGroup, read_sdgs_from_odx
 
 from dataclasses import dataclass, field
 from typing import Optional, Any, Dict, List
@@ -29,6 +30,19 @@ class RelatedDoc:
 @dataclass()
 class CompanySpecificInfo:
     related_docs: Optional[List[RelatedDoc]]
+    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = { }
+
+        for sdg in self.sdgs:
+            result.update(sdg._build_odxlinks())
+
+        return result
+
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+        for sdg in self.sdgs:
+            sdg._resolve_references(odxlinks)
 
 @dataclass()
 class TeamMember:
@@ -63,10 +77,14 @@ class CompanyData:
             for tm in self.team_members:
                 result[tm.odx_id] = tm
 
+        if self.company_specific_info:
+            result.update(self.company_specific_info._build_odxlinks())
+
         return result
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
-        pass
+        if self.company_specific_info:
+            self.company_specific_info._resolve_references(odxlinks)
 
 def read_xdoc_from_odx(xdoc):
     short_name = xdoc.findtext("SHORT-NAME")
@@ -170,7 +188,10 @@ def read_company_datas_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
 
                 related_docs = rdlist
 
-            company_specific_info = CompanySpecificInfo(related_docs=related_docs)
+            sdgs = read_sdgs_from_odx(company_specific_info.find("SDGS"), doc_frags)
+
+            company_specific_info = CompanySpecificInfo(related_docs=related_docs,
+                                                        sdgs=sdgs)
 
         cdl.append(CompanyData(odx_id=odx_id,
                                short_name=short_name,

@@ -4,6 +4,8 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
 {%- macro printAdminData(admin_data) %}
 <ADMIN-DATA>
  {%- if admin_data.language is not none %}
@@ -16,10 +18,11 @@
     <COMPANY-DATA-REF ID-REF="{{cdi.company_data_ref.ref_id}}" />
    {%- if cdi.team_member_ref is not none %}
     <TEAM-MEMBER-REF ID-REF="{{cdi.team_member_ref.ref_id}}" />
-   {%- endif %}
+    {%- endif %}
    {%- if cdi.doc_label is not none %}
     <DOC-LABEL>{{cdi.doc_label|e}}</DOC-LABEL>
    {%- endif %}
+   {{- psd.printSpecialDataGroups(cdi.sdgs)|indent(1, first=True) }}
   </COMPANY-DOC-INFO>
   {%- endfor %}
  </COMPANY-DOC-INFOS>

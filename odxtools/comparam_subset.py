@@ -11,7 +11,7 @@ from .units import UnitSpec, read_unit_spec_from_odx
 from .admindata import AdminData, read_admin_data_from_odx
 from .companydata import CompanyData, read_company_datas_from_odx
 from .utils import read_description_from_odx, short_name_as_id
-
+from .specialdata import SpecialDataGroup, read_sdgs_from_odx
 
 StandardizationLevel = Literal[
     "STANDARD",
@@ -102,6 +102,7 @@ class ComparamSubset:
     description: Optional[str] = None
     admin_data: Optional[AdminData] = None
     company_datas: Optional[NamedItemList[CompanyData]] = None
+    sdgs: List[SpecialDataGroup] = field(default_factory=list)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks: Dict[OdxLinkId, Any] = {}
@@ -117,6 +118,16 @@ class ComparamSubset:
         if self.unit_spec:
             odxlinks.update(self.unit_spec._build_odxlinks())
 
+        if self.admin_data is not None:
+            odxlinks.update(self.admin_data._build_odxlinks())
+
+        if self.company_datas is not None:
+            for cd in self.company_datas:
+                odxlinks.update(cd._build_odxlinks())
+
+        for sdg in self.sdgs:
+            odxlinks.update(sdg._build_odxlinks())
+
         return odxlinks
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
@@ -129,6 +140,15 @@ class ComparamSubset:
         if self.unit_spec:
             self.unit_spec._resolve_references(odxlinks)
 
+        if self.admin_data is not None:
+            self.admin_data._resolve_references(odxlinks)
+
+        if self.company_datas is not None:
+            for cd in self.company_datas:
+                cd._resolve_references(odxlinks)
+
+        for sdg in self.sdgs:
+            sdg._resolve_references(odxlinks)
 
 def read_comparam_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> BaseComparam:
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
@@ -217,6 +237,8 @@ def read_comparam_subset_from_odx(et_element: Element) -> ComparamSubset:
     else:
         unit_spec = None
 
+    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+
     return ComparamSubset(
         odx_id=odx_id,
         category=category,
@@ -228,4 +250,5 @@ def read_comparam_subset_from_odx(et_element: Element) -> ComparamSubset:
         data_object_props=NamedItemList(short_name_as_id, data_object_props),
         comparams=NamedItemList(short_name_as_id, comparams),
         unit_spec=unit_spec,
+        sdgs=sdgs,
     )

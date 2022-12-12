@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from typing import List, Iterable, Optional, Union
+from xml.etree import ElementTree
 
 from .utils import short_name_as_id
 from .audience import Audience, read_audience_from_odx
@@ -15,7 +16,8 @@ from .state_transition import StateTransition
 from .structures import Request, Response
 from .nameditemlist import NamedItemList
 from .message import Message
-
+from .specialdata import SpecialDataGroup, read_sdgs_from_odx
+from .admindata import read_admin_data_from_odx, AdminData
 
 class DiagService:
     def __init__(self,
@@ -25,12 +27,14 @@ class DiagService:
                  positive_responses: Union[Iterable[OdxLinkRef], Iterable[Response]],
                  negative_responses: Union[Iterable[OdxLinkRef], Iterable[Response]],
                  long_name: Optional[str] = None,
+                 admin_data: Optional[AdminData] = None,
                  description: Optional[str] = None,
                  semantic: Optional[str] = None,
                  audience: Optional[Audience] = None,
                  functional_class_refs: Iterable[OdxLinkRef] = [],
                  pre_condition_state_refs: Iterable[OdxLinkRef] = [],
-                 state_transition_refs: Iterable[OdxLinkRef] = []):
+                 state_transition_refs: Iterable[OdxLinkRef] = [],
+                 sdgs: List[SpecialDataGroup] = []):
         """Constructs the service.
 
         Parameters:
@@ -103,6 +107,8 @@ class DiagService:
             raise TypeError(
                 "negative_responses must be of type Union[List[str], List[Response], None]")
 
+        self.sdgs = sdgs
+
     @property
     def request(self) -> Optional[Request]:
         return self._request
@@ -143,6 +149,14 @@ class DiagService:
     def state_transitions(self):
         return self._state_transitions
 
+    def _build_odxlinks(self):
+        result = {}
+
+        for sdg in self.sdgs:
+            result.update(sdg._build_odxlinks())
+
+        return result
+
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         self._request = odxlinks.resolve(self.request_ref)
         self._positive_responses = \
@@ -167,6 +181,10 @@ class DiagService:
                 [odxlinks.resolve(stt_id) for stt_id in self.state_transition_refs])
         if self.audience:
             self.audience._resolve_references(odxlinks)
+
+        for sdg in self.sdgs:
+            sdg._resolve_references(odxlinks)
+
 
     def decode_message(self, message: Union[bytes, bytearray]) -> Message:
 
@@ -281,6 +299,7 @@ def read_diag_service_from_odx(et_element, doc_frags: List[OdxDocFragment]):
 
     long_name = et_element.findtext("LONG-NAME")
     description = read_description_from_odx(et_element.find("DESC"))
+    admin_data = read_admin_data_from_odx(et_element.find("ADMIN-DATA"), doc_frags)
     semantic = et_element.get("SEMANTIC")
 
     audience = None
@@ -288,16 +307,19 @@ def read_diag_service_from_odx(et_element, doc_frags: List[OdxDocFragment]):
         audience = read_audience_from_odx(et_element.find(
             "AUDIENCE"), doc_frags)
 
-    diag_service = DiagService(odx_id,
-                               short_name,
-                               request_ref,
-                               pos_res_refs,
-                               neg_res_refs,
-                               long_name=long_name,
-                               description=description,
-                               semantic=semantic,
-                               audience=audience,
-                               functional_class_refs=functional_class_refs,
-                               pre_condition_state_refs=pre_condition_state_refs,
-                               state_transition_refs=state_transition_refs)
-    return diag_service
+    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+
+    return DiagService(odx_id,
+                       short_name,
+                       request_ref,
+                       pos_res_refs,
+                       neg_res_refs,
+                       long_name=long_name,
+                       description=description,
+                       admin_data=admin_data,
+                       semantic=semantic,
+                       audience=audience,
+                       functional_class_refs=functional_class_refs,
+                       pre_condition_state_refs=pre_condition_state_refs,
+                       state_transition_refs=state_transition_refs,
+                       sdgs=sdgs)

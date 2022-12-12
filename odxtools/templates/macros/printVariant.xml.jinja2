@@ -20,6 +20,7 @@
 {%- import('macros/printComparamRef.xml.jinja2') as pcom %}
 {%- import('macros/printParentRef.xml.jinja2') as pparref %}
 {%- import('macros/printAudience.xml.jinja2') as paud %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printVariant(dl, variant_tag) -%}
 <{{variant_tag}} ID="{{dl.odx_id.local_id}}">
@@ -99,6 +100,7 @@
    {{ pt.printTable(table)|indent(3) }}
   {%- endfor %}
    </TABLES>
+  {{- psd.printSpecialDataGroups(dl.local_diag_data_dictionary_spec.sdgs)|indent(2, first=True) }}
  {%- endif %}
  </DIAG-DATA-DICTIONARY-SPEC>
 {%- endif %}
@@ -160,5 +162,6 @@
  {%- endfor %}
  </PARENT-REFS>
 {%- endif %}
+ {{- psd.printSpecialDataGroups(dl.sdgs)|indent(1, first=True) }}
 </{{variant_tag}}>
 {%- endmacro -%}

@@ -21,6 +21,7 @@ from .structures import BasicStructure, read_structure_from_odx
 from .table import read_table_from_odx, Table
 from .units import read_unit_spec_from_odx, UnitSpec
 from .odxlink import OdxLinkId, OdxLinkDatabase, OdxDocFragment
+from .specialdata import SpecialDataGroup, read_sdgs_from_odx
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -56,6 +57,7 @@ class DiagDataDictionarySpec:
         default_factory=lambda: _construct_named_item_list([])
     )
     unit_spec: Optional[UnitSpec] = None
+    sdgs: List[SpecialDataGroup] = field(default_factory=list)
 
     def __post_init__(self):
         self._all_data_object_properties = _construct_named_item_list(
@@ -96,27 +98,26 @@ class DiagDataDictionarySpec:
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
-        for obj in chain(
-            self.data_object_props, self.structures, self.end_of_pdu_fields, self.tables
-        ):
+        for obj in chain(self.data_object_props,
+                         self.structures,
+                         self.end_of_pdu_fields,
+                         self.tables,
+                         ):
             odxlinks[obj.odx_id] = obj
 
-        for table in self.tables:
-            odxlinks.update(table._build_odxlinks())
-
-        for env_data_desc in self.env_data_descs:
-            odxlinks.update(env_data_desc._build_odxlinks())
-
-        for env_data in self.env_datas:
-            odxlinks.update(env_data._build_odxlinks())
-
-        for mux in self.muxs:
-            odxlinks.update(mux._build_odxlinks())
-
-        for obj in self.dtc_dops:
+        for obj in chain(self.data_object_props,
+                         self.dtc_dops,
+                         self.env_data_descs,
+                         self.env_datas,
+                         self.muxs,
+                         self.sdgs,
+                         self.structures,
+                         self.end_of_pdu_fields,
+                         self.tables,
+                         ):
             odxlinks.update(obj._build_odxlinks())
 
-        if self.unit_spec:
+        if self.unit_spec is not None:
             odxlinks.update(self.unit_spec._build_odxlinks())
 
         return odxlinks
@@ -124,25 +125,25 @@ class DiagDataDictionarySpec:
     def _resolve_references(self,
                             parent_dl: "DiagLayer",
                             odxlinks: OdxLinkDatabase):
-        for dop in chain(
-            self.dtc_dops,
-            self.data_object_props,
-            self.tables,
-        ):
-            dop._resolve_references(odxlinks)
 
-        for struct in chain(self.structures, self.end_of_pdu_fields):
-            struct._resolve_references(parent_dl, odxlinks)
-
-        for env_data in chain(
-            self.env_datas,
-        ):
-            env_data._resolve_references(parent_dl, odxlinks)
-
-        for mux in chain(
-            self.muxs,
-        ):
-            mux._resolve_references(odxlinks)
+        for obj in self.data_object_props:
+            obj._resolve_references(odxlinks)
+        for obj in self.dtc_dops:
+            obj._resolve_references(odxlinks)
+        for obj in self.end_of_pdu_fields:
+            obj._resolve_references(parent_dl, odxlinks)
+        for obj in self.env_data_descs:
+            obj._resolve_references(odxlinks)
+        for obj in self.env_datas:
+            obj._resolve_references(parent_dl, odxlinks)
+        for obj in self.muxs:
+            obj._resolve_references(odxlinks)
+        for obj in self.sdgs:
+            obj._resolve_references(odxlinks)
+        for obj in self.structures:
+            obj._resolve_references(parent_dl, odxlinks)
+        for obj in self.tables:
+            obj._resolve_references(odxlinks)
 
         if self.unit_spec:
             self.unit_spec._resolve_references(odxlinks)
@@ -219,6 +220,8 @@ def read_diag_data_dictionary_spec_from_odx(et_element, doc_frags: List[OdxDocFr
         if num > 0:
             logger.info(f"Not implemented: Did not parse {num} {name}.")
 
+    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+
     return DiagDataDictionarySpec(
         data_object_props=NamedItemList(short_name_as_id, data_object_props),
         structures=NamedItemList(short_name_as_id, structures),
@@ -229,4 +232,5 @@ def read_diag_data_dictionary_spec_from_odx(et_element, doc_frags: List[OdxDocFr
         env_data_descs=NamedItemList(short_name_as_id, env_data_descs),
         env_datas=NamedItemList(short_name_as_id, env_datas),
         muxs=NamedItemList(short_name_as_id, muxs),
+        sdgs=sdgs,
     )

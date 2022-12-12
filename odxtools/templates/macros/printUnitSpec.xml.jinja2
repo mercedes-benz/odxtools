@@ -5,6 +5,7 @@
 -#}
 
 {%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printUnitSpec(spec) -%}
 <UNIT-SPEC>
@@ -29,6 +30,7 @@
  {%- endfor %}
  </PHYSICAL-DIMENSIONS>
  {%- endif %}
+ {{- psd.printSpecialDataGroups(spec.sdgs)|indent(1, first=True) }}
 </UNIT-SPEC>
 {%- endmacro -%}
 

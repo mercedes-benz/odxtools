@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 import abc
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any, Iterable
 
 from .utils import read_description_from_odx
@@ -10,16 +10,33 @@ from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
 
 from .dataobjectproperty import DopBase
 from .globals import logger
+from .specialdata import SpecialDataGroup, read_sdgs_from_odx
 
 
 class TableBase(abc.ABC):
     """ Base class for all Tables."""
 
-    def __init__(self, odx_id: OdxLinkId, short_name: str, long_name=None):
+    def __init__(self,
+                 odx_id: OdxLinkId,
+                 short_name: str,
+                 long_name=None,
+                 sdgs: List[SpecialDataGroup] = []):
         self.odx_id = odx_id
         self.short_name = short_name
         self.long_name = long_name
+        self.sdgs = sdgs
 
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = {}
+
+        for sdg in self.sdgs:
+            result.update(sdg._build_odxlinks())
+
+        return result
+
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+        for sdg in self.sdgs:
+            sdg._resolve_references(odxlinks)
 
 @dataclass
 class TableRow:
@@ -33,16 +50,28 @@ class TableRow:
     dop_ref: Optional[OdxLinkRef] = None
     description: Optional[str] = None
     semantic: Optional[str] = None
+    sdgs: List[SpecialDataGroup] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self._structure: Optional[DopBase] = None
         self._dop: Optional[DopBase] = None
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = {}
+
+        for sdg in self.sdgs:
+            result.update(sdg._build_odxlinks())
+
+        return result
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         if self.structure_ref is not None:
             self._structure = odxlinks.resolve(self.structure_ref)
         if self.dop_ref is not None:
             self._dop = odxlinks.resolve(self.dop_ref)
+
+        for sdg in self.sdgs:
+            sdg._resolve_references(odxlinks)
 
     @property
     def structure(self) -> Optional[DopBase]:
@@ -80,10 +109,13 @@ class Table(TableBase):
         key_dop_ref: Optional[OdxLinkRef] = None,
         description: Optional[str] = None,
         semantic: Optional[str] = None,
+        sdgs: List[SpecialDataGroup] = [],
     ):
-        super().__init__(
-            odx_id=odx_id, short_name=short_name, long_name=long_name
-        )
+        super().__init__(odx_id=odx_id,
+                         short_name=short_name,
+                         long_name=long_name,
+                         sdgs = sdgs,
+                         )
         self._local_table_rows = table_rows
         self._ref_table_rows: List[TableRow] = []
         self._table_row_refs = table_row_refs or []
@@ -103,11 +135,16 @@ class Table(TableBase):
         return self._local_table_rows + self._ref_table_rows
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        odxlinks = {}
-        odxlinks.update({table_row.odx_id: table_row for table_row in self.table_rows})
-        return odxlinks
+        result = super()._build_odxlinks()
+
+        for tr in self._local_table_rows:
+            result.update(tr._build_odxlinks())
+
+        return result
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+        super()._resolve_references(odxlinks)
+
         if self.key_dop_ref is not None:
             self._key_dop = odxlinks.resolve(self.key_dop_ref)
 
@@ -117,8 +154,8 @@ class Table(TableBase):
         self._ref_table_rows = []
         for ref in self._table_row_refs:
             tr = odxlinks.resolve(ref)
-            if isinstance(tr, TableRow):
-                self._ref_table_rows.append(tr)
+            assert isinstance(tr, TableRow)
+            self._ref_table_rows.append(tr)
 
     def __repr__(self) -> str:
         return (
@@ -151,12 +188,14 @@ def read_table_row_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
     dop_ref = None
     if et_element.find("DATA-OBJECT-PROP-REF") is not None:
         dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
+    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
 
     return TableRow(
         key=key,
         structure_ref=structure_ref,
         dop_ref=dop_ref,
-        **_get_common_props(et_element, doc_frags)
+        sdgs=sdgs,
+        **_get_common_props(et_element, doc_frags),
     )
 
 
@@ -178,10 +217,12 @@ def read_table_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
         ref = OdxLinkRef.from_et(el, doc_frags)
         assert ref is not None
         table_row_refs.append(ref)
+    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
 
     return Table(
         key_dop_ref=key_dop_ref,
         table_rows=table_rows,
         table_row_refs=table_row_refs,
+        sdgs=sdgs,
         **_get_common_props(et_element, doc_frags)
     )

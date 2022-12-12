@@ -5,6 +5,7 @@
 -#}
 
 {%- import('macros/printParam.xml.jinja2') as pp %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printResponse(resp, tag_name="POS-RESPONSE") -%}
 <{{tag_name}} ID="{{resp.odx_id.local_id}}">
@@ -22,5 +23,6 @@
 {%- endfor %}
  </PARAMS>
 {%- endif %}
+ {{- psd.printSpecialDataGroups(resp.sdgs)|indent(1, first=True) }}
 </{{tag_name}}>
 {%- endmacro -%}
