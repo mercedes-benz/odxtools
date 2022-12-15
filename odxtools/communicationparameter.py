@@ -4,10 +4,10 @@
 import warnings
 from typing import Any, List, Optional, Union
 
-from odxtools.exceptions import OdxWarning
-
 from .comparam_subset import (BaseComparam, Comparam, ComplexComparam,
                               ComplexValue, read_complex_value_from_odx)
+from .diaglayertype import DIAG_LAYER_TYPE
+from .exceptions import OdxWarning
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from .utils import read_description_from_odx
 
@@ -106,7 +106,7 @@ class CommunicationParameterRef:
         # This should not happen anyway in a correct PDX
         return self.id_ref.ref_id.replace(".", "__").replace("-", "_")
 
-def read_communication_param_ref_from_odx(et_element, doc_frags: List[OdxDocFragment], dl_variant_type): # TODO argument type annotation
+def read_communication_param_ref_from_odx(et_element, doc_frags: List[OdxDocFragment], dl_type: DIAG_LAYER_TYPE):
     id_ref = OdxLinkRef.from_et(et_element, doc_frags)
     assert id_ref is not None
 
@@ -119,7 +119,7 @@ def read_communication_param_ref_from_odx(et_element, doc_frags: List[OdxDocFrag
     else:
         value = read_complex_value_from_odx(et_element.find("COMPLEX-VALUE"))
 
-    is_functional = dl_variant_type == "FUNCTIONAL-GROUP"
+    is_functional = (dl_type == DIAG_LAYER_TYPE.FUNCTIONAL_GROUP)
 
     description = read_description_from_odx(et_element.find("DESC"))
 

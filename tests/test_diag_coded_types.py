@@ -3,22 +3,19 @@
 
 import unittest
 
-from odxtools.diagcodedtypes import *
-from odxtools.parameters import LengthKeyParameter, CodedConstParameter, ValueParameter
+import odxtools.uds as uds
+from odxtools.compumethods import IdenticalCompuMethod, LinearCompuMethod
+from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.decodestate import ParameterValuePair
-
+from odxtools.diagcodedtypes import *
+from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayertype import DIAG_LAYER_TYPE
+from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
+from odxtools.parameters import (CodedConstParameter, LengthKeyParameter,
+                                 ValueParameter)
 from odxtools.physicaltype import PhysicalType
 from odxtools.structures import Request
-
-from odxtools.compumethods import IdenticalCompuMethod, LinearCompuMethod
-
-from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.dataobjectproperty import DataObjectProperty
-
-import odxtools.uds as uds
-
-from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
 
 doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
@@ -162,7 +159,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
         # Dummy diag layer to resolve references from request parameters to DOPs
         diag_layer = DiagLayer(
-            "BASE-VARIANT",
+            DIAG_LAYER_TYPE.BASE_VARIANT,
             OdxLinkId("BV.dummy_DL", doc_frags),
             "dummy_DL",
             requests=[request],
@@ -321,7 +318,7 @@ class TestParamLengthInfoType(unittest.TestCase):
 
         # Dummy diag layer to resolve references from request parameters to DOPs
         diag_layer = DiagLayer(
-            "BASE-VARIANT",
+            DIAG_LAYER_TYPE.BASE_VARIANT,
             OdxLinkId("BV.dummy_DL", doc_frags),
             "dummy_DL",
             requests=[request],
@@ -524,7 +521,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
         # Dummy diag layer to resolve references from request parameters to DOPs
         diag_layer = DiagLayer(
-            "BASE-VARIANT",
+            DIAG_LAYER_TYPE.BASE_VARIANT,
             OdxLinkId("BV.dummy_DL", doc_frags),
             "dummy_DL",
             requests=[request],

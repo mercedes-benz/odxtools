@@ -9,12 +9,13 @@ from xml.etree import ElementTree
 
 from deprecated import deprecated
 
+from odxtools.diaglayertype import DIAG_LAYER_TYPE
+
 from .admindata import AdminData, read_admin_data_from_odx
 from .audience import read_additional_audience_from_odx
 from .communicationparameter import (CommunicationParameterRef,
                                      read_communication_param_ref_from_odx)
 from .companydata import CompanyData, read_company_datas_from_odx
-from .comparam_subset import Comparam, ComplexComparam
 from .dataobjectproperty import DopBase
 from .diagdatadictionaryspec import (DiagDataDictionarySpec,
                                      read_diag_data_dictionary_spec_from_odx)
@@ -33,13 +34,13 @@ from .structures import Request, Response, read_structure_from_odx
 from .utils import read_description_from_odx, short_name_as_id
 
 # Defines priority of overriding objects
-PRIORITY_OF_DIAG_LAYER_TYPE = {
-    "PROTOCOL": 1,
-    "FUNCTIONAL-GROUP": 2,
-    "BASE-VARIANT": 3,
-    "ECU-VARIANT": 4,
+PRIORITY_OF_DIAG_LAYER_TYPE : Dict[DIAG_LAYER_TYPE,int]= {
+    DIAG_LAYER_TYPE.PROTOCOL: 1,
+    DIAG_LAYER_TYPE.FUNCTIONAL_GROUP: 2,
+    DIAG_LAYER_TYPE.BASE_VARIANT: 3,
+    DIAG_LAYER_TYPE.ECU_VARIANT: 4,
     # Inherited services from ECU Shared Data always override inherited services from other diag layers
-    "ECU-SHARED-DATA": 5
+    DIAG_LAYER_TYPE.ECU_SHARED_DATA: 5
 }
 
 
@@ -97,7 +98,7 @@ class DiagLayer:
             return list(self.parent_diag_layer._communication_parameters)
 
     def __init__(self,
-                 variant_type,
+                 variant_type : DIAG_LAYER_TYPE,
                  odx_id,
                  short_name,
                  long_name=None,
@@ -120,7 +121,7 @@ class DiagLayer:
                  import_refs=[],
                  sdgs=[],
                  ):
-        logger.info(f"Initializing variant type {variant_type}")
+        logger.info(f"Initializing variant type {variant_type.value}")
         self.variant_type = variant_type
 
         self.odx_id = odx_id
@@ -461,16 +462,16 @@ class DiagLayer:
 
     def get_communication_parameter(self,
                                     name: str,
-                                    functional: Optional[bool] = None,
+                                    is_functional: Optional[bool] = None,
                                     protocol_name: Optional[str] = None) \
             -> Optional[CommunicationParameterRef]:
 
         cps = [cp for cp in self.communication_parameters if cp.short_name == name]
 
-        if functional is not None:
-            cps = [cp for cp in cps if cp.is_functional == functional]
+        if is_functional is not None:
+            cps = [cp for cp in cps if cp.is_functional == is_functional]
         if protocol_name:
-            cps = [cp for cp in cps if cp.protocol_sn_ref == protocol_name]
+            cps = [cp for cp in cps if cp.protocol_sn_ref in (None, protocol_name)]
         
         if len(cps) > 1:
             warnings.warn(f"Communication parameter `{name}` specified more "
@@ -634,7 +635,7 @@ class DiagLayer:
         return float(result)/1e6
 
     def __repr__(self) -> str:
-        return f"""DiagLayer(variant_type={self.variant_type},
+        return f"""DiagLayer(variant_type={self.variant_type.value},
           odx_id={repr(self.odx_id)},
           short_name={repr(self.short_name)},
           long_name={repr(self.long_name)},
@@ -649,7 +650,7 @@ class DiagLayer:
           communication_parameters={self._local_communication_parameters})"""
 
     def __str__(self) -> str:
-        return f"DiagLayer('{self.short_name}', type='{self.variant_type}')"
+        return f"DiagLayer('{self.short_name}', type='{self.variant_type.value}')"
 
 
 def read_parent_ref_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
@@ -676,7 +677,7 @@ def read_diag_layer_from_odx(et_element: ElementTree.Element,
                              doc_frags: List[OdxDocFragment]) \
         -> DiagLayer:
 
-    variant_type = et_element.tag
+    variant_type = DIAG_LAYER_TYPE.from_str(et_element.tag)
 
     short_name = et_element.findtext("SHORT-NAME")
     assert short_name is not None
@@ -684,7 +685,7 @@ def read_diag_layer_from_odx(et_element: ElementTree.Element,
     description = read_description_from_odx(et_element.find("DESC"))
 
     logger.info(f"Parsing diagnostic layer '{short_name}' "
-                f"of type {variant_type} ...")
+                f"of type {variant_type.value} ...")
 
     # extend the applicable ODX "document fragments" for the diag layer objects
     doc_frags = copy(doc_frags)

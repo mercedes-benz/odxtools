@@ -3,25 +3,31 @@
 
 import inspect
 import os
-from typing import NamedTuple, cast
 import unittest
+from typing import NamedTuple, cast
 from xml.etree import ElementTree
+
 import jinja2
 
 import odxtools
-from odxtools.utils import short_name_as_id
 from odxtools.audience import AdditionalAudience, Audience
-from odxtools.compumethods import CompuScale, Limit, LinearCompuMethod, TexttableCompuMethod
+from odxtools.compumethods import (CompuScale, Limit, LinearCompuMethod,
+                                   TexttableCompuMethod)
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayertype import DIAG_LAYER_TYPE
 from odxtools.functionalclass import FunctionalClass
 from odxtools.nameditemlist import NamedItemList
+from odxtools.odxlink import (OdxDocFragment, OdxLinkDatabase, OdxLinkId,
+                              OdxLinkRef)
 from odxtools.odxtypes import DataType
 from odxtools.physicaltype import PhysicalType
-from odxtools.singleecujob import read_single_ecu_job_from_odx, SingleEcuJob, ProgCode, InputParam, OutputParam, NegOutputParam
+from odxtools.singleecujob import (InputParam, NegOutputParam, OutputParam,
+                                   ProgCode, SingleEcuJob,
+                                   read_single_ecu_job_from_odx)
+from odxtools.utils import short_name_as_id
 from odxtools.write_pdx_file import jinja2_odxraise_helper
-from odxtools.odxlink import OdxLinkId, OdxLinkRef, OdxLinkDatabase, OdxDocFragment
 
 doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
@@ -252,7 +258,7 @@ class TestSingleEcuJob(unittest.TestCase):
         self.assertEqual(sej.prog_codes[0].library_refs, [])
 
     def test_resolve_references(self):
-        dl = DiagLayer(variant_type="BASE-VARIANT",
+        dl = DiagLayer(variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
                        odx_id=OdxLinkId("ID.bv", doc_frags),
                        short_name="bv",
                        single_ecu_jobs=[self.singleecujob_object])
