@@ -2,15 +2,14 @@
 # Copyright (c) 2022 MBition GmbH
 
 import argparse
-from typing import cast, List, Union
-
-from ._print_utils import print_diagnostic_service, format_desc
-from . import _parser_utils
+from typing import List, Union, cast
 
 from ..database import Database
 from ..diaglayer import DiagLayer
 from ..service import DiagService
 from ..singleecujob import SingleEcuJob
+from . import _parser_utils
+from ._print_utils import format_desc, print_diagnostic_service
 
 # name of the tool
 _odxtools_tool_name_ = "list"
@@ -56,7 +55,7 @@ def print_summary(odxdb: Database,
             send_id = "None"
 
         print(
-            f"{dl.variant_type} '{dl.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
+            f"{dl.variant_type.value} '{dl.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
         )
         print(
             f" num services: {len(all_services)}, num DOPs: {len(data_object_properties)}, num communication parameters: {len(com_params)}."
@@ -70,7 +69,7 @@ def print_summary(odxdb: Database,
             services = [s for s in all_services if service_filter(s)]
             if len(services) > 0:
                 print(
-                    f"The services of the {dl.variant_type} '{dl.short_name}' are: ")
+                    f"The services of the {dl.variant_type.value} '{dl.short_name}' are: ")
                 for service in services:
                     if isinstance(service, DiagService):
                         print_diagnostic_service(
@@ -93,7 +92,7 @@ def print_summary(odxdb: Database,
 
         if print_com_params and len(com_params) > 0:
             print(
-                f"The communication parameters of the {dl.variant_type} '{dl.short_name}' are: ")
+                f"The communication parameters of the {dl.variant_type.value} '{dl.short_name}' are: ")
             for com_param in com_params:
                 print(f"  {com_param.id_ref}: {com_param.value}")
 

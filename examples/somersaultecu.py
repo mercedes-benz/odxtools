@@ -3,41 +3,47 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+import pathlib
 from enum import IntEnum
 from itertools import chain
 from typing import Any
 from xml.etree import ElementTree
-import pathlib
-import odxtools
 
-from odxtools.utils import short_name_as_id
+import odxtools.uds as uds
 from odxtools import PhysicalConstantParameter
+from odxtools.admindata import (AdminData, CompanyDocInfo, DocRevision,
+                                Modification)
+from odxtools.audience import AdditionalAudience, Audience
+from odxtools.communicationparameter import CommunicationParameterRef
+from odxtools.companydata import (CompanyData, CompanySpecificInfo, RelatedDoc,
+                                  TeamMember, XDoc)
+from odxtools.comparam_subset import read_comparam_subset_from_odx
+from odxtools.compumethods import (CompuScale, IdenticalCompuMethod, Limit,
+                                   TexttableCompuMethod)
+from odxtools.database import Database
+from odxtools.dataobjectproperty import DataObjectProperty
+from odxtools.diagcodedtypes import StandardLengthType
+from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
+from odxtools.diaglayer import DiagLayer, DiagLayerContainer
+from odxtools.diaglayertype import DIAG_LAYER_TYPE
 from odxtools.envdata import EnvironmentData
 from odxtools.envdatadesc import EnvironmentDataDescription
-from odxtools.multiplexer import Multiplexer, MultiplexerSwitchKey, MultiplexerDefaultCase, MultiplexerCase
-from odxtools.table import Table, TableRow
-from odxtools.nameditemlist import NamedItemList
-from odxtools.database import Database
-from odxtools.companydata import XDoc, RelatedDoc, CompanySpecificInfo, TeamMember, CompanyData
-from odxtools.admindata import CompanyDocInfo, Modification, DocRevision, AdminData
-from odxtools.diaglayer import DiagLayer, DiagLayerContainer
-from odxtools.service import DiagService
-from odxtools.singleecujob import SingleEcuJob, ProgCode
-from odxtools.structures import Request, Response
-from odxtools.compumethods import IdenticalCompuMethod, TexttableCompuMethod, CompuScale, Limit
-from odxtools.dataobjectproperty import DataObjectProperty
-from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.diagcodedtypes import StandardLengthType
-from odxtools.physicaltype import PhysicalType
-from odxtools.units import UnitSpec, Unit, UnitGroup, PhysicalDimension
-from odxtools.parameters import CodedConstParameter, ValueParameter, MatchingRequestParameter, NrcConstParameter
-from odxtools.communicationparameter import CommunicationParameterRef
-from odxtools.audience import AdditionalAudience, Audience
 from odxtools.functionalclass import FunctionalClass
-import odxtools.uds as uds
+from odxtools.multiplexer import (Multiplexer, MultiplexerCase,
+                                  MultiplexerDefaultCase, MultiplexerSwitchKey)
+from odxtools.nameditemlist import NamedItemList
+from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
-from odxtools.odxlink import OdxLinkId, OdxLinkRef, OdxDocFragment
-from odxtools.comparam_subset import ComparamSubset, read_comparam_subset_from_odx
+from odxtools.parameters import (CodedConstParameter, MatchingRequestParameter,
+                                 NrcConstParameter, ValueParameter)
+from odxtools.physicaltype import PhysicalType
+from odxtools.service import DiagService
+from odxtools.singleecujob import ProgCode, SingleEcuJob
+from odxtools.structures import Request, Response
+from odxtools.table import Table, TableRow
+from odxtools.units import PhysicalDimension, Unit, UnitGroup, UnitSpec
+from odxtools.utils import short_name_as_id
+
 
 class SomersaultSID(IntEnum):
     """The Somersault-ECU specific service IDs.
@@ -1103,7 +1109,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
 
 # diagnostics layer
 somersault_diaglayer = DiagLayer(
-    variant_type="BASE-VARIANT",
+    variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
     odx_id=OdxLinkId("somersault", doc_frags),
     short_name="somersault",
     long_name="Somersault base variant",
@@ -1124,7 +1130,7 @@ somersault_diaglayer = DiagLayer(
 
 # TODO: inheritance (without too much code duplication)
 somersault_lazy_diaglayer = DiagLayer(
-    variant_type="ECU-VARIANT",
+    variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
     odx_id=OdxLinkId("somersault_lazy", doc_frags),
     short_name="somersault_lazy",
     long_name="Somersault lazy ECU",
@@ -1149,7 +1155,7 @@ somersault_lazy_diaglayer = DiagLayer(
 
 # TODO: inheritance (without too much code duplication)
 somersault_assiduous_diaglayer = DiagLayer(
-    variant_type="ECU-VARIANT",
+    variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
     odx_id=OdxLinkId("somersault_assiduous", doc_frags),
     short_name="somersault_assiduous",
     long_name="Somersault assiduous ECU",

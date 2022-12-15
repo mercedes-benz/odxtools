@@ -1,19 +1,22 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
+from itertools import chain
 from pathlib import Path
-from typing import List, Set, Optional
+from typing import List, Optional, Set
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
-from itertools import chain
 from zipfile import ZipFile
 
-from .utils import short_name_as_id
-from .odxlink import OdxLinkDatabase
-from .diaglayer import DiagLayer, DiagLayerContainer, read_diag_layer_container_from_odx
 from .comparam_subset import ComparamSubset, read_comparam_subset_from_odx
+from .diaglayer import (DiagLayer, DiagLayerContainer,
+                        read_diag_layer_container_from_odx)
+from .diaglayertype import DIAG_LAYER_TYPE
 from .globals import logger
 from .nameditemlist import NamedItemList
+from .odxlink import OdxLinkDatabase
+from .utils import short_name_as_id
+
 
 def version(v: str):
     return tuple(map(int, (v.split("."))))
@@ -109,7 +112,7 @@ class Database:
         for dlc in self.diag_layer_containers:
             dlc._resolve_references(self._odxlinks)
 
-        for dl_type_name in ["ECU-SHARED-DATA", "PROTOCOL", "FUNCTIONAL-GROUP", "BASE-VARIANT", "ECU-VARIANT"]:
+        for dl_type_name in DIAG_LAYER_TYPE:
             for dl in self.diag_layers:
                 if dl.variant_type == dl_type_name:
                     dl._resolve_references(self._odxlinks)

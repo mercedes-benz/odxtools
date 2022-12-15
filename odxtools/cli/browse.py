@@ -1,20 +1,21 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-import sys
 import argparse
+import logging
+import sys
 from typing import Dict, List, Union
+
 import PyInquirer
 
 from ..database import Database
 from ..diaglayer import DiagLayer
+from ..odxtypes import DataType
+from ..parameters import Parameter, ParameterWithDOP
 from ..service import DiagService
 from ..structures import Request, Response
-from ..parameters import Parameter, ParameterWithDOP
-from ..odxtypes import DataType
 from . import _parser_utils
 
-import logging
 # logging.basicConfig(level=logging.DEBUG)
 
 # name of the tool
@@ -253,7 +254,7 @@ def browse(odxdb: Database):
             send_id = "None"
 
         print(
-            f"{variant.variant_type} '{variant.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
+            f"{variant.variant_type.value} '{variant.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
         )
 
         service_sn = 0

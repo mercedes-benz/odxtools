@@ -3,18 +3,19 @@
 
 import unittest
 from xml.etree import ElementTree
-from odxtools.physicaltype import PhysicalType
-
-from odxtools.units import read_unit_spec_from_odx, Unit, UnitSpec, PhysicalDimension
 
 from odxtools.compumethods import IdenticalCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagcodedtypes import StandardLengthType
-from odxtools.diaglayer import DiagLayer
-from odxtools.parameters import CodedConstParameter, ValueParameter
-from odxtools.structures import Request
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.odxlink import OdxLinkId, OdxLinkRef, OdxDocFragment
+from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayertype import DIAG_LAYER_TYPE
+from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
+from odxtools.parameters import CodedConstParameter, ValueParameter
+from odxtools.physicaltype import PhysicalType
+from odxtools.structures import Request
+from odxtools.units import (PhysicalDimension, Unit, UnitSpec,
+                            read_unit_spec_from_odx)
 
 doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
@@ -93,7 +94,7 @@ class TestUnitSpec(unittest.TestCase):
             unit_ref=OdxLinkRef.from_id(unit.odx_id)
         )
         dl = DiagLayer(
-            "BASE-VARIANT",
+            DIAG_LAYER_TYPE.BASE_VARIANT,
             odx_id=OdxLinkId("BV_id", doc_frags),
             short_name="BaseVariant",
             requests=[Request(OdxLinkId("rq_id", doc_frags), "rq_sn", [

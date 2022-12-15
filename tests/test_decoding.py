@@ -2,21 +2,26 @@
 # Copyright (c) 2022 MBition GmbH
 
 
-from odxtools.endofpdufield import EndOfPduField
-from odxtools.dataobjectproperty import DataObjectProperty, DiagnosticTroubleCode, DtcDop
+import unittest
+
 from odxtools.compumethods import IdenticalCompuMethod, LinearCompuMethod
+from odxtools.dataobjectproperty import (DataObjectProperty,
+                                         DiagnosticTroubleCode, DtcDop)
+from odxtools.diagcodedtypes import (LeadingLengthInfoType, MinMaxLengthType,
+                                     StandardLengthType)
+from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayertype import DIAG_LAYER_TYPE
+from odxtools.endofpdufield import EndOfPduField
 from odxtools.exceptions import DecodeError
 from odxtools.message import Message
-from odxtools.diagcodedtypes import LeadingLengthInfoType, MinMaxLengthType, StandardLengthType
-from odxtools.parameters import CodedConstParameter, MatchingRequestParameter, PhysicalConstantParameter, ValueParameter
-from odxtools.physicaltype import PhysicalType
-from odxtools.structures import Request, Response, Structure
-from odxtools.service import DiagService
-from odxtools.diaglayer import DiagLayer
+from odxtools.odxlink import (OdxDocFragment, OdxLinkDatabase, OdxLinkId,
+                              OdxLinkRef)
 from odxtools.odxtypes import DataType
-from odxtools.odxlink import OdxLinkId, OdxLinkRef, OdxLinkDatabase, OdxDocFragment
-
-import unittest
+from odxtools.parameters import (CodedConstParameter, MatchingRequestParameter,
+                                 PhysicalConstantParameter, ValueParameter)
+from odxtools.physicaltype import PhysicalType
+from odxtools.service import DiagService
+from odxtools.structures import Request, Response, Structure
 
 doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
@@ -54,7 +59,7 @@ class TestIdentifyingService(unittest.TestCase):
                                positive_responses=[resp2],
                                negative_responses=[])
 
-        diag_layer = DiagLayer("BASE-VARIANT",
+        diag_layer = DiagLayer(DIAG_LAYER_TYPE.BASE_VARIANT,
                                odx_id=OdxLinkId("dl_id", doc_frags),
                                short_name="dl_sn",
                                services=[service, service2],
@@ -89,7 +94,7 @@ class TestDecoding(unittest.TestCase):
                               request=OdxLinkRef.from_id(req.odx_id),
                               positive_responses=[],
                               negative_responses=[])
-        diag_layer = DiagLayer("BASE-VARIANT",
+        diag_layer = DiagLayer(DIAG_LAYER_TYPE.BASE_VARIANT,
                                odx_id=OdxLinkId("dl_id", doc_frags),
                                short_name="dl_sn",
                                services=[service],
@@ -132,7 +137,7 @@ class TestDecoding(unittest.TestCase):
                               request=OdxLinkRef.from_id(req.odx_id),
                               positive_responses=[],
                               negative_responses=[])
-        diag_layer = DiagLayer("BASE-VARIANT",
+        diag_layer = DiagLayer(DIAG_LAYER_TYPE.BASE_VARIANT,
                                odx_id=OdxLinkId("dl_id", doc_frags),
                                short_name="dl_sn",
                                services=[service],
@@ -190,7 +195,7 @@ class TestDecoding(unittest.TestCase):
                               request=OdxLinkRef.from_id(req.odx_id),
                               positive_responses=[],
                               negative_responses=[])
-        diag_layer = DiagLayer("BASE-VARIANT",
+        diag_layer = DiagLayer(DIAG_LAYER_TYPE.BASE_VARIANT,
                                odx_id=OdxLinkId("dl_id", doc_frags),
                                short_name="dl_sn",
                                services=[service],
@@ -250,7 +255,7 @@ class TestDecoding(unittest.TestCase):
                               request=OdxLinkRef.from_id(req.odx_id),
                               positive_responses=[],
                               negative_responses=[])
-        diag_layer = DiagLayer("BASE-VARIANT",
+        diag_layer = DiagLayer(DIAG_LAYER_TYPE.BASE_VARIANT,
                                odx_id=OdxLinkId("dl_id", doc_frags),
                                short_name="dl_sn",
                                services=[service],
@@ -296,7 +301,7 @@ class TestDecoding(unittest.TestCase):
                               request=OdxLinkRef.from_id(req.odx_id),
                               positive_responses=[],
                               negative_responses=[])
-        diag_layer = DiagLayer("BASE-VARIANT",
+        diag_layer = DiagLayer(DIAG_LAYER_TYPE.BASE_VARIANT,
                                odx_id=OdxLinkId("dl_id", doc_frags),
                                short_name="dl_sn",
                                services=[service],
@@ -352,7 +357,7 @@ class TestDecoding(unittest.TestCase):
                               request=OdxLinkRef.from_id(req.odx_id),
                               positive_responses=[OdxLinkRef.from_id(pos_response.odx_id)],
                               negative_responses=[OdxLinkRef.from_id(neg_response.odx_id)])
-        diag_layer = DiagLayer("BASE-VARIANT",
+        diag_layer = DiagLayer(DIAG_LAYER_TYPE.BASE_VARIANT,
                                odx_id=OdxLinkId("dl_id", doc_frags),
                                short_name="dl_sn",
                                services=[service],
