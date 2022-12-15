@@ -538,7 +538,7 @@ class DiagLayer:
             -> Optional[int]:
         """DoIp logical gateway address"""
         com_param = self.get_communication_parameter("CP_DoIPLogicalGatewayAddress", 
-                                                     functional=functional,
+                                                     is_functional=functional,
                                                      protocol_name=protocol_name)
         if com_param is None:
             return None
@@ -554,7 +554,7 @@ class DiagLayer:
             -> Optional[int]:
         """DoIp logical gateway address"""
         com_param = self.get_communication_parameter("CP_DoIPLogicalTesterAddress",
-                                                     functional=functional,
+                                                     is_functional=functional,
                                                      protocol_name=protocol_name)
         if com_param is None:
             return None
@@ -570,7 +570,7 @@ class DiagLayer:
             -> Optional[int]:
         """The logical functional DoIP address of the ECU."""
         com_param = self.get_communication_parameter("CP_DoIPLogicalFunctionalAddress",
-                                                     functional=functional,
+                                                     is_functional=functional,
                                                      protocol_name=protocol_name)
         if com_param is None:
             return None
