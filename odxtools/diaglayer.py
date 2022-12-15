@@ -534,11 +534,11 @@ class DiagLayer:
 
         return int(result)
 
-    def get_doip_logical_gateway_address(self, functional: Optional[bool] = False, protocol_name: Optional[str] = None) \
+    def get_doip_logical_gateway_address(self, is_functional: Optional[bool] = False, protocol_name: Optional[str] = None) \
             -> Optional[int]:
         """DoIp logical gateway address"""
         com_param = self.get_communication_parameter("CP_DoIPLogicalGatewayAddress", 
-                                                     is_functional=functional,
+                                                     is_functional=is_functional,
                                                      protocol_name=protocol_name)
         if com_param is None:
             return None
@@ -550,11 +550,11 @@ class DiagLayer:
 
         return int(result)
 
-    def get_doip_logical_tester_address(self, functional: Optional[bool] = False, protocol_name: Optional[str] = None) \
+    def get_doip_logical_tester_address(self, is_functional: Optional[bool] = False, protocol_name: Optional[str] = None) \
             -> Optional[int]:
         """DoIp logical gateway address"""
         com_param = self.get_communication_parameter("CP_DoIPLogicalTesterAddress",
-                                                     is_functional=functional,
+                                                     is_functional=is_functional,
                                                      protocol_name=protocol_name)
         if com_param is None:
             return None
@@ -566,11 +566,11 @@ class DiagLayer:
 
         return int(result)
 
-    def get_doip_logical_functional_address(self, functional: Optional[bool] = False, protocol_name: Optional[str] = None) \
+    def get_doip_logical_functional_address(self, is_functional: Optional[bool] = False, protocol_name: Optional[str] = None) \
             -> Optional[int]:
         """The logical functional DoIP address of the ECU."""
         com_param = self.get_communication_parameter("CP_DoIPLogicalFunctionalAddress",
-                                                     is_functional=functional,
+                                                     is_functional=is_functional,
                                                      protocol_name=protocol_name)
         if com_param is None:
             return None
