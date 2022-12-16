@@ -17,7 +17,7 @@ from odxtools.audience import AdditionalAudience, Audience
 from odxtools.communicationparameter import CommunicationParameterRef
 from odxtools.companydata import (CompanyData, CompanySpecificInfo, RelatedDoc,
                                   TeamMember, XDoc)
-from odxtools.comparam_subset import read_comparam_subset_from_odx
+from odxtools.comparam_subset import ComparamSubset
 from odxtools.compumethods import (CompuScale, IdenticalCompuMethod, Limit,
                                    TexttableCompuMethod)
 from odxtools.database import Database
@@ -1285,7 +1285,7 @@ for odx_cs_filename in ("ISO_11898_2_DWCAN.odx-cs",
     odx_cs_root = ElementTree.parse(odx_cs_dir/odx_cs_filename).getroot()
     subset = odx_cs_root.find("COMPARAM-SUBSET")
     if subset is not None:
-        comparam_subsets.append(read_comparam_subset_from_odx(subset))
+        comparam_subsets.append(ComparamSubset.from_et(subset))
 
 # create a database object
 database = Database()

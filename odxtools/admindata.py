@@ -24,6 +24,22 @@ class CompanyDocInfo:
     def team_member(self) -> Optional[TeamMember]:
         return self._team_member
 
+    @staticmethod
+    def from_et(et_element: ElementTree.Element ,
+                doc_frags: List[OdxDocFragment]) \
+            -> "CompanyDocInfo" :
+        # the company data reference is mandatory
+        company_data_ref = OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), doc_frags)
+        assert company_data_ref is not None
+        team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), doc_frags)
+        doc_label = et_element.findtext("DOC-LABEL")
+        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+
+        return CompanyDocInfo(company_data_ref=company_data_ref,
+                              team_member_ref=team_member_ref,
+                              doc_label=doc_label,
+                              sdgs=sdgs)
+
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = { }
 
@@ -46,6 +62,15 @@ class Modification:
     change: Optional[str] = None
     reason: Optional[str] = None
 
+    @staticmethod
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) \
+            -> "Modification":
+        change = et_element.findtext("CHANGE")
+        reason = et_element.findtext("REASON")
+
+        return Modification(change=change,
+                            reason=reason)
 @dataclass()
 class DocRevision:
     """
@@ -59,6 +84,30 @@ class DocRevision:
     tool: Optional[str] = None
     modifications: List[Modification] = field(default_factory=list)
 
+    @staticmethod
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) \
+            -> "DocRevision":
+
+        team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), doc_frags)
+        revision_label = et_element.findtext("REVISION-LABEL")
+        state = et_element.findtext("STATE")
+        date = et_element.findtext("DATE")
+        assert date is not None
+        tool = et_element.findtext("TOOL")
+
+        modlist = [
+            Modification.from_et(mod_elem, doc_frags)
+            for mod_elem in et_element.iterfind("MODIFICATIONS/MODIFICATION")
+        ]
+
+        return DocRevision(team_member_ref=team_member_ref,
+                           revision_label=revision_label,
+                           state=state,
+                           date=date,
+                           tool=tool,
+                           modifications=modlist)
+
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         if self.team_member_ref is not None:
             self.team_member = odxlinks.resolve(self.team_member_ref)
@@ -67,7 +116,31 @@ class DocRevision:
 class AdminData:
     language: Optional[str] = None
     company_doc_infos: List[CompanyDocInfo] = field(default_factory=list)
-    doc_revisions: Optional[List[DocRevision]] = None
+    doc_revisions: List[DocRevision] = field(default_factory=list)
+
+    @staticmethod
+    def from_et(et_element: Optional[ElementTree.Element],
+                doc_frags: List[OdxDocFragment]) \
+            -> Optional["AdminData"]:
+
+        if et_element is None:
+            return None
+
+        language = et_element.findtext("LANGUAGE")
+
+        company_doc_infos = [
+            CompanyDocInfo.from_et(cdi_elem, doc_frags)
+            for cdi_elem in et_element.iterfind("COMPANY-DOC-INFOS/COMPANY-DOC-INFO")
+        ]
+
+        doc_revisions = [
+            DocRevision.from_et(dr_elem, doc_frags)
+            for dr_elem in et_element.iterfind("DOC-REVISIONS/DOC-REVISION")
+        ]
+
+        return AdminData(language=language,
+                         company_doc_infos=company_doc_infos,
+                         doc_revisions=doc_revisions)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result: Dict[OdxLinkId, Any] = {}
@@ -78,69 +151,8 @@ class AdminData:
         return result
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
-        if self.company_doc_infos is not None:
-            for cdi in self.company_doc_infos:
-                cdi._resolve_references(odxlinks)
-
-        if self.doc_revisions is not None:
-            for dr in self.doc_revisions:
-                dr._resolve_references(odxlinks)
-
         for cdi in self.company_doc_infos:
             cdi._resolve_references(odxlinks)
 
-def read_admin_data_from_odx(et_element: Optional[ElementTree.Element],
-                             doc_frags: List[OdxDocFragment]) \
-        -> Optional[AdminData]:
-
-    if et_element is None:
-        return None
-
-    language = et_element.findtext("LANGUAGE")
-
-    company_doc_infos = list()
-    if cdis_elem := et_element.find("COMPANY-DOC-INFOS"):
-        for cdi in cdis_elem.iterfind("COMPANY-DOC-INFO"):
-            # the company data reference is mandatory
-            company_data_ref = OdxLinkRef.from_et(cdi.find("COMPANY-DATA-REF"), doc_frags)
-            assert company_data_ref is not None
-            team_member_ref = OdxLinkRef.from_et(cdi.find("TEAM-MEMBER-REF"), doc_frags)
-            doc_label = cdi.findtext("DOC-LABEL")
-            sdgs = read_sdgs_from_odx(cdi.find("SDGS"), doc_frags)
-
-            company_doc_infos.append(CompanyDocInfo(company_data_ref=company_data_ref,
-                                                    team_member_ref=team_member_ref,
-                                                    doc_label=doc_label,
-                                                    sdgs=sdgs))
-
-    doc_revisions = []
-    if drs_elem := et_element.find("DOC-REVISIONS"):
-        for dr in drs_elem.iterfind("DOC-REVISION"):
-            team_member_ref = OdxLinkRef.from_et(dr.find("TEAM-MEMBER-REF"), doc_frags)
-            revision_label = dr.findtext("REVISION-LABEL")
-            state = dr.findtext("STATE")
-            date = dr.findtext("DATE")
-            assert date is not None
-            tool = dr.findtext("TOOL")
-
-            modlist = None
-            mods = dr.find("MODIFICATIONS")
-            if mods is not None:
-                modlist = list()
-                for mod in mods.iterfind("MODIFICATION"):
-                    m_change = mod.findtext("CHANGE")
-                    m_reason = mod.findtext("REASON")
-
-                    modlist.append(Modification(change=m_change,
-                                                reason=m_reason))
-
-            doc_revisions.append(DocRevision(team_member_ref=team_member_ref,
-                                      revision_label=revision_label,
-                                      state=state,
-                                      date=date,
-                                      tool=tool,
-                                      modifications=modlist))
-
-    return AdminData(language=language,
-                     company_doc_infos=company_doc_infos,
-                     doc_revisions=doc_revisions)
+        for dr in self.doc_revisions:
+            dr._resolve_references(odxlinks)

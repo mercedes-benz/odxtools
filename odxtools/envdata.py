@@ -32,6 +32,34 @@ class EnvironmentData(BasicStructure):
                          description=description)
         self.dtc_values = dtc_values
 
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
+            -> "EnvironmentData":
+
+        """Reads Environment Data from Diag Layer."""
+        odx_id = OdxLinkId.from_et(et_element, doc_frags)
+        assert odx_id is not None
+        short_name = et_element.findtext("SHORT-NAME")
+        long_name = et_element.findtext("LONG-NAME")
+        description = read_description_from_odx(et_element.find("DESC"))
+        parameters = [
+            read_parameter_from_odx(et_parameter, doc_frags)
+            for et_parameter in et_element.iterfind("PARAMS/PARAM")
+        ]
+        dtc_values = None
+        if (dtcv_elems := et_element.find("DTC-VALUES")) is not None:
+            dtc_values = [
+                int(dtcv_elem.text)
+                for dtcv_elem in dtcv_elems.iterfind("DTC-VALUE")
+            ]
+
+        return EnvironmentData(odx_id,
+                               short_name,
+                               parameters=parameters,
+                               dtc_values=dtc_values,
+                               long_name=long_name,
+                               description=description)
+
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
 
@@ -53,28 +81,3 @@ class EnvironmentData(BasicStructure):
         )
 
 
-def read_env_data_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
-    -> EnvironmentData:
-    """Reads Environment Data from Diag Layer."""
-    odx_id = OdxLinkId.from_et(et_element, doc_frags)
-    assert odx_id is not None
-    short_name = et_element.findtext("SHORT-NAME")
-    long_name = et_element.findtext("LONG-NAME")
-    description = read_description_from_odx(et_element.find("DESC"))
-    parameters = [
-        read_parameter_from_odx(et_parameter, doc_frags)
-        for et_parameter in et_element.iterfind("PARAMS/PARAM")
-    ]
-    dtc_values = None
-    if (dtcv_elems := et_element.find("DTC-VALUES")) is not None:
-        dtc_values = [
-            int(dtcv_elem.text)
-            for dtcv_elem in dtcv_elems.iterfind("DTC-VALUE")
-        ]
-
-    return EnvironmentData(odx_id,
-                           short_name,
-                           parameters=parameters,
-                           dtc_values=dtc_values,
-                           long_name=long_name,
-                           description=description)

@@ -7,6 +7,7 @@ from .odxlink import OdxLinkId, OdxLinkDatabase, OdxDocFragment
 from .utils import short_name_as_id
 from .specialdata import SpecialDataGroup, read_sdgs_from_odx
 
+from xml.etree import ElementTree
 from dataclasses import dataclass, field
 from typing import Optional, Any, Dict, List
 
@@ -22,15 +23,65 @@ class XDoc:
     url: Optional[str] = None
     position: Optional[str] = None
 
+    @staticmethod
+    def from_et(xdoc) -> "XDoc":
+        short_name = xdoc.findtext("SHORT-NAME")
+        long_name = xdoc.findtext("LONG-NAME")
+        description = read_description_from_odx(xdoc.find("DESC"))
+        number = xdoc.findtext("NUMBER")
+        state = xdoc.findtext("STATE")
+        date = xdoc.findtext("DATE")
+        publisher = xdoc.findtext("PUBLISHER")
+        url = xdoc.findtext("URL")
+        position = xdoc.findtext("POSITION")
+
+        return XDoc(short_name=short_name,
+                    long_name=long_name,
+                    description=description,
+                    number=number,
+                    state=state,
+                    date=date,
+                    publisher=publisher,
+                    url=url,
+                    position=position,
+                    )
+
 @dataclass()
 class RelatedDoc:
     description: Optional[str] = None
     xdoc: Optional[XDoc] = None
 
+    @staticmethod
+    def from_et(et_element) -> "RelatedDoc":
+        description = read_description_from_odx(et_element.find("DESC"))
+        xdoc = et_element.find("XDOC")
+        if xdoc is not None:
+            xdoc = XDoc.from_et(xdoc)
+
+        return RelatedDoc(description=description,
+                          xdoc=xdoc,
+                          )
+
+
 @dataclass()
 class CompanySpecificInfo:
     related_docs: Optional[List[RelatedDoc]]
     sdgs: List[SpecialDataGroup] = field(default_factory=list)
+
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "CompanySpecificInfo":
+        related_docs = et_element.find("RELATED-DOCS")
+        if related_docs is not None:
+            rdlist = list()
+            for rd in related_docs.iterfind("RELATED-DOC"):
+                rdlist.append(RelatedDoc.from_et(rd))
+
+            related_docs = rdlist
+
+        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+
+        return CompanySpecificInfo(related_docs=related_docs,
+                                   sdgs=sdgs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = { }
@@ -59,6 +110,45 @@ class TeamMember:
     fax: Optional[str] = None
     email: Optional[str] = None
 
+    @staticmethod
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "TeamMember":
+        odx_id = OdxLinkId.from_et(et_element, doc_frags)
+        assert odx_id is not None
+        short_name = et_element.findtext("SHORT-NAME")
+        assert short_name is not None
+        long_name = et_element.findtext("LONG-NAME")
+        description = read_description_from_odx(et_element.find("DESC"))
+
+        roles = list()
+        if (roles_elem := et_element.find("ROLES")) is not None:
+            for role_elem in roles_elem.iterfind("ROLE"):
+                role = role_elem.text
+                assert role is not None
+                roles.append(role)
+
+        department = et_element.findtext("DEPARTMENT")
+        address = et_element.findtext("ADDRESS")
+        zip = et_element.findtext("ZIP")
+        city = et_element.findtext("CITY")
+        phone = et_element.findtext("PHONE")
+        fax = et_element.findtext("FAX")
+        email = et_element.findtext("EMAIL")
+
+        return TeamMember(odx_id=odx_id,
+                          short_name=short_name,
+                          long_name=long_name,
+                          description=description,
+                          roles=roles,
+                          department=department,
+                          address=address,
+                          zip=zip,
+                          city=city,
+                          phone=phone,
+                          fax=fax,
+                          email=email)
+
+
 @dataclass()
 class CompanyData:
     odx_id: OdxLinkId
@@ -68,6 +158,45 @@ class CompanyData:
     roles: Optional[List[str]] = None
     team_members: Optional[NamedItemList[TeamMember]] = None
     company_specific_info: Optional[CompanySpecificInfo] = None
+
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
+            -> "CompanyData":
+
+        odx_id = OdxLinkId.from_et(et_element, doc_frags)
+        assert odx_id is not None
+        short_name = et_element.findtext("SHORT-NAME")
+        long_name = et_element.findtext("LONG-NAME")
+        description = read_description_from_odx(et_element.find("DESC"))
+        roles = et_element.find("ROLES")
+        if roles is not None:
+            rlist = list()
+
+            for role in roles.iterfind("ROLE"):
+                rlist.append(role.text)
+
+            roles = rlist
+
+        team_members = et_element.find("TEAM-MEMBERS")
+        if team_members is not None:
+            tml = NamedItemList(short_name_as_id) # type: ignore
+
+            for tm in team_members.iterfind("TEAM-MEMBER"):
+                tml.append(TeamMember.from_et(tm, doc_frags))
+
+            team_members = tml
+
+        company_specific_info = et_element.find("COMPANY-SPECIFIC-INFO")
+        if company_specific_info is not None:
+            company_specific_info = CompanySpecificInfo.from_et(company_specific_info, doc_frags)
+
+        return CompanyData(odx_id=odx_id,
+                           short_name=short_name,
+                           long_name=long_name,
+                           description=description,
+                           roles=roles,
+                           team_members=team_members,
+                           company_specific_info=company_specific_info)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = { self.odx_id: self }
@@ -86,119 +215,13 @@ class CompanyData:
         if self.company_specific_info:
             self.company_specific_info._resolve_references(odxlinks)
 
-def read_xdoc_from_odx(xdoc):
-    short_name = xdoc.findtext("SHORT-NAME")
-    long_name = xdoc.findtext("LONG-NAME")
-    description = read_description_from_odx(xdoc.find("DESC"))
-    number = xdoc.findtext("NUMBER")
-    state = xdoc.findtext("STATE")
-    date = xdoc.findtext("DATE")
-    publisher = xdoc.findtext("PUBLISHER")
-    url = xdoc.findtext("URL")
-    position = xdoc.findtext("POSITION")
-
-    return XDoc(short_name=short_name,
-                long_name=long_name,
-                description=description,
-                number=number,
-                state=state,
-                date=date,
-                publisher=publisher,
-                url=url,
-                position=position,
-                )
-
 def read_company_datas_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
         -> NamedItemList[CompanyData]:
     if et_element is None:
         return NamedItemList(short_name_as_id)
 
     cdl = NamedItemList(short_name_as_id) # type: ignore
-
-    for cd in et_element.iterfind("COMPANY-DATA"):
-        odx_id = OdxLinkId.from_et(cd, doc_frags)
-        assert odx_id is not None
-        short_name = cd.findtext("SHORT-NAME")
-        long_name = cd.findtext("LONG-NAME")
-        description = read_description_from_odx(cd.find("DESC"))
-        roles = cd.find("ROLES")
-        if roles is not None:
-            rlist = list()
-
-            for role in roles.iterfind("ROLE"):
-                rlist.append(role.text)
-
-            roles = rlist
-
-        team_members = cd.find("TEAM-MEMBERS")
-        if team_members is not None:
-            tml = NamedItemList(short_name_as_id) # type: ignore
-
-            for tm in team_members.iterfind("TEAM-MEMBER"):
-                tm_id = OdxLinkId.from_et(tm, doc_frags)
-                assert tm_id is not None
-                tm_short_name = tm.findtext("SHORT-NAME")
-                tm_long_name = tm.findtext("LONG-NAME")
-                tm_description = read_description_from_odx(tm.find("DESC"))
-
-                tm_roles = tm.find("ROLES")
-                if tm_roles is not None:
-                    rlist = list()
-                    for role in tm_roles.iterfind("ROLE"):
-                        rlist.append(role.text)
-                    tm_roles = rlist
-
-                tm_department = tm.findtext("DEPARTMENT")
-                tm_address = tm.findtext("ADDRESS")
-                tm_zip = tm.findtext("ZIP")
-                tm_city = tm.findtext("CITY")
-                tm_phone = tm.findtext("PHONE")
-                tm_fax = tm.findtext("FAX")
-                tm_email = tm.findtext("EMAIL")
-
-                tml.append(TeamMember(odx_id=tm_id,
-                                      short_name=tm_short_name,
-                                      long_name=tm_long_name,
-                                      description=tm_description,
-                                      roles=tm_roles,
-                                      department=tm_department,
-                                      address=tm_address,
-                                      zip=tm_zip,
-                                      city=tm_city,
-                                      phone=tm_phone,
-                                      fax=tm_fax,
-                                      email=tm_email))
-
-            team_members = tml
-
-        company_specific_info = cd.find("COMPANY-SPECIFIC-INFO")
-        if company_specific_info is not None:
-            related_docs = company_specific_info.find("RELATED-DOCS")
-            if related_docs is not None:
-                rdlist = list()
-                for rd in related_docs.iterfind("RELATED-DOC"):
-                    rd_description = read_description_from_odx(rd.find("DESC"))
-                    xdoc = rd.find("XDOC")
-                    if xdoc is not None:
-                        xdoc = read_xdoc_from_odx(xdoc)
-
-                    rdlist.append(RelatedDoc(description=rd_description,
-                                             xdoc=xdoc,
-                                             ))
-
-                related_docs = rdlist
-
-            sdgs = read_sdgs_from_odx(company_specific_info.find("SDGS"), doc_frags)
-
-            company_specific_info = CompanySpecificInfo(related_docs=related_docs,
-                                                        sdgs=sdgs)
-
-        cdl.append(CompanyData(odx_id=odx_id,
-                               short_name=short_name,
-                               long_name=long_name,
-                               description=description,
-                               roles=roles,
-                               team_members=team_members,
-                               company_specific_info=company_specific_info))
+    for cd_elem in et_element.iterfind("COMPANY-DATA"):
+        cdl.append(CompanyData.from_et(cd_elem, doc_frags))
 
     return cdl

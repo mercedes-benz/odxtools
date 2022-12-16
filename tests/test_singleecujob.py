@@ -24,8 +24,7 @@ from odxtools.odxlink import (OdxDocFragment, OdxLinkDatabase, OdxLinkId,
 from odxtools.odxtypes import DataType
 from odxtools.physicaltype import PhysicalType
 from odxtools.singleecujob import (InputParam, NegOutputParam, OutputParam,
-                                   ProgCode, SingleEcuJob,
-                                   read_single_ecu_job_from_odx)
+                                   ProgCode, SingleEcuJob)
 from odxtools.utils import short_name_as_id
 from odxtools.write_pdx_file import jinja2_odxraise_helper
 
@@ -197,7 +196,7 @@ class TestSingleEcuJob(unittest.TestCase):
         expected = self.singleecujob_object
         sample_single_ecu_job_odx = self.singleecujob_odx
         et_element = ElementTree.fromstring(sample_single_ecu_job_odx)
-        sej = read_single_ecu_job_from_odx(et_element, doc_frags=doc_frags)
+        sej = SingleEcuJob.from_et(et_element, doc_frags)
         self.assertEqual(expected.prog_codes, sej.prog_codes)
         self.assertEqual(expected.output_params, sej.output_params)
         self.assertEqual(expected.neg_output_params,
@@ -235,7 +234,7 @@ class TestSingleEcuJob(unittest.TestCase):
 
         # Assert equality of objects
         # This tests the idempotency of read-write
-        sej = read_single_ecu_job_from_odx(ElementTree.fromstring(rawodx), doc_frags=doc_frags)
+        sej = SingleEcuJob.from_et(ElementTree.fromstring(rawodx), doc_frags)
         self.assertEqual(self.singleecujob_object, sej)
 
     def test_default_lists(self):

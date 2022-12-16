@@ -54,19 +54,17 @@ def _parse_compu_scale_to_linear_compu_method(scale_element,
         assert kwargs["denominator"] > 0
 
     # Read lower limit
-    internal_lower_limit = read_limit_from_odx(
-        scale_element.find("LOWER-LIMIT"),
-        internal_type=internal_type
-    )
+    internal_lower_limit = Limit.from_et(scale_element.find("LOWER-LIMIT"),
+                                         internal_type=internal_type,
+                                         )
     if internal_lower_limit is None:
         internal_lower_limit = Limit(float("-inf"), IntervalType.INFINITE)
     kwargs["internal_lower_limit"] = internal_lower_limit
 
     # Read upper limit
-    internal_upper_limit = read_limit_from_odx(
-        scale_element.find("UPPER-LIMIT"),
-        internal_type=internal_type
-    )
+    internal_upper_limit = Limit.from_et(scale_element.find("UPPER-LIMIT"),
+                                         internal_type=internal_type,
+                                         )
     if internal_upper_limit is None:
         if not is_scale_linear:
             internal_upper_limit = Limit(float("inf"), IntervalType.INFINITE)
@@ -79,37 +77,10 @@ def _parse_compu_scale_to_linear_compu_method(scale_element,
 
     return LinearCompuMethod(offset=offset, factor=factor, **kwargs)
 
-
-def read_limit_from_odx(et_element, internal_type: DataType):
-    limit: Optional[Limit] = None
-    if et_element is not None:
-        if et_element.get("INTERVAL-TYPE"):
-            interval_type = IntervalType(et_element.get("INTERVAL-TYPE"))
-        else:
-            interval_type = IntervalType.CLOSED
-
-        if interval_type == IntervalType.INFINITE:
-            if et_element.tag == "LOWER-LIMIT":
-                limit = Limit(float("-inf"), interval_type)
-            else:
-                assert et_element.tag == "UPPER-LIMIT"
-                limit = Limit(float("inf"), interval_type)
-        else:
-            if internal_type == DataType.A_BYTEFIELD:
-                hex_text = et_element.text
-                if len(hex_text) % 2 == 1:
-                    hex_text = '0' + hex_text
-                limit = Limit(bytearray.fromhex(hex_text), interval_type)
-            else:
-                limit = Limit(internal_type.from_string(et_element.text),
-                              interval_type)
-    return limit
-
-
 def read_compu_method_from_odx(et_element,
-                               doc_frags: List[OdxDocFragment],
-                               internal_type: DataType,
-                               physical_type: DataType) -> CompuMethod:
+                                  doc_frags: List[OdxDocFragment],
+                                  internal_type: DataType,
+                                  physical_type: DataType) -> CompuMethod:
     compu_category = et_element.findtext("CATEGORY")
     assert compu_category in ["IDENTICAL", "LINEAR", "SCALE-LINEAR",
                               "TEXTTABLE", "COMPUCODE", "TAB-INTP",
@@ -134,10 +105,10 @@ def read_compu_method_from_odx(et_element,
 
         internal_to_phys: List[CompuScale] = []
         for scale in compu_internal_to_phys.iterfind("COMPU-SCALES/COMPU-SCALE"):
-            lower_limit = read_limit_from_odx(scale.find("LOWER-LIMIT"),
-                                              internal_type=internal_type)
-            upper_limit = read_limit_from_odx(scale.find("UPPER-LIMIT"),
-                                              internal_type=internal_type)
+            lower_limit = Limit.from_et(scale.find("LOWER-LIMIT"),
+                                        internal_type=internal_type)
+            upper_limit = Limit.from_et(scale.find("UPPER-LIMIT"),
+                                        internal_type=internal_type)
 
             if (vt := scale.find("COMPU-INVERSE-VALUE/VT")) is not None:
                 compu_inverse_value = internal_type.from_string(vt.text)

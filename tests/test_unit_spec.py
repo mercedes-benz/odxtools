@@ -14,8 +14,7 @@ from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
 from odxtools.parameters import CodedConstParameter, ValueParameter
 from odxtools.physicaltype import PhysicalType
 from odxtools.structures import Request
-from odxtools.units import (PhysicalDimension, Unit, UnitSpec,
-                            read_unit_spec_from_odx)
+from odxtools.units import (PhysicalDimension, Unit, UnitSpec)
 
 doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
@@ -62,7 +61,7 @@ class TestUnitSpec(unittest.TestCase):
             </UNIT-SPEC>
         """
         et_element = ElementTree.fromstring(sample_unit_spec_odx)
-        spec = read_unit_spec_from_odx(et_element, doc_frags=doc_frags)
+        spec = UnitSpec.from_et(et_element, doc_frags)
         self.assertEqual(
             expected.units,
             spec.units

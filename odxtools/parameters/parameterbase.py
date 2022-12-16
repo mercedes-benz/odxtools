@@ -11,7 +11,7 @@ from ..encodestate import EncodeState
 from ..exceptions import OdxWarning
 from ..odxlink import OdxLinkDatabase
 from ..globals import logger
-from ..specialdata import SpecialDataGroup, read_sdgs_from_odx
+from ..specialdata import SpecialDataGroup
 
 class Parameter(abc.ABC):
     def __init__(self,

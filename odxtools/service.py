@@ -5,7 +5,7 @@ from typing import List, Iterable, Optional, Union
 from xml.etree import ElementTree
 
 from .utils import short_name_as_id
-from .audience import Audience, read_audience_from_odx
+from .audience import Audience
 from .functionalclass import FunctionalClass
 from .state import State
 from .utils import read_description_from_odx
@@ -17,7 +17,7 @@ from .structures import Request, Response
 from .nameditemlist import NamedItemList
 from .message import Message
 from .specialdata import SpecialDataGroup, read_sdgs_from_odx
-from .admindata import read_admin_data_from_odx, AdminData
+from .admindata import AdminData
 
 class DiagService:
     def __init__(self,
@@ -108,6 +108,73 @@ class DiagService:
                 "negative_responses must be of type Union[List[str], List[Response], None]")
 
         self.sdgs = sdgs
+
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]):
+
+        # logger.info(f"Parsing service based on ET DiagService element: {et_element}")
+        short_name = et_element.findtext("SHORT-NAME")
+        odx_id = OdxLinkId.from_et(et_element, doc_frags)
+        assert odx_id is not None
+
+        request_ref = OdxLinkRef.from_et(et_element.find("REQUEST-REF"), doc_frags)
+        assert request_ref is not None
+
+        pos_res_refs = [ ]
+        for el in et_element.iterfind("POS-RESPONSE-REFS/POS-RESPONSE-REF"):
+            ref = OdxLinkRef.from_et(el, doc_frags)
+            assert ref is not None
+            pos_res_refs.append(ref)
+
+        neg_res_refs = []
+        for el in et_element.iterfind("NEG-RESPONSE-REFS/NEG-RESPONSE-REF"):
+            ref = OdxLinkRef.from_et(el, doc_frags)
+            assert ref is not None
+            neg_res_refs.append(ref)
+
+        functional_class_refs = []
+        for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF"):
+            ref = OdxLinkRef.from_et(el, doc_frags)
+            assert ref is not None
+            functional_class_refs.append(ref)
+
+        pre_condition_state_refs = []
+        for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF"):
+            ref = OdxLinkRef.from_et(el, doc_frags)
+            assert ref is not None
+            pre_condition_state_refs.append(ref)
+
+        state_transition_refs = []
+        for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF"):
+            ref = OdxLinkRef.from_et(el, doc_frags)
+            assert ref is not None
+            state_transition_refs.append(ref)
+
+        long_name = et_element.findtext("LONG-NAME")
+        description = read_description_from_odx(et_element.find("DESC"))
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        semantic = et_element.get("SEMANTIC")
+
+        audience = None
+        if et_element.find("AUDIENCE"):
+            audience = Audience.from_et(et_element.find("AUDIENCE"), doc_frags)
+
+        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+
+        return DiagService(odx_id,
+                           short_name,
+                           request_ref,
+                           pos_res_refs,
+                           neg_res_refs,
+                           long_name=long_name,
+                           description=description,
+                           admin_data=admin_data,
+                           semantic=semantic,
+                           audience=audience,
+                           functional_class_refs=functional_class_refs,
+                           pre_condition_state_refs=pre_condition_state_refs,
+                           state_transition_refs=state_transition_refs,
+                           sdgs=sdgs)
 
     @property
     def request(self) -> Optional[Request]:
@@ -257,69 +324,3 @@ class DiagService:
         return isinstance(o, DiagService) and self.odx_id == o.odx_id
 
 
-def read_diag_service_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-
-    # logger.info(f"Parsing service based on ET DiagService element: {et_element}")
-    short_name = et_element.findtext("SHORT-NAME")
-    odx_id = OdxLinkId.from_et(et_element, doc_frags)
-    assert odx_id is not None
-
-    request_ref = OdxLinkRef.from_et(et_element.find("REQUEST-REF"), doc_frags)
-    assert request_ref is not None
-
-    pos_res_refs = [ ]
-    for el in et_element.iterfind("POS-RESPONSE-REFS/POS-RESPONSE-REF"):
-        ref = OdxLinkRef.from_et(el, doc_frags)
-        assert ref is not None
-        pos_res_refs.append(ref)
-
-    neg_res_refs = []
-    for el in et_element.iterfind("NEG-RESPONSE-REFS/NEG-RESPONSE-REF"):
-        ref = OdxLinkRef.from_et(el, doc_frags)
-        assert ref is not None
-        neg_res_refs.append(ref)
-
-    functional_class_refs = []
-    for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF"):
-         ref = OdxLinkRef.from_et(el, doc_frags)
-         assert ref is not None
-         functional_class_refs.append(ref)
-
-    pre_condition_state_refs = []
-    for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF"):
-        ref = OdxLinkRef.from_et(el, doc_frags)
-        assert ref is not None
-        pre_condition_state_refs.append(ref)
-
-    state_transition_refs = []
-    for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF"):
-        ref = OdxLinkRef.from_et(el, doc_frags)
-        assert ref is not None
-        state_transition_refs.append(ref)
-
-    long_name = et_element.findtext("LONG-NAME")
-    description = read_description_from_odx(et_element.find("DESC"))
-    admin_data = read_admin_data_from_odx(et_element.find("ADMIN-DATA"), doc_frags)
-    semantic = et_element.get("SEMANTIC")
-
-    audience = None
-    if et_element.find("AUDIENCE"):
-        audience = read_audience_from_odx(et_element.find(
-            "AUDIENCE"), doc_frags)
-
-    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
-
-    return DiagService(odx_id,
-                       short_name,
-                       request_ref,
-                       pos_res_refs,
-                       neg_res_refs,
-                       long_name=long_name,
-                       description=description,
-                       admin_data=admin_data,
-                       semantic=semantic,
-                       audience=audience,
-                       functional_class_refs=functional_class_refs,
-                       pre_condition_state_refs=pre_condition_state_refs,
-                       state_transition_refs=state_transition_refs,
-                       sdgs=sdgs)

@@ -4,11 +4,11 @@ from dataclasses import dataclass, field
 from typing import Any, Union, Dict, List, Literal, Optional
 from xml.etree.ElementTree import Element
 
-from .dataobjectproperty import DataObjectProperty, read_data_object_property_from_odx
+from .dataobjectproperty import DataObjectProperty
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .units import UnitSpec, read_unit_spec_from_odx
-from .admindata import AdminData, read_admin_data_from_odx
+from .units import UnitSpec
+from .admindata import AdminData
 from .companydata import CompanyData, read_company_datas_from_odx
 from .utils import read_description_from_odx, short_name_as_id
 from .specialdata import SpecialDataGroup, read_sdgs_from_odx
@@ -49,6 +49,19 @@ class BaseComparam:
     cpusage: Usage
     display_level: Optional[int] = field(default=None, init=False)
 
+    def __init_from_et__(self, et_element, doc_frags: List[OdxDocFragment]) -> None:
+        odx_id = OdxLinkId.from_et(et_element, doc_frags)
+        assert odx_id is not None
+        self.odx_id = odx_id
+        self.short_name = et_element.findtext("SHORT-NAME")
+        self.long_name = et_element.findtext("LONG-NAME")
+        self.description = read_description_from_odx(et_element.find("DESC"))
+        self.param_class = et_element.attrib.get("PARAM-CLASS")
+        self.cptype = et_element.attrib.get("CPTYPE")
+        self.cpusage = et_element.attrib.get("CPUSAGE")
+        dl = et_element.attrib.get("DISPLAY_LEVEL")
+        self.display_level = None if dl is None else int(dl)
+
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         pass
 
@@ -62,7 +75,30 @@ class ComplexComparam(BaseComparam):
     complex_physical_default_value: Optional[ComplexValue] = field(default=None, init=False)
     allow_multiple_values: Optional[bool] = None
 
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "ComplexComparam":
+        result = ComplexComparam.__new__(ComplexComparam)
+
+        result.__init_from_et__(et_element, doc_frags)
+
+        return result
+
+    def __init_from_et__(self, et_element, doc_frags: List[OdxDocFragment]) -> None:
+        super().__init_from_et__(et_element, doc_frags)
+
+        self.comparams = NamedItemList(short_name_as_id)
+        for el in et_element:
+            if el.tag in ('COMPARAM', 'COMPLEX-COMPARAM'):
+                self.comparams.append(read_comparam_from_odx(el, doc_frags))
+
+        if cpdv_elem := et_element.find("COMPLEX-PHYSICAL-DEFAULT-VALUE"):
+            self.complex_physical_default_value = read_complex_value_from_odx(cpdv_elem)
+
+        tmp = et_element.get("ALLOW-MULTIPLE-VALUES")
+        self.allow_multiple_values = (tmp == "true") if tmp is not None else None
+
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
+        super()._resolve_references(odxlinks)
         for comparam in self.comparams:
             comparam._resolve_references(odxlinks)
 
@@ -79,6 +115,23 @@ class Comparam(BaseComparam):
     physical_default_value: Optional[str] = field(default=None, init=False)
     _dop: Optional[DataObjectProperty] = field(default=None, init=False)
 
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> ComplexComparam:
+        result = Comparam.__new__(ComplexComparam)
+
+        result.__init_from_et__(et_element, doc_frags)
+
+        return result
+
+    def __init_from_et__(self, et_element, doc_frags: List[OdxDocFragment]) -> None:
+        super().__init_from_et__(et_element, doc_frags)
+
+        dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
+        assert dop_ref is not None
+        self.dop_ref = dop_ref
+
+        self.physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
+
     @property
     def dop(self) -> DataObjectProperty:
         """The data object property describing this parameter."""
@@ -87,6 +140,7 @@ class Comparam(BaseComparam):
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         """Resolves the reference to the dop"""
+        super()._resolve_references(odxlinks)
         self._dop = odxlinks.resolve(self.dop_ref)
 
 
@@ -103,6 +157,60 @@ class ComparamSubset:
     admin_data: Optional[AdminData] = None
     company_datas: Optional[NamedItemList[CompanyData]] = None
     sdgs: List[SpecialDataGroup] = field(default_factory=list)
+
+    @staticmethod
+    def from_et(et_element: Element) \
+            -> "ComparamSubset":
+
+        category = et_element.get("CATEGORY")
+        assert category is not None
+
+        short_name = et_element.findtext("SHORT-NAME")
+        assert short_name is not None
+
+        doc_frags = [OdxDocFragment(short_name, str(et_element.tag))]
+        odx_id = OdxLinkId.from_et(et_element, doc_frags)
+        long_name = et_element.findtext("LONG-NAME")
+        description = read_description_from_odx(et_element.find("DESC"))
+
+        admin_data = \
+            AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        company_datas = \
+            read_company_datas_from_odx(et_element.find("COMPANY-DATAS"), doc_frags)
+
+        data_object_props = [
+            DataObjectProperty.from_et(el, doc_frags)
+            for el in et_element.iterfind("DATA-OBJECT-PROPS/DATA-OBJECT-PROP")
+        ]
+        comparams: List[BaseComparam] = []
+        comparams += [
+            Comparam.from_et(el, doc_frags)
+            for el in et_element.iterfind("COMPARAMS/COMPARAM")
+        ]
+        comparams += [
+            Comparam.from_et(el, doc_frags)
+            for el in et_element.iterfind("COMPLEX-COMPARAMS/COMPLEX-COMPARAM")
+        ]
+        if unit_spec_elem := et_element.find("UNIT-SPEC"):
+            unit_spec = UnitSpec.from_et(unit_spec_elem, doc_frags)
+        else:
+            unit_spec = None
+
+        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+
+        return ComparamSubset(
+            odx_id=odx_id,
+            category=category,
+            short_name=short_name,
+            long_name=long_name,
+            description=description,
+            admin_data=admin_data,
+            company_datas=company_datas,
+            data_object_props=NamedItemList(short_name_as_id, data_object_props),
+            comparams=NamedItemList(short_name_as_id, comparams),
+            unit_spec=unit_spec,
+            sdgs=sdgs,
+        )
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks: Dict[OdxLinkId, Any] = {}
@@ -150,105 +258,11 @@ class ComparamSubset:
         for sdg in self.sdgs:
             sdg._resolve_references(odxlinks)
 
-def read_comparam_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> BaseComparam:
-    odx_id = OdxLinkId.from_et(et_element, doc_frags)
-    assert odx_id is not None
-    short_name = et_element.findtext("SHORT-NAME")
-    param_class = et_element.attrib.get("PARAM-CLASS")
-    cptype = et_element.attrib.get("CPTYPE")
-    cpusage = et_element.attrib.get("CPUSAGE")
-
-    comparam: BaseComparam
+def read_comparam_from_odx(et_element,
+                               doc_frags: List[OdxDocFragment]) -> BaseComparam:
     if et_element.tag == "COMPARAM":
-        dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
-        assert dop_ref is not None
-        comparam = Comparam(
-            odx_id=odx_id,
-            short_name=short_name,
-            param_class=param_class,
-            cptype=cptype,
-            cpusage=cpusage,
-            dop_ref=dop_ref,
-        )
-        comparam.physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
+        return Comparam.from_et(et_element, doc_frags)
     elif et_element.tag == "COMPLEX-COMPARAM":
-        comparams = [
-            read_comparam_from_odx(el, doc_frags)
-            for el in et_element if el.tag in ('COMPARAM', 'COMPLEX-COMPARAM')
-        ]
-        comparam = ComplexComparam(
-            odx_id=odx_id,
-            short_name=short_name,
-            param_class=param_class,
-            cptype=cptype,
-            cpusage=cpusage,
-            comparams=NamedItemList(short_name_as_id, comparams),
-        )
-        if cpdv_elem := et_element.find("COMPLEX-PHYSICAL-DEFAULT-VALUE"):
-            comparam.complex_physical_default_value=read_complex_value_from_odx(cpdv_elem)
+        return ComplexComparam.from_et(et_element, doc_frags)
 
-        tmp = et_element.get("ALLOW-MULTIPLE-VALUES")
-        comparam.allow_multiple_values = (tmp == "true") if tmp is not None else None
-    else:
-        assert False, f"Failed to parse COMPARAM {short_name}"
-
-    comparam.long_name = et_element.findtext("LONG-NAME")
-    comparam.description = read_description_from_odx(et_element.find("DESC"))
-    display_level = et_element.attrib.get("DISPLAY-LEVEL", None)
-    if display_level is not None:
-        comparam.display_level = int(display_level)
-
-    return comparam
-
-
-def read_comparam_subset_from_odx(et_element: Element) -> ComparamSubset:
-
-    category = et_element.get("CATEGORY")
-    assert category is not None
-
-    short_name = et_element.findtext("SHORT-NAME")
-    assert short_name is not None
-
-    doc_frags = [OdxDocFragment(short_name, str(et_element.tag))]
-    odx_id = OdxLinkId.from_et(et_element, doc_frags)
-    long_name = et_element.findtext("LONG-NAME")
-    description = read_description_from_odx(et_element.find("DESC"))
-
-    admin_data = \
-        read_admin_data_from_odx(et_element.find("ADMIN-DATA"), doc_frags)
-    company_datas = \
-        read_company_datas_from_odx(et_element.find("COMPANY-DATAS"), doc_frags)
-
-    data_object_props = [
-        read_data_object_property_from_odx(el, doc_frags)
-        for el in et_element.iterfind("DATA-OBJECT-PROPS/DATA-OBJECT-PROP")
-    ]
-    comparams: List[BaseComparam] = []
-    comparams += [
-        read_comparam_from_odx(el, doc_frags)
-        for el in et_element.iterfind("COMPARAMS/COMPARAM")
-    ]
-    comparams += [
-        read_comparam_from_odx(el, doc_frags)
-        for el in et_element.iterfind("COMPLEX-COMPARAMS/COMPLEX-COMPARAM")
-    ]
-    if unit_spec_elem := et_element.find("UNIT-SPEC"):
-        unit_spec = read_unit_spec_from_odx(unit_spec_elem, doc_frags)
-    else:
-        unit_spec = None
-
-    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
-
-    return ComparamSubset(
-        odx_id=odx_id,
-        category=category,
-        short_name=short_name,
-        long_name=long_name,
-        description=description,
-        admin_data=admin_data,
-        company_datas=company_datas,
-        data_object_props=NamedItemList(short_name_as_id, data_object_props),
-        comparams=NamedItemList(short_name_as_id, comparams),
-        unit_spec=unit_spec,
-        sdgs=sdgs,
-    )
+    raise RuntimeError(f"Unhandled communication parameter type {et_element.tag}")

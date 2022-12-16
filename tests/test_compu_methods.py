@@ -192,9 +192,9 @@ class TestTabIntpCompuMethod(unittest.TestCase):
 
         et_element = ElementTree.fromstring(self.compumethod_odx)
         actual = read_compu_method_from_odx(et_element,
-                                            doc_frags,
-                                            expected.internal_type,
-                                            expected.physical_type)
+                                                doc_frags,
+                                                expected.internal_type,
+                                                expected.physical_type)
         self.assertIsInstance(actual, TabIntpCompuMethod)
         self.assertEqual(expected.physical_type, actual.physical_type)
         self.assertEqual(expected.internal_type, actual.internal_type)

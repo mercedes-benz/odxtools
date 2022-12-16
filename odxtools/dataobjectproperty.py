@@ -6,11 +6,15 @@ from typing import cast, List, Dict, Optional, Any, Union
 from dataclasses import dataclass, field
 
 from .utils import read_description_from_odx
-from .physicaltype import PhysicalType, read_physical_type_from_odx
+from .physicaltype import PhysicalType
 from .globals import logger
 from .compumethods import CompuMethod, read_compu_method_from_odx
 from .units import Unit
-from .diagcodedtypes import DiagCodedType, StandardLengthType, read_diag_coded_type_from_odx
+from .diagcodedtypes import (
+    DiagCodedType,
+    StandardLengthType,
+    read_diag_coded_type_from_odx,
+)
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError
@@ -84,6 +88,59 @@ class DataObjectProperty(DopBase):
         self.compu_method = compu_method
         self.unit_ref = unit_ref
         self._unit = None
+
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
+            -> "DataObjectProperty":
+        """Reads a DATA-OBJECT-PROP or a DTC-DOP."""
+        odx_id = OdxLinkId.from_et(et_element, doc_frags)
+        assert odx_id is not None
+        short_name = et_element.findtext("SHORT-NAME")
+        long_name = et_element.findtext("LONG-NAME")
+        description = read_description_from_odx(et_element.find("DESC"))
+        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+
+        diag_coded_type = read_diag_coded_type_from_odx(
+            et_element.find("DIAG-CODED-TYPE"), doc_frags)
+
+        physical_type = PhysicalType.from_et(
+            et_element.find("PHYSICAL-TYPE"), doc_frags)
+        compu_method = read_compu_method_from_odx(et_element.find(
+            "COMPU-METHOD"), doc_frags, diag_coded_type.base_data_type, physical_type.base_data_type)
+
+        if et_element.tag == "DATA-OBJECT-PROP":
+            unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
+            dop = DataObjectProperty(odx_id,
+                                     short_name,
+                                     diag_coded_type,
+                                     physical_type,
+                                     compu_method,
+                                     unit_ref=unit_ref,
+                                     long_name=long_name,
+                                     description=description,
+                                     sdgs=sdgs)
+        else:
+            dtclist: List[Union[DiagnosticTroubleCode, DtcRef]] = list()
+            dtcs_elem = et_element.find("DTCS")
+            if dtcs_elem is not None:
+                for dtc_elem in dtcs_elem:
+                    if dtc_elem.tag == "DTC":
+                        dtclist.append(DiagnosticTroubleCode.from_et(dtc_elem, doc_frags))
+                    elif dtc_elem.tag == "DTC-REF":
+                        dtclist.append(DtcRef.from_et(dtc_elem, doc_frags))
+
+            is_visible = et_element.get("IS-VISIBLE") == "true"
+            dop = DtcDop(odx_id=odx_id,
+                         short_name=short_name,
+                         long_name=long_name,
+                         description=description,
+                         diag_coded_type=diag_coded_type,
+                         physical_type=physical_type,
+                         compu_method=compu_method,
+                         dtcs=dtclist,
+                         is_visible=is_visible,
+                         sdgs=sdgs)
+        return dop
 
     @property
     def unit(self) -> Optional[Unit]:
@@ -176,6 +233,30 @@ class DiagnosticTroubleCode:
     is_temporary: bool = False
     sdgs: List[SpecialDataGroup] = field(default_factory=list)
 
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
+            -> "DiagnosticTroubleCode":
+        if et_element.find("DISPLAY-TROUBLE-CODE") is not None:
+            display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
+        else:
+            display_trouble_code = None
+
+        if et_element.find("LEVEL") is not None:
+            level = et_element.findtext("LEVEL")
+        else:
+            level = None
+
+        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+
+        return DiagnosticTroubleCode(odx_id=OdxLinkId.from_et(et_element, doc_frags),
+                                     short_name=et_element.findtext("SHORT-NAME"),
+                                     trouble_code=int(
+                                         et_element.findtext("TROUBLE-CODE")),
+                                     text=et_element.findtext("TEXT"),
+                                     display_trouble_code=display_trouble_code,
+                                     level=level,
+                                     sdgs=sdgs)
+
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
 
@@ -197,6 +278,20 @@ class DtcRef:
     def __init__(self, dtc_ref: OdxLinkRef):
         self.dtc_ref = dtc_ref
         self.dtc: Optional[DiagnosticTroubleCode] = None
+
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "DtcRef":
+        dtc_ref = OdxLinkRef.from_et(et_element, doc_frags)
+        assert dtc_ref is not None
+
+        return DtcRef(dtc_ref)
+
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+        dtc = odxlinks.resolve(self.dtc_ref)
+        assert isinstance(dtc, DiagnosticTroubleCode),\
+            f"DTC-REF {self.dtc_ref} references an object of type {type(dtc)} " \
+            f"instead of a DiagnosticTroubleCode."
+        self.dtc = dtc
 
     @property
     def odx_id(self):
@@ -225,14 +320,6 @@ class DtcRef:
     @property
     def is_temporary(self):
         return self.dtc.is_temporary
-
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
-        dtc = odxlinks.resolve(self.dtc_ref)
-        assert isinstance(dtc, DiagnosticTroubleCode),\
-            f"DTC-REF {self.dtc_ref} references an object of type {type(dtc)} " \
-            f"instead of a DiagnosticTroubleCode."
-        self.dtc = dtc
-
 
 class DtcDop(DataObjectProperty):
     """ A DOP describing a diagnostic trouble code """
@@ -317,74 +404,3 @@ class DtcDop(DataObjectProperty):
 
         for dtc in self.dtcs:
             dtc._resolve_references(odxlinks)
-
-def read_dtc_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    if et_element.find("DISPLAY-TROUBLE-CODE") is not None:
-        display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
-    else:
-        display_trouble_code = None
-
-    if et_element.find("LEVEL") is not None:
-        level = et_element.findtext("LEVEL")
-    else:
-        level = None
-
-    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
-
-    return DiagnosticTroubleCode(odx_id=OdxLinkId.from_et(et_element, doc_frags),
-                                 short_name=et_element.findtext("SHORT-NAME"),
-                                 trouble_code=int(
-                                     et_element.findtext("TROUBLE-CODE")),
-                                 text=et_element.findtext("TEXT"),
-                                 display_trouble_code=display_trouble_code,
-                                 level=level,
-                                 sdgs=sdgs)
-
-
-def read_data_object_property_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
-    -> DataObjectProperty:
-    """Reads a DATA-OBJECT-PROP or a DTC-DOP."""
-    odx_id = OdxLinkId.from_et(et_element, doc_frags)
-    assert odx_id is not None
-    short_name = et_element.findtext("SHORT-NAME")
-    long_name = et_element.findtext("LONG-NAME")
-    description = read_description_from_odx(et_element.find("DESC"))
-    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
-
-    diag_coded_type = read_diag_coded_type_from_odx(
-        et_element.find("DIAG-CODED-TYPE"), doc_frags)
-
-    physical_type = read_physical_type_from_odx(
-        et_element.find("PHYSICAL-TYPE"), doc_frags)
-    compu_method = read_compu_method_from_odx(et_element.find(
-        "COMPU-METHOD"), doc_frags, diag_coded_type.base_data_type, physical_type.base_data_type)
-
-    if et_element.tag == "DATA-OBJECT-PROP":
-        unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
-        dop = DataObjectProperty(odx_id,
-                                 short_name,
-                                 diag_coded_type,
-                                 physical_type,
-                                 compu_method,
-                                 unit_ref=unit_ref,
-                                 long_name=long_name,
-                                 description=description,
-                                 sdgs=sdgs)
-    else:
-        dtcs = [read_dtc_from_odx(el, doc_frags)
-                for el in et_element.iterfind("DTCS/DTC")]
-        dtcs += [DtcRef(cast(OdxLinkRef, OdxLinkRef.from_et(el, doc_frags)))
-                 for el in et_element.iterfind("DTCS/DTC-REF")]
-
-        is_visible = et_element.get("IS-VISIBLE") == "true"
-        dop = DtcDop(odx_id,
-                     short_name,
-                     diag_coded_type,
-                     physical_type,
-                     compu_method,
-                     dtcs,
-                     is_visible=is_visible,
-                     long_name=long_name,
-                     description=description,
-                     sdgs=sdgs)
-    return dop
