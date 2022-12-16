@@ -534,6 +534,25 @@ class DiagLayer:
 
         return int(result)
 
+    def get_doip_logical_ecu_address(self, doip_layer_name: str) -> Optional[int]:
+        """Return the CP_DoIPLogicalEcuAddress.
+        The parameter doip_layer_name is required to distinguish between different interfaces, 
+        e.g., offboard and onboard DoIP Ethernet.
+        """
+
+        com_param = self.get_communication_parameter("CP_UniqueRespIdTable", 
+                                                    protocol_name=doip_layer_name, 
+                                                    is_functional=False)
+
+        if com_param is None:
+            return None
+        
+        # The CP_DoIPLogicalEcuAddress is a subvalue of a complex Comparam called CP_UniqueRespIdTable
+        ecu_addr = com_param.get_subvalue("CP_DoIPLogicalEcuAddress")
+        if ecu_addr is None:
+            return None
+        return int(ecu_addr)
+
     def get_doip_logical_gateway_address(self, is_functional: Optional[bool] = False, protocol_name: Optional[str] = None) \
             -> Optional[int]:
         """DoIp logical gateway address"""
