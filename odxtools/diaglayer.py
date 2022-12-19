@@ -7,7 +7,7 @@ from itertools import chain
 from typing import cast, Any, Dict, Iterable, Tuple, List, Optional, Union
 from xml.etree import ElementTree
 
-from deprecated import deprecated
+from deprecation import deprecated
 
 from odxtools.diaglayertype import DIAG_LAYER_TYPE
 
@@ -540,7 +540,7 @@ class DiagLayer:
 
         return int(result)
 
-    @deprecated(reason="use get_can_receive_id()")
+    @deprecated(details="use get_can_receive_id()")
     def get_receive_id(self) -> Optional[int]:
         return self.get_can_receive_id()
 
@@ -561,7 +561,7 @@ class DiagLayer:
 
         return int(result)
 
-    @deprecated(reason="use get_can_send_id()")
+    @deprecated(details="use get_can_send_id()")
     def get_send_id(self) -> Optional[int]:
         return self.get_can_send_id()
 
