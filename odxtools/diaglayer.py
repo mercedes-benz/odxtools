@@ -210,7 +210,7 @@ class DiagLayer:
     @property
     def protocols(self) -> NamedItemList["DiagLayer"]:
         """Return the set of all protocols which are applicable for this diagnostic layer"""
-        result_dict: dict[str, DiagLayer] = dict()
+        result_dict: Dict[str, DiagLayer] = dict()
 
         for parent_ref in self._get_parent_refs_sorted_by_priority():
             for prot in parent_ref.parent_diag_layer.protocols:
