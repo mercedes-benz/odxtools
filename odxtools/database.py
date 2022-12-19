@@ -145,13 +145,14 @@ class Database:
         return self._comparam_subsets
 
     @property
-    def protocol_names(self) -> Set[str]:
+    def protocols(self) -> NamedItemList[DiagLayer]:
         """
-        The names of all protocols defined for this database
+        Return a list of all protocols defined by this database
         """
-        result = set()
-        for dlc in self.diag_layer_containers:
-            for prot in dlc.protocols:
-                result.add(prot.short_name)
+        result_dict = dict()
+        for dl in self.diag_layers:
+            if dl.variant_type == DIAG_LAYER_TYPE.PROTOCOL:
+                result_dict[dl.short_name]= dl
 
-        return result
+        return NamedItemList(short_name_as_id,
+                             list(result_dict.values()))

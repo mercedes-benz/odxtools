@@ -207,6 +207,21 @@ class DiagLayer:
         """All communication parameters including inherited ones."""
         return self._communication_parameters
 
+    @property
+    def protocols(self) -> NamedItemList["DiagLayer"]:
+        """Return the set of all protocols which are applicable for this diagnostic layer"""
+        result_dict: dict[str, DiagLayer] = dict()
+
+        for parent_ref in self._get_parent_refs_sorted_by_priority():
+            for prot in parent_ref.parent_diag_layer.protocols:
+                result_dict[prot.short_name] = prot
+
+        if self.variant_type == DIAG_LAYER_TYPE.PROTOCOL:
+            result_dict[self.short_name] = self
+
+        return NamedItemList(short_name_as_id,
+                             list(result_dict.values()))
+
     def finalize_init(self, odxlinks: Optional[OdxLinkDatabase] = None):
         """Resolves all references.
 

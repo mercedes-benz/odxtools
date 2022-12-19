@@ -49,12 +49,12 @@ def print_summary(odxdb: Database,
             f" num services: {len(all_services)}, num DOPs: {len(data_object_properties)}, num communication parameters: {len(com_params)}."
         )
 
-        for proto_name in odxdb.protocol_names:
-            if (can_rx_id := dl.get_can_receive_id(proto_name)) is not None:
-                print(f"  CAN receive ID for protocol '{proto_name}': 0x{can_rx_id:x}")
+        for proto in dl.protocols:
+            if (can_rx_id := dl.get_can_receive_id(proto.short_name)) is not None:
+                print(f"  CAN receive ID for protocol '{proto.short_name}': 0x{can_rx_id:x}")
 
-            if (can_tx_id := dl.get_can_send_id(proto_name)) is not None:
-                print(f"  CAN send ID for protocol '{proto_name}': 0x{can_tx_id:x}")
+            if (can_tx_id := dl.get_can_send_id(proto.short_name)) is not None:
+                print(f"  CAN send ID for protocol '{proto.short_name}': 0x{can_tx_id:x}")
 
         if dl.description:
             desc = format_desc(dl.description, ident=2)
