@@ -514,7 +514,7 @@ class DiagLayer:
             cps = [cp for cp in cps if cp.is_functional == is_functional]
         if protocol_name:
             cps = [cp for cp in cps if cp.protocol_sn_ref in (None, protocol_name)]
-        
+
         if len(cps) > 1:
             warnings.warn(f"Communication parameter `{name}` specified more "
                           f"than once. Using first occurence.", OdxWarning)
@@ -532,7 +532,11 @@ class DiagLayer:
             return None
 
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
+            # depending on the protocol, we may get
+            # "Communication parameter 'CP_UniqueRespIdTable' does not
+            # specify 'CP_CanPhysReqId'" warning here. we don't want this
+            # warning and simply return None...
+            warnings.simplefilter("ignore", category=OdxWarning)
             result = com_param.get_subvalue("CP_CanPhysReqId")
         if not result:
             return None
@@ -553,7 +557,11 @@ class DiagLayer:
             return None
 
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
+            # depending on the protocol, we may get
+            # "Communication parameter 'CP_UniqueRespIdTable' does not
+            # specify 'CP_CanRespUSDTId'" warning here. we don't want this
+            # warning and simply return None...
+            warnings.simplefilter("ignore", category=OdxWarning)
             result = com_param.get_subvalue("CP_CanRespUSDTId")
         if not result:
             return None
@@ -580,29 +588,37 @@ class DiagLayer:
 
         return int(result)
 
-    def get_doip_logical_ecu_address(self, doip_layer_name: str) -> Optional[int]:
+    def get_doip_logical_ecu_address(self, protocol_name: Optional[str] = None) -> Optional[int]:
         """Return the CP_DoIPLogicalEcuAddress.
-        The parameter doip_layer_name is required to distinguish between different interfaces, 
-        e.g., offboard and onboard DoIP Ethernet.
+
+        The parameter protocol_name is used to distinguish between
+        different interfaces, e.g., offboard and onboard DoIP
+        Ethernet.
         """
 
-        com_param = self.get_communication_parameter("CP_UniqueRespIdTable", 
-                                                    protocol_name=doip_layer_name, 
+        com_param = self.get_communication_parameter("CP_UniqueRespIdTable",
+                                                    protocol_name=protocol_name,
                                                     is_functional=False)
 
         if com_param is None:
             return None
-        
-        # The CP_DoIPLogicalEcuAddress is a subvalue of a complex Comparam called CP_UniqueRespIdTable
-        ecu_addr = com_param.get_subvalue("CP_DoIPLogicalEcuAddress")
+
+        # The CP_DoIPLogicalEcuAddress is specified by the
+        # "CP_DoIPLogicalEcuAddress" subvalue of the complex Comparam
+        # CP_UniqueRespIdTable. Depending of the underlying transport
+        # protocol, (i.e., CAN using ISO-TP) this subvalue might not
+        # exist.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=OdxWarning)
+            ecu_addr = com_param.get_subvalue("CP_DoIPLogicalEcuAddress")
         if ecu_addr is None:
             return None
         return int(ecu_addr)
 
     def get_doip_logical_gateway_address(self, is_functional: Optional[bool] = False, protocol_name: Optional[str] = None) \
             -> Optional[int]:
-        """DoIp logical gateway address"""
-        com_param = self.get_communication_parameter("CP_DoIPLogicalGatewayAddress", 
+        """The logical gateway address for the diagnosis over IP transport protocol"""
+        com_param = self.get_communication_parameter("CP_DoIPLogicalGatewayAddress",
                                                      is_functional=is_functional,
                                                      protocol_name=protocol_name)
         if com_param is None:
