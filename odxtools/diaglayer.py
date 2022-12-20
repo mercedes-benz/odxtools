@@ -4,10 +4,10 @@
 import warnings
 from copy import copy
 from itertools import chain
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import cast, Any, Dict, Iterable, Tuple, List, Optional, Union
 from xml.etree import ElementTree
 
-from deprecated import deprecated
+from deprecation import deprecated
 
 from odxtools.diaglayertype import DIAG_LAYER_TYPE
 
@@ -84,18 +84,35 @@ class DiagLayer:
         def get_inheritance_priority(self):
             return PRIORITY_OF_DIAG_LAYER_TYPE[self.parent_diag_layer.variant_type]
 
-        def get_inherited_services_by_name(self):
-            services = {service.short_name: service for service in self.parent_diag_layer._services
-                        if service.short_name not in self.not_inherited_diag_comms}
-            return services
+        def get_inherited_services(self) \
+                -> List[Union[DiagService, SingleEcuJob]]:
 
-        def get_inherited_data_object_properties_by_name(self):
-            dops = {dop.short_name: dop for dop in self.parent_diag_layer._data_object_properties
-                    if dop.short_name not in self.not_inherited_dops}
-            return dops
+            if self.parent_diag_layer is None:
+                return []
+
+            services = dict()
+            for service in self.parent_diag_layer._services:
+                assert isinstance(service, (DiagService, SingleEcuJob))
+
+                if service.short_name not in self.not_inherited_diag_comms:
+                    services[service.short_name] = service
+
+            return list(services.values())
+
+        def get_inherited_data_object_properties(self) \
+                -> List[DopBase]:
+            if self.parent_diag_layer is None:
+                return []
+
+            dops = {
+                dop.short_name: dop
+                for dop in self.parent_diag_layer._data_object_properties
+                if dop.short_name not in self.not_inherited_dops
+            }
+            return list(dops.values())
 
         def get_inherited_communication_parameters(self):
-            return list(self.parent_diag_layer._communication_parameters)
+            return self.parent_diag_layer._communication_parameters
 
     def __init__(self,
                  variant_type : DIAG_LAYER_TYPE,
@@ -190,6 +207,21 @@ class DiagLayer:
         """All communication parameters including inherited ones."""
         return self._communication_parameters
 
+    @property
+    def protocols(self) -> NamedItemList["DiagLayer"]:
+        """Return the set of all protocols which are applicable for this diagnostic layer"""
+        result_dict: Dict[str, DiagLayer] = dict()
+
+        for parent_ref in self._get_parent_refs_sorted_by_priority():
+            for prot in parent_ref.parent_diag_layer.protocols:
+                result_dict[prot.short_name] = prot
+
+        if self.variant_type == DIAG_LAYER_TYPE.PROTOCOL:
+            result_dict[self.short_name] = self
+
+        return NamedItemList(short_name_as_id,
+                             list(result_dict.values()))
+
     def finalize_init(self, odxlinks: Optional[OdxLinkDatabase] = None):
         """Resolves all references.
 
@@ -247,23 +279,23 @@ class DiagLayer:
         for sdg in self.sdgs:
             sdg._resolve_references(odxlinks)
 
-        services = sorted(self._compute_available_services_by_name(odxlinks).values(),
+        services = sorted(self._compute_available_services(odxlinks),
                           key=short_name_as_id)
         self._services = NamedItemList[Union[DiagService, SingleEcuJob]](
             short_name_as_id,
             services)
 
-        dops = sorted(self._compute_available_data_object_properties_by_name().values(),
+        dops = sorted(self._compute_available_data_object_properties(),
                       key=short_name_as_id)
         self._data_object_properties = NamedItemList[DopBase](
             short_name_as_id,
-            dops)
+            dops or [])
         for comparam in self._local_communication_parameters:
             comparam._resolve_references(odxlinks)
 
         self._communication_parameters = NamedItemList[CommunicationParameterRef](
             short_name_as_id,
-             list(self._compute_available_commmunication_parameters())
+            self._compute_available_commmunication_parameters()
         )
 
         # Resolve all other references
@@ -282,63 +314,73 @@ class DiagLayer:
                                                                      odxlinks)
 
 
-    def __local_services_by_name(self, odxlinks: OdxLinkDatabase) -> Dict[str, Union[DiagService, SingleEcuJob]]:
-        services_by_name: Dict[str, Union[DiagService, SingleEcuJob]] = {}
+    def __gather_local_services(self, odxlinks: OdxLinkDatabase) -> List[Union[DiagService, SingleEcuJob]]:
+        diagcomms_by_name: Dict[str, Union[DiagService, SingleEcuJob]] = {}
 
         for ref in self._diag_comm_refs:
             if (obj := odxlinks.resolve_lenient(ref)) is not None:
-                services_by_name[obj.short_name] = obj
+                diagcomms_by_name[obj.short_name] = obj
             else:
                 logger.warning(f"Diag comm ref {ref!r} could not be resolved.")
 
-        services_by_name.update({
+        diagcomms_by_name.update({
             service.short_name: service for service in self._local_services
         })
-        services_by_name.update({
-            service.short_name: service for service in self._local_single_ecu_jobs
+        diagcomms_by_name.update({
+            secuj.short_name: secuj for secuj in self._local_single_ecu_jobs
         })
-        return services_by_name
+        return list(diagcomms_by_name.values())
 
-    def _compute_available_services_by_name(self, odxlinks: OdxLinkDatabase) -> Dict[str, DiagService]:
+    def _compute_available_services(self, odxlinks: OdxLinkDatabase) -> List[Union[DiagService, SingleEcuJob]]:
         """Helper method for initializing the available services.
         This computes the services that are inherited from other diagnostic layers."""
-        services_by_name = {}
+        result_dict = {}
 
-        # Look in parent refs for inherited services
-        # Fetch services from low priority parents first, then update with increasing priority
+        # Look in parent refs for inherited services Fetch services
+        # from low priority parents first, then update with increasing
+        # priority
         for parent_ref in self._get_parent_refs_sorted_by_priority():
-            services_by_name.update(
-                parent_ref.get_inherited_services_by_name())
+            for service in parent_ref.get_inherited_services():
+                result_dict[service.short_name] = service
 
-        services_by_name.update(self.__local_services_by_name(odxlinks))
-        return services_by_name
+        for service in self.__gather_local_services(odxlinks):
+            result_dict[service.short_name] = service
 
-    def _compute_available_data_object_properties_by_name(self) -> Dict[str, DopBase]:
+        return list(result_dict.values())
+
+    def _compute_available_data_object_properties(self) -> List[DopBase]:
         """Returns the locally defined and inherited DOPs."""
-        data_object_properties_by_name = {}
+        result_dict = {}
 
-        # Look in parent refs for inherited services
-        # Fetch services from low priority parents first, then update with increasing priority
+        # Look in parent refs for inherited DOPs. Fetch the DOPs from
+        # low priority parents first, then update with increasing
+        # priority
         for parent_ref in self._get_parent_refs_sorted_by_priority():
-            data_object_properties_by_name.update(
-                parent_ref.get_inherited_data_object_properties_by_name())
+            for dop in parent_ref.get_inherited_data_object_properties():
+                result_dict[dop.short_name] = dop
 
         if self.local_diag_data_dictionary_spec:
-            data_object_properties_by_name.update({
-                d.short_name: d for d in self.local_diag_data_dictionary_spec.all_data_object_properties
-            })
-        return data_object_properties_by_name
+            for dop in self.local_diag_data_dictionary_spec.all_data_object_properties:
+                result_dict[dop.short_name] = dop
+
+        return list(result_dict.values())
 
     def _compute_available_commmunication_parameters(self) -> List[CommunicationParameterRef]:
-        com_params = list()
+        com_params_dict: Dict[Tuple[str, str], CommunicationParameterRef] = dict()
 
-        # Look in parent refs for inherited services
-        # Fetch services from low priority parents first, then update with increasing priority
+        # Look in parent refs for inherited communication
+        # parameters. First fetch the communication parameters from
+        # low priority parents first, then update with increasing
+        # priority.
         for parent_ref in self._get_parent_refs_sorted_by_priority():
-            com_params.extend(parent_ref.get_inherited_communication_parameters())
-        com_params.extend(self._local_communication_parameters)
+            for cp in parent_ref.get_inherited_communication_parameters():
+                com_params_dict[(cp.short_name, cp.protocol_sn_ref)] = cp
 
-        return com_params
+        # finally, handle the locally specified communication parameters
+        for cp in self._local_communication_parameters:
+            com_params_dict[(cp.short_name, cp.protocol_sn_ref)] = cp
+
+        return list(com_params_dict.values())
 
     def _get_parent_refs_sorted_by_priority(self, reverse=False):
         return sorted(self.parent_refs, key=lambda pr: pr.get_inheritance_priority(), reverse=reverse)
@@ -472,7 +514,7 @@ class DiagLayer:
             cps = [cp for cp in cps if cp.is_functional == is_functional]
         if protocol_name:
             cps = [cp for cp in cps if cp.protocol_sn_ref in (None, protocol_name)]
-        
+
         if len(cps) > 1:
             warnings.warn(f"Communication parameter `{name}` specified more "
                           f"than once. Using first occurence.", OdxWarning)
@@ -489,14 +531,20 @@ class DiagLayer:
         if com_param is None:
             return None
 
-        result = com_param.get_subvalue("CP_CanPhysReqId")
+        with warnings.catch_warnings():
+            # depending on the protocol, we may get
+            # "Communication parameter 'CP_UniqueRespIdTable' does not
+            # specify 'CP_CanPhysReqId'" warning here. we don't want this
+            # warning and simply return None...
+            warnings.simplefilter("ignore", category=OdxWarning)
+            result = com_param.get_subvalue("CP_CanPhysReqId")
         if not result:
             return None
         assert isinstance(result, str)
 
         return int(result)
 
-    @deprecated(reason="use get_can_receive_id()")
+    @deprecated(details="use get_can_receive_id()")
     def get_receive_id(self) -> Optional[int]:
         return self.get_can_receive_id()
 
@@ -508,14 +556,20 @@ class DiagLayer:
         if com_param is None:
             return None
 
-        result = com_param.get_subvalue("CP_CanRespUSDTId")
+        with warnings.catch_warnings():
+            # depending on the protocol, we may get
+            # "Communication parameter 'CP_UniqueRespIdTable' does not
+            # specify 'CP_CanRespUSDTId'" warning here. we don't want this
+            # warning and simply return None...
+            warnings.simplefilter("ignore", category=OdxWarning)
+            result = com_param.get_subvalue("CP_CanRespUSDTId")
         if not result:
             return None
         assert isinstance(result, str)
 
         return int(result)
 
-    @deprecated(reason="use get_can_send_id()")
+    @deprecated(details="use get_can_send_id()")
     def get_send_id(self) -> Optional[int]:
         return self.get_can_send_id()
 
@@ -534,29 +588,37 @@ class DiagLayer:
 
         return int(result)
 
-    def get_doip_logical_ecu_address(self, doip_layer_name: str) -> Optional[int]:
+    def get_doip_logical_ecu_address(self, protocol_name: Optional[str] = None) -> Optional[int]:
         """Return the CP_DoIPLogicalEcuAddress.
-        The parameter doip_layer_name is required to distinguish between different interfaces, 
-        e.g., offboard and onboard DoIP Ethernet.
+
+        The parameter protocol_name is used to distinguish between
+        different interfaces, e.g., offboard and onboard DoIP
+        Ethernet.
         """
 
-        com_param = self.get_communication_parameter("CP_UniqueRespIdTable", 
-                                                    protocol_name=doip_layer_name, 
+        com_param = self.get_communication_parameter("CP_UniqueRespIdTable",
+                                                    protocol_name=protocol_name,
                                                     is_functional=False)
 
         if com_param is None:
             return None
-        
-        # The CP_DoIPLogicalEcuAddress is a subvalue of a complex Comparam called CP_UniqueRespIdTable
-        ecu_addr = com_param.get_subvalue("CP_DoIPLogicalEcuAddress")
+
+        # The CP_DoIPLogicalEcuAddress is specified by the
+        # "CP_DoIPLogicalEcuAddress" subvalue of the complex Comparam
+        # CP_UniqueRespIdTable. Depending of the underlying transport
+        # protocol, (i.e., CAN using ISO-TP) this subvalue might not
+        # exist.
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=OdxWarning)
+            ecu_addr = com_param.get_subvalue("CP_DoIPLogicalEcuAddress")
         if ecu_addr is None:
             return None
         return int(ecu_addr)
 
     def get_doip_logical_gateway_address(self, is_functional: Optional[bool] = False, protocol_name: Optional[str] = None) \
             -> Optional[int]:
-        """DoIp logical gateway address"""
-        com_param = self.get_communication_parameter("CP_DoIPLogicalGatewayAddress", 
+        """The logical gateway address for the diagnosis over IP transport protocol"""
+        com_param = self.get_communication_parameter("CP_DoIPLogicalGatewayAddress",
                                                      is_functional=is_functional,
                                                      protocol_name=protocol_name)
         if com_param is None:

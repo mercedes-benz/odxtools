@@ -22,7 +22,6 @@ last_request = None
 ecu_rx_id = None
 ecu_tx_id = None
 
-
 def handle_telegram(telegram_id, payload):
     global odx_diag_layer
     global last_request
@@ -106,6 +105,7 @@ async def passive_main(args):
 
     ecu_rx_id = int(args.rx, 0)
     ecu_tx_id = int(args.tx, 0)
+
     isotp_decoder = init_verbose_state_machine(BaseClass=ism.IsoTpStateMachine,
                                                can_rx_ids=[ecu_rx_id, ecu_tx_id])
 
@@ -133,6 +133,8 @@ def add_cli_arguments(parser):
                         help="CAN ID in which the ECU sends replys to diagnostic messages  (required in active mode)")
     parser.add_argument("--variant", "-v", default=None, required=False,
                         help="Name of the ECU variant which the decode process ought to be based on")
+    parser.add_argument("--protocol", "-p", default=None, required=False,
+                        help="Name of the protocol used for decoding")
     _parser_utils.add_pdx_argument(parser)
 
 
@@ -157,25 +159,37 @@ def run(args, odx_database=None):
 
     odx_diag_layer = None
     if odx_database is not None:
-        odx_diag_layer = odx_database.diag_layers[args.variant]
+        odx_diag_layer = odx_database.diag_layers.get(args.variant)
 
         if odx_diag_layer is None:
             print(
                 f"Variant '{args.variant}' does not exist. Available variants:")
             for dl in odx_database.diag_layers:
-                print(f"  {dl.short_name}")
+                desc = "" if dl.description is None else f": {dl.description}"
+                print(f"  {dl.short_name}{desc}")
+            sys.exit(1)
+
+    protocol_name = args.protocol
+    if odx_diag_layer is not None and protocol_name is not None:
+        protocol_names = [ x.short_name for x in odx_diag_layer.protocols ]
+        if protocol_name not in protocol_names:
+            print(f"ECU variant {odx_diag_layer.short_name} does not support "
+                  f"a protocol named '{protocol_name}'. Supported protocols are:")
+            for x in odx_diag_layer.protocols:
+                desc = "" if x.description is None else f": {dl.description}"
+                print(f"  {x.short_name}{desc}")
             sys.exit(1)
 
     # if no can IDs have been explicitly specified, take them from the DL
     if args.rx is None and odx_diag_layer:
-        args.rx = str(odx_diag_layer.get_receive_id())
+        args.rx = str(odx_diag_layer.get_can_receive_id(protocol_name=protocol_name))
 
     if args.tx is None and odx_diag_layer:
-        args.tx = str(odx_diag_layer.get_send_id())
+        args.tx = str(odx_diag_layer.get_can_send_id(protocol_name=protocol_name))
 
     if args.rx is None:
         print(
-            f"If no database and variant is specified, a CAN receive ID must be provided.")
+            f"Could not determine a CAN receive ID.")
         sys.exit(1)
 
     if args.active:
