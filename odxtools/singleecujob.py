@@ -4,12 +4,11 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Optional, Union, cast
 
-from .utils import short_name_as_id
 from .dataobjectproperty import DopBase
 from .admindata import AdminData
 from .audience import Audience
 from .functionalclass import FunctionalClass
-from .utils import create_description_from_et
+from .utils import create_description_from_et, short_name_as_id, str_to_bool
 from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
 from .nameditemlist import NamedItemList
 from .globals import logger
@@ -240,9 +239,12 @@ class SingleEcuJob:
     # xsd:attributes inherited from DIAG-COMM (and thus shared with DIAG-SERVICE)
     semantic: Optional[str] = None
     diagnostic_class: Optional[DiagClassType] = None
-    is_mandatory: bool = False
-    is_executable: bool = True
-    is_final: bool = False
+    is_mandatory: Optional[bool] = None
+    _is_executable: Optional[bool] = None
+    @property
+    def is_executable(self):
+        return self._is_executable in (None, True)
+    is_final: Optional[bool] = None
     sdgs: List[SpecialDataGroup] = field(default_factory=list)
 
     def __post_init__(self) -> None:
@@ -300,10 +302,9 @@ class SingleEcuJob:
         ]
 
         # Read boolean flags. Note that the "else" clause contains the default value.
-        is_mandatory = True if et_element.get("IS-MANDATORY") == "true" else False
-        is_executable = (False if et_element.get("IS-EXECUTABLE") == "false"
-                         else True)
-        is_final = True if et_element.get("IS-FINAL") == "true" else False
+        is_mandatory = str_to_bool(et_element.get("IS-MANDATORY"))
+        is_executable = str_to_bool(et_element.get("IS-MANDATORY"))
+        is_final = str_to_bool(et_element.get("IS-FINAL"))
 
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
@@ -320,7 +321,7 @@ class SingleEcuJob:
                             output_params=output_params,
                             neg_output_params=neg_output_params,
                             is_mandatory=is_mandatory,
-                            is_executable=is_executable,
+                            _is_executable=is_executable,
                             is_final=is_final,
                             sdgs=sdgs)
 

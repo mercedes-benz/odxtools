@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING, List, Union, Optional
 
-from .utils import create_description_from_et
+from .utils import create_description_from_et, str_to_bool
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 from .structures import BasicStructure
 from .dataobjectproperty import DopBase
@@ -25,11 +25,11 @@ class EndOfPduField(DopBase):
                  structure_snref=None,
                  min_number_of_items=0,
                  max_number_of_items=None,
-                 is_visible=False,
+                 _is_visible: Optional[bool] = None,
                  long_name=None,
                  description=None):
         super().__init__(odx_id, short_name, long_name=long_name,
-                         description=description, is_visible=is_visible)
+                         description=description, _is_visible=_is_visible)
 
         self.structure_snref = structure_snref
         self.structure_ref = structure_ref
@@ -41,8 +41,6 @@ class EndOfPduField(DopBase):
 
         self.min_number_of_items = min_number_of_items
         self.max_number_of_items = max_number_of_items
-
-        self.is_visible = is_visible
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) \
@@ -80,12 +78,7 @@ class EndOfPduField(DopBase):
         else:
             max_number_of_items = None
 
-        is_visible = et_element.get("IS-VISIBLE")
-        if is_visible is not None:
-            assert is_visible in ["true", "false"]
-            is_visible = is_visible == "true"
-        else:
-            is_visible = False
+        _is_visible = str_to_bool(et_element.get("IS-VISIBLE"))
         eopf = EndOfPduField(odx_id,
                              short_name,
                              long_name=long_name,
@@ -94,7 +87,7 @@ class EndOfPduField(DopBase):
                              structure_snref=structure_snref,
                              min_number_of_items=min_number_of_items,
                              max_number_of_items=max_number_of_items,
-                             is_visible=is_visible)
+                             _is_visible=_is_visible)
 
         return eopf
 

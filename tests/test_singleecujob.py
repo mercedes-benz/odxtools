@@ -25,7 +25,7 @@ from odxtools.odxtypes import DataType
 from odxtools.physicaltype import PhysicalType
 from odxtools.singleecujob import (InputParam, NegOutputParam, OutputParam,
                                    ProgCode, SingleEcuJob)
-from odxtools.utils import short_name_as_id
+from odxtools.utils import short_name_as_id, bool_to_str
 from odxtools.write_pdx_file import jinja2_odxraise_helper
 
 doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
@@ -150,7 +150,8 @@ class TestSingleEcuJob(unittest.TestCase):
                 <FUNCT-CLASS-REFS>
                     <FUNCT-CLASS-REF ID-REF="{self.singleecujob_object.functional_class_refs[0].ref_id}"/>
                 </FUNCT-CLASS-REFS>
-                <AUDIENCE>
+                <AUDIENCE
+                          IS-MANUFACTORING="false">
                     <ENABLED-AUDIENCE-REFS>
                         <ENABLED-AUDIENCE-REF ID-REF="{cast(Audience, self.singleecujob_object.audience).enabled_audience_refs[0].ref_id}"/>
                     </ENABLED-AUDIENCE-REFS>
@@ -213,6 +214,7 @@ class TestSingleEcuJob(unittest.TestCase):
         jinja_env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(templates_dir))
         jinja_env.globals['odxraise'] = jinja2_odxraise_helper
+        jinja_env.globals['bool_to_str'] = bool_to_str
         jinja_env.globals['hasattr'] = hasattr
         jinja_env.filters["odxtools_collapse_xml_attribute"] = (
             lambda x: " " + x.strip() if x.strip() else "")

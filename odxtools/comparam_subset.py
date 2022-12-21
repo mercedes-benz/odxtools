@@ -1,5 +1,3 @@
-
-
 from dataclasses import dataclass, field
 from typing import Any, Union, Dict, List, Literal, Optional
 from xml.etree.ElementTree import Element
@@ -10,7 +8,7 @@ from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .units import UnitSpec
 from .admindata import AdminData
 from .companydata import CompanyData, create_company_datas_from_et
-from .utils import create_description_from_et, short_name_as_id
+from .utils import create_description_from_et, short_name_as_id, str_to_bool
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 
 StandardizationLevel = Literal[
@@ -94,8 +92,7 @@ class ComplexComparam(BaseComparam):
         if cpdv_elem := et_element.find("COMPLEX-PHYSICAL-DEFAULT-VALUE"):
             self.complex_physical_default_value = create_complex_value_from_et(cpdv_elem)
 
-        tmp = et_element.get("ALLOW-MULTIPLE-VALUES")
-        self.allow_multiple_values = (tmp == "true") if tmp is not None else None
+        self.allow_multiple_values = str_to_bool(et_element.get("ALLOW-MULTIPLE-VALUES"))
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         super()._resolve_references(odxlinks)

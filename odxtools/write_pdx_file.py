@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Tuple
 
 from .exceptions import OdxError
 from .comparam_subset import BaseComparam, Comparam, ComplexComparam
+from .utils import bool_to_str
 
 odxdatabase = None
 
@@ -97,6 +98,7 @@ def write_pdx_file(output_file_name : str,
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
         jinja_env.globals['hasattr'] = hasattr
         jinja_env.globals['odxraise'] = jinja2_odxraise_helper
+        jinja_env.globals['bool_to_str'] = bool_to_str
 
         # allows to put XML attributes on a separate line while it is
         # collapsed with the previous line in the rendering

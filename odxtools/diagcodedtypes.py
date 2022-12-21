@@ -11,6 +11,7 @@ from .globals import xsi, logger
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .odxlink import OdxLinkId, OdxDocFragment
+from .utils import str_to_bool
 
 import bitstruct
 
@@ -31,11 +32,15 @@ class DiagCodedType(abc.ABC):
                  base_data_type: Union[str, DataType],
                  dct_type: str,
                  base_type_encoding=None,
-                 is_highlow_byte_order: bool = True):
+                 _is_highlow_byte_order: Optional[bool] = None):
         self.base_data_type = DataType(base_data_type)
         self.dct_type = dct_type
         self.base_type_encoding = base_type_encoding
-        self.is_highlow_byte_order = is_highlow_byte_order
+        self._is_highlow_byte_order = _is_highlow_byte_order
+
+    @property
+    def is_highlow_byte_order(self) -> bool:
+        return self._is_highlow_byte_order in [None, True]
 
     def _extract_internal(self,
                           coded_message: bytes,
@@ -67,7 +72,12 @@ class DiagCodedType(abc.ABC):
                 f"Don't know how to handle bit_mask={bit_mask}.")
 
         # Apply byteorder
-        if not is_highlow_byte_order and base_data_type not in [DataType.A_UNICODE2STRING, DataType.A_BYTEFIELD, DataType.A_ASCIISTRING, DataType.A_UTF8STRING]:
+        if not is_highlow_byte_order and \
+           base_data_type not in [
+               DataType.A_UNICODE2STRING,
+               DataType.A_BYTEFIELD,
+               DataType.A_ASCIISTRING,
+               DataType.A_UTF8STRING]:
             extracted_bytes = extracted_bytes[::-1]
 
         format_letter = ODX_TYPE_TO_FORMAT_LETTER[base_data_type]
@@ -194,11 +204,11 @@ class LeadingLengthInfoType(DiagCodedType):
                  base_data_type,
                  bit_length,
                  base_type_encoding=None,
-                 is_highlow_byte_order=True):
+                 _is_highlow_byte_order=True):
         super().__init__(base_data_type,
                          dct_type="LEADING-LENGTH-INFO-TYPE",
                          base_type_encoding=base_type_encoding,
-                         is_highlow_byte_order=is_highlow_byte_order)
+                         _is_highlow_byte_order=_is_highlow_byte_order)
         self.bit_length = bit_length
         assert self.bit_length > 0, "A Leading length info type with bit length == 0 does not make sense."
         assert self.base_data_type in [DataType.A_BYTEFIELD, DataType.A_ASCIISTRING, DataType.A_UNICODE2STRING, DataType.A_UTF8STRING], (
@@ -269,11 +279,11 @@ class MinMaxLengthType(DiagCodedType):
                  termination,
                  max_length=None,
                  base_type_encoding=None,
-                 is_highlow_byte_order=True):
+                 _is_highlow_byte_order=None):
         super().__init__(base_data_type,
                          dct_type="MIN-MAX-LENGTH-TYPE",
                          base_type_encoding=base_type_encoding,
-                         is_highlow_byte_order=is_highlow_byte_order)
+                         _is_highlow_byte_order=_is_highlow_byte_order)
         assert max_length is None or min_length <= max_length
         self.min_length = min_length
         self.max_length = max_length
@@ -408,11 +418,11 @@ class ParamLengthInfoType(DiagCodedType):
                  base_data_type: Union[str, DataType],
                  length_key_id: OdxLinkId,
                  base_type_encoding=None,
-                 is_highlow_byte_order=True):
+                 _is_highlow_byte_order=True):
         super().__init__(base_data_type,
                          dct_type="PARAM-LENGTH-INFO-TYPE",
                          base_type_encoding=base_type_encoding,
-                         is_highlow_byte_order=is_highlow_byte_order)
+                         _is_highlow_byte_order=_is_highlow_byte_order)
         self.length_key_id = length_key_id
 
     def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> bytes:
@@ -480,14 +490,14 @@ class StandardLengthType(DiagCodedType):
     def __init__(self,
                  base_data_type: Union[str, DataType],
                  bit_length: int,
-                 bit_mask=None,
-                 condensed: bool = False,
-                 base_type_encoding=None,
-                 is_highlow_byte_order=True):
+                 bit_mask = None,
+                 condensed: Optional[bool] = None,
+                 base_type_encoding = None,
+                 _is_highlow_byte_order = True):
         super().__init__(base_data_type,
                          dct_type="STANDARD-LENGTH-TYPE",
                          base_type_encoding=base_type_encoding,
-                         is_highlow_byte_order=is_highlow_byte_order)
+                         _is_highlow_byte_order=_is_highlow_byte_order)
         self.bit_length = bit_length
         self.bit_mask = bit_mask
         self.condensed = condensed
@@ -532,14 +542,7 @@ def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragmen
     assert base_data_type in ["A_INT32", "A_UINT32", "A_FLOAT32", "A_FLOAT64",
                               "A_ASCIISTRING", "A_UTF8STRING", "A_UNICODE2STRING", "A_BYTEFIELD"]
 
-    if et_element.get("IS-HIGHLOW-BYTE-ORDER") is not None:
-        assert et_element.get("IS-HIGHLOW-BYTE-ORDER") in ["true", "false"]
-        is_highlow_byte_order = et_element.get(
-            "IS-HIGHLOW-BYTE-ORDER") == "true"
-        logger.debug(
-            f"HIGH-LOW-BYTE-ORDER set to {is_highlow_byte_order}")
-    else:
-        is_highlow_byte_order = True
+    _is_highlow_byte_order = str_to_bool(et_element.get("IS-HIGHLOW-BYTE-ORDER"))
 
     dct_type = et_element.get(f"{xsi}type")
     bit_length = None
@@ -548,7 +551,7 @@ def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragmen
         return LeadingLengthInfoType(base_data_type,
                                      bit_length=bit_length,
                                      base_type_encoding=base_type_encoding,
-                                     is_highlow_byte_order=is_highlow_byte_order)
+                                     _is_highlow_byte_order=_is_highlow_byte_order)
     elif dct_type == "MIN-MAX-LENGTH-TYPE":
         min_length = int(et_element.findtext("MIN-LENGTH"))
         max_length = None
@@ -561,7 +564,7 @@ def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragmen
                                 max_length=max_length,
                                 termination=termination,
                                 base_type_encoding=base_type_encoding,
-                                is_highlow_byte_order=is_highlow_byte_order)
+                                _is_highlow_byte_order=_is_highlow_byte_order)
     elif dct_type == "PARAM-LENGTH-INFO-TYPE":
         # TODO: This is a bit hacky: we make an ID where the data
         # specifies a reference. The reason is that we need to store
@@ -576,17 +579,17 @@ def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragmen
         return ParamLengthInfoType(base_data_type,
                                    length_key_id,
                                    base_type_encoding=base_type_encoding,
-                                   is_highlow_byte_order=is_highlow_byte_order)
+                                   _is_highlow_byte_order=_is_highlow_byte_order)
     elif dct_type == "STANDARD-LENGTH-TYPE":
         bit_length = int(et_element.findtext("BIT-LENGTH"))
         bit_mask = None
         if et_element.find("BIT-MASK"):
             bit_mask = et_element.findtext("BIT-MASK")
-        condensed = et_element.get("CONDENSED") == "true"
+        condensed = str_to_bool(et_element.get("CONDENSED"))
         return StandardLengthType(base_data_type,
                                   bit_length,
                                   bit_mask=bit_mask,
                                   condensed=condensed,
                                   base_type_encoding=base_type_encoding,
-                                  is_highlow_byte_order=is_highlow_byte_order)
+                                  _is_highlow_byte_order=_is_highlow_byte_order)
     raise NotImplementedError(f"I do not know the diag-coded-type {dct_type}")

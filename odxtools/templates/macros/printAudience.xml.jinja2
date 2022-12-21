@@ -19,32 +19,22 @@
 {%- endmacro -%}
 
 {%- macro printAudience(audience) -%}
-<AUDIENCE 
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if not audience.is_supplier %}
-                 IS-SUPPLIER="false"
+<AUDIENCE
+  {%- if audience._is_supplier is not none %}
+                 IS-SUPPLIER="{{bool_to_str(audience._is_supplier)}}"
   {%- endif %}
- {%- endfilter %}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if not audience.is_development %}
-                 IS-DEVELOPMENT="false"
+  {%- if audience._is_development is not none %}
+                 IS-DEVELOPMENT="{{bool_to_str(audience._is_development)}}"
   {%- endif %}
- {%- endfilter %}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if not audience.is_manufacturing %}
-                 IS-MANUFACTURING="false"
+  {%- if audience._is_manufactoring is not none %}
+                 IS-MANUFACTORING="{{bool_to_str(audience._is_manufactoring)}}"
   {%- endif %}
- {%- endfilter %}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if not audience.is_aftersales %}
-                 IS-AFTERSALES="false"
+  {%- if audience._is_aftersales is not none %}
+                 IS-AFTERSALES="{{bool_to_str(audience._is_aftersales)}}"
   {%- endif %}
- {%- endfilter %}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if not audience.is_aftermarket %}
-                 IS-AFTERMARKET="false"
-  {%- endif %}
- {%- endfilter %} >
+  {%- if audience._is_aftermarket is not none %}
+                 IS-AFTERMARKET="{{bool_to_str(audience._is_aftermarket)}}"
+  {%- endif %} >
 {%- if audience.enabled_audience_refs %}
  <ENABLED-AUDIENCE-REFS>
 {%- for ref in audience.enabled_audience_refs %}
