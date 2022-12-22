@@ -362,63 +362,63 @@ class BasicStructure(DopBase):
             else:
                 params.append(p)
 
-        i = 0
-        byte = 0
+        param_idx = 0
+        byte_idx = 0
         # needs to be one larger than the maximum digit length of a byte number
         indent_for_byte_numbering = 5 * " "
         formatted_lines = [indent_for_byte_numbering +
-                           "".join(f"   {7-bit}  " for bit in range(8))]
+                           "".join(f"   {7-bit_idx}  " for bit_idx in range(8))]
 
-        breakpoint = 0  # absolute bit position where the next parameter starts
+        stop_bit = 0  # absolute bit position where the next parameter starts
 
         divide_string = indent_for_byte_numbering + 8 * "+-----" + "+"
 
         error = False
         next_line = ""
-        while i <= len(params) and not error:  # For each byte
-            if 8 * byte == breakpoint and i == len(params):
+        while param_idx <= len(params) and not error:  # For each byte
+            if 8 * byte_idx == stop_bit and param_idx == len(params):
                 # If we have formatted the last parameter, we're done.
                 break
 
             formatted_lines.append(f"{divide_string}")
-            if breakpoint // 8 - byte > 5:
-                curr_param = params[i-1].short_name
+            if stop_bit // 8 - byte_idx > 5:
+                curr_param = params[param_idx-1].short_name
                 formatted_lines.append(
-                    indent_for_byte_numbering + f"  ... {breakpoint // 8 - byte} bytes belonging to {curr_param} ... ")
-                byte += breakpoint // 8 - byte
+                    indent_for_byte_numbering + f"  ... {stop_bit // 8 - byte_idx} bytes belonging to {curr_param} ... ")
+                byte_idx += stop_bit // 8 - byte_idx
                 continue
 
-            next_line = f"{(len(indent_for_byte_numbering) - 1 - len(str(byte))) * ' '}{byte} "
+            next_line = f"{(len(indent_for_byte_numbering) - 1 - len(str(byte_idx))) * ' '}{byte_idx} "
 
-            for bit in range(8):
-                assert 8 * byte + bit <= breakpoint
+            for bit_idx in range(8):
+                assert 8 * byte_idx + bit_idx <= stop_bit
 
-                if 8 * byte + bit == breakpoint:
+                if 8 * byte_idx + bit_idx == stop_bit:
                     # END-OF-PDU fields do not exhibit a fixed bit
                     # length, so they need special treatment here
                     dct = None
-                    if hasattr(params[i], 'dop'):
-                        dop = params[i].dop # type: ignore
+                    if hasattr(params[param_idx], 'dop'):
+                        dop = params[param_idx].dop # type: ignore
                         if hasattr(dop, 'diag_coded_type'):
                             dct = dop.diag_coded_type
 
                     if dct is not None and dct.dct_type == 'MIN-MAX-LENGTH-TYPE':
-                        name = params[i].short_name + " ("
+                        name = params[param_idx].short_name + " ("
                         if dct.termination == "END-OF-PDU":
                             name += "End of PDU, "
                         name += f"{dct.min_length}..{dct.max_length} bytes"
                         name += ")"
                         next_line += "| " + name
 
-                        i += 1
+                        param_idx += 1
 
                         # adding 8 is is a bit hacky here, but hey, it
                         # works ...
-                        breakpoint += 8
+                        stop_bit += 8
 
                         break
 
-                    elif not params[i].bit_length and not allow_unknown_lengths:
+                    elif not params[param_idx].bit_length and not allow_unknown_lengths:
                         # The bit length is not set for the current
                         # parameter, i.e. it was either not specified
                         # or the parameter is of variable length and
@@ -427,36 +427,37 @@ class BasicStructure(DopBase):
                         error = True
                         break
                     else:
-                        breakpoint += params[i].bit_length or (
+                        stop_bit += params[param_idx].bit_length or (
                             allow_unknown_lengths and 8)
-                        name = params[i].short_name + \
-                            f" ({params[i].bit_length or 'Unknown'} bits)"
+                        name = params[param_idx].short_name + \
+                            f" ({params[param_idx].bit_length or 'Unknown'} bits)"
                         next_line += "| " + name
 
-                    i += 1
+                    param_idx += 1
 
-                    if byte == breakpoint // 8:
-                        char_pos = bit * 6 + 2 + len(name)
-                        width_of_line = (breakpoint % 8) * 6
+                    if byte_idx == stop_bit // 8:
+                        char_pos = bit_idx * 6 + 2 + len(name)
+                        width_of_line = (stop_bit % 8) * 6
                         if char_pos < width_of_line:
                             next_line += " " * \
                                 (width_of_line - char_pos) + "|"
                         # start next line (belongs to same byte)
                         formatted_lines.append(next_line)
-                        # fill next line with white spaces upto the bit where next parameter starts
+                        # fill next line with white spaces up to the
+                        # bit where next parameter starts
                         next_line = indent_for_byte_numbering + \
-                            (bit + 1) * 6 * " "
+                            (bit_idx + 1) * 6 * " "
                     else:
-                        char_pos = 2 + bit * 6 + len(name)
+                        char_pos = 2 + bit_idx * 6 + len(name)
                         width_of_line = 8 * 6
                         if char_pos < width_of_line:
                             next_line += " " * \
                                 (width_of_line - char_pos) + "|"
                         break
                 else:
-                    if bit == 0:
+                    if bit_idx == 0:
                         next_line += "|" + 5 * " "
-                    elif bit == 7:
+                    elif bit_idx == 7:
                         next_line += 6 * " " + "|"
                     else:
                         next_line += 6 * " "
@@ -464,7 +465,7 @@ class BasicStructure(DopBase):
             formatted_lines.append(next_line)
             next_line = ""
 
-            byte += 1
+            byte_idx += 1
 
         if not error:
             formatted_lines.append(divide_string)
