@@ -44,6 +44,60 @@ class EndOfPduField(DopBase):
 
         self.is_visible = is_visible
 
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
+            -> "EndOfPduField":
+        odx_id = OdxLinkId.from_et(et_element, doc_frags)
+        assert odx_id is not None
+        short_name = et_element.findtext("SHORT-NAME")
+        long_name = et_element.findtext("LONG-NAME")
+        description = read_description_from_odx(et_element.find("DESC"))
+
+        structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
+
+        structure_snref = None
+        if et_element.find("BASIC-STRUCTURE-SNREF") is not None:
+            structure_snref = et_element.find(
+                "BASIC-STRUCTURE-SNREF").get("SHORT-NAME")
+        assert (structure_ref is not None) or (structure_snref is not None)
+
+        if et_element.find("ENV-DATA-DESC-REF") is not None:
+            structure_ref = OdxLinkRef.from_et(et_element.get("ENV-DATA-DESC-REF"), doc_frags)
+            structure_snref = None
+
+        if et_element.find("ENV-DATA-DESC-SNREF") is not None:
+            structure_ref = None
+            structure_snref = et_element.get("ENV-DATA-DESC-SNREF")
+
+        if et_element.find("MIN-NUMBER-OF-ITEMS") is not None:
+            min_number_of_items = int(
+                et_element.findtext("MIN-NUMBER-OF-ITEMS"))
+        else:
+            min_number_of_items = None
+        if et_element.find("MAX-NUMBER-OF-ITEMS") is not None:
+            max_number_of_items = int(
+                et_element.findtext("MAX-NUMBER-OF-ITEMS"))
+        else:
+            max_number_of_items = None
+
+        is_visible = et_element.get("IS-VISIBLE")
+        if is_visible is not None:
+            assert is_visible in ["true", "false"]
+            is_visible = is_visible == "true"
+        else:
+            is_visible = False
+        eopf = EndOfPduField(odx_id,
+                             short_name,
+                             long_name=long_name,
+                             description=description,
+                             structure_ref=structure_ref,
+                             structure_snref=structure_snref,
+                             min_number_of_items=min_number_of_items,
+                             max_number_of_items=max_number_of_items,
+                             is_visible=is_visible)
+
+        return eopf
+
     @property
     def structure(self) -> "BasicStructure":
         """may be a Structure or a env-data-desc"""
@@ -108,57 +162,3 @@ class EndOfPduField(DopBase):
         ] + [
             " " + str(self.structure).replace("\n", "\n ")
         ])
-
-
-def read_end_of_pdu_field_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
-    -> EndOfPduField:
-    odx_id = OdxLinkId.from_et(et_element, doc_frags)
-    assert odx_id is not None
-    short_name = et_element.findtext("SHORT-NAME")
-    long_name = et_element.findtext("LONG-NAME")
-    description = read_description_from_odx(et_element.find("DESC"))
-
-    structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
-
-    structure_snref = None
-    if et_element.find("BASIC-STRUCTURE-SNREF") is not None:
-        structure_snref = et_element.find(
-            "BASIC-STRUCTURE-SNREF").get("SHORT-NAME")
-    assert (structure_ref is not None) or (structure_snref is not None)
-
-    if et_element.find("ENV-DATA-DESC-REF") is not None:
-        structure_ref = OdxLinkRef.from_et(et_element.get("ENV-DATA-DESC-REF"), doc_frags)
-        structure_snref = None
-
-    if et_element.find("ENV-DATA-DESC-SNREF") is not None:
-        structure_ref = None
-        structure_snref = et_element.get("ENV-DATA-DESC-SNREF")
-
-    if et_element.find("MIN-NUMBER-OF-ITEMS") is not None:
-        min_number_of_items = int(
-            et_element.findtext("MIN-NUMBER-OF-ITEMS"))
-    else:
-        min_number_of_items = None
-    if et_element.find("MAX-NUMBER-OF-ITEMS") is not None:
-        max_number_of_items = int(
-            et_element.findtext("MAX-NUMBER-OF-ITEMS"))
-    else:
-        max_number_of_items = None
-
-    is_visible = et_element.get("IS-VISIBLE")
-    if is_visible is not None:
-        assert is_visible in ["true", "false"]
-        is_visible = is_visible == "true"
-    else:
-        is_visible = False
-    eopf = EndOfPduField(odx_id,
-                         short_name,
-                         long_name=long_name,
-                         description=description,
-                         structure_ref=structure_ref,
-                         structure_snref=structure_snref,
-                         min_number_of_items=min_number_of_items,
-                         max_number_of_items=max_number_of_items,
-                         is_visible=is_visible)
-
-    return eopf

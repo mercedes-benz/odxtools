@@ -4,13 +4,17 @@
 import warnings
 from typing import Any, List, Optional, Union
 
-from .comparam_subset import (BaseComparam, Comparam, ComplexComparam,
-                              ComplexValue, read_complex_value_from_odx)
+from .comparam_subset import (
+    BaseComparam,
+    Comparam,
+    ComplexComparam,
+    ComplexValue,
+    read_complex_value_from_odx,
+)
 from .diaglayertype import DIAG_LAYER_TYPE
 from .exceptions import OdxWarning
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from .utils import read_description_from_odx
-
 
 class CommunicationParameterRef:
 
@@ -28,6 +32,43 @@ class CommunicationParameterRef:
         self.protocol_sn_ref = protocol_sn_ref
         self.prot_stack_sn_ref = prot_stack_sn_ref
         self.comparam: Optional[BaseComparam] = None
+
+    @staticmethod
+    def from_et(et_element,
+                doc_frags: List[OdxDocFragment],
+                dl_type: DIAG_LAYER_TYPE) \
+            -> "CommunicationParameterRef":
+        id_ref = OdxLinkRef.from_et(et_element, doc_frags)
+        assert id_ref is not None
+
+        # ODX standard v2.0.0 defined only VALUE. ODX v2.0.1 decided
+        # to break things and change it to choice between SIMPLE-VALUE
+        # and COMPLEX-VALUE
+        if et_element.find("VALUE") is not None:
+            value = et_element.findtext("VALUE")
+        elif et_element.find("SIMPLE-VALUE") is not None:
+            value = et_element.findtext("SIMPLE-VALUE")
+        else:
+            value = read_complex_value_from_odx(et_element.find("COMPLEX-VALUE"))
+
+        is_functional = (dl_type == DIAG_LAYER_TYPE.FUNCTIONAL_GROUP)
+        description = read_description_from_odx(et_element.find("DESC"))
+
+        prot_stack_snref = None
+        if (psnref_elem := et_element.find("PROT-STACK-SNREF")) is not None:
+            prot_stack_snref = psnref_elem.get("SHORT-NAME")
+
+        protocol_snref = None
+        if (psnref_elem := et_element.find("PROTOCOL-SNREF")) is not None:
+            protocol_snref = psnref_elem.get("SHORT-NAME")
+
+        return CommunicationParameterRef(value,
+                                         id_ref,
+                                         is_functional=is_functional,
+                                         description=description,
+                                         protocol_sn_ref=protocol_snref,
+                                         prot_stack_sn_ref=prot_stack_snref
+                                         )
 
     def __repr__(self) -> str:
         val = self.value
@@ -105,36 +146,3 @@ class CommunicationParameterRef:
         # ODXLINK IDs allow dots and hyphens, but python identifiers do not.
         # This should not happen anyway in a correct PDX
         return self.id_ref.ref_id.replace(".", "__").replace("-", "_")
-
-def read_communication_param_ref_from_odx(et_element, doc_frags: List[OdxDocFragment], dl_type: DIAG_LAYER_TYPE):
-    id_ref = OdxLinkRef.from_et(et_element, doc_frags)
-    assert id_ref is not None
-
-    # ODX standard v2.0.0 defined only VALUE
-    # ODX standard v2.0.1 decided to break things and change it to choice between SIMPLE-VALUE and COMPLEX-VALUE
-    if et_element.find("VALUE") is not None:
-        value = et_element.findtext("VALUE")
-    elif et_element.find("SIMPLE-VALUE") is not None:
-        value = et_element.findtext("SIMPLE-VALUE")
-    else:
-        value = read_complex_value_from_odx(et_element.find("COMPLEX-VALUE"))
-
-    is_functional = (dl_type == DIAG_LAYER_TYPE.FUNCTIONAL_GROUP)
-
-    description = read_description_from_odx(et_element.find("DESC"))
-
-    prot_stack_snref = None
-    if (psnref_elem := et_element.find("PROT-STACK-SNREF")) is not None:
-        prot_stack_snref = psnref_elem.get("SHORT-NAME")
-
-    protocol_snref = None
-    if (psnref_elem := et_element.find("PROTOCOL-SNREF")) is not None:
-        protocol_snref = psnref_elem.get("SHORT-NAME")
-
-    return CommunicationParameterRef(value,
-                                     id_ref,
-                                     is_functional=is_functional,
-                                     description=description,
-                                     protocol_sn_ref=protocol_snref,
-                                     prot_stack_sn_ref=prot_stack_snref
-                                     )

@@ -27,6 +27,26 @@ class MultiplexerCase:
     def __post_init__(self) -> None:
         self._structure: Optional[BasicStructure] = None
 
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
+            -> "MultiplexerCase":
+
+        """Reads a Case for a Multiplexer."""
+        short_name = et_element.findtext("SHORT-NAME")
+        long_name = et_element.findtext("LONG-NAME")
+        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
+        assert structure_ref is not None
+        lower_limit = et_element.findtext("LOWER-LIMIT")
+        upper_limit = et_element.findtext("UPPER-LIMIT")
+
+        return MultiplexerCase(
+            short_name=short_name,
+            long_name=long_name,
+            structure_ref=structure_ref,
+            lower_limit=lower_limit,
+            upper_limit=upper_limit,
+        )
+
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         self._structure = odxlinks.resolve(self.structure_ref)
 
@@ -55,6 +75,22 @@ class MultiplexerDefaultCase:
     def __post_init__(self) -> None:
         self._structure: Optional[BasicStructure] = None
 
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
+            -> "MultiplexerDefaultCase":
+
+        """Reads a Default Case for a Multiplexer."""
+        short_name = et_element.findtext("SHORT-NAME")
+        long_name = et_element.findtext("LONG-NAME")
+
+        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
+
+        return MultiplexerDefaultCase(
+            short_name=short_name,
+            long_name=long_name,
+            structure_ref=structure_ref,
+        )
+
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         if self.structure_ref is not None:
             self._structure = odxlinks.resolve(self.structure_ref)
@@ -81,6 +117,23 @@ class MultiplexerSwitchKey:
 
     def __post_init__(self):
         self._dop: DataObjectProperty = None # type: ignore
+
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
+            -> "MultiplexerSwitchKey":
+        """Reads a Switch Key for a Multiplexer."""
+        byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
+        assert byte_position is not None
+        bit_position_str = et_element.findtext("BIT-POSITION")
+        bit_position = int(bit_position_str) if bit_position_str is not None else None
+        dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
+        assert dop_ref is not None
+
+        return MultiplexerSwitchKey(
+            byte_position=byte_position,
+            bit_position=bit_position,
+            dop_ref=dop_ref,
+        )
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         dop = odxlinks.resolve(self.dop_ref)
@@ -117,6 +170,41 @@ class Multiplexer(DopBase):
     switch_key: MultiplexerSwitchKey
     default_case: Optional[MultiplexerDefaultCase] = None
     cases: Optional[List[MultiplexerCase]] = None
+
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
+            -> "Multiplexer":
+        """Reads a Multiplexer from Diag Layer."""
+        odx_id = OdxLinkId.from_et(et_element, doc_frags)
+        assert odx_id is not None
+        short_name = et_element.findtext("SHORT-NAME")
+        long_name = et_element.findtext("LONG-NAME")
+        byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
+        switch_key = MultiplexerSwitchKey.from_et(et_element.find("SWITCH-KEY"),
+                                                  doc_frags)
+
+        default_case = None
+        if et_element.find("DEFAULT-CASE") is not None:
+            default_case = MultiplexerDefaultCase.from_et(
+                et_element.find("DEFAULT-CASE"), doc_frags)
+
+        cases = []
+        if et_element.find("CASES") is not None:
+            cases = [
+                MultiplexerCase.from_et(el, doc_frags) for el in et_element.find("CASES").iterfind("CASE")
+            ]
+
+        logger.debug("Parsing MUX " + short_name)
+
+        return Multiplexer(
+            odx_id=odx_id,
+            short_name=short_name,
+            long_name=long_name,
+            byte_position=byte_position,
+            switch_key=switch_key,
+            default_case=default_case,
+            cases=cases,
+        )
 
     @property
     def bit_length(self):
@@ -257,85 +345,3 @@ class Multiplexer(DopBase):
             + ")"
         )
 
-
-def read_switch_key_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    """Reads a Switch Key for a Multiplexer."""
-    byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
-    assert byte_position is not None
-    bit_position_str = et_element.findtext("BIT-POSITION")
-    bit_position = int(bit_position_str) if bit_position_str is not None else None
-    dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
-    assert dop_ref is not None
-
-    return MultiplexerSwitchKey(
-        byte_position=byte_position,
-        bit_position=bit_position,
-        dop_ref=dop_ref,
-    )
-
-
-def read_default_case_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    """Reads a Default Case for a Multiplexer."""
-    short_name = et_element.findtext("SHORT-NAME")
-    long_name = et_element.findtext("LONG-NAME")
-
-    structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
-
-    return MultiplexerDefaultCase(
-        short_name=short_name,
-        long_name=long_name,
-        structure_ref=structure_ref,
-    )
-
-
-def read_case_from_odx(et_element, doc_frags: List[OdxDocFragment]):
-    """Reads a Case for a Multiplexer."""
-    short_name = et_element.findtext("SHORT-NAME")
-    long_name = et_element.findtext("LONG-NAME")
-    structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
-    assert structure_ref is not None
-    lower_limit = et_element.findtext("LOWER-LIMIT")
-    upper_limit = et_element.findtext("UPPER-LIMIT")
-
-    return MultiplexerCase(
-        short_name=short_name,
-        long_name=long_name,
-        structure_ref=structure_ref,
-        lower_limit=lower_limit,
-        upper_limit=upper_limit,
-    )
-
-
-def read_mux_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
-    -> Multiplexer:
-    """Reads a Multiplexer from Diag Layer."""
-    odx_id = OdxLinkId.from_et(et_element, doc_frags)
-    assert odx_id is not None
-    short_name = et_element.findtext("SHORT-NAME")
-    long_name = et_element.findtext("LONG-NAME")
-    byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
-    switch_key = read_switch_key_from_odx(et_element.find("SWITCH-KEY"),
-                                          doc_frags)
-
-    default_case = None
-    if et_element.find("DEFAULT-CASE") is not None:
-        default_case = read_default_case_from_odx(
-            et_element.find("DEFAULT-CASE"), doc_frags)
-
-    cases = []
-    if et_element.find("CASES") is not None:
-        cases = [
-            read_case_from_odx(el, doc_frags) for el in et_element.find("CASES").iterfind("CASE")
-        ]
-
-    logger.debug("Parsing MUX " + short_name)
-
-    return Multiplexer(
-        odx_id=odx_id,
-        short_name=short_name,
-        long_name=long_name,
-        byte_position=byte_position,
-        switch_key=switch_key,
-        default_case=default_case,
-        cases=cases,
-    )

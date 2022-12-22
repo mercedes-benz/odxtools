@@ -14,8 +14,14 @@ from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, OdxWarning
 from .globals import logger
 from .nameditemlist import NamedItemList
-from .parameters import Parameter, ParameterWithDOP, read_parameter_from_odx
-from .parameters import CodedConstParameter, MatchingRequestParameter, ValueParameter
+from .parameters import (
+    read_parameter_from_odx,
+    Parameter,
+    ParameterWithDOP,
+    CodedConstParameter,
+    MatchingRequestParameter,
+    ValueParameter,
+)
 from .utils import read_description_from_odx
 from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
 from .specialdata import SpecialDataGroup, read_sdgs_from_odx
@@ -576,7 +582,10 @@ class Response(BasicStructure):
         return f"Response('{self.short_name}')"
 
 
-def read_structure_from_odx(et_element, doc_frags: List[OdxDocFragment]) -> Union[Structure, Request, Response, None]:
+def read_structure_from_odx(et_element,
+                                doc_frags: List[OdxDocFragment]) \
+        -> Union[Structure, Request, Response, None]:
+
     odx_id = OdxLinkId.from_et(et_element, doc_frags)
     short_name = et_element.findtext("SHORT-NAME")
     long_name = et_element.findtext("LONG-NAME")

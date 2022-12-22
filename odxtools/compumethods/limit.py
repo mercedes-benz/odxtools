@@ -3,8 +3,9 @@
 
 
 from enum import Enum
-from typing import NamedTuple, Union
+from typing import Optional, NamedTuple, Union
 
+from ..odxtypes import DataType
 
 class IntervalType(Enum):
     OPEN = "OPEN"
@@ -15,6 +16,33 @@ class IntervalType(Enum):
 class Limit(NamedTuple):
     value: Union[str, int, float, bytes]
     interval_type: IntervalType = IntervalType.CLOSED
+
+    @staticmethod
+    def from_et(et_element, internal_type: DataType) \
+            -> Optional["Limit"]:
+
+        if et_element is None:
+            return None
+
+        if et_element.get("INTERVAL-TYPE"):
+            interval_type = IntervalType(et_element.get("INTERVAL-TYPE"))
+        else:
+            interval_type = IntervalType.CLOSED
+
+        if interval_type == IntervalType.INFINITE:
+            if et_element.tag == "LOWER-LIMIT":
+                return Limit(float("-inf"), interval_type)
+            else:
+                assert et_element.tag == "UPPER-LIMIT"
+                return Limit(float("inf"), interval_type)
+        elif internal_type == DataType.A_BYTEFIELD:
+            hex_text = et_element.text
+            if len(hex_text) % 2 == 1:
+                hex_text = '0' + hex_text
+            return Limit(bytearray.fromhex(hex_text), interval_type)
+        else:
+            return Limit(internal_type.from_string(et_element.text),
+                         interval_type)
 
     def complies_to_upper(self, value):
         """Checks if the value is in the range w.r.t. the upper limit.

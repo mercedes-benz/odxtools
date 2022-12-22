@@ -76,6 +76,7 @@ class SpecialDataGroup:
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) \
             -> "SpecialDataGroup":
+
         sdg_caption = None
         if caption_elem := et_element.find("SDG-CAPTION"):
             sdg_caption = SpecialDataGroupCaption.from_et(caption_elem, doc_frags)

@@ -8,15 +8,13 @@ from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 from zipfile import ZipFile
 
-from .comparam_subset import ComparamSubset, read_comparam_subset_from_odx
-from .diaglayer import (DiagLayer, DiagLayerContainer,
-                        read_diag_layer_container_from_odx)
+from .comparam_subset import ComparamSubset
+from .diaglayer import DiagLayer, DiagLayerContainer
 from .diaglayertype import DIAG_LAYER_TYPE
 from .globals import logger
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase
 from .utils import short_name_as_id
-
 
 def version(v: str):
     return tuple(map(int, (v.split("."))))
@@ -63,9 +61,7 @@ class Database:
             model_version = version(root.attrib.get('MODEL-VERSION', '2.0'))
             dlc = root.find("DIAG-LAYER-CONTAINER")
             if dlc is not None:
-                dlcs.append(read_diag_layer_container_from_odx(
-                    dlc
-                ))
+                dlcs.append(DiagLayerContainer.from_et(dlc))
             # In ODX 2.0 there was only COMPARAM-SPEC
             # In ODX 2.2 content of COMPARAM-SPEC was renamed to COMPARAM-SUBSET
             # and COMPARAM-SPEC becomes a container for PROT-STACKS
@@ -73,11 +69,11 @@ class Database:
             if model_version >= version('2.2'):
                 subset = root.find("COMPARAM-SUBSET")
                 if subset is not None:
-                    comparam_subsets.append(read_comparam_subset_from_odx(subset))
+                    comparam_subsets.append(ComparamSubset.from_et(subset))
             else:
                 subset = root.find("COMPARAM-SPEC")
                 if subset is not None:
-                    comparam_subsets.append(read_comparam_subset_from_odx(subset))
+                    comparam_subsets.append(ComparamSubset.from_et(subset))
 
         self._diag_layer_containers = NamedItemList(short_name_as_id, dlcs)
         self._diag_layer_containers.sort(key=short_name_as_id)
