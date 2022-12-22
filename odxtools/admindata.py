@@ -14,10 +14,15 @@ from typing import Optional, Any, Dict, List
 @dataclass()
 class CompanyDocInfo:
     company_data_ref: OdxLinkRef
-    company_data: Optional[CompanyData] = None
     team_member_ref: Optional[OdxLinkRef] = None
     doc_label: Optional[str] = None
     sdgs: List[SpecialDataGroup] = field(default_factory=list)
+
+    _company_data: Optional[CompanyData] = None
+    @property
+    def company_data(self) -> CompanyData:
+        assert self._company_data is not None
+        return self._company_data
 
     _team_member: Optional[TeamMember] = None
     @property
@@ -49,7 +54,7 @@ class CompanyDocInfo:
         return result
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
-        self.company_data = odxlinks.resolve(self.company_data_ref)
+        self._company_data = odxlinks.resolve(self.company_data_ref)
 
         if self.team_member_ref is not None:
             self._team_member = odxlinks.resolve(self.team_member_ref)
@@ -111,12 +116,16 @@ class DocRevision:
     """
     date: str
     team_member_ref: Optional[OdxLinkRef] = None
-    team_member: Optional[TeamMember] = None
     revision_label: Optional[str] = None
     state: Optional[str] = None
     tool: Optional[str] = None
     company_revision_infos: List[CompanyRevisionInfo] = field(default_factory=list)
     modifications: List[Modification] = field(default_factory=list)
+
+    _team_member: Optional[TeamMember] = None
+    @property
+    def team_member(self) -> Optional[TeamMember]:
+        return self._team_member
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -151,7 +160,7 @@ class DocRevision:
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         if self.team_member_ref is not None:
-            self.team_member = odxlinks.resolve(self.team_member_ref)
+            self._team_member = odxlinks.resolve(self.team_member_ref)
 
         for cri in self.company_revision_infos:
             cri._resolve_references(odxlinks)
