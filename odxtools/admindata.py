@@ -14,10 +14,15 @@ from typing import Optional, Any, Dict, List
 @dataclass()
 class CompanyDocInfo:
     company_data_ref: OdxLinkRef
-    company_data: Optional[CompanyData] = None
     team_member_ref: Optional[OdxLinkRef] = None
     doc_label: Optional[str] = None
     sdgs: List[SpecialDataGroup] = field(default_factory=list)
+
+    _company_data: Optional[CompanyData] = None
+    @property
+    def company_data(self) -> CompanyData:
+        assert self._company_data is not None
+        return self._company_data
 
     _team_member: Optional[TeamMember] = None
     @property
@@ -49,7 +54,7 @@ class CompanyDocInfo:
         return result
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
-        self.company_data = odxlinks.resolve(self.company_data_ref)
+        self._company_data = odxlinks.resolve(self.company_data_ref)
 
         if self.team_member_ref is not None:
             self._team_member = odxlinks.resolve(self.team_member_ref)
@@ -71,6 +76,39 @@ class Modification:
 
         return Modification(change=change,
                             reason=reason)
+
+@dataclass()
+class CompanyRevisionInfo:
+    company_data_ref: OdxLinkRef
+    revision_label: Optional[str] = None
+    state: Optional[str] = None
+
+    _company_data: Optional[CompanyData] = None
+    @property
+    def company_data(self) -> CompanyData:
+        assert self._company_data is not None
+        return self._company_data
+
+    @staticmethod
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) \
+            -> "CompanyRevisionInfo":
+
+        company_data_ref = OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"),
+                                              doc_frags)
+        assert company_data_ref is not None
+        revision_label = et_element.findtext("REVISION_LABEL")
+        state = et_element.findtext("STATE")
+
+        return CompanyRevisionInfo(company_data_ref=company_data_ref,
+                                   revision_label=revision_label,
+                                   state=state)
+
+    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+        cd = odxlinks.resolve(self.company_data_ref)
+        assert isinstance(cd, CompanyData)
+        self._company_data = cd
+
 @dataclass()
 class DocRevision:
     """
@@ -78,11 +116,16 @@ class DocRevision:
     """
     date: str
     team_member_ref: Optional[OdxLinkRef] = None
-    team_member: Optional[TeamMember] = None
     revision_label: Optional[str] = None
     state: Optional[str] = None
     tool: Optional[str] = None
+    company_revision_infos: List[CompanyRevisionInfo] = field(default_factory=list)
     modifications: List[Modification] = field(default_factory=list)
+
+    _team_member: Optional[TeamMember] = None
+    @property
+    def team_member(self) -> Optional[TeamMember]:
+        return self._team_member
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -96,6 +139,12 @@ class DocRevision:
         assert date is not None
         tool = et_element.findtext("TOOL")
 
+        crilist = [
+            CompanyRevisionInfo.from_et(cri_elem, doc_frags)
+            for cri_elem in et_element.iterfind("COMPANY-REVISION-INFOS/"
+                                                "COMPANY-REVISION-INFO")
+        ]
+
         modlist = [
             Modification.from_et(mod_elem, doc_frags)
             for mod_elem in et_element.iterfind("MODIFICATIONS/MODIFICATION")
@@ -106,11 +155,15 @@ class DocRevision:
                            state=state,
                            date=date,
                            tool=tool,
+                           company_revision_infos=crilist,
                            modifications=modlist)
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         if self.team_member_ref is not None:
-            self.team_member = odxlinks.resolve(self.team_member_ref)
+            self._team_member = odxlinks.resolve(self.team_member_ref)
+
+        for cri in self.company_revision_infos:
+            cri._resolve_references(odxlinks)
 
 @dataclass()
 class AdminData:

@@ -176,7 +176,7 @@ def run(args, odx_database=None):
             print(f"ECU variant {odx_diag_layer.short_name} does not support "
                   f"a protocol named '{protocol_name}'. Supported protocols are:")
             for x in odx_diag_layer.protocols:
-                desc = "" if x.description is None else f": {dl.description}"
+                desc = "" if x.description is None else f": {x.description}"
                 print(f"  {x.short_name}{desc}")
             sys.exit(1)
 

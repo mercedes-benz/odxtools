@@ -44,6 +44,21 @@
    {%- if doc_revision.tool is not none %}
    <TOOL>{{doc_revision.tool|e}}</TOOL>
    {%- endif %}
+   {%- if doc_revision.company_revision_infos %}
+   <COMPANY-REVISION-INFOS>
+     {%- for cri in doc_revision.company_revision_infos %}
+     <COMPANY-REVISION-INFO>
+       <COMPANY-DATA-REF ID-REF="{{cri.company_data_ref.ref_id}}" />
+       {%- if cri.revision_label is not none %}
+       <REVISION-LABEL>{{cri.revision_label|e}}</REVISION-LABEL>
+       {%- endif %}
+       {%- if cri.state is not none %}
+       <STATE>{{cri.state|e}}</STATE>
+       {%- endif %}
+     </COMPANY-REVISION-INFO>
+     {%- endfor %}
+   </COMPANY-REVISION-INFOS>
+   {%- endif %}
    {%- if doc_revision.modifications %}
    <MODIFICATIONS>
     {%- for mod in doc_revision.modifications %}
