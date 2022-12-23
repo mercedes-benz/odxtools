@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 
 from .utils import short_name_as_id
 from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
-from .utils import read_description_from_odx
+from .utils import create_description_from_et
 
 @dataclass
 class SpecialDataGroupCaption:
@@ -27,7 +27,7 @@ class SpecialDataGroupCaption:
         short_name = et_element.findtext("SHORT-NAME")
         assert short_name is not None
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
 
         return SpecialDataGroupCaption(odx_id=odx_id,
                                        short_name=short_name,
@@ -123,7 +123,7 @@ class SpecialDataGroup:
         for val in self.values:
             val._resolve_references(odxlinks)
 
-def read_sdgs_from_odx(et_element: Optional[ElementTree.Element],
+def create_sdgs_from_et(et_element: Optional[ElementTree.Element],
                        doc_frags: List[OdxDocFragment]) \
         -> List[SpecialDataGroup]:
 

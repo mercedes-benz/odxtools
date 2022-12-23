@@ -8,7 +8,7 @@ from .utils import short_name_as_id
 from .audience import Audience
 from .functionalclass import FunctionalClass
 from .state import State
-from .utils import read_description_from_odx
+from .utils import create_description_from_et
 from .exceptions import DecodeError
 from .parameters import Parameter
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
@@ -16,7 +16,7 @@ from .state_transition import StateTransition
 from .structures import Request, Response
 from .nameditemlist import NamedItemList
 from .message import Message
-from .specialdata import SpecialDataGroup, read_sdgs_from_odx
+from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .admindata import AdminData
 
 class DiagService:
@@ -151,7 +151,7 @@ class DiagService:
             state_transition_refs.append(ref)
 
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         semantic = et_element.get("SEMANTIC")
 
@@ -159,7 +159,7 @@ class DiagService:
         if et_element.find("AUDIENCE"):
             audience = Audience.from_et(et_element.find("AUDIENCE"), doc_frags)
 
-        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return DiagService(odx_id,
                            short_name,

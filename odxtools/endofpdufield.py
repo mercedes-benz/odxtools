@@ -3,7 +3,7 @@
 
 from typing import TYPE_CHECKING, List, Union
 
-from .utils import read_description_from_odx
+from .utils import create_description_from_et
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 from .structures import BasicStructure
 from .dataobjectproperty import DopBase
@@ -51,7 +51,7 @@ class EndOfPduField(DopBase):
         assert odx_id is not None
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
 
         structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
 

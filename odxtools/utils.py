@@ -6,7 +6,7 @@ from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment
 
-def read_description_from_odx(et_element: Optional[ElementTree.Element]) \
+def create_description_from_et(et_element: Optional[ElementTree.Element]) \
  -> Optional[str]:
     """Read a description tag.
 

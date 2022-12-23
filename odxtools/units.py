@@ -6,9 +6,9 @@ from typing import Dict, List, Any, Literal, Optional, Union
 
 from .utils import short_name_as_id
 from .nameditemlist import NamedItemList
-from .utils import read_description_from_odx
+from .utils import create_description_from_et
 from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
-from .specialdata import SpecialDataGroup, read_sdgs_from_odx
+from .specialdata import SpecialDataGroup, create_sdgs_from_et
 
 UnitGroupCategory = Literal["COUNTRY", "EQUIV-UNITS"]
 
@@ -65,7 +65,7 @@ class PhysicalDimension:
         oid = et_element.get("OID")
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
 
         def read_optional_int(element, name):
             if element.findtext(name):
@@ -159,7 +159,7 @@ class Unit:
         oid = et_element.get("OID")
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         display_name = et_element.findtext("DISPLAY-NAME")
 
         def read_optional_float(element, name):
@@ -219,7 +219,7 @@ class UnitGroup:
         oid = et_element.get("OID")
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         category = et_element.findtext("CATEGORY")
         assert category in [
             "COUNTRY", "EQUIV-UNITS"], f'A UNIT-GROUP-CATEGORY must be "COUNTRY" or "EQUIV-UNITS". It was {category}.'
@@ -284,7 +284,7 @@ class UnitSpec:
                  for el in et_element.iterfind("UNITS/UNIT")]
         physical_dimensions = [PhysicalDimension.from_et(el, doc_frags)
                                for el in et_element.iterfind("PHYSICAL-DIMENSIONS/PHYSICAL-DIMENSION")]
-        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return UnitSpec(
             unit_groups=unit_groups,

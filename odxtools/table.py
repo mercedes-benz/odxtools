@@ -5,12 +5,12 @@ import abc
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any, Iterable
 
-from .utils import read_description_from_odx
+from .utils import create_description_from_et
 from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
 
 from .dataobjectproperty import DopBase
 from .globals import logger
-from .specialdata import SpecialDataGroup, read_sdgs_from_odx
+from .specialdata import SpecialDataGroup, create_sdgs_from_et
 
 
 class TableBase(abc.ABC):
@@ -66,7 +66,7 @@ class TableRow:
         assert short_name is not None
         long_name=et_element.findtext("LONG-NAME")
         semantic=et_element.get("SEMANTIC")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         key = et_element.findtext("KEY")
         structure_ref = None
         if et_element.find("STRUCTURE-REF") is not None:
@@ -74,7 +74,7 @@ class TableRow:
         dop_ref = None
         if et_element.find("DATA-OBJECT-PROP-REF") is not None:
             dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
-        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return TableRow(
             odx_id=odx_id,
@@ -166,7 +166,7 @@ class Table(TableBase):
         assert short_name is not None
         long_name = et_element.findtext("LONG-NAME")
         semantic = et_element.get("SEMANTIC")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         key_dop_ref = None
         if et_element.find("KEY-DOP-REF") is not None:
             key_dop_ref = OdxLinkRef.from_et(et_element.find("KEY-DOP-REF"), doc_frags)
@@ -182,7 +182,7 @@ class Table(TableBase):
             ref = OdxLinkRef.from_et(el, doc_frags)
             assert ref is not None
             table_row_refs.append(ref)
-        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return Table(odx_id=odx_id,
                      short_name=short_name,

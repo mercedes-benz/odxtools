@@ -5,7 +5,7 @@
 from typing import Any, Dict, List, Optional, Union, Type
 
 from ..odxtypes import DataType
-from ..utils import read_description_from_odx
+from ..utils import create_description_from_et
 from ..globals import logger
 from ..odxlink import OdxDocFragment
 
@@ -77,7 +77,7 @@ def _parse_compu_scale_to_linear_compu_method(scale_element,
 
     return LinearCompuMethod(offset=offset, factor=factor, **kwargs)
 
-def read_compu_method_from_odx(et_element,
+def create_any_compu_method_from_et(et_element,
                                   doc_frags: List[OdxDocFragment],
                                   internal_type: DataType,
                                   physical_type: DataType) -> CompuMethod:
@@ -120,7 +120,7 @@ def read_compu_method_from_odx(et_element,
             internal_to_phys.append(CompuScale(
                 short_label=(scale.findtext("SHORT-LABEL")
                              if scale.find("SHORT-LABEL") is not None else None),
-                description=read_description_from_odx(scale.find("DESC")),
+                description=create_description_from_et(scale.find("DESC")),
                 lower_limit=lower_limit,
                 upper_limit=upper_limit,
                 compu_inverse_value=compu_inverse_value,

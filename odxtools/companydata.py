@@ -2,10 +2,10 @@
 # Copyright (c) 2022 MBition GmbH
 
 from .nameditemlist import NamedItemList
-from .utils import read_description_from_odx
+from .utils import create_description_from_et
 from .odxlink import OdxLinkId, OdxLinkDatabase, OdxDocFragment
 from .utils import short_name_as_id
-from .specialdata import SpecialDataGroup, read_sdgs_from_odx
+from .specialdata import SpecialDataGroup, create_sdgs_from_et
 
 from xml.etree import ElementTree
 from dataclasses import dataclass, field
@@ -27,7 +27,7 @@ class XDoc:
     def from_et(xdoc) -> "XDoc":
         short_name = xdoc.findtext("SHORT-NAME")
         long_name = xdoc.findtext("LONG-NAME")
-        description = read_description_from_odx(xdoc.find("DESC"))
+        description = create_description_from_et(xdoc.find("DESC"))
         number = xdoc.findtext("NUMBER")
         state = xdoc.findtext("STATE")
         date = xdoc.findtext("DATE")
@@ -53,7 +53,7 @@ class RelatedDoc:
 
     @staticmethod
     def from_et(et_element) -> "RelatedDoc":
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         xdoc = et_element.find("XDOC")
         if xdoc is not None:
             xdoc = XDoc.from_et(xdoc)
@@ -78,7 +78,7 @@ class CompanySpecificInfo:
 
             related_docs = rdlist
 
-        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return CompanySpecificInfo(related_docs=related_docs,
                                    sdgs=sdgs)
@@ -118,7 +118,7 @@ class TeamMember:
         short_name = et_element.findtext("SHORT-NAME")
         assert short_name is not None
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
 
         roles = list()
         if (roles_elem := et_element.find("ROLES")) is not None:
@@ -167,7 +167,7 @@ class CompanyData:
         assert odx_id is not None
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         roles = et_element.find("ROLES")
         if roles is not None:
             rlist = list()
@@ -215,7 +215,7 @@ class CompanyData:
         if self.company_specific_info:
             self.company_specific_info._resolve_references(odxlinks)
 
-def read_company_datas_from_odx(et_element, doc_frags: List[OdxDocFragment]) \
+def create_company_datas_from_et(et_element, doc_frags: List[OdxDocFragment]) \
         -> NamedItemList[CompanyData]:
     if et_element is None:
         return NamedItemList(short_name_as_id)

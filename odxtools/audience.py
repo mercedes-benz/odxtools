@@ -3,7 +3,7 @@
 
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
-from odxtools.utils import read_description_from_odx
+from odxtools.utils import create_description_from_et
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
 @dataclass()
@@ -78,7 +78,7 @@ class AdditionalAudience:
         assert odx_id is not None
 
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
 
         return AdditionalAudience(odx_id=odx_id,
                                   short_name=short_name,

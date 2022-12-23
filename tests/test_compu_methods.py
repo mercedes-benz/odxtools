@@ -10,7 +10,7 @@ import jinja2
 import odxtools
 
 from odxtools.compumethods import Limit, LinearCompuMethod, IntervalType, TabIntpCompuMethod
-from odxtools.compumethods.readcompumethod import read_compu_method_from_odx
+from odxtools.compumethods.createanycompumethod import create_any_compu_method_from_et
 from odxtools.exceptions import DecodeError, EncodeError
 from odxtools.odxtypes import DataType
 from odxtools.odxlink import OdxDocFragment
@@ -191,7 +191,7 @@ class TestTabIntpCompuMethod(unittest.TestCase):
         expected = self.compumethod
 
         et_element = ElementTree.fromstring(self.compumethod_odx)
-        actual = read_compu_method_from_odx(et_element,
+        actual = create_any_compu_method_from_et(et_element,
                                                 doc_frags,
                                                 expected.internal_type,
                                                 expected.physical_type)
