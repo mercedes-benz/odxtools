@@ -9,13 +9,13 @@ from .dataobjectproperty import DopBase
 from .admindata import AdminData
 from .audience import Audience
 from .functionalclass import FunctionalClass
-from .utils import read_description_from_odx
+from .utils import create_description_from_et
 from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
 from .nameditemlist import NamedItemList
 from .globals import logger
 from .exceptions import EncodeError, DecodeError
 from .message import Message
-from .specialdata import SpecialDataGroup, read_sdgs_from_odx
+from .specialdata import SpecialDataGroup, create_sdgs_from_et
 
 DiagClassType = Literal["STARTCOMM",
                         "STOPCOMM",
@@ -44,7 +44,7 @@ class InputParam:
         short_name = et_element.findtext("SHORT-NAME")
         assert short_name is not None
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags)
         assert dop_base_ref is not None
         physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
@@ -93,7 +93,7 @@ class OutputParam:
         short_name = et_element.findtext("SHORT-NAME")
         assert short_name is not None
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags)
         assert dop_base_ref is not None
 
@@ -136,7 +136,7 @@ class NegOutputParam:
         short_name = et_element.findtext("SHORT-NAME")
         assert short_name is not None
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags)
         assert dop_base_ref is not None
 
@@ -269,7 +269,7 @@ class SingleEcuJob:
         short_name = et_element.findtext("SHORT-NAME")
         assert short_name is not None
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         semantic = et_element.get("SEMANTIC")
 
@@ -305,7 +305,7 @@ class SingleEcuJob:
                          else True)
         is_final = True if et_element.get("IS-FINAL") == "true" else False
 
-        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return SingleEcuJob(odx_id=odx_id,
                             short_name=short_name,

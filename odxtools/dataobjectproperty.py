@@ -5,20 +5,20 @@ import abc
 from typing import cast, List, Dict, Optional, Any, Union
 from dataclasses import dataclass, field
 
-from .utils import read_description_from_odx
+from .utils import create_description_from_et
 from .physicaltype import PhysicalType
 from .globals import logger
-from .compumethods import CompuMethod, read_compu_method_from_odx
+from .compumethods import CompuMethod, create_any_compu_method_from_et
 from .units import Unit
 from .diagcodedtypes import (
     DiagCodedType,
     StandardLengthType,
-    read_diag_coded_type_from_odx,
+    create_any_diag_coded_type_from_et,
 )
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError
-from .specialdata import SpecialDataGroup, read_sdgs_from_odx
+from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
 class DopBase(abc.ABC):
@@ -97,15 +97,15 @@ class DataObjectProperty(DopBase):
         assert odx_id is not None
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
-        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+        description = create_description_from_et(et_element.find("DESC"))
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
-        diag_coded_type = read_diag_coded_type_from_odx(
+        diag_coded_type = create_any_diag_coded_type_from_et(
             et_element.find("DIAG-CODED-TYPE"), doc_frags)
 
         physical_type = PhysicalType.from_et(
             et_element.find("PHYSICAL-TYPE"), doc_frags)
-        compu_method = read_compu_method_from_odx(et_element.find(
+        compu_method = create_any_compu_method_from_et(et_element.find(
             "COMPU-METHOD"), doc_frags, diag_coded_type.base_data_type, physical_type.base_data_type)
 
         if et_element.tag == "DATA-OBJECT-PROP":
@@ -246,7 +246,7 @@ class DiagnosticTroubleCode:
         else:
             level = None
 
-        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return DiagnosticTroubleCode(odx_id=OdxLinkId.from_et(et_element, doc_frags),
                                      short_name=et_element.findtext("SHORT-NAME"),

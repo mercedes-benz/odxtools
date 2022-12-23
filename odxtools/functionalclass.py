@@ -4,7 +4,7 @@
 from dataclasses import dataclass
 from typing import Optional, Dict, List, Any
 
-from .utils import read_description_from_odx
+from .utils import create_description_from_et
 from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
 
@@ -25,7 +25,7 @@ class FunctionalClass:
         assert odx_id is not None
 
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
 
         return FunctionalClass(odx_id=odx_id,
                                short_name=short_name,

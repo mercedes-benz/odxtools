@@ -18,4 +18,4 @@ from .tablekeyparameter import TableKeyParameter
 from .tablestructparameter import TableStructParameter
 from .valueparameter import ValueParameter
 
-from .readparameter import read_parameter_from_odx
+from .createanyparameter import create_any_parameter_from_et

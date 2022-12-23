@@ -4,8 +4,8 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional, Any, Dict, List
 
-from .parameters import read_parameter_from_odx
-from .utils import read_description_from_odx
+from .parameters import create_any_parameter_from_et
+from .utils import create_description_from_et
 from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
 from .structures import BasicStructure
 from .parameters.parameterbase import Parameter
@@ -41,9 +41,9 @@ class EnvironmentData(BasicStructure):
         assert odx_id is not None
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         parameters = [
-            read_parameter_from_odx(et_parameter, doc_frags)
+            create_any_parameter_from_et(et_parameter, doc_frags)
             for et_parameter in et_element.iterfind("PARAMS/PARAM")
         ]
         dtc_values = None

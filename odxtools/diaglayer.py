@@ -14,7 +14,7 @@ from odxtools.diaglayertype import DIAG_LAYER_TYPE
 from .admindata import AdminData
 from .audience import AdditionalAudience
 from .communicationparameter import CommunicationParameterRef
-from .companydata import CompanyData, read_company_datas_from_odx
+from .companydata import CompanyData, create_company_datas_from_et
 from .dataobjectproperty import DopBase
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .exceptions import DecodeError, OdxWarning
@@ -25,11 +25,11 @@ from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .service import DiagService
 from .singleecujob import SingleEcuJob
-from .specialdata import SpecialDataGroup, read_sdgs_from_odx
+from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .state import State
 from .state_transition import StateTransition
-from .structures import Request, Response, read_structure_from_odx
-from .utils import read_description_from_odx, short_name_as_id
+from .structures import Request, Response, create_any_structure_from_et
+from .utils import create_description_from_et, short_name_as_id
 
 # Defines priority of overriding objects
 PRIORITY_OF_DIAG_LAYER_TYPE : Dict[DIAG_LAYER_TYPE,int]= {
@@ -216,7 +216,7 @@ class DiagLayer:
         short_name = et_element.findtext("SHORT-NAME")
         assert short_name is not None
         long_name = et_element.findtext("LONG-NAME")
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
 
         logger.info(f"Parsing diagnostic layer '{short_name}' "
                     f"of type {variant_type.value} ...")
@@ -258,19 +258,19 @@ class DiagLayer:
         # Parse Requests and Responses
         requests = []
         for rq_elem in et_element.iterfind("REQUESTS/REQUEST"):
-            rq = read_structure_from_odx(rq_elem, doc_frags)
+            rq = create_any_structure_from_et(rq_elem, doc_frags)
             assert isinstance(rq, Request)
             requests.append(rq)
 
         positive_responses = []
         for pr_elem in et_element.iterfind("POS-RESPONSES/POS-RESPONSE"):
-            pr = read_structure_from_odx(pr_elem, doc_frags)
+            pr = create_any_structure_from_et(pr_elem, doc_frags)
             assert isinstance(pr, Response)
             positive_responses.append(pr)
 
         negative_responses = []
         for nr_elem in et_element.iterfind("NEG-RESPONSES/NEG-RESPONSE"):
-            nr = read_structure_from_odx(nr_elem, doc_frags)
+            nr = create_any_structure_from_et(nr_elem, doc_frags)
             assert isinstance(nr, Response)
             negative_responses.append(nr)
 
@@ -309,7 +309,7 @@ class DiagLayer:
             for ref in et_element.iterfind("IMPORT-REFS/IMPORT-REF")
         ]
 
-        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         # Create DiagLayer
         return DiagLayer(variant_type,
@@ -924,9 +924,9 @@ class DiagLayerContainer:
 
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
         assert odx_id is not None
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        company_datas = read_company_datas_from_odx(et_element.find("COMPANY-DATAS"), doc_frags)
+        company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
         ecu_shared_datas = [DiagLayer.from_et(dl_element, doc_frags)
                             for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")]
         protocols = [DiagLayer.from_et(dl_element, doc_frags)

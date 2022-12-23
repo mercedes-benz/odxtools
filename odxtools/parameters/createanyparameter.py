@@ -3,11 +3,11 @@
 
 from typing import List
 
-from ..diagcodedtypes import read_diag_coded_type_from_odx
+from ..diagcodedtypes import create_any_diag_coded_type_from_et
 from ..globals import xsi
-from ..utils import read_description_from_odx
+from ..utils import create_description_from_et
 from ..odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
-from ..specialdata import SpecialDataGroup, read_sdgs_from_odx
+from ..specialdata import SpecialDataGroup, create_sdgs_from_et
 
 from .codedconstparameter import CodedConstParameter
 from .dynamicparameter import DynamicParameter
@@ -23,10 +23,10 @@ from .tablestructparameter import TableStructParameter
 from .valueparameter import ValueParameter
 
 
-def read_parameter_from_odx(et_element, doc_frags):
+def create_any_parameter_from_et(et_element, doc_frags):
     short_name = et_element.findtext("SHORT-NAME")
     long_name = et_element.findtext("LONG-NAME")
-    description = read_description_from_odx(et_element.find("DESC"))
+    description = create_description_from_et(et_element.find("DESC"))
     semantic = et_element.get("SEMANTIC")
     byte_position_str = et_element.findtext("BYTE-POSITION")
     byte_position = int(byte_position_str) if byte_position_str is not None else None
@@ -36,7 +36,7 @@ def read_parameter_from_odx(et_element, doc_frags):
         bit_position = int(bit_position_str)
     parameter_type = et_element.get(f"{xsi}type")
 
-    sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+    sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
     # Which attributes are set depends on the type of the parameter.
     if parameter_type in ["VALUE", "PHYS-CONST", "SYSTEM", "LENGTH-KEY"]:
@@ -79,7 +79,7 @@ def read_parameter_from_odx(et_element, doc_frags):
                                          sdgs=sdgs)
 
     elif parameter_type == "CODED-CONST":
-        diag_coded_type = read_diag_coded_type_from_odx(
+        diag_coded_type = create_any_diag_coded_type_from_et(
             et_element.find("DIAG-CODED-TYPE"), doc_frags)
         coded_value = diag_coded_type.base_data_type.from_string(
             et_element.findtext("CODED-VALUE"))
@@ -95,7 +95,7 @@ def read_parameter_from_odx(et_element, doc_frags):
                                    sdgs=sdgs)
 
     elif parameter_type == "NRC-CONST":
-        diag_coded_type = read_diag_coded_type_from_odx(
+        diag_coded_type = create_any_diag_coded_type_from_et(
             et_element.find("DIAG-CODED-TYPE"), doc_frags)
         coded_values = [diag_coded_type.base_data_type.from_string(val.text)
                         for val in et_element.iterfind("CODED-VALUES/CODED-VALUE")]

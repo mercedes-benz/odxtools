@@ -20,4 +20,4 @@ from .texttablecompumethod import TexttableCompuMethod
 from .compurationalcoeffs import CompuRationalCoeffs
 from .compuscale import CompuScale
 from .limit import IntervalType, Limit
-from .readcompumethod import read_compu_method_from_odx
+from .createanycompumethod import create_any_compu_method_from_et

@@ -525,7 +525,7 @@ class StandardLengthType(DiagCodedType):
         return self.__repr__()
 
 
-def read_diag_coded_type_from_odx(et_element, doc_frags: List[OdxDocFragment]):
+def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragment]):
     base_type_encoding = et_element.get("BASE-TYPE-ENCODING")
 
     base_data_type = et_element.get("BASE-DATA-TYPE")

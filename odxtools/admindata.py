@@ -4,8 +4,8 @@
 from .nameditemlist import NamedItemList
 from .companydata import CompanyData, TeamMember
 from .odxlink import OdxLinkId, OdxLinkRef, OdxLinkDatabase, OdxDocFragment
-from .utils import read_description_from_odx
-from .specialdata import SpecialDataGroup, read_sdgs_from_odx
+from .utils import create_description_from_et
+from .specialdata import SpecialDataGroup, create_sdgs_from_et
 
 from xml.etree import ElementTree
 from dataclasses import dataclass, field
@@ -38,7 +38,7 @@ class CompanyDocInfo:
         assert company_data_ref is not None
         team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), doc_frags)
         doc_label = et_element.findtext("DOC-LABEL")
-        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return CompanyDocInfo(company_data_ref=company_data_ref,
                               team_member_ref=team_member_ref,

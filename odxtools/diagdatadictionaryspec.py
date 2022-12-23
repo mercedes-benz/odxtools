@@ -16,11 +16,11 @@ from .envdatadesc import EnvironmentDataDescription
 from .globals import logger
 from .multiplexer import Multiplexer
 from .nameditemlist import NamedItemList
-from .structures import BasicStructure, read_structure_from_odx
+from .structures import BasicStructure, create_any_structure_from_et
 from .table import Table
 from .units import UnitSpec
 from .odxlink import OdxLinkId, OdxLinkDatabase, OdxDocFragment
-from .specialdata import SpecialDataGroup, read_sdgs_from_odx
+from .specialdata import SpecialDataGroup, create_sdgs_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -106,7 +106,7 @@ class DiagDataDictionarySpec:
 
         structures = []
         for structure_element in et_element.iterfind("STRUCTURES/STRUCTURE"):
-            structure = read_structure_from_odx(structure_element, doc_frags)
+            structure = create_any_structure_from_et(structure_element, doc_frags)
             assert structure is not None
             structures.append(structure)
 
@@ -164,7 +164,7 @@ class DiagDataDictionarySpec:
             if num > 0:
                 logger.info(f"Not implemented: Did not parse {num} {name}.")
 
-        sdgs = read_sdgs_from_odx(et_element.find("SDGS"), doc_frags)
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return DiagDataDictionarySpec(
             data_object_props=NamedItemList(short_name_as_id, data_object_props),

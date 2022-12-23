@@ -9,12 +9,12 @@ from .comparam_subset import (
     Comparam,
     ComplexComparam,
     ComplexValue,
-    read_complex_value_from_odx,
+    create_complex_value_from_et,
 )
 from .diaglayertype import DIAG_LAYER_TYPE
 from .exceptions import OdxWarning
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
-from .utils import read_description_from_odx
+from .utils import create_description_from_et
 
 class CommunicationParameterRef:
 
@@ -49,10 +49,10 @@ class CommunicationParameterRef:
         elif et_element.find("SIMPLE-VALUE") is not None:
             value = et_element.findtext("SIMPLE-VALUE")
         else:
-            value = read_complex_value_from_odx(et_element.find("COMPLEX-VALUE"))
+            value = create_complex_value_from_et(et_element.find("COMPLEX-VALUE"))
 
         is_functional = (dl_type == DIAG_LAYER_TYPE.FUNCTIONAL_GROUP)
-        description = read_description_from_odx(et_element.find("DESC"))
+        description = create_description_from_et(et_element.find("DESC"))
 
         prot_stack_snref = None
         if (psnref_elem := et_element.find("PROT-STACK-SNREF")) is not None:
