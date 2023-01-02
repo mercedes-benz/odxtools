@@ -25,7 +25,8 @@ class SystemParameter(ParameterWithDOP):
                          byte_position=byte_position,
                          bit_position=bit_position,
                          semantic=semantic,
-                         description=description)
+                         description=description,
+                         **kwargs)
         self.sysparam = sysparam
 
     def is_required(self):

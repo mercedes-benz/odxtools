@@ -22,7 +22,8 @@ class TableEntryParameter(Parameter):
             bit_position=bit_position,
             parameter_type="TABLE-ENTRY",
             semantic=semantic,
-            description=description
+            description=description,
+            **kwargs
         )
         assert target in ["KEY", "STRUCT"]
         self.target = target

@@ -21,7 +21,8 @@ class DynamicParameter(Parameter):
             bit_position=bit_position,
             parameter_type="DYNAMIC",
             semantic=semantic,
-            description=description
+            description=description,
+            **kwargs
         )
 
     def is_required(self):

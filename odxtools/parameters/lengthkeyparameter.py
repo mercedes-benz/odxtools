@@ -36,7 +36,8 @@ class LengthKeyParameter(ParameterWithDOP):
                          byte_position=byte_position,
                          bit_position=bit_position,
                          semantic=semantic,
-                         description=description)
+                         description=description,
+                         **kwargs)
         self.odx_id = odx_id
 
     def is_required(self):
