@@ -10,7 +10,7 @@ from odxtools.odxlink import OdxDocFragment
 
 @dataclass
 class MatchingParameter:
-    expected_value: str
+    expected_value: int
     diag_comm_snref: str
     out_param_if_snref: str
 
@@ -27,11 +27,18 @@ class MatchingParameter:
         assert diag_comm_snref is not None
 
         out_param_snref_el = et_element.find("OUT-PARAM-IF-SNREF")
-        assert diag_com_snref_el is not None
+        assert out_param_snref_el is not None
         out_param_if_snref = out_param_snref_el.get("SHORT-NAME")
         assert out_param_if_snref is not None
 
-        return cls(expected_value, diag_comm_snref, out_param_if_snref)
+        return cls(int(expected_value), diag_comm_snref, out_param_if_snref)
+
+    def is_match(self, ident_value: int) -> bool:
+        """
+        Returns true iff the provided identification value matches this MatchingParameter's
+        expected value.
+        """
+        return (self.expected_value == ident_value)
 
 @dataclass
 class EcuVariantPattern:
