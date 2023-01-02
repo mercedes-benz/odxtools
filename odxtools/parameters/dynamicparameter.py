@@ -12,7 +12,8 @@ class DynamicParameter(Parameter):
                  byte_position=None,
                  bit_position=None,
                  semantic=None,
-                 description=None):
+                 description=None,
+                 **kwargs):
         super().__init__(
             short_name=short_name,
             long_name=long_name,

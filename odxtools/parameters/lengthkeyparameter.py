@@ -26,7 +26,8 @@ class LengthKeyParameter(ParameterWithDOP):
                  byte_position=None,
                  bit_position=None,
                  semantic=None,
-                 description=None):
+                 description=None,
+                 **kwargs):
         super().__init__(short_name,
                          parameter_type="LENGTH-KEY",
                          dop_ref=dop_ref,
