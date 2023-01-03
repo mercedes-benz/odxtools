@@ -125,21 +125,12 @@ def write_pdx_file(output_file_name : str,
             zf_mime_type = "application/x-asam.odx.odx-cs"
 
             vars["comparam_subset"] = comparam_subset
-            vars["simple_comparams"] = [x
-                                         for x in comparam_subset.comparams
-                                         if isinstance(x, Comparam)]
-            vars["complex_comparams"] = [x
-                                         for x in comparam_subset.comparams
-                                         if isinstance(x, ComplexComparam)]
 
             file_index.append( (zf_file_name,
                                 zf_file_cdate,
                                 zf_mime_type) )
 
             zf.writestr(zf_file_name, comparam_subset_tpl.render(**vars))
-
-        del vars["simple_comparams"]
-        del vars["complex_comparams"]
         del vars["comparam_subset"]
 
         # write the actual diagnostic data.

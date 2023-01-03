@@ -90,9 +90,9 @@ class ComplexComparam(BaseComparam):
         super().__init_from_et__(et_element, doc_frags)
 
         self.comparams = NamedItemList(short_name_as_id)
-        for el in et_element:
-            if el.tag in ('COMPARAM', 'COMPLEX-COMPARAM'):
-                self.comparams.append(create_any_comparam_from_et(el, doc_frags))
+        for cp_el in et_element:
+            if cp_el.tag in ('COMPARAM', 'COMPLEX-COMPARAM'):
+                self.comparams.append(create_any_comparam_from_et(cp_el, doc_frags))
 
         if cpdv_elem := et_element.find("COMPLEX-PHYSICAL-DEFAULT-VALUE"):
             self.complex_physical_default_value = create_complex_value_from_et(cpdv_elem)
@@ -115,11 +115,10 @@ class ComplexComparam(BaseComparam):
 class Comparam(BaseComparam):
     dop_ref: OdxLinkRef
     physical_default_value: Optional[str] = field(default=None, init=False)
-    _dop: Optional[DataObjectProperty] = field(default=None, init=False)
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> ComplexComparam:
-        result = Comparam.__new__(ComplexComparam)
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Comparam":
+        result = Comparam.__new__(Comparam)
 
         result.__init_from_et__(et_element, doc_frags)
 
@@ -130,20 +129,21 @@ class Comparam(BaseComparam):
 
         dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
         assert dop_ref is not None
-        self.dop_ref = dop_ref
 
+        self.dop_ref = dop_ref
         self.physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
 
     @property
     def dop(self) -> DataObjectProperty:
         """The data object property describing this parameter."""
-        assert self._dop is not None
         return self._dop
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         """Resolves the reference to the dop"""
         super()._resolve_references(odxlinks)
+
         self._dop = odxlinks.resolve(self.dop_ref)
+        assert isinstance(self._dop, DataObjectProperty)
 
 
 @dataclass()
@@ -152,13 +152,14 @@ class ComparamSubset:
     short_name: str
     category: str
     data_object_props: NamedItemList[DataObjectProperty]
-    comparams: NamedItemList[BaseComparam]
-    unit_spec: Optional[UnitSpec] = None
-    long_name: Optional[str] = None
-    description: Optional[str] = None
-    admin_data: Optional[AdminData] = None
-    company_datas: Optional[NamedItemList[CompanyData]] = None
-    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+    comparams: NamedItemList[Comparam]
+    complex_comparams: NamedItemList[ComplexComparam]
+    unit_spec: Optional[UnitSpec]
+    long_name: Optional[str]
+    description: Optional[str]
+    admin_data: Optional[AdminData]
+    company_datas: NamedItemList[CompanyData]
+    sdgs: List[SpecialDataGroup]
 
     @staticmethod
     def from_et(et_element: Element) \
@@ -184,13 +185,12 @@ class ComparamSubset:
             DataObjectProperty.from_et(el, doc_frags)
             for el in et_element.iterfind("DATA-OBJECT-PROPS/DATA-OBJECT-PROP")
         ]
-        comparams: List[BaseComparam] = []
-        comparams += [
+        comparams = [
             Comparam.from_et(el, doc_frags)
             for el in et_element.iterfind("COMPARAMS/COMPARAM")
         ]
-        comparams += [
-            Comparam.from_et(el, doc_frags)
+        complex_comparams = [
+            ComplexComparam.from_et(el, doc_frags)
             for el in et_element.iterfind("COMPLEX-COMPARAMS/COMPLEX-COMPARAM")
         ]
         if unit_spec_elem := et_element.find("UNIT-SPEC"):
@@ -210,6 +210,7 @@ class ComparamSubset:
             company_datas=company_datas,
             data_object_props=NamedItemList(short_name_as_id, data_object_props),
             comparams=NamedItemList(short_name_as_id, comparams),
+            complex_comparams=NamedItemList(short_name_as_id, complex_comparams),
             unit_spec=unit_spec,
             sdgs=sdgs,
         )
@@ -223,6 +224,9 @@ class ComparamSubset:
             odxlinks[dop.odx_id] = dop
 
         for comparam in self.comparams:
+            odxlinks.update(comparam._build_odxlinks())
+
+        for comparam in self.complex_comparams:
             odxlinks.update(comparam._build_odxlinks())
 
         if self.unit_spec:
@@ -245,6 +249,9 @@ class ComparamSubset:
             dop._resolve_references(odxlinks)
 
         for comparam in self.comparams:
+            comparam._resolve_references(odxlinks)
+
+        for comparam in self.complex_comparams:
             comparam._resolve_references(odxlinks)
 
         if self.unit_spec:
