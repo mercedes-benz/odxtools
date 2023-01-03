@@ -520,11 +520,11 @@ class DiagLayer:
         # priority.
         for parent_ref in self._get_parent_refs_sorted_by_priority():
             for cp in parent_ref.get_inherited_communication_parameters():
-                com_params_dict[(cp.short_name, cp.protocol_sn_ref)] = cp
+                com_params_dict[(cp.short_name, cp.protocol_snref)] = cp
 
         # finally, handle the locally specified communication parameters
         for cp in self._local_communication_parameters:
-            com_params_dict[(cp.short_name, cp.protocol_sn_ref)] = cp
+            com_params_dict[(cp.short_name, cp.protocol_snref)] = cp
 
         return list(com_params_dict.values())
 
@@ -660,7 +660,7 @@ class DiagLayer:
         if is_functional is not None:
             cps = [cp for cp in cps if cp.is_functional == is_functional]
         if protocol_name:
-            cps = [cp for cp in cps if cp.protocol_sn_ref in (None, protocol_name)]
+            cps = [cp for cp in cps if cp.protocol_snref in (None, protocol_name)]
 
         if len(cps) > 1:
             warnings.warn(f"Communication parameter `{name}` specified more "
