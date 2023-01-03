@@ -3,7 +3,8 @@
 
 from typing import TYPE_CHECKING, List, Union, Optional
 
-from .utils import create_description_from_et, str_to_bool
+from .utils import create_description_from_et
+from .odxtypes import odxstr_to_bool
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 from .structures import BasicStructure
 from .dataobjectproperty import DopBase
@@ -25,11 +26,11 @@ class EndOfPduField(DopBase):
                  structure_snref=None,
                  min_number_of_items=0,
                  max_number_of_items=None,
-                 _is_visible: Optional[bool] = None,
+                 is_visible_raw: Optional[bool] = None,
                  long_name=None,
                  description=None):
         super().__init__(odx_id, short_name, long_name=long_name,
-                         description=description, _is_visible=_is_visible)
+                         description=description, is_visible_raw=is_visible_raw)
 
         self.structure_snref = structure_snref
         self.structure_ref = structure_ref
@@ -78,7 +79,7 @@ class EndOfPduField(DopBase):
         else:
             max_number_of_items = None
 
-        _is_visible = str_to_bool(et_element.get("IS-VISIBLE"))
+        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         eopf = EndOfPduField(odx_id,
                              short_name,
                              long_name=long_name,
@@ -87,7 +88,7 @@ class EndOfPduField(DopBase):
                              structure_snref=structure_snref,
                              min_number_of_items=min_number_of_items,
                              max_number_of_items=max_number_of_items,
-                             _is_visible=_is_visible)
+                             is_visible_raw=is_visible_raw)
 
         return eopf
 

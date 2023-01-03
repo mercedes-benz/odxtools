@@ -11,7 +11,7 @@ from .parameterwithdop import ParameterWithDOP
 class ValueParameter(ParameterWithDOP):
     def __init__(self,
                  short_name,
-                 physical_default_value=None,
+                 physical_default_value_raw=None,
                  dop_ref=None,
                  dop_snref=None,
                  **kwargs):
@@ -20,21 +20,21 @@ class ValueParameter(ParameterWithDOP):
                          dop_ref=dop_ref,
                          dop_snref=dop_snref,
                          **kwargs)
-        # _physical_default_value is a string. Conversion to actual type must happen after parsing
-        self._physical_default_value = physical_default_value
+        # physical_default_value is a string. Conversion to actual type must happen after parsing
+        self.physical_default_value_raw = physical_default_value_raw
 
     @property
     def physical_default_value(self):
-        if self._physical_default_value is None:
+        if self.physical_default_value_raw is None:
             return None
         else:
-            return self.dop.physical_type.base_data_type.from_string(self._physical_default_value)
+            return self.dop.physical_type.base_data_type.from_string(self.physical_default_value_raw)
 
     def is_required(self):
-        return True if self.physical_default_value is None else False
+        return self.physical_default_value is None
 
     def is_optional(self):
-        return True if self._physical_default_value is not None else False
+        return not self.is_required()
 
     def get_coded_value(self, physical_value=None):
         if physical_value is not None:

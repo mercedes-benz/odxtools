@@ -3,7 +3,8 @@
 
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
-from .utils import create_description_from_et, str_to_bool
+from .utils import create_description_from_et
+from .odxtypes import odxstr_to_bool
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
 @dataclass()
@@ -11,30 +12,30 @@ class Audience:
     enabled_audience_refs: list = field(default_factory=list)
     disabled_audience_refs: list = field(default_factory=list)
 
-    _is_supplier: Optional[bool] = None
+    is_supplier_raw: Optional[bool] = None
     @property
     def is_supplier(self) -> bool:
-        return self._is_supplier in [None, True]
+        return self.is_supplier_raw in [None, True]
 
-    _is_development: Optional[bool] = None
+    is_development_raw: Optional[bool] = None
     @property
     def is_development(self) -> bool:
-        return self._is_development in [None, True]
+        return self.is_development_raw in [None, True]
 
-    _is_manufacturing: Optional[bool] = None
+    is_manufacturing_raw: Optional[bool] = None
     @property
     def is_manufacturing(self) -> bool:
-        return self._is_manufacturing in [None, True]
+        return self.is_manufacturing_raw in [None, True]
 
-    _is_aftersales: Optional[bool] = None
+    is_aftersales_raw: Optional[bool] = None
     @property
     def is_aftersales(self) -> bool:
-        return self._is_aftersales in [None, True]
+        return self.is_aftersales_raw in [None, True]
 
-    _is_aftermarket: Optional[bool] = None
+    is_aftermarket_raw: Optional[bool] = None
     @property
     def is_aftermarket(self) -> bool:
-        return self._is_aftermarket in [None, True]
+        return self.is_aftermarket_raw in [None, True]
 
     _enabled_audiences: Optional[List["AdditionalAudience"]] = None
     @property
@@ -58,20 +59,19 @@ class Audience:
         disabled_audience_refs = [OdxLinkRef.from_et(ref, doc_frags)
             for ref in et_element.iterfind("DISABLED-AUDIENCE-REFS/"
                                            "DISABLED-AUDIENCE-REF")]
-        is_supplier = str_to_bool(et_element.get("IS-SUPPLIER"))
-        is_development = str_to_bool(et_element.get("IS-DEVELOPMENT"))
-        is_manufacturing = str_to_bool(et_element.get("IS-MANUFACTURING"))
-        is_aftersales = str_to_bool(et_element.get("IS-AFTERSALES"))
-        is_aftermarket = str_to_bool(et_element.get("IS-AFTERMARKET"))
+        is_supplier_raw = odxstr_to_bool(et_element.get("IS-SUPPLIER"))
+        is_development_raw = odxstr_to_bool(et_element.get("IS-DEVELOPMENT"))
+        is_manufacturing_raw = odxstr_to_bool(et_element.get("IS-MANUFACTURING"))
+        is_aftersales_raw = odxstr_to_bool(et_element.get("IS-AFTERSALES"))
+        is_aftermarket_raw = odxstr_to_bool(et_element.get("IS-AFTERMARKET"))
 
         return Audience(enabled_audience_refs=enabled_audience_refs,
                         disabled_audience_refs=disabled_audience_refs,
-                        _is_supplier=is_supplier,
-                        _is_development=is_development,
-                        _is_manufacturing=is_manufacturing,
-                        _is_aftersales=is_aftersales,
-                        _is_aftermarket=is_aftermarket)
-
+                        is_supplier_raw=is_supplier_raw,
+                        is_development_raw=is_development_raw,
+                        is_manufacturing_raw=is_manufacturing_raw,
+                        is_aftersales_raw=is_aftersales_raw,
+                        is_aftermarket_raw=is_aftermarket_raw)
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         self._enabled_audiences = [odxlinks.resolve(ref)

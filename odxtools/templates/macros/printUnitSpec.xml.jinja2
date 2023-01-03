@@ -37,11 +37,7 @@
 
 {%- macro printUnit(unit) -%}
 <UNIT ID="{{unit.odx_id.local_id}}"
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if unit.oid %}
-                OID="{{unit.oid}}"
-  {%- endif %}
- {%- endfilter -%}>
+      {{-make_xml_attrib("OID", unit.oid)}}>
  {{ peid.printElementID(unit) }}
  <DISPLAY-NAME>{{ unit.display_name }}</DISPLAY-NAME>
  {%- if unit.factor_si_to_unit is not none %}
@@ -72,11 +68,7 @@
 
 {%- macro printPhysicalDimesion(dim) -%}
 <PHYSICAL-DIMENSION ID="{{dim.odx_id.local_id}}"
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if dim.oid %}
-                OID="{{dim.oid}}"
-  {%- endif %}
- {%- endfilter -%}>
+                    {{-make_xml_attrib("OID",dim.oid)}}>
  {{ peid.printElementID(dim) }}
  {%- if dim.length_exp %}
  <LENGTH-EXP>{{ dim.length_exp }}</LENGTH-EXP>

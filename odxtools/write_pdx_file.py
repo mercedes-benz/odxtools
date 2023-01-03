@@ -9,16 +9,28 @@ import time
 import datetime
 import inspect
 
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 from .exceptions import OdxError
 from .comparam_subset import BaseComparam, Comparam, ComplexComparam
-from .utils import bool_to_str
+from .odxtypes import bool_to_odxstr
 
 odxdatabase = None
 
 def jinja2_odxraise_helper(msg: str) -> None:
     raise Exception(msg)
+
+def make_xml_attrib(attrib_name: str, attrib_val: Optional[Any]) -> str:
+    if attrib_val is None:
+        return ""
+
+    return f' {attrib_name}="{attrib_val}"'
+
+def make_bool_xml_attrib(attrib_name: str, attrib_val: Optional[bool]) -> str:
+    if attrib_val is None:
+        return ""
+
+    return make_xml_attrib(attrib_name, bool_to_odxstr(attrib_val))
 
 __module_filename = inspect.getsourcefile(odxtools)
 assert isinstance(__module_filename, str)
@@ -98,11 +110,8 @@ def write_pdx_file(output_file_name : str,
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
         jinja_env.globals['hasattr'] = hasattr
         jinja_env.globals['odxraise'] = jinja2_odxraise_helper
-        jinja_env.globals['bool_to_str'] = bool_to_str
-
-        # allows to put XML attributes on a separate line while it is
-        # collapsed with the previous line in the rendering
-        jinja_env.filters["odxtools_collapse_xml_attribute"] = lambda x: " "+x.strip() if x.strip() else ""
+        jinja_env.globals['make_xml_attrib'] = make_xml_attrib
+        jinja_env.globals['make_bool_xml_attrib'] = make_bool_xml_attrib
 
         vars: Dict[str, Any] = {}
         vars["odxtools_version"] = odxtools.__version__

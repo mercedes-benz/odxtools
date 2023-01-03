@@ -40,9 +40,7 @@
 <COMPARAM ID="{{cp.odx_id.local_id}}"
           PARAM-CLASS="{{cp.param_class}}"
           CPTYPE="{{cp.cptype}}"
-          {%- if cp.display_level is not none %}
-          DISPLAY-LEVEL="{{cp.display_level}}"
-          {%- endif %}
+         {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}
           CPUSAGE="{{cp.cpusage}}">
  <SHORT-NAME>{{cp.short_name}}</SHORT-NAME>
  {%- if cp.long_name and cp.long_name.strip() %}
@@ -62,16 +60,10 @@
 <COMPLEX-COMPARAM ID="{{cp.odx_id.local_id}}"
                   PARAM-CLASS="{{cp.param_class}}"
                   CPTYPE="{{cp.cptype}}"
-                  {%- if cp.display_level is not none %}
-                  DISPLAY-LEVEL="{{cp.display_level}}"
-                  {%- endif %}
+                 {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}
                   CPUSAGE="{{cp.cpusage}}"
-                  {%- if cp.allow_multiple_values == True %}
-                  ALLOW-MULTIPLE-VALUES="true"
-                  {%- elif cp.allow_multiple_values == False %}
-                  ALLOW-MULTIPLE-VALUES="false"
-                  {%- endif %}
-                  >
+                 {{make_bool_xml_attrib("ALLOW-MULTIPLE-VALUES", cp.allow_multiple_values_raw)}}
+                  {#- #}>
  <SHORT-NAME>{{cp.short_name}}</SHORT-NAME>
  {%- if cp.long_name and cp.long_name.strip() %}
  <LONG-NAME>{{cp.long_name|e}}</LONG-NAME>

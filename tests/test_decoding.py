@@ -242,7 +242,7 @@ class TestDecoding(unittest.TestCase):
         odxlinks.update({struct.odx_id: struct})
         eopf = EndOfPduField(OdxLinkId("eopf_id", doc_frags), "eopf_sn",
                              structure=struct,
-                             _is_visible=True)
+                             is_visible_raw=True)
         odxlinks.update({eopf.odx_id: eopf})
 
         req_param2 = ValueParameter("eopf_param", dop=eopf)
@@ -402,7 +402,7 @@ class TestDecoding(unittest.TestCase):
                      physical_type=PhysicalType(DataType.A_UINT32),
                      compu_method=compu_method,
                      dtcs=dtcs,
-                     _is_visible=True)
+                     is_visible_raw=True)
         odxlinks[dop.odx_id] = dop
         resp_param1 = CodedConstParameter(
             "SID", diag_coded_type, coded_value=0x12, byte_position=0)

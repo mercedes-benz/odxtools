@@ -151,8 +151,7 @@ class BasicStructure(DopBase):
         for param in self.parameters:
             if param == self.parameters[-1]:
                 # The last parameter is at the end of the PDU if the structure itself is at the end of the PDU
-                encode_state = encode_state._replace(
-                    is_end_of_pdu=is_end_of_pdu)
+                encode_state = encode_state._replace(is_end_of_pdu=is_end_of_pdu)
 
             implicit_length_encoding = isinstance(param, LengthKeyParameter) and param.short_name not in param_values
             if implicit_length_encoding:

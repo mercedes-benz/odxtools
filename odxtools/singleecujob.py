@@ -8,7 +8,8 @@ from .dataobjectproperty import DopBase
 from .admindata import AdminData
 from .audience import Audience
 from .functionalclass import FunctionalClass
-from .utils import create_description_from_et, short_name_as_id, str_to_bool
+from .utils import create_description_from_et, short_name_as_id
+from .odxtypes import odxstr_to_bool
 from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
 from .nameditemlist import NamedItemList
 from .globals import logger
@@ -239,13 +240,22 @@ class SingleEcuJob:
     # xsd:attributes inherited from DIAG-COMM (and thus shared with DIAG-SERVICE)
     semantic: Optional[str] = None
     diagnostic_class: Optional[DiagClassType] = None
-    is_mandatory: Optional[bool] = None
-    _is_executable: Optional[bool] = None
+    is_mandatory_raw: Optional[bool] = None
+    is_executable_raw: Optional[bool] = None
+    is_final_raw: Optional[bool] = None
+    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+
+    @property
+    def is_mandatory(self):
+        return self.is_mandatory_raw == True
+
     @property
     def is_executable(self):
-        return self._is_executable in (None, True)
-    is_final: Optional[bool] = None
-    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+        return self.is_executable_raw in (None, True)
+
+    @property
+    def is_final(self):
+        return self.is_final_raw == True
 
     def __post_init__(self) -> None:
         if not self.functional_class_refs:
@@ -302,9 +312,9 @@ class SingleEcuJob:
         ]
 
         # Read boolean flags. Note that the "else" clause contains the default value.
-        is_mandatory = str_to_bool(et_element.get("IS-MANDATORY"))
-        is_executable = str_to_bool(et_element.get("IS-MANDATORY"))
-        is_final = str_to_bool(et_element.get("IS-FINAL"))
+        is_mandatory_raw = odxstr_to_bool(et_element.get("IS-MANDATORY"))
+        is_executable_raw = odxstr_to_bool(et_element.get("IS-MANDATORY"))
+        is_final_raw = odxstr_to_bool(et_element.get("IS-FINAL"))
 
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
@@ -320,9 +330,9 @@ class SingleEcuJob:
                             input_params=input_params,
                             output_params=output_params,
                             neg_output_params=neg_output_params,
-                            is_mandatory=is_mandatory,
-                            _is_executable=is_executable,
-                            is_final=is_final,
+                            is_mandatory_raw=is_mandatory_raw,
+                            is_executable_raw=is_executable_raw,
+                            is_final_raw=is_final_raw,
                             sdgs=sdgs)
 
     @property

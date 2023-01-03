@@ -7,27 +7,11 @@
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printDiagCodedType(dct) -%}
-<DIAG-CODED-TYPE BASE-DATA-TYPE="{{dct.base_data_type.value}}"
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if dct.base_type_encoding %}
-                 BASE-TYPE-ENCODING="{{dct.base_type_encoding}}"
-  {%- endif %}
- {%- endfilter %}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if dct.termination %}
-                 TERMINATION="{{dct.termination}}"
-  {%- endif %}
- {%- endfilter %}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if dct.is_highlow_byte_order %}
-                 IS-HIGHLOW-BYTE-ORDER="true"
-  {%- else %}
-                 IS-HIGHLOW-BYTE-ORDER="false"
-  {%- endif %}
- {%- endfilter %}
- {%- filter odxtools_collapse_xml_attribute %}
-                 xsi:type="{{dct.dct_type}}" >
- {%- endfilter %}
+<DIAG-CODED-TYPE {{-make_xml_attrib("BASE-DATA-TYPE", dct.base_data_type.value)}}
+                 {{-make_xml_attrib("BASE-TYPE-ENCODING", dct.base_type_encoding)}}
+                 {{-make_xml_attrib("TERMINATION", dct.termination)}}
+                 {{-make_bool_xml_attrib("IS-HIGHLOW-BYTE-ORDER", dct.is_highlow_byte_order_raw)}}
+                 {#- #} xsi:type="{{dct.dct_type}}">
  {%- if dct.dct_type in ("STANDARD-LENGTH-TYPE", "LEADING-LENGTH-INFO-TYPE") %}
  <BIT-LENGTH>{{dct.bit_length}}</BIT-LENGTH>
  {%- else %}

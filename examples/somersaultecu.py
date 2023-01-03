@@ -895,7 +895,7 @@ somersault_services = {
                         OdxLinkRef.from_id(somersault_additional_audiences["attentive_admirer"].odx_id),
                         OdxLinkRef.from_id(somersault_additional_audiences["anyone"].odx_id),
                     ],
-                    _is_development=False)
+                    is_development_raw=False)
                 ),
 
     "set_operation_params":
@@ -934,7 +934,7 @@ somersault_services = {
                 ],
                 audience=Audience(
                     enabled_audience_refs=[OdxLinkRef.from_id(somersault_additional_audiences["attentive_admirer"].odx_id)],
-                    _is_development=False)
+                    is_development_raw=False)
                 ),
 
     "backward_flips":
@@ -953,7 +953,7 @@ somersault_services = {
                 ],
                 audience=Audience(
                     enabled_audience_refs=[OdxLinkRef.from_id(somersault_additional_audiences["attentive_admirer"].odx_id)],
-                    _is_development=False)
+                    is_development_raw=False)
                 ),
 
     "report_status":
@@ -969,8 +969,8 @@ somersault_services = {
                 ],
                 audience=Audience(
                     disabled_audience_refs=[OdxLinkRef.from_id(somersault_additional_audiences["attentive_admirer"].odx_id)],
-                    _is_aftersales=False,
-                    _is_aftermarket=False)
+                    is_aftersales_raw=False,
+                    is_aftermarket_raw=False)
                 ),
 
 }
