@@ -650,6 +650,7 @@ class DiagLayer:
 
     def get_communication_parameter(self,
                                     name: str,
+                                    *,
                                     is_functional: Optional[bool] = None,
                                     protocol_name: Optional[str] = None) \
             -> Optional[CommunicationParameterRef]:
