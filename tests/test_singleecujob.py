@@ -125,7 +125,8 @@ class TestSingleEcuJob(unittest.TestCase):
             short_name="JumpStart",
             functional_class_refs=[OdxLinkRef.from_id(self.context.extensiveTask.odx_id)],
             audience=Audience(
-                enabled_audience_refs=[OdxLinkRef.from_id(self.context.specialAudience.odx_id)]
+                enabled_audience_refs=[OdxLinkRef.from_id(self.context.specialAudience.odx_id)],
+                is_manufacturing_raw=False,
             ),
             prog_codes=[
                 ProgCode(
@@ -150,7 +151,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 <FUNCT-CLASS-REFS>
                     <FUNCT-CLASS-REF ID-REF="{self.singleecujob_object.functional_class_refs[0].ref_id}"/>
                 </FUNCT-CLASS-REFS>
-                <AUDIENCE IS-MANUFACTORING="false">
+                <AUDIENCE IS-MANUFACTURING="false">
                     <ENABLED-AUDIENCE-REFS>
                         <ENABLED-AUDIENCE-REF ID-REF="{cast(Audience, self.singleecujob_object.audience).enabled_audience_refs[0].ref_id}"/>
                     </ENABLED-AUDIENCE-REFS>

@@ -21,7 +21,7 @@
 {%- macro printAudience(audience) -%}
 <AUDIENCE {{-make_bool_xml_attrib("IS-SUPPLIER", audience.is_supplier_raw)}}
           {{-make_bool_xml_attrib("IS-DEVELOPMENT", audience.is_development_raw)}}
-          {{-make_bool_xml_attrib("IS-MANUFACTORING", audience.is_manufactoring_raw)}}
+          {{-make_bool_xml_attrib("IS-MANUFACTURING", audience.is_manufacturing_raw)}}
           {{-make_bool_xml_attrib("IS-AFTERSALES", audience.is_aftersales_raw)}}
           {{-make_bool_xml_attrib("IS-AFTERMARKET", audience.is_aftermarket_raw)}}>
 {%- if audience.enabled_audience_refs %}
