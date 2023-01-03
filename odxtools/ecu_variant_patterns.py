@@ -60,7 +60,7 @@ class EcuVariantPattern:
         return EcuVariantPattern(matching_params)
 
 
-def read_ecu_variant_patterns_from_odx(et_element: Optional[ElementTree.Element], doc_frags: List[OdxDocFragment]) -> List[EcuVariantPattern]:
+def create_ecu_variant_patterns_from_et(et_element: Optional[ElementTree.Element], doc_frags: List[OdxDocFragment]) -> List[EcuVariantPattern]:
 
     if not et_element:
         return []

@@ -11,7 +11,7 @@ from deprecation import deprecated
 
 from odxtools.diaglayertype import DIAG_LAYER_TYPE
 from odxtools.ecu_variant_patterns import (EcuVariantPattern,
-                                           read_ecu_variant_patterns_from_odx)
+                                           create_ecu_variant_patterns_from_et)
 
 from .admindata import AdminData
 from .audience import AdditionalAudience
@@ -317,7 +317,7 @@ class DiagLayer:
 
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
-        ecu_variant_patterns = read_ecu_variant_patterns_from_odx(et_element.find("ECU-VARIANT-PATTERNS"), doc_frags)
+        ecu_variant_patterns = create_ecu_variant_patterns_from_et(et_element.find("ECU-VARIANT-PATTERNS"), doc_frags)
         if variant_type is not DIAG_LAYER_TYPE.ECU_VARIANT:
             assert len(ecu_variant_patterns) == 0, \
                 "DiagLayer of type other than 'ECU-VARIANT' must not define a ECU-VARIANT-PATTERN"
