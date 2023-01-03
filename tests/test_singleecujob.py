@@ -231,7 +231,6 @@ class TestSingleEcuJob(unittest.TestCase):
         expected = self.singleecujob_odx.replace(" ", "")
 
         # Assert equality of outputted string
-        self.maxDiff = None
         self.assertEqual(expected, actual)
 
         # Assert equality of objects
