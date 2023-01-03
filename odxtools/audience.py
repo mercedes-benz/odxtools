@@ -3,21 +3,51 @@
 
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any
-from odxtools.utils import create_description_from_et
+from .utils import create_description_from_et
+from .odxtypes import odxstr_to_bool
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
 @dataclass()
 class Audience:
     enabled_audience_refs: list = field(default_factory=list)
     disabled_audience_refs: list = field(default_factory=list)
-    is_supplier: bool = True
-    is_development: bool = True
-    is_manufacturing: bool = True
-    is_aftersales: bool = True
-    is_aftermarket: bool = True
 
-    _enabled_audiences: Optional[List["Audience"]] = None
-    _disabled_audiences: Optional[List["Audience"]] = None
+    is_supplier_raw: Optional[bool] = None
+    @property
+    def is_supplier(self) -> bool:
+        return self.is_supplier_raw in [None, True]
+
+    is_development_raw: Optional[bool] = None
+    @property
+    def is_development(self) -> bool:
+        return self.is_development_raw in [None, True]
+
+    is_manufacturing_raw: Optional[bool] = None
+    @property
+    def is_manufacturing(self) -> bool:
+        return self.is_manufacturing_raw in [None, True]
+
+    is_aftersales_raw: Optional[bool] = None
+    @property
+    def is_aftersales(self) -> bool:
+        return self.is_aftersales_raw in [None, True]
+
+    is_aftermarket_raw: Optional[bool] = None
+    @property
+    def is_aftermarket(self) -> bool:
+        return self.is_aftermarket_raw in [None, True]
+
+    _enabled_audiences: Optional[List["AdditionalAudience"]] = None
+    @property
+    def enabled_audiences(self) -> List["AdditionalAudience"]:
+        assert self._enabled_audiences is not None
+        return self._enabled_audiences
+
+    _disabled_audiences: Optional[List["AdditionalAudience"]] = None
+    @property
+    def disabled_audiences(self) -> List["AdditionalAudience"]:
+        assert self._disabled_audiences is not None
+        return self._disabled_audiences
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) \
@@ -29,28 +59,19 @@ class Audience:
         disabled_audience_refs = [OdxLinkRef.from_et(ref, doc_frags)
             for ref in et_element.iterfind("DISABLED-AUDIENCE-REFS/"
                                            "DISABLED-AUDIENCE-REF")]
-        is_supplier = et_element.get("IS-SUPPLIER", "true") == 'true'
-        is_development = et_element.get("IS-DEVELOPMENT", "true") == 'true'
-        is_manufacturing = et_element.get("IS-MANUFACTURING", "true") == 'true'
-        is_aftersales = et_element.get("IS-AFTERSALES", "true") == 'true'
-        is_aftermarket = et_element.get("IS-AFTERMARKET", "true") == 'true'
+        is_supplier_raw = odxstr_to_bool(et_element.get("IS-SUPPLIER"))
+        is_development_raw = odxstr_to_bool(et_element.get("IS-DEVELOPMENT"))
+        is_manufacturing_raw = odxstr_to_bool(et_element.get("IS-MANUFACTURING"))
+        is_aftersales_raw = odxstr_to_bool(et_element.get("IS-AFTERSALES"))
+        is_aftermarket_raw = odxstr_to_bool(et_element.get("IS-AFTERMARKET"))
 
         return Audience(enabled_audience_refs=enabled_audience_refs,
                         disabled_audience_refs=disabled_audience_refs,
-                        is_supplier=is_supplier,
-                        is_development=is_development,
-                        is_manufacturing=is_manufacturing,
-                        is_aftersales=is_aftersales,
-                        is_aftermarket=is_aftermarket)
-
-
-    @property
-    def enabled_audiences(self):
-        return self._enabled_audiences
-
-    @property
-    def disabled_audiences(self):
-        return self._disabled_audiences
+                        is_supplier_raw=is_supplier_raw,
+                        is_development_raw=is_development_raw,
+                        is_manufacturing_raw=is_manufacturing_raw,
+                        is_aftersales_raw=is_aftersales_raw,
+                        is_aftermarket_raw=is_aftermarket_raw)
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         self._enabled_audiences = [odxlinks.resolve(ref)

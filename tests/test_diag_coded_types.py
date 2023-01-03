@@ -75,7 +75,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
         dct = LeadingLengthInfoType("A_UNICODE2STRING",
                                     bit_length=8,
-                                    is_highlow_byte_order=False)
+                                    is_highlow_byte_order_raw=False)
         state = DecodeState(bytes([0x12, 0x4, 0x61, 0x00, 0x39, 0x00]), [], 1)
         internal, next_byte = dct.convert_bytes_to_internal(state,
                                                             bit_position=0)
@@ -93,7 +93,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
         dct = LeadingLengthInfoType("A_UNICODE2STRING",
                                     bit_length=8,
-                                    is_highlow_byte_order=False)
+                                    is_highlow_byte_order_raw=False)
         byte_val = dct.convert_internal_to_bytes("a9",
                                                  state,
                                                  bit_position=0)
@@ -193,7 +193,7 @@ class TestStandardLengthType(unittest.TestCase):
         self.assertEqual(next_byte, 2)
 
     def test_decode_standard_length_type_uint_byteorder(self):
-        dct = StandardLengthType("A_UINT32", 16, is_highlow_byte_order=False)
+        dct = StandardLengthType("A_UINT32", 16, is_highlow_byte_order_raw=False)
         state = DecodeState(bytes([0x1, 0x2, 0x3]), [], 1)
         internal, next_byte = dct.convert_bytes_to_internal(state,
                                                             bit_position=0)

@@ -6,6 +6,7 @@ from typing import cast, List, Dict, Optional, Any, Union
 from dataclasses import dataclass, field
 
 from .utils import create_description_from_et
+from .odxtypes import odxstr_to_bool
 from .physicaltype import PhysicalType
 from .globals import logger
 from .compumethods import CompuMethod, create_any_compu_method_from_et
@@ -32,13 +33,13 @@ class DopBase(abc.ABC):
                  short_name,
                  long_name=None,
                  description=None,
-                 is_visible=True,
+                 is_visible_raw=None,
                  sdgs = []):
         self.odx_id = odx_id
         self.short_name = short_name
         self.long_name = long_name
         self.description = description
-        self.is_visible = is_visible
+        self.is_visible_raw = is_visible_raw
         self.sdgs = sdgs
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -52,6 +53,10 @@ class DopBase(abc.ABC):
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         for sdg in self.sdgs:
             sdg._resolve_references(odxlinks)
+
+    @property
+    def is_visible(self) -> bool:
+        return self.is_visible_raw in (None, True)
 
     @abc.abstractmethod
     def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState, bit_position: int) -> bytes:
@@ -76,12 +81,14 @@ class DataObjectProperty(DopBase):
                  unit_ref: Optional[OdxLinkRef] = None,
                  long_name: Optional[str] = None,
                  description: Optional[str] = None,
+                 is_visible_raw: Optional[bool] = None,
                  sdgs: List[SpecialDataGroup] = [],
                  ):
         super().__init__(odx_id=odx_id,
                          short_name=short_name,
                          long_name=long_name,
                          description=description,
+                         is_visible_raw=is_visible_raw,
                          sdgs=sdgs)
         self.diag_coded_type = diag_coded_type
         self.physical_type = physical_type
@@ -129,7 +136,7 @@ class DataObjectProperty(DopBase):
                     elif dtc_elem.tag == "DTC-REF":
                         dtclist.append(DtcRef.from_et(dtc_elem, doc_frags))
 
-            is_visible = et_element.get("IS-VISIBLE") == "true"
+            is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
             dop = DtcDop(odx_id=odx_id,
                          short_name=short_name,
                          long_name=long_name,
@@ -138,7 +145,7 @@ class DataObjectProperty(DopBase):
                          physical_type=physical_type,
                          compu_method=compu_method,
                          dtcs=dtclist,
-                         is_visible=is_visible,
+                         is_visible_raw=is_visible_raw,
                          sdgs=sdgs)
         return dop
 
@@ -230,8 +237,12 @@ class DiagnosticTroubleCode:
     text: Optional[str] = None
     display_trouble_code: Optional[str] = None
     level: Union[bytes, bytearray, None] = None
-    is_temporary: bool = False
+    is_temporary_raw: Optional[bool] = None
     sdgs: List[SpecialDataGroup] = field(default_factory=list)
+
+    @property
+    def is_temporary(self) -> bool:
+        return self.is_temporary_raw == True
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) \
@@ -246,6 +257,7 @@ class DiagnosticTroubleCode:
         else:
             level = None
 
+        is_temporary_raw = odxstr_to_bool(et_element.get("IS-TEMPORARY"))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return DiagnosticTroubleCode(odx_id=OdxLinkId.from_et(et_element, doc_frags),
@@ -255,6 +267,7 @@ class DiagnosticTroubleCode:
                                      text=et_element.findtext("TEXT"),
                                      display_trouble_code=display_trouble_code,
                                      level=level,
+                                     is_temporary_raw=is_temporary_raw,
                                      sdgs=sdgs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -331,7 +344,7 @@ class DtcDop(DataObjectProperty):
                  physical_type: PhysicalType,
                  compu_method: CompuMethod,
                  dtcs: List[Union[DiagnosticTroubleCode, DtcRef]],
-                 is_visible: bool = False,
+                 is_visible_raw: bool = False,
                  linked_dtc_dops: bool = False,
                  long_name: Optional[str] = None,
                  description: Optional[str] = None,
@@ -344,9 +357,9 @@ class DtcDop(DataObjectProperty):
                          diag_coded_type=diag_coded_type,
                          physical_type=physical_type,
                          compu_method=compu_method,
+                         is_visible_raw=is_visible_raw,
                          sdgs=sdgs)
         self.dtcs = dtcs
-        self.is_visible = is_visible
         self.linked_dtc_dops = linked_dtc_dops
 
     def convert_bytes_to_physical(self, decode_state, bit_position: int = 0):

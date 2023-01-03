@@ -49,7 +49,7 @@ def create_any_parameter_from_et(et_element, doc_frags):
                 f"A parameter of type {parameter_type} must reference a DOP! {dop_ref}, {dop_snref}")
 
     if parameter_type == "VALUE":
-        physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE") \
+        physical_default_value_raw = et_element.findtext("PHYSICAL-DEFAULT-VALUE") \
             if et_element.find("PHYSICAL-DEFAULT-VALUE") is not None else None
 
         return ValueParameter(short_name=short_name,
@@ -59,7 +59,7 @@ def create_any_parameter_from_et(et_element, doc_frags):
                               bit_position=bit_position,
                               dop_ref=dop_ref,
                               dop_snref=dop_snref,
-                              physical_default_value=physical_default_value,
+                              physical_default_value_raw=physical_default_value_raw,
                               description=description,
                               sdgs=sdgs)
 

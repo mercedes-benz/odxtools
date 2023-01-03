@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-from typing import Dict, Literal, Optional, Any
+from typing import Dict, Literal, Optional, Any, Union
 from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment

@@ -19,32 +19,11 @@
 {%- endmacro -%}
 
 {%- macro printAudience(audience) -%}
-<AUDIENCE 
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if not audience.is_supplier %}
-                 IS-SUPPLIER="false"
-  {%- endif %}
- {%- endfilter %}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if not audience.is_development %}
-                 IS-DEVELOPMENT="false"
-  {%- endif %}
- {%- endfilter %}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if not audience.is_manufacturing %}
-                 IS-MANUFACTURING="false"
-  {%- endif %}
- {%- endfilter %}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if not audience.is_aftersales %}
-                 IS-AFTERSALES="false"
-  {%- endif %}
- {%- endfilter %}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if not audience.is_aftermarket %}
-                 IS-AFTERMARKET="false"
-  {%- endif %}
- {%- endfilter %} >
+<AUDIENCE {{-make_bool_xml_attrib("IS-SUPPLIER", audience.is_supplier_raw)}}
+          {{-make_bool_xml_attrib("IS-DEVELOPMENT", audience.is_development_raw)}}
+          {{-make_bool_xml_attrib("IS-MANUFACTORING", audience.is_manufactoring_raw)}}
+          {{-make_bool_xml_attrib("IS-AFTERSALES", audience.is_aftersales_raw)}}
+          {{-make_bool_xml_attrib("IS-AFTERMARKET", audience.is_aftermarket_raw)}}>
 {%- if audience.enabled_audience_refs %}
  <ENABLED-AUDIENCE-REFS>
 {%- for ref in audience.enabled_audience_refs %}

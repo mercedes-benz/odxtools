@@ -10,37 +10,12 @@
 
 {%- macro printSingleEcuJob(job) -%}
 <SINGLE-ECU-JOB ID="{{job.odx_id.local_id}}"
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if job.oid %}
-                OID="{{job.oid}}"
-  {%- endif %}
- {%- endfilter -%}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if job.semantic %}
-                SEMANTIC="{{job.semantic}}"
-  {%- endif %}
- {%- endfilter -%}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if job.diagnostic_class %}
-                DIAGNOSTIC-CLASS="{{job.diagnostic_class}}"
-  {%- endif %}
- {%- endfilter -%}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if job.is_mandatory %}
-                IS-MANDATORY="true"
-  {%- endif %}
- {%- endfilter -%}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if not job.is_executable %}
-                IS-EXECUTABLE="false"
-  {%- endif %}
- {%- endfilter -%}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if job.is_final %}
-                IS-FINAL="true"
-  {%- endif %}
- {%- endfilter -%}
- >
+                {{-make_xml_attrib("OID", job.oid)}}
+                {{-make_xml_attrib("SEMANTIC", job.semantic)}}
+                {{-make_xml_attrib("DIAGNOSTIC-CLASS", job.diagnostic_class)}}
+                {{-make_bool_xml_attrib("IS-MANDATORY", job.is_mandatory_raw)}}
+                {{-make_bool_xml_attrib("IS-EXECUTABLE", job.is_executable_raw)}}
+                {{-make_bool_xml_attrib("IS-FINAL", job.is_final_raw)}}>
  {{ peid.printElementID(job)|indent(1) }}
  {{- psd.printSpecialDataGroups(job.sdgs)|indent(1, first=True) }}
 {%- if job.functional_class_refs %}
@@ -106,18 +81,8 @@
 
 
 {%- macro printInputParam(param) -%}
-<INPUT-PARAM
-{%- filter odxtools_collapse_xml_attribute %}
-  {%- if param.semantic %}
-                SEMANTIC="{{param.semantic}}"
-  {%- endif %}
- {%- endfilter -%}
-{%- filter odxtools_collapse_xml_attribute %}
-  {%- if param.oid %}
-                OID="{{param.oid}}"
-  {%- endif %}
- {%- endfilter -%}
->
+<INPUT-PARAM {{-make_xml_attrib("OID", param.oid)}}
+             {{-make_xml_attrib("SEMANTIC", param.semantic)}}>
  {{ peid.printElementID(param)|indent(1) }}
 {%- if param.physical_default_value %}
  <PHYSICAL-DEFAULT-VALUE>{{param.physical_default_value}}</PHYSICAL-DEFAULT-VALUE>
@@ -128,17 +93,8 @@
 
 {%- macro printOutputParam(param) -%}
 <OUTPUT-PARAM ID="{{param.odx_id.local_id}}"
-{%- filter odxtools_collapse_xml_attribute %}
-  {%- if param.oid %}
-             OID="{{param.oid}}"
-  {%- endif %}
- {%- endfilter -%}
- {%- filter odxtools_collapse_xml_attribute %}
-  {%- if param.semantic %}
-             SEMANTIC="{{param.semantic}}"
-  {%- endif %}
- {%- endfilter -%}
->
+              {{-make_xml_attrib("OID", param.oid)}}
+              {{-make_xml_attrib("SEMANTIC", param.semantic)}}>
  {{ peid.printElementID(param)|indent(1) }}
  <DOP-BASE-REF ID-REF="{{param.dop_base_ref.ref_id}}" />
 </OUTPUT-PARAM>

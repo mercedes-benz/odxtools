@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 from enum import Enum
-from typing import Any, Callable, Dict, Literal, Type, Union
+from typing import Any, Optional, Callable, Dict, Literal, Type, Union, overload
 
 def bytefield_to_bytearray(bytefield: str) -> bytearray:
     bytes_string = [bytefield[i:i+2] for i in range(0, len(bytefield), 2)]
@@ -10,6 +10,25 @@ def bytefield_to_bytearray(bytefield: str) -> bytearray:
 
 PythonType = Union[str, int, float, bytearray]
 LiteralPythonType = Type[Union[str, int, float, bytearray]]
+
+@overload
+def odxstr_to_bool(str_val: None) -> None: ...
+
+@overload
+def odxstr_to_bool(str_val: str) -> bool: ...
+
+def odxstr_to_bool(str_val: Optional[str]) -> Optional[bool]:
+    if str_val is None:
+        return None
+
+    str_val = str_val.strip()
+    assert str_val in ["0", "1", "false", "true"], \
+        f"String '{str_val}' cannot be converted to a boolean"
+
+    return str_val in ["1", "true"]
+
+def bool_to_odxstr(bool_val: bool) -> str:
+    return "true" if bool_val else "false"
 
 def parse_int(value: str) -> int:
     try:
