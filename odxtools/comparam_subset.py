@@ -80,8 +80,14 @@ class ComplexComparam(BaseComparam):
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "ComplexComparam":
+        # create an "empty" ComplexComparam object without calling the
+        # "official" constructor. We need to do this because we need
+        # all data attributes of the class to call the constructor,
+        # including those which are supposed to be handled by the base
+        # class (i.e., ComparamBase)
         result = ComplexComparam.__new__(ComplexComparam)
 
+        # initialize the new "empty" object from the ElementTree
         result.__init_from_et__(et_element, doc_frags)
 
         return result
@@ -118,8 +124,14 @@ class Comparam(BaseComparam):
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Comparam":
+        # create an "empty" Comparam object without calling the
+        # "official" constructor. We need to do this because we need
+        # all data attributes of the class to call the constructor,
+        # including those which are supposed to be handled by the base
+        # class (i.e., ComparamBase)
         result = Comparam.__new__(Comparam)
 
+        # initialize the new "empty" object from the ElementTree
         result.__init_from_et__(et_element, doc_frags)
 
         return result
