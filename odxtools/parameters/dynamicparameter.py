@@ -12,7 +12,8 @@ class DynamicParameter(Parameter):
                  byte_position=None,
                  bit_position=None,
                  semantic=None,
-                 description=None):
+                 description=None,
+                 **kwargs):
         super().__init__(
             short_name=short_name,
             long_name=long_name,
@@ -20,7 +21,8 @@ class DynamicParameter(Parameter):
             bit_position=bit_position,
             parameter_type="DYNAMIC",
             semantic=semantic,
-            description=description
+            description=description,
+            **kwargs
         )
 
     def is_required(self):

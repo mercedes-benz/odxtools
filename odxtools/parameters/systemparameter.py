@@ -15,7 +15,8 @@ class SystemParameter(ParameterWithDOP):
                  byte_position=None,
                  bit_position=None,
                  semantic=None,
-                 description=None):
+                 description=None,
+                 **kwargs):
         super().__init__(short_name,
                          parameter_type="SYSTEM",
                          dop_ref=dop_ref,
@@ -24,7 +25,8 @@ class SystemParameter(ParameterWithDOP):
                          byte_position=byte_position,
                          bit_position=bit_position,
                          semantic=semantic,
-                         description=description)
+                         description=description,
+                         **kwargs)
         self.sysparam = sysparam
 
     def is_required(self):
