@@ -60,6 +60,9 @@ class OdxLinkId:
         # i.e. the same OdxId object can be put into all of them.
         return self.local_id == other.local_id
 
+    def __str__(self):
+        return f"OdxLinkId('{self.local_id}')"
+
     @staticmethod
     def from_et(et: Element, doc_fragments: List[OdxDocFragment]) -> Optional["OdxLinkId"]:
         """Construct an OdxLinkId for a given XML node (ElementTree object).
@@ -129,6 +132,9 @@ class OdxLinkRef:
         """Construct an OdxLinkRef for a given OdxLinkId.
         """
         return OdxLinkRef(odxid.local_id, odxid.doc_fragments)
+
+    def __str__(self):
+        return f"OdxLinkRef('{self.ref_id}')"
 
     def __contains__(self, odx_id: OdxLinkId) -> bool:
         """

@@ -89,7 +89,7 @@ def print_summary(odxdb: Database,
             print(
                 f"The communication parameters of the {dl.variant_type.value} '{dl.short_name}' are: ")
             for com_param in com_params:
-                print(f"  {com_param.id_ref}: {com_param.value}")
+                print(f"  {com_param.short_name}: {com_param.value}")
 
 
 def add_subparser(subparsers):

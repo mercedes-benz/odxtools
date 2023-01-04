@@ -9,8 +9,10 @@
 {%- macro printDiagCodedType(dct) -%}
 <DIAG-CODED-TYPE {{-make_xml_attrib("BASE-DATA-TYPE", dct.base_data_type.value)}}
                  {{-make_xml_attrib("BASE-TYPE-ENCODING", dct.base_type_encoding)}}
-                 {{-make_xml_attrib("TERMINATION", dct.termination)}}
                  {{-make_bool_xml_attrib("IS-HIGHLOW-BYTE-ORDER", dct.is_highlow_byte_order_raw)}}
+                 {%- if dct.termination is defined %}
+                 {{-make_xml_attrib("TERMINATION", dct.termination)}}
+                 {%- endif %}
                  {#- #} xsi:type="{{dct.dct_type}}">
  {%- if dct.dct_type in ("STANDARD-LENGTH-TYPE", "LEADING-LENGTH-INFO-TYPE") %}
  <BIT-LENGTH>{{dct.bit_length}}</BIT-LENGTH>

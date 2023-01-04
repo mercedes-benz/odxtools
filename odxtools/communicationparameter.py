@@ -23,14 +23,14 @@ class CommunicationParameterRef:
                  id_ref: OdxLinkRef,
                  is_functional = False,
                  description: Optional[str] = None,
-                 protocol_sn_ref: Optional[str] = None,
-                 prot_stack_sn_ref: Optional[str] = None) -> None:
+                 protocol_snref: Optional[str] = None,
+                 prot_stack_snref: Optional[str] = None) -> None:
         self.value = value
         self.id_ref = id_ref
         self.is_functional = is_functional
         self.description = description
-        self.protocol_sn_ref = protocol_sn_ref
-        self.prot_stack_sn_ref = prot_stack_sn_ref
+        self.protocol_snref = protocol_snref
+        self.prot_stack_snref = prot_stack_snref
         self.comparam: Optional[BaseComparam] = None
 
     @staticmethod
@@ -66,8 +66,8 @@ class CommunicationParameterRef:
                                          id_ref,
                                          is_functional=is_functional,
                                          description=description,
-                                         protocol_sn_ref=protocol_snref,
-                                         prot_stack_sn_ref=prot_stack_snref
+                                         protocol_snref=protocol_snref,
+                                         prot_stack_snref=prot_stack_snref
                                          )
 
     def __repr__(self) -> str:

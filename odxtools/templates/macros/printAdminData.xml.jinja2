@@ -11,7 +11,7 @@
  {%- if admin_data.language is not none %}
  <LANGUAGE>{{admin_data.language|e}}</LANGUAGE>
  {%- endif %}
- {%- if admin_data.company_doc_infos is not none %}
+ {%- if admin_data.company_doc_infos %}
  <COMPANY-DOC-INFOS>
   {%- for cdi in admin_data.company_doc_infos %}
   <COMPANY-DOC-INFO>

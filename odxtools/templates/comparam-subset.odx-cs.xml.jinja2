@@ -32,7 +32,7 @@
    {%- if comparam_subset.admin_data is not none %}
    {{- pad.printAdminData(comparam_subset.admin_data) | indent(3) }}
    {%- endif %}
-   {%- if comparam_subset.company_datas is not none %}
+   {%- if comparam_subset.company_datas %}
    <COMPANY-DATAS>
      {%- for cd in comparam_subset.company_datas %}
      {{- pcd.printCompanyData(cd) | indent(5, first=True) }}
@@ -40,16 +40,16 @@
    </COMPANY-DATAS>
    {%- endif %}
    {{- psd.printSpecialDataGroups(comparam_subset.sdgs)|indent(3, first=True) }}
-   {%- if simple_comparams | length > 0 %}
+   {%- if comparam_subset.comparams %}
    <COMPARAMS>
-     {%- for cp in simple_comparams %}
+     {%- for cp in comparam_subset.comparams %}
      {{- pcp.printSimpleComparam(cp) | indent(5, first=True) }}
      {%- endfor %}
    </COMPARAMS>
    {%- endif %}
-   {%- if complex_comparams | length > 0 %}
+   {%- if comparam_subset.complex_comparams %}
    <COMPLEX-COMPARAMS>
-     {%- for cp in complex_comparams %}
+     {%- for cp in comparam_subset.complex_comparams %}
      {{- pcp.printComplexComparam(cp) | indent(5, first=True) }}
      {%- endfor %}
    </COMPLEX-COMPARAMS>

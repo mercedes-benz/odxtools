@@ -145,6 +145,7 @@
 {%- endfor %}
  </ADDITIONAL-AUDIENCES>
 {%- endif %}
+{{- psd.printSpecialDataGroups(dl.sdgs)|indent(1, first=True) }}
 {%- if dl._local_communication_parameters %}
  <COMPARAM-REFS>
  {%- for cp in dl._local_communication_parameters -%}
@@ -162,6 +163,5 @@
  {%- endfor %}
  </PARENT-REFS>
 {%- endif %}
- {{- psd.printSpecialDataGroups(dl.sdgs)|indent(1, first=True) }}
 </{{variant_tag}}>
 {%- endmacro -%}
