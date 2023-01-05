@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 class TableKeyParameter(Parameter):
     def __init__(self,
+                 *,
                  short_name,
                  table_ref=None,
                  table_snref=None,

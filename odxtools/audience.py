@@ -7,7 +7,7 @@ from .utils import create_description_from_et
 from .odxtypes import odxstr_to_bool
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
-@dataclass()
+@dataclass
 class Audience:
     enabled_audience_refs: list = field(default_factory=list)
     disabled_audience_refs: list = field(default_factory=list)
@@ -80,7 +80,7 @@ class Audience:
                                     for ref in self.disabled_audience_refs]
 
 
-@dataclass()
+@dataclass
 class AdditionalAudience:
     """
     Corresponds to ADDITIONAL-AUDIENCE.

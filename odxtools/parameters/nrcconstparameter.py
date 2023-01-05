@@ -22,9 +22,15 @@ class NrcConstParameter(Parameter):
     See ASAM MCD-2 D (ODX), p. 77-79.
     """
 
-    def __init__(self, short_name, diag_coded_type: DiagCodedType, coded_values: List[int], **kwargs):
-        super().__init__(short_name,
-                         parameter_type="NRC-CONST", **kwargs)
+    def __init__(self,
+                 *,
+                 short_name,
+                 diag_coded_type: DiagCodedType,
+                 coded_values: List[int],
+                 **kwargs):
+        super().__init__(short_name=short_name,
+                         parameter_type="NRC-CONST",
+                         **kwargs)
 
         self._diag_coded_type = diag_coded_type
         # TODO: Does it have to be an integer or is that just common practice?

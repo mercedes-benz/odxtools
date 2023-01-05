@@ -59,6 +59,7 @@ class LinearCompuMethod(CompuMethod):
     """
 
     def __init__(self,
+                 *,
                  offset,
                  factor,
                  internal_type: Union[DataType, str],
@@ -66,7 +67,9 @@ class LinearCompuMethod(CompuMethod):
                  denominator=1,
                  internal_lower_limit: Optional[Limit] = None,
                  internal_upper_limit: Optional[Limit] = None):
-        super().__init__(internal_type, physical_type, "LINEAR")
+        super().__init__(internal_type=internal_type,
+                         physical_type=physical_type,
+                         category="LINEAR")
         self.offset = offset
         self.factor = factor
         self.denominator = denominator

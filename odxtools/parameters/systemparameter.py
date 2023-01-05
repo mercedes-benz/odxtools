@@ -7,6 +7,7 @@ from .parameterwithdop import ParameterWithDOP
 
 class SystemParameter(ParameterWithDOP):
     def __init__(self,
+                 *,
                  short_name,
                  sysparam,
                  dop_ref=None,

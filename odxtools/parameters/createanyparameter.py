@@ -67,7 +67,7 @@ def create_any_parameter_from_et(et_element, doc_frags):
         physical_constant_value = et_element.findtext(
             "PHYS-CONSTANT-VALUE")
 
-        return PhysicalConstantParameter(short_name,
+        return PhysicalConstantParameter(short_name=short_name,
                                          long_name=long_name,
                                          semantic=semantic,
                                          byte_position=byte_position,
@@ -84,7 +84,7 @@ def create_any_parameter_from_et(et_element, doc_frags):
         coded_value = diag_coded_type.base_data_type.from_string(
             et_element.findtext("CODED-VALUE"))
 
-        return CodedConstParameter(short_name,
+        return CodedConstParameter(short_name=short_name,
                                    long_name=long_name,
                                    semantic=semantic,
                                    diag_coded_type=diag_coded_type,
@@ -100,7 +100,7 @@ def create_any_parameter_from_et(et_element, doc_frags):
         coded_values = [diag_coded_type.base_data_type.from_string(val.text)
                         for val in et_element.iterfind("CODED-VALUES/CODED-VALUE")]
 
-        return NrcConstParameter(short_name,
+        return NrcConstParameter(short_name=short_name,
                                  long_name=long_name,
                                  semantic=semantic,
                                  diag_coded_type=diag_coded_type,
@@ -113,12 +113,12 @@ def create_any_parameter_from_et(et_element, doc_frags):
     elif parameter_type == "RESERVED":
         bit_length = int(et_element.findtext("BIT-LENGTH"))
 
-        return ReservedParameter(short_name,
+        return ReservedParameter(bit_length=bit_length,
+                                 short_name=short_name,
                                  long_name=long_name,
                                  semantic=semantic,
                                  byte_position=byte_position,
                                  bit_position=bit_position,
-                                 bit_length=bit_length,
                                  description=description,
                                  sdgs=sdgs)
 
@@ -127,7 +127,7 @@ def create_any_parameter_from_et(et_element, doc_frags):
         request_byte_pos = int(
             et_element.findtext("REQUEST-BYTE-POS"))
 
-        return MatchingRequestParameter(short_name,
+        return MatchingRequestParameter(short_name=short_name,
                                         long_name=long_name,
                                         semantic=semantic,
                                         byte_position=byte_position, bit_position=bit_position,

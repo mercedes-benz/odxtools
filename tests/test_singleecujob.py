@@ -60,8 +60,8 @@ class TestSingleEcuJob(unittest.TestCase):
             inputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.inputDOP", doc_frags),
                 short_name="inputDOP",
-                diag_coded_type=StandardLengthType(
-                    DataType.A_INT32, bit_length=1),
+                diag_coded_type=StandardLengthType(base_data_type=DataType.A_INT32,
+                                                   bit_length=1),
                 physical_type=PhysicalType(DataType.A_UNICODE2STRING),
                 compu_method=TexttableCompuMethod(
                     internal_to_phys=[
@@ -77,21 +77,25 @@ class TestSingleEcuJob(unittest.TestCase):
             outputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.outputDOP", doc_frags),
                 short_name="outputDOP",
-                diag_coded_type=StandardLengthType(
-                    DataType.A_INT32, bit_length=1),
+                diag_coded_type=StandardLengthType(base_data_type=DataType.A_INT32,
+                                                   bit_length=1),
                 physical_type=PhysicalType(DataType.A_UNICODE2STRING),
-                compu_method=LinearCompuMethod(1, -1,
-                                               internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32)
+                compu_method=LinearCompuMethod(offset=1,
+                                               factor=-1,
+                                               internal_type=DataType.A_UINT32,
+                                               physical_type=DataType.A_UINT32)
             ),
 
             negOutputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.negOutputDOP", doc_frags),
                 short_name="negOutputDOP",
-                diag_coded_type=StandardLengthType(
-                    DataType.A_INT32, bit_length=1),
+                diag_coded_type=StandardLengthType(base_data_type=DataType.A_INT32,
+                                                   bit_length=1),
                 physical_type=PhysicalType(DataType.A_UNICODE2STRING),
-                compu_method=LinearCompuMethod(1, -1,
-                                               internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32)
+                compu_method=LinearCompuMethod(offset=1,
+                                               factor=-1,
+                                               internal_type=DataType.A_UINT32,
+                                               physical_type=DataType.A_UINT32)
             )
         )
 

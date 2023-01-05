@@ -8,7 +8,7 @@ from .utils import create_description_from_et
 from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
 
-@dataclass()
+@dataclass
 class FunctionalClass:
     """
     Corresponds to FUNCT-CLASS.

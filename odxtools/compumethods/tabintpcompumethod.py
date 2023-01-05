@@ -69,11 +69,14 @@ class TabIntpCompuMethod(CompuMethod):
     """
 
     def __init__(self,
+                 *,
                  internal_type: Union[DataType, str],
                  physical_type: Union[DataType, str],
                  internal_points: List[Union[float, int]],
                  physical_points: List[Union[float, int]]):
-        super().__init__(internal_type, physical_type, "TAB-INTP")
+        super().__init__(internal_type=internal_type,
+                         physical_type=physical_type,
+                         category="TAB-INTP")
 
         self.internal_points = internal_points
         self.physical_points = physical_points

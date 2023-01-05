@@ -68,7 +68,7 @@ class BaseComparam:
         return {self.odx_id: self}
 
 
-@dataclass()
+@dataclass
 class ComplexComparam(BaseComparam):
     comparams: NamedItemList[BaseComparam]
     complex_physical_default_value: Optional[ComplexValue] = field(default=None, init=False)
@@ -117,7 +117,7 @@ class ComplexComparam(BaseComparam):
         return odxlinks
 
 
-@dataclass()
+@dataclass
 class Comparam(BaseComparam):
     dop_ref: OdxLinkRef
     physical_default_value: Optional[str] = field(default=None, init=False)
@@ -158,7 +158,7 @@ class Comparam(BaseComparam):
         assert isinstance(self._dop, DataObjectProperty)
 
 
-@dataclass()
+@dataclass
 class ComparamSubset:
     odx_id: Optional[OdxLinkId]
     short_name: str

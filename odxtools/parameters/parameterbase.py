@@ -15,6 +15,7 @@ from ..specialdata import SpecialDataGroup
 
 class Parameter(abc.ABC):
     def __init__(self,
+                 *,
                  short_name: str,
                  parameter_type: str,
                  long_name: Optional[str] = None,

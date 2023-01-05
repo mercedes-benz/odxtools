@@ -45,6 +45,7 @@ PRIORITY_OF_DIAG_LAYER_TYPE : Dict[DIAG_LAYER_TYPE,int]= {
 class DiagLayer:
     class ParentRef:
         def __init__(self,
+                     *,
                      parent: Union[OdxLinkRef, "DiagLayer"],
                      ref_type: str,
                      not_inherited_diag_comms=[],
@@ -90,7 +91,7 @@ class DiagLayer:
             ref_type = et_element.get(f"{xsi}type")
 
             return DiagLayer.ParentRef(
-                parent_ref,
+                parent=parent_ref,
                 ref_type=ref_type,
                 not_inherited_diag_comms=not_inherited_diag_comms,
                 not_inherited_dops=not_inherited_dops
@@ -133,6 +134,7 @@ class DiagLayer:
             return self.parent_diag_layer._communication_parameters
 
     def __init__(self,
+                 *,
                  variant_type : DIAG_LAYER_TYPE,
                  odx_id,
                  short_name,
@@ -312,9 +314,9 @@ class DiagLayer:
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         # Create DiagLayer
-        return DiagLayer(variant_type,
-                         odx_id,
-                         short_name,
+        return DiagLayer(variant_type=variant_type,
+                         odx_id=odx_id,
+                         short_name=short_name,
                          long_name=long_name,
                          description=description,
                          requests=requests,
@@ -882,6 +884,7 @@ class DiagLayer:
 
 class DiagLayerContainer:
     def __init__(self,
+                 *,
                  odx_id: OdxLinkId,
                  short_name: str,
                  long_name: Optional[str] = None,
@@ -939,8 +942,8 @@ class DiagLayerContainer:
         ecu_variants = [DiagLayer.from_et(dl_element, doc_frags)
                         for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")]
 
-        return DiagLayerContainer(odx_id,
-                                  short_name,
+        return DiagLayerContainer(odx_id=odx_id,
+                                  short_name=short_name,
                                   long_name=long_name,
                                   description=description,
                                   admin_data=admin_data,

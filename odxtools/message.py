@@ -8,6 +8,7 @@ class Message:
     """A CAN message with its interpretation."""
 
     def __init__(self,
+                 *,
                  coded_message: Union[bytes, bytearray],
                  service,
                  structure,

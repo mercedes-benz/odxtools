@@ -34,6 +34,7 @@ ParameterDict = Dict[str, Union[Parameter, "ParameterDict"]]
 
 class BasicStructure(DopBase):
     def __init__(self,
+                 *,
                  odx_id,
                  short_name,
                  parameters: Iterable[Union[Parameter, "EndOfPduField"]],
@@ -41,12 +42,12 @@ class BasicStructure(DopBase):
                  byte_size=None,
                  description=None,
                  sdgs=[]):
-        super().__init__(odx_id,
-                         short_name,
+        super().__init__(odx_id=odx_id,
+                         short_name=short_name,
                          long_name=long_name,
                          description=description,
                          sdgs=sdgs)
-        self.parameters : NamedItemList[Union[Parameter, "EndOfPduField"]] = NamedItemList(short_name_as_id, parameters)
+        self.parameters: NamedItemList[Union[Parameter, "EndOfPduField"]] = NamedItemList(short_name_as_id, parameters)
         self._byte_size = byte_size
 
     @property
@@ -491,6 +492,7 @@ class BasicStructure(DopBase):
 
 class Structure(BasicStructure):
     def __init__(self,
+                 *,
                  odx_id,
                  short_name,
                  parameters,
@@ -498,9 +500,9 @@ class Structure(BasicStructure):
                  byte_size=None,
                  description=None,
                  sdgs=[]):
-        super().__init__(odx_id,
-                         short_name,
-                         parameters,
+        super().__init__(odx_id=odx_id,
+                         short_name=short_name,
+                         parameters=parameters,
                          long_name=long_name,
                          description=description,
                          sdgs=sdgs)
@@ -522,15 +524,16 @@ class Structure(BasicStructure):
 
 class Request(BasicStructure):
     def __init__(self,
+                 *,
                  odx_id,
                  short_name,
                  parameters,
                  long_name=None,
                  description=None,
                  sdgs=[]):
-        super().__init__(odx_id,
-                         short_name,
-                         parameters,
+        super().__init__(odx_id=odx_id,
+                         short_name=short_name,
+                         parameters=parameters,
                          long_name=long_name,
                          description=description,
                          sdgs=sdgs)
@@ -544,6 +547,7 @@ class Request(BasicStructure):
 
 class Response(BasicStructure):
     def __init__(self,
+                 *,
                  odx_id,
                  short_name,
                  parameters,
@@ -551,9 +555,9 @@ class Response(BasicStructure):
                  response_type=None,
                  description=None,
                  sdgs=[]):
-        super().__init__(odx_id,
-                         short_name,
-                         parameters,
+        super().__init__(odx_id=odx_id,
+                         short_name=short_name,
+                         parameters=parameters,
                          long_name=long_name,
                          description=description,
                          sdgs=sdgs)
@@ -597,8 +601,8 @@ def create_any_structure_from_et(et_element,
     res: Union[Structure, Request, Response, None]
     if et_element.tag == "REQUEST":
         res = Request(
-            odx_id,
-            short_name,
+            odx_id=odx_id,
+            short_name=short_name,
             parameters=parameters,
             long_name=long_name,
             description=description,
@@ -606,8 +610,8 @@ def create_any_structure_from_et(et_element,
         )
     elif et_element.tag in ["POS-RESPONSE", "NEG-RESPONSE"]:
         res = Response(
-            odx_id,
-            short_name,
+            odx_id=odx_id,
+            short_name=short_name,
             response_type=et_element.tag,
             parameters=parameters,
             long_name=long_name,
@@ -618,8 +622,8 @@ def create_any_structure_from_et(et_element,
         byte_size_text = et_element.findtext("BYTE-SIZE")
         byte_size = int(byte_size_text) if byte_size_text is not None else None
         res = Structure(
-            odx_id,
-            short_name,
+            odx_id=odx_id,
+            short_name=short_name,
             parameters=parameters,
             byte_size=byte_size,
             long_name=long_name,

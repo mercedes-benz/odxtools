@@ -18,6 +18,7 @@ class EnvironmentDataDescription(DopBase):
     that is used to define the interpretation of environment data."""
 
     def __init__(self,
+                 *,
                  env_datas: List[EnvironmentData],
                  env_data_refs: List[OdxLinkRef],
                  param_snref: Optional[str] = None,

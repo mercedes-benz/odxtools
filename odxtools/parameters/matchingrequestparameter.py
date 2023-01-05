@@ -10,12 +10,11 @@ from .parameterbase import Parameter
 
 class MatchingRequestParameter(Parameter):
     def __init__(self,
-                 short_name,
+                 *,
                  request_byte_position,
                  byte_length,
                  **kwargs):
-        super().__init__(short_name,
-                         parameter_type="MATCHING-REQUEST-PARAM",
+        super().__init__(parameter_type="MATCHING-REQUEST-PARAM",
                          **kwargs)
         assert byte_length is not None
         assert request_byte_position is not None

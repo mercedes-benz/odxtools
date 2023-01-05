@@ -12,8 +12,10 @@ from .compuscale import CompuScale
 
 
 class TexttableCompuMethod(CompuMethod):
-    def __init__(self, internal_to_phys: List[CompuScale], internal_type):
-        super().__init__(internal_type, DataType.A_UNICODE2STRING, "TEXTTABLE")
+    def __init__(self, *, internal_to_phys: List[CompuScale], internal_type):
+        super().__init__(internal_type=internal_type,
+                         physical_type=DataType.A_UNICODE2STRING,
+                         category="TEXTTABLE")
         self.internal_to_phys = internal_to_phys
 
         assert all(scale.lower_limit is not None or scale.upper_limit is not None

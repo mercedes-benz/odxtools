@@ -7,6 +7,7 @@ from .parameterbase import Parameter
 
 class TableStructParameter(Parameter):
     def __init__(self,
+                 *,
                  short_name,
                  table_key_ref=None,
                  table_key_snref=None,

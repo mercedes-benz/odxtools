@@ -29,6 +29,7 @@ class DopBase(abc.ABC):
     """
 
     def __init__(self,
+                 *,
                  odx_id,
                  short_name,
                  long_name=None,
@@ -73,6 +74,7 @@ class DataObjectProperty(DopBase):
     """This class represents a DATA-OBJECT-PROP."""
 
     def __init__(self,
+                 *,
                  odx_id: OdxLinkId,
                  short_name: str,
                  diag_coded_type: DiagCodedType,
@@ -117,11 +119,11 @@ class DataObjectProperty(DopBase):
 
         if et_element.tag == "DATA-OBJECT-PROP":
             unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
-            dop = DataObjectProperty(odx_id,
-                                     short_name,
-                                     diag_coded_type,
-                                     physical_type,
-                                     compu_method,
+            dop = DataObjectProperty(odx_id=odx_id,
+                                     short_name=short_name,
+                                     diag_coded_type=diag_coded_type,
+                                     physical_type=physical_type,
+                                     compu_method=compu_method,
                                      unit_ref=unit_ref,
                                      long_name=long_name,
                                      description=description,
@@ -288,7 +290,7 @@ class DtcRef:
     is resolved after loading the pdx database.
     """
 
-    def __init__(self, dtc_ref: OdxLinkRef):
+    def __init__(self, *, dtc_ref: OdxLinkRef):
         self.dtc_ref = dtc_ref
         self.dtc: Optional[DiagnosticTroubleCode] = None
 
@@ -297,7 +299,7 @@ class DtcRef:
         dtc_ref = OdxLinkRef.from_et(et_element, doc_frags)
         assert dtc_ref is not None
 
-        return DtcRef(dtc_ref)
+        return DtcRef(dtc_ref=dtc_ref)
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         dtc = odxlinks.resolve(self.dtc_ref)
@@ -338,6 +340,7 @@ class DtcDop(DataObjectProperty):
     """ A DOP describing a diagnostic trouble code """
 
     def __init__(self,
+                 *,
                  odx_id: OdxLinkId,
                  short_name: str,
                  diag_coded_type: DiagCodedType,

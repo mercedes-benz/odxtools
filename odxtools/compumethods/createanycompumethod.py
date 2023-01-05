@@ -143,7 +143,7 @@ def create_any_compu_method_from_et(et_element,
             "COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE")
         linear_methods = [_parse_compu_scale_to_linear_compu_method(
             scale, internal_type, physical_type, additional_kwargs=kwargs) for scale in scales]
-        return ScaleLinearCompuMethod(linear_methods)
+        return ScaleLinearCompuMethod(linear_methods=linear_methods)
 
     elif compu_category == "TAB-INTP":
 
@@ -160,4 +160,6 @@ def create_any_compu_method_from_et(et_element,
     # TODO: Implement other categories (never instantiate CompuMethod)
     logger.warning(
         f"Warning: Computation category {compu_category} is not implemented!")
-    return CompuMethod(DataType.A_UINT32, DataType.A_UINT32, f"NOT-IMPLEMENTED:{compu_category}")
+    return CompuMethod(internal_type=DataType.A_UINT32,
+                       physical_type=DataType.A_UINT32,
+                       category=f"NOT-IMPLEMENTED:{compu_category}")

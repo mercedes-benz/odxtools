@@ -18,6 +18,7 @@ class LengthKeyParameter(ParameterWithDOP):
     """
 
     def __init__(self,
+                 *,
                  short_name,
                  odx_id,
                  dop_ref=None,
@@ -28,7 +29,7 @@ class LengthKeyParameter(ParameterWithDOP):
                  semantic=None,
                  description=None,
                  **kwargs):
-        super().__init__(short_name,
+        super().__init__(short_name=short_name,
                          parameter_type="LENGTH-KEY",
                          dop_ref=dop_ref,
                          dop_snref=dop_snref,

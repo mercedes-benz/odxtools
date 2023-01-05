@@ -28,6 +28,7 @@ ODX_TYPE_TO_FORMAT_LETTER = {
 
 class DiagCodedType(abc.ABC):
     def __init__(self,
+                 *,
                  base_data_type: Union[str, DataType],
                  dct_type: str,
                  base_type_encoding=None,
@@ -200,11 +201,12 @@ class DiagCodedType(abc.ABC):
 
 class LeadingLengthInfoType(DiagCodedType):
     def __init__(self,
+                 *,
                  base_data_type,
                  bit_length,
                  base_type_encoding=None,
                  is_highlow_byte_order_raw=True):
-        super().__init__(base_data_type,
+        super().__init__(base_data_type=base_data_type,
                          dct_type="LEADING-LENGTH-INFO-TYPE",
                          base_type_encoding=base_type_encoding,
                          is_highlow_byte_order_raw=is_highlow_byte_order_raw)
@@ -273,13 +275,14 @@ class LeadingLengthInfoType(DiagCodedType):
 
 class MinMaxLengthType(DiagCodedType):
     def __init__(self,
+                 *,
                  base_data_type,
                  min_length,
                  termination,
                  max_length=None,
                  base_type_encoding=None,
                  is_highlow_byte_order_raw=None):
-        super().__init__(base_data_type,
+        super().__init__(base_data_type=base_data_type,
                          dct_type="MIN-MAX-LENGTH-TYPE",
                          base_type_encoding=base_type_encoding,
                          is_highlow_byte_order_raw=is_highlow_byte_order_raw)
@@ -414,11 +417,12 @@ class MinMaxLengthType(DiagCodedType):
 
 class ParamLengthInfoType(DiagCodedType):
     def __init__(self,
+                 *,
                  base_data_type: Union[str, DataType],
                  length_key_id: OdxLinkId,
                  base_type_encoding=None,
                  is_highlow_byte_order_raw=True):
-        super().__init__(base_data_type,
+        super().__init__(base_data_type=base_data_type,
                          dct_type="PARAM-LENGTH-INFO-TYPE",
                          base_type_encoding=base_type_encoding,
                          is_highlow_byte_order_raw=is_highlow_byte_order_raw)
@@ -487,13 +491,14 @@ class ParamLengthInfoType(DiagCodedType):
 class StandardLengthType(DiagCodedType):
 
     def __init__(self,
+                 *,
                  base_data_type: Union[str, DataType],
                  bit_length: int,
                  bit_mask = None,
                  condensed: Optional[bool] = None,
                  base_type_encoding = None,
                  is_highlow_byte_order_raw = True):
-        super().__init__(base_data_type,
+        super().__init__(base_data_type=base_data_type,
                          dct_type="STANDARD-LENGTH-TYPE",
                          base_type_encoding=base_type_encoding,
                          is_highlow_byte_order_raw=is_highlow_byte_order_raw)
@@ -547,7 +552,7 @@ def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragmen
     bit_length = None
     if dct_type == "LEADING-LENGTH-INFO-TYPE":
         bit_length = int(et_element.findtext("BIT-LENGTH"))
-        return LeadingLengthInfoType(base_data_type,
+        return LeadingLengthInfoType(base_data_type=base_data_type,
                                      bit_length=bit_length,
                                      base_type_encoding=base_type_encoding,
                                      is_highlow_byte_order_raw=is_highlow_byte_order_raw)
@@ -558,7 +563,7 @@ def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragmen
             max_length = int(et_element.findtext("MAX-LENGTH"))
         termination = et_element.get("TERMINATION")
 
-        return MinMaxLengthType(base_data_type,
+        return MinMaxLengthType(base_data_type=base_data_type,
                                 min_length=min_length,
                                 max_length=max_length,
                                 termination=termination,
@@ -575,8 +580,8 @@ def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragmen
         length_key_elem = et_element.find("LENGTH-KEY-REF")
         length_key_id = OdxLinkId(length_key_elem.attrib["ID-REF"], doc_frags)
 
-        return ParamLengthInfoType(base_data_type,
-                                   length_key_id,
+        return ParamLengthInfoType(base_data_type=base_data_type,
+                                   length_key_id=length_key_id,
                                    base_type_encoding=base_type_encoding,
                                    is_highlow_byte_order_raw=is_highlow_byte_order_raw)
     elif dct_type == "STANDARD-LENGTH-TYPE":
@@ -585,8 +590,8 @@ def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragmen
         if et_element.find("BIT-MASK"):
             bit_mask = et_element.findtext("BIT-MASK")
         condensed = odxstr_to_bool(et_element.get("CONDENSED"))
-        return StandardLengthType(base_data_type,
-                                  bit_length,
+        return StandardLengthType(base_data_type=base_data_type,
+                                  bit_length=bit_length,
                                   bit_mask=bit_mask,
                                   condensed=condensed,
                                   base_type_encoding=base_type_encoding,

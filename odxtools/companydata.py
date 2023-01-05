@@ -11,7 +11,7 @@ from xml.etree import ElementTree
 from dataclasses import dataclass, field
 from typing import Optional, Any, Dict, List
 
-@dataclass()
+@dataclass
 class XDoc:
     short_name : str
     long_name : Optional[str] = None
@@ -46,7 +46,7 @@ class XDoc:
                     position=position,
                     )
 
-@dataclass()
+@dataclass
 class RelatedDoc:
     description: Optional[str] = None
     xdoc: Optional[XDoc] = None
@@ -63,7 +63,7 @@ class RelatedDoc:
                           )
 
 
-@dataclass()
+@dataclass
 class CompanySpecificInfo:
     related_docs: Optional[List[RelatedDoc]]
     sdgs: List[SpecialDataGroup] = field(default_factory=list)
@@ -95,7 +95,7 @@ class CompanySpecificInfo:
         for sdg in self.sdgs:
             sdg._resolve_references(odxlinks)
 
-@dataclass()
+@dataclass
 class TeamMember:
     odx_id: OdxLinkId
     short_name: str
@@ -149,7 +149,7 @@ class TeamMember:
                           email=email)
 
 
-@dataclass()
+@dataclass
 class CompanyData:
     odx_id: OdxLinkId
     short_name: str

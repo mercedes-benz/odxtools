@@ -19,6 +19,7 @@ from .utils import create_description_from_et
 class CommunicationParameterRef:
 
     def __init__(self,
+                 *,
                  value : Union[str, ComplexValue],
                  id_ref: OdxLinkRef,
                  is_functional = False,
@@ -62,8 +63,8 @@ class CommunicationParameterRef:
         if (psnref_elem := et_element.find("PROTOCOL-SNREF")) is not None:
             protocol_snref = psnref_elem.get("SHORT-NAME")
 
-        return CommunicationParameterRef(value,
-                                         id_ref,
+        return CommunicationParameterRef(value=value,
+                                         id_ref=id_ref,
                                          is_functional=is_functional,
                                          description=description,
                                          protocol_snref=protocol_snref,
