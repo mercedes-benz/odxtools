@@ -1,11 +1,12 @@
 #! /usr/bin/python3
 #
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
+# Copyright (c) 2023 MBition GmbH
 
 import argparse
+
 import odxtools
-import somersaultecu
+from examples import somersaultecu
 
 argparser = argparse.ArgumentParser(
     description="\n".join([
