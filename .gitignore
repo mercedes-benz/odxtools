@@ -8,6 +8,7 @@ __pycache__/
 
 # Coverage log
 .coverage
+*.lcov
 
 # IDEs
 .vscode
