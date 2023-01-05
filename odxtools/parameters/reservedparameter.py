@@ -11,11 +11,10 @@ from .parameterbase import Parameter
 
 class ReservedParameter(Parameter):
     def __init__(self,
-                 short_name,
+                 *,
                  bit_length,
                  **kwargs):
-        super().__init__(short_name,
-                         parameter_type="RESERVED",
+        super().__init__(parameter_type="RESERVED",
                          **kwargs)
         self._bit_length = bit_length
 

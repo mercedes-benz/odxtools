@@ -12,9 +12,15 @@ from .parameterbase import Parameter
 
 
 class CodedConstParameter(Parameter):
-    def __init__(self, short_name, diag_coded_type: DiagCodedType, coded_value, **kwargs):
-        super().__init__(short_name,
-                         parameter_type="CODED-CONST", **kwargs)
+    def __init__(self,
+                 *,
+                 short_name,
+                 diag_coded_type: DiagCodedType,
+                 coded_value,
+                 **kwargs):
+        super().__init__(short_name=short_name,
+                         parameter_type="CODED-CONST",
+                         **kwargs)
 
         self._diag_coded_type = diag_coded_type
         assert isinstance(coded_value, (int, bytes, bytearray))

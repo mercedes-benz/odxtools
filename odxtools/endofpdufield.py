@@ -19,6 +19,7 @@ class EndOfPduField(DopBase):
     """ End of PDU fields are structures that are repeated until the end of the PDU """
 
     def __init__(self,
+                 *,
                  odx_id,
                  short_name,
                  structure=None,
@@ -29,8 +30,11 @@ class EndOfPduField(DopBase):
                  is_visible_raw: Optional[bool] = None,
                  long_name=None,
                  description=None):
-        super().__init__(odx_id, short_name, long_name=long_name,
-                         description=description, is_visible_raw=is_visible_raw)
+        super().__init__(odx_id=odx_id,
+                         short_name=short_name,
+                         long_name=long_name,
+                         description=description,
+                         is_visible_raw=is_visible_raw)
 
         self.structure_snref = structure_snref
         self.structure_ref = structure_ref
@@ -80,8 +84,8 @@ class EndOfPduField(DopBase):
             max_number_of_items = None
 
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
-        eopf = EndOfPduField(odx_id,
-                             short_name,
+        eopf = EndOfPduField(odx_id=odx_id,
+                             short_name=short_name,
                              long_name=long_name,
                              description=description,
                              structure_ref=structure_ref,

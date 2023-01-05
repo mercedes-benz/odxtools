@@ -29,7 +29,7 @@ def _construct_named_item_list(iterable):
     return NamedItemList(short_name_as_id, iterable)
 
 
-@dataclass()
+@dataclass
 class DiagDataDictionarySpec:
     dtc_dops: NamedItemList[DtcDop] = field(
         default_factory=lambda: _construct_named_item_list([])

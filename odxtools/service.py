@@ -21,6 +21,7 @@ from .admindata import AdminData
 
 class DiagService:
     def __init__(self,
+                 *,
                  odx_id: OdxLinkId,
                  short_name: str,
                  request: Union[OdxLinkRef, Request],
@@ -161,11 +162,11 @@ class DiagService:
 
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
-        return DiagService(odx_id,
-                           short_name,
-                           request_ref,
-                           pos_res_refs,
-                           neg_res_refs,
+        return DiagService(odx_id=odx_id,
+                           short_name=short_name,
+                           request=request_ref,
+                           positive_responses=pos_res_refs,
+                           negative_responses=neg_res_refs,
                            long_name=long_name,
                            description=description,
                            admin_data=admin_data,

@@ -11,6 +11,7 @@ from ..odxtypes import DataType
 class CompuMethod:
 
     def __init__(self,
+                 *,
                  internal_type: Union[DataType, str],
                  physical_type: Union[DataType, str],
                  category: str):

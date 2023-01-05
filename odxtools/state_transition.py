@@ -6,7 +6,7 @@ from typing import Optional, List, Dict, Any
 
 from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
-@dataclass()
+@dataclass
 class StateTransition:
     """
     Corresponds to STATE.

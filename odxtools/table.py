@@ -17,6 +17,7 @@ class TableBase(abc.ABC):
     """ Base class for all Tables."""
 
     def __init__(self,
+                 *,
                  odx_id: OdxLinkId,
                  short_name: str,
                  long_name=None,
@@ -131,18 +132,18 @@ class TableRow:
 class Table(TableBase):
     """This class represents a TABLE."""
 
-    def __init__(
-        self,
-        odx_id: OdxLinkId,
-        short_name: str,
-        table_rows: List[TableRow],
-        table_row_refs: Optional[List[OdxLinkRef]] = None,
-        long_name: Optional[str] = None,
-        key_dop_ref: Optional[OdxLinkRef] = None,
-        description: Optional[str] = None,
-        semantic: Optional[str] = None,
-        sdgs: List[SpecialDataGroup] = [],
-    ):
+    def __init__(self,
+                 *,
+                 odx_id: OdxLinkId,
+                 short_name: str,
+                 table_rows: List[TableRow],
+                 table_row_refs: Optional[List[OdxLinkRef]] = None,
+                 long_name: Optional[str] = None,
+                 key_dop_ref: Optional[OdxLinkRef] = None,
+                 description: Optional[str] = None,
+                 semantic: Optional[str] = None,
+                 sdgs: List[SpecialDataGroup] = [],
+                 ):
         super().__init__(odx_id=odx_id,
                          short_name=short_name,
                          long_name=long_name,

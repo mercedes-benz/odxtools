@@ -83,29 +83,32 @@ class TestUnitSpec(unittest.TestCase):
         unit = Unit(odx_id=OdxLinkId("unit_time_id", doc_frags),
                     short_name="second",
                     display_name="s")
-        dct = StandardLengthType("A_UINT32", 8)
+        dct = StandardLengthType(base_data_type="A_UINT32", bit_length=8)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop_id", doc_frags),
             short_name="dop_sn",
             diag_coded_type=dct,
             physical_type=PhysicalType("A_UINT32"),
-            compu_method=IdenticalCompuMethod("A_UINT32", "A_UINT32"),
+            compu_method=IdenticalCompuMethod(internal_type="A_UINT32",
+                                              physical_type="A_UINT32"),
             unit_ref=OdxLinkRef.from_id(unit.odx_id)
         )
         dl = DiagLayer(
-            DIAG_LAYER_TYPE.BASE_VARIANT,
+            variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
             odx_id=OdxLinkId("BV_id", doc_frags),
             short_name="BaseVariant",
-            requests=[Request(OdxLinkId("rq_id", doc_frags), "rq_sn", [
-                CodedConstParameter(short_name="sid",
-                                    diag_coded_type=dct,
-                                    coded_value=0x12),
-                ValueParameter("time", dop_ref=OdxLinkRef.from_id(dop.odx_id)),
-            ])],
-            diag_data_dictionary_spec=DiagDataDictionarySpec(
-                data_object_props=[dop],
-                unit_spec=UnitSpec(units=[unit])
-            )
+            requests=[Request(odx_id=OdxLinkId("rq_id", doc_frags),
+                              short_name="rq_sn",
+                              parameters=[
+                                  CodedConstParameter(short_name="sid",
+                                                      diag_coded_type=dct,
+                                                      coded_value=0x12),
+                                  ValueParameter(short_name="time",
+                                                 dop_ref=OdxLinkRef.from_id(dop.odx_id)),
+                              ])],
+            diag_data_dictionary_spec=DiagDataDictionarySpec(data_object_props=[dop],
+                                                             unit_spec=UnitSpec(units=[unit])
+                                                             )
         )
         dl.finalize_init()
 

@@ -25,64 +25,60 @@ doc_frags = [ OdxDocFragment("UnitTest", "unit_test_doc") ]
 class TestDiagDataDictionarySpec(unittest.TestCase):
     def test_initialization(self):
         uint_type = StandardLengthType(base_data_type="A_UINT32", bit_length=8)
-        ident_compu_method = IdenticalCompuMethod("A_UINT32", "A_UINT32")
+        ident_compu_method = IdenticalCompuMethod(internal_type="A_UINT32",
+                                                  physical_type="A_UINT32")
 
-        dtc_dop = DtcDop("DOP.dtc_dop", "dtc_dop",
+        dtc_dop = DtcDop(odx_id=OdxLinkId("DOP.dtc_dop", doc_frags),
+                         short_name="dtc_dop",
                          diag_coded_type=uint_type,
                          physical_type=PhysicalType("A_UINT32"),
                          compu_method=ident_compu_method,
                          dtcs=[DiagnosticTroubleCode(
-                             "DOP.dtc_dop.DTC.X10",
-                             "X10",
-                             0x10,
-                             "Something exploded.",
+                             odx_id=OdxLinkId("DOP.dtc_dop.DTC.X10", doc_frags),
+                             short_name="X10",
+                             trouble_code=0x10,
+                             text="Something exploded.",
                              display_trouble_code="X10"
                          )])
 
-        dop_1 = DataObjectProperty("DOP.the_dop",
-                                   "the_dop",
+        dop_1 = DataObjectProperty(odx_id=OdxLinkId("DOP.the_dop", doc_frags),
+                                   short_name="the_dop",
                                    diag_coded_type=uint_type,
                                    physical_type=PhysicalType("A_UINT32"),
                                    compu_method=ident_compu_method)
 
-        dop_2 = DataObjectProperty("DOP.another_dop",
-                                   "another_dop",
+        dop_2 = DataObjectProperty(odx_id=OdxLinkId("DOP.another_dop", doc_frags),
+                                   short_name="another_dop",
                                    diag_coded_type=uint_type,
                                    physical_type=PhysicalType("A_UINT32"),
                                    compu_method=ident_compu_method)
 
-        table = Table(
-                odx_id="somersault.table.flip_quality",
-                short_name="flip_quality",
-                long_name="Flip Quality",
-                key_dop_ref="",
-                table_rows=[
-                    TableRow(
-                        odx_id="somersault.table.flip_quality.average",
-                        short_name="average",
-                        long_name="Average",
-                        key=3,
-                        structure_ref="",
-                    ),
-                    TableRow(
-                        odx_id="somersault.table.flip_quality.good",
-                        short_name="good",
-                        long_name="Good",
-                        key=5,
-                        structure_ref="",
-                    ),
-                    TableRow(
-                        odx_id="somersault.table.flip_quality.best",
-                        short_name="best",
-                        long_name="Best",
-                        key=10,
-                        structure_ref="",
-                    ),
-                ]
-            )
+        table = Table(odx_id=OdxLinkId("somersault.table.flip_quality", doc_frags),
+                      short_name="flip_quality",
+                      long_name="Flip Quality",
+                      key_dop_ref="",
+                      table_rows=[
+                        TableRow(odx_id=OdxLinkId("somersault.table.flip_quality.average", doc_frags),
+                                 short_name="average",
+                                 long_name="Average",
+                                 key=3,
+                                 structure_ref="",
+                                 ),
+                          TableRow(odx_id=OdxLinkId("somersault.table.flip_quality.good", doc_frags),
+                                   short_name="good",
+                                   long_name="Good",
+                                   key=5,
+                                   ),
+                          TableRow(odx_id=OdxLinkId("somersault.table.flip_quality.best", doc_frags),
+                                   short_name="best",
+                                   long_name="Best",
+                                   key=10,
+                                   ),
+                      ]
+                      )
 
         env_data = EnvironmentData(
-            odx_id="somersault.env_data.flip_env_data",
+            odx_id=OdxLinkId("somersault.env_data.flip_env_data", doc_frags),
             short_name="flip_env_data",
             long_name="Flip Env Data",
             parameters=[
@@ -105,7 +101,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         )
 
         env_data_desc = EnvironmentDataDescription(
-            odx_id="somersault.env_data_desc.flip_env_data_desc",
+            odx_id=OdxLinkId("somersault.env_data_desc.flip_env_data_desc", doc_frags),
             short_name="flip_env_data_desc",
             long_name="Flip Env Data Desc",
             param_snref="flip_speed",
@@ -114,7 +110,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         )
 
         mux = Multiplexer(
-            odx_id="somersault.multiplexer.flip_preference",
+            odx_id=OdxLinkId("somersault.multiplexer.flip_preference", doc_frags),
             short_name="flip_preference",
             long_name="Flip Preference",
             byte_position=0,

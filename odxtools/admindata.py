@@ -11,7 +11,7 @@ from xml.etree import ElementTree
 from dataclasses import dataclass, field
 from typing import Optional, Any, Dict, List
 
-@dataclass()
+@dataclass
 class CompanyDocInfo:
     company_data_ref: OdxLinkRef
     team_member_ref: Optional[OdxLinkRef] = None
@@ -62,7 +62,7 @@ class CompanyDocInfo:
         for sdg in self.sdgs:
             sdg._resolve_references(odxlinks)
 
-@dataclass()
+@dataclass
 class Modification:
     change: Optional[str] = None
     reason: Optional[str] = None
@@ -77,7 +77,7 @@ class Modification:
         return Modification(change=change,
                             reason=reason)
 
-@dataclass()
+@dataclass
 class CompanyRevisionInfo:
     company_data_ref: OdxLinkRef
     revision_label: Optional[str] = None
@@ -109,7 +109,7 @@ class CompanyRevisionInfo:
         assert isinstance(cd, CompanyData)
         self._company_data = cd
 
-@dataclass()
+@dataclass
 class DocRevision:
     """
     Representation of a single revision of the relevant object.
@@ -165,7 +165,7 @@ class DocRevision:
         for cri in self.company_revision_infos:
             cri._resolve_references(odxlinks)
 
-@dataclass()
+@dataclass
 class AdminData:
     language: Optional[str] = None
     company_doc_infos: List[CompanyDocInfo] = field(default_factory=list)

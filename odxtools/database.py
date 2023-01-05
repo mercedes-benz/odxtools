@@ -26,8 +26,9 @@ class Database:
     """
 
     def __init__(self,
+                 *,
                  pdx_zip: Optional[ZipFile] = None,
-                 odx_d_file_name: Optional[str] = None):
+                 odx_d_file_name: Optional[str] = None) -> None:
 
         if pdx_zip is None and odx_d_file_name is None:
             # create an empty database object

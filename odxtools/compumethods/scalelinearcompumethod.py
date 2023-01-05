@@ -11,10 +11,10 @@ from .linearcompumethod import LinearCompuMethod
 
 
 class ScaleLinearCompuMethod(CompuMethod):
-    def __init__(self, linear_methods: Iterable[LinearCompuMethod]):
-        super().__init__(list(linear_methods)[0].internal_type,
-                         list(linear_methods)[0].physical_type,
-                         "SCALE-LINEAR")
+    def __init__(self, *, linear_methods: Iterable[LinearCompuMethod]):
+        super().__init__(internal_type=list(linear_methods)[0].internal_type,
+                         physical_type=list(linear_methods)[0].physical_type,
+                         category="SCALE-LINEAR")
         self.linear_methods = list(linear_methods)
         logger.debug("Created scale linear compu method!")
 

@@ -7,6 +7,7 @@ from .parameterbase import Parameter
 
 class DynamicParameter(Parameter):
     def __init__(self,
+                 *,
                  short_name,
                  long_name=None,
                  byte_position=None,

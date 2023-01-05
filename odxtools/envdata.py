@@ -19,15 +19,16 @@ class EnvironmentData(BasicStructure):
     """This class represents Environment Data that describes the circumstances in which the error occurred."""
 
     def __init__(self,
+                 *,
                  odx_id: OdxLinkId,
                  short_name: str,
                  parameters: List[Parameter],
                  dtc_values: Optional[List[int]] = None,
                  long_name: Optional[str] = None,
                  description: Optional[str] = None) -> None:
-        super().__init__(odx_id,
-                         short_name,
-                         parameters,
+        super().__init__(odx_id=odx_id,
+                         short_name=short_name,
+                         parameters=parameters,
                          long_name=long_name,
                          description=description)
         self.dtc_values = dtc_values
@@ -53,8 +54,8 @@ class EnvironmentData(BasicStructure):
                 for dtcv_elem in dtcv_elems.iterfind("DTC-VALUE")
             ]
 
-        return EnvironmentData(odx_id,
-                               short_name,
+        return EnvironmentData(odx_id=odx_id,
+                               short_name=short_name,
                                parameters=parameters,
                                dtc_values=dtc_values,
                                long_name=long_name,

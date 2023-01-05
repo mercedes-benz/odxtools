@@ -6,6 +6,7 @@ from .parameterbase import Parameter
 
 class TableEntryParameter(Parameter):
     def __init__(self,
+                 *,
                  short_name,
                  target,
                  table_row_ref,

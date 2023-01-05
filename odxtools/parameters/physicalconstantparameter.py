@@ -12,10 +12,10 @@ from .parameterwithdop import ParameterWithDOP
 
 class PhysicalConstantParameter(ParameterWithDOP):
     def __init__(self,
-                 short_name,
+                 *,
                  physical_constant_value,
                  **kwargs):
-        super().__init__(short_name, parameter_type="PHYS-CONST",
+        super().__init__(parameter_type="PHYS-CONST",
                          **kwargs)
         assert physical_constant_value is not None
         self._physical_constant_value = physical_constant_value

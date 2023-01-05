@@ -10,12 +10,13 @@ from .parameterwithdop import ParameterWithDOP
 
 class ValueParameter(ParameterWithDOP):
     def __init__(self,
+                 *,
                  short_name,
                  physical_default_value_raw=None,
                  dop_ref=None,
                  dop_snref=None,
                  **kwargs):
-        super().__init__(short_name,
+        super().__init__(short_name=short_name,
                          parameter_type="VALUE",
                          dop_ref=dop_ref,
                          dop_snref=dop_snref,
