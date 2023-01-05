@@ -502,6 +502,7 @@ class Structure(BasicStructure):
                          short_name,
                          parameters,
                          long_name=long_name,
+                         byte_size=byte_size,
                          description=description,
                          sdgs=sdgs)
 
