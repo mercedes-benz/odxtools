@@ -2,7 +2,7 @@
 # Copyright (c) 2023 MBition GmbH
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Union
 from xml.etree import ElementTree
 
 from odxtools.odxlink import OdxDocFragment
@@ -33,7 +33,7 @@ class MatchingParameter:
 
         return cls(expected_value, diag_comm_snref, out_param_if_snref)
 
-    def is_match(self, ident_value: int | str) -> bool:
+    def is_match(self, ident_value: Union[int, str]) -> bool:
         """
         Returns true iff the provided identification value matches this MatchingParameter's
         expected value.
