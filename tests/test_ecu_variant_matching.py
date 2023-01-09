@@ -2,7 +2,7 @@
 # Copyright (c) 2023 MBition GmbH
 
 import json
-from typing import Union
+from typing import Any, Dict, List, Union
 
 import pytest
 
@@ -14,13 +14,13 @@ from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from odxtools.service import DiagService
 from odxtools.structures import Request, Response
 
-doc_frags = [OdxDocFragment("pytest", "WinneThePoh")]
+doc_frags = [OdxDocFragment(doc_name="pytest", doc_type="WinneThePoh")]
 
 odxlinks = OdxLinkDatabase()
 
 
 @pytest.fixture
-def dummy_response(monkeypatch):
+def dummy_response(monkeypatch) -> Response:
     resp = Response(
         odx_id=OdxLinkId(local_id="dummy_resp", doc_fragments=doc_frags),
         short_name="dummy_resp",
@@ -38,7 +38,7 @@ def dummy_response(monkeypatch):
 
 
 @pytest.fixture()
-def identificationService(monkeypatch, dummy_response):
+def ident_service(monkeypatch, dummy_response: Response) -> DiagService:
     dummy_req = Request(
         odx_id=OdxLinkId(local_id="dummy_req", doc_fragments=doc_frags),
         short_name="dummy_req",
@@ -62,7 +62,7 @@ def identificationService(monkeypatch, dummy_response):
 
 
 @pytest.fixture
-def supplierService(monkeypatch, dummy_response):
+def supplier_service(monkeypatch, dummy_response: Response) -> DiagService:
     dummy_req = Request(
         odx_id=OdxLinkId(local_id="dummy_req", doc_fragments=doc_frags),
         short_name="dummy_req",
@@ -86,7 +86,7 @@ def supplierService(monkeypatch, dummy_response):
 
 
 @pytest.fixture
-def ecu_variant_pattern1():
+def ecu_variant_pattern1() -> EcuVariantPattern:
     return EcuVariantPattern(
         matching_parameters=[
             MatchingParameter(
@@ -104,7 +104,7 @@ def ecu_variant_pattern1():
 
 
 @pytest.fixture
-def ecu_variant_pattern2():
+def ecu_variant_pattern2() -> EcuVariantPattern:
     return EcuVariantPattern(
         matching_parameters=[
             MatchingParameter(
@@ -122,7 +122,7 @@ def ecu_variant_pattern2():
 
 
 @pytest.fixture
-def ecu_variant_pattern3():
+def ecu_variant_pattern3() -> EcuVariantPattern:
     return EcuVariantPattern(
         matching_parameters=[
             MatchingParameter(
@@ -135,24 +135,32 @@ def ecu_variant_pattern3():
 
 
 @pytest.fixture
-def ecu_variant_1(identificationService, supplierService, ecu_variant_pattern1):
+def ecu_variant_1(
+    ident_service: DiagService,
+    supplier_service: DiagService,
+    ecu_variant_pattern1: EcuVariantPattern,
+) -> DiagLayer:
     return DiagLayer(
         variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant1", doc_fragments=doc_frags),
         short_name="ecu_variant1",
-        services=[identificationService, supplierService],
+        services=[ident_service, supplier_service],
         ecu_variant_patterns=[ecu_variant_pattern1],
         odxlinks=odxlinks,
     )
 
 
 @pytest.fixture
-def ecu_variant_2(identificationService, supplierService, ecu_variant_pattern2):
+def ecu_variant_2(
+    ident_service: DiagService,
+    supplier_service: DiagService,
+    ecu_variant_pattern2: EcuVariantPattern,
+) -> DiagLayer:
     return DiagLayer(
         variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant2", doc_fragments=doc_frags),
         short_name="ecu_variant2",
-        services=[identificationService, supplierService],
+        services=[ident_service, supplier_service],
         ecu_variant_patterns=[ecu_variant_pattern2],
         odxlinks=odxlinks,
     )
@@ -160,19 +168,29 @@ def ecu_variant_2(identificationService, supplierService, ecu_variant_pattern2):
 
 @pytest.fixture
 def ecu_variant_3(
-    identificationService, supplierService, ecu_variant_pattern1, ecu_variant_pattern3
-):
+    ident_service: DiagService,
+    supplier_service: DiagService,
+    ecu_variant_pattern1: EcuVariantPattern,
+    ecu_variant_pattern3: EcuVariantPattern,
+) -> DiagLayer:
     return DiagLayer(
         variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant3", doc_fragments=doc_frags),
         short_name="ecu_variant3",
-        services=[identificationService, supplierService],
+        services=[ident_service, supplier_service],
         ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
         odxlinks=odxlinks,
     )
 
 
-def as_bytes(dikt):
+@pytest.fixture
+def ecu_variants(
+    ecu_variant_1: DiagLayer, ecu_variant_2: DiagLayer, ecu_variant_3: DiagLayer
+) -> List[DiagLayer]:
+    return [ecu_variant_1, ecu_variant_2, ecu_variant_3]
+
+
+def as_bytes(dikt: Dict[str, Any]) -> bytes:
     return bytes(json.dumps(dikt), "utf-8")
 
 
@@ -208,15 +226,13 @@ def as_bytes(dikt):
     ],
 )
 def test_ecu_variant_matching(
-    ecu_variant_1,
-    ecu_variant_2,
-    ecu_variant_3,
-    use_cache,
-    req_resp_mapping,
-    expected_variant,
+    ecu_variants: List[DiagLayer],
+    use_cache: bool,
+    req_resp_mapping: Dict[bytes, bytes],
+    expected_variant: str,
 ):
     matcher = EcuVariantMatcher(
-        ecu_variant_candidates=[ecu_variant_1, ecu_variant_2, ecu_variant_3],
+        ecu_variant_candidates=ecu_variants,
         use_cache=use_cache,
     )
     for req in matcher.request_loop():
@@ -227,7 +243,7 @@ def test_ecu_variant_matching(
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-def test_no_match(ecu_variant_1, ecu_variant_2, ecu_variant_3, use_cache):
+def test_no_match(ecu_variants: List[DiagLayer], use_cache: bool):
     # stores the responses for each request for the ecu-under-test
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 1000}),
@@ -235,7 +251,7 @@ def test_no_match(ecu_variant_1, ecu_variant_2, ecu_variant_3, use_cache):
     }
 
     matcher = EcuVariantMatcher(
-        ecu_variant_candidates=[ecu_variant_1, ecu_variant_2, ecu_variant_3],
+        ecu_variant_candidates=ecu_variants,
         use_cache=use_cache,
     )
     for req in matcher.request_loop():
@@ -248,9 +264,9 @@ def test_no_match(ecu_variant_1, ecu_variant_2, ecu_variant_3, use_cache):
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if pending matchers reject the has_match() or active variant query
-def test_no_request_loop(ecu_variant_1, ecu_variant_2, ecu_variant_3, use_cache):
+def test_no_request_loop(ecu_variants: List[DiagLayer], use_cache: bool):
     matcher = EcuVariantMatcher(
-        ecu_variant_candidates=[ecu_variant_1, ecu_variant_2, ecu_variant_3],
+        ecu_variant_candidates=ecu_variants,
         use_cache=use_cache,
     )
     with pytest.raises(RuntimeError):
@@ -261,9 +277,9 @@ def test_no_request_loop(ecu_variant_1, ecu_variant_2, ecu_variant_3, use_cache)
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if runs of the request loop without calling `evaluate(...)` are rejected
-def test_request_loop_misuse(ecu_variant_1, ecu_variant_2, ecu_variant_3, use_cache):
+def test_request_loop_misuse(ecu_variants: List[DiagLayer], use_cache: bool):
     matcher = EcuVariantMatcher(
-        ecu_variant_candidates=[ecu_variant_1, ecu_variant_2, ecu_variant_3],
+        ecu_variant_candidates=ecu_variants,
         use_cache=use_cache,
     )
     with pytest.raises(RuntimeError):
@@ -273,11 +289,9 @@ def test_request_loop_misuse(ecu_variant_1, ecu_variant_2, ecu_variant_3, use_ca
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if request loop is idempotent, i.e., the matching is the same regardless of how often the request loop is run
-def test_request_loop_idempotency(
-    ecu_variant_1, ecu_variant_2, ecu_variant_3, use_cache
-):
+def test_request_loop_idempotency(ecu_variants: List[DiagLayer], use_cache: bool):
     matcher = EcuVariantMatcher(
-        ecu_variant_candidates=[ecu_variant_1, ecu_variant_2, ecu_variant_3],
+        ecu_variant_candidates=ecu_variants,
         use_cache=use_cache,
     )
     with pytest.raises(RuntimeError):
