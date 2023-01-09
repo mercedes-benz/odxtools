@@ -147,3 +147,29 @@ def test_no_match(ecu_variant_1, ecu_variant_2, ecu_variant_3, use_cache):
     assert not matcher.has_match()
     with pytest.raises(AssertionError):
         matcher.get_active_ecu_variant()
+
+@pytest.mark.parametrize("use_cache", [True, False])
+# test if pending matchers reject the has_match() or active variant query
+def test_no_request_loop(ecu_variant_1, ecu_variant_2, ecu_variant_3, use_cache):
+    matcher = EcuVariantMatcher(ecu_variant_candidates=[ecu_variant_1, ecu_variant_2, ecu_variant_3], use_cache=use_cache)
+    with pytest.raises(RuntimeError):
+        matcher.has_match()
+    with pytest.raises(RuntimeError):
+        matcher.get_active_ecu_variant()
+
+@pytest.mark.parametrize("use_cache", [True, False])
+# test if runs of the request loop without calling `evaluate(...)` are rejected
+def test_request_loop_misuse(ecu_variant_1, ecu_variant_2, ecu_variant_3, use_cache):
+    matcher = EcuVariantMatcher(ecu_variant_candidates=[ecu_variant_1, ecu_variant_2, ecu_variant_3], use_cache=use_cache)
+    with pytest.raises(RuntimeError):
+        for _ in matcher.request_loop():
+            pass
+
+@pytest.mark.parametrize("use_cache", [True, False])
+# test if request loop is idempotent, i.e., the matching is the same regardless of how often the request loop is run
+def test_request_loop_idempotency(ecu_variant_1, ecu_variant_2, ecu_variant_3, use_cache):
+    matcher = EcuVariantMatcher(ecu_variant_candidates=[ecu_variant_1, ecu_variant_2, ecu_variant_3], use_cache=use_cache)
+    with pytest.raises(RuntimeError):
+        for _ in matcher.request_loop():
+            pass
+
