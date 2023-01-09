@@ -2,7 +2,7 @@
 # Copyright (c) 2023 MBition GmbH
 
 from enum import Enum
-from typing import List
+from typing import ByteString, Dict, List, Optional, Union
 
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayertype import DIAG_LAYER_TYPE
@@ -22,7 +22,9 @@ class EcuVariantMatcher:
         service_name = matching_param.diag_comm_snref
         # TODO this is not working since NamedItemList.__contains__() is not implemented
         #assert service_name in diag_layer.services
-        return diag_layer.services[service_name]
+        service = diag_layer.services[service_name]
+        assert isinstance(service, DiagService)
+        return service
 
     @staticmethod
     def encode_ident_request(diag_layer: DiagLayer, matching_param: MatchingParameter) -> bytearray:
@@ -32,6 +34,7 @@ class EcuVariantMatcher:
     @staticmethod
     def decode_ident_response(diag_layer: DiagLayer, matching_param: MatchingParameter, response: bytearray) -> str:
         service = EcuVariantMatcher.get_ident_service(diag_layer, matching_param)
+        assert service.positive_responses is not None
         resp_decoded = service.positive_responses[0].decode(response)
         assert matching_param.out_param_if_snref in resp_decoded
         return resp_decoded[matching_param.out_param_if_snref]
@@ -43,8 +46,8 @@ class EcuVariantMatcher:
             assert ecu.variant_type == DIAG_LAYER_TYPE.ECU_VARIANT
 
         self.use_cache = use_cache
-        self.req_resp_cache = {}
-        self._recent_ident_response = None
+        self.req_resp_cache: Dict[ByteString, Union[bytes, bytearray]] = {}
+        self._recent_ident_response: Optional[Union[bytes, bytearray]] = None
 
         self._state = EcuVariantMatcher.State.PENDING
 
