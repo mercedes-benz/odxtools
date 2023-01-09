@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
+# Copyright (c) 2023 MBition GmbH
 
 from enum import Enum
 from typing import List
@@ -44,6 +44,7 @@ class EcuVariantMatcher:
 
         self.use_cache = use_cache
         self.req_resp_cache = {}
+        self._recent_ident_response = None
 
         self._state = EcuVariantMatcher.State.PENDING
 
@@ -87,7 +88,7 @@ class EcuVariantMatcher:
             raise RuntimeError("EcuVariantMatcher is pending. Run the request_loop to determine the active ecu variant.")
         return self._state == EcuVariantMatcher.State.MATCH
 
-    def active_ecu_variant(self) -> DiagLayer:
+    def get_active_ecu_variant(self) -> DiagLayer:
         assert self.has_match()
         return self._match
 

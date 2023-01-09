@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
+# Copyright (c) 2023 MBition GmbH
 
 from dataclasses import dataclass
 from typing import List, Optional
@@ -10,7 +10,7 @@ from odxtools.odxlink import OdxDocFragment
 
 @dataclass
 class MatchingParameter:
-    expected_value: int
+    expected_value: str # datatype according to ISO 22901-1 Figure 141
     diag_comm_snref: str
     out_param_if_snref: str
 
@@ -31,14 +31,14 @@ class MatchingParameter:
         out_param_if_snref = out_param_snref_el.get("SHORT-NAME")
         assert out_param_if_snref is not None
 
-        return cls(int(expected_value), diag_comm_snref, out_param_if_snref)
+        return cls(expected_value, diag_comm_snref, out_param_if_snref)
 
-    def is_match(self, ident_value: int) -> bool:
+    def is_match(self, ident_value: int | str) -> bool:
         """
         Returns true iff the provided identification value matches this MatchingParameter's
         expected value.
         """
-        return (self.expected_value == ident_value)
+        return (self.expected_value == str(ident_value))
 
 @dataclass
 class EcuVariantPattern:
