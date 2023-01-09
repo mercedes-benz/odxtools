@@ -131,7 +131,7 @@ class EcuVariantMatcher:
         assert self.has_match()
         return self._match
 
-    def _update_cache(self, req_bytes: bytearray, resp_bytes: bytearray):
+    def _update_cache(self, req_bytes: bytearray, resp_bytes: bytearray) -> None:
         if self.use_cache:
             self.req_resp_cache[bytes(req_bytes)] = resp_bytes
 
