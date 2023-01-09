@@ -11,6 +11,27 @@ from odxtools.service import DiagService
 
 
 class EcuVariantMatcher:
+    """EcuVariantMatcher implements the matching algorithm of ecu variants according to their
+    ECU-VARIANT-PATTERN according to ISO 22901-1.
+
+    Usage (example):
+
+    ```python
+
+    # initialize the matcher with a list of ecu variants,
+    # i.e., DiagLayer instances of variant_type == DIAG_LAYER_TYPE.ECU-VARIANT
+    matcher = EcuVariantMatcher(ecu_variant_candidates=[...], use_cache=use_cache)
+
+    # run the request loop to obtain responses for every request
+    for req in matcher.request_loop():
+        resp = ... # make a UDS request 
+        matcher.evaluate(resp)
+
+    # result
+    if matcher.has_match()
+        match = matcher.get_active_ecu_variant()
+    ``` 
+    """
 
     class State(Enum):
         PENDING = 0
@@ -52,6 +73,9 @@ class EcuVariantMatcher:
         self._state = EcuVariantMatcher.State.PENDING
 
     def request_loop(self):
+        """The request loop yields byte sequences of requests, which shall be executed within the
+        loop body. It is required to pass the response back to the matcher using the evaluate method.
+        """
         if not self.is_pending():
             return
 
@@ -81,17 +105,29 @@ class EcuVariantMatcher:
             self._state = EcuVariantMatcher.State.NO_MATCH
 
     def evaluate(self, resp_bytes: bytearray) -> None:
+        """Update the matcher with the response to a requst.
+
+        Warning: Use this method EXACTLY once within the loop body of the request loop.
+        """
         self._recent_ident_response = resp_bytes
 
     def is_pending(self) -> bool:
+        """True iff request loop has not yet been run.
+        """
         return self._state == EcuVariantMatcher.State.PENDING
 
     def has_match(self) -> bool:
+        """Returns true iff the non-pending matcher found a matching ecu variant.
+        
+        Raises a runtime error if the matcher is pending.
+        """
         if self.is_pending():
             raise RuntimeError("EcuVariantMatcher is pending. Run the request_loop to determine the active ecu variant.")
         return self._state == EcuVariantMatcher.State.MATCH
 
     def get_active_ecu_variant(self) -> DiagLayer:
+        """Returns the matched, i.e., active ecu variant if such a variant has been found.
+        """
         assert self.has_match()
         return self._match
 
