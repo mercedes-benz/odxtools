@@ -39,6 +39,7 @@ def valid_evp_et():
     """
     return ElementTree.fromstring(xml)
 
+
 @pytest.fixture()
 def invalid_evp_et():
     xml = """
@@ -51,12 +52,14 @@ def invalid_evp_et():
     """
     return ElementTree.fromstring(xml)
 
+
 def test_create_evp_from_et(valid_evp_et):
     ecu_variant_patterns = create_ecu_variant_patterns_from_et(valid_evp_et, None)
     assert len(ecu_variant_patterns) == 2
     assert ecu_variant_patterns[0].matching_parameters[0].is_match(0xFFFF)
     assert ecu_variant_patterns[1].matching_parameters[0].is_match(0xFF)
     assert ecu_variant_patterns[1].matching_parameters[1].is_match("supplier_A")
+
 
 def test_create_invalid_evp_from_et(invalid_evp_et):
     with pytest.raises(AssertionError):
