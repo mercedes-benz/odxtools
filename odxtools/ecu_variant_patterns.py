@@ -62,7 +62,7 @@ class EcuVariantPattern:
 
 def create_ecu_variant_patterns_from_et(et_element: Optional[ElementTree.Element], doc_frags: List[OdxDocFragment]) -> List[EcuVariantPattern]:
 
-    if not et_element:
+    if et_element is None:
         return []
 
     result = []
