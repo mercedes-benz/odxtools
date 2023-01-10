@@ -92,6 +92,8 @@ class TableRow:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
 
+        result[self.odx_id] = self
+
         for sdg in self.sdgs:
             result.update(sdg._build_odxlinks())
 
