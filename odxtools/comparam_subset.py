@@ -162,7 +162,8 @@ class Comparam(BaseComparam):
 class ComparamSubset:
     odx_id: Optional[OdxLinkId]
     short_name: str
-    category: str
+    # mandatory in ODX 2.2, but non existent in ODX 2.0
+    category: Optional[str]
     data_object_props: NamedItemList[DataObjectProperty]
     comparams: NamedItemList[Comparam]
     complex_comparams: NamedItemList[ComplexComparam]
@@ -178,7 +179,6 @@ class ComparamSubset:
             -> "ComparamSubset":
 
         category = et_element.get("CATEGORY")
-        assert category is not None
 
         short_name = et_element.findtext("SHORT-NAME")
         assert short_name is not None
