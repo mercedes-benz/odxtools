@@ -8,7 +8,7 @@ import pytest
 
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayertype import DIAG_LAYER_TYPE
-from odxtools.ecu_variant_matching import EcuVariantMatcher
+from odxtools.ecu_variant_matcher import EcuVariantMatcher
 from odxtools.ecu_variant_patterns import EcuVariantPattern, MatchingParameter
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from odxtools.service import DiagService
