@@ -454,6 +454,7 @@ somersault_env_datas = {
                 semantic="DATA",
                 physical_constant_value=1,
                 dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                dop_snref=None,
             ),
         ]
     )
