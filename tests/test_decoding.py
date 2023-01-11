@@ -493,12 +493,14 @@ class TestDecoding(unittest.TestCase):
                                      text="Crashed into wall",
                                      display_trouble_code="P56")
         dtcs = [dtc1, dtc2]
+        odxlinks.update({dtc1.odx_id: dtc1,
+                         dtc2.odx_id: dtc2})
         dop = DtcDop(odx_id=OdxLinkId("dtc.dop.odx_id", doc_frags),
                      short_name="dtc_dop_sn",
                      diag_coded_type=diag_coded_type,
                      physical_type=PhysicalType(DataType.A_UINT32),
                      compu_method=compu_method,
-                     dtcs=dtcs,
+                     dtcs_raw=dtcs,
                      is_visible_raw=True)
         odxlinks.update({dop.odx_id: dop})
         resp_param1 = CodedConstParameter(short_name="SID",
@@ -512,6 +514,8 @@ class TestDecoding(unittest.TestCase):
                                 short_name="pos_response_sn",
                                 parameters=[resp_param1, resp_param2],
                                 response_type="POS-RESPONSE")
+
+        dop._resolve_references(odxlinks)
         resp_param1._resolve_references(None, odxlinks) # type: ignore
         resp_param2._resolve_references(None, odxlinks) # type: ignore
         pos_response._resolve_references(None, odxlinks) # type: ignore

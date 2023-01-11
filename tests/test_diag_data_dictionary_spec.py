@@ -33,7 +33,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                          diag_coded_type=uint_type,
                          physical_type=PhysicalType("A_UINT32"),
                          compu_method=ident_compu_method,
-                         dtcs=[DiagnosticTroubleCode(
+                         dtcs_raw=[DiagnosticTroubleCode(
                              odx_id=OdxLinkId("DOP.dtc_dop.DTC.X10", doc_frags),
                              short_name="X10",
                              trouble_code=0x10,
