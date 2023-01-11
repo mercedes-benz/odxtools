@@ -3,7 +3,7 @@
 
 
 import abc
-from typing import Optional, Union, List
+from typing import TYPE_CHECKING, Optional, Union, List
 import warnings
 
 from ..decodestate import DecodeState
@@ -12,6 +12,9 @@ from ..exceptions import OdxWarning
 from ..odxlink import OdxLinkDatabase
 from ..globals import logger
 from ..specialdata import SpecialDataGroup
+
+if TYPE_CHECKING:
+    from ..diaglayer import DiagLayer
 
 class Parameter(abc.ABC):
     def __init__(self,
@@ -41,7 +44,9 @@ class Parameter(abc.ABC):
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_references(self,
+                            parent_dl: "DiagLayer",
+                            odxlinks: OdxLinkDatabase) -> None:
         for sdg in self.sdgs:
             sdg._resolve_references(odxlinks)
 

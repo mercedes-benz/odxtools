@@ -46,6 +46,7 @@ class TestEncodeRequest(unittest.TestCase):
         self.assertEqual(req.encode(), bytearray([0x12, 0x34]))
 
     def test_encode_linear(self):
+        odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(base_data_type="A_UINT32", bit_length=8)
         # This CompuMethod represents the linear function: decode(x) = 2*x + 8 and encode(x) = (x-8)/2
         compu_method = LinearCompuMethod(offset=8,
@@ -57,11 +58,16 @@ class TestEncodeRequest(unittest.TestCase):
                                  diag_coded_type=diag_coded_type,
                                  physical_type=PhysicalType("A_UINT32"),
                                  compu_method=compu_method)
+        odxlinks.update({dop.odx_id: dop})
         param1 = ValueParameter(short_name="linear_value_parameter",
-                                dop=dop)
+                                dop_ref=OdxLinkRef.from_id(dop.odx_id),
+                                dop_snref=None,
+                                )
         req = Request(odx_id=OdxLinkId("request_id", doc_frags),
                       short_name="request_sn",
                       parameters=[param1])
+
+        param1._resolve_references(None, odxlinks) # type: ignore
 
         # Missing mandatory parameter.
         with self.assertRaises(TypeError) as cm:

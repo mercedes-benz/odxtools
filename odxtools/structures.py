@@ -330,12 +330,7 @@ class BasicStructure(DopBase):
         super()._resolve_references(odxlinks)
 
         for p in self.parameters:
-            if isinstance(p, ParameterWithDOP):
-                p.resolve_references(parent_dl, odxlinks)
-            elif isinstance(p, TableKeyParameter):
-                p.resolve_references(parent_dl, odxlinks)
-            else:
-                p._resolve_references(odxlinks)
+            p._resolve_references(parent_dl, odxlinks)
 
     def __message_format_lines(self, allow_unknown_lengths: bool = False) \
             -> List[str]:

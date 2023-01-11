@@ -217,7 +217,7 @@ class TestDecoding(unittest.TestCase):
                                             byte_position=0,
                                             bit_position=0)
         struct_param2 = ValueParameter(short_name="struct_param_2",
-                                       dop=dop,
+                                       dop_ref=OdxLinkRef.from_id(dop.odx_id),
                                        byte_position=0,
                                        bit_position=4)
         struct = Structure(odx_id=OdxLinkId("struct_id", doc_frags),
@@ -225,7 +225,7 @@ class TestDecoding(unittest.TestCase):
                            parameters=[struct_param1, struct_param2])
         odxlinks.update({struct.odx_id: struct})
         req_param2 = ValueParameter(short_name="structured_param",
-                                    dop=struct)
+                                    dop_ref=OdxLinkRef.from_id(struct.odx_id))
 
         req = Request(odx_id=OdxLinkId("request_id", doc_frags),
                       short_name="request_sn",
@@ -242,6 +242,11 @@ class TestDecoding(unittest.TestCase):
                                services=[service],
                                requests=[req],
                                odxlinks=odxlinks)
+
+        req_param1._resolve_references(diag_layer, odxlinks)
+        req_param2._resolve_references(diag_layer, odxlinks)
+        struct_param1._resolve_references(diag_layer, odxlinks)
+        struct_param2._resolve_references(diag_layer, odxlinks)
 
         coded_message = bytes([0x12, 0x34])
         expected_message = Message(coded_message=coded_message,
@@ -286,7 +291,7 @@ class TestDecoding(unittest.TestCase):
                                             byte_position=0,
                                             bit_position=0)
         struct_param2 = ValueParameter(short_name="struct_param_2",
-                                       dop=dop,
+                                       dop_ref=OdxLinkRef.from_id(dop.odx_id),
                                        byte_position=0,
                                        bit_position=4)
         struct = Structure(odx_id=OdxLinkId("struct_id", doc_frags),
@@ -299,7 +304,8 @@ class TestDecoding(unittest.TestCase):
                              is_visible_raw=True)
         odxlinks.update({eopf.odx_id: eopf})
 
-        req_param2 = ValueParameter(short_name="eopf_param", dop=eopf)
+        req_param2 = ValueParameter(short_name="eopf_param",
+                                    dop_ref=OdxLinkRef.from_id(eopf.odx_id))
 
         req = Request(odx_id=OdxLinkId("request_id", doc_frags),
                       short_name="request_sn",
@@ -316,6 +322,13 @@ class TestDecoding(unittest.TestCase):
                                services=[service],
                                requests=[req],
                                odxlinks=odxlinks)
+
+        eopf._resolve_references(diag_layer, odxlinks)
+        struct_param2._resolve_references(diag_layer, odxlinks)
+        req_param2._resolve_references(diag_layer, odxlinks)
+        req._resolve_references(diag_layer, odxlinks)
+        service._resolve_references(odxlinks)
+        diag_layer._resolve_references(odxlinks)
 
         coded_message = bytes([0x12, 0x34, 0x34])
         expected_message = Message(coded_message=coded_message,
@@ -353,7 +366,7 @@ class TestDecoding(unittest.TestCase):
                                          coded_value=0x7d,
                                          byte_position=0)
         req_param2 = ValueParameter(short_name="value_parameter_2",
-                                    dop=dop,
+                                    dop_ref=OdxLinkRef.from_id(dop.odx_id),
                                     byte_position=1)
         req = Request(odx_id=OdxLinkId("request_id", doc_frags),
                       short_name="request_sn",
@@ -463,7 +476,7 @@ class TestDecoding(unittest.TestCase):
                              decoded_message.param_dict)
 
     def test_decode_dtc(self):
-        odxlinks = {}
+        odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(base_data_type="A_UINT32", bit_length=8)
         compu_method = IdenticalCompuMethod(internal_type="A_INT32",
                                             physical_type="A_INT32")
@@ -487,18 +500,21 @@ class TestDecoding(unittest.TestCase):
                      compu_method=compu_method,
                      dtcs=dtcs,
                      is_visible_raw=True)
-        odxlinks[dop.odx_id] = dop
+        odxlinks.update({dop.odx_id: dop})
         resp_param1 = CodedConstParameter(short_name="SID",
                                           diag_coded_type=diag_coded_type,
                                           coded_value=0x12,
                                           byte_position=0)
         resp_param2 = ValueParameter(short_name="DTC_Param",
-                                     dop=dop,
+                                     dop_ref=OdxLinkRef.from_id(dop.odx_id),
                                      byte_position=1)
         pos_response = Response(odx_id=OdxLinkId("pos_response_id", doc_frags),
                                 short_name="pos_response_sn",
                                 parameters=[resp_param1, resp_param2],
                                 response_type="POS-RESPONSE")
+        resp_param1._resolve_references(None, odxlinks) # type: ignore
+        resp_param2._resolve_references(None, odxlinks) # type: ignore
+        pos_response._resolve_references(None, odxlinks) # type: ignore
 
         coded_message = bytes([0x12, 0x34])
         decoded_param_dict = pos_response.decode(coded_message)
@@ -509,6 +525,7 @@ class TestDecoding(unittest.TestCase):
 class TestDecodingAndEncoding(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
+        odxlinks = OdxLinkDatabase()
         self.dop_bytes_termination_end_of_pdu = \
             DataObjectProperty(
                 odx_id=OdxLinkId("DOP_ID", doc_frags),
@@ -520,9 +537,11 @@ class TestDecodingAndEncoding(unittest.TestCase):
                 compu_method=IdenticalCompuMethod(internal_type=DataType.A_BYTEFIELD,
                                                   physical_type=DataType.A_BYTEFIELD)
             )
+        dop = self.dop_bytes_termination_end_of_pdu
+        odxlinks.update({dop.odx_id: dop})
         self.parameter_termination_end_of_pdu = ValueParameter(
             short_name="min_max_parameter",
-            dop=self.dop_bytes_termination_end_of_pdu
+            dop_ref=OdxLinkRef.from_id(dop.odx_id),
         )
 
         self.parameter_sid = CodedConstParameter(short_name="SID",
@@ -531,6 +550,9 @@ class TestDecodingAndEncoding(unittest.TestCase):
                                                  coded_value=0x12,
                                                  byte_position=0
         )
+
+        self.parameter_termination_end_of_pdu._resolve_references(None, odxlinks) # type: ignore
+        self.parameter_sid._resolve_references(None, odxlinks) # type: ignore
 
     def test_min_max_length_type_end_of_pdu(self):
         req_param1 = self.parameter_sid
@@ -554,6 +576,8 @@ class TestDecodingAndEncoding(unittest.TestCase):
         self.assertEqual(actual_coded_message, expected_coded_message)
 
     def test_min_max_length_type_end_of_pdu_in_structure(self):
+        odxlinks = OdxLinkDatabase()
+
         struct_param = self.parameter_termination_end_of_pdu
 
         structure = Structure(
@@ -563,11 +587,12 @@ class TestDecodingAndEncoding(unittest.TestCase):
                 struct_param
             ]
         )
+        odxlinks.update({structure.odx_id: structure})
 
         req_param1 = self.parameter_sid
         req_param2 = ValueParameter(
             short_name="min_max_parameter",
-            dop=structure
+            dop_ref=OdxLinkRef.from_id(structure.odx_id),
         )
 
         request = Request(
@@ -578,6 +603,9 @@ class TestDecodingAndEncoding(unittest.TestCase):
                 req_param2
             ]
         )
+
+        req_param1._resolve_references(None, odxlinks) # type: ignore
+        req_param2._resolve_references(None, odxlinks) # type: ignore
 
         expected_coded_message = bytes([0x12, 0x34])
         expected_param_dict = {
@@ -594,6 +622,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
         self.assertEqual(actual_coded_message, expected_coded_message)
 
     def test_physical_constant_parameter(self):
+        odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(base_data_type="A_UINT32", bit_length=8)
         offset = 0x34
         dop = DataObjectProperty(
@@ -608,6 +637,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
                 physical_type=DataType.A_INT32
             )
         )
+        odxlinks.update({dop.odx_id: dop})
         req_param1 = CodedConstParameter(short_name="SID",
                                          diag_coded_type=diag_coded_type,
                                          coded_value=0x12,
@@ -615,7 +645,8 @@ class TestDecodingAndEncoding(unittest.TestCase):
                                          )
         req_param2 = PhysicalConstantParameter(short_name="physical_constant_parameter",
                                                physical_constant_value=offset,
-                                               dop=dop
+                                               dop_ref=OdxLinkRef.from_id(dop.odx_id),
+                                               dop_snref=None,
                                                )
         request = Request(odx_id=OdxLinkId("request", doc_frags),
                           short_name="Request",
@@ -624,6 +655,9 @@ class TestDecodingAndEncoding(unittest.TestCase):
                               req_param2
                           ]
                           )
+
+        req_param1._resolve_references(None, odxlinks) # type: ignore
+        req_param2._resolve_references(None, odxlinks) # type: ignore
 
         expected_coded_message = bytes([0x12, 0x0])
         expected_param_dict = {

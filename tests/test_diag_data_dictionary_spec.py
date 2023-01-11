@@ -88,6 +88,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     byte_position=0,
                     semantic="DATA",
                     dop_ref="dop-ref",
+                    dop_snref=None,
                 ),
                 PhysicalConstantParameter(
                     short_name="flip_direction",
@@ -96,6 +97,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     semantic="DATA",
                     physical_constant_value=1,
                     dop_ref="dop-ref",
+                    dop_snref=None,
                 ),
             ]
         )
