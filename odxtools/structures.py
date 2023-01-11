@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 
 import math
-from typing import TYPE_CHECKING, Any, Optional, List, Dict, Iterable, ByteString, OrderedDict, Tuple, Union
+from typing import TYPE_CHECKING, Optional, List, Dict, Iterable, ByteString, OrderedDict, Tuple, Union
 import warnings
 
 from .utils import short_name_as_id
@@ -24,7 +24,7 @@ from .parameters import (
 )
 from .utils import create_description_from_et
 from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .specialdata import create_sdgs_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -609,7 +609,7 @@ def create_any_structure_from_et(et_element,
             description=description,
             sdgs=sdgs,
         )
-    elif et_element.tag in ["POS-RESPONSE", "NEG-RESPONSE"]:
+    elif et_element.tag in ["POS-RESPONSE", "NEG-RESPONSE", "GLOBAL-NEG-RESPONSE"]:
         res = Response(
             odx_id=odx_id,
             short_name=short_name,

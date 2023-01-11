@@ -2,7 +2,6 @@
 # Copyright (c) 2022 MBition GmbH
 
 from typing import List, Iterable, Optional, Union
-from xml.etree import ElementTree
 
 from .utils import short_name_as_id
 from .audience import Audience
@@ -31,6 +30,7 @@ class DiagService:
                  admin_data: Optional[AdminData] = None,
                  description: Optional[str] = None,
                  semantic: Optional[str] = None,
+                 addressing: Optional[str] = None,
                  audience: Optional[Audience] = None,
                  functional_class_refs: Iterable[OdxLinkRef] = [],
                  pre_condition_state_refs: Iterable[OdxLinkRef] = [],
@@ -53,6 +53,7 @@ class DiagService:
         self.long_name: Optional[str] = long_name
         self.description: Optional[str] = description
         self.semantic: Optional[str] = semantic
+        self.addressing: Optional[str] = addressing
         self.audience: Optional[Audience] = audience
         self.functional_class_refs: List[OdxLinkRef] = list(functional_class_refs)
         self._functional_classes: Union[List[FunctionalClass],
@@ -156,6 +157,10 @@ class DiagService:
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         semantic = et_element.get("SEMANTIC")
 
+        addressing = et_element.get("ADDRESSING")
+        if addressing is None:
+            addressing = "PHYSICAL"
+
         audience = None
         if et_element.find("AUDIENCE"):
             audience = Audience.from_et(et_element.find("AUDIENCE"), doc_frags)
@@ -171,6 +176,7 @@ class DiagService:
                            description=description,
                            admin_data=admin_data,
                            semantic=semantic,
+                           addressing=addressing,
                            audience=audience,
                            functional_class_refs=functional_class_refs,
                            pre_condition_state_refs=pre_condition_state_refs,
