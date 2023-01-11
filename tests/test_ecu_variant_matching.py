@@ -290,10 +290,26 @@ def test_request_loop_misuse(ecu_variants: List[DiagLayer], use_cache: bool):
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if request loop is idempotent, i.e., the matching is the same regardless of how often the request loop is run
 def test_request_loop_idempotency(ecu_variants: List[DiagLayer], use_cache: bool):
+    req_resp_mapping = {
+        b"\x22\x10\00": as_bytes({"id": 2000}),
+        b"\x22\x20\00": as_bytes({"name": "supplier_B"}),
+    }
+
     matcher = EcuVariantMatcher(
         ecu_variant_candidates=ecu_variants,
         use_cache=use_cache,
     )
-    with pytest.raises(RuntimeError):
-        for _ in matcher.request_loop():
-            pass
+
+    for req in matcher.request_loop():
+        resp = req_resp_mapping[req]
+        matcher.evaluate(resp)
+    assert matcher.has_match()
+    assert matcher.get_active_ecu_variant().short_name == "ecu_variant2"
+
+    # second run with arbitrary input
+    for req in matcher.request_loop():
+        matcher.evaluate(b"")
+
+    # idempotency criterion
+    assert matcher.has_match()
+    assert matcher.get_active_ecu_variant().short_name == "ecu_variant2"
