@@ -2,13 +2,13 @@
 # Copyright (c) 2023 MBition GmbH
 
 from dataclasses import dataclass
-from typing import List, Optional, Union
+from typing import List, Optional
 from xml.etree import ElementTree
 
 from odxtools.odxlink import OdxDocFragment
+from odxtools.utils import is_short_name, is_short_name_path
 
 
-@dataclass
 class MatchingParameter:
     """According to ISO 22901, a MatchingParameter contains a string value identifying
     the active ECU variant. Moreover, it references a DIAG-COMM via snref and one of its
@@ -18,9 +18,15 @@ class MatchingParameter:
     not transferred over the network.
     """
 
-    expected_value: str  # datatype according to ISO 22901-1 Figure 141
-    diag_comm_snref: str
-    out_param_if_snref: str
+    def __init__(self, *, expected_value: str, diag_comm_snref: str, out_param_if: str):
+        # datatype according to ISO 22901-1 Figure 141
+        self.expected_value: str = expected_value
+
+        assert is_short_name(diag_comm_snref)  # const-correctness
+        self.diag_comm_snref: str = diag_comm_snref
+
+        assert is_short_name_path(out_param_if)  # const-correctness
+        self.out_param_if: str = out_param_if
 
     @classmethod
     def from_et(
@@ -36,18 +42,26 @@ class MatchingParameter:
         assert diag_comm_snref is not None
 
         out_param_snref_el = et_element.find("OUT-PARAM-IF-SNREF")
-        assert out_param_snref_el is not None
-        out_param_if_snref = out_param_snref_el.get("SHORT-NAME")
-        assert out_param_if_snref is not None
+        out_param_snpathref_el = et_element.find("OUT-PARAM-IF-SNPATHREF")
+        out_param_if = None
+        if out_param_snref_el is not None:
+            out_param_if = out_param_snref_el.get("SHORT-NAME")
+        elif out_param_snpathref_el is not None:
+            out_param_if = out_param_snpathref_el.get("SHORT-NAME-PATH")
+        assert out_param_if is not None
 
-        return cls(expected_value, diag_comm_snref, out_param_if_snref)
+        return cls(
+            expected_value=expected_value,
+            diag_comm_snref=diag_comm_snref,
+            out_param_if=out_param_if,
+        )
 
-    def is_match(self, ident_value: Union[int, str]) -> bool:
+    def is_match(self, ident_value: str) -> bool:
         """
         Returns true iff the provided identification value matches this MatchingParameter's
         expected value.
         """
-        return self.expected_value == str(ident_value)
+        return self.expected_value == ident_value
 
 
 @dataclass

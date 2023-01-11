@@ -7,7 +7,9 @@ from typing import ByteString, Dict, Generator, List, Optional, Union
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayertype import DIAG_LAYER_TYPE
 from odxtools.ecu_variant_patterns import MatchingParameter
+from odxtools.exceptions import OdxError
 from odxtools.service import DiagService
+from odxtools.structures import Response
 
 
 class EcuVariantMatcher:
@@ -60,13 +62,40 @@ class EcuVariantMatcher:
     def decode_ident_response(
         diag_layer: DiagLayer,
         matching_param: MatchingParameter,
-        response: Union[bytes, bytearray],
+        response_bytes: Union[bytes, bytearray],
     ) -> str:
+        """Decode a binary response and extract the identification string according
+        to the snref or snpathref of the matching_param.
+        """
         service = EcuVariantMatcher.get_ident_service(diag_layer, matching_param)
-        assert service.positive_responses is not None
-        resp_decoded = service.positive_responses[0].decode(response)
-        assert matching_param.out_param_if_snref in resp_decoded
-        return resp_decoded[matching_param.out_param_if_snref]
+
+        # ISO 22901 requires that snref or snpathref is resolvable in at least one
+        # POS-RESPONSE or NEG-RESPONSE
+        pos_neg_responses: List[Response] = []
+        if service.positive_responses is not None:
+            pos_neg_responses.extend(service.positive_responses)
+        if service.negative_responses is not None:
+            pos_neg_responses.extend(service.negative_responses)
+
+        for any_response in pos_neg_responses:
+            decoded_val = any_response.decode(response_bytes)
+            # disassemble snref / snpathref
+            path_ref = matching_param.out_param_if.split(".")
+            for ref in path_ref:
+                if ref in decoded_val:
+                    decoded_val = decoded_val[ref]
+                else:
+                    decoded_val = None
+                    break
+
+            if decoded_val is not None:
+                if isinstance(decoded_val, str) or isinstance(decoded_val, int):
+                    return str(decoded_val)
+
+        raise OdxError(
+            f"The snref or snpathref '{matching_param.out_param_if}' is cannot be \
+                resolved for any positive or negative response."
+        )
 
     def __init__(self, ecu_variant_candidates: List[DiagLayer], use_cache: bool = True):
 

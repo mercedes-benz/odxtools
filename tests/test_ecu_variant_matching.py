@@ -10,6 +10,7 @@ from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayertype import DIAG_LAYER_TYPE
 from odxtools.ecu_variant_matcher import EcuVariantMatcher
 from odxtools.ecu_variant_patterns import EcuVariantPattern, MatchingParameter
+from odxtools.exceptions import OdxError
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from odxtools.service import DiagService
 from odxtools.structures import Request, Response
@@ -92,12 +93,12 @@ def ecu_variant_pattern1() -> EcuVariantPattern:
             MatchingParameter(
                 diag_comm_snref="identService",
                 expected_value="1000",
-                out_param_if_snref="id",
+                out_param_if="id",
             ),
             MatchingParameter(
                 diag_comm_snref="supplierService",
                 expected_value="supplier_A",
-                out_param_if_snref="name",
+                out_param_if="name.english",
             ),
         ]
     )
@@ -110,12 +111,12 @@ def ecu_variant_pattern2() -> EcuVariantPattern:
             MatchingParameter(
                 diag_comm_snref="identService",
                 expected_value="2000",
-                out_param_if_snref="id",
+                out_param_if="id",
             ),
             MatchingParameter(
                 diag_comm_snref="supplierService",
                 expected_value="supplier_B",
-                out_param_if_snref="name",
+                out_param_if="name.english",
             ),
         ]
     )
@@ -128,7 +129,7 @@ def ecu_variant_pattern3() -> EcuVariantPattern:
             MatchingParameter(
                 diag_comm_snref="supplierService",
                 expected_value="supplier_C",
-                out_param_if_snref="name",
+                out_param_if="name.english",
             )
         ]
     )
@@ -203,7 +204,7 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
         (
             {
                 b"\x22\x10\00": as_bytes({"id": 2000}),
-                b"\x22\x20\00": as_bytes({"name": "supplier_B"}),
+                b"\x22\x20\00": as_bytes({"name": {"english": "supplier_B"}}),
             },
             "ecu_variant2",
         ),
@@ -211,7 +212,7 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
         (
             {
                 b"\x22\x10\00": as_bytes({"id": 2000}),
-                b"\x22\x20\00": as_bytes({"name": "supplier_C"}),
+                b"\x22\x20\00": as_bytes({"name": {"english": "supplier_C"}}),
             },
             "ecu_variant3",
         ),
@@ -219,7 +220,7 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
         (
             {
                 b"\x22\x10\00": as_bytes({"id": 1000}),
-                b"\x22\x20\00": as_bytes({"name": "supplier_A"}),
+                b"\x22\x20\00": as_bytes({"name": {"english": "supplier_A"}}),
             },
             "ecu_variant1",
         ),
@@ -247,7 +248,7 @@ def test_no_match(ecu_variants: List[DiagLayer], use_cache: bool):
     # stores the responses for each request for the ecu-under-test
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 1000}),
-        b"\x22\x20\00": as_bytes({"name": "supplier_D"}),
+        b"\x22\x20\00": as_bytes({"name": {"english": "supplier_D"}}),
     }
 
     matcher = EcuVariantMatcher(
@@ -292,7 +293,7 @@ def test_request_loop_misuse(ecu_variants: List[DiagLayer], use_cache: bool):
 def test_request_loop_idempotency(ecu_variants: List[DiagLayer], use_cache: bool):
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 2000}),
-        b"\x22\x20\00": as_bytes({"name": "supplier_B"}),
+        b"\x22\x20\00": as_bytes({"name": {"english": "supplier_B"}}),
     }
 
     matcher = EcuVariantMatcher(
@@ -313,3 +314,23 @@ def test_request_loop_idempotency(ecu_variants: List[DiagLayer], use_cache: bool
     # idempotency criterion
     assert matcher.has_match()
     assert matcher.get_active_ecu_variant().short_name == "ecu_variant2"
+
+
+@pytest.mark.parametrize("use_cache", [True, False])
+def test_unresolvable_snpathref(ecu_variants: List[DiagLayer], use_cache: bool):
+    # stores the responses for each request for the ecu-under-test
+    req_resp_mapping = {
+        b"\x22\x10\00": as_bytes({"id": 1000}),
+        # the snpathref cannot be resolved, because name is not a struct
+        b"\x22\x20\00": as_bytes({"name": "supplier_C"}),
+    }
+
+    matcher = EcuVariantMatcher(
+        ecu_variant_candidates=ecu_variants,
+        use_cache=use_cache,
+    )
+
+    with pytest.raises(OdxError):
+        for req in matcher.request_loop():
+            resp = req_resp_mapping[req]
+            matcher.evaluate(resp)

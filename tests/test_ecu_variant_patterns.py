@@ -33,8 +33,8 @@ def valid_evp_et() -> ElementTree.Element:
                 </MATCHING-PARAMETER>
                 <MATCHING-PARAMETER>
                     <EXPECTED-VALUE>supplier_A</EXPECTED-VALUE>
-                    <DIAG-COMM-SNREF SHORT-NAME="Supplier"/>
-                    <OUT-PARAM-IF-SNREF SHORT-NAME="Name"/>
+                    <DIAG-COMM-SNREF SHORT-NAME="SupplierInfo"/>
+                    <OUT-PARAM-IF-SNPATHREF SHORT-NAME-PATH="name.english"/>
                 </MATCHING-PARAMETER>
             </MATCHING-PARAMETERS>
         </ECU-VARIANT-PATTERN>
@@ -59,8 +59,8 @@ def invalid_evp_et() -> ElementTree.Element:
 def test_create_evp_from_et(valid_evp_et: ElementTree.Element) -> None:
     ecu_variant_patterns = create_ecu_variant_patterns_from_et(valid_evp_et, doc_frags)
     assert len(ecu_variant_patterns) == 2
-    assert ecu_variant_patterns[0].matching_parameters[0].is_match(0xFFFF)
-    assert ecu_variant_patterns[1].matching_parameters[0].is_match(0xFF)
+    assert ecu_variant_patterns[0].matching_parameters[0].is_match(str(0xFFFF))
+    assert ecu_variant_patterns[1].matching_parameters[0].is_match(str(0xFF))
     assert ecu_variant_patterns[1].matching_parameters[1].is_match("supplier_A")
 
 
