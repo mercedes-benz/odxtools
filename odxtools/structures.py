@@ -330,12 +330,7 @@ class BasicStructure(DopBase):
         super()._resolve_references(odxlinks)
 
         for p in self.parameters:
-            if isinstance(p, ParameterWithDOP):
-                p.resolve_references(parent_dl, odxlinks)
-            elif isinstance(p, TableKeyParameter):
-                p.resolve_references(parent_dl, odxlinks)
-            else:
-                p._resolve_references(odxlinks)
+            p._resolve_references(parent_dl, odxlinks)
 
     def __message_format_lines(self, allow_unknown_lengths: bool = False) \
             -> List[str]:
@@ -402,6 +397,10 @@ class BasicStructure(DopBase):
                         if hasattr(dop, 'diag_coded_type'):
                             dct = dop.diag_coded_type
 
+                    bit_length = None
+                    if hasattr(params[param_idx], "bit_length"):
+                        bit_length = params[param_idx].bit_length
+
                     if dct is not None and dct.dct_type == 'MIN-MAX-LENGTH-TYPE':
                         name = params[param_idx].short_name + " ("
                         if dct.termination == "END-OF-PDU":
@@ -418,7 +417,7 @@ class BasicStructure(DopBase):
 
                         break
 
-                    elif not params[param_idx].bit_length and not allow_unknown_lengths:
+                    elif not bit_length and not allow_unknown_lengths:
                         # The bit length is not set for the current
                         # parameter, i.e. it was either not specified
                         # or the parameter is of variable length and
@@ -427,10 +426,10 @@ class BasicStructure(DopBase):
                         error = True
                         break
                     else:
-                        stop_bit += params[param_idx].bit_length or (
-                            allow_unknown_lengths and 8)
+                        bit_length = 0 if bit_length is None else bit_length
+                        stop_bit += bit_length or (allow_unknown_lengths and 8)
                         name = params[param_idx].short_name + \
-                            f" ({params[param_idx].bit_length or 'Unknown'} bits)"
+                            f" ({bit_length or 'Unknown'} bits)"
                         next_line += "| " + name
 
                     param_idx += 1

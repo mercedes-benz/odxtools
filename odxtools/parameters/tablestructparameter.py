@@ -27,13 +27,11 @@ class TableStructParameter(Parameter):
             description=description,
             **kwargs
         )
-        if table_key_ref:
-            self.table_key_ref = table_key_ref
-        elif table_key_snref:
-            self.table_key_snref = table_key_snref
-        else:
-            raise ValueError(
-                "Either table_key_ref or table_key_snref must be defined.")
+        self.table_key_ref = table_key_ref
+        self.table_key_snref = table_key_snref
+        if self.table_key_ref is None and self.table_key_snref is None:
+            raise OdxError("Either table_key_ref or table_key_snref "
+                           "must be defined.")
 
     def is_required(self):
         raise NotImplementedError(

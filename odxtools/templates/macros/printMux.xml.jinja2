@@ -25,6 +25,7 @@
     {%- endif %}
   </DEFAULT-CASE>
   {%- endif %}
+  {%- if mux.default_cases %}
   <CASES>
     {%- for case in mux.cases %}
     <CASE>
@@ -36,5 +37,6 @@
     </CASE>
     {%- endfor %}
   </CASES>
+  {%- endif %}
 </MUX>
 {%- endmacro -%}

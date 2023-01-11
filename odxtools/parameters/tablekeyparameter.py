@@ -71,10 +71,10 @@ class TableKeyParameter(Parameter):
         raise NotImplementedError(
             "Decoding a TableKeyParameter is not implemented yet.")
 
-    def resolve_references(self,
-                           parent_dl: "DiagLayer",
-                           odxlinks: OdxLinkDatabase):
-        super()._resolve_references(odxlinks)
+    def _resolve_references(self,
+                            parent_dl: "DiagLayer",
+                            odxlinks: OdxLinkDatabase) -> None:
+        super()._resolve_references(parent_dl, odxlinks)
         self.table = None
         if self.table_snref:
             self.table = parent_dl.local_diag_data_dictionary_spec.tables[self.table_snref]

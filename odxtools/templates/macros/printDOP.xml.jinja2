@@ -4,6 +4,7 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printDiagCodedType(dct) -%}
@@ -154,14 +155,22 @@
 <{{tag_name}} ID="{{dop.odx_id.local_id}}">
  <SHORT-NAME>{{dop.short_name}}</SHORT-NAME>
  <LONG-NAME>{{dop.long_name|e}}</LONG-NAME>
+ {%- if dop.description %}
+ <DESC>{{dop.description}}</DESC>
+ {%- endif %}
+ {%- if dop.admin_data %}
+ {{- pad.printAdminData(dop.admin_data)|indent(2, first=True) }}
+ {%- endif %}
  {{- psd.printSpecialDataGroups(dop.sdgs)|indent(2, first=True) }}
- {%- if dop.compu_method is defined %}
+ {%- if dop.compu_method %}
  {{ printCompuMethod(dop.compu_method)|indent(1) }}
  {%- endif %}
- {%- if dop.diag_coded_type is defined %}
+ {%- if dop.diag_coded_type %}
  {{ printDiagCodedType(dop.diag_coded_type)|indent(1) -}}
  {%- endif -%}
+ {%- if dop.physical_type %}
  {{ printPhysicalType(dop.physical_type)|indent(1) }}
+ {%- endif -%}
  {%- if dop.unit_ref %}
  <UNIT-REF ID-REF="{{ dop.unit_ref.ref_id }}" />
  {%- endif %}
@@ -172,14 +181,14 @@
 <DTC-DOP ID="{{dop.odx_id.local_id}}">
  <SHORT-NAME>{{dop.short_name}}</SHORT-NAME>
  <LONG-NAME>{{dop.long_name|e}}</LONG-NAME>
- {{- psd.printSpecialDataGroups(dop.sdgs)|indent(2, first=True) }}
+ {{- psd.printSpecialDataGroups(dop.sdgs)|indent(1, first=True) }}
  {{- printDiagCodedType(dop.diag_coded_type)|indent(1, first=True) }}
  {{- printPhysicalType(dop.physical_type)|indent(1, first=True) }}
  {{- printCompuMethod(dop.compu_method)|indent(1, first=True) }}
  <DTCS>
- {%- for dtc in dop.dtcs %}
- {%- if hasattr(dtc, "dtc_ref") %}
-  <DTC-REF ID-REF="{{dtc.dtc_ref.ref_id}}" />
+ {%- for dtc in dop.dtcs_raw %}
+ {%- if hasattr(dtc, "ref_id") %}
+  <DTC-REF ID-REF="{{dtc.ref_id}}" />
  {%- else %}
   <DTC ID="{{dtc.odx_id.local_id}}">
    <SHORT-NAME>{{dtc.short_name}}</SHORT-NAME>

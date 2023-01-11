@@ -33,7 +33,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                          diag_coded_type=uint_type,
                          physical_type=PhysicalType("A_UINT32"),
                          compu_method=ident_compu_method,
-                         dtcs=[DiagnosticTroubleCode(
+                         dtcs_raw=[DiagnosticTroubleCode(
                              odx_id=OdxLinkId("DOP.dtc_dop.DTC.X10", doc_frags),
                              short_name="X10",
                              trouble_code=0x10,
@@ -88,6 +88,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     byte_position=0,
                     semantic="DATA",
                     dop_ref="dop-ref",
+                    dop_snref=None,
                 ),
                 PhysicalConstantParameter(
                     short_name="flip_direction",
@@ -96,6 +97,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     semantic="DATA",
                     physical_constant_value=1,
                     dop_ref="dop-ref",
+                    dop_snref=None,
                 ),
             ]
         )
