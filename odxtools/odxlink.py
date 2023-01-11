@@ -6,7 +6,7 @@ import warnings
 
 from dataclasses import dataclass, field
 from xml.etree.ElementTree import Element
-from typing import Optional, Any, List
+from typing import overload, Optional, Dict, Union, Any, List, TypeVar, Type
 from .exceptions import OdxWarning
 
 @dataclass(frozen=True)
@@ -76,10 +76,6 @@ class OdxLinkId:
 
         return OdxLinkId(local_id, doc_fragments)
 
-from typing import Dict, Union, Optional, Any
-from dataclasses import dataclass, field, replace
-from xml.etree.ElementTree import Element
-
 @dataclass(frozen=True)
 class OdxLinkRef:
     """A reference to an ODX object.
@@ -94,6 +90,16 @@ class OdxLinkRef:
 
     #: The document fragments to which the `ref_id` refers to (in reverse order)
     ref_docs : List[OdxDocFragment]
+
+    @overload
+    @staticmethod
+    def from_et(et: None, source_doc_frags: List[OdxDocFragment]) -> None:
+        ...
+
+    @overload
+    @staticmethod
+    def from_et(et: Element, source_doc_frags: List[OdxDocFragment]) -> "OdxLinkRef":
+        ...
 
     @staticmethod
     def from_et(et: Optional[Element], source_doc_frags: List[OdxDocFragment]) -> Optional["OdxLinkRef"]:
@@ -149,6 +155,7 @@ class OdxLinkRef:
         # the local ID of the reference and the object ID must match
         return odx_id.local_id == self.ref_id
 
+T = TypeVar('T')
 class OdxLinkDatabase:
     """
     A database holding all objects which ehibit OdxLinkIds
@@ -159,7 +166,15 @@ class OdxLinkDatabase:
     def __init__(self) -> None:
         self._db: Dict[OdxDocFragment, Dict[OdxLinkId, Any]] = {}
 
-    def resolve(self, ref: OdxLinkRef) -> Any:
+    @overload
+    def resolve(self, ref: OdxLinkRef, expected_type: None = None) -> Any:
+        ...
+
+    @overload
+    def resolve(self, ref: OdxLinkRef, expected_type: Type[T]) -> T:
+        ...
+
+    def resolve(self, ref: OdxLinkRef, expected_type: Optional[Type[T]] = None) -> Any:
         """
         Resolve a reference to an object
 
@@ -181,6 +196,10 @@ class OdxLinkDatabase:
 
             obj = doc_frag_db.get(odx_id)
             if obj is not None:
+                if expected_type is not None:
+                    assert isinstance(obj, expected_type)
+                    return obj
+
                 return obj
 
         raise KeyError(f"ODXLINK reference {ref} could not be resolved for any "
