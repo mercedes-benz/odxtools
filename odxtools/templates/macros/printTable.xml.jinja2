@@ -29,7 +29,7 @@
   {%- if table_row.description %}
   <DESC>{{table_row.description}}</DESC>
   {%- endif %}
-  <KEY>{{table_row.key}}</KEY>
+  <KEY>{{table_row.key|e}}</KEY>
   {%- if table_row.structure_ref %}
   <STRUCTURE-REF ID-REF="{{ table_row.structure_ref.ref_id }}" />
   {%- endif %}
