@@ -48,13 +48,18 @@ def short_name_as_id(obj: Any) -> str:
     return sn
 
 
+# ISO 22901 section 7.1.1
+_short_name_pattern = re.compile("[a-zA-Z0-9_]+")
+# ISO 22901 section 7.3.13.3
+_short_name_path_pattern = re.compile("[a-zA-Z0-9_]+(.[a-zA-Z0-9_]+)*")
+
+
 def is_short_name(test_val: str) -> bool:
     """Returns true iff the test_val string is a ODX short name.
 
     See also: ISO 22901 section 7.1.1
     """
-    short_name_pattern = re.compile("[a-zA-Z0-9_]+")
-    return short_name_pattern.fullmatch(test_val) is not None
+    return _short_name_pattern.fullmatch(test_val) is not None
 
 
 def is_short_name_path(test_val: str) -> bool:
@@ -62,5 +67,4 @@ def is_short_name_path(test_val: str) -> bool:
 
     See also: ISO 22901 section 7.3.13.3
     """
-    short_name_path_pattern = re.compile("[a-zA-Z0-9_]+(.[a-zA-Z0-9_]+)*")
-    return short_name_path_pattern.fullmatch(test_val) is not None
+    return _short_name_path_pattern.fullmatch(test_val) is not None
