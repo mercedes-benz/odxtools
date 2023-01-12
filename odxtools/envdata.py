@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 @dataclass
 class EnvironmentData(BasicStructure):
     """This class represents Environment Data that describes the circumstances in which the error occurred."""
+    dtc_values: List[int]
 
     def __init__(self,
                  *,

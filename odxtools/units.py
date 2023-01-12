@@ -45,16 +45,16 @@ class PhysicalDimension:
     """
     odx_id: OdxLinkId
     short_name: str
-    oid: Optional[str] = None
-    long_name: Optional[str] = None
-    description: Optional[str] = None
-    length_exp: int = 0
-    mass_exp: int = 0
-    time_exp: int = 0
-    current_exp: int = 0
-    temperature_exp: int = 0
-    molar_amount_exp: int = 0
-    luminous_intensity_exp: int = 0
+    oid: Optional[str]
+    long_name: Optional[str]
+    description: Optional[str]
+    length_exp: int
+    mass_exp: int
+    time_exp: int
+    current_exp: int
+    temperature_exp: int
+    molar_amount_exp: int
+    luminous_intensity_exp: int
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) \
@@ -140,12 +140,12 @@ class Unit:
     odx_id: OdxLinkId
     short_name: str
     display_name: str
-    oid: Optional[str] = None
-    long_name: Optional[str] = None
-    description: Optional[str] = None
-    factor_si_to_unit: Optional[float] = None
-    offset_si_to_unit: Optional[float] = None
-    physical_dimension_ref: Optional[OdxLinkRef] = None
+    oid: Optional[str]
+    long_name: Optional[str]
+    description: Optional[str]
+    factor_si_to_unit: Optional[float]
+    offset_si_to_unit: Optional[float]
+    physical_dimension_ref: Optional[OdxLinkRef]
 
     def __post_init__(self):
         self._physical_dimension = None
@@ -204,10 +204,10 @@ class UnitGroup:
     """
     short_name: str
     category: UnitGroupCategory
-    unit_refs: List[OdxLinkRef] = field(default_factory=list)
-    oid: Optional[str] = None
-    long_name: Optional[str] = None
-    description: Optional[str] = None
+    unit_refs: List[OdxLinkRef]
+    oid: Optional[str]
+    long_name: Optional[str]
+    description: Optional[str]
 
     def __post_init__(self):
         self._units = NamedItemList[Unit](short_name_as_id)
@@ -261,13 +261,10 @@ class UnitSpec:
     The following odx elements are not internalized: ADMIN-DATA, SDGS
     """
     # TODO (?): Why are there type errors...
-    unit_groups: Union[NamedItemList[UnitGroup],
-                       List[UnitGroup]] = field(default_factory=list)  # type: ignore
-    units: Union[NamedItemList[Unit], List[Unit]] = field(
-        default_factory=list)  # type: ignore
-    physical_dimensions: Union[NamedItemList[PhysicalDimension],
-                               List[PhysicalDimension]] = field(default_factory=list)  # type: ignore
-    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+    unit_groups: Union[NamedItemList[UnitGroup], List[UnitGroup]]
+    units: Union[NamedItemList[Unit], List[Unit]]
+    physical_dimensions: Union[NamedItemList[PhysicalDimension], List[PhysicalDimension]]
+    sdgs: List[SpecialDataGroup]
 
     def __post_init__(self):
         self.unit_groups = NamedItemList(short_name_as_id, self.unit_groups)
@@ -285,12 +282,10 @@ class UnitSpec:
                                for el in et_element.iterfind("PHYSICAL-DIMENSIONS/PHYSICAL-DIMENSION")]
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
-        return UnitSpec(
-            unit_groups=unit_groups,
-            units=units,
-            physical_dimensions=physical_dimensions,
-            sdgs=sdgs,
-        )
+        return UnitSpec(unit_groups=unit_groups,
+                        units=units,
+                        physical_dimensions=physical_dimensions,
+                        sdgs=sdgs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}

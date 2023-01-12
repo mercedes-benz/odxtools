@@ -12,9 +12,9 @@ class StateTransition:
     """
     odx_id: OdxLinkId
     short_name: str
-    long_name: Optional[str] = None
-    source_short_name: Optional[str] = None
-    target_short_name: Optional[str] = None
+    long_name: Optional[str]
+    source_short_name: Optional[str]
+    target_short_name: Optional[str]
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) \

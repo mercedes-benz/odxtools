@@ -104,7 +104,9 @@ class TestEncodeRequest(unittest.TestCase):
                                  description=None,
                                  is_visible_raw=None,
                                  diag_coded_type=diag_coded_type,
-                                 physical_type=PhysicalType("A_UINT32"),
+                                 physical_type=PhysicalType("A_UINT32",
+                                                            display_radix=None,
+                                                            precision=None),
                                  compu_method=compu_method,
                                  unit_ref=None,
                                  sdgs=[])

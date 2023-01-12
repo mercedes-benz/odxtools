@@ -13,14 +13,14 @@ from typing import Optional, Any, Dict, List
 @dataclass
 class XDoc:
     short_name : str
-    long_name : Optional[str] = None
-    description : Optional[str] = None
-    number: Optional[str] = None
-    state: Optional[str] = None
-    date: Optional[str] = None
-    publisher: Optional[str] = None
-    url: Optional[str] = None
-    position: Optional[str] = None
+    long_name : Optional[str]
+    description : Optional[str]
+    number: Optional[str]
+    state: Optional[str]
+    date: Optional[str]
+    publisher: Optional[str]
+    url: Optional[str]
+    position: Optional[str]
 
     @staticmethod
     def from_et(xdoc) -> "XDoc":
@@ -47,8 +47,8 @@ class XDoc:
 
 @dataclass
 class RelatedDoc:
-    description: Optional[str] = None
-    xdoc: Optional[XDoc] = None
+    description: Optional[str]
+    xdoc: Optional[XDoc]
 
     @staticmethod
     def from_et(et_element) -> "RelatedDoc":
@@ -65,7 +65,7 @@ class RelatedDoc:
 @dataclass
 class CompanySpecificInfo:
     related_docs: Optional[List[RelatedDoc]]
-    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+    sdgs: List[SpecialDataGroup]
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "CompanySpecificInfo":
@@ -98,16 +98,16 @@ class CompanySpecificInfo:
 class TeamMember:
     odx_id: OdxLinkId
     short_name: str
-    long_name: Optional[str] = None
-    description: Optional[str] = None
-    roles: Optional[List[str]] = None
-    department: Optional[str] = None
-    address: Optional[str] = None
-    zip: Optional[str] = None
-    city: Optional[str] = None
-    phone: Optional[str] = None
-    fax: Optional[str] = None
-    email: Optional[str] = None
+    long_name: Optional[str]
+    description: Optional[str]
+    roles: Optional[List[str]]
+    department: Optional[str]
+    address: Optional[str]
+    zip: Optional[str]
+    city: Optional[str]
+    phone: Optional[str]
+    fax: Optional[str]
+    email: Optional[str]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -152,11 +152,11 @@ class TeamMember:
 class CompanyData:
     odx_id: OdxLinkId
     short_name: str
-    long_name: Optional[str] = None
-    description: Optional[str] = None
-    roles: Optional[List[str]] = None
-    team_members: Optional[NamedItemList[TeamMember]] = None
-    company_specific_info: Optional[CompanySpecificInfo] = None
+    long_name: Optional[str]
+    description: Optional[str]
+    roles: Optional[List[str]]
+    team_members: NamedItemList[TeamMember]
+    company_specific_info: Optional[CompanySpecificInfo]
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) \

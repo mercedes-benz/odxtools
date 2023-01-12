@@ -385,7 +385,9 @@ class TestDecoding(unittest.TestCase):
                                  description=None,
                                  is_visible_raw=None,
                                  diag_coded_type=diag_coded_type_4,
-                                 physical_type=PhysicalType(DataType.A_UINT32),
+                                 physical_type=PhysicalType(DataType.A_UINT32,
+                                                            display_radix=None,
+                                                            precision=None),
                                  compu_method=compu_method,
                                  unit_ref=None,
                                  sdgs=[])
@@ -529,7 +531,9 @@ class TestDecoding(unittest.TestCase):
                                  description=None,
                                  is_visible_raw=None,
                                  diag_coded_type=diag_coded_type_4,
-                                 physical_type=PhysicalType(DataType.A_UINT32),
+                                 physical_type=PhysicalType(DataType.A_UINT32,
+                                                            display_radix=None,
+                                                            precision=None),
                                  compu_method=compu_method,
                                  unit_ref=None,
                                  sdgs=[])
@@ -685,7 +689,9 @@ class TestDecoding(unittest.TestCase):
                                  description=None,
                                  is_visible_raw=None,
                                  diag_coded_type=diag_coded_type,
-                                 physical_type=PhysicalType(DataType.A_UINT32),
+                                 physical_type=PhysicalType(DataType.A_UINT32,
+                                                            display_radix=None,
+                                                            precision=None),
                                  compu_method=compu_method,
                                  unit_ref=None,
                                  sdgs=[])
@@ -931,13 +937,19 @@ class TestDecoding(unittest.TestCase):
                                      short_name="P34_sn",
                                      trouble_code=0x34,
                                      text="Error encountered",
-                                     display_trouble_code="P34")
+                                     display_trouble_code="P34",
+                                     level=None,
+                                     is_temporary_raw=None,
+                                     sdgs=[])
 
         dtc2 = DiagnosticTroubleCode(odx_id=OdxLinkId("dtcID2", doc_frags),
                                      short_name="P56_sn",
                                      trouble_code=0x56,
                                      text="Crashed into wall",
-                                     display_trouble_code="P56")
+                                     display_trouble_code="P56",
+                                     level=None,
+                                     is_temporary_raw=None,
+                                     sdgs=[])
         dtcs = [dtc1, dtc2]
         odxlinks.update({dtc1.odx_id: dtc1,
                          dtc2.odx_id: dtc2})
@@ -947,7 +959,9 @@ class TestDecoding(unittest.TestCase):
                      description=None,
                      diag_coded_type=diag_coded_type,
                      linked_dtc_dops=[],
-                     physical_type=PhysicalType(DataType.A_UINT32),
+                     physical_type=PhysicalType(DataType.A_UINT32,
+                                                display_radix=None,
+                                                precision=None),
                      compu_method=compu_method,
                      unit_ref=None,
                      dtcs_raw=dtcs,
@@ -1010,7 +1024,9 @@ class TestDecodingAndEncoding(unittest.TestCase):
                                                  termination='END-OF-PDU',
                                                  base_type_encoding=None,
                                                  is_highlow_byte_order_raw=None),
-                physical_type=PhysicalType(DataType.A_BYTEFIELD),
+                physical_type=PhysicalType(DataType.A_BYTEFIELD,
+                                           display_radix=None,
+                                           precision=None),
                 compu_method=IdenticalCompuMethod(internal_type=DataType.A_BYTEFIELD,
                                                   physical_type=DataType.A_BYTEFIELD),
                 unit_ref=None,
@@ -1152,7 +1168,9 @@ class TestDecodingAndEncoding(unittest.TestCase):
             description=None,
             is_visible_raw=None,
             diag_coded_type=diag_coded_type,
-            physical_type=PhysicalType(DataType.A_INT32),
+            physical_type=PhysicalType(DataType.A_INT32,
+                                       display_radix=None,
+                                       precision=None),
             compu_method=LinearCompuMethod(
                 offset=offset,
                 factor=1,

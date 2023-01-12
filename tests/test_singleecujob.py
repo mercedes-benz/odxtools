@@ -51,10 +51,16 @@ class TestSingleEcuJob(unittest.TestCase):
         self.context = Context(
 
             extensiveTask=FunctionalClass(
-                odx_id=OdxLinkId("ID.extensiveTask", doc_frags), short_name="extensiveTask"),
+                odx_id=OdxLinkId("ID.extensiveTask", doc_frags),
+                short_name="extensiveTask",
+                long_name=None,
+                description=None),
 
             specialAudience=AdditionalAudience(
-                odx_id=OdxLinkId("ID.specialAudience", doc_frags), short_name="specialAudience"),
+                odx_id=OdxLinkId("ID.specialAudience", doc_frags),
+                short_name="specialAudience",
+                long_name=None,
+                description=None),
 
             inputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.inputDOP", doc_frags),
@@ -68,7 +74,9 @@ class TestSingleEcuJob(unittest.TestCase):
                                                    base_type_encoding=None,
                                                    is_condensed_raw=None,
                                                    is_highlow_byte_order_raw=None),
-                physical_type=PhysicalType(DataType.A_UNICODE2STRING),
+                physical_type=PhysicalType(DataType.A_UNICODE2STRING,
+                                           display_radix=None,
+                                           precision=None),
                 compu_method=TexttableCompuMethod(
                     internal_to_phys=[
                         CompuScale("yes", lower_limit=Limit(
@@ -94,7 +102,9 @@ class TestSingleEcuJob(unittest.TestCase):
                                                    base_type_encoding=None,
                                                    is_condensed_raw=None,
                                                    is_highlow_byte_order_raw=None),
-                physical_type=PhysicalType(DataType.A_UNICODE2STRING),
+                physical_type=PhysicalType(DataType.A_UNICODE2STRING,
+                                           display_radix=None,
+                                           precision=None),
                 compu_method=LinearCompuMethod(offset=1,
                                                factor=-1,
                                                denominator=1,
@@ -118,7 +128,9 @@ class TestSingleEcuJob(unittest.TestCase):
                                                    base_type_encoding=None,
                                                    is_condensed_raw=None,
                                                    is_highlow_byte_order_raw=None),
-                physical_type=PhysicalType(DataType.A_UNICODE2STRING),
+                physical_type=PhysicalType(DataType.A_UNICODE2STRING,
+                                           display_radix=None,
+                                           precision=None),
                 compu_method=LinearCompuMethod(offset=1,
                                                factor=-1,
                                                denominator=1,
@@ -133,7 +145,11 @@ class TestSingleEcuJob(unittest.TestCase):
 
         input_params=[
             InputParam(
+                oid=None,
                 short_name="inputParam",
+                long_name=None,
+                description=None,
+                semantic=None,
                 physical_default_value="Yes!",
                 dop_base_ref=OdxLinkRef.from_id(self.context.inputDOP.odx_id)
             )
@@ -141,6 +157,7 @@ class TestSingleEcuJob(unittest.TestCase):
         output_params=[
             OutputParam(
                 odx_id=OdxLinkId("ID.outputParam", doc_frags),
+                oid=None,
                 semantic="DATA",
                 short_name="outputParam",
                 long_name="The Output Param",
@@ -151,6 +168,7 @@ class TestSingleEcuJob(unittest.TestCase):
         neg_output_params=[
             NegOutputParam(
                 short_name="NegativeOutputParam",
+                long_name=None,
                 description="<p>The one and only output of this job.</p>",
                 dop_base_ref=OdxLinkRef.from_id(self.context.negOutputDOP.odx_id)
             )
@@ -158,10 +176,21 @@ class TestSingleEcuJob(unittest.TestCase):
 
         self.singleecujob_object = SingleEcuJob(
             odx_id=OdxLinkId("ID.JumpStart", doc_frags),
+            oid = None,
             short_name="JumpStart",
+            long_name = None,
+            description = None,
+            admin_data = None,
+            semantic = None,
             functional_class_refs=[OdxLinkRef.from_id(self.context.extensiveTask.odx_id)],
+            diagnostic_class = None,
             audience=Audience(
                 enabled_audience_refs=[OdxLinkRef.from_id(self.context.specialAudience.odx_id)],
+                disabled_audience_refs=[],
+                is_supplier_raw=None,
+                is_development_raw=None,
+                is_aftersales_raw=None,
+                is_aftermarket_raw=None,
                 is_manufacturing_raw=False,
             ),
             prog_codes=[
@@ -179,6 +208,10 @@ class TestSingleEcuJob(unittest.TestCase):
             input_params=input_params,
             output_params=output_params,
             neg_output_params=neg_output_params,
+            is_mandatory_raw = None,
+            is_executable_raw = None,
+            is_final_raw = None,
+            sdgs = [],
         )
 
         self.singleecujob_odx = f"""
@@ -278,14 +311,31 @@ class TestSingleEcuJob(unittest.TestCase):
         """Test that empty lists are assigned to list-attributes if no explicit value is passed."""
         sej = SingleEcuJob(
             odx_id=OdxLinkId("ID.SomeID", doc_frags),
+            oid = None,
             short_name="SN.SomeShortName",
+            long_name = None,
+            description = None,
+            admin_data = None,
+            semantic = None,
+            audience = None,
             prog_codes=[
                 ProgCode(
                     code_file="abc.jar",
+                    encryption=None,
+                    entrypoint=None,
                     syntax="abc",
                     revision="12.34"
                 )
-            ]
+            ],
+            input_params = [],
+            output_params = [],
+            neg_output_params = [],
+            functional_class_refs = [],
+            diagnostic_class = None,
+            is_mandatory_raw = None,
+            is_executable_raw = None,
+            is_final_raw = None,
+            sdgs = [],
         )
         self.assertEqual(sej.functional_class_refs, [])
         self.assertEqual(sej.input_params, NamedItemList(short_name_as_id, []))

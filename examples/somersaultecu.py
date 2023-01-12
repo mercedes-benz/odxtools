@@ -104,7 +104,17 @@ somersault_team_members = {
 
     "slothy":
     TeamMember(odx_id=OdxLinkId("TM.Slothy", doc_frags),
-               short_name="Slothy")
+               short_name="Slothy",
+               long_name = None,
+               description = None,
+               roles = None,
+               department = None,
+               address = None,
+               zip = None,
+               city = None,
+               phone = None,
+               fax = None,
+               email = None)
 }
 
 somersault_company_datas = {
@@ -132,17 +142,21 @@ somersault_company_datas = {
                                       publisher="Suncus Publishing",
                                       url="https://suncus-is-the-best.com",
                                       position="first!")),
-                    ]),
+                    ],
+                    sdgs=[]),
                 ),
 
     "acme":
     CompanyData(odx_id=OdxLinkId("CD.ACME", doc_frags),
                 short_name="ACME_Corporation",
+                long_name = None,
+                description = None,
                 team_members=NamedItemList(short_name_as_id,
                                            [
                                                somersault_team_members["slothy"],
                                            ]),
-                ),
+                roles = None,
+                company_specific_info = None),
 
 }
 
@@ -152,7 +166,8 @@ somersault_admin_data = \
               [
                   CompanyDocInfo(company_data_ref=OdxLinkRef("CD.Suncus", doc_frags),
                                  team_member_ref=OdxLinkRef("TM.Doggy", doc_frags),
-                                 doc_label="A really meaningful label"),
+                                 doc_label="A really meaningful label",
+                                 sdgs=[]),
               ],
               doc_revisions=\
               [
@@ -166,19 +181,26 @@ somersault_admin_data = \
                                                reason="we needed a new artist"),
                                   Modification(change="increase robustness to dizzyness",
                                                reason="No alcohol anymore"),
-                              ]),
+                              ],
+                              company_revision_infos=[]),
                   DocRevision(team_member_ref=OdxLinkRef("TM.Horsey", doc_frags),
                               revision_label="1.1",
                               state="released",
                               date="2020-08-19T12:12:12+08:00",
                               tool="odxtools 0.1",
                               modifications=[
-                                  Modification(change="rename somersault ECU to somersault_assiduous to enable slothy to add somersault_lazy"),
-                              ]),
+                                  Modification(change="rename somersault ECU to somersault_assiduous to enable slothy to add somersault_lazy",
+                                               reason=None),
+                              ],
+                              company_revision_infos=[]),
 
                   DocRevision(team_member_ref=OdxLinkRef("TM.Slothy", doc_frags),
                               revision_label="1.0.3.2.1.5.6",
-                              date="1900-01-01T00:00:00+00:00"),
+                              date="1900-01-01T00:00:00+00:00",
+                              state=None,
+                              tool=None,
+                              modifications=[],
+                              company_revision_infos=[]),
               ])
 
 # functional classes
@@ -187,28 +209,30 @@ somersault_functional_classes = {
     FunctionalClass(
         odx_id=OdxLinkId("somersault.FNC.flip", doc_frags),
         short_name="flip",
-        long_name="Flip"),
+        long_name="Flip",
+        description=None),
 
     "session":
     FunctionalClass(
         odx_id=OdxLinkId("somersault.FNC.session", doc_frags),
         short_name="session",
-        long_name="Session"),
+        long_name="Session",
+        description=None),
 }
 
 # additional audiences
 somersault_additional_audiences = {
     "attentive_admirer":
-    AdditionalAudience(
-        odx_id=OdxLinkId("somersault.AA.attentive_admirer", doc_frags),
-        short_name="attentive_admirer",
-        long_name="Attentive Admirer"),
+    AdditionalAudience(odx_id=OdxLinkId("somersault.AA.attentive_admirer", doc_frags),
+                       short_name="attentive_admirer",
+                       long_name="Attentive Admirer",
+                       description=None),
 
     "anyone":
-    AdditionalAudience(
-        odx_id=OdxLinkId("somersault.AA.anyone", doc_frags),
-        short_name="anyone",
-        long_name="Anyone"),
+    AdditionalAudience(odx_id=OdxLinkId("somersault.AA.anyone", doc_frags),
+                       short_name="anyone",
+                       long_name="Anyone",
+                       description=None),
 }
 
 # diag coded types
@@ -246,7 +270,15 @@ somersault_physical_dimensions = {
         odx_id=OdxLinkId("somersault.PD.second", doc_frags),
         short_name="second",
         long_name="Second",
-        time_exp=1
+        time_exp=1,
+        length_exp=0,
+        mass_exp=0,
+        current_exp=0,
+        temperature_exp=0,
+        molar_amount_exp=0,
+        luminous_intensity_exp=0,
+        oid=None,
+        description=None,
     )
 }
 
@@ -254,6 +286,7 @@ somersault_units = {
     "second":
         Unit(
             odx_id=OdxLinkId("somersault.unit.second", doc_frags),
+            oid=None,
             short_name="second",
             display_name="s",
             long_name="Second",
@@ -265,9 +298,11 @@ somersault_units = {
     "minute":
         Unit(
             odx_id=OdxLinkId("somersault.unit.minute", doc_frags),
+            oid=None,
             short_name="minute",
             display_name="min",
             long_name="Minute",
+            description=None,
             factor_si_to_unit=60,
             offset_si_to_unit=0,
             physical_dimension_ref=OdxLinkRef.from_id(somersault_physical_dimensions["second"].odx_id)
@@ -277,6 +312,7 @@ somersault_units = {
 somersault_unit_groups = {
     "european_duration":
         UnitGroup(
+            oid=None,
             short_name="european_duration",
             category="COUNTRY",
             unit_refs=[
@@ -318,7 +354,9 @@ somersault_dops = {
         long_name=None,
         description=None,
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_type=PhysicalType(DataType.A_UINT32),
+        physical_type=PhysicalType(DataType.A_UINT32,
+                                   display_radix=None,
+                                   precision=None),
         compu_method=somersault_compumethods["uint_passthrough"],
         unit_ref=None,
         is_visible_raw=None,
@@ -331,7 +369,9 @@ somersault_dops = {
         long_name=None,
         description=None,
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_type=PhysicalType(DataType.A_UINT32),
+        physical_type=PhysicalType(DataType.A_UINT32,
+                                   display_radix=None,
+                                   precision=None),
         compu_method=somersault_compumethods["uint_passthrough"],
         unit_ref=None,
         is_visible_raw=None,
@@ -344,7 +384,9 @@ somersault_dops = {
         long_name=None,
         description=None,
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_type=PhysicalType(DataType.A_UINT32),
+        physical_type=PhysicalType(DataType.A_UINT32,
+                                   display_radix=None,
+                                   precision=None),
         compu_method=somersault_compumethods["uint_passthrough"],
         unit_ref=None,
         is_visible_raw=None,
@@ -357,7 +399,9 @@ somersault_dops = {
         long_name=None,
         description=None,
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_type=PhysicalType(DataType.A_UINT32),
+        physical_type=PhysicalType(DataType.A_UINT32,
+                                   display_radix=None,
+                                   precision=None),
         compu_method=somersault_compumethods["uint_passthrough"],
         unit_ref=None,
         is_visible_raw=None,
@@ -370,7 +414,9 @@ somersault_dops = {
         long_name=None,
         description=None,
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_type=PhysicalType(DataType.A_UINT32),
+        physical_type=PhysicalType(DataType.A_UINT32,
+                                   display_radix=None,
+                                   precision=None),
         compu_method=somersault_compumethods["uint_passthrough"],
         unit_ref=OdxLinkRef.from_id(somersault_units["second"].odx_id),
         is_visible_raw=None,
@@ -383,7 +429,9 @@ somersault_dops = {
         long_name=None,
         description=None,
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_type=PhysicalType(DataType.A_UINT32),
+        physical_type=PhysicalType(DataType.A_UINT32,
+                                   display_radix=None,
+                                   precision=None),
         compu_method=somersault_compumethods["uint_passthrough"],
         unit_ref=None,
         is_visible_raw=None,
@@ -396,7 +444,9 @@ somersault_dops = {
         long_name=None,
         description=None,
         diag_coded_type=somersault_diagcodedtypes["uint8"],
-        physical_type=PhysicalType(DataType.A_UNICODE2STRING),
+        physical_type=PhysicalType(DataType.A_UNICODE2STRING,
+                                   display_radix=None,
+                                   precision=None),
         compu_method=somersault_compumethods["boolean"],
         unit_ref=None,
         is_visible_raw=None,
@@ -421,20 +471,30 @@ somersault_tables = {
                 structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
                 description="<p>The quality of the flip is average</p>",
                 semantic="QUALITY-KEY",
+                dop_ref=None,
+                sdgs=[],
             ),
             TableRow(
                 odx_id=OdxLinkId("somersault.table.flip_quality.good", doc_frags),
                 short_name="good",
                 long_name="Good",
+                description=None,
+                semantic=None,
                 key=5,
                 structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                dop_ref=None,
+                sdgs=[],
             ),
             TableRow(
                 odx_id=OdxLinkId("somersault.table.flip_quality.best", doc_frags),
                 short_name="best",
                 long_name="Best",
+                description=None,
+                semantic=None,
                 key=10,
                 structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                dop_ref=None,
+                sdgs=[],
             ),
         ],
         table_row_refs=None,
@@ -1217,6 +1277,11 @@ somersault_services = {
                         OdxLinkRef.from_id(somersault_additional_audiences["attentive_admirer"].odx_id),
                         OdxLinkRef.from_id(somersault_additional_audiences["anyone"].odx_id),
                     ],
+                    disabled_audience_refs=[],
+                    is_supplier_raw=None,
+                    is_aftersales_raw=None,
+                    is_aftermarket_raw=None,
+                    is_manufacturing_raw=None,
                     is_development_raw=False),
                 functional_class_refs=[],
                 pre_condition_state_refs=[],
@@ -1261,6 +1326,11 @@ somersault_services = {
                 admin_data=None,
                 audience=Audience(
                     enabled_audience_refs=[OdxLinkRef.from_id(somersault_additional_audiences["attentive_admirer"].odx_id)],
+                    disabled_audience_refs=[],
+                    is_supplier_raw=None,
+                    is_aftersales_raw=None,
+                    is_aftermarket_raw=None,
+                    is_manufacturing_raw=None,
                     is_development_raw=False),
                 pre_condition_state_refs=[],
                 state_transition_refs=[],
@@ -1292,6 +1362,11 @@ somersault_services = {
                 admin_data=None,
                 audience=Audience(
                     enabled_audience_refs=[OdxLinkRef.from_id(somersault_additional_audiences["attentive_admirer"].odx_id)],
+                    disabled_audience_refs=[],
+                    is_supplier_raw=None,
+                    is_aftersales_raw=None,
+                    is_aftermarket_raw=None,
+                    is_manufacturing_raw=None,
                     is_development_raw=False),
                 pre_condition_state_refs=[],
                 state_transition_refs=[],
@@ -1317,6 +1392,10 @@ somersault_services = {
                 admin_data=None,
                 audience=Audience(
                     disabled_audience_refs=[OdxLinkRef.from_id(somersault_additional_audiences["attentive_admirer"].odx_id)],
+                    enabled_audience_refs=[],
+                    is_supplier_raw=None,
+                    is_manufacturing_raw=None,
+                    is_development_raw=None,
                     is_aftersales_raw=False,
                     is_aftermarket_raw=False),
                 functional_class_refs=[],
@@ -1337,18 +1416,33 @@ somersault_services = {
 
 somersault_single_ecu_jobs = {
     "compulsory_program":
-    SingleEcuJob(odx_id=OdxLinkId("somersault.service.compulsory_program", doc_frags),
+    SingleEcuJob(oid = None,
+                 audience = None,
+                 odx_id=OdxLinkId("somersault.service.compulsory_program", doc_frags),
                  short_name="compulsory_program",
                  long_name="Compulsory Program",
                  description="<p>Do several fancy moves.</p>",
+                 admin_data = None,
+                 semantic = None,
+                 functional_class_refs = [],
+                 diagnostic_class = None,
                  prog_codes=[
                     ProgCode(
                         code_file="jobs.jar",
+                        encryption=None,
                         syntax="JAR",
                         entrypoint="com.supervisor.jobs.CompulsoryProgram",
                         revision="1.23.4"
                     ),
-                 ])
+                 ],
+                 input_params = [],
+                 output_params = [],
+                 neg_output_params = [],
+                 is_mandatory_raw = None,
+                 is_executable_raw = None,
+                 is_final_raw = None,
+                 sdgs = [],
+                 )
 }
 
 # communication parameters
@@ -1504,11 +1598,15 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
         unit_groups=list(somersault_unit_groups.values()),
         units=list(somersault_units.values()),
         physical_dimensions=list(somersault_physical_dimensions.values()),
-    ),
+        sdgs=[]),
     tables=NamedItemList(short_name_as_id, somersault_tables.values()),
     muxs=NamedItemList(short_name_as_id, somersault_muxs.values()),
     env_datas=NamedItemList(short_name_as_id, somersault_env_datas.values()),
     env_data_descs=NamedItemList(short_name_as_id, somersault_env_data_descs.values()),
+    dtc_dops = NamedItemList(short_name_as_id, []),
+    structures = NamedItemList(short_name_as_id, []),
+    end_of_pdu_fields = NamedItemList(short_name_as_id, []),
+    sdgs = [],
 )
 
 # diagnostics layer
@@ -1583,7 +1681,16 @@ somersault_assiduous_diaglayer = DiagLayer(
     short_name="somersault_assiduous",
     long_name="Somersault assiduous ECU",
     description="<p>Hard-working variant of the somersault ECU (lazy &lt; assiduous)</p>",
-    diag_data_dictionary_spec=DiagDataDictionarySpec(),
+    diag_data_dictionary_spec=DiagDataDictionarySpec(dtc_dops = NamedItemList(short_name_as_id, []),
+                                                     data_object_props = NamedItemList(short_name_as_id, []),
+                                                     structures = NamedItemList(short_name_as_id, []),
+                                                     end_of_pdu_fields = NamedItemList(short_name_as_id, []),
+                                                     tables = NamedItemList(short_name_as_id, []),
+                                                     env_data_descs = NamedItemList(short_name_as_id, []),
+                                                     env_datas = NamedItemList(short_name_as_id, []),
+                                                     muxs = NamedItemList(short_name_as_id, []),
+                                                     unit_spec = None,
+                                                     sdgs = []),
     parent_refs=[
         DiagLayer.ParentRef( # <- TODO: this is a bit sketchy IMO
             parent=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
@@ -1731,7 +1838,13 @@ somersault_assiduous_services = {
                 negative_responses=[
                     OdxLinkRef.from_id(somersault_assiduous_negative_responses["fell_over"].odx_id),
                 ],
-                audience=Audience(enabled_audience_refs=[OdxLinkRef.from_id(somersault_additional_audiences["attentive_admirer"].odx_id)]),
+                audience=Audience(enabled_audience_refs=[OdxLinkRef.from_id(somersault_additional_audiences["attentive_admirer"].odx_id)],
+                                  disabled_audience_refs=[],
+                                  is_supplier_raw=None,
+                                  is_manufacturing_raw=None,
+                                  is_development_raw=None,
+                                  is_aftersales_raw=None,
+                                  is_aftermarket_raw=None),
                 sdgs=[],
                 ),
 }

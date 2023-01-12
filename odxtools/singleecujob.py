@@ -27,14 +27,11 @@ DiagClassType = Literal["STARTCOMM",
 class InputParam:
     short_name: str
     dop_base_ref: OdxLinkRef
-    long_name: Optional[str] = None
-    description: Optional[str] = None
-    oid: Optional[str] = None
-    semantic: Optional[str] = None
-    physical_default_value: Optional[str] = None
-
-    def __post_init__(self) -> None:
-        self._dop: Optional[DopBase] = None
+    long_name: Optional[str]
+    description: Optional[str]
+    oid: Optional[str]
+    semantic: Optional[str]
+    physical_default_value: Optional[str]
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) \
@@ -61,23 +58,22 @@ class InputParam:
         )
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
-        self._dop = odxlinks.resolve(self.dop_base_ref)
+        self._dop = odxlinks.resolve(self.dop_base_ref, DopBase)
 
     @property
-    def dop(self) -> Optional[DopBase]:
+    def dop(self) -> DopBase:
         """The data object property describing this parameter."""
         return self._dop
-
 
 @dataclass
 class OutputParam:
     odx_id: OdxLinkId
     short_name: str
     dop_base_ref: OdxLinkRef
-    long_name: Optional[str] = None
-    description: Optional[str] = None
-    oid: Optional[str] = None
-    semantic: Optional[str] = None
+    long_name: Optional[str]
+    description: Optional[str]
+    oid: Optional[str]
+    semantic: Optional[str]
 
     def __post_init__(self) -> None:
         self._dop: Optional[DopBase] = None
@@ -121,8 +117,8 @@ class OutputParam:
 class NegOutputParam:
     short_name: str
     dop_base_ref: OdxLinkRef
-    long_name: Optional[str] = None
-    description: Optional[str] = None
+    long_name: Optional[str]
+    description: Optional[str]
 
     def __post_init__(self) -> None:
         self._dop: Optional[DopBase] = None
@@ -161,8 +157,8 @@ class ProgCode:
     code_file: str
     syntax: Literal["JAVA", "CLASS", "JAR"]
     revision: str
-    encryption: Optional[str] = None
-    entrypoint: Optional[str] = None
+    encryption: Optional[str]
+    entrypoint: Optional[str]
     library_refs: List[OdxLinkRef] = field(default_factory=list)
 
     def __post_init__(self):
@@ -221,27 +217,24 @@ class SingleEcuJob:
     prog_codes: List[ProgCode]
     """Pointers to the code that is executed when calling this job."""
     # optional xsd:elements inherited from DIAG-COMM (and thus shared with DIAG-SERVICE)
-    oid: Optional[str] = None
-    long_name: Optional[str] = None
-    description: Optional[str] = None
-    admin_data: Optional[AdminData] = None
-    functional_class_refs: List[OdxLinkRef] = field(default_factory=list)
-    audience: Optional[Audience] = None
+    oid: Optional[str]
+    long_name: Optional[str]
+    description: Optional[str]
+    admin_data: Optional[AdminData]
+    functional_class_refs: List[OdxLinkRef]
+    audience: Optional[Audience]
     # optional xsd:elements specific to SINGLE-ECU-JOB
     # cast(...) just tells the type checker to pretend it's a list...
-    input_params: Union[NamedItemList[InputParam], List[InputParam]] \
-        = cast(List[InputParam], field(default_factory=list))
-    output_params: Union[NamedItemList[OutputParam], List[OutputParam]] \
-        = cast(List[OutputParam], field(default_factory=list))
-    neg_output_params: Union[NamedItemList[NegOutputParam], List[NegOutputParam]] \
-        = cast(List[NegOutputParam], field(default_factory=list))
+    input_params: Union[NamedItemList[InputParam], List[InputParam]]
+    output_params: Union[NamedItemList[OutputParam], List[OutputParam]]
+    neg_output_params: Union[NamedItemList[NegOutputParam], List[NegOutputParam]]
     # xsd:attributes inherited from DIAG-COMM (and thus shared with DIAG-SERVICE)
-    semantic: Optional[str] = None
-    diagnostic_class: Optional[DiagClassType] = None
-    is_mandatory_raw: Optional[bool] = None
-    is_executable_raw: Optional[bool] = None
-    is_final_raw: Optional[bool] = None
-    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+    semantic: Optional[str]
+    diagnostic_class: Optional[DiagClassType]
+    is_mandatory_raw: Optional[bool]
+    is_executable_raw: Optional[bool]
+    is_final_raw: Optional[bool]
+    sdgs: List[SpecialDataGroup]
 
     @property
     def is_mandatory(self):
@@ -317,6 +310,7 @@ class SingleEcuJob:
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return SingleEcuJob(odx_id=odx_id,
+                            oid=None,
                             short_name=short_name,
                             long_name=long_name,
                             description=description,
@@ -325,6 +319,7 @@ class SingleEcuJob:
                             semantic=semantic,
                             audience=audience,
                             functional_class_refs=functional_class_refs,
+                            diagnostic_class=None,
                             input_params=input_params,
                             output_params=output_params,
                             neg_output_params=neg_output_params,

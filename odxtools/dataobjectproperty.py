@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-import abc
 from typing import cast, List, Dict, Optional, Any, Union
 from dataclasses import dataclass, field
 
@@ -22,7 +21,7 @@ from .exceptions import DecodeError, EncodeError
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
-class DopBase(abc.ABC):
+class DopBase:
     """Base class for all DOPs.
 
     Any class that a parameter can reference via a DOP-REF should inherit from this class.
@@ -59,16 +58,13 @@ class DopBase(abc.ABC):
     def is_visible(self) -> bool:
         return self.is_visible_raw in (None, True)
 
-    @abc.abstractmethod
     def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState, bit_position: int) -> bytes:
         """Convert the physical value into bytes."""
-        pass
+        raise NotImplementedError
 
-    @abc.abstractmethod
     def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
         """Extract the bytes from the PDU and convert them to the physical value."""
-        pass
-
+        raise NotImplementedError
 
 class DataObjectProperty(DopBase):
     """This class represents a DATA-OBJECT-PROP."""
@@ -245,13 +241,13 @@ class DataObjectProperty(DopBase):
 @dataclass
 class DiagnosticTroubleCode:
     trouble_code: int
-    odx_id: Optional[OdxLinkId] = None
-    short_name: Optional[str] = None
-    text: Optional[str] = None
-    display_trouble_code: Optional[str] = None
-    level: Union[bytes, bytearray, None] = None
-    is_temporary_raw: Optional[bool] = None
-    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+    odx_id: Optional[OdxLinkId]
+    short_name: Optional[str]
+    text: Optional[str]
+    display_trouble_code: Optional[str]
+    level: Union[bytes, bytearray, None]
+    is_temporary_raw: Optional[bool]
+    sdgs: List[SpecialDataGroup]
 
     @property
     def is_temporary(self) -> bool:
@@ -348,7 +344,14 @@ class DtcDop(DataObjectProperty):
         # diagnostic description file is incomplete. We do not bail
         # out but we cannot provide an interpretation for it out of the
         # box...
-        dtc = DiagnosticTroubleCode(trouble_code=trouble_code)
+        dtc = DiagnosticTroubleCode(trouble_code=trouble_code,
+                                    odx_id=None,
+                                    short_name=None,
+                                    text=None,
+                                    display_trouble_code=None,
+                                    level=None,
+                                    is_temporary_raw=None,
+                                    sdgs=[])
 
         return dtc, next_byte
 

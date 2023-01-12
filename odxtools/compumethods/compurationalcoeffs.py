@@ -4,4 +4,4 @@ from typing import List, NamedTuple, Optional
 
 class CompuRationalCoeffs(NamedTuple):
     numerators: List[float]
-    denominators: Optional[List[float]] = None
+    denominators: Optional[List[float]]

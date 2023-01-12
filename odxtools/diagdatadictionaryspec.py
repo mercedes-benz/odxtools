@@ -30,32 +30,16 @@ def _construct_named_item_list(iterable):
 
 @dataclass
 class DiagDataDictionarySpec:
-    dtc_dops: NamedItemList[DtcDop] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    data_object_props: NamedItemList[DataObjectProperty] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    structures: NamedItemList[BasicStructure] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    end_of_pdu_fields: NamedItemList[EndOfPduField] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    tables: NamedItemList[Table] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    env_data_descs: NamedItemList[EnvironmentDataDescription] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    env_datas: NamedItemList[EnvironmentData] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    muxs: NamedItemList[Multiplexer] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    unit_spec: Optional[UnitSpec] = None
-    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+    dtc_dops: NamedItemList[DtcDop]
+    data_object_props: NamedItemList[DataObjectProperty]
+    structures: NamedItemList[BasicStructure]
+    end_of_pdu_fields: NamedItemList[EndOfPduField]
+    tables: NamedItemList[Table]
+    env_data_descs: NamedItemList[EnvironmentDataDescription]
+    env_datas: NamedItemList[EnvironmentData]
+    muxs: NamedItemList[Multiplexer]
+    unit_spec: Optional[UnitSpec]
+    sdgs: List[SpecialDataGroup]
 
     def __post_init__(self):
         self._all_data_object_properties = _construct_named_item_list(

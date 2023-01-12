@@ -9,6 +9,8 @@ from odxtools import ValueParameter, PhysicalConstantParameter
 
 from odxtools.envdata import EnvironmentData
 from odxtools.table import Table, TableRow
+from odxtools.nameditemlist import NamedItemList
+from odxtools.utils import short_name_as_id
 
 from odxtools.compumethods import IdenticalCompuMethod
 from odxtools.diagcodedtypes import StandardLengthType
@@ -38,7 +40,9 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                          description=None,
                          is_visible_raw=None,
                          diag_coded_type=uint_type,
-                         physical_type=PhysicalType("A_UINT32"),
+                         physical_type=PhysicalType("A_UINT32",
+                                                    display_radix=None,
+                                                    precision=None),
                          linked_dtc_dops=[],
                          compu_method=ident_compu_method,
                          unit_ref=None,
@@ -47,7 +51,10 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                              short_name="X10",
                              trouble_code=0x10,
                              text="Something exploded.",
-                             display_trouble_code="X10"
+                             display_trouble_code="X10",
+                             level=None,
+                             is_temporary_raw=None,
+                             sdgs=[]
                          )],
                          sdgs=[])
 
@@ -57,7 +64,9 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                                    description=None,
                                    is_visible_raw=None,
                                    diag_coded_type=uint_type,
-                                   physical_type=PhysicalType("A_UINT32"),
+                                   physical_type=PhysicalType("A_UINT32",
+                                                              display_radix=None,
+                                                              precision=None),
                                    compu_method=ident_compu_method,
                                    unit_ref=None,
                                    sdgs=[])
@@ -68,7 +77,9 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                                    description=None,
                                    is_visible_raw=None,
                                    diag_coded_type=uint_type,
-                                   physical_type=PhysicalType("A_UINT32"),
+                                   physical_type=PhysicalType("A_UINT32",
+                                                              display_radix=None,
+                                                              precision=None),
                                    compu_method=ident_compu_method,
                                    unit_ref=None,
                                    sdgs=[])
@@ -83,18 +94,32 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                         TableRow(odx_id=OdxLinkId("somersault.table.flip_quality.average", doc_frags),
                                  short_name="average",
                                  long_name="Average",
+                                 description = None,
+                                 semantic = None,
+                                 dop_ref = None,
                                  key=3,
-                                 structure_ref="",
+                                 structure_ref=None,
+                                 sdgs = [],
                                  ),
                           TableRow(odx_id=OdxLinkId("somersault.table.flip_quality.good", doc_frags),
                                    short_name="good",
                                    long_name="Good",
+                                   description = None,
+                                   semantic = None,
+                                   dop_ref = None,
                                    key=5,
+                                   structure_ref=None,
+                                   sdgs = [],
                                    ),
                           TableRow(odx_id=OdxLinkId("somersault.table.flip_quality.best", doc_frags),
                                    short_name="best",
                                    long_name="Best",
+                                   description = None,
+                                   semantic = None,
+                                   dop_ref = None,
                                    key=10,
+                                   structure_ref=None,
+                                   sdgs = [],
                                    ),
                       ],
                       table_row_refs=[],
@@ -187,7 +212,11 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                                       tables=[table],
                                       env_data_descs=[env_data_desc],
                                       env_datas=[env_data],
-                                      muxs=[mux])
+                                      muxs=[mux],
+                                      structures = NamedItemList(short_name_as_id, []),
+                                      end_of_pdu_fields = NamedItemList(short_name_as_id, []),
+                                      unit_spec = None,
+                                      sdgs = [])
 
         self.assertEqual(ddds.dtc_dops[0], dtc_dop)
         self.assertEqual(ddds.data_object_props[0], dop_1)

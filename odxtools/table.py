@@ -45,11 +45,11 @@ class TableRow:
     short_name: str
     long_name: str
     key: int
-    structure_ref: Optional[OdxLinkRef] = None
-    dop_ref: Optional[OdxLinkRef] = None
-    description: Optional[str] = None
-    semantic: Optional[str] = None
-    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+    structure_ref: Optional[OdxLinkRef]
+    dop_ref: Optional[OdxLinkRef]
+    description: Optional[str]
+    semantic: Optional[str]
+    sdgs: List[SpecialDataGroup]
 
     def __post_init__(self) -> None:
         self._structure: Optional[DopBase] = None

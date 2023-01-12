@@ -14,6 +14,8 @@ from odxtools.parameters import CodedConstParameter, ValueParameter
 from odxtools.physicaltype import PhysicalType
 from odxtools.structures import Request
 from odxtools.units import (PhysicalDimension, Unit, UnitSpec)
+from odxtools.nameditemlist import NamedItemList
+from odxtools.utils import short_name_as_id
 
 doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
@@ -25,19 +27,33 @@ class TestUnitSpec(unittest.TestCase):
                 PhysicalDimension(
                     odx_id=OdxLinkId("ID.metre", doc_frags),
                     short_name="metre",
-                    length_exp=1
+                    length_exp=1,
+                    time_exp=0,
+                    mass_exp=0,
+                    current_exp=0,
+                    temperature_exp=0,
+                    molar_amount_exp=0,
+                    luminous_intensity_exp=0,
+                    oid=None,
+                    long_name=None,
+                    description=None,
                 )
             ],
             units=[
                 Unit(
                     odx_id=OdxLinkId("ID.kilometre", doc_frags),
+                    oid=None,
                     short_name="Kilometre",
+                    long_name=None,
+                    description=None,
                     display_name="km",
                     physical_dimension_ref=OdxLinkRef("ID.metre", doc_frags),
                     factor_si_to_unit=1000,
                     offset_si_to_unit=0
                 )
-            ]
+            ],
+            unit_groups=None,
+            sdgs=[],
         )
         # Define an example ECU job as odx
         sample_unit_spec_odx = f"""
@@ -80,8 +96,14 @@ class TestUnitSpec(unittest.TestCase):
 
     def test_resolve_references(self):
         unit = Unit(odx_id=OdxLinkId("unit_time_id", doc_frags),
+                    oid=None,
                     short_name="second",
-                    display_name="s")
+                    long_name=None,
+                    description=None,
+                    display_name="s",
+                    physical_dimension_ref=None,
+                    factor_si_to_unit=1,
+                    offset_si_to_unit=0)
         dct = StandardLengthType(base_data_type="A_UINT32",
                                  base_type_encoding=None,
                                  bit_length=8,
@@ -95,7 +117,9 @@ class TestUnitSpec(unittest.TestCase):
             description=None,
             is_visible_raw=None,
             diag_coded_type=dct,
-            physical_type=PhysicalType("A_UINT32"),
+            physical_type=PhysicalType("A_UINT32",
+                                       display_radix=None,
+                                       precision=None),
             compu_method=IdenticalCompuMethod(internal_type="A_UINT32",
                                               physical_type="A_UINT32"),
             unit_ref=OdxLinkRef.from_id(unit.odx_id),
@@ -142,7 +166,18 @@ class TestUnitSpec(unittest.TestCase):
             single_ecu_jobs=[],
             diag_comm_refs=[],
             diag_data_dictionary_spec=DiagDataDictionarySpec(data_object_props=[dop],
-                                                             unit_spec=UnitSpec(units=[unit])
+                                                             unit_spec=UnitSpec(units=[unit],
+                                                                                physical_dimensions=None,
+                                                                                unit_groups=None,
+                                                                                sdgs=[],),
+                                                             dtc_dops = NamedItemList(short_name_as_id, []),
+                                                             structures = NamedItemList(short_name_as_id, []),
+                                                             end_of_pdu_fields = NamedItemList(short_name_as_id, []),
+                                                             tables = NamedItemList(short_name_as_id, []),
+                                                             env_data_descs = NamedItemList(short_name_as_id, []),
+                                                             env_datas = NamedItemList(short_name_as_id, []),
+                                                             muxs = NamedItemList(short_name_as_id, []),
+                                                             sdgs = []
                                                              ),
             additional_audiences=[],
             functional_classes=[],
