@@ -4,12 +4,14 @@
 import warnings
 from copy import copy
 from itertools import chain
-from typing import cast, Any, Dict, Iterable, Tuple, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast
 from xml.etree import ElementTree
 
 from deprecation import deprecated
 
 from odxtools.diaglayertype import DIAG_LAYER_TYPE
+from odxtools.ecu_variant_patterns import (EcuVariantPattern,
+                                           create_ecu_variant_patterns_from_et)
 
 from .admindata import AdminData
 from .audience import AdditionalAudience
@@ -157,6 +159,7 @@ class DiagLayer:
                  state_transitions=[],
                  import_refs=[],
                  sdgs=[],
+                 ecu_variant_patterns: List[EcuVariantPattern] = [],
                  ):
         logger.info(f"Initializing variant type {variant_type.value}")
         self.variant_type = variant_type
@@ -166,6 +169,7 @@ class DiagLayer:
         self.long_name = long_name
         self.description = description
         self.sdgs = sdgs
+        self.ecu_variant_patterns = ecu_variant_patterns
 
         # Requests and Responses
         self.requests = requests
@@ -313,6 +317,11 @@ class DiagLayer:
 
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
+        ecu_variant_patterns = create_ecu_variant_patterns_from_et(et_element.find("ECU-VARIANT-PATTERNS"), doc_frags)
+        if variant_type is not DIAG_LAYER_TYPE.ECU_VARIANT:
+            assert len(ecu_variant_patterns) == 0, \
+                "DiagLayer of type other than 'ECU-VARIANT' must not define a ECU-VARIANT-PATTERN"
+
         # Create DiagLayer
         return DiagLayer(variant_type=variant_type,
                          odx_id=odx_id,
@@ -334,6 +343,7 @@ class DiagLayer:
                          state_transitions=state_transitions,
                          import_refs=import_refs,
                          sdgs=sdgs,
+                         ecu_variant_patterns=ecu_variant_patterns,
                          )
 
     @property
@@ -881,6 +891,7 @@ class DiagLayer:
 
     def __str__(self) -> str:
         return f"DiagLayer('{self.short_name}', type='{self.variant_type.value}')"
+
 
 class DiagLayerContainer:
     def __init__(self,

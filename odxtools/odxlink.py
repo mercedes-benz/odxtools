@@ -1,18 +1,18 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 
-import typing
 import warnings
-
-from dataclasses import dataclass, field
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Type, TypeVar, overload
 from xml.etree.ElementTree import Element
-from typing import overload, Optional, Dict, Union, Any, List, TypeVar, Type
+
 from .exceptions import OdxWarning
+
 
 @dataclass(frozen=True)
 class OdxDocFragment:
-    doc_name : str
-    doc_type : Optional[str]
+    doc_name: str
+    doc_type: Optional[str]
 
     def __eq__(self, other) -> bool:
         if other is None:
@@ -25,6 +25,7 @@ class OdxDocFragment:
     def __hash__(self) -> int:
         # only the document name is relevant for the hash value
         return hash(self.doc_name) + hash(self.doc_type)
+
 
 @dataclass(frozen=True)
 class OdxLinkId:
@@ -39,11 +40,11 @@ class OdxLinkId:
 
     #: An identifier that is (hopefully) locally unique within the
     #: relevant document fragment
-    local_id : str
+    local_id: str
 
     #: The name and type of the document fragment to which the
     #: `local_id` is relative to
-    doc_fragments : List[OdxDocFragment]
+    doc_fragments: List[OdxDocFragment]
 
     def __hash__(self) -> int:
         # we do not hash about the document fragment here, because
@@ -64,7 +65,9 @@ class OdxLinkId:
         return f"OdxLinkId('{self.local_id}')"
 
     @staticmethod
-    def from_et(et: Element, doc_fragments: List[OdxDocFragment]) -> Optional["OdxLinkId"]:
+    def from_et(
+        et: Element, doc_fragments: List[OdxDocFragment]
+    ) -> Optional["OdxLinkId"]:
         """Construct an OdxLinkId for a given XML node (ElementTree object).
 
         Returns None if the given XML node does not exhibit an ID.
@@ -76,6 +79,7 @@ class OdxLinkId:
 
         return OdxLinkId(local_id, doc_fragments)
 
+
 @dataclass(frozen=True)
 class OdxLinkRef:
     """A reference to an ODX object.
@@ -86,10 +90,10 @@ class OdxLinkRef:
     """
 
     #: The local identifier of the object which is referred to
-    ref_id : str
+    ref_id: str
 
     #: The document fragments to which the `ref_id` refers to (in reverse order)
-    ref_docs : List[OdxDocFragment]
+    ref_docs: List[OdxDocFragment]
 
     @overload
     @staticmethod
@@ -102,7 +106,9 @@ class OdxLinkRef:
         ...
 
     @staticmethod
-    def from_et(et: Optional[Element], source_doc_frags: List[OdxDocFragment]) -> Optional["OdxLinkRef"]:
+    def from_et(
+        et: Optional[Element], source_doc_frags: List[OdxDocFragment]
+    ) -> Optional["OdxLinkRef"]:
         """Construct an OdxLinkRef for a given XML node (ElementTree object).
 
         Returns None if the given XML node does not represent a reference.
@@ -118,10 +124,9 @@ class OdxLinkRef:
         doc_ref = et.attrib.get("DOCREF")
         doc_type = et.attrib.get("DOCTYPE")
 
-        assert \
-            (doc_ref is not None and doc_type is not None) or \
-            (doc_ref is None and doc_type is None), \
-            "DOCREF and DOCTYPE must both either be specified or omitted"
+        assert (doc_ref is not None and doc_type is not None) or (
+            doc_ref is None and doc_type is None
+        ), "DOCREF and DOCTYPE must both either be specified or omitted"
 
         # if the target document fragment is specified by the
         # reference, use it, else use the document fragment containing
@@ -135,8 +140,7 @@ class OdxLinkRef:
 
     @staticmethod
     def from_id(odxid: OdxLinkId) -> "OdxLinkRef":
-        """Construct an OdxLinkRef for a given OdxLinkId.
-        """
+        """Construct an OdxLinkRef for a given OdxLinkId."""
         return OdxLinkRef(odxid.local_id, odxid.doc_fragments)
 
     def __str__(self):
@@ -155,7 +159,10 @@ class OdxLinkRef:
         # the local ID of the reference and the object ID must match
         return odx_id.local_id == self.ref_id
 
-T = TypeVar('T')
+
+T = TypeVar("T")
+
+
 class OdxLinkDatabase:
     """
     A database holding all objects which ehibit OdxLinkIds
@@ -190,8 +197,11 @@ class OdxLinkDatabase:
                 # No object featured by the database uses the document
                 # fragment mentioned by the reference. This should not
                 # happen for correct databases...
-                warnings.warn(f"Warning: Unknown document fragment {ref_frag} "
-                              f"when resolving reference {ref}", OdxWarning)
+                warnings.warn(
+                    f"Warning: Unknown document fragment {ref_frag} "
+                    f"when resolving reference {ref}",
+                    OdxWarning,
+                )
                 continue
 
             obj = doc_frag_db.get(odx_id)
@@ -202,8 +212,10 @@ class OdxLinkDatabase:
 
                 return obj
 
-        raise KeyError(f"ODXLINK reference {ref} could not be resolved for any "
-                       f"of the document fragments {ref.ref_docs}")
+        raise KeyError(
+            f"ODXLINK reference {ref} could not be resolved for any "
+            f"of the document fragments {ref.ref_docs}"
+        )
 
     def resolve_lenient(self, ref: OdxLinkRef) -> Optional[Any]:
         """
@@ -221,8 +233,11 @@ class OdxLinkDatabase:
                 # No object featured by the database uses the document
                 # fragment mentioned by the reference. This should not
                 # happen for correct databases...
-                warnings.warn(f"Warning: Unknown document fragment {ref_frag} "
-                              f"when resolving reference {ref}", OdxWarning)
+                warnings.warn(
+                    f"Warning: Unknown document fragment {ref_frag} "
+                    f"when resolving reference {ref}",
+                    OdxWarning,
+                )
                 continue
 
             obj = doc_frag_db.get(odx_id)
@@ -231,7 +246,7 @@ class OdxLinkDatabase:
 
         return None
 
-    def update(self, new_entries : Dict[OdxLinkId, Any]) -> None:
+    def update(self, new_entries: Dict[OdxLinkId, Any]) -> None:
         """
         Add a bunch of new objects to the ODXLINK database.
 
