@@ -1,12 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from dataclasses import dataclass
 from typing import Optional, Dict, List, Any
 
 from .utils import create_description_from_et
 from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
-
 
 @dataclass
 class FunctionalClass:

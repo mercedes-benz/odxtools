@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from dataclasses import dataclass, field
 from typing import Dict, List, Any, Literal, Optional, Union
 

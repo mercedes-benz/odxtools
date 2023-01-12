@@ -1,21 +1,17 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 import warnings
 from ..decodestate import DecodeState
 from ..exceptions import DecodeError
 
 from .parameterbase import Parameter
 
-
 class ReservedParameter(Parameter):
     def __init__(self,
                  *,
                  bit_length,
                  **kwargs):
-        super().__init__(parameter_type="RESERVED",
-                         **kwargs)
+        super().__init__(parameter_type="RESERVED", **kwargs)
         self._bit_length = bit_length
 
     @property

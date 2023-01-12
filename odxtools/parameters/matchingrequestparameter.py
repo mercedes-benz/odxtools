@@ -1,12 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 
 from .parameterbase import Parameter
-
 
 class MatchingRequestParameter(Parameter):
     def __init__(self,

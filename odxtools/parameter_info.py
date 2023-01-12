@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from typing import Iterable, Union
+import re
 
 from .dataobjectproperty import DataObjectProperty
 from .endofpdufield import EndOfPduField
@@ -16,8 +16,6 @@ from .compumethods import IntervalType
 from .compumethods import IdenticalCompuMethod
 from .compumethods import LinearCompuMethod
 from .compumethods import TexttableCompuMethod
-
-import re
 
 def parameter_info(param_list : Iterable[Union[Parameter, EndOfPduField]]) -> str:
     result = ""

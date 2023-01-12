@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from dataclasses import dataclass, field
 from itertools import chain
 from typing import TYPE_CHECKING, Optional, Any, Dict, List
@@ -117,7 +116,7 @@ class DiagDataDictionarySpec:
 
         dtc_dops = []
         for dop_element in et_element.iterfind("DTC-DOPS/DTC-DOP"):
-            dop = DataObjectProperty.from_et(dop_element, doc_frags)
+            dop = DtcDop.from_et(dop_element, doc_frags)
             assert isinstance(dop, DtcDop)
             dtc_dops.append(dop)
 

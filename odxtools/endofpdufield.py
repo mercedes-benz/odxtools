@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from typing import TYPE_CHECKING, List, Union, Optional
 
 from .utils import create_description_from_et
@@ -20,21 +19,13 @@ class EndOfPduField(DopBase):
 
     def __init__(self,
                  *,
-                 odx_id,
-                 short_name,
-                 structure=None,
-                 structure_ref=None,
-                 structure_snref=None,
-                 min_number_of_items=0,
-                 max_number_of_items=None,
-                 is_visible_raw: Optional[bool] = None,
-                 long_name=None,
-                 description=None):
-        super().__init__(odx_id=odx_id,
-                         short_name=short_name,
-                         long_name=long_name,
-                         description=description,
-                         is_visible_raw=is_visible_raw)
+                 structure,
+                 structure_ref,
+                 structure_snref,
+                 min_number_of_items,
+                 max_number_of_items,
+                 **kwargs):
+        super().__init__(**kwargs)
 
         self.structure_snref = structure_snref
         self.structure_ref = structure_ref
@@ -88,6 +79,7 @@ class EndOfPduField(DopBase):
                              short_name=short_name,
                              long_name=long_name,
                              description=description,
+                             structure=None,
                              structure_ref=structure_ref,
                              structure_snref=structure_snref,
                              min_number_of_items=min_number_of_items,

@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import inspect
 import os
 import unittest
@@ -60,8 +59,15 @@ class TestSingleEcuJob(unittest.TestCase):
             inputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.inputDOP", doc_frags),
                 short_name="inputDOP",
+                long_name=None,
+                description=None,
+                is_visible_raw=None,
                 diag_coded_type=StandardLengthType(base_data_type=DataType.A_INT32,
-                                                   bit_length=1),
+                                                   bit_length=1,
+                                                   bit_mask=None,
+                                                   base_type_encoding=None,
+                                                   is_condensed_raw=None,
+                                                   is_highlow_byte_order_raw=None),
                 physical_type=PhysicalType(DataType.A_UNICODE2STRING),
                 compu_method=TexttableCompuMethod(
                     internal_to_phys=[
@@ -71,31 +77,57 @@ class TestSingleEcuJob(unittest.TestCase):
                             1), compu_const="No!"),
                     ],
                     internal_type=DataType.A_UINT32
-                )
+                ),
+                unit_ref=None,
+                sdgs=[],
             ),
 
             outputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.outputDOP", doc_frags),
                 short_name="outputDOP",
+                long_name=None,
+                description=None,
+                is_visible_raw=None,
                 diag_coded_type=StandardLengthType(base_data_type=DataType.A_INT32,
-                                                   bit_length=1),
+                                                   bit_length=1,
+                                                   bit_mask=None,
+                                                   base_type_encoding=None,
+                                                   is_condensed_raw=None,
+                                                   is_highlow_byte_order_raw=None),
                 physical_type=PhysicalType(DataType.A_UNICODE2STRING),
                 compu_method=LinearCompuMethod(offset=1,
                                                factor=-1,
+                                               denominator=1,
                                                internal_type=DataType.A_UINT32,
-                                               physical_type=DataType.A_UINT32)
+                                               physical_type=DataType.A_UINT32,
+                                               internal_lower_limit=None,
+                                               internal_upper_limit=None),
+                unit_ref=None,
+                sdgs=[],
             ),
 
             negOutputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.negOutputDOP", doc_frags),
                 short_name="negOutputDOP",
+                long_name=None,
+                description=None,
+                is_visible_raw=None,
                 diag_coded_type=StandardLengthType(base_data_type=DataType.A_INT32,
-                                                   bit_length=1),
+                                                   bit_length=1,
+                                                   bit_mask=None,
+                                                   base_type_encoding=None,
+                                                   is_condensed_raw=None,
+                                                   is_highlow_byte_order_raw=None),
                 physical_type=PhysicalType(DataType.A_UNICODE2STRING),
                 compu_method=LinearCompuMethod(offset=1,
                                                factor=-1,
+                                               denominator=1,
                                                internal_type=DataType.A_UINT32,
-                                               physical_type=DataType.A_UINT32)
+                                               physical_type=DataType.A_UINT32,
+                                               internal_lower_limit=None,
+                                               internal_upper_limit=None),
+                unit_ref=None,
+                sdgs=[],
             )
         )
 
@@ -265,11 +297,26 @@ class TestSingleEcuJob(unittest.TestCase):
         dl = DiagLayer(variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
                        odx_id=OdxLinkId("ID.bv", doc_frags),
                        short_name="bv",
-                       single_ecu_jobs=[self.singleecujob_object])
+                       long_name=None,
+                       description=None,
+                       parent_refs=[],
+                       communication_parameters=[],
+                       services=[],
+                       requests=[],
+                       positive_responses=[],
+                       negative_responses=[],
+                       single_ecu_jobs=[self.singleecujob_object],
+                       diag_comm_refs=[],
+                       diag_data_dictionary_spec=None,
+                       additional_audiences=[],
+                       functional_classes=[],
+                       states=[],
+                       state_transitions=[],
+                       import_refs=[],
+                       sdgs=[])
         odxlinks = OdxLinkDatabase()
         odxlinks.update({val.odx_id: val for val in self.context})
-
-        dl._resolve_references(odxlinks)
+        dl.finalize_init(odxlinks=odxlinks)
 
         self.assertEqual(self.context.extensiveTask,
                          self.singleecujob_object.functional_classes.extensiveTask)

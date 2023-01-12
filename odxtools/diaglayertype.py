@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from enum import Enum
-
 
 class DIAG_LAYER_TYPE(Enum):
     PROTOCOL = "PROTOCOL"

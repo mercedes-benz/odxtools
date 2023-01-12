@@ -1,31 +1,20 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from .parameterbase import Parameter
 
+from ..odxlink import OdxLinkRef
 
 class TableEntryParameter(Parameter):
     def __init__(self,
                  *,
-                 short_name,
-                 target,
-                 table_row_ref,
-                 long_name=None,
-                 byte_position=None,
-                 bit_position=None,
-                 semantic=None,
-                 description=None,
+                 target: str,
+                 table_row_ref: OdxLinkRef,
                  **kwargs):
         super().__init__(
-            short_name=short_name,
-            long_name=long_name,
-            byte_position=byte_position,
-            bit_position=bit_position,
             parameter_type="TABLE-ENTRY",
-            semantic=semantic,
-            description=description,
             **kwargs
         )
+
         assert target in ["KEY", "STRUCT"]
         self.target = target
         self.table_row_ref = table_row_ref

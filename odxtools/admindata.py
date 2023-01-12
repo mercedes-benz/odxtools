@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from .nameditemlist import NamedItemList
 from .companydata import CompanyData, TeamMember
 from .odxlink import OdxLinkId, OdxLinkRef, OdxLinkDatabase, OdxDocFragment

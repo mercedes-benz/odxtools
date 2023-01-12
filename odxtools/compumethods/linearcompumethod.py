@@ -1,14 +1,11 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from typing import Optional, Union
 
 from ..odxtypes import DataType
 
 from .compumethodbase import CompuMethod
 from .limit import IntervalType, Limit
-
 
 class LinearCompuMethod(CompuMethod):
     """Represents the decoding function d(y) = (offset + factor * y) / denominator
@@ -60,13 +57,13 @@ class LinearCompuMethod(CompuMethod):
 
     def __init__(self,
                  *,
-                 offset,
-                 factor,
+                 offset: float,
+                 factor: float,
+                 denominator: float,
                  internal_type: Union[DataType, str],
                  physical_type: Union[DataType, str],
-                 denominator=1,
-                 internal_lower_limit: Optional[Limit] = None,
-                 internal_upper_limit: Optional[Limit] = None):
+                 internal_lower_limit: Optional[Limit],
+                 internal_upper_limit: Optional[Limit]):
         super().__init__(internal_type=internal_type,
                          physical_type=physical_type,
                          category="LINEAR")

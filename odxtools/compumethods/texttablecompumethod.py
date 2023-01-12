@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from typing import List
 
 from ..exceptions import DecodeError
@@ -9,7 +7,6 @@ from ..odxtypes import DataType
 
 from .compumethodbase import CompuMethod
 from .compuscale import CompuScale
-
 
 class TexttableCompuMethod(CompuMethod):
     def __init__(self, *, internal_to_phys: List[CompuScale], internal_type):

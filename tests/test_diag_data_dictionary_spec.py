@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import unittest
 
 from odxtools.envdatadesc import EnvironmentDataDescription
@@ -24,39 +23,62 @@ doc_frags = [ OdxDocFragment("UnitTest", "unit_test_doc") ]
 
 class TestDiagDataDictionarySpec(unittest.TestCase):
     def test_initialization(self):
-        uint_type = StandardLengthType(base_data_type="A_UINT32", bit_length=8)
+        uint_type = StandardLengthType(base_data_type="A_UINT32",
+                                       base_type_encoding=None,
+                                       bit_length=8,
+                                       bit_mask=None,
+                                       is_highlow_byte_order_raw=None,
+                                       is_condensed_raw=None)
         ident_compu_method = IdenticalCompuMethod(internal_type="A_UINT32",
                                                   physical_type="A_UINT32")
 
         dtc_dop = DtcDop(odx_id=OdxLinkId("DOP.dtc_dop", doc_frags),
                          short_name="dtc_dop",
+                         long_name=None,
+                         description=None,
+                         is_visible_raw=None,
                          diag_coded_type=uint_type,
                          physical_type=PhysicalType("A_UINT32"),
+                         linked_dtc_dops=[],
                          compu_method=ident_compu_method,
+                         unit_ref=None,
                          dtcs_raw=[DiagnosticTroubleCode(
                              odx_id=OdxLinkId("DOP.dtc_dop.DTC.X10", doc_frags),
                              short_name="X10",
                              trouble_code=0x10,
                              text="Something exploded.",
                              display_trouble_code="X10"
-                         )])
+                         )],
+                         sdgs=[])
 
         dop_1 = DataObjectProperty(odx_id=OdxLinkId("DOP.the_dop", doc_frags),
                                    short_name="the_dop",
+                                   long_name=None,
+                                   description=None,
+                                   is_visible_raw=None,
                                    diag_coded_type=uint_type,
                                    physical_type=PhysicalType("A_UINT32"),
-                                   compu_method=ident_compu_method)
+                                   compu_method=ident_compu_method,
+                                   unit_ref=None,
+                                   sdgs=[])
 
         dop_2 = DataObjectProperty(odx_id=OdxLinkId("DOP.another_dop", doc_frags),
                                    short_name="another_dop",
+                                   long_name=None,
+                                   description=None,
+                                   is_visible_raw=None,
                                    diag_coded_type=uint_type,
                                    physical_type=PhysicalType("A_UINT32"),
-                                   compu_method=ident_compu_method)
+                                   compu_method=ident_compu_method,
+                                   unit_ref=None,
+                                   sdgs=[])
 
         table = Table(odx_id=OdxLinkId("somersault.table.flip_quality", doc_frags),
                       short_name="flip_quality",
                       long_name="Flip Quality",
+                      description=None,
                       key_dop_ref="",
+                      semantic=None,
                       table_rows=[
                         TableRow(odx_id=OdxLinkId("somersault.table.flip_quality.average", doc_frags),
                                  short_name="average",
@@ -74,41 +96,57 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                                    long_name="Best",
                                    key=10,
                                    ),
-                      ]
+                      ],
+                      table_row_refs=[],
+                      sdgs=None,
                       )
 
         env_data = EnvironmentData(
             odx_id=OdxLinkId("somersault.env_data.flip_env_data", doc_frags),
             short_name="flip_env_data",
             long_name="Flip Env Data",
+            description=None,
+            is_visible_raw=None,
             parameters=[
                 ValueParameter(
                     short_name="flip_speed",
                     long_name="Flip Speed",
-                    byte_position=0,
+                    description=None,
                     semantic="DATA",
+                    byte_position=0,
                     dop_ref="dop-ref",
                     dop_snref=None,
+                    physical_default_value_raw=None,
+                    bit_position=None,
+                    sdgs=[]
                 ),
                 PhysicalConstantParameter(
                     short_name="flip_direction",
                     long_name="Flip Direction",
-                    byte_position=1,
+                    description=None,
                     semantic="DATA",
+                    byte_position=1,
                     physical_constant_value=1,
                     dop_ref="dop-ref",
                     dop_snref=None,
+                    bit_position=None,
+                    sdgs=[]
                 ),
-            ]
+            ],
+            byte_size=None,
+            dtc_values=[],
         )
 
         env_data_desc = EnvironmentDataDescription(
             odx_id=OdxLinkId("somersault.env_data_desc.flip_env_data_desc", doc_frags),
             short_name="flip_env_data_desc",
             long_name="Flip Env Data Desc",
+            description=None,
+            is_visible_raw=None,
             param_snref="flip_speed",
+            param_snpathref=None,
             env_datas=[],
-            env_data_refs=["somersault.env_data.flip_env_data"],
+            env_data_refs=[OdxLinkRef.from_id(env_data.odx_id)],
         )
 
         mux = Multiplexer(

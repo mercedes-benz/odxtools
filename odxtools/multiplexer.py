@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from collections import OrderedDict
 from dataclasses import dataclass
 from typing import Optional, Dict, Any, List
@@ -12,7 +11,6 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError
 from .globals import logger
-
 
 @dataclass
 class MultiplexerCase:

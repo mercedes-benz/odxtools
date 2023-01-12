@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import abc
 from typing import cast, List, Dict, Optional, Any, Union
 from dataclasses import dataclass, field
@@ -33,9 +32,9 @@ class DopBase(abc.ABC):
                  *,
                  odx_id,
                  short_name,
-                 long_name=None,
-                 description=None,
-                 is_visible_raw=None,
+                 long_name,
+                 description,
+                 is_visible_raw,
                  sdgs = []):
         self.odx_id = odx_id
         self.short_name = short_name
@@ -81,11 +80,11 @@ class DataObjectProperty(DopBase):
                  diag_coded_type: DiagCodedType,
                  physical_type: PhysicalType,
                  compu_method: CompuMethod,
-                 unit_ref: Optional[OdxLinkRef] = None,
-                 long_name: Optional[str] = None,
-                 description: Optional[str] = None,
-                 is_visible_raw: Optional[bool] = None,
-                 sdgs: List[SpecialDataGroup] = [],
+                 unit_ref: Optional[OdxLinkRef],
+                 long_name: Optional[str],
+                 description: Optional[str],
+                 is_visible_raw: Optional[bool],
+                 sdgs: List[SpecialDataGroup],
                  ):
         super().__init__(odx_id=odx_id,
                          short_name=short_name,
@@ -109,25 +108,28 @@ class DataObjectProperty(DopBase):
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
 
         diag_coded_type = create_any_diag_coded_type_from_et(
             et_element.find("DIAG-CODED-TYPE"), doc_frags)
 
-        physical_type = PhysicalType.from_et(
-            et_element.find("PHYSICAL-TYPE"), doc_frags)
-        compu_method = create_any_compu_method_from_et(et_element.find(
-            "COMPU-METHOD"), doc_frags, diag_coded_type.base_data_type, physical_type.base_data_type)
+        physical_type = PhysicalType.from_et(et_element.find("PHYSICAL-TYPE"), doc_frags)
+        compu_method = create_any_compu_method_from_et(et_element.find("COMPU-METHOD"),
+                                                       doc_frags,
+                                                       diag_coded_type.base_data_type,
+                                                       physical_type.base_data_type)
+        unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
 
         if et_element.tag == "DATA-OBJECT-PROP":
-            unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
             dop = DataObjectProperty(odx_id=odx_id,
                                      short_name=short_name,
+                                     long_name=long_name,
+                                     description=description,
+                                     is_visible_raw=is_visible_raw,
                                      diag_coded_type=diag_coded_type,
                                      physical_type=physical_type,
                                      compu_method=compu_method,
                                      unit_ref=unit_ref,
-                                     long_name=long_name,
-                                     description=description,
                                      sdgs=sdgs)
         else:
             dtclist: List[Union[DiagnosticTroubleCode, OdxLinkRef]] = list()
@@ -138,7 +140,14 @@ class DataObjectProperty(DopBase):
                     elif dtc_proxy_elem.tag == "DTC-REF":
                         dtclist.append(OdxLinkRef.from_et(dtc_proxy_elem, doc_frags))
 
-            is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
+            # TODO: NOT-INHERITED-DTC-SNREFS
+            linked_dtc_dops = [
+                cast(OdxLinkRef, OdxLinkRef.from_et(dtc_ref_elem, doc_frags))
+                for dtc_ref_elem in et_element.iterfind("LINKED-DTC-DOPS/"
+                                                        "LINKED-DTC-DOP/"
+                                                        "DTC-DOP-REF")
+            ]
+
             dop = DtcDop(odx_id=odx_id,
                          short_name=short_name,
                          long_name=long_name,
@@ -146,7 +155,9 @@ class DataObjectProperty(DopBase):
                          diag_coded_type=diag_coded_type,
                          physical_type=physical_type,
                          compu_method=compu_method,
+                         unit_ref=unit_ref,
                          dtcs_raw=dtclist,
+                         linked_dtc_dops=linked_dtc_dops,
                          is_visible_raw=is_visible_raw,
                          sdgs=sdgs)
         return dop
@@ -294,12 +305,13 @@ class DtcDop(DataObjectProperty):
                  diag_coded_type: DiagCodedType,
                  physical_type: PhysicalType,
                  compu_method: CompuMethod,
+                 unit_ref: Optional[OdxLinkRef],
                  dtcs_raw: List[Union[DiagnosticTroubleCode, OdxLinkRef]],
-                 is_visible_raw: bool = False,
-                 linked_dtc_dops: bool = False,
-                 long_name: Optional[str] = None,
-                 description: Optional[str] = None,
-                 sdgs: List[SpecialDataGroup] = [],
+                 is_visible_raw: bool,
+                 linked_dtc_dops: List[OdxLinkRef],
+                 long_name: Optional[str],
+                 description: Optional[str],
+                 sdgs: List[SpecialDataGroup],
                  ):
         super().__init__(odx_id=odx_id,
                          short_name=short_name,
@@ -308,6 +320,7 @@ class DtcDop(DataObjectProperty):
                          diag_coded_type=diag_coded_type,
                          physical_type=physical_type,
                          compu_method=compu_method,
+                         unit_ref=unit_ref,
                          is_visible_raw=is_visible_raw,
                          sdgs=sdgs)
         self.dtcs_raw = dtcs_raw

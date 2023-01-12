@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from typing import List
 
 from ..diagcodedtypes import create_any_diag_coded_type_from_et
@@ -21,7 +20,6 @@ from .tableentryparameter import TableEntryParameter
 from .tablekeyparameter import TableKeyParameter
 from .tablestructparameter import TableStructParameter
 from .valueparameter import ValueParameter
-
 
 def create_any_parameter_from_et(et_element, doc_frags):
     short_name = et_element.findtext("SHORT-NAME")

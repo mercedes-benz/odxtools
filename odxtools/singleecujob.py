@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Optional, Union, cast
 
@@ -23,7 +22,6 @@ DiagClassType = Literal["STARTCOMM",
                         "READ-DYN-DEFINED-MESSAGE",
                         "DYN-DEF-MESSAGE",
                         "CLEAR-DYN-DEF-MESSAGE"]
-
 
 @dataclass
 class InputParam:

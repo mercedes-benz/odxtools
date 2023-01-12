@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from typing import TYPE_CHECKING, Optional, Union
 
 from ..dataobjectproperty import DataObjectProperty, DopBase, DtcDop
@@ -19,14 +17,11 @@ if TYPE_CHECKING:
 class ParameterWithDOP(Parameter):
     def __init__(self,
                  *,
-                 short_name: str,
                  parameter_type: str,
                  dop_ref: Optional[OdxLinkRef],
                  dop_snref: Optional[str],
                  **kwargs) -> None:
-        super().__init__(short_name=short_name,
-                         parameter_type=parameter_type,
-                         **kwargs)
+        super().__init__(parameter_type=parameter_type, **kwargs)
         self.dop_ref = dop_ref
         self.dop_snref = dop_snref
 

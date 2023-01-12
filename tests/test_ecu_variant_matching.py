@@ -21,11 +21,16 @@ odxlinks = OdxLinkDatabase()
 
 
 @pytest.fixture
-def dummy_response(monkeypatch) -> Response:
+def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
     resp = Response(
         odx_id=OdxLinkId(local_id="dummy_resp", doc_fragments=doc_frags),
         short_name="dummy_resp",
-        parameters=None,
+        long_name=None,
+        description=None,
+        is_visible_raw=None,
+        parameters=[],
+        response_type="POS-RESPONSE",
+        byte_size=None,
     )
     odxlinks.update({resp.odx_id: resp})
 
@@ -43,16 +48,29 @@ def ident_service(monkeypatch, dummy_response: Response) -> DiagService:
     dummy_req = Request(
         odx_id=OdxLinkId(local_id="dummy_req", doc_fragments=doc_frags),
         short_name="dummy_req",
+        long_name=None,
+        description=None,
+        is_visible_raw=None,
         parameters=[],
+        byte_size=None,
     )
     odxlinks.update({dummy_req.odx_id: dummy_req})
 
     diagService = DiagService(
         odx_id=OdxLinkId(local_id="identService", doc_fragments=doc_frags),
         short_name="identService",
+        long_name=None,
+        description=None,
+        semantic=None,
+        admin_data=None,
+        audience=None,
+        functional_class_refs=[],
+        pre_condition_state_refs=[],
+        state_transition_refs=[],
         request=dummy_req,
         positive_responses=[dummy_response],
         negative_responses=[],
+        sdgs=[],
     )
 
     def encode_request():
@@ -67,16 +85,29 @@ def supplier_service(monkeypatch, dummy_response: Response) -> DiagService:
     dummy_req = Request(
         odx_id=OdxLinkId(local_id="dummy_req", doc_fragments=doc_frags),
         short_name="dummy_req",
+        long_name=None,
+        description=None,
+        is_visible_raw=None,
         parameters=[],
+        byte_size=None,
     )
     odxlinks.update({dummy_req.odx_id: dummy_req})
 
     diagService = DiagService(
         odx_id=OdxLinkId(local_id="supplierService", doc_fragments=doc_frags),
         short_name="supplierService",
+        long_name=None,
+        description=None,
+        semantic=None,
+        admin_data=None,
+        audience=None,
+        functional_class_refs=[],
+        pre_condition_state_refs=[],
+        state_transition_refs=[],
         request=dummy_req,
         positive_responses=[dummy_response],
         negative_responses=[],
+        sdgs=[],
     )
 
     def encode_request():
@@ -141,15 +172,31 @@ def ecu_variant_1(
     supplier_service: DiagService,
     ecu_variant_pattern1: EcuVariantPattern,
 ) -> DiagLayer:
-    return DiagLayer(
+    result = DiagLayer(
         variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant1", doc_fragments=doc_frags),
         short_name="ecu_variant1",
+        long_name=None,
+        description=None,
+        additional_audiences=[],
+        functional_classes=[],
+        parent_refs=[],
+        import_refs=[],
+        communication_parameters=[],
+        diag_comm_refs=[],
+        diag_data_dictionary_spec=None,
         services=[ident_service, supplier_service],
+        requests=[],
+        positive_responses=[],
+        negative_responses=[],
+        single_ecu_jobs=[],
+        states=[],
+        state_transitions=[],
         ecu_variant_patterns=[ecu_variant_pattern1],
-        odxlinks=odxlinks,
+        sdgs=[],
     )
-
+    result.finalize_init(odxlinks)
+    return result
 
 @pytest.fixture
 def ecu_variant_2(
@@ -157,14 +204,31 @@ def ecu_variant_2(
     supplier_service: DiagService,
     ecu_variant_pattern2: EcuVariantPattern,
 ) -> DiagLayer:
-    return DiagLayer(
+    result = DiagLayer(
         variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant2", doc_fragments=doc_frags),
         short_name="ecu_variant2",
+        long_name=None,
+        description=None,
+        functional_classes=[],
+        additional_audiences=[],
+        parent_refs=[],
+        import_refs=[],
+        communication_parameters=[],
+        diag_comm_refs=[],
+        diag_data_dictionary_spec=None,
         services=[ident_service, supplier_service],
+        requests=[],
+        positive_responses=[],
+        negative_responses=[],
+        single_ecu_jobs=[],
+        states=[],
+        state_transitions=[],
         ecu_variant_patterns=[ecu_variant_pattern2],
-        odxlinks=odxlinks,
+        sdgs=[],
     )
+    result.finalize_init(odxlinks)
+    return result
 
 
 @pytest.fixture
@@ -174,15 +238,31 @@ def ecu_variant_3(
     ecu_variant_pattern1: EcuVariantPattern,
     ecu_variant_pattern3: EcuVariantPattern,
 ) -> DiagLayer:
-    return DiagLayer(
+    result = DiagLayer(
         variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant3", doc_fragments=doc_frags),
         short_name="ecu_variant3",
+        long_name=None,
+        description=None,
+        functional_classes=[],
+        additional_audiences=[],
+        parent_refs=[],
+        import_refs=[],
+        communication_parameters=[],
+        diag_comm_refs=[],
+        diag_data_dictionary_spec=None,
         services=[ident_service, supplier_service],
+        requests=[],
+        positive_responses=[],
+        negative_responses=[],
+        single_ecu_jobs=[],
+        states=[],
+        state_transitions=[],
         ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
-        odxlinks=odxlinks,
+        sdgs=[],
     )
-
+    result.finalize_init(odxlinks)
+    return result
 
 @pytest.fixture
 def ecu_variants(

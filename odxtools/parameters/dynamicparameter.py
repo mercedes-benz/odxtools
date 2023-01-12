@@ -1,30 +1,11 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from .parameterbase import Parameter
-
 
 class DynamicParameter(Parameter):
     def __init__(self,
-                 *,
-                 short_name,
-                 long_name=None,
-                 byte_position=None,
-                 bit_position=None,
-                 semantic=None,
-                 description=None,
                  **kwargs):
-        super().__init__(
-            short_name=short_name,
-            long_name=long_name,
-            byte_position=byte_position,
-            bit_position=bit_position,
-            parameter_type="DYNAMIC",
-            semantic=semantic,
-            description=description,
-            **kwargs
-        )
+        super().__init__(parameter_type="DYNAMIC", **kwargs)
 
     def is_required(self):
         raise NotImplementedError(
