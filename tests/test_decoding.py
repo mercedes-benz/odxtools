@@ -580,9 +580,10 @@ class TestDecoding(unittest.TestCase):
                              short_name="eopf_sn",
                              long_name=None,
                              description=None,
-                             structure=None,
                              structure_ref=OdxLinkRef.from_id(struct.odx_id),
                              structure_snref=None,
+                             env_data_desc_ref=None,
+                             env_data_desc_snref=None,
                              min_number_of_items=None,
                              max_number_of_items=None,
                              is_visible_raw=True)
