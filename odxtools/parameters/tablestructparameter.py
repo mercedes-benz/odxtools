@@ -1,32 +1,15 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from .parameterbase import Parameter
-
 
 class TableStructParameter(Parameter):
     def __init__(self,
                  *,
-                 short_name,
-                 table_key_ref=None,
-                 table_key_snref=None,
-                 long_name=None,
-                 byte_position=None,
-                 bit_position=None,
-                 semantic=None,
-                 description=None,
+                 table_key_ref,
+                 table_key_snref,
                  **kwargs):
-        super().__init__(
-            short_name=short_name,
-            long_name=long_name,
-            byte_position=byte_position,
-            bit_position=bit_position,
-            parameter_type="TABLE-STRUCT",
-            semantic=semantic,
-            description=description,
-            **kwargs
-        )
+        super().__init__(parameter_type="TABLE-STRUCT", **kwargs)
+
         self.table_key_ref = table_key_ref
         self.table_key_snref = table_key_snref
         if self.table_key_ref is None and self.table_key_snref is None:

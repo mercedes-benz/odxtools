@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from typing import List, Iterable, Optional, Union
 from xml.etree import ElementTree
 
@@ -27,15 +26,15 @@ class DiagService:
                  request: Union[OdxLinkRef, Request],
                  positive_responses: Union[Iterable[OdxLinkRef], Iterable[Response]],
                  negative_responses: Union[Iterable[OdxLinkRef], Iterable[Response]],
-                 long_name: Optional[str] = None,
-                 admin_data: Optional[AdminData] = None,
-                 description: Optional[str] = None,
-                 semantic: Optional[str] = None,
-                 audience: Optional[Audience] = None,
-                 functional_class_refs: Iterable[OdxLinkRef] = [],
-                 pre_condition_state_refs: Iterable[OdxLinkRef] = [],
-                 state_transition_refs: Iterable[OdxLinkRef] = [],
-                 sdgs: List[SpecialDataGroup] = []):
+                 long_name: Optional[str],
+                 admin_data: Optional[AdminData],
+                 description: Optional[str],
+                 semantic: Optional[str],
+                 audience: Optional[Audience],
+                 functional_class_refs: Iterable[OdxLinkRef],
+                 pre_condition_state_refs: Iterable[OdxLinkRef],
+                 state_transition_refs: Iterable[OdxLinkRef],
+                 sdgs: List[SpecialDataGroup]):
         """Constructs the service.
 
         Parameters:

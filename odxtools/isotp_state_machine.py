@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import bitstruct
 import can
 import asyncio

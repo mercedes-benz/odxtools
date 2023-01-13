@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 import abc
 from typing import TYPE_CHECKING, Optional, Union, List
 import warnings
@@ -21,12 +19,12 @@ class Parameter(abc.ABC):
                  *,
                  short_name: str,
                  parameter_type: str,
-                 long_name: Optional[str] = None,
-                 byte_position: Optional[int] = None,
-                 bit_position: Optional[int] = None,
-                 semantic: Optional[str] = None,
-                 description: Optional[str] = None,
-                 sdgs: List[SpecialDataGroup] = []) -> None:
+                 long_name: Optional[str],
+                 byte_position: Optional[int],
+                 bit_position: Optional[int],
+                 semantic: Optional[str],
+                 description: Optional[str],
+                 sdgs: List[SpecialDataGroup]) -> None:
         self.short_name: str = short_name
         self.long_name: Optional[str] = long_name
         self.byte_position: Optional[int] = byte_position

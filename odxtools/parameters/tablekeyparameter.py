@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from ..odxlink import OdxLinkDatabase
 from .parameterbase import Parameter
 
@@ -12,44 +11,21 @@ if TYPE_CHECKING:
 class TableKeyParameter(Parameter):
     def __init__(self,
                  *,
-                 short_name,
-                 table_ref=None,
-                 table_snref=None,
-                 table_row_snref=None,
-                 table_row_ref=None,
-                 odx_id=None,
-                 long_name=None,
-                 byte_position=None,
-                 bit_position=None,
-                 semantic=None,
-                 description=None,
+                 odx_id,
+                 table_ref,
+                 table_snref,
+                 table_row_snref,
+                 table_row_ref,
                  **kwargs):
         super().__init__(
-            short_name=short_name,
-            long_name=long_name,
-            byte_position=byte_position,
-            bit_position=bit_position,
             parameter_type="TABLE-KEY",
-            semantic=semantic,
-            description=description,
             **kwargs
         )
-        self.table_ref = None
-        self.table_snref = None
-        self.table_row_ref = None
-        self.table_row_snref = None
-        if table_ref:
-            self.table_ref = table_ref
-            self.table_row_ref = table_row_ref
-        elif table_snref:
-            self.table_snref = table_snref
-            self.table_row_snref = table_row_snref
-        elif table_row_ref:
-            self.table_row_ref = table_row_ref
-        else:
-            raise ValueError(
-                "Either table_key_ref or table_key_snref must be defined.")
         self.odx_id = odx_id
+        self.table_ref = table_ref
+        self.table_row_ref = table_row_ref
+        self.table_snref = table_snref
+        self.table_row_snref = table_row_snref
 
     def is_required(self):
         raise NotImplementedError(
@@ -78,5 +54,14 @@ class TableKeyParameter(Parameter):
         self.table = None
         if self.table_snref:
             self.table = parent_dl.local_diag_data_dictionary_spec.tables[self.table_snref]
-        elif self.table_ref:
+        if self.table_ref:
             self.table = odxlinks.resolve(self.table_ref)
+
+        if self.table_row_ref:
+            self.table_row = odxlinks.resolve(self.table_row_ref)
+        if self.table_row_snref:
+            self.table_row = parent_dl.local_diag_data_dictionary_spec.tables[self.table_row_snref]
+
+        if self.table is None:
+            raise ValueError(
+                "Either table_key_ref or table_key_snref must be defined.")

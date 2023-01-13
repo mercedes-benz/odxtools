@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import math
 from typing import TYPE_CHECKING, Any, Optional, List, Dict, Iterable, ByteString, OrderedDict, Tuple, Union
 import warnings
@@ -12,6 +11,7 @@ from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState, ParameterValuePair
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, OdxWarning
+from .odxtypes import odxstr_to_bool
 from .globals import logger
 from .nameditemlist import NamedItemList
 from .parameters import (
@@ -35,26 +35,18 @@ ParameterDict = Dict[str, Union[Parameter, "ParameterDict"]]
 class BasicStructure(DopBase):
     def __init__(self,
                  *,
-                 odx_id,
-                 short_name,
                  parameters: Iterable[Union[Parameter, "EndOfPduField"]],
-                 long_name=None,
-                 byte_size=None,
-                 description=None,
-                 sdgs=[]):
-        super().__init__(odx_id=odx_id,
-                         short_name=short_name,
-                         long_name=long_name,
-                         description=description,
-                         sdgs=sdgs)
+                 byte_size: Optional[int],
+                 **kwargs):
+        super().__init__(**kwargs)
         self.parameters: NamedItemList[Union[Parameter, "EndOfPduField"]] = NamedItemList(short_name_as_id, parameters)
-        self._byte_size = byte_size
+        self.byte_size = byte_size
 
     @property
     def bit_length(self):
         # Explicit size was specified
-        if self._byte_size:
-            return 8 * self._byte_size
+        if self.byte_size:
+            return 8 * self.byte_size
 
         if all(p.bit_length is not None for p in self.parameters):
             offset = 0
@@ -168,9 +160,9 @@ class BasicStructure(DopBase):
                 # Undo length_keys changes
                 encode_state.length_keys.pop(param.odx_id)
 
-        if self._byte_size is not None and len(coded_rpc) < self._byte_size:
+        if self.byte_size is not None and len(coded_rpc) < self.byte_size:
             # Padding bytes needed
-            coded_rpc = coded_rpc.ljust(self._byte_size, b'\0')
+            coded_rpc = coded_rpc.ljust(self.byte_size, b'\0')
 
         for (param, encode_state) in length_encodings:
             # Same as previous, but all bytes as 0.
@@ -194,9 +186,9 @@ class BasicStructure(DopBase):
             self,
             coded_rpc: bytearray):
 
-        if self._byte_size is not None:
+        if self.byte_size is not None:
             # We definitely broke something if we didn't respect the explicit byte_size
-            assert len(coded_rpc) == self._byte_size, self._get_encode_error_str('was', coded_rpc, self._byte_size * 8)
+            assert len(coded_rpc) == self.byte_size, self._get_encode_error_str('was', coded_rpc, self.byte_size * 8)
             # No need to check further
             return
 
@@ -491,26 +483,11 @@ class BasicStructure(DopBase):
 
 class Structure(BasicStructure):
     def __init__(self,
-                 *,
-                 odx_id,
-                 short_name,
-                 parameters,
-                 long_name=None,
-                 byte_size=None,
-                 description=None,
-                 sdgs=[]):
-        super().__init__(odx_id=odx_id,
-                         short_name=short_name,
-                         parameters=parameters,
-                         long_name=long_name,
-                         byte_size=byte_size,
-                         description=description,
-                         sdgs=sdgs)
-
-        self.parameters = parameters
+                 **kwargs):
+        super().__init__(**kwargs)
 
     def __repr__(self) -> str:
-        return f"Structure('{self.short_name}', byte_size={self._byte_size})"
+        return f"Structure('{self.short_name}', byte_size={self.byte_size})"
 
     def __str__(self) -> str:
         params = "[\n" + "\n".join([" " + str(p).replace("\n", "\n ")
@@ -518,25 +495,14 @@ class Structure(BasicStructure):
 
         return \
             f"Structure '{self.short_name}': " + \
-            f"Byte size={self._byte_size}, " + \
+            f"Byte size={self.byte_size}, " + \
             f"Parameters={params}"
 
 
 class Request(BasicStructure):
     def __init__(self,
-                 *,
-                 odx_id,
-                 short_name,
-                 parameters,
-                 long_name=None,
-                 description=None,
-                 sdgs=[]):
-        super().__init__(odx_id=odx_id,
-                         short_name=short_name,
-                         parameters=parameters,
-                         long_name=long_name,
-                         description=description,
-                         sdgs=sdgs)
+                 **kwargs):
+        super().__init__(**kwargs)
 
     def __repr__(self) -> str:
         return f"Request('{self.short_name}')"
@@ -548,20 +514,11 @@ class Request(BasicStructure):
 class Response(BasicStructure):
     def __init__(self,
                  *,
-                 odx_id,
-                 short_name,
-                 parameters,
-                 long_name=None,
-                 response_type=None,
-                 description=None,
-                 sdgs=[]):
-        super().__init__(odx_id=odx_id,
-                         short_name=short_name,
-                         parameters=parameters,
-                         long_name=long_name,
-                         description=description,
-                         sdgs=sdgs)
-        self.response_type = "POS-RESPONSE" if response_type == "POS-RESPONSE" else "NEG-RESPONSE"
+                 response_type: str, # "POS-RESPONSE" or "NEG-RESPONSE"
+                 **kwargs):
+        super().__init__(**kwargs)
+
+        self.response_type = response_type
 
     def encode(self, coded_request: Optional[ByteString] = None, **params) -> ByteString:
         logger.info(f"Compose response message to the request {coded_request}")
@@ -603,9 +560,11 @@ def create_any_structure_from_et(et_element,
         res = Request(
             odx_id=odx_id,
             short_name=short_name,
-            parameters=parameters,
             long_name=long_name,
             description=description,
+            is_visible_raw=None,
+            parameters=parameters,
+            byte_size=None,
             sdgs=sdgs,
         )
     elif et_element.tag in ["POS-RESPONSE", "NEG-RESPONSE"]:
@@ -613,21 +572,25 @@ def create_any_structure_from_et(et_element,
             odx_id=odx_id,
             short_name=short_name,
             response_type=et_element.tag,
-            parameters=parameters,
             long_name=long_name,
             description=description,
+            is_visible_raw=None,
+            parameters=parameters,
+            byte_size=None,
             sdgs=sdgs,
         )
     elif et_element.tag == "STRUCTURE":
         byte_size_text = et_element.findtext("BYTE-SIZE")
         byte_size = int(byte_size_text) if byte_size_text is not None else None
+        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         res = Structure(
             odx_id=odx_id,
             short_name=short_name,
-            parameters=parameters,
-            byte_size=byte_size,
             long_name=long_name,
             description=description,
+            is_visible_raw=is_visible_raw,
+            parameters=parameters,
+            byte_size=byte_size,
             sdgs=sdgs,
         )
     else:

@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from typing import List
 import warnings
 from ..decodestate import DecodeState
@@ -10,7 +9,6 @@ from ..odxtypes import DataType
 from ..exceptions import DecodeError, EncodeError
 
 from .parameterbase import Parameter
-
 
 class NrcConstParameter(Parameter):
     """A param of type NRC-CONST defines a set of values to be matched.
@@ -24,13 +22,10 @@ class NrcConstParameter(Parameter):
 
     def __init__(self,
                  *,
-                 short_name,
                  diag_coded_type: DiagCodedType,
                  coded_values: List[int],
                  **kwargs):
-        super().__init__(short_name=short_name,
-                         parameter_type="NRC-CONST",
-                         **kwargs)
+        super().__init__(parameter_type="NRC-CONST", **kwargs)
 
         self._diag_coded_type = diag_coded_type
         # TODO: Does it have to be an integer or is that just common practice?

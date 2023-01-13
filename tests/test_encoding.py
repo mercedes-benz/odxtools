@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 import unittest
 
 from odxtools.dataobjectproperty import DataObjectProperty
@@ -17,55 +15,119 @@ doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
 class TestEncodeRequest(unittest.TestCase):
     def test_encode_coded_const_infer_order(self):
-        diag_coded_type = StandardLengthType(base_data_type="A_UINT32", bit_length=8)
+        diag_coded_type = StandardLengthType(base_data_type="A_UINT32",
+                                             base_type_encoding=None,
+                                             bit_length=8,
+                                             bit_mask=None,
+                                             is_highlow_byte_order_raw=None,
+                                             is_condensed_raw=None)
         param1 = CodedConstParameter(short_name="coded_const_parameter",
+                                     long_name=None,
+                                     description=None,
+                                     semantic=None,
                                      diag_coded_type=diag_coded_type,
                                      coded_value=0x7d,
-                                     byte_position=0)
+                                     byte_position=0,
+                                     bit_position=None,
+                                     sdgs=[])
         param2 = CodedConstParameter(short_name="coded_const_parameter",
+                                     long_name=None,
+                                     description=None,
+                                     semantic=None,
                                      diag_coded_type=diag_coded_type,
-                                     coded_value=0xab)
+                                     coded_value=0xab,
+                                     byte_position=None,
+                                     bit_position=None,
+                                     sdgs=[])
         req = Request(odx_id=OdxLinkId("request_id", doc_frags),
                       short_name="request_sn",
-                      parameters=[param1, param2])
+                      long_name=None,
+                      description=None,
+                      is_visible_raw=None,
+                      parameters=[param1, param2],
+                      byte_size=None)
         self.assertEqual(req.encode(), bytearray([0x7d, 0xab]))
 
     def test_encode_coded_const_reorder(self):
-        diag_coded_type = StandardLengthType(base_data_type="A_UINT32", bit_length=8)
+        diag_coded_type = StandardLengthType(base_data_type="A_UINT32",
+                                             base_type_encoding=None,
+                                             bit_length=8,
+                                             bit_mask=None,
+                                             is_highlow_byte_order_raw=None,
+                                             is_condensed_raw=None)
         param1 = CodedConstParameter(short_name="param1",
+                                     long_name=None,
+                                     description=None,
+                                     semantic=None,
                                      diag_coded_type=diag_coded_type,
                                      coded_value=0x34,
-                                     byte_position=1)
+                                     byte_position=1,
+                                     bit_position=None,
+                                     sdgs=[])
         param2 = CodedConstParameter(short_name="param2",
+                                     long_name=None,
+                                     description=None,
+                                     semantic=None,
                                      diag_coded_type=diag_coded_type,
                                      coded_value=0x12,
-                                     byte_position=0)
+                                     byte_position=0,
+                                     bit_position=None,
+                                     sdgs=[])
         req = Request(odx_id=OdxLinkId("request_id", doc_frags),
                       short_name="request_sn",
-                      parameters=[param1, param2])
+                      long_name=None,
+                      description=None,
+                      is_visible_raw=None,
+                      parameters=[param1, param2],
+                      byte_size=None)
         self.assertEqual(req.encode(), bytearray([0x12, 0x34]))
 
     def test_encode_linear(self):
         odxlinks = OdxLinkDatabase()
-        diag_coded_type = StandardLengthType(base_data_type="A_UINT32", bit_length=8)
+        diag_coded_type = StandardLengthType(base_data_type="A_UINT32",
+                                             base_type_encoding=None,
+                                             bit_length=8,
+                                             bit_mask=None,
+                                             is_highlow_byte_order_raw=None,
+                                             is_condensed_raw=None)
         # This CompuMethod represents the linear function: decode(x) = 2*x + 8 and encode(x) = (x-8)/2
         compu_method = LinearCompuMethod(offset=8,
                                          factor=2,
+                                         denominator=1,
                                          internal_type="A_UINT32",
-                                         physical_type="A_UINT32")
+                                         physical_type="A_UINT32",
+                                         internal_lower_limit=None,
+                                         internal_upper_limit=None)
         dop = DataObjectProperty(odx_id=OdxLinkId("dop-odx_id", doc_frags),
                                  short_name="example dop",
+                                 long_name=None,
+                                 description=None,
+                                 is_visible_raw=None,
                                  diag_coded_type=diag_coded_type,
-                                 physical_type=PhysicalType("A_UINT32"),
-                                 compu_method=compu_method)
+                                 physical_type=PhysicalType("A_UINT32",
+                                                            display_radix=None,
+                                                            precision=None),
+                                 compu_method=compu_method,
+                                 unit_ref=None,
+                                 sdgs=[])
         odxlinks.update({dop.odx_id: dop})
         param1 = ValueParameter(short_name="linear_value_parameter",
+                                long_name=None,
+                                description=None,
+                                semantic=None,
                                 dop_ref=OdxLinkRef.from_id(dop.odx_id),
                                 dop_snref=None,
-                                )
+                                physical_default_value_raw=None,
+                                byte_position=None,
+                                bit_position=None,
+                                sdgs=[])
         req = Request(odx_id=OdxLinkId("request_id", doc_frags),
                       short_name="request_sn",
-                      parameters=[param1])
+                      long_name=None,
+                      description=None,
+                      is_visible_raw=None,
+                      parameters=[param1],
+                      byte_size=None)
 
         param1._resolve_references(None, odxlinks) # type: ignore
 
@@ -79,41 +141,89 @@ class TestEncodeRequest(unittest.TestCase):
         )
 
     def test_encode_nrc_const(self):
-        diag_coded_type = StandardLengthType(base_data_type="A_UINT32", bit_length=8)
+        diag_coded_type = StandardLengthType(base_data_type="A_UINT32",
+                                             base_type_encoding=None,
+                                             bit_length=8,
+                                             bit_mask=None,
+                                             is_highlow_byte_order_raw=None,
+                                             is_condensed_raw=None)
         param1 = CodedConstParameter(short_name="param1",
+                                     long_name=None,
+                                     description=None,
+                                     semantic=None,
                                      diag_coded_type=diag_coded_type,
                                      coded_value=0x12,
-                                     byte_position=0)
+                                     byte_position=0,
+                                     bit_position=None,
+                                     sdgs=[])
         param2 = NrcConstParameter(short_name="param2",
+                                   long_name=None,
+                                   description=None,
+                                   semantic=None,
                                    diag_coded_type=diag_coded_type,
                                    coded_values=[0x34, 0xab],
-                                   byte_position=1)
+                                   byte_position=1,
+                                   bit_position=None,
+                                   sdgs=[])
         resp = Response(odx_id=OdxLinkId("response_id", doc_frags),
                         short_name= "response_sn",
-                        parameters=[param1, param2])
+                        long_name=None,
+                        description=None,
+                        is_visible_raw=None,
+                        response_type="POS-RESPONSE",
+                        parameters=[param1, param2],
+                        byte_size=None)
         self.assertEqual(resp.encode(), bytearray([0x12, 0x34]))
         self.assertEqual(resp.encode(param2=0xab), bytearray([0x12, 0xab]))
         self.assertRaises(EncodeError, resp.encode, param2=0xef)
 
     def test_encode_overlapping(self):
-        uint24 = StandardLengthType(base_data_type="A_UINT32", bit_length=24)
-        uint8 = StandardLengthType(base_data_type="A_UINT32", bit_length=8)
+        uint24 = StandardLengthType(base_data_type="A_UINT32",
+                                    base_type_encoding=None,
+                                    bit_length=24,
+                                    bit_mask=None,
+                                    is_highlow_byte_order_raw=None,
+                                    is_condensed_raw=None)
+        uint8 = StandardLengthType(base_data_type="A_UINT32",
+                                   base_type_encoding=None,
+                                   bit_length=8,
+                                   bit_mask=None,
+                                   is_highlow_byte_order_raw=None,
+                                   is_condensed_raw=None)
         param1 = CodedConstParameter(short_name="code",
+                                     long_name=None,
+                                     description=None,
+                                     semantic=None,
                                      diag_coded_type=uint24,
-                                     coded_value=0x123456)
+                                     coded_value=0x123456,
+                                     byte_position=0,
+                                     bit_position=None,
+                                     sdgs=[])
         param2 = CodedConstParameter(short_name="part1",
+                                     long_name=None,
+                                     description=None,
+                                     semantic=None,
                                      diag_coded_type=uint8,
                                      coded_value=0x23,
                                      byte_position=0,
-                                     bit_position=4)
+                                     bit_position=4,
+                                     sdgs=[])
         param3 = CodedConstParameter(short_name="part2",
+                                     long_name=None,
+                                     description=None,
+                                     semantic=None,
                                      diag_coded_type=uint8,
                                      coded_value=0x45,
                                      byte_position=1,
-                                     bit_position=4)
+                                     bit_position=4,
+                                     sdgs=[])
         req = Request(odx_id=OdxLinkId("request_id", doc_frags),
                       short_name="request_sn",
-                      parameters=[param1, param2, param3])
+                      long_name=None,
+                      description=None,
+                      is_visible_raw=None,
+                      parameters=[param1, param2, param3],
+                      byte_size=None)
         self.assertEqual(req.encode(), bytearray([0x12, 0x34, 0x56]))
         self.assertEqual(req.bit_length, 24)
 

@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from collections import OrderedDict
 from dataclasses import dataclass
 from typing import Optional, Dict, Any, List
@@ -12,7 +11,6 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError
 from .globals import logger
-
 
 @dataclass
 class MultiplexerCase:
@@ -70,7 +68,7 @@ class MultiplexerDefaultCase:
 
     short_name: str
     long_name: str
-    structure_ref: Optional[OdxLinkRef] = None
+    structure_ref: Optional[OdxLinkRef]
 
     def __post_init__(self) -> None:
         self._structure: Optional[BasicStructure] = None
@@ -168,8 +166,8 @@ class Multiplexer(DopBase):
     long_name: str
     byte_position: int
     switch_key: MultiplexerSwitchKey
-    default_case: Optional[MultiplexerDefaultCase] = None
-    cases: Optional[List[MultiplexerCase]] = None
+    default_case: Optional[MultiplexerDefaultCase]
+    cases: Optional[List[MultiplexerCase]]
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) \

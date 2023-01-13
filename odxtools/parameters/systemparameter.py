@@ -1,33 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from .parameterwithdop import ParameterWithDOP
-
 
 class SystemParameter(ParameterWithDOP):
     def __init__(self,
                  *,
-                 short_name,
                  sysparam,
-                 dop_ref=None,
-                 dop_snref=None,
-                 long_name=None,
-                 byte_position=None,
-                 bit_position=None,
-                 semantic=None,
-                 description=None,
                  **kwargs):
-        super().__init__(short_name,
-                         parameter_type="SYSTEM",
-                         dop_ref=dop_ref,
-                         dop_snref=dop_snref,
-                         long_name=long_name,
-                         byte_position=byte_position,
-                         bit_position=bit_position,
-                         semantic=semantic,
-                         description=description,
-                         **kwargs)
+        super().__init__(parameter_type="SYSTEM", **kwargs)
         self.sysparam = sysparam
 
     def is_required(self):

@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-import abc
 from typing import cast, List, Dict, Optional, Any, Union
 from dataclasses import dataclass, field
 
@@ -23,7 +21,7 @@ from .exceptions import DecodeError, EncodeError
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 
-class DopBase(abc.ABC):
+class DopBase:
     """Base class for all DOPs.
 
     Any class that a parameter can reference via a DOP-REF should inherit from this class.
@@ -33,9 +31,9 @@ class DopBase(abc.ABC):
                  *,
                  odx_id,
                  short_name,
-                 long_name=None,
-                 description=None,
-                 is_visible_raw=None,
+                 long_name,
+                 description,
+                 is_visible_raw,
                  sdgs = []):
         self.odx_id = odx_id
         self.short_name = short_name
@@ -60,16 +58,13 @@ class DopBase(abc.ABC):
     def is_visible(self) -> bool:
         return self.is_visible_raw in (None, True)
 
-    @abc.abstractmethod
     def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState, bit_position: int) -> bytes:
         """Convert the physical value into bytes."""
-        pass
+        raise NotImplementedError
 
-    @abc.abstractmethod
     def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
         """Extract the bytes from the PDU and convert them to the physical value."""
-        pass
-
+        raise NotImplementedError
 
 class DataObjectProperty(DopBase):
     """This class represents a DATA-OBJECT-PROP."""
@@ -81,11 +76,11 @@ class DataObjectProperty(DopBase):
                  diag_coded_type: DiagCodedType,
                  physical_type: PhysicalType,
                  compu_method: CompuMethod,
-                 unit_ref: Optional[OdxLinkRef] = None,
-                 long_name: Optional[str] = None,
-                 description: Optional[str] = None,
-                 is_visible_raw: Optional[bool] = None,
-                 sdgs: List[SpecialDataGroup] = [],
+                 unit_ref: Optional[OdxLinkRef],
+                 long_name: Optional[str],
+                 description: Optional[str],
+                 is_visible_raw: Optional[bool],
+                 sdgs: List[SpecialDataGroup],
                  ):
         super().__init__(odx_id=odx_id,
                          short_name=short_name,
@@ -109,25 +104,28 @@ class DataObjectProperty(DopBase):
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
 
         diag_coded_type = create_any_diag_coded_type_from_et(
             et_element.find("DIAG-CODED-TYPE"), doc_frags)
 
-        physical_type = PhysicalType.from_et(
-            et_element.find("PHYSICAL-TYPE"), doc_frags)
-        compu_method = create_any_compu_method_from_et(et_element.find(
-            "COMPU-METHOD"), doc_frags, diag_coded_type.base_data_type, physical_type.base_data_type)
+        physical_type = PhysicalType.from_et(et_element.find("PHYSICAL-TYPE"), doc_frags)
+        compu_method = create_any_compu_method_from_et(et_element.find("COMPU-METHOD"),
+                                                       doc_frags,
+                                                       diag_coded_type.base_data_type,
+                                                       physical_type.base_data_type)
+        unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
 
         if et_element.tag == "DATA-OBJECT-PROP":
-            unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
             dop = DataObjectProperty(odx_id=odx_id,
                                      short_name=short_name,
+                                     long_name=long_name,
+                                     description=description,
+                                     is_visible_raw=is_visible_raw,
                                      diag_coded_type=diag_coded_type,
                                      physical_type=physical_type,
                                      compu_method=compu_method,
                                      unit_ref=unit_ref,
-                                     long_name=long_name,
-                                     description=description,
                                      sdgs=sdgs)
         else:
             dtclist: List[Union[DiagnosticTroubleCode, OdxLinkRef]] = list()
@@ -138,7 +136,14 @@ class DataObjectProperty(DopBase):
                     elif dtc_proxy_elem.tag == "DTC-REF":
                         dtclist.append(OdxLinkRef.from_et(dtc_proxy_elem, doc_frags))
 
-            is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
+            # TODO: NOT-INHERITED-DTC-SNREFS
+            linked_dtc_dops = [
+                cast(OdxLinkRef, OdxLinkRef.from_et(dtc_ref_elem, doc_frags))
+                for dtc_ref_elem in et_element.iterfind("LINKED-DTC-DOPS/"
+                                                        "LINKED-DTC-DOP/"
+                                                        "DTC-DOP-REF")
+            ]
+
             dop = DtcDop(odx_id=odx_id,
                          short_name=short_name,
                          long_name=long_name,
@@ -146,7 +151,9 @@ class DataObjectProperty(DopBase):
                          diag_coded_type=diag_coded_type,
                          physical_type=physical_type,
                          compu_method=compu_method,
+                         unit_ref=unit_ref,
                          dtcs_raw=dtclist,
+                         linked_dtc_dops=linked_dtc_dops,
                          is_visible_raw=is_visible_raw,
                          sdgs=sdgs)
         return dop
@@ -234,13 +241,13 @@ class DataObjectProperty(DopBase):
 @dataclass
 class DiagnosticTroubleCode:
     trouble_code: int
-    odx_id: Optional[OdxLinkId] = None
-    short_name: Optional[str] = None
-    text: Optional[str] = None
-    display_trouble_code: Optional[str] = None
-    level: Union[bytes, bytearray, None] = None
-    is_temporary_raw: Optional[bool] = None
-    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+    odx_id: Optional[OdxLinkId]
+    short_name: Optional[str]
+    text: Optional[str]
+    display_trouble_code: Optional[str]
+    level: Union[bytes, bytearray, None]
+    is_temporary_raw: Optional[bool]
+    sdgs: List[SpecialDataGroup]
 
     @property
     def is_temporary(self) -> bool:
@@ -294,12 +301,13 @@ class DtcDop(DataObjectProperty):
                  diag_coded_type: DiagCodedType,
                  physical_type: PhysicalType,
                  compu_method: CompuMethod,
+                 unit_ref: Optional[OdxLinkRef],
                  dtcs_raw: List[Union[DiagnosticTroubleCode, OdxLinkRef]],
-                 is_visible_raw: bool = False,
-                 linked_dtc_dops: bool = False,
-                 long_name: Optional[str] = None,
-                 description: Optional[str] = None,
-                 sdgs: List[SpecialDataGroup] = [],
+                 is_visible_raw: bool,
+                 linked_dtc_dops: List[OdxLinkRef],
+                 long_name: Optional[str],
+                 description: Optional[str],
+                 sdgs: List[SpecialDataGroup],
                  ):
         super().__init__(odx_id=odx_id,
                          short_name=short_name,
@@ -308,6 +316,7 @@ class DtcDop(DataObjectProperty):
                          diag_coded_type=diag_coded_type,
                          physical_type=physical_type,
                          compu_method=compu_method,
+                         unit_ref=unit_ref,
                          is_visible_raw=is_visible_raw,
                          sdgs=sdgs)
         self.dtcs_raw = dtcs_raw
@@ -335,7 +344,14 @@ class DtcDop(DataObjectProperty):
         # diagnostic description file is incomplete. We do not bail
         # out but we cannot provide an interpretation for it out of the
         # box...
-        dtc = DiagnosticTroubleCode(trouble_code=trouble_code)
+        dtc = DiagnosticTroubleCode(trouble_code=trouble_code,
+                                    odx_id=None,
+                                    short_name=None,
+                                    text=None,
+                                    display_trouble_code=None,
+                                    level=None,
+                                    is_temporary_raw=None,
+                                    sdgs=[])
 
         return dtc, next_byte
 

@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from typing import Any, Dict, List, Optional, Union, Type
 
 from ..odxtypes import DataType
@@ -18,12 +16,12 @@ from .scalelinearcompumethod import ScaleLinearCompuMethod
 from .tabintpcompumethod import TabIntpCompuMethod
 from .texttablecompumethod import TexttableCompuMethod
 
-
-def _parse_compu_scale_to_linear_compu_method(scale_element,
+def _parse_compu_scale_to_linear_compu_method(*,
+                                              scale_element,
                                               internal_type: DataType,
                                               physical_type: DataType,
                                               is_scale_linear=False,
-                                              additional_kwargs={}):
+                                              **kwargs):
     assert physical_type in [DataType.A_FLOAT32,
                              DataType.A_FLOAT64,
                              DataType.A_INT32,
@@ -38,7 +36,7 @@ def _parse_compu_scale_to_linear_compu_method(scale_element,
     else:
         computation_python_type = internal_type.from_string
 
-    kwargs = additional_kwargs.copy()
+    kwargs = kwargs.copy()
     kwargs["internal_type"] = internal_type
     kwargs["physical_type"] = physical_type
 
@@ -74,8 +72,11 @@ def _parse_compu_scale_to_linear_compu_method(scale_element,
             logger.info("Scale linear without UPPER-LIMIT")
             internal_upper_limit = internal_lower_limit
     kwargs["internal_upper_limit"] = internal_upper_limit
+    kwargs["denominator"] = 1.0
+    kwargs["factor"] = factor
+    kwargs["offset"] = offset
 
-    return LinearCompuMethod(offset=offset, factor=factor, **kwargs)
+    return LinearCompuMethod(**kwargs)
 
 def create_any_compu_method_from_et(et_element,
                                   doc_frags: List[OdxDocFragment],
@@ -135,14 +136,21 @@ def create_any_compu_method_from_et(et_element,
 
         scale = et_element.find(
             "COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE")
-        return _parse_compu_scale_to_linear_compu_method(scale, internal_type, physical_type, additional_kwargs=kwargs)
+        kwargs["internal_type"] = internal_type
+        kwargs["physical_type"] = physical_type
+        return _parse_compu_scale_to_linear_compu_method(scale_element=scale,
+                                                         **kwargs)
 
     elif compu_category == "SCALE-LINEAR":
 
-        scales = et_element.iterfind(
+        scale_elems = et_element.iterfind(
             "COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE")
-        linear_methods = [_parse_compu_scale_to_linear_compu_method(
-            scale, internal_type, physical_type, additional_kwargs=kwargs) for scale in scales]
+        kwargs["internal_type"] = internal_type
+        kwargs["physical_type"] = physical_type
+        linear_methods = [
+            _parse_compu_scale_to_linear_compu_method(scale_element=scale_elem,
+                                                      **kwargs)
+            for scale_elem in scale_elems]
         return ScaleLinearCompuMethod(linear_methods=linear_methods)
 
     elif compu_category == "TAB-INTP":
@@ -155,7 +163,10 @@ def create_any_compu_method_from_et(et_element,
         internal = [internal_type.from_string(x) for x in internal]
         physical = [physical_type.from_string(x) for x in physical]
 
-        return TabIntpCompuMethod(internal_type=internal_type, physical_type=physical_type, internal_points=internal, physical_points=physical)
+        return TabIntpCompuMethod(internal_type=internal_type,
+                                  physical_type=physical_type,
+                                  internal_points=internal,
+                                  physical_points=physical)
 
     # TODO: Implement other categories (never instantiate CompuMethod)
     logger.warning(
