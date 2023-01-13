@@ -64,7 +64,7 @@ class RelatedDoc:
 
 @dataclass
 class CompanySpecificInfo:
-    related_docs: Optional[List[RelatedDoc]]
+    related_docs: List[RelatedDoc]
     sdgs: List[SpecialDataGroup]
 
     @staticmethod
@@ -100,7 +100,7 @@ class TeamMember:
     short_name: str
     long_name: Optional[str]
     description: Optional[str]
-    roles: Optional[List[str]]
+    roles: List[str]
     department: Optional[str]
     address: Optional[str]
     zip: Optional[str]
@@ -154,7 +154,7 @@ class CompanyData:
     short_name: str
     long_name: Optional[str]
     description: Optional[str]
-    roles: Optional[List[str]]
+    roles: List[str]
     team_members: NamedItemList[TeamMember]
     company_specific_info: Optional[CompanySpecificInfo]
 

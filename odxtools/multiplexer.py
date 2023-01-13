@@ -167,7 +167,7 @@ class Multiplexer(DopBase):
     byte_position: int
     switch_key: MultiplexerSwitchKey
     default_case: Optional[MultiplexerDefaultCase]
-    cases: Optional[List[MultiplexerCase]]
+    cases: List[MultiplexerCase]
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) \
