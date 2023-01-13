@@ -107,7 +107,7 @@ somersault_team_members = {
                short_name="Slothy",
                long_name = None,
                description = None,
-               roles = None,
+               roles = [],
                department = None,
                address = None,
                zip = None,
@@ -155,7 +155,7 @@ somersault_company_datas = {
                                            [
                                                somersault_team_members["slothy"],
                                            ]),
-                roles = None,
+                roles = [],
                 company_specific_info = None),
 
 }
@@ -497,7 +497,7 @@ somersault_tables = {
                 sdgs=[],
             ),
         ],
-        table_row_refs=None,
+        table_row_refs=[],
         sdgs=[],
     )
 

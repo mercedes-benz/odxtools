@@ -137,7 +137,7 @@ class Table(TableBase):
                  odx_id: OdxLinkId,
                  short_name: str,
                  table_rows: List[TableRow],
-                 table_row_refs: Optional[List[OdxLinkRef]],
+                 table_row_refs: List[OdxLinkRef],
                  long_name: Optional[str],
                  key_dop_ref: Optional[OdxLinkRef],
                  description: Optional[str],
