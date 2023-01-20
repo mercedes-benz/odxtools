@@ -2,27 +2,25 @@
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass, field
 from itertools import chain
-from typing import TYPE_CHECKING, Optional, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from .utils import short_name_as_id
-from .dataobjectproperty import (
-    DataObjectProperty,
-    DtcDop,
-)
+from .dataobjectproperty import DataObjectProperty, DtcDop
 from .endofpdufield import EndOfPduField
 from .envdata import EnvironmentData
 from .envdatadesc import EnvironmentDataDescription
 from .globals import logger
 from .multiplexer import Multiplexer
 from .nameditemlist import NamedItemList
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .structures import BasicStructure, create_any_structure_from_et
 from .table import Table
 from .units import UnitSpec
-from .odxlink import OdxLinkId, OdxLinkDatabase, OdxDocFragment
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .utils import short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
+
 
 @dataclass
 class DiagDataDictionarySpec:
@@ -38,17 +36,19 @@ class DiagDataDictionarySpec:
     sdgs: List[SpecialDataGroup]
 
     def __post_init__(self):
-        self._all_data_object_properties = \
-            NamedItemList(short_name_as_id,
-                          chain(self.data_object_props,
-                                self.structures,
-                                self.end_of_pdu_fields,
-                                self.dtc_dops,
-                                self.tables))
+        self._all_data_object_properties = NamedItemList(
+            short_name_as_id,
+            chain(
+                self.data_object_props,
+                self.structures,
+                self.end_of_pdu_fields,
+                self.dtc_dops,
+                self.tables,
+            ),
+        )
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "DiagDataDictionarySpec":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "DiagDataDictionarySpec":
         # Parse DOP-BASEs
         data_object_props = [
             DataObjectProperty.from_et(dop_element, doc_frags)
@@ -132,23 +132,25 @@ class DiagDataDictionarySpec:
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
-        for obj in chain(self.data_object_props,
-                         self.structures,
-                         self.end_of_pdu_fields,
-                         self.tables,
-                         ):
+        for obj in chain(
+                self.data_object_props,
+                self.structures,
+                self.end_of_pdu_fields,
+                self.tables,
+        ):
             odxlinks[obj.odx_id] = obj
 
-        for obj in chain(self.data_object_props,
-                         self.dtc_dops,
-                         self.env_data_descs,
-                         self.env_datas,
-                         self.muxs,
-                         self.sdgs,
-                         self.structures,
-                         self.end_of_pdu_fields,
-                         self.tables,
-                         ):
+        for obj in chain(
+                self.data_object_props,
+                self.dtc_dops,
+                self.env_data_descs,
+                self.env_datas,
+                self.muxs,
+                self.sdgs,
+                self.structures,
+                self.end_of_pdu_fields,
+                self.tables,
+        ):
             odxlinks.update(obj._build_odxlinks())
 
         if self.unit_spec is not None:
@@ -156,9 +158,7 @@ class DiagDataDictionarySpec:
 
         return odxlinks
 
-    def _resolve_references(self,
-                            parent_dl: "DiagLayer",
-                            odxlinks: OdxLinkDatabase):
+    def _resolve_references(self, parent_dl: "DiagLayer", odxlinks: OdxLinkDatabase):
 
         for obj in self.data_object_props:
             obj._resolve_references(odxlinks)

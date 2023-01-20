@@ -2,12 +2,14 @@
 #
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-import bitstruct
-import can
 import asyncio
 import re
 import sys
 from enum import IntEnum
+
+import bitstruct
+import can
+
 
 class IsoTp(IntEnum):
     # Frame types
@@ -21,8 +23,10 @@ class IsoTp(IntEnum):
     FLOW_CONTROL_WAIT = 1
     FLOW_CONTROL_ABORT = 2
 
+
 class IsoTpStateMachine:
-    can_normal_frame_re = re.compile("([a-zA-Z0-9_-]*) *([0-9A-Fa-f ]*) *\[[0-9]*\] *([ 0-9A-Fa-f]*)")
+    can_normal_frame_re = re.compile(
+        "([a-zA-Z0-9_-]*) *([0-9A-Fa-f ]*) *\[[0-9]*\] *([ 0-9A-Fa-f]*)")
     can_log_frame_re = re.compile("\([0-9.]*\) *([a-zA-Z0-9_-]*) ([0-9A-Fa-f]*)#([0-9A-Fa-f]*)")
 
     def __init__(self, can_rx_ids):
@@ -30,11 +34,11 @@ class IsoTpStateMachine:
             can_rx_ids = [can_rx_ids]
 
         self._can_rx_ids = can_rx_ids
-        assert(isinstance(self._can_rx_ids, list))
+        assert isinstance(self._can_rx_ids, list)
 
-        self._telegram_specified_len = [0]*len(can_rx_ids)
-        self._telegram_data = [None]*len(can_rx_ids)
-        self._telegram_last_rx_fragment_idx = [0]*len(can_rx_ids)
+        self._telegram_specified_len = [0] * len(can_rx_ids)
+        self._telegram_data = [None] * len(can_rx_ids)
+        self._telegram_last_rx_fragment_idx = [0] * len(can_rx_ids)
 
     def decode_rx_frame(self, rx_id, data, do_yield=False):
         """Handle the ISO-TP state transitions caused by a CAN frame.
@@ -44,20 +48,20 @@ class IsoTpStateMachine:
         try:
             telegram_idx = self._can_rx_ids.index(rx_id)
         except ValueError:
-            return False # unknown CAN ID
+            return False  # unknown CAN ID
 
         # decode the isotp segment
         result = True
-        frame_type, = bitstruct.unpack("u4", data)
+        (frame_type,) = bitstruct.unpack("u4", data)
         telegram_len = None
         if frame_type == IsoTp.FRAME_TYPE_SINGLE:
             frame_type, telegram_len = bitstruct.unpack("u4u4", data)
 
-            self.on_single_frame(telegram_idx, data[1:1+telegram_len])
-            self.on_telegram_complete(telegram_idx, data[1:1+telegram_len])
+            self.on_single_frame(telegram_idx, data[1:1 + telegram_len])
+            self.on_telegram_complete(telegram_idx, data[1:1 + telegram_len])
 
             if do_yield:
-                yield (rx_id, data[1:1+telegram_len])
+                yield (rx_id, data[1:1 + telegram_len])
 
         elif frame_type == IsoTp.FRAME_TYPE_FIRST:
             frame_type, telegram_len = bitstruct.unpack("u4u12", data)
@@ -71,7 +75,7 @@ class IsoTpStateMachine:
         elif frame_type == IsoTp.FRAME_TYPE_CONSECUTIVE:
             frame_type, rx_segment_idx = bitstruct.unpack("u4u4", data)
 
-            expected_segment_idx = (self._telegram_last_rx_fragment_idx[telegram_idx] + 1)%16
+            expected_segment_idx = (self._telegram_last_rx_fragment_idx[telegram_idx] + 1) % 16
 
             if expected_segment_idx == rx_segment_idx:
                 self._telegram_last_rx_fragment_idx[telegram_idx] = rx_segment_idx
@@ -82,19 +86,14 @@ class IsoTpStateMachine:
                     # can frames can include padding, i.e. the length
                     # of the telegram payload is not necessarily a
                     # multiple of the segment payloads
-                    self._telegram_data[telegram_idx] = \
-                        self._telegram_data[telegram_idx][:n]
+                    self._telegram_data[telegram_idx] = self._telegram_data[telegram_idx][:n]
             else:
                 result = False
 
-            self.on_consecutive_frame(telegram_idx,
-                                      rx_segment_idx,
-                                      data[1:])
+            self.on_consecutive_frame(telegram_idx, rx_segment_idx, data[1:])
 
             if expected_segment_idx != rx_segment_idx:
-                self.on_sequence_error(telegram_idx,
-                                       expected_segment_idx,
-                                       rx_segment_idx)
+                self.on_sequence_error(telegram_idx, expected_segment_idx, rx_segment_idx)
             elif len(self._telegram_data[telegram_idx]) == n:
                 self.on_telegram_complete(telegram_idx, self._telegram_data[telegram_idx])
                 if do_yield:
@@ -132,9 +131,7 @@ class IsoTpStateMachine:
                 await rx_event.wait()
 
                 msg = bus.recv()
-                for tmp in self.decode_rx_frame(msg.arbitration_id,
-                                                msg.data,
-                                                do_yield=True):
+                for tmp in self.decode_rx_frame(msg.arbitration_id, msg.data, do_yield=True):
                     yield tmp
         else:
             # input is a file
@@ -149,7 +146,8 @@ class IsoTpStateMachine:
                     frame_id = int(m.group(2), 16)
 
                     frame_data_formatted = m.group(3).strip()
-                    frame_data = bytearray(map(lambda x: int(x, 16), frame_data_formatted.split(" ")))
+                    frame_data = bytearray(
+                        map(lambda x: int(x, 16), frame_data_formatted.split(" ")))
 
                     for tmp in self.decode_rx_frame(frame_id, frame_data, do_yield=True):
                         yield tmp
@@ -159,17 +157,21 @@ class IsoTpStateMachine:
                     frame_id = int(m.group(2), 16)
 
                     frame_data_formatted = m.group(3).strip()
-                    frame_data_list = [ frame_data_formatted[i:i+2] for i in range(0, len(frame_data_formatted), 2) ]
+                    frame_data_list = [
+                        frame_data_formatted[i:i + 2]
+                        for i in range(0, len(frame_data_formatted), 2)
+                    ]
                     frame_data = bytearray(map(lambda x: int(x, 16), frame_data_list))
 
                     for tmp in self.decode_rx_frame(frame_id, frame_data, do_yield=True):
                         yield tmp
 
                 else:
-                    print(f"Warning: unrecognized frame format: '{cur_line.strip()}'", file=sys.stderr)
+                    print(
+                        f"Warning: unrecognized frame format: '{cur_line.strip()}'",
+                        file=sys.stderr)
 
     def can_rx_id(self, telegram_idx):
-
         """Given a Telegram index, returns the CAN ID for receiving data.
 
         :raises IndexError: The telegram index is invalid.
@@ -222,12 +224,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
     receive ISO-TP messages actively instead of just snooping in on
     other people's conversations."""
 
-    def __init__(self,
-                 can_bus,
-                 can_rx_ids,
-                 can_tx_ids,
-                 padding_size=0,
-                 padding_value=0xaa):
+    def __init__(self, can_bus, can_rx_ids, can_tx_ids, padding_size=0, padding_value=0xAA):
         self._can_bus = can_bus
 
         if isinstance(can_tx_ids, int):
@@ -239,12 +236,12 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
 
         super().__init__(can_rx_ids)
 
-        assert(isinstance(self._can_tx_ids, list))
-        assert(len(self._can_rx_ids) == len(self._can_tx_ids))
-        assert(set(self._can_rx_ids).isdisjoint(set(self._can_tx_ids))) # correct?
+        assert isinstance(self._can_tx_ids, list)
+        assert len(self._can_rx_ids) == len(self._can_tx_ids)
+        assert set(self._can_rx_ids).isdisjoint(set(self._can_tx_ids))  # correct?
 
-        self._block_size = [None]*len(self._can_rx_ids)
-        self._frames_received = [None]*len(self._can_rx_ids)
+        self._block_size = [None] * len(self._can_rx_ids)
+        self._frames_received = [None] * len(self._can_rx_ids)
 
     def can_tx_id(self, telegram_idx):
         """Given a Telegram index, returns the CAN ID for sending data.
@@ -259,13 +256,15 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         # send ACK
         rx_id = self.can_rx_id(telegram_idx)
         tx_id = self.can_tx_id(telegram_idx)
-        block_size = 0xff
-        min_separation_time = 0 # ms
-        fc_payload = bitstruct.pack("u4u4u8u8",
-                                    IsoTp.FRAME_TYPE_FLOW_CONTROL,
-                                    IsoTp.FLOW_CONTROL_CONTINUE,
-                                    block_size, # does not matter here?!
-                                    min_separation_time)
+        block_size = 0xFF
+        min_separation_time = 0  # ms
+        fc_payload = bitstruct.pack(
+            "u4u4u8u8",
+            IsoTp.FRAME_TYPE_FLOW_CONTROL,
+            IsoTp.FLOW_CONTROL_CONTINUE,
+            block_size,  # does not matter here?!
+            min_separation_time,
+        )
 
         self._send_can_message(tx_id, fc_payload)
         self._frames_received[telegram_idx] = None
@@ -276,13 +275,15 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         # send ACK
         rx_id = self.can_rx_id(telegram_idx)
         tx_id = self.can_tx_id(telegram_idx)
-        block_size = 0xff # default value, can be overwritten later
-        min_separation_time = 0 # ms
-        fc_payload = bitstruct.pack("u4u4u8u8",
-                                    IsoTp.FRAME_TYPE_FLOW_CONTROL,
-                                    IsoTp.FLOW_CONTROL_CONTINUE,
-                                    block_size,
-                                    min_separation_time)
+        block_size = 0xFF  # default value, can be overwritten later
+        min_separation_time = 0  # ms
+        fc_payload = bitstruct.pack(
+            "u4u4u8u8",
+            IsoTp.FRAME_TYPE_FLOW_CONTROL,
+            IsoTp.FLOW_CONTROL_CONTINUE,
+            block_size,
+            min_separation_time,
+        )
 
         self._send_can_message(tx_id, fc_payload)
 
@@ -300,25 +301,25 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         if self._frames_received[telegram_idx] >= block_size:
             rx_id = self.can_rx_id(telegram_idx)
             tx_id = self.can_tx_id(telegram_idx)
-            min_separation_time = 0 # ms
-            fc_payload = bitstruct.pack("u4u4u8u8",
-                                        IsoTp.FRAME_TYPE_FLOW_CONTROL,
-                                        IsoTp.FLOW_CONTROL_CONTINUE,
-                                        block_size,
-                                        min_separation_time)
+            min_separation_time = 0  # ms
+            fc_payload = bitstruct.pack(
+                "u4u4u8u8",
+                IsoTp.FRAME_TYPE_FLOW_CONTROL,
+                IsoTp.FLOW_CONTROL_CONTINUE,
+                block_size,
+                min_separation_time,
+            )
             self._send_can_message(tx_id, fc_payload)
 
-            self._frames_received[telegram_idx] = 0 # TODO: 1?
+            self._frames_received[telegram_idx] = 0  # TODO: 1?
 
         super().on_consecutive_frame(telegram_idx, segment_idx, frame_payload)
 
-
     def _send_can_message(self, can_tx_id, payload):
         if len(payload) < self._padding_size:
-            payload = bytes(payload)+bytes([self._padding_value]*(self._padding_size - len(payload)))
+            payload = bytes(payload) + bytes([self._padding_value] *
+                                             (self._padding_size - len(payload)))
 
-        msg = can.Message(arbitration_id=can_tx_id,
-                          data=payload,
-                          is_extended_id=False)
+        msg = can.Message(arbitration_id=can_tx_id, data=payload, is_extended_id=False)
 
         self._can_bus.send(msg)

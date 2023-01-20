@@ -41,9 +41,7 @@ class EcuVariantMatcher:
         MATCH = 2
 
     @staticmethod
-    def get_ident_service(
-        diag_layer: DiagLayer, matching_param: MatchingParameter
-    ) -> DiagService:
+    def get_ident_service(diag_layer: DiagLayer, matching_param: MatchingParameter) -> DiagService:
         service_name = matching_param.diag_comm_snref
         # TODO this is not working since NamedItemList.__contains__() is not implemented
         # assert service_name in diag_layer.services
@@ -52,9 +50,7 @@ class EcuVariantMatcher:
         return service
 
     @staticmethod
-    def encode_ident_request(
-        diag_layer: DiagLayer, matching_param: MatchingParameter
-    ) -> bytes:
+    def encode_ident_request(diag_layer: DiagLayer, matching_param: MatchingParameter) -> bytes:
         service = EcuVariantMatcher.get_ident_service(diag_layer, matching_param)
         return bytes(service.encode_request())
 
@@ -92,10 +88,8 @@ class EcuVariantMatcher:
                 if isinstance(decoded_val, str) or isinstance(decoded_val, int):
                     return str(decoded_val)
 
-        raise OdxError(
-            f"The snref or snpathref '{matching_param.out_param_if}' is cannot be \
-                resolved for any positive or negative response."
-        )
+        raise OdxError(f"The snref or snpathref '{matching_param.out_param_if}' is cannot be \
+                resolved for any positive or negative response.")
 
     def __init__(self, ecu_variant_candidates: List[DiagLayer], use_cache: bool = True):
 
@@ -121,9 +115,7 @@ class EcuVariantMatcher:
             for pattern in ecu.ecu_variant_patterns:
                 all_match = True
                 for matching_param in pattern.matching_parameters:
-                    req_bytes = bytes(
-                        EcuVariantMatcher.encode_ident_request(ecu, matching_param)
-                    )
+                    req_bytes = bytes(EcuVariantMatcher.encode_ident_request(ecu, matching_param))
                     if self.use_cache and req_bytes in self.req_resp_cache:
                         resp_bytes = self.req_resp_cache[req_bytes]
                     else:
@@ -131,8 +123,7 @@ class EcuVariantMatcher:
                         resp_bytes = self._get_ident_response()
                         self._update_cache(req_bytes, resp_bytes)
                     ident_val = EcuVariantMatcher.decode_ident_response(
-                        ecu, matching_param, resp_bytes
-                    )
+                        ecu, matching_param, resp_bytes)
                     all_match &= matching_param.is_match(ident_val)
                 if all_match:
                     any_match = True
@@ -178,7 +169,5 @@ class EcuVariantMatcher:
 
     def _get_ident_response(self) -> bytes:
         if not self._recent_ident_response:
-            raise RuntimeError(
-                "No response available. Mayby forgot to call 'evaluate' in loop?"
-            )
+            raise RuntimeError("No response available. Mayby forgot to call 'evaluate' in loop?")
         return self._recent_ident_response

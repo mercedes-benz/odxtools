@@ -119,51 +119,45 @@ def supplier_service(monkeypatch, dummy_response: Response) -> DiagService:
 
 @pytest.fixture
 def ecu_variant_pattern1() -> EcuVariantPattern:
-    return EcuVariantPattern(
-        matching_parameters=[
-            MatchingParameter(
-                diag_comm_snref="identService",
-                expected_value="1000",
-                out_param_if="id",
-            ),
-            MatchingParameter(
-                diag_comm_snref="supplierService",
-                expected_value="supplier_A",
-                out_param_if="name.english",
-            ),
-        ]
-    )
+    return EcuVariantPattern(matching_parameters=[
+        MatchingParameter(
+            diag_comm_snref="identService",
+            expected_value="1000",
+            out_param_if="id",
+        ),
+        MatchingParameter(
+            diag_comm_snref="supplierService",
+            expected_value="supplier_A",
+            out_param_if="name.english",
+        ),
+    ])
 
 
 @pytest.fixture
 def ecu_variant_pattern2() -> EcuVariantPattern:
-    return EcuVariantPattern(
-        matching_parameters=[
-            MatchingParameter(
-                diag_comm_snref="identService",
-                expected_value="2000",
-                out_param_if="id",
-            ),
-            MatchingParameter(
-                diag_comm_snref="supplierService",
-                expected_value="supplier_B",
-                out_param_if="name.english",
-            ),
-        ]
-    )
+    return EcuVariantPattern(matching_parameters=[
+        MatchingParameter(
+            diag_comm_snref="identService",
+            expected_value="2000",
+            out_param_if="id",
+        ),
+        MatchingParameter(
+            diag_comm_snref="supplierService",
+            expected_value="supplier_B",
+            out_param_if="name.english",
+        ),
+    ])
 
 
 @pytest.fixture
 def ecu_variant_pattern3() -> EcuVariantPattern:
-    return EcuVariantPattern(
-        matching_parameters=[
-            MatchingParameter(
-                diag_comm_snref="supplierService",
-                expected_value="supplier_C",
-                out_param_if="name.english",
-            )
-        ]
-    )
+    return EcuVariantPattern(matching_parameters=[
+        MatchingParameter(
+            diag_comm_snref="supplierService",
+            expected_value="supplier_C",
+            out_param_if="name.english",
+        )
+    ])
 
 
 @pytest.fixture
@@ -197,6 +191,7 @@ def ecu_variant_1(
     )
     result.finalize_init(odxlinks)
     return result
+
 
 @pytest.fixture
 def ecu_variant_2(
@@ -264,10 +259,10 @@ def ecu_variant_3(
     result.finalize_init(odxlinks)
     return result
 
+
 @pytest.fixture
-def ecu_variants(
-    ecu_variant_1: DiagLayer, ecu_variant_2: DiagLayer, ecu_variant_3: DiagLayer
-) -> List[DiagLayer]:
+def ecu_variants(ecu_variant_1: DiagLayer, ecu_variant_2: DiagLayer,
+                 ecu_variant_3: DiagLayer) -> List[DiagLayer]:
     return [ecu_variant_1, ecu_variant_2, ecu_variant_3]
 
 
@@ -284,7 +279,9 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
         (
             {
                 b"\x22\x10\00": as_bytes({"id": 2000}),
-                b"\x22\x20\00": as_bytes({"name": {"english": "supplier_B"}}),
+                b"\x22\x20\00": as_bytes({"name": {
+                    "english": "supplier_B"
+                }}),
             },
             "ecu_variant2",
         ),
@@ -292,7 +289,9 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
         (
             {
                 b"\x22\x10\00": as_bytes({"id": 2000}),
-                b"\x22\x20\00": as_bytes({"name": {"english": "supplier_C"}}),
+                b"\x22\x20\00": as_bytes({"name": {
+                    "english": "supplier_C"
+                }}),
             },
             "ecu_variant3",
         ),
@@ -300,7 +299,9 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
         (
             {
                 b"\x22\x10\00": as_bytes({"id": 1000}),
-                b"\x22\x20\00": as_bytes({"name": {"english": "supplier_A"}}),
+                b"\x22\x20\00": as_bytes({"name": {
+                    "english": "supplier_A"
+                }}),
             },
             "ecu_variant1",
         ),
@@ -328,7 +329,9 @@ def test_no_match(ecu_variants: List[DiagLayer], use_cache: bool):
     # stores the responses for each request for the ecu-under-test
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 1000}),
-        b"\x22\x20\00": as_bytes({"name": {"english": "supplier_D"}}),
+        b"\x22\x20\00": as_bytes({"name": {
+            "english": "supplier_D"
+        }}),
     }
 
     matcher = EcuVariantMatcher(
@@ -373,7 +376,9 @@ def test_request_loop_misuse(ecu_variants: List[DiagLayer], use_cache: bool):
 def test_request_loop_idempotency(ecu_variants: List[DiagLayer], use_cache: bool):
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 2000}),
-        b"\x22\x20\00": as_bytes({"name": {"english": "supplier_B"}}),
+        b"\x22\x20\00": as_bytes({"name": {
+            "english": "supplier_B"
+        }}),
     }
 
     matcher = EcuVariantMatcher(

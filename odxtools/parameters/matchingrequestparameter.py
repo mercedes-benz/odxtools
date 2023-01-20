@@ -2,17 +2,13 @@
 # Copyright (c) 2022 MBition GmbH
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-
 from .parameterbase import Parameter
 
+
 class MatchingRequestParameter(Parameter):
-    def __init__(self,
-                 *,
-                 request_byte_position,
-                 byte_length,
-                 **kwargs):
-        super().__init__(parameter_type="MATCHING-REQUEST-PARAM",
-                         **kwargs)
+
+    def __init__(self, *, request_byte_position, byte_length, **kwargs):
+        super().__init__(parameter_type="MATCHING-REQUEST-PARAM", **kwargs)
         assert byte_length is not None
         assert request_byte_position is not None
         self.request_byte_position = request_byte_position
@@ -39,14 +35,17 @@ class MatchingRequestParameter(Parameter):
         if not encode_state.triggering_request:
             raise TypeError(f"Parameter '{self.short_name}' is of matching request type,"
                             " but no original request has been specified.")
-        return encode_state.triggering_request[self.request_byte_position:self.request_byte_position+self.byte_length]
+        return encode_state.triggering_request[self
+                                               .request_byte_position:self.request_byte_position +
+                                               self.byte_length]
 
     def decode_from_pdu(self, decode_state: DecodeState):
-        byte_position = self.byte_position if self.byte_position is not None else decode_state.next_byte_position
+        byte_position = (
+            self.byte_position
+            if self.byte_position is not None else decode_state.next_byte_position)
         bit_position = self.bit_position if self.bit_position is not None else 0
         byte_length = (self.bit_length + bit_position + 7) // 8
-        val_as_bytes = decode_state.coded_message[byte_position:
-                                                  byte_position+byte_length]
+        val_as_bytes = decode_state.coded_message[byte_position:byte_position + byte_length]
 
         return val_as_bytes, byte_position + byte_length
 
@@ -69,4 +68,7 @@ class MatchingRequestParameter(Parameter):
         return repr_str + ")"
 
     def __str__(self):
-        return super().__str__() + f"\n Request byte position = {self.request_byte_position}, byte length = {self._byte_length}"
+        return (
+            super().__str__() +
+            f"\n Request byte position = {self.request_byte_position}, byte length = {self._byte_length}"
+        )

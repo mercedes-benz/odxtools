@@ -2,6 +2,6 @@
 # Copyright (c) 2022 MBition GmbH
 import logging
 
-logger = logging.getLogger('odxtools')
+logger = logging.getLogger("odxtools")
 
 xsi = "{http://www.w3.org/2001/XMLSchema-instance}"

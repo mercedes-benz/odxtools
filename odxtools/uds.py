@@ -2,15 +2,17 @@
 # Copyright (c) 2022 MBition GmbH
 from enum import IntEnum
 from itertools import chain
-from typing import Optional, Union, ByteString
+from typing import ByteString, Optional, Union
 
 import odxtools.obd as obd
+
 
 class UDSSID(IntEnum):
     """The service IDs standardized by UDS.
 
     For additional information, see https://en.wikipedia.org/wiki/Unified_Diagnostic_Services
     """
+
     # 0x10..0x3e: UDS standardized service IDs
     DiagnosticSessionControl = 0x10
     EcuReset = 0x11
@@ -46,8 +48,10 @@ class UDSSID(IntEnum):
 
     # 0xBA..0xBE: Reserved for ECU specific services
 
+
 # add the OBD SIDs to the ones from UDS
-SID = IntEnum('UdsSID', ((i.name, i.value) for i in chain(obd.SID, UDSSID)))  # type: ignore
+SID = IntEnum("UdsSID", ((i.name, i.value) for i in chain(obd.SID, UDSSID)))  # type: ignore
+
 
 class NegativeResponseCodes(IntEnum):
     """The standardized negative response codes of UDS.
@@ -56,41 +60,47 @@ class NegativeResponseCodes(IntEnum):
     service_id_of_request, response_code]`. The meaning of the last
     byte is what's defined here.
     """
+
     GeneralReject = 0x10
     ServiceNotSupported = 0x11
     SubFunctionNotSupported = 0x12
-    InvalidFormat = 0x13 # Incorrect message length of request or invalid format
-    TooLong = 0x14 # Response would be too long
-    Busy = 0x21 # please repeat!
-    ConditionsIncorrect = 0x22 # request cannot be satisfied because ECU is in wrong state
+    InvalidFormat = 0x13  # Incorrect message length of request or invalid format
+    TooLong = 0x14  # Response would be too long
+    Busy = 0x21  # please repeat!
+    ConditionsIncorrect = 0x22  # request cannot be satisfied because ECU is in wrong state
     RequestSequenceError = 0x24
-    NoResponseFromSubNetComponent = 0x25 # we pinged a slave ECU bit it did not respond in time
-    Failure = 0x26 # failure prevents execution of requested action
+    NoResponseFromSubNetComponent = 0x25  # we pinged a slave ECU bit it did not respond in time
+    Failure = 0x26  # failure prevents execution of requested action
     RequestOutOfRange = 0x31
     SecurityAccessDenied = 0x33
     InvalidKey = 0x35
     ExceededNumberOfAttempts = 0x36
     RequiredTimeDelayNotExpired = 0x37
-    Reserved = 0x4F # reserved by Extended Data Link Security Document
+    Reserved = 0x4F  # reserved by Extended Data Link Security Document
     UpDownloadNotAccepted = 0x70
     TransferDataSuspended = 0x71
     GeneralProgrammingFailure = 0x72
     WrongBlockSequenceCounter = 0x73
-    ResponsePending = 0x78 # Request correctly received, but response is still pending
+    ResponsePending = 0x78  # Request correctly received, but response is still pending
     SubFunctionNotSupportedInActiveSession = 0x7E
     ServiceNotSupportedInActiveSession = 0x7F
+
 
 # get the ID of a positive response
 def positive_response_id(service_id: int) -> int:
     """Given a service ID of a request, return the corresponding SID for a positive response"""
-    assert service_id != 0x7f - 0x40
+    assert service_id != 0x7F - 0x40
     return service_id + 0x40
 
-NegativeResponseId = 0x7f
+
+NegativeResponseId = 0x7F
+
+
 def negative_response_id(service_id: int) -> int:
     """Given a service ID of a request, return the corresponding SID for a negative response"""
-    assert service_id != 0x7f - 0x40  # TODO: What is this assert supposed to do?
+    assert service_id != 0x7F - 0x40  # TODO: What is this assert supposed to do?
     return NegativeResponseId
+
 
 def is_reponse_pending(telegram_payload: ByteString, request_sid: Optional[int] = None) -> bool:
     # "response pending" responses exhibit at least three bytes

@@ -2,15 +2,16 @@
 # Copyright (c) 2022 MBition GmbH
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Optional, Dict, Any, List
+from typing import Any, Dict, List, Optional
 
-from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
-from .structures import BasicStructure
-from .dataobjectproperty import DopBase, DataObjectProperty
+from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError
 from .globals import logger
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .structures import BasicStructure
+
 
 @dataclass
 class MultiplexerCase:
@@ -26,9 +27,7 @@ class MultiplexerCase:
         self._structure: Optional[BasicStructure] = None
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "MultiplexerCase":
-
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "MultiplexerCase":
         """Reads a Case for a Multiplexer."""
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
@@ -49,17 +48,11 @@ class MultiplexerCase:
         self._structure = odxlinks.resolve(self.structure_ref)
 
     def __repr__(self) -> str:
-        return (
-            f"MultiplexerCase('{self.short_name}', "
-            + ", ".join(
-                [
-                    f"lower_limit='{self.lower_limit}'",
-                    f"upper_limit='{self.upper_limit}'",
-                    f"structure_ref='{self.structure_ref}'",
-                ]
-            )
-            + ")"
-        )
+        return (f"MultiplexerCase('{self.short_name}', " + ", ".join([
+            f"lower_limit='{self.lower_limit}'",
+            f"upper_limit='{self.upper_limit}'",
+            f"structure_ref='{self.structure_ref}'",
+        ]) + ")")
 
 
 @dataclass
@@ -74,9 +67,7 @@ class MultiplexerDefaultCase:
         self._structure: Optional[BasicStructure] = None
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "MultiplexerDefaultCase":
-
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "MultiplexerDefaultCase":
         """Reads a Default Case for a Multiplexer."""
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
@@ -94,15 +85,9 @@ class MultiplexerDefaultCase:
             self._structure = odxlinks.resolve(self.structure_ref)
 
     def __repr__(self) -> str:
-        return (
-            f"MultiplexerDefaultCase('{self.short_name}', "
-            + ", ".join(
-                [
-                    f"structure_ref='{self.structure_ref}'",
-                ]
-            )
-            + ")"
-        )
+        return (f"MultiplexerDefaultCase('{self.short_name}', " + ", ".join([
+            f"structure_ref='{self.structure_ref}'",
+        ]) + ")")
 
 
 @dataclass
@@ -114,11 +99,10 @@ class MultiplexerSwitchKey:
     dop_ref: OdxLinkRef
 
     def __post_init__(self):
-        self._dop: DataObjectProperty = None # type: ignore
+        self._dop: DataObjectProperty = None  # type: ignore
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "MultiplexerSwitchKey":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "MultiplexerSwitchKey":
         """Reads a Switch Key for a Multiplexer."""
         byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
         assert byte_position is not None
@@ -139,21 +123,14 @@ class MultiplexerSwitchKey:
             self._dop = dop
         else:
             logger.warning(
-                f"DATA-OBJECT-PROP-REF '{self.dop_ref}' could not be resolved in SWITCH-KEY."
-            )
+                f"DATA-OBJECT-PROP-REF '{self.dop_ref}' could not be resolved in SWITCH-KEY.")
 
     def __repr__(self) -> str:
-        return (
-            f"MultiplexerSwitchKey("
-            + ", ".join(
-                [
-                    f"byte_position={self.byte_position}",
-                    f"bit_position={self.bit_position}",
-                    f"dop_ref={self.dop_ref}",
-                ]
-            )
-            + ")"
-        )
+        return (f"MultiplexerSwitchKey(" + ", ".join([
+            f"byte_position={self.byte_position}",
+            f"bit_position={self.bit_position}",
+            f"dop_ref={self.dop_ref}",
+        ]) + ")")
 
 
 @dataclass
@@ -170,16 +147,14 @@ class Multiplexer(DopBase):
     cases: List[MultiplexerCase]
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "Multiplexer":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Multiplexer":
         """Reads a Multiplexer from Diag Layer."""
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
         assert odx_id is not None
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
         byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
-        switch_key = MultiplexerSwitchKey.from_et(et_element.find("SWITCH-KEY"),
-                                                  doc_frags)
+        switch_key = MultiplexerSwitchKey.from_et(et_element.find("SWITCH-KEY"), doc_frags)
 
         default_case = None
         if et_element.find("DEFAULT-CASE") is not None:
@@ -189,7 +164,8 @@ class Multiplexer(DopBase):
         cases = []
         if et_element.find("CASES") is not None:
             cases = [
-                MultiplexerCase.from_et(el, doc_frags) for el in et_element.find("CASES").iterfind("CASE")
+                MultiplexerCase.from_et(el, doc_frags)
+                for el in et_element.find("CASES").iterfind("CASE")
             ]
 
         logger.debug("Parsing MUX " + short_name)
@@ -214,16 +190,12 @@ class Multiplexer(DopBase):
         upper_limit = key_type.make_from(case.upper_limit)
         return lower_limit, upper_limit
 
-    def convert_physical_to_bytes(
-            self,
-            physical_value,
-            encode_state: EncodeState,
-            bit_position: int) -> bytes:
+    def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState,
+                                  bit_position: int) -> bytes:
 
         if bit_position != 0:
-            raise EncodeError(
-                "Multiplexer must be aligned, i.e. bit_position=0, but "
-                f"{self.short_name} was passed the bit position {bit_position}")
+            raise EncodeError("Multiplexer must be aligned, i.e. bit_position=0, but "
+                              f"{self.short_name} was passed the bit position {bit_position}")
 
         if not isinstance(physical_value, dict) or len(physical_value) != 1:
             raise EncodeError("""Multiplexer should be defined as a dict
@@ -233,62 +205,54 @@ class Multiplexer(DopBase):
         key_pos = self.switch_key.byte_position
         case_pos = self.byte_position
 
-        for case in (self.cases or []):
+        for case in self.cases or []:
             if case.short_name == case_name:
                 if case._structure:
                     case_bytes = case._structure.convert_physical_to_bytes(
                         case_value, encode_state, 0)
                 else:
                     case_bytes = bytes()
-                
+
                 key_value, _ = self._get_case_limits(case)
                 sk_bit_position = self.switch_key.bit_position
                 sk_bit_position = sk_bit_position if sk_bit_position is not None else 0
                 key_bytes = self.switch_key._dop.convert_physical_to_bytes(
                     key_value, encode_state, sk_bit_position)
 
-                mux_len = max(
-                    len(key_bytes) + key_pos,
-                    len(case_bytes) + case_pos
-                )
+                mux_len = max(len(key_bytes) + key_pos, len(case_bytes) + case_pos)
                 mux_bytes = bytearray(mux_len)
                 mux_bytes[key_pos:key_pos + len(key_bytes)] = key_bytes
                 mux_bytes[case_pos:case_pos + len(case_bytes)] = case_bytes
 
                 return bytes(mux_bytes)
 
-        raise EncodeError(
-            f"The case {case_name} is not found in Multiplexer {self.short_name}")
+        raise EncodeError(f"The case {case_name} is not found in Multiplexer {self.short_name}")
 
-    def convert_bytes_to_physical(
-            self,
-            decode_state: DecodeState,
-            bit_position: int = 0):
+    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
 
         if bit_position != 0:
-            raise DecodeError(
-                "Multiplexer must be aligned, i.e. bit_position=0, but "
-                f"{self.short_name} was passed the bit position {bit_position}")
+            raise DecodeError("Multiplexer must be aligned, i.e. bit_position=0, but "
+                              f"{self.short_name} was passed the bit position {bit_position}")
         byte_code = decode_state.coded_message[decode_state.next_byte_position:]
         key_decode_state = DecodeState(
             coded_message=byte_code[self.switch_key.byte_position:],
             parameter_value_pairs=[],
-            next_byte_position=0
+            next_byte_position=0,
         )
-        bit_position_int = self.switch_key.bit_position if self.switch_key.bit_position is not None else 0
-        key_value, key_next_byte = \
-            self.switch_key._dop.convert_bytes_to_physical(key_decode_state,
-                                                           bit_position=bit_position_int)
+        bit_position_int = (
+            self.switch_key.bit_position if self.switch_key.bit_position is not None else 0)
+        key_value, key_next_byte = self.switch_key._dop.convert_bytes_to_physical(
+            key_decode_state, bit_position=bit_position_int)
 
         case_decode_state = DecodeState(
             coded_message=byte_code[self.byte_position:],
             parameter_value_pairs=[],
-            next_byte_position=0
+            next_byte_position=0,
         )
         case_found = False
         case_next_byte = 0
         case_value = None
-        for case in (self.cases or []):
+        for case in self.cases or []:
             lower, upper = self._get_case_limits(case)
             if lower <= key_value and key_value <= upper:
                 case_found = True
@@ -308,11 +272,8 @@ class Multiplexer(DopBase):
                 f"Failed to find a matching case in {self.short_name} for value {key_value}")
 
         mux_value = OrderedDict({case.short_name: case_value})
-        mux_next_byte = decode_state.next_byte_position + \
-            max(
-                key_next_byte + self.switch_key.byte_position,
-                case_next_byte + self.byte_position
-            )
+        mux_next_byte = decode_state.next_byte_position + max(
+            key_next_byte + self.switch_key.byte_position, case_next_byte + self.byte_position)
         return mux_value, mux_next_byte
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -325,21 +286,14 @@ class Multiplexer(DopBase):
         if self.default_case is not None:
             self.default_case._resolve_references(odxlinks)
 
-        for case in (self.cases or []):
+        for case in self.cases or []:
             case._resolve_references(odxlinks)
 
     def __repr__(self) -> str:
-        return (
-            f"Multiplexer('{self.short_name}', "
-            + ", ".join(
-                [
-                    f"odx_id='{self.odx_id}'",
-                    f"byte_position='{self.byte_position}'",
-                    f"switch_key='{self.switch_key}'",
-                    f"default_case='{self.default_case}'",
-                    f"cases='{self.cases}'",
-                ]
-            )
-            + ")"
-        )
-
+        return (f"Multiplexer('{self.short_name}', " + ", ".join([
+            f"odx_id='{self.odx_id}'",
+            f"byte_position='{self.byte_position}'",
+            f"switch_key='{self.switch_key}'",
+            f"default_case='{self.default_case}'",
+            f"cases='{self.cases}'",
+        ]) + ")")

@@ -1,40 +1,43 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-from typing import List, Iterable, Optional, Union
+from typing import Iterable, List, Optional, Union, cast
 from xml.etree import ElementTree
 
-from .utils import short_name_as_id
+from .admindata import AdminData
 from .audience import Audience
-from .functionalclass import FunctionalClass
-from .state import State
-from .utils import create_description_from_et
 from .exceptions import DecodeError
+from .functionalclass import FunctionalClass
+from .message import Message
+from .nameditemlist import NamedItemList
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parameters import Parameter
-from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
+from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .state import State
 from .state_transition import StateTransition
 from .structures import Request, Response
-from .nameditemlist import NamedItemList
-from .message import Message
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
-from .admindata import AdminData
+from .utils import create_description_from_et, short_name_as_id
+
 
 class DiagService:
-    def __init__(self,
-                 *,
-                 odx_id: OdxLinkId,
-                 short_name: str,
-                 request: Union[OdxLinkRef, Request],
-                 positive_responses: Union[Iterable[OdxLinkRef], Iterable[Response]],
-                 negative_responses: Union[Iterable[OdxLinkRef], Iterable[Response]],
-                 long_name: Optional[str],
-                 admin_data: Optional[AdminData],
-                 description: Optional[str],
-                 semantic: Optional[str],
-                 audience: Optional[Audience],
-                 functional_class_refs: Iterable[OdxLinkRef],
-                 pre_condition_state_refs: Iterable[OdxLinkRef],
-                 state_transition_refs: Iterable[OdxLinkRef],
-                 sdgs: List[SpecialDataGroup]):
+
+    def __init__(
+        self,
+        *,
+        odx_id: OdxLinkId,
+        short_name: str,
+        request: Union[OdxLinkRef, Request],
+        positive_responses: Union[Iterable[OdxLinkRef], Iterable[Response]],
+        negative_responses: Union[Iterable[OdxLinkRef], Iterable[Response]],
+        long_name: Optional[str],
+        admin_data: Optional[AdminData],
+        description: Optional[str],
+        semantic: Optional[str],
+        audience: Optional[Audience],
+        functional_class_refs: Iterable[OdxLinkRef],
+        pre_condition_state_refs: Iterable[OdxLinkRef],
+        state_transition_refs: Iterable[OdxLinkRef],
+        sdgs: List[SpecialDataGroup],
+    ):
         """Constructs the service.
 
         Parameters:
@@ -54,14 +57,11 @@ class DiagService:
         self.semantic: Optional[str] = semantic
         self.audience: Optional[Audience] = audience
         self.functional_class_refs: List[OdxLinkRef] = list(functional_class_refs)
-        self._functional_classes: Union[List[FunctionalClass],
-                                        NamedItemList[FunctionalClass]] = []
+        self._functional_classes: Union[List[FunctionalClass], NamedItemList[FunctionalClass]] = []
         self.pre_condition_state_refs: List[OdxLinkRef] = list(pre_condition_state_refs)
-        self._pre_condition_states: Union[List[State],
-                                          NamedItemList[State]] = []
+        self._pre_condition_states: Union[List[State], NamedItemList[State]] = []
         self.state_transition_refs: List[OdxLinkRef] = list(state_transition_refs)
-        self._state_transitions: Union[List[StateTransition],
-                                       NamedItemList[StateTransition]] = []
+        self._state_transitions: Union[List[StateTransition], NamedItemList[StateTransition]] = []
 
         self._request: Optional[Request]
         self.request_ref: OdxLinkRef
@@ -77,32 +77,32 @@ class DiagService:
             self._request = request
             self.request_ref = OdxLinkRef.from_id(request.odx_id)
         else:
-            raise ValueError(
-                "request must be a reference to a request or a Request object")
+            raise ValueError("request must be a reference to a request or a Request object")
 
         if all(isinstance(x, Response) for x in positive_responses):
-            # TODO (?): Can we tell mypy that positive_responses is definitely of type Iterable[Response]
-            self._positive_responses = \
-                NamedItemList[Response](short_name_as_id,
-                                        positive_responses)  # type: ignore
+            self._positive_responses = NamedItemList[Response](short_name_as_id, [
+                cast(Response, x) for x in positive_responses
+            ])
             self.pos_res_refs = [
-                OdxLinkRef.from_id(pr.odx_id) for pr in positive_responses]  # type: ignore
+                OdxLinkRef.from_id(cast(Response, pr).odx_id) for pr in positive_responses
+            ]
         elif all(isinstance(x, OdxLinkRef) for x in positive_responses):
             self._positive_responses = None
-            self.pos_res_refs = positive_responses  # type: ignore
+            self.pos_res_refs = [cast(OdxLinkRef, x) for x in positive_responses]
         else:
             raise TypeError(
                 "positive_responses must be of type Union[List[OdxLinkRef], List[Response], None]")
 
         if all(isinstance(x, Response) for x in negative_responses):
-            self._negative_responses = \
-                NamedItemList[Response](short_name_as_id,
-                                        negative_responses)  # type: ignore
+            self._negative_responses = NamedItemList[Response](short_name_as_id, [
+                cast(Response, x) for x in negative_responses
+            ])
             self.neg_res_refs = [
-                OdxLinkRef.from_id(nr.odx_id) for nr in negative_responses]  # type: ignore
+                OdxLinkRef.from_id(cast(Response, nr).odx_id) for nr in negative_responses
+            ]  # type: ignore
         elif all(isinstance(x, OdxLinkRef) for x in negative_responses):
             self._negative_responses = None
-            self.neg_res_refs = negative_responses  # type: ignore
+            self.neg_res_refs = [cast(OdxLinkRef, x) for x in negative_responses]
         else:
             raise TypeError(
                 "negative_responses must be of type Union[List[str], List[Response], None]")
@@ -120,7 +120,7 @@ class DiagService:
         request_ref = OdxLinkRef.from_et(et_element.find("REQUEST-REF"), doc_frags)
         assert request_ref is not None
 
-        pos_res_refs = [ ]
+        pos_res_refs = []
         for el in et_element.iterfind("POS-RESPONSE-REFS/POS-RESPONSE-REF"):
             ref = OdxLinkRef.from_et(el, doc_frags)
             assert ref is not None
@@ -161,27 +161,29 @@ class DiagService:
 
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
-        return DiagService(odx_id=odx_id,
-                           short_name=short_name,
-                           request=request_ref,
-                           positive_responses=pos_res_refs,
-                           negative_responses=neg_res_refs,
-                           long_name=long_name,
-                           description=description,
-                           admin_data=admin_data,
-                           semantic=semantic,
-                           audience=audience,
-                           functional_class_refs=functional_class_refs,
-                           pre_condition_state_refs=pre_condition_state_refs,
-                           state_transition_refs=state_transition_refs,
-                           sdgs=sdgs)
+        return DiagService(
+            odx_id=odx_id,
+            short_name=short_name,
+            request=request_ref,
+            positive_responses=pos_res_refs,
+            negative_responses=neg_res_refs,
+            long_name=long_name,
+            description=description,
+            admin_data=admin_data,
+            semantic=semantic,
+            audience=audience,
+            functional_class_refs=functional_class_refs,
+            pre_condition_state_refs=pre_condition_state_refs,
+            state_transition_refs=state_transition_refs,
+            sdgs=sdgs,
+        )
 
     @property
     def request(self) -> Optional[Request]:
         return self._request
 
     @property
-    def free_parameters(self) -> List[Union[Parameter, "EndOfPduField"]]: # type: ignore
+    def free_parameters(self) -> List[Union[Parameter, "EndOfPduField"]]:  # type: ignore
         """Return the list of parameters which can be freely specified by
         the user when encoding the service's request.
         """
@@ -226,45 +228,38 @@ class DiagService:
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         self._request = odxlinks.resolve(self.request_ref)
-        self._positive_responses = \
-            NamedItemList(
-                short_name_as_id,
-                [odxlinks.resolve(pr_id) for pr_id in self.pos_res_refs])
-        self._negative_responses = \
-            NamedItemList(
-                short_name_as_id,
-                [odxlinks.resolve(nr_id) for nr_id in self.neg_res_refs])
-        self._functional_classes = \
-            NamedItemList(
-                short_name_as_id,
-                [odxlinks.resolve(fc_id) for fc_id in self.functional_class_refs])
-        self._pre_condition_states = \
-            NamedItemList(
-                short_name_as_id,
-                [odxlinks.resolve(st_id) for st_id in self.pre_condition_state_refs])
-        self._state_transitions = \
-            NamedItemList(
-                short_name_as_id,
-                [odxlinks.resolve(stt_id) for stt_id in self.state_transition_refs])
+        self._positive_responses = NamedItemList(short_name_as_id, [
+            odxlinks.resolve(pr_id) for pr_id in self.pos_res_refs
+        ])
+        self._negative_responses = NamedItemList(short_name_as_id, [
+            odxlinks.resolve(nr_id) for nr_id in self.neg_res_refs
+        ])
+        self._functional_classes = NamedItemList(short_name_as_id, [
+            odxlinks.resolve(fc_id) for fc_id in self.functional_class_refs
+        ])
+        self._pre_condition_states = NamedItemList(short_name_as_id, [
+            odxlinks.resolve(st_id) for st_id in self.pre_condition_state_refs
+        ])
+        self._state_transitions = NamedItemList(short_name_as_id, [
+            odxlinks.resolve(stt_id) for stt_id in self.state_transition_refs
+        ])
         if self.audience:
             self.audience._resolve_references(odxlinks)
 
         for sdg in self.sdgs:
             sdg._resolve_references(odxlinks)
 
-
     def decode_message(self, message: Union[bytes, bytearray]) -> Message:
 
         # Check if message is a request or positive or negative response
         interpretable_message_types = []
 
-        if self.request is None or self.positive_responses is None or self.negative_responses is None:
+        if (self.request is None or self.positive_responses is None or
+                self.negative_responses is None):
             raise ValueError("References couldn't be resolved or have not been resolved yet."
                              " Try calling `database.resolve_references()`.")
 
-        for message_type in [self.request,
-                             *self.positive_responses,
-                             *self.negative_responses]:
+        for message_type in [self.request, *self.positive_responses, *self.negative_responses]:
             prefix = message_type.coded_const_prefix(
                 request_prefix=self.request.coded_const_prefix())
             if all(b == message[i] for (i, b) in enumerate(prefix)):
@@ -275,7 +270,8 @@ class DiagService:
                 f"The service {self.short_name} cannot decode the message {message.hex()}")
         message_type = interpretable_message_types[0]
         param_dict = message_type.decode(message)
-        return Message(coded_message=message, service=self, structure=message_type, param_dict=param_dict)
+        return Message(
+            coded_message=message, service=self, structure=message_type, param_dict=param_dict)
 
     def encode_request(self, **params):
         """
@@ -288,16 +284,15 @@ class DiagService:
         # make sure that all parameters which are required for
         # encoding are specified (parameters which have a default are
         # optional)
-        missing_params = {
-            x.short_name
-            for x in self.request.required_parameters
-        }.difference(params.keys())
+        missing_params = {x.short_name
+                          for x in self.request.required_parameters}.difference(params.keys())
         assert not missing_params, f"The parameters {missing_params} are required but missing!"
 
         # make sure that no unknown parameters are specified
-        rq_all_param_names = { x.short_name for x in self.request.parameters }
-        assert set(params.keys()).issubset(rq_all_param_names), \
-            f"Unknown parameters specified for encoding: {params.keys()}, known parameters are: {rq_all_param_names}"
+        rq_all_param_names = {x.short_name for x in self.request.parameters}
+        assert set(params.keys()).issubset(
+            rq_all_param_names
+        ), f"Unknown parameters specified for encoding: {params.keys()}, known parameters are: {rq_all_param_names}"
         return self.request.encode(**params)
 
     def encode_positive_response(self, coded_request, response_index=0, **params):
@@ -322,5 +317,3 @@ class DiagService:
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, DiagService) and self.odx_id == o.odx_id
-
-

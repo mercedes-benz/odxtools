@@ -1,41 +1,33 @@
 from dataclasses import dataclass, field
-from typing import Any, Union, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 from xml.etree.ElementTree import Element
 
+from .admindata import AdminData
+from .companydata import CompanyData, create_company_datas_from_et
 from .dataobjectproperty import DataObjectProperty
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .units import UnitSpec
-from .admindata import AdminData
-from .companydata import CompanyData, create_company_datas_from_et
-from .utils import create_description_from_et, short_name_as_id
 from .odxtypes import odxstr_to_bool
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .units import UnitSpec
+from .utils import create_description_from_et, short_name_as_id
 
-StandardizationLevel = Literal[
-    "STANDARD",
-    "OEM-SPECIFIC",
-    "OPTIONAL",
-    "OEM-OPTIONAL",
-]
+StandardizationLevel = Literal["STANDARD", "OEM-SPECIFIC", "OPTIONAL", "OEM-OPTIONAL",]
 
-Usage = Literal[
-    "ECU-SOFTWARE",
-    "ECU-COMM",
-    "APPLICATION",
-    "TESTER",
-]
+Usage = Literal["ECU-SOFTWARE", "ECU-COMM", "APPLICATION", "TESTER",]
 
-ComplexValue = List[ Union[str, "ComplexValue"] ]
+ComplexValue = List[Union[str, "ComplexValue"]]
+
 
 def create_complex_value_from_et(et_element) -> ComplexValue:
     result = []
     for el in et_element:
         if el.tag == "SIMPLE-VALUE":
-            result.append('' if el.text is None else el.text)
+            result.append("" if el.text is None else el.text)
         else:
             result.append(create_complex_value_from_et(el))
     return result
+
 
 @dataclass
 class BaseComparam:
@@ -97,7 +89,7 @@ class ComplexComparam(BaseComparam):
 
         self.comparams = NamedItemList(short_name_as_id)
         for cp_el in et_element:
-            if cp_el.tag in ('COMPARAM', 'COMPLEX-COMPARAM'):
+            if cp_el.tag in ("COMPARAM", "COMPLEX-COMPARAM"):
                 self.comparams.append(create_any_comparam_from_et(cp_el, doc_frags))
 
         if cpdv_elem := et_element.find("COMPLEX-PHYSICAL-DEFAULT-VALUE"):
@@ -175,8 +167,7 @@ class ComparamSubset:
     sdgs: List[SpecialDataGroup]
 
     @staticmethod
-    def from_et(et_element: Element) \
-            -> "ComparamSubset":
+    def from_et(et_element: Element) -> "ComparamSubset":
 
         category = et_element.get("CATEGORY")
 
@@ -188,18 +179,15 @@ class ComparamSubset:
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
 
-        admin_data = \
-            AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        company_datas = \
-            create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
 
         data_object_props = [
             DataObjectProperty.from_et(el, doc_frags)
             for el in et_element.iterfind("DATA-OBJECT-PROPS/DATA-OBJECT-PROP")
         ]
         comparams = [
-            Comparam.from_et(el, doc_frags)
-            for el in et_element.iterfind("COMPARAMS/COMPARAM")
+            Comparam.from_et(el, doc_frags) for el in et_element.iterfind("COMPARAMS/COMPARAM")
         ]
         complex_comparams = [
             ComplexComparam.from_et(el, doc_frags)
@@ -279,8 +267,8 @@ class ComparamSubset:
         for sdg in self.sdgs:
             sdg._resolve_references(odxlinks)
 
-def create_any_comparam_from_et(et_element,
-                               doc_frags: List[OdxDocFragment]) -> BaseComparam:
+
+def create_any_comparam_from_et(et_element, doc_frags: List[OdxDocFragment]) -> BaseComparam:
     if et_element.tag == "COMPARAM":
         return Comparam.from_et(et_element, doc_frags)
     elif et_element.tag == "COMPLEX-COMPARAM":

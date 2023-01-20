@@ -1,30 +1,33 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-from typing import TYPE_CHECKING, List, Union, Optional
+from typing import TYPE_CHECKING, List, Optional, Union
 
-from .utils import create_description_from_et
-from .odxtypes import odxstr_to_bool
-from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
-from .structures import BasicStructure
 from .dataobjectproperty import DopBase
 from .decodestate import DecodeState
 from .encodestate import EncodeState
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxtypes import odxstr_to_bool
+from .structures import BasicStructure
+from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
-class EndOfPduField(DopBase):
-    """ End of PDU fields are structures that are repeated until the end of the PDU """
 
-    def __init__(self,
-                 *,
-                 structure_ref: Optional[OdxLinkRef],
-                 structure_snref: Optional[str],
-                 env_data_desc_ref: Optional[OdxLinkRef],
-                 env_data_desc_snref: Optional[str],
-                 min_number_of_items: Optional[int],
-                 max_number_of_items: Optional[int],
-                 **kwargs):
+class EndOfPduField(DopBase):
+    """End of PDU fields are structures that are repeated until the end of the PDU"""
+
+    def __init__(
+        self,
+        *,
+        structure_ref: Optional[OdxLinkRef],
+        structure_snref: Optional[str],
+        env_data_desc_ref: Optional[OdxLinkRef],
+        env_data_desc_snref: Optional[str],
+        min_number_of_items: Optional[int],
+        max_number_of_items: Optional[int],
+        **kwargs,
+    ):
         super().__init__(**kwargs)
 
         num_struct_refs = 0 if structure_ref is None else 1
@@ -32,9 +35,9 @@ class EndOfPduField(DopBase):
 
         num_edd_refs = 0 if env_data_desc_ref is None else 1
         num_edd_refs += 0 if env_data_desc_snref is None else 1
-        assert num_struct_refs + num_edd_refs == 1, \
-            "END-OF-PDU-FIELDs need to specify exactly one reference to a " \
-            "structure of an environment data description"
+        assert num_struct_refs + num_edd_refs == 1, (
+            "END-OF-PDU-FIELDs need to specify exactly one reference to a "
+            "structure of an environment data description")
 
         self.structure_snref = structure_snref
         self.structure_ref = structure_ref
@@ -45,8 +48,7 @@ class EndOfPduField(DopBase):
         self.max_number_of_items = max_number_of_items
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "EndOfPduField":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "EndOfPduField":
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
         assert odx_id is not None
         short_name = et_element.findtext("SHORT-NAME")
@@ -64,28 +66,28 @@ class EndOfPduField(DopBase):
             env_data_desc_snref = edsnr_elem.get("SHORT-NAME")
 
         if et_element.find("MIN-NUMBER-OF-ITEMS") is not None:
-            min_number_of_items = int(
-                et_element.findtext("MIN-NUMBER-OF-ITEMS"))
+            min_number_of_items = int(et_element.findtext("MIN-NUMBER-OF-ITEMS"))
         else:
             min_number_of_items = None
         if et_element.find("MAX-NUMBER-OF-ITEMS") is not None:
-            max_number_of_items = int(
-                et_element.findtext("MAX-NUMBER-OF-ITEMS"))
+            max_number_of_items = int(et_element.findtext("MAX-NUMBER-OF-ITEMS"))
         else:
             max_number_of_items = None
 
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
-        eopf = EndOfPduField(odx_id=odx_id,
-                             short_name=short_name,
-                             long_name=long_name,
-                             description=description,
-                             structure_ref=structure_ref,
-                             structure_snref=structure_snref,
-                             env_data_desc_ref=env_data_desc_ref,
-                             env_data_desc_snref=env_data_desc_snref,
-                             min_number_of_items=min_number_of_items,
-                             max_number_of_items=max_number_of_items,
-                             is_visible_raw=is_visible_raw)
+        eopf = EndOfPduField(
+            odx_id=odx_id,
+            short_name=short_name,
+            long_name=long_name,
+            description=description,
+            structure_ref=structure_ref,
+            structure_snref=structure_snref,
+            env_data_desc_ref=env_data_desc_ref,
+            env_data_desc_snref=env_data_desc_snref,
+            min_number_of_items=min_number_of_items,
+            max_number_of_items=max_number_of_items,
+            is_visible_raw=is_visible_raw,
+        )
 
         return eopf
 
@@ -101,13 +103,20 @@ class EndOfPduField(DopBase):
     def convert_physical_to_internal(self, physical_value):
         return self.structure.convert_physical_to_internal(physical_value)
 
-    def convert_physical_to_bytes(self, physical_value: Union[dict, List[dict]], encode_state: EncodeState, bit_position: int = 0):
-        assert bit_position == 0, "End of PDU field must be byte aligned. Is there an error in reading the .odx?"
+    def convert_physical_to_bytes(
+        self,
+        physical_value: Union[dict, List[dict]],
+        encode_state: EncodeState,
+        bit_position: int = 0,
+    ):
+        assert (bit_position == 0
+               ), "End of PDU field must be byte aligned. Is there an error in reading the .odx?"
         if isinstance(physical_value, dict):
             # If the value is given as a dict, the End of PDU field behaves like the underlying structure.
             return self.structure.convert_physical_to_bytes(physical_value, encode_state)
         else:
-            assert isinstance(physical_value, list), "The value of an End-of-PDU-field must be a list or a dict."
+            assert isinstance(physical_value,
+                              list), "The value of an End-of-PDU-field must be a list or a dict."
             # If the value is given as a list, each list element is a encoded seperately using the structure.
             coded_rpc = bytes()
             for value in physical_value:
@@ -125,20 +134,17 @@ class EndOfPduField(DopBase):
             # here: it says that the item is repeated until the end of
             # the PDU, but it means that DOP of the items that are
             # repeated are identical, not their values
-            new_value, next_byte_position = self.structure.convert_bytes_to_physical(decode_state,
-                                                                                     bit_position=bit_position)
+            new_value, next_byte_position = self.structure.convert_bytes_to_physical(
+                decode_state, bit_position=bit_position)
             # Update next byte_position
             decode_state = decode_state._replace(next_byte_position=next_byte_position)
             value.append(new_value)
 
         return value, next_byte_position
 
-    def _resolve_references(self, # type: ignore[override]
-                            parent_dl: "DiagLayer",
-                            odxlinks: OdxLinkDatabase) \
-            -> None:
-        """Recursively resolve any references (odxlinks or sn-refs)
-        """
+    def _resolve_references(  # type: ignore[override]
+            self, parent_dl: "DiagLayer", odxlinks: OdxLinkDatabase) -> None:
+        """Recursively resolve any references (odxlinks or sn-refs)"""
         if self.structure_ref is not None:
             self._structure = odxlinks.resolve(self.structure_ref)
         elif self.structure_snref is not None:
@@ -153,8 +159,6 @@ class EndOfPduField(DopBase):
         return f"EndOfPduField(short_name='{self.short_name}', ref='{self.structure.odx_id}')"
 
     def __str__(self):
-        return "\n".join([
-            f"EndOfPduField(short_name='{self.short_name}', ref='{self.structure.odx_id}')"
-        ] + [
-            " " + str(self.structure).replace("\n", "\n ")
-        ])
+        return "\n".join(
+            [f"EndOfPduField(short_name='{self.short_name}', ref='{self.structure.odx_id}')"] +
+            [" " + str(self.structure).replace("\n", "\n ")])

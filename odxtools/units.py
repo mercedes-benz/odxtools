@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass, field
-from typing import Dict, List, Any, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 
-from .utils import short_name_as_id
 from .nameditemlist import NamedItemList
-from .utils import create_description_from_et
-from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .utils import create_description_from_et, short_name_as_id
 
 UnitGroupCategory = Literal["COUNTRY", "EQUIV-UNITS"]
+
 
 @dataclass
 class PhysicalDimension:
@@ -43,6 +43,7 @@ class PhysicalDimension:
     )
     ```
     """
+
     odx_id: OdxLinkId
     short_name: str
     oid: Optional[str]
@@ -57,8 +58,7 @@ class PhysicalDimension:
     luminous_intensity_exp: int
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "PhysicalDimension":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "PhysicalDimension":
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
         assert odx_id is not None
         oid = et_element.get("OID")
@@ -78,8 +78,7 @@ class PhysicalDimension:
         current_exp = read_optional_int(et_element, "CURRENT-EXP")
         temperature_exp = read_optional_int(et_element, "TEMPERATURE-EXP")
         molar_amount_exp = read_optional_int(et_element, "MOLAR-AMOUNT-EXP")
-        luminous_intensity_exp = read_optional_int(et_element,
-                                                   "LUMINOUS-INTENSITY-EXP")
+        luminous_intensity_exp = read_optional_int(et_element, "LUMINOUS-INTENSITY-EXP")
 
         return PhysicalDimension(
             odx_id=odx_id,
@@ -93,8 +92,9 @@ class PhysicalDimension:
             current_exp=current_exp,
             temperature_exp=temperature_exp,
             molar_amount_exp=molar_amount_exp,
-            luminous_intensity_exp=luminous_intensity_exp
+            luminous_intensity_exp=luminous_intensity_exp,
         )
+
 
 @dataclass
 class Unit:
@@ -137,6 +137,7 @@ class Unit:
     PhysicalDimension(odx_id=OdxLinkId("ID.metre", doc_frags), short_name="metre", length_exp=1)
     ```
     """
+
     odx_id: OdxLinkId
     short_name: str
     display_name: str
@@ -151,8 +152,7 @@ class Unit:
         self._physical_dimension = None
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "Unit":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Unit":
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
         assert odx_id is not None
         oid = et_element.get("OID")
@@ -166,9 +166,11 @@ class Unit:
                 return float(element.findtext(name))
             else:
                 return None
+
         factor_si_to_unit = read_optional_float(et_element, "FACTOR-SI-TO-UNIT")
         offset_si_to_unit = read_optional_float(et_element, "OFFSET-SI-TO-UNIT")
-        physical_dimension_ref = OdxLinkRef.from_et(et_element.find("PHYSICAL-DIMENSION-REF"), doc_frags)
+        physical_dimension_ref = OdxLinkRef.from_et(
+            et_element.find("PHYSICAL-DIMENSION-REF"), doc_frags)
 
         return Unit(
             odx_id=odx_id,
@@ -192,8 +194,7 @@ class Unit:
 
             assert isinstance(self._physical_dimension, PhysicalDimension), (
                 f"The physical_dimension_ref must be resolved to a PhysicalDimension."
-                f" {self.physical_dimension_ref} referenced {self._physical_dimension}"
-            )
+                f" {self.physical_dimension_ref} referenced {self._physical_dimension}")
 
 
 @dataclass
@@ -202,6 +203,7 @@ class UnitGroup:
 
     There are two categories of groups: COUNTRY and EQUIV-UNITS.
     """
+
     short_name: str
     category: UnitGroupCategory
     unit_refs: List[OdxLinkRef]
@@ -213,15 +215,16 @@ class UnitGroup:
         self._units = NamedItemList[Unit](short_name_as_id)
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "UnitGroup":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "UnitGroup":
         oid = et_element.get("OID")
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
         category = et_element.findtext("CATEGORY")
         assert category in [
-            "COUNTRY", "EQUIV-UNITS"], f'A UNIT-GROUP-CATEGORY must be "COUNTRY" or "EQUIV-UNITS". It was {category}.'
+            "COUNTRY",
+            "EQUIV-UNITS",
+        ], f'A UNIT-GROUP-CATEGORY must be "COUNTRY" or "EQUIV-UNITS". It was {category}.'
         unit_refs = []
 
         for el in et_element.iterfind("UNIT-REFS/UNIT-REF"):
@@ -235,14 +238,12 @@ class UnitGroup:
             unit_refs=unit_refs,
             oid=oid,
             long_name=long_name,
-            description=description
+            description=description,
         )
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
-        self._units = NamedItemList[Unit](
-            short_name_as_id,
-            [odxlinks.resolve(ref) for ref in self.unit_refs]
-        )
+        self._units = NamedItemList[Unit](short_name_as_id,
+                                          [odxlinks.resolve(ref) for ref in self.unit_refs])
 
     @property
     def units(self) -> NamedItemList[Unit]:
@@ -260,6 +261,7 @@ class UnitSpec:
 
     The following odx elements are not internalized: ADMIN-DATA, SDGS
     """
+
     # TODO (?): Why are there type errors...
     unit_groups: Union[NamedItemList[UnitGroup], List[UnitGroup]]
     units: Union[NamedItemList[Unit], List[Unit]]
@@ -274,27 +276,26 @@ class UnitSpec:
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]):
 
-        unit_groups = [UnitGroup.from_et(el, doc_frags)
-                       for el in et_element.iterfind("UNIT-GROUPS/UNIT-GROUP")]
-        units = [Unit.from_et(el, doc_frags)
-                 for el in et_element.iterfind("UNITS/UNIT")]
-        physical_dimensions = [PhysicalDimension.from_et(el, doc_frags)
-                               for el in et_element.iterfind("PHYSICAL-DIMENSIONS/PHYSICAL-DIMENSION")]
+        unit_groups = [
+            UnitGroup.from_et(el, doc_frags) for el in et_element.iterfind("UNIT-GROUPS/UNIT-GROUP")
+        ]
+        units = [Unit.from_et(el, doc_frags) for el in et_element.iterfind("UNITS/UNIT")]
+        physical_dimensions = [
+            PhysicalDimension.from_et(el, doc_frags)
+            for el in et_element.iterfind("PHYSICAL-DIMENSIONS/PHYSICAL-DIMENSION")
+        ]
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
-        return UnitSpec(unit_groups=unit_groups,
-                        units=units,
-                        physical_dimensions=physical_dimensions,
-                        sdgs=sdgs)
+        return UnitSpec(
+            unit_groups=unit_groups,
+            units=units,
+            physical_dimensions=physical_dimensions,
+            sdgs=sdgs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {}
-        odxlinks.update({
-            unit.odx_id: unit for unit in self.units
-        })
-        odxlinks.update({
-            dim.odx_id: dim for dim in self.physical_dimensions
-        })
+        odxlinks.update({unit.odx_id: unit for unit in self.units})
+        odxlinks.update({dim.odx_id: dim for dim in self.physical_dimensions})
 
         for sdg in self.sdgs:
             odxlinks.update(sdg._build_odxlinks())
