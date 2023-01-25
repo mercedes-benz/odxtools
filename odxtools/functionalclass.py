@@ -1,12 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from dataclasses import dataclass
 from typing import Optional, Dict, List, Any
 
 from .utils import create_description_from_et
 from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
-
 
 @dataclass
 class FunctionalClass:
@@ -15,8 +13,8 @@ class FunctionalClass:
     """
     odx_id: OdxLinkId
     short_name: str
-    long_name: Optional[str] = None
-    description: Optional[str] = None
+    long_name: Optional[str]
+    description: Optional[str]
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]):

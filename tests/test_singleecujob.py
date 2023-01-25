@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import inspect
 import os
 import unittest
@@ -52,17 +51,32 @@ class TestSingleEcuJob(unittest.TestCase):
         self.context = Context(
 
             extensiveTask=FunctionalClass(
-                odx_id=OdxLinkId("ID.extensiveTask", doc_frags), short_name="extensiveTask"),
+                odx_id=OdxLinkId("ID.extensiveTask", doc_frags),
+                short_name="extensiveTask",
+                long_name=None,
+                description=None),
 
             specialAudience=AdditionalAudience(
-                odx_id=OdxLinkId("ID.specialAudience", doc_frags), short_name="specialAudience"),
+                odx_id=OdxLinkId("ID.specialAudience", doc_frags),
+                short_name="specialAudience",
+                long_name=None,
+                description=None),
 
             inputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.inputDOP", doc_frags),
                 short_name="inputDOP",
+                long_name=None,
+                description=None,
+                is_visible_raw=None,
                 diag_coded_type=StandardLengthType(base_data_type=DataType.A_INT32,
-                                                   bit_length=1),
-                physical_type=PhysicalType(DataType.A_UNICODE2STRING),
+                                                   bit_length=1,
+                                                   bit_mask=None,
+                                                   base_type_encoding=None,
+                                                   is_condensed_raw=None,
+                                                   is_highlow_byte_order_raw=None),
+                physical_type=PhysicalType(DataType.A_UNICODE2STRING,
+                                           display_radix=None,
+                                           precision=None),
                 compu_method=TexttableCompuMethod(
                     internal_to_phys=[
                         CompuScale("yes", lower_limit=Limit(
@@ -71,37 +85,71 @@ class TestSingleEcuJob(unittest.TestCase):
                             1), compu_const="No!"),
                     ],
                     internal_type=DataType.A_UINT32
-                )
+                ),
+                unit_ref=None,
+                sdgs=[],
             ),
 
             outputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.outputDOP", doc_frags),
                 short_name="outputDOP",
+                long_name=None,
+                description=None,
+                is_visible_raw=None,
                 diag_coded_type=StandardLengthType(base_data_type=DataType.A_INT32,
-                                                   bit_length=1),
-                physical_type=PhysicalType(DataType.A_UNICODE2STRING),
+                                                   bit_length=1,
+                                                   bit_mask=None,
+                                                   base_type_encoding=None,
+                                                   is_condensed_raw=None,
+                                                   is_highlow_byte_order_raw=None),
+                physical_type=PhysicalType(DataType.A_UNICODE2STRING,
+                                           display_radix=None,
+                                           precision=None),
                 compu_method=LinearCompuMethod(offset=1,
                                                factor=-1,
+                                               denominator=1,
                                                internal_type=DataType.A_UINT32,
-                                               physical_type=DataType.A_UINT32)
+                                               physical_type=DataType.A_UINT32,
+                                               internal_lower_limit=None,
+                                               internal_upper_limit=None),
+                unit_ref=None,
+                sdgs=[],
             ),
 
             negOutputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.negOutputDOP", doc_frags),
                 short_name="negOutputDOP",
+                long_name=None,
+                description=None,
+                is_visible_raw=None,
                 diag_coded_type=StandardLengthType(base_data_type=DataType.A_INT32,
-                                                   bit_length=1),
-                physical_type=PhysicalType(DataType.A_UNICODE2STRING),
+                                                   bit_length=1,
+                                                   bit_mask=None,
+                                                   base_type_encoding=None,
+                                                   is_condensed_raw=None,
+                                                   is_highlow_byte_order_raw=None),
+                physical_type=PhysicalType(DataType.A_UNICODE2STRING,
+                                           display_radix=None,
+                                           precision=None),
                 compu_method=LinearCompuMethod(offset=1,
                                                factor=-1,
+                                               denominator=1,
                                                internal_type=DataType.A_UINT32,
-                                               physical_type=DataType.A_UINT32)
+                                               physical_type=DataType.A_UINT32,
+                                               internal_lower_limit=None,
+                                               internal_upper_limit=None),
+                unit_ref=None,
+                sdgs=[],
             )
         )
 
         input_params=[
             InputParam(
+                oid=None,
                 short_name="inputParam",
+                long_name=None,
+                description=None,
+                semantic=None,
                 physical_default_value="Yes!",
                 dop_base_ref=OdxLinkRef.from_id(self.context.inputDOP.odx_id)
             )
@@ -109,6 +157,7 @@ class TestSingleEcuJob(unittest.TestCase):
         output_params=[
             OutputParam(
                 odx_id=OdxLinkId("ID.outputParam", doc_frags),
+                oid=None,
                 semantic="DATA",
                 short_name="outputParam",
                 long_name="The Output Param",
@@ -119,6 +168,7 @@ class TestSingleEcuJob(unittest.TestCase):
         neg_output_params=[
             NegOutputParam(
                 short_name="NegativeOutputParam",
+                long_name=None,
                 description="<p>The one and only output of this job.</p>",
                 dop_base_ref=OdxLinkRef.from_id(self.context.negOutputDOP.odx_id)
             )
@@ -126,10 +176,21 @@ class TestSingleEcuJob(unittest.TestCase):
 
         self.singleecujob_object = SingleEcuJob(
             odx_id=OdxLinkId("ID.JumpStart", doc_frags),
+            oid = None,
             short_name="JumpStart",
+            long_name = None,
+            description = None,
+            admin_data = None,
+            semantic = None,
             functional_class_refs=[OdxLinkRef.from_id(self.context.extensiveTask.odx_id)],
+            diagnostic_class = None,
             audience=Audience(
                 enabled_audience_refs=[OdxLinkRef.from_id(self.context.specialAudience.odx_id)],
+                disabled_audience_refs=[],
+                is_supplier_raw=None,
+                is_development_raw=None,
+                is_aftersales_raw=None,
+                is_aftermarket_raw=None,
                 is_manufacturing_raw=False,
             ),
             prog_codes=[
@@ -147,6 +208,10 @@ class TestSingleEcuJob(unittest.TestCase):
             input_params=input_params,
             output_params=output_params,
             neg_output_params=neg_output_params,
+            is_mandatory_raw = None,
+            is_executable_raw = None,
+            is_final_raw = None,
+            sdgs = [],
         )
 
         self.singleecujob_odx = f"""
@@ -246,14 +311,31 @@ class TestSingleEcuJob(unittest.TestCase):
         """Test that empty lists are assigned to list-attributes if no explicit value is passed."""
         sej = SingleEcuJob(
             odx_id=OdxLinkId("ID.SomeID", doc_frags),
+            oid = None,
             short_name="SN.SomeShortName",
+            long_name = None,
+            description = None,
+            admin_data = None,
+            semantic = None,
+            audience = None,
             prog_codes=[
                 ProgCode(
                     code_file="abc.jar",
+                    encryption=None,
+                    entrypoint=None,
                     syntax="abc",
                     revision="12.34"
                 )
-            ]
+            ],
+            input_params = [],
+            output_params = [],
+            neg_output_params = [],
+            functional_class_refs = [],
+            diagnostic_class = None,
+            is_mandatory_raw = None,
+            is_executable_raw = None,
+            is_final_raw = None,
+            sdgs = [],
         )
         self.assertEqual(sej.functional_class_refs, [])
         self.assertEqual(sej.input_params, NamedItemList(short_name_as_id, []))
@@ -265,11 +347,26 @@ class TestSingleEcuJob(unittest.TestCase):
         dl = DiagLayer(variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
                        odx_id=OdxLinkId("ID.bv", doc_frags),
                        short_name="bv",
-                       single_ecu_jobs=[self.singleecujob_object])
+                       long_name=None,
+                       description=None,
+                       parent_refs=[],
+                       communication_parameters=[],
+                       services=[],
+                       requests=[],
+                       positive_responses=[],
+                       negative_responses=[],
+                       single_ecu_jobs=[self.singleecujob_object],
+                       diag_comm_refs=[],
+                       diag_data_dictionary_spec=None,
+                       additional_audiences=[],
+                       functional_classes=[],
+                       states=[],
+                       state_transitions=[],
+                       import_refs=[],
+                       sdgs=[])
         odxlinks = OdxLinkDatabase()
         odxlinks.update({val.odx_id: val for val in self.context})
-
-        dl._resolve_references(odxlinks)
+        dl.finalize_init(odxlinks=odxlinks)
 
         self.assertEqual(self.context.extensiveTask,
                          self.singleecujob_object.functional_classes.extensiveTask)

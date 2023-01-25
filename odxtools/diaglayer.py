@@ -1,18 +1,17 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import warnings
 from copy import copy
 from itertools import chain
-from typing import Any, Dict, Iterable, Tuple, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast
 from xml.etree import ElementTree
-
 from deprecation import deprecated
 
-from odxtools.diaglayertype import DIAG_LAYER_TYPE
-
+from .diaglayertype import DIAG_LAYER_TYPE
+from odxtools.ecu_variant_patterns import (EcuVariantPattern,
+                                           create_ecu_variant_patterns_from_et)
 from .admindata import AdminData
-from .audience import AdditionalAudience
+from .audience import Audience, AdditionalAudience
 from .communicationparameter import CommunicationParameterRef
 from .companydata import CompanyData, create_company_datas_from_et
 from .dataobjectproperty import DopBase
@@ -48,8 +47,8 @@ class DiagLayer:
                      *,
                      parent: Union[OdxLinkRef, "DiagLayer"],
                      ref_type: str,
-                     not_inherited_diag_comms=[],
-                     not_inherited_dops=[]):
+                     not_inherited_diag_comms: List[str], # short_name references
+                     not_inherited_dops: List[str]): # short_name references
             """
             Parameters
             ----------
@@ -138,26 +137,25 @@ class DiagLayer:
                  variant_type : DIAG_LAYER_TYPE,
                  odx_id,
                  short_name,
-                 long_name=None,
-                 description=None,
-                 requests: List[Request] = [],
-                 positive_responses: List[Response] = [],
-                 negative_responses: List[Response] = [],
+                 long_name,
+                 description,
+                 requests: List[Request],
+                 positive_responses: List[Response],
+                 negative_responses: List[Response],
                  global_negative_responses: List[Response] = [],
-                 services: List[DiagService] = [],
-                 single_ecu_jobs: List[SingleEcuJob] = [],
-                 diag_comm_refs: List[OdxLinkRef] = [],
-                 parent_refs: List[ParentRef] = [],
-                 diag_data_dictionary_spec: Optional[DiagDataDictionarySpec] = None,
-                 communication_parameters:
-                 Iterable[CommunicationParameterRef] = [],
-                 odxlinks=None,
-                 additional_audiences=[],
-                 functional_classes=[],
-                 states=[],
-                 state_transitions=[],
-                 import_refs=[],
-                 sdgs=[],
+                 services: List[DiagService],
+                 single_ecu_jobs: List[SingleEcuJob],
+                 diag_comm_refs: List[OdxLinkRef],
+                 parent_refs: List[ParentRef],
+                 diag_data_dictionary_spec: Optional[DiagDataDictionarySpec],
+                 communication_parameters: Iterable[CommunicationParameterRef],
+                 additional_audiences: List[AdditionalAudience],
+                 functional_classes: List[FunctionalClass],
+                 states: List[State],
+                 state_transitions: List[StateTransition],
+                 import_refs: List[OdxLinkRef],
+                 sdgs: List[SpecialDataGroup],
+                 ecu_variant_patterns: List[EcuVariantPattern] = [],
                  ):
         logger.info(f"Initializing variant type {variant_type.value}")
         self.variant_type = variant_type
@@ -167,6 +165,7 @@ class DiagLayer:
         self.long_name = long_name
         self.description = description
         self.sdgs = sdgs
+        self.ecu_variant_patterns = ecu_variant_patterns
 
         # Requests and Responses
         self.requests = requests
@@ -207,9 +206,6 @@ class DiagLayer:
             = NamedItemList(short_name_as_id, [])
 
         self.import_refs = import_refs
-
-        if odxlinks is not None:
-            self.finalize_init(odxlinks)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -316,11 +312,16 @@ class DiagLayer:
             diag_data_dictionary_spec = None
 
         import_refs = [
-            OdxLinkRef.from_et(ref, doc_frags)
+            cast(OdxLinkRef, OdxLinkRef.from_et(ref, doc_frags))
             for ref in et_element.iterfind("IMPORT-REFS/IMPORT-REF")
         ]
 
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+
+        ecu_variant_patterns = create_ecu_variant_patterns_from_et(et_element.find("ECU-VARIANT-PATTERNS"), doc_frags)
+        if variant_type is not DIAG_LAYER_TYPE.ECU_VARIANT:
+            assert len(ecu_variant_patterns) == 0, \
+                "DiagLayer of type other than 'ECU-VARIANT' must not define a ECU-VARIANT-PATTERN"
 
         # Create DiagLayer
         return DiagLayer(variant_type=variant_type,
@@ -344,6 +345,7 @@ class DiagLayer:
                          state_transitions=state_transitions,
                          import_refs=import_refs,
                          sdgs=sdgs,
+                         ecu_variant_patterns=ecu_variant_patterns,
                          )
 
     @property
@@ -892,21 +894,22 @@ class DiagLayer:
     def __str__(self) -> str:
         return f"DiagLayer('{self.short_name}', type='{self.variant_type.value}')"
 
+
 class DiagLayerContainer:
     def __init__(self,
                  *,
                  odx_id: OdxLinkId,
                  short_name: str,
-                 long_name: Optional[str] = None,
-                 description: Optional[str] = None,
-                 admin_data: Optional[AdminData] = None,
-                 company_datas: Optional[NamedItemList[CompanyData]] = None,
-                 ecu_shared_datas: List[DiagLayer] = [],
-                 protocols: List[DiagLayer] = [],
-                 functional_groups: List[DiagLayer] = [],
-                 base_variants: List[DiagLayer] = [],
-                 ecu_variants: List[DiagLayer] = [],
-                 sdgs: List[SpecialDataGroup] = [],
+                 long_name: Optional[str],
+                 description: Optional[str],
+                 admin_data: Optional[AdminData],
+                 company_datas: Optional[NamedItemList[CompanyData]],
+                 ecu_shared_datas: List[DiagLayer],
+                 protocols: List[DiagLayer],
+                 functional_groups: List[DiagLayer],
+                 base_variants: List[DiagLayer],
+                 ecu_variants: List[DiagLayer],
+                 sdgs: List[SpecialDataGroup],
                  ) -> None:
         self.odx_id = odx_id
         self.short_name = short_name
@@ -951,6 +954,7 @@ class DiagLayerContainer:
                          for dl_element in et_element.iterfind("BASE-VARIANTS/BASE-VARIANT")]
         ecu_variants = [DiagLayer.from_et(dl_element, doc_frags)
                         for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")]
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return DiagLayerContainer(odx_id=odx_id,
                                   short_name=short_name,
@@ -962,7 +966,8 @@ class DiagLayerContainer:
                                   protocols=protocols,
                                   functional_groups=functional_groups,
                                   base_variants=base_variants,
-                                  ecu_variants=ecu_variants
+                                  ecu_variants=ecu_variants,
+                                  sdgs=sdgs,
                                   )
 
     def _build_odxlinks(self):

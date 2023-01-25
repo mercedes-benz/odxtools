@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from dataclasses import dataclass, field
 from itertools import chain
 from typing import TYPE_CHECKING, Optional, Any, Dict, List
@@ -25,75 +24,27 @@ from .specialdata import SpecialDataGroup, create_sdgs_from_et
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
-def _construct_named_item_list(iterable):
-    return NamedItemList(short_name_as_id, iterable)
-
-
 @dataclass
 class DiagDataDictionarySpec:
-    dtc_dops: NamedItemList[DtcDop] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    data_object_props: NamedItemList[DataObjectProperty] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    structures: NamedItemList[BasicStructure] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    end_of_pdu_fields: NamedItemList[EndOfPduField] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    tables: NamedItemList[Table] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    env_data_descs: NamedItemList[EnvironmentDataDescription] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    env_datas: NamedItemList[EnvironmentData] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    muxs: NamedItemList[Multiplexer] = field(
-        default_factory=lambda: _construct_named_item_list([])
-    )
-    unit_spec: Optional[UnitSpec] = None
-    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+    dtc_dops: NamedItemList[DtcDop]
+    data_object_props: NamedItemList[DataObjectProperty]
+    structures: NamedItemList[BasicStructure]
+    end_of_pdu_fields: NamedItemList[EndOfPduField]
+    tables: NamedItemList[Table]
+    env_data_descs: NamedItemList[EnvironmentDataDescription]
+    env_datas: NamedItemList[EnvironmentData]
+    muxs: NamedItemList[Multiplexer]
+    unit_spec: Optional[UnitSpec]
+    sdgs: List[SpecialDataGroup]
 
     def __post_init__(self):
-        self._all_data_object_properties = _construct_named_item_list(
-            chain(
-                self.data_object_props,
-                self.structures,
-                self.end_of_pdu_fields,
-                self.dtc_dops,
-                self.tables,
-            )
-        )
-
-        # The attributes are already initialized as (most likely normal) lists.
-        # Convert them to NamedItemLists if necessary
-        if not isinstance(self.dtc_dops, NamedItemList):
-            self.dtc_dops = _construct_named_item_list(self.dtc_dops)
-
-        if not isinstance(self.data_object_props, NamedItemList):
-            self.data_object_props = _construct_named_item_list(self.data_object_props)
-
-        if not isinstance(self.structures, NamedItemList):
-            self.structures = _construct_named_item_list(self.structures)
-
-        if not isinstance(self.end_of_pdu_fields, NamedItemList):
-            self.end_of_pdu_fields = _construct_named_item_list(self.end_of_pdu_fields)
-
-        if not isinstance(self.tables, NamedItemList):
-            self.tables = _construct_named_item_list(self.tables)
-
-        if not isinstance(self.env_data_descs, NamedItemList):
-            self.env_data_descs = _construct_named_item_list(self.env_data_descs)
-
-        if not isinstance(self.env_datas, NamedItemList):
-            self.env_datas = _construct_named_item_list(self.env_datas)
-
-        if not isinstance(self.muxs, NamedItemList):
-            self.muxs = _construct_named_item_list(self.muxs)
+        self._all_data_object_properties = \
+            NamedItemList(short_name_as_id,
+                          chain(self.data_object_props,
+                                self.structures,
+                                self.end_of_pdu_fields,
+                                self.dtc_dops,
+                                self.tables))
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) \
@@ -117,7 +68,7 @@ class DiagDataDictionarySpec:
 
         dtc_dops = []
         for dop_element in et_element.iterfind("DTC-DOPS/DTC-DOP"):
-            dop = DataObjectProperty.from_et(dop_element, doc_frags)
+            dop = DtcDop.from_et(dop_element, doc_frags)
             assert isinstance(dop, DtcDop)
             dtc_dops.append(dop)
 

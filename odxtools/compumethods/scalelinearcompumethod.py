@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from typing import Iterable
 
 from ..globals import logger
@@ -9,9 +7,10 @@ from ..globals import logger
 from .compumethodbase import CompuMethod
 from .linearcompumethod import LinearCompuMethod
 
-
 class ScaleLinearCompuMethod(CompuMethod):
-    def __init__(self, *, linear_methods: Iterable[LinearCompuMethod]):
+    def __init__(self,
+                 *,
+                 linear_methods: Iterable[LinearCompuMethod]):
         super().__init__(internal_type=list(linear_methods)[0].internal_type,
                          physical_type=list(linear_methods)[0].physical_type,
                          category="SCALE-LINEAR")

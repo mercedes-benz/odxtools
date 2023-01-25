@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 import warnings
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -9,14 +7,13 @@ from ..exceptions import DecodeError
 
 from .parameterwithdop import ParameterWithDOP
 
-
 class PhysicalConstantParameter(ParameterWithDOP):
     def __init__(self,
                  *,
                  physical_constant_value,
                  **kwargs):
-        super().__init__(parameter_type="PHYS-CONST",
-                         **kwargs)
+        super().__init__(parameter_type="PHYS-CONST", **kwargs)
+
         assert physical_constant_value is not None
         self._physical_constant_value = physical_constant_value
 

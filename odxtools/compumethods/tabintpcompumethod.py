@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from typing import List, Tuple, Union
 
 from ..exceptions import EncodeError, DecodeError
@@ -10,7 +8,6 @@ from ..odxtypes import DataType
 
 from .compumethodbase import CompuMethod
 from .limit import IntervalType, Limit
-
 
 class TabIntpCompuMethod(CompuMethod):
     """

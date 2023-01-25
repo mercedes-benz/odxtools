@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import warnings
 from typing import Any, List, Optional, Union
 
@@ -17,15 +16,14 @@ from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from .utils import create_description_from_et
 
 class CommunicationParameterRef:
-
     def __init__(self,
                  *,
                  value : Union[str, ComplexValue],
                  id_ref: OdxLinkRef,
-                 is_functional = False,
-                 description: Optional[str] = None,
-                 protocol_snref: Optional[str] = None,
-                 prot_stack_snref: Optional[str] = None) -> None:
+                 is_functional: bool,
+                 description: Optional[str],
+                 protocol_snref: Optional[str],
+                 prot_stack_snref: Optional[str]) -> None:
         self.value = value
         self.id_ref = id_ref
         self.is_functional = is_functional

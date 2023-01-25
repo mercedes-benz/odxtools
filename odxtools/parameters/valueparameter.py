@@ -1,26 +1,16 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from ..dataobjectproperty import DataObjectProperty
 from ..encodestate import EncodeState
 
 from .parameterwithdop import ParameterWithDOP
 
-
 class ValueParameter(ParameterWithDOP):
     def __init__(self,
                  *,
-                 short_name,
-                 physical_default_value_raw=None,
-                 dop_ref=None,
-                 dop_snref=None,
+                 physical_default_value_raw,
                  **kwargs):
-        super().__init__(short_name=short_name,
-                         parameter_type="VALUE",
-                         dop_ref=dop_ref,
-                         dop_snref=dop_snref,
-                         **kwargs)
+        super().__init__(parameter_type="VALUE", **kwargs)
         # physical_default_value is a string. Conversion to actual type must happen after parsing
         self.physical_default_value_raw = physical_default_value_raw
 

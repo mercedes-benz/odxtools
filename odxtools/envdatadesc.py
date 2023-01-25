@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from dataclasses import dataclass
 from typing import List, Dict, Optional, Any
 
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment
 from .globals import logger
+from .utils import create_description_from_et
+from .odxtypes import odxstr_to_bool
 from .dataobjectproperty import DopBase
-
 from .envdata import EnvironmentData
 from .decodestate import DecodeState
 from .encodestate import EncodeState
@@ -19,10 +19,15 @@ class EnvironmentDataDescription(DopBase):
 
     def __init__(self,
                  *,
+
+                 # in ODX 2.0.0, ENV-DATAS seems to be a mandatory
+                 # sub-element of ENV-DATA-DESC, on ODX 2.2 it is not
+                 # present
                  env_datas: List[EnvironmentData],
+
                  env_data_refs: List[OdxLinkRef],
-                 param_snref: Optional[str] = None,
-                 param_snpathref: Optional[str] = None,
+                 param_snref: Optional[str],
+                 param_snpathref: Optional[str],
                  **kwargs):
         super().__init__(**kwargs)
 
@@ -40,6 +45,8 @@ class EnvironmentDataDescription(DopBase):
         assert odx_id is not None
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
+        description = create_description_from_et(et_element.find("DESC"))
+        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         param_snref = None
         if et_element.find("PARAM-SNREF") is not None:
             param_snref = et_element.find("PARAM-SNREF").get("SHORT-NAME")
@@ -64,6 +71,8 @@ class EnvironmentDataDescription(DopBase):
             odx_id=odx_id,
             short_name=short_name,
             long_name=long_name,
+            description=description,
+            is_visible_raw=is_visible_raw,
             param_snref=param_snref,
             param_snpathref=param_snpathref,
             env_datas=env_datas,

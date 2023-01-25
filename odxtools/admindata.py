@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from .nameditemlist import NamedItemList
 from .companydata import CompanyData, TeamMember
 from .odxlink import OdxLinkId, OdxLinkRef, OdxLinkDatabase, OdxDocFragment
@@ -14,17 +13,14 @@ from typing import Optional, Any, Dict, List
 @dataclass
 class CompanyDocInfo:
     company_data_ref: OdxLinkRef
-    team_member_ref: Optional[OdxLinkRef] = None
-    doc_label: Optional[str] = None
-    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+    team_member_ref: Optional[OdxLinkRef]
+    doc_label: Optional[str]
+    sdgs: List[SpecialDataGroup]
 
-    _company_data: Optional[CompanyData] = None
     @property
     def company_data(self) -> CompanyData:
-        assert self._company_data is not None
         return self._company_data
 
-    _team_member: Optional[TeamMember] = None
     @property
     def team_member(self) -> Optional[TeamMember]:
         return self._team_member
@@ -54,18 +50,19 @@ class CompanyDocInfo:
         return result
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
-        self._company_data = odxlinks.resolve(self.company_data_ref)
+        self._company_data = odxlinks.resolve(self.company_data_ref, CompanyData)
 
+        self._team_member: Optional[TeamMember] = None
         if self.team_member_ref is not None:
-            self._team_member = odxlinks.resolve(self.team_member_ref)
+            self._team_member = odxlinks.resolve(self.team_member_ref, TeamMember)
 
         for sdg in self.sdgs:
             sdg._resolve_references(odxlinks)
 
 @dataclass
 class Modification:
-    change: Optional[str] = None
-    reason: Optional[str] = None
+    change: Optional[str]
+    reason: Optional[str]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -80,10 +77,9 @@ class Modification:
 @dataclass
 class CompanyRevisionInfo:
     company_data_ref: OdxLinkRef
-    revision_label: Optional[str] = None
-    state: Optional[str] = None
+    revision_label: Optional[str]
+    state: Optional[str]
 
-    _company_data: Optional[CompanyData] = None
     @property
     def company_data(self) -> CompanyData:
         assert self._company_data is not None
@@ -105,9 +101,7 @@ class CompanyRevisionInfo:
                                    state=state)
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
-        cd = odxlinks.resolve(self.company_data_ref)
-        assert isinstance(cd, CompanyData)
-        self._company_data = cd
+        self._company_data = odxlinks.resolve(self.company_data_ref, CompanyData)
 
 @dataclass
 class DocRevision:
@@ -115,14 +109,13 @@ class DocRevision:
     Representation of a single revision of the relevant object.
     """
     date: str
-    team_member_ref: Optional[OdxLinkRef] = None
-    revision_label: Optional[str] = None
-    state: Optional[str] = None
-    tool: Optional[str] = None
-    company_revision_infos: List[CompanyRevisionInfo] = field(default_factory=list)
-    modifications: List[Modification] = field(default_factory=list)
+    team_member_ref: Optional[OdxLinkRef]
+    revision_label: Optional[str]
+    state: Optional[str]
+    tool: Optional[str]
+    company_revision_infos: List[CompanyRevisionInfo]
+    modifications: List[Modification]
 
-    _team_member: Optional[TeamMember] = None
     @property
     def team_member(self) -> Optional[TeamMember]:
         return self._team_member
@@ -159,17 +152,19 @@ class DocRevision:
                            modifications=modlist)
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
+        self._team_member: Optional[TeamMember] = None
         if self.team_member_ref is not None:
-            self._team_member = odxlinks.resolve(self.team_member_ref)
+            self._team_member = odxlinks.resolve(self.team_member_ref,
+                                                 TeamMember)
 
         for cri in self.company_revision_infos:
             cri._resolve_references(odxlinks)
 
 @dataclass
 class AdminData:
-    language: Optional[str] = None
-    company_doc_infos: List[CompanyDocInfo] = field(default_factory=list)
-    doc_revisions: List[DocRevision] = field(default_factory=list)
+    language: Optional[str]
+    company_doc_infos: List[CompanyDocInfo]
+    doc_revisions: List[DocRevision]
 
     @staticmethod
     def from_et(et_element: Optional[ElementTree.Element],

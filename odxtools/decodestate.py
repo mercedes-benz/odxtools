@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from typing import TYPE_CHECKING, Any, Dict, List, NamedTuple, Union
 
 if TYPE_CHECKING:

@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from ..dataobjectproperty import DataObjectProperty, DopBase, DtcDop
 from ..decodestate import DecodeState
@@ -13,62 +11,50 @@ from ..odxlink import OdxLinkRef, OdxLinkDatabase
 
 from .parameterbase import Parameter
 
+if TYPE_CHECKING:
+    from ..diaglayer import DiagLayer
 
 class ParameterWithDOP(Parameter):
     def __init__(self,
                  *,
-                 short_name: str,
                  parameter_type: str,
-                 dop=None,
-                 dop_ref: Optional[OdxLinkRef] = None,
-                 dop_snref: Optional[str] = None,
-                 **kwargs):
-        super().__init__(short_name=short_name,
-                         parameter_type=parameter_type,
-                         **kwargs)
+                 dop_ref: Optional[OdxLinkRef],
+                 dop_snref: Optional[str],
+                 **kwargs) -> None:
+        super().__init__(parameter_type=parameter_type, **kwargs)
         self.dop_ref = dop_ref
         self.dop_snref = dop_snref
 
-        self._dop = dop
-        if dop and not dop_ref and not dop_snref:
-            self.dop_ref = OdxLinkRef.from_id(dop.odx_id)
-        assert self.dop_ref or self.dop_snref
-
     @property
-    def dop(self) -> Union[DopBase, None]:
+    def dop(self) -> Optional[DopBase]:
         """may be a DataObjectProperty, a Structure or None"""
+
         return self._dop
 
-    @dop.setter
-    def dop(self, dop: DopBase):
-        self._dop = dop
-        if not self.dop_snref:
-            self.dop_ref = OdxLinkRef.from_id(dop.odx_id)
-        else:
-            self.dop_snref = dop.short_name
+    def _resolve_references(self,
+                            parent_dl: "DiagLayer",
+                            odxlinks: OdxLinkDatabase) -> None:
+        super()._resolve_references(parent_dl, odxlinks)
 
-    def resolve_references(self, parent_dl, odxlinks: OdxLinkDatabase):
-        super()._resolve_references(odxlinks)
+        self._dop: Optional[DopBase] = None
 
-        dop = self.dop
         if self.dop_snref:
             dop = parent_dl.data_object_properties.get(self.dop_snref)
             if dop is None:
                 logger.info(
                     f"Param {self.short_name} could not resolve DOP-SNREF {self.dop_snref}")
+            else:
+                self._dop = dop
         elif self.dop_ref:
             dop = odxlinks.resolve_lenient(self.dop_ref) # TODO: non-lenient!
             if dop is None:
                 logger.info(
                     f"Param {self.short_name} could not resolve DOP-REF {self.dop_ref}")
+            else:
+                self._dop = dop
         else:
             logger.warn(
                 f"Param {self.short_name} without DOP-(SN)REF should not exist!")
-        if self.dop and dop != self.dop:
-            logger.warn(
-                f"Param {self.short_name}: Reference and DOP are inconsistent!")
-
-        self._dop = dop
 
     @property
     def bit_length(self):
