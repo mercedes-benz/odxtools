@@ -4,7 +4,6 @@
 # Copyright (c) 2022 MBition GmbH
 #
 # Implementation of the "lazy" somersault ECU
-
 import odxtools
 from odxtools.odxtypes import bytefield_to_bytearray
 import odxtools.uds as uds

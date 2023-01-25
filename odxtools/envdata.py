@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional, Any, Dict, List
 
@@ -10,6 +9,7 @@ from .odxlink import OdxLinkId, OdxDocFragment, OdxLinkDatabase
 from .structures import BasicStructure
 from .parameters.parameterbase import Parameter
 from .globals import logger
+from .odxtypes import odxstr_to_bool
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -17,20 +17,13 @@ if TYPE_CHECKING:
 @dataclass
 class EnvironmentData(BasicStructure):
     """This class represents Environment Data that describes the circumstances in which the error occurred."""
+    dtc_values: List[int]
 
     def __init__(self,
                  *,
-                 odx_id: OdxLinkId,
-                 short_name: str,
-                 parameters: List[Parameter],
-                 dtc_values: Optional[List[int]] = None,
-                 long_name: Optional[str] = None,
-                 description: Optional[str] = None) -> None:
-        super().__init__(odx_id=odx_id,
-                         short_name=short_name,
-                         parameters=parameters,
-                         long_name=long_name,
-                         description=description)
+                 dtc_values: List[int],
+                 **kwargs):
+        super().__init__(**kwargs)
         self.dtc_values = dtc_values
 
     @staticmethod
@@ -43,23 +36,26 @@ class EnvironmentData(BasicStructure):
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
+        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         parameters = [
             create_any_parameter_from_et(et_parameter, doc_frags)
             for et_parameter in et_element.iterfind("PARAMS/PARAM")
         ]
-        dtc_values = None
-        if (dtcv_elems := et_element.find("DTC-VALUES")) is not None:
-            dtc_values = [
-                int(dtcv_elem.text)
-                for dtcv_elem in dtcv_elems.iterfind("DTC-VALUE")
-            ]
+        byte_size_text = et_element.findtext("BYTE-SIZE")
+        byte_size = None if byte_size_text is None else int(byte_size_text)
+        dtc_values = [
+            int(dtcv_elem.text)
+            for dtcv_elem in et_element.iterfind("DTC-VALUES/DTC-VALUE")
+        ]
 
         return EnvironmentData(odx_id=odx_id,
                                short_name=short_name,
-                               parameters=parameters,
-                               dtc_values=dtc_values,
                                long_name=long_name,
-                               description=description)
+                               description=description,
+                               is_visible_raw=is_visible_raw,
+                               parameters=parameters,
+                               byte_size=byte_size,
+                               dtc_values=dtc_values)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()

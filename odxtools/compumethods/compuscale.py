@@ -1,12 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from typing import NamedTuple, Optional, Union
 
 from .compurationalcoeffs import CompuRationalCoeffs
 from .limit import Limit
-
 
 class CompuScale(NamedTuple):
     """A COMPU-SCALE represents one value range of a COMPU-METHOD.

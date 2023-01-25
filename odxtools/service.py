@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from typing import List, Iterable, Optional, Union
 
 from .utils import short_name_as_id
@@ -188,11 +187,11 @@ class DiagService:
         return self._request
 
     @property
-    def free_parameters(self) -> Optional[List[Union[Parameter, "EndOfPduField"]]]: # type: ignore
+    def free_parameters(self) -> List[Union[Parameter, "EndOfPduField"]]: # type: ignore
         """Return the list of parameters which can be freely specified by
         the user when encoding the service's request.
         """
-        return self.request.free_parameters if self.request is not None else None
+        return self.request.free_parameters if self.request is not None else []
 
     def print_free_parameters_info(self) -> None:
         """Return a human readable description of the service's

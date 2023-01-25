@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import warnings
+from typing import Union, ByteString
+
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..diagcodedtypes import DiagCodedType
@@ -10,17 +11,13 @@ from ..exceptions import DecodeError
 
 from .parameterbase import Parameter
 
-
 class CodedConstParameter(Parameter):
     def __init__(self,
                  *,
-                 short_name,
                  diag_coded_type: DiagCodedType,
-                 coded_value,
+                 coded_value: Union[int, ByteString],
                  **kwargs):
-        super().__init__(short_name=short_name,
-                         parameter_type="CODED-CONST",
-                         **kwargs)
+        super().__init__(parameter_type="CODED-CONST", **kwargs)
 
         self._diag_coded_type = diag_coded_type
         assert isinstance(coded_value, (int, bytes, bytearray))
