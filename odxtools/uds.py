@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from enum import IntEnum
 from itertools import chain
 from typing import Optional, Union, ByteString

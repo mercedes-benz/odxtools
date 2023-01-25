@@ -1,11 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import warnings
 from typing import Callable, Dict, Iterable, List, Optional, Union, Generic, TypeVar
 
 T = TypeVar('T')
-
 
 class NamedItemList(Generic[T]):
     """A list that provides direct access to its items as named attributes.

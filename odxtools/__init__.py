@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 """odxtools is a set of utilities to deal with automotive diagnostic
 descriptions of electronic control units using ODX-formatted
 description files.

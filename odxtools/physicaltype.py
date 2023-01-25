@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, List
@@ -40,14 +39,14 @@ class PhysicalType:
 
     base_data_type: DataType
 
-    display_radix: Optional[Radix] = None
+    display_radix: Optional[Radix]
     """The display radix defines how integers are displayed to the user.
-    The display radix is only applicable if the base data type is A_UINT32. 
+    The display radix is only applicable if the base data type is A_UINT32.
     """
 
-    precision: Optional[int] = None
+    precision: Optional[int]
     """Number of digits after the decimal point to display to the user
-    The precision is only applicable if the base data type is A_FLOAT32 or A_FLOAT64. 
+    The precision is only applicable if the base data type is A_FLOAT32 or A_FLOAT64.
     """
 
     def __post_init__(self):

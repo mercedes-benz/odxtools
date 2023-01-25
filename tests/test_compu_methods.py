@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import inspect
 import os
 import unittest
@@ -21,8 +20,11 @@ class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_type_int_int(self):
         compu_method = LinearCompuMethod(offset=1,
                                          factor=3,
+                                         denominator=1,
                                          internal_type="A_INT32",
-                                         physical_type="A_INT32")
+                                         physical_type="A_INT32",
+                                         internal_lower_limit=None,
+                                         internal_upper_limit=None)
 
         self.assertEqual(compu_method.convert_internal_to_physical(4), 13)
         self.assertEqual(compu_method.convert_internal_to_physical(0), 1)
@@ -35,8 +37,11 @@ class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_type_int_float(self):
         compu_method = LinearCompuMethod(offset=1,
                                          factor=3,
+                                         denominator=1,
                                          internal_type="A_INT32",
-                                         physical_type="A_FLOAT32")
+                                         physical_type="A_FLOAT32",
+                                         internal_lower_limit=None,
+                                         internal_upper_limit=None)
         self.assertTrue(compu_method.is_valid_internal_value(123))
         self.assertFalse(compu_method.is_valid_internal_value("123"))
         self.assertFalse(compu_method.is_valid_internal_value(1.2345))
@@ -48,8 +53,11 @@ class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_type_float_int(self):
         compu_method = LinearCompuMethod(offset=1,
                                          factor=3,
+                                         denominator=1,
                                          internal_type="A_FLOAT32",
-                                         physical_type="A_INT32")
+                                         physical_type="A_INT32",
+                                         internal_lower_limit=None,
+                                         internal_upper_limit=None)
         self.assertTrue(compu_method.is_valid_internal_value(1.2345))
         self.assertTrue(compu_method.is_valid_internal_value(123))
         self.assertFalse(compu_method.is_valid_internal_value("123"))
@@ -61,8 +69,11 @@ class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_type_string(self):
         compu_method = LinearCompuMethod(offset=1,
                                          factor=3,
+                                         denominator=1,
                                          internal_type="A_ASCIISTRING",
-                                         physical_type="A_UNICODE2STRING")
+                                         physical_type="A_UNICODE2STRING",
+                                         internal_lower_limit=None,
+                                         internal_upper_limit=None)
         self.assertTrue(compu_method.is_valid_internal_value("123"))
         self.assertFalse(compu_method.is_valid_internal_value(123))
         self.assertFalse(compu_method.is_valid_internal_value(1.2345))
@@ -70,6 +81,7 @@ class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_limits(self):
         compu_method = LinearCompuMethod(offset=1,
                                          factor=5,
+                                         denominator=1,
                                          internal_type="A_INT32",
                                          physical_type="A_INT32",
                                          internal_lower_limit=Limit(2),
@@ -96,6 +108,7 @@ class TestLinearCompuMethod(unittest.TestCase):
         # Define decoding function: f: (2, 15] -> [-74, -14], f(x) = -5*x + 1
         compu_method = LinearCompuMethod(offset=1,
                                          factor=-5,
+                                         denominator=1,
                                          internal_type="A_INT32",
                                          physical_type="A_INT32",
                                          internal_lower_limit=Limit(2,

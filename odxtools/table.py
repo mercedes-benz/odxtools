@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import abc
 from dataclasses import dataclass, field
 from typing import Optional, List, Dict, Any, Iterable
@@ -12,7 +11,6 @@ from .dataobjectproperty import DopBase
 from .globals import logger
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 
-
 class TableBase(abc.ABC):
     """ Base class for all Tables."""
 
@@ -20,8 +18,8 @@ class TableBase(abc.ABC):
                  *,
                  odx_id: OdxLinkId,
                  short_name: str,
-                 long_name=None,
-                 sdgs: List[SpecialDataGroup] = []):
+                 long_name: Optional[str],
+                 sdgs: List[SpecialDataGroup]):
         self.odx_id = odx_id
         self.short_name = short_name
         self.long_name = long_name
@@ -47,11 +45,11 @@ class TableRow:
     short_name: str
     long_name: str
     key: int
-    structure_ref: Optional[OdxLinkRef] = None
-    dop_ref: Optional[OdxLinkRef] = None
-    description: Optional[str] = None
-    semantic: Optional[str] = None
-    sdgs: List[SpecialDataGroup] = field(default_factory=list)
+    structure_ref: Optional[OdxLinkRef]
+    dop_ref: Optional[OdxLinkRef]
+    description: Optional[str]
+    semantic: Optional[str]
+    sdgs: List[SpecialDataGroup]
 
     def __post_init__(self) -> None:
         self._structure: Optional[DopBase] = None
@@ -139,13 +137,12 @@ class Table(TableBase):
                  odx_id: OdxLinkId,
                  short_name: str,
                  table_rows: List[TableRow],
-                 table_row_refs: Optional[List[OdxLinkRef]] = None,
-                 long_name: Optional[str] = None,
-                 key_dop_ref: Optional[OdxLinkRef] = None,
-                 description: Optional[str] = None,
-                 semantic: Optional[str] = None,
-                 sdgs: List[SpecialDataGroup] = [],
-                 ):
+                 table_row_refs: List[OdxLinkRef],
+                 long_name: Optional[str],
+                 key_dop_ref: Optional[OdxLinkRef],
+                 description: Optional[str],
+                 semantic: Optional[str],
+                 sdgs: List[SpecialDataGroup]):
         super().__init__(odx_id=odx_id,
                          short_name=short_name,
                          long_name=long_name,

@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import abc
 import math
 from typing import Any, Optional, Union, List
@@ -31,8 +30,8 @@ class DiagCodedType(abc.ABC):
                  *,
                  base_data_type: Union[str, DataType],
                  dct_type: str,
-                 base_type_encoding=None,
-                 is_highlow_byte_order_raw: Optional[bool] = None):
+                 base_type_encoding: Optional[str],
+                 is_highlow_byte_order_raw: Optional[bool]):
         self.base_data_type = DataType(base_data_type)
         self.dct_type = dct_type
         self.base_type_encoding = base_type_encoding
@@ -202,10 +201,10 @@ class DiagCodedType(abc.ABC):
 class LeadingLengthInfoType(DiagCodedType):
     def __init__(self,
                  *,
-                 base_data_type,
-                 bit_length,
-                 base_type_encoding=None,
-                 is_highlow_byte_order_raw=True):
+                 base_data_type: str,
+                 bit_length: int,
+                 base_type_encoding: Optional[str],
+                 is_highlow_byte_order_raw: Optional[bool]):
         super().__init__(base_data_type=base_data_type,
                          dct_type="LEADING-LENGTH-INFO-TYPE",
                          base_type_encoding=base_type_encoding,
@@ -276,12 +275,12 @@ class LeadingLengthInfoType(DiagCodedType):
 class MinMaxLengthType(DiagCodedType):
     def __init__(self,
                  *,
-                 base_data_type,
-                 min_length,
-                 termination,
-                 max_length=None,
-                 base_type_encoding=None,
-                 is_highlow_byte_order_raw=None):
+                 base_data_type: Union[str, DataType],
+                 min_length: int,
+                 termination: str,
+                 max_length: Optional[int],
+                 base_type_encoding: Optional[str],
+                 is_highlow_byte_order_raw: Optional[bool]):
         super().__init__(base_data_type=base_data_type,
                          dct_type="MIN-MAX-LENGTH-TYPE",
                          base_type_encoding=base_type_encoding,
@@ -420,8 +419,8 @@ class ParamLengthInfoType(DiagCodedType):
                  *,
                  base_data_type: Union[str, DataType],
                  length_key_id: OdxLinkId,
-                 base_type_encoding=None,
-                 is_highlow_byte_order_raw=True):
+                 base_type_encoding: Optional[str],
+                 is_highlow_byte_order_raw: Optional[bool]):
         super().__init__(base_data_type=base_data_type,
                          dct_type="PARAM-LENGTH-INFO-TYPE",
                          base_type_encoding=base_type_encoding,
@@ -494,17 +493,17 @@ class StandardLengthType(DiagCodedType):
                  *,
                  base_data_type: Union[str, DataType],
                  bit_length: int,
-                 bit_mask = None,
-                 condensed: Optional[bool] = None,
-                 base_type_encoding = None,
-                 is_highlow_byte_order_raw = True):
+                 bit_mask: Optional[int],
+                 is_condensed_raw: Optional[bool],
+                 base_type_encoding: Optional[str],
+                 is_highlow_byte_order_raw: Optional[bool]):
         super().__init__(base_data_type=base_data_type,
                          dct_type="STANDARD-LENGTH-TYPE",
                          base_type_encoding=base_type_encoding,
                          is_highlow_byte_order_raw=is_highlow_byte_order_raw)
         self.bit_length = bit_length
         self.bit_mask = bit_mask
-        self.condensed = condensed
+        self.is_condensed_raw = is_condensed_raw
 
     def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState, bit_position: int) -> bytes:
         return self._to_bytes(internal_value,
@@ -527,8 +526,8 @@ class StandardLengthType(DiagCodedType):
         repr_str = f"StandardLengthType(base_data_type='{self.base_data_type}', bit_length={self.bit_length}"
         if self.bit_mask is not None:
             repr_str += f", bit_mask={self.bit_mask}"
-        if self.condensed:
-            repr_str += f", condensed={self.condensed}"
+        if self.is_condensed_raw:
+            repr_str += f", is_condensed_raw={self.is_condensed_raw}"
         if self.base_type_encoding is not None:
             repr_str += f", base_type_encoding={self.base_type_encoding}"
         if not self.is_highlow_byte_order:
@@ -589,11 +588,11 @@ def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragmen
         bit_mask = None
         if et_element.find("BIT-MASK"):
             bit_mask = et_element.findtext("BIT-MASK")
-        condensed = odxstr_to_bool(et_element.get("CONDENSED"))
+        is_condensed_raw = odxstr_to_bool(et_element.get("CONDENSED"))
         return StandardLengthType(base_data_type=base_data_type,
                                   bit_length=bit_length,
                                   bit_mask=bit_mask,
-                                  condensed=condensed,
+                                  is_condensed_raw=is_condensed_raw,
                                   base_type_encoding=base_type_encoding,
                                   is_highlow_byte_order_raw=is_highlow_byte_order_raw)
     raise NotImplementedError(f"I do not know the diag-coded-type {dct_type}")

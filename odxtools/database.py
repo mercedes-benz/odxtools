@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 from itertools import chain
 from pathlib import Path
 from typing import List, Optional, Set

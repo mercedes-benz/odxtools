@@ -2,7 +2,6 @@
 #
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
 import isotp
 import sys
 import can

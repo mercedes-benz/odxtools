@@ -41,12 +41,12 @@ def create_complex_value_from_et(et_element) -> ComplexValue:
 class BaseComparam:
     odx_id: OdxLinkId
     short_name: str
-    long_name: Optional[str] = field(default=None, init=False)
-    description: Optional[str] = field(default=None, init=False)
+    long_name: Optional[str]
+    description: Optional[str]
     param_class: str
     cptype: StandardizationLevel
     cpusage: Usage
-    display_level: Optional[int] = field(default=None, init=False)
+    display_level: Optional[int]
 
     def __init_from_et__(self, et_element, doc_frags: List[OdxDocFragment]) -> None:
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
@@ -71,8 +71,8 @@ class BaseComparam:
 @dataclass
 class ComplexComparam(BaseComparam):
     comparams: NamedItemList[BaseComparam]
-    complex_physical_default_value: Optional[ComplexValue] = field(default=None, init=False)
-    allow_multiple_values_raw: Optional[bool] = None
+    complex_physical_default_value: Optional[ComplexValue]
+    allow_multiple_values_raw: Optional[bool]
 
     @property
     def allow_multiple_values(self) -> bool:
@@ -120,7 +120,7 @@ class ComplexComparam(BaseComparam):
 @dataclass
 class Comparam(BaseComparam):
     dop_ref: OdxLinkRef
-    physical_default_value: Optional[str] = field(default=None, init=False)
+    physical_default_value: Optional[str]
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Comparam":

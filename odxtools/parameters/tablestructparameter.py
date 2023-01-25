@@ -1,39 +1,20 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-
-
 from .parameterbase import Parameter
-
 
 class TableStructParameter(Parameter):
     def __init__(self,
                  *,
-                 short_name,
-                 table_key_ref=None,
-                 table_key_snref=None,
-                 long_name=None,
-                 byte_position=None,
-                 bit_position=None,
-                 semantic=None,
-                 description=None,
+                 table_key_ref,
+                 table_key_snref,
                  **kwargs):
-        super().__init__(
-            short_name=short_name,
-            long_name=long_name,
-            byte_position=byte_position,
-            bit_position=bit_position,
-            parameter_type="TABLE-STRUCT",
-            semantic=semantic,
-            description=description,
-            **kwargs
-        )
-        if table_key_ref:
-            self.table_key_ref = table_key_ref
-        elif table_key_snref:
-            self.table_key_snref = table_key_snref
-        else:
-            raise ValueError(
-                "Either table_key_ref or table_key_snref must be defined.")
+        super().__init__(parameter_type="TABLE-STRUCT", **kwargs)
+
+        self.table_key_ref = table_key_ref
+        self.table_key_snref = table_key_snref
+        if self.table_key_ref is None and self.table_key_snref is None:
+            raise OdxError("Either table_key_ref or table_key_snref "
+                           "must be defined.")
 
     def is_required(self):
         raise NotImplementedError(
