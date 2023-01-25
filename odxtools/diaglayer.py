@@ -137,33 +137,12 @@ class DiagLayer:
                  variant_type : DIAG_LAYER_TYPE,
                  odx_id,
                  short_name,
-<<<<<<< HEAD
-                 long_name=None,
-                 description=None,
-                 requests: List[Request] = [],
-                 positive_responses: List[Response] = [],
-                 negative_responses: List[Response] = [],
-                 global_negative_responses: List[Response] = [],
-                 services: List[DiagService] = [],
-                 single_ecu_jobs: List[SingleEcuJob] = [],
-                 diag_comm_refs: List[OdxLinkRef] = [],
-                 parent_refs: List[ParentRef] = [],
-                 diag_data_dictionary_spec: Optional[DiagDataDictionarySpec] = None,
-                 communication_parameters:
-                 Iterable[CommunicationParameterRef] = [],
-                 odxlinks=None,
-                 additional_audiences=[],
-                 functional_classes=[],
-                 states=[],
-                 state_transitions=[],
-                 import_refs=[],
-                 sdgs=[],
-=======
                  long_name,
                  description,
                  requests: List[Request],
                  positive_responses: List[Response],
                  negative_responses: List[Response],
+                 global_negative_responses: List[Response] = [],
                  services: List[DiagService],
                  single_ecu_jobs: List[SingleEcuJob],
                  diag_comm_refs: List[OdxLinkRef],
@@ -177,7 +156,6 @@ class DiagLayer:
                  import_refs: List[OdxLinkRef],
                  sdgs: List[SpecialDataGroup],
                  ecu_variant_patterns: List[EcuVariantPattern] = [],
->>>>>>> bf01932415d9ad9cee792981f8e25c2264af87e6
                  ):
         logger.info(f"Initializing variant type {variant_type.value}")
         self.variant_type = variant_type
