@@ -1,21 +1,19 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 import warnings
-from typing import Union, ByteString
+from typing import ByteString, Union
 
 from ..decodestate import DecodeState
-from ..encodestate import EncodeState
 from ..diagcodedtypes import DiagCodedType
-from ..odxtypes import DataType
+from ..encodestate import EncodeState
 from ..exceptions import DecodeError
-
+from ..odxtypes import DataType
 from .parameterbase import Parameter
 
+
 class CodedConstParameter(Parameter):
-    def __init__(self,
-                 *,
-                 diag_coded_type: DiagCodedType,
-                 coded_value: Union[int, ByteString],
+
+    def __init__(self, *, diag_coded_type: DiagCodedType, coded_value: Union[int, ByteString],
                  **kwargs):
         super().__init__(parameter_type="CODED-CONST", **kwargs)
 
@@ -45,26 +43,23 @@ class CodedConstParameter(Parameter):
         return self.coded_value
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
-        if self.short_name in encode_state.parameter_values \
-                and encode_state.parameter_values[self.short_name] != self.coded_value:
+        if (self.short_name in encode_state.parameter_values and
+                encode_state.parameter_values[self.short_name] != self.coded_value):
             raise TypeError(f"The parameter '{self.short_name}' is constant {self._coded_value_str}"
                             " and thus can not be changed.")
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return self.diag_coded_type.convert_internal_to_bytes(self.coded_value,
-                                                              encode_state=encode_state,
-                                                              bit_position=bit_position_int)
+        return self.diag_coded_type.convert_internal_to_bytes(
+            self.coded_value, encode_state=encode_state, bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState):
         if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
             # Update byte position
-            decode_state = decode_state._replace(
-                next_byte_position=self.byte_position)
+            decode_state = decode_state._replace(next_byte_position=self.byte_position)
 
         # Extract coded values
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        coded_val, next_byte_position = \
-            self.diag_coded_type.convert_bytes_to_internal(decode_state,
-                                                           bit_position=bit_position_int)
+        coded_val, next_byte_position = self.diag_coded_type.convert_bytes_to_internal(
+            decode_state, bit_position=bit_position_int)
 
         # Check if the coded value in the message is correct.
         if self.coded_value != coded_val:
@@ -73,7 +68,7 @@ class CodedConstParameter(Parameter):
                 f"The parameter {self.short_name} expected coded value {self._coded_value_str} but got {coded_val} "
                 f"at byte position {decode_state.next_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
-                DecodeError
+                DecodeError,
             )
 
         return coded_val, next_byte_position

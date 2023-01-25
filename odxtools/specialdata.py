@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-from typing import Optional, Any, Dict, List, Union
 import warnings
-from xml.etree import ElementTree
 from dataclasses import dataclass, field
+from typing import Any, Dict, List, Optional, Union
+from xml.etree import ElementTree
 
-from .utils import short_name_as_id
-from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
-from .utils import create_description_from_et
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .utils import create_description_from_et, short_name_as_id
+
 
 @dataclass
 class SpecialDataGroupCaption:
@@ -18,8 +18,7 @@ class SpecialDataGroupCaption:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) \
-            -> "SpecialDataGroupCaption":
+                doc_frags: List[OdxDocFragment]) -> "SpecialDataGroupCaption":
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
         assert odx_id is not None
 
@@ -28,10 +27,8 @@ class SpecialDataGroupCaption:
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
 
-        return SpecialDataGroupCaption(odx_id=odx_id,
-                                       short_name=short_name,
-                                       long_name=long_name,
-                                       description=description)
+        return SpecialDataGroupCaption(
+            odx_id=odx_id, short_name=short_name, long_name=long_name, description=description)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
@@ -40,10 +37,11 @@ class SpecialDataGroupCaption:
 
         return result
 
+
 @dataclass
 class SpecialData:
-    semantic_info: Optional[str] # the "SI" attribute
-    text_identifier: Optional[str] # the "TI" attribute, specifies the language used
+    semantic_info: Optional[str]  # the "SI" attribute
+    text_identifier: Optional[str]  # the "TI" attribute, specifies the language used
     value: str
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -53,28 +51,25 @@ class SpecialData:
         pass
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) \
-            -> "SpecialData":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SpecialData":
         semantic_info = et_element.get("SI")
         text_identifier = et_element.get("TI")
         value = et_element.text or ""
 
-        return SpecialData(semantic_info=semantic_info,
-                           text_identifier=text_identifier,
-                           value=value)
+        return SpecialData(
+            semantic_info=semantic_info, text_identifier=text_identifier, value=value)
+
 
 @dataclass
 class SpecialDataGroup:
     sdg_caption: Optional[SpecialDataGroupCaption]
     sdg_caption_ref: Optional[OdxLinkRef]
-    semantic_info: Optional[str] # the "SI" attribute
+    semantic_info: Optional[str]  # the "SI" attribute
     values: List[Union["SpecialDataGroup", SpecialData]]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) \
-            -> "SpecialDataGroup":
+                doc_frags: List[OdxDocFragment]) -> "SpecialDataGroup":
 
         sdg_caption = None
         if caption_elem := et_element.find("SDG-CAPTION"):
@@ -97,10 +92,12 @@ class SpecialDataGroup:
             if next_entry is not None:
                 values.append(next_entry)
 
-        return SpecialDataGroup(sdg_caption=sdg_caption,
-                                sdg_caption_ref=sdg_caption_ref,
-                                semantic_info=semantic_info,
-                                values=values)
+        return SpecialDataGroup(
+            sdg_caption=sdg_caption,
+            sdg_caption_ref=sdg_caption_ref,
+            semantic_info=semantic_info,
+            values=values,
+        )
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
@@ -122,9 +119,9 @@ class SpecialDataGroup:
         for val in self.values:
             val._resolve_references(odxlinks)
 
+
 def create_sdgs_from_et(et_element: Optional[ElementTree.Element],
-                       doc_frags: List[OdxDocFragment]) \
-        -> List[SpecialDataGroup]:
+                        doc_frags: List[OdxDocFragment]) -> List[SpecialDataGroup]:
 
     if not et_element:
         return []

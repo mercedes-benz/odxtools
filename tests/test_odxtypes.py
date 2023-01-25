@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 import unittest
+
 from odxtools.odxtypes import DataType
+
 
 class TestDataType(unittest.TestCase):
 
@@ -41,5 +43,5 @@ class TestDataType(unittest.TestCase):
         self.assertFalse(DataType.A_BYTEFIELD.isinstance(0x12))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

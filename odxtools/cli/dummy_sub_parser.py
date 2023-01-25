@@ -3,6 +3,7 @@
 import argparse
 import sys
 
+
 class DummyTool:
     """A tool which acts as a placeholder for a "real" tool that
     could not be loaded for whatever reason.
@@ -14,9 +15,7 @@ class DummyTool:
     should bail out.
     """
 
-    def __init__(self,
-                 tool_name,
-                 error):
+    def __init__(self, tool_name, error):
         self._odxtools_tool_name_ = tool_name
         self._error = error
 
@@ -25,9 +24,12 @@ class DummyTool:
             self._odxtools_tool_name_,
             description=f"Tool '{self._odxtools_tool_name_}' is unavailable: {self._error}",
             help="Dummy tool",
-            formatter_class=argparse.RawTextHelpFormatter)
+            formatter_class=argparse.RawTextHelpFormatter,
+        )
 
     def run(self, args: argparse.Namespace):
-        print(f"Error: Tool '{self._odxtools_tool_name_}' is unavailable: {self._error}",
-              file=sys.stderr)
+        print(
+            f"Error: Tool '{self._odxtools_tool_name_}' is unavailable: {self._error}",
+            file=sys.stderr,
+        )
         exit(1)

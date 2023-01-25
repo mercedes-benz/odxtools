@@ -4,10 +4,11 @@ from typing import Any, Dict, NamedTuple, Optional, Union
 
 from .odxlink import OdxLinkId
 
+
 class EncodeState(NamedTuple):
     """Utility class to be used while encoding a message.
 
-    While encoding parameters may update the dicts with new keys 
+    While encoding parameters may update the dicts with new keys
     but this is the only allowed change.
     In particular the coded_message is not updated in-place.
     Instead the new encode state can be constructed with::
@@ -17,6 +18,7 @@ class EncodeState(NamedTuple):
             encode_state = encode_state._replace(coded_message=prefix)
 
     """
+
     coded_message: bytes
     """payload that is constructed so far"""
     parameter_values: Dict[str, Any]

@@ -1,17 +1,16 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 import warnings
+
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError
-
 from .parameterwithdop import ParameterWithDOP
 
+
 class PhysicalConstantParameter(ParameterWithDOP):
-    def __init__(self,
-                 *,
-                 physical_constant_value,
-                 **kwargs):
+
+    def __init__(self, *, physical_constant_value, **kwargs):
         super().__init__(parameter_type="PHYS-CONST", **kwargs)
 
         assert physical_constant_value is not None
@@ -33,15 +32,15 @@ class PhysicalConstantParameter(ParameterWithDOP):
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
         assert self.dop is not None, "Reference to DOP is not resolved"
-        if self.short_name in encode_state.parameter_values \
-                and encode_state.parameter_values[self.short_name] != self.physical_constant_value:
-            raise TypeError(f"The parameter '{self.short_name}' is constant {self.physical_constant_value}"
-                            " and thus can not be changed.")
+        if (self.short_name in encode_state.parameter_values and
+                encode_state.parameter_values[self.short_name] != self.physical_constant_value):
+            raise TypeError(
+                f"The parameter '{self.short_name}' is constant {self.physical_constant_value}"
+                " and thus can not be changed.")
 
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return self.dop.convert_physical_to_bytes(self.physical_constant_value,
-                                                  encode_state,
-                                                  bit_position=bit_position_int)
+        return self.dop.convert_physical_to_bytes(
+            self.physical_constant_value, encode_state, bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState):
         # Decode value
@@ -54,7 +53,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
                 f"The parameter {self.short_name} expected physical value {self.physical_constant_value!r} but got {phys_val!r} "
                 f"at byte position {next_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
-                DecodeError
+                DecodeError,
             )
         return phys_val, next_byte_position
 
