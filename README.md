@@ -55,26 +55,19 @@ send to/received from ECUs in an pythonic manner.
 - [License](#license)
 
 ## Use Cases
+Intended Use Cases of odxtools:
 
-Here are some of the intended use cases of `odxtools`:
+Prototype Development: These tools can be used to interact with the diagnostic services of electronic control units directly from Python by tapping into the relevant CAN or Ethernet bus of the car.
 
-- Prototype development: Interacting with the diagnostic services of
-  electronic control units directly from python (requires taping into
-  the car's relevant CAN or ethernet bus)
-- End-of-production calibration/quality control: Initial set up and
-  running a self diagnosis of newly produced cars to ensure that
-  everything works as specified
-- After-sales: Implementing servicing functionality for workshops, i.e.,
-  defining test schedules based on the legally mandated functionality of
-  ISO 15031-6 (OBD II) as well as manufacturer-specific routines
-- Prototype development (II): Analyzing and debugging diagnostic sessions
-  done using third-party software
-- Prototype development (III): Implementing bridges to higher-level protocols
-  such as HTTP
-- Development for mass production: Accelerating the implementation of
-  diagnostic servicesfor low-cost ECUs by using `odxtools`-based code
-  generators for the diagnostic glue code on system-level languages like
-  C++ or rust
+End-of-Production Calibration/Quality Control: odxtools can assist in the initial setup and running of a self-diagnosis of newly produced cars to ensure that everything works as specified.
+
+After-Sales: These tools can help in implementing servicing functionality for workshops by defining test schedules based on the legally mandated functionality of ISO 15031-6 (OBD II), as well as manufacturer-specific routines.
+
+Prototype Development (II): These tools can be used for analyzing and debugging diagnostic sessions done using third-party software.
+
+Prototype Development (III): odxtools can be employed in implementing bridges to higher-level protocols such as HTTP.
+
+Development for Mass Production: These tools can speed up the implementation of diagnostic services for low-cost electronic control units by using odxtools-based code generators for the diagnostic glue code on system-level languages like C++ or Rust.z
 
 Please be aware that some of the use cases listed above are currently
 rather aspirational.
