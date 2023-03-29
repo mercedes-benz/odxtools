@@ -19,6 +19,84 @@ doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
 class TestLinearCompuMethod(unittest.TestCase):
 
+    def setUp(self) -> None:
+        """Prepares the jinja environment and the sample tab-intp compumethod"""
+
+        def _get_jinja_environment():
+            __module_filname = inspect.getsourcefile(odxtools)
+            assert isinstance(__module_filname, str)
+            templates_dir = os.path.sep.join([os.path.dirname(__module_filname), "templates"])
+
+            jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
+
+            # allows to put XML attributes on a separate line while it is
+            # collapsed with the previous line in the rendering
+            jinja_env.filters["odxtools_collapse_xml_attribute"] = (lambda x: " " + x.strip()
+                                                                    if x.strip() else "")
+
+            jinja_env.globals["hasattr"] = hasattr
+            return jinja_env
+
+        self.jinja_env = _get_jinja_environment()
+
+        self.compumethod = LinearCompuMethod(
+            offset=0,
+            factor=1,
+            denominator=3600,
+            internal_type="A_INT32",
+            physical_type="A_INT32",
+            internal_lower_limit=None,
+            internal_upper_limit=None,
+        )
+
+        self.compumethod_odx = f"""
+        <COMPU-METHOD>
+            <CATEGORY>LINEAR</CATEGORY>
+            <COMPU-INTERNAL-TO-PHYS>
+                <COMPU-SCALES>
+                    <COMPU-SCALE>
+                        <COMPU-RATIONAL-COEFFS>
+                            <COMPU-NUMERATOR>
+                                <V>{self.compumethod.offset}</V>
+                                <V>{self.compumethod.factor}</V>
+                            </COMPU-NUMERATOR>
+                            <COMPU-DENOMINATOR>
+                                <V>{self.compumethod.denominator}</V>
+                            </COMPU-DENOMINATOR>
+                        </COMPU-RATIONAL-COEFFS>
+                    </COMPU-SCALE>
+                </COMPU-SCALES>
+            </COMPU-INTERNAL-TO-PHYS>
+        </COMPU-METHOD>
+        """
+
+    def test_read_odx(self):
+        expected = self.compumethod
+
+        et_element = ElementTree.fromstring(self.compumethod_odx)
+        actual = create_any_compu_method_from_et(et_element, doc_frags, expected.internal_type,
+                                                 expected.physical_type)
+        self.assertIsInstance(actual, LinearCompuMethod)
+        self.assertEqual(expected.physical_type, actual.physical_type)
+        self.assertEqual(expected.internal_type, actual.internal_type)
+        self.assertEqual(expected.offset, actual.offset)
+        self.assertEqual(expected.factor, actual.factor)
+        self.assertEqual(expected.denominator, actual.denominator)
+
+    def test_linear_compu_method_type_denom_not_one(self):
+        compu_method = LinearCompuMethod(
+            offset=0,
+            factor=1,
+            denominator=3600,
+            internal_type="A_INT32",
+            physical_type="A_INT32",
+            internal_lower_limit=None,
+            internal_upper_limit=None,
+        )
+        self.assertEqual(compu_method.convert_physical_to_internal(2), 7200)
+
+        self.assertEqual(compu_method.convert_internal_to_physical(7200), 2)
+
     def test_linear_compu_method_type_int_int(self):
         compu_method = LinearCompuMethod(
             offset=1,
