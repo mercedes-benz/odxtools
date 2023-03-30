@@ -39,7 +39,8 @@ class TestLinearCompuMethod(unittest.TestCase):
 
         self.jinja_env = _get_jinja_environment()
 
-        self.compumethod = LinearCompuMethod(
+    def test_read_odx(self):
+        compumethod = LinearCompuMethod(
             offset=0,
             factor=1,
             denominator=3600,
@@ -49,7 +50,7 @@ class TestLinearCompuMethod(unittest.TestCase):
             internal_upper_limit=None,
         )
 
-        self.compumethod_odx = f"""
+        compumethod_odx = f"""
         <COMPU-METHOD>
             <CATEGORY>LINEAR</CATEGORY>
             <COMPU-INTERNAL-TO-PHYS>
@@ -57,11 +58,11 @@ class TestLinearCompuMethod(unittest.TestCase):
                     <COMPU-SCALE>
                         <COMPU-RATIONAL-COEFFS>
                             <COMPU-NUMERATOR>
-                                <V>{self.compumethod.offset}</V>
-                                <V>{self.compumethod.factor}</V>
+                                <V>{compumethod.offset}</V>
+                                <V>{compumethod.factor}</V>
                             </COMPU-NUMERATOR>
                             <COMPU-DENOMINATOR>
-                                <V>{self.compumethod.denominator}</V>
+                                <V>{compumethod.denominator}</V>
                             </COMPU-DENOMINATOR>
                         </COMPU-RATIONAL-COEFFS>
                     </COMPU-SCALE>
@@ -70,10 +71,9 @@ class TestLinearCompuMethod(unittest.TestCase):
         </COMPU-METHOD>
         """
 
-    def test_read_odx(self):
-        expected = self.compumethod
+        expected = compumethod
 
-        et_element = ElementTree.fromstring(self.compumethod_odx)
+        et_element = ElementTree.fromstring(compumethod_odx)
         actual = create_any_compu_method_from_et(et_element, doc_frags, expected.internal_type,
                                                  expected.physical_type)
         self.assertIsInstance(actual, LinearCompuMethod)
