@@ -52,9 +52,10 @@ def _parse_compu_scale_to_linear_compu_method(
     offset = computation_python_type(next(nums).text)
     factor_el = next(nums, None)
     factor = computation_python_type(factor_el.text if factor_el is not None else "0")
+    denominator = 1.0
     if coeffs.find("COMPU-DENOMINATOR/V") is not None:
-        kwargs["denominator"] = float(coeffs.findtext("COMPU-DENOMINATOR/V"))
-        assert kwargs["denominator"] > 0
+        denominator = float(coeffs.findtext("COMPU-DENOMINATOR/V"))
+        assert denominator > 0
 
     # Read lower limit
     internal_lower_limit = Limit.from_et(
@@ -79,7 +80,7 @@ def _parse_compu_scale_to_linear_compu_method(
             logger.info("Scale linear without UPPER-LIMIT")
             internal_upper_limit = internal_lower_limit
     kwargs["internal_upper_limit"] = internal_upper_limit
-    kwargs["denominator"] = 1.0
+    kwargs["denominator"] = denominator
     kwargs["factor"] = factor
     kwargs["offset"] = offset
 
