@@ -19,28 +19,9 @@ doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
 class TestLinearCompuMethod(unittest.TestCase):
 
-    def setUp(self) -> None:
-        """Prepares the jinja environment and the sample tab-intp compumethod"""
-
-        def _get_jinja_environment():
-            __module_filname = inspect.getsourcefile(odxtools)
-            assert isinstance(__module_filname, str)
-            templates_dir = os.path.sep.join([os.path.dirname(__module_filname), "templates"])
-
-            jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
-
-            # allows to put XML attributes on a separate line while it is
-            # collapsed with the previous line in the rendering
-            jinja_env.filters["odxtools_collapse_xml_attribute"] = (lambda x: " " + x.strip()
-                                                                    if x.strip() else "")
-
-            jinja_env.globals["hasattr"] = hasattr
-            return jinja_env
-
-        self.jinja_env = _get_jinja_environment()
-
     def test_read_odx(self):
-        compumethod = LinearCompuMethod(
+        """Test parsing of linear compumethod"""
+        expected = LinearCompuMethod(
             offset=0,
             factor=1,
             denominator=3600,
@@ -58,11 +39,11 @@ class TestLinearCompuMethod(unittest.TestCase):
                     <COMPU-SCALE>
                         <COMPU-RATIONAL-COEFFS>
                             <COMPU-NUMERATOR>
-                                <V>{compumethod.offset}</V>
-                                <V>{compumethod.factor}</V>
+                                <V>{expected.offset}</V>
+                                <V>{expected.factor}</V>
                             </COMPU-NUMERATOR>
                             <COMPU-DENOMINATOR>
-                                <V>{compumethod.denominator}</V>
+                                <V>{expected.denominator}</V>
                             </COMPU-DENOMINATOR>
                         </COMPU-RATIONAL-COEFFS>
                     </COMPU-SCALE>
@@ -70,8 +51,6 @@ class TestLinearCompuMethod(unittest.TestCase):
             </COMPU-INTERNAL-TO-PHYS>
         </COMPU-METHOD>
         """
-
-        expected = compumethod
 
         et_element = ElementTree.fromstring(compumethod_odx)
         actual = create_any_compu_method_from_et(et_element, doc_frags, expected.internal_type,
