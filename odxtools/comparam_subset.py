@@ -12,9 +12,19 @@ from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .units import UnitSpec
 from .utils import create_description_from_et, short_name_as_id
 
-StandardizationLevel = Literal["STANDARD", "OEM-SPECIFIC", "OPTIONAL", "OEM-OPTIONAL",]
+StandardizationLevel = Literal[
+    "STANDARD",
+    "OEM-SPECIFIC",
+    "OPTIONAL",
+    "OEM-OPTIONAL",
+]
 
-Usage = Literal["ECU-SOFTWARE", "ECU-COMM", "APPLICATION", "TESTER",]
+Usage = Literal[
+    "ECU-SOFTWARE",
+    "ECU-COMM",
+    "APPLICATION",
+    "TESTER",
+]
 
 ComplexValue = List[Union[str, "ComplexValue"]]
 

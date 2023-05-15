@@ -16,8 +16,14 @@ from .odxtypes import odxstr_to_bool
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .utils import create_description_from_et, short_name_as_id
 
-DiagClassType = Literal["STARTCOMM", "STOPCOMM", "VARIANTIDENTIFICATION",
-                        "READ-DYN-DEFINED-MESSAGE", "DYN-DEF-MESSAGE", "CLEAR-DYN-DEF-MESSAGE",]
+DiagClassType = Literal[
+    "STARTCOMM",
+    "STOPCOMM",
+    "VARIANTIDENTIFICATION",
+    "READ-DYN-DEFINED-MESSAGE",
+    "DYN-DEF-MESSAGE",
+    "CLEAR-DYN-DEF-MESSAGE",
+]
 
 
 @dataclass

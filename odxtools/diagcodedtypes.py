@@ -228,8 +228,8 @@ class LeadingLengthInfoType(DiagCodedType):
             is_highlow_byte_order_raw=is_highlow_byte_order_raw,
         )
         self.bit_length = bit_length
-        assert (self.bit_length >
-                0), "A Leading length info type with bit length == 0 does not make sense."
+        assert (self.bit_length
+                > 0), "A Leading length info type with bit length == 0 does not make sense."
         assert self.base_data_type in [
             DataType.A_BYTEFIELD,
             DataType.A_ASCIISTRING,
