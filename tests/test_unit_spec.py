@@ -182,8 +182,7 @@ class TestUnitSpec(unittest.TestCase):
             ),
             additional_audiences=[],
             functional_classes=[],
-            states=[],
-            state_transitions=[],
+            state_charts=[],
             import_refs=[],
             sdgs=[],
         )

@@ -26,8 +26,7 @@ from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .service import DiagService
 from .singleecujob import SingleEcuJob
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
-from .state import State
-from .state_transition import StateTransition
+from .statechart import StateChart
 from .structures import Request, Response, create_any_structure_from_et
 from .utils import create_description_from_et, short_name_as_id
 
@@ -165,8 +164,7 @@ class DiagLayer:
         communication_parameters: Iterable[CommunicationParameterRef],
         additional_audiences: List[AdditionalAudience],
         functional_classes: List[FunctionalClass],
-        states: List[State],
-        state_transitions: List[StateTransition],
+        state_charts: List[StateChart],
         import_refs: List[OdxLinkRef],
         sdgs: List[SpecialDataGroup],
         ecu_variant_patterns: List[EcuVariantPattern] = [],
@@ -202,8 +200,7 @@ class DiagLayer:
 
         self.additional_audiences = additional_audiences
         self.functional_classes = functional_classes
-        self.states = states
-        self.state_transitions = state_transitions
+        self.state_charts = state_charts
 
         # Properties that include inherited objects
         self._services: NamedItemList[Union[DiagService,
@@ -290,18 +287,9 @@ class DiagLayer:
             for el in et_element.iterfind("FUNCT-CLASSS/FUNCT-CLASS")
         ]
 
-        states = [
-            State.from_et(el, doc_frags)
-            for el in et_element.iterfind("STATE-CHARTS/STATE-CHART/STATES/STATE")
-        ]
-
-        # TODO: store the state charts properly (i.e. as separate objects)
-        state_transitions = [
-            StateTransition.from_et(el, doc_frags)
-            for el in et_element.iterfind("STATE-CHARTS/"
-                                          "STATE-CHART/"
-                                          "STATE-TRANSITIONS/"
-                                          "STATE-TRANSITION")
+        state_charts = [
+            StateChart.from_et(el, doc_frags)
+            for el in et_element.iterfind("STATE-CHARTS/STATE-CHART")
         ]
 
         if et_element.find("DIAG-DATA-DICTIONARY-SPEC"):
@@ -342,8 +330,7 @@ class DiagLayer:
             communication_parameters=com_params,
             additional_audiences=additional_audiences,
             functional_classes=functional_classes,
-            states=states,
-            state_transitions=state_transitions,
+            state_charts=state_charts,
             import_refs=import_refs,
             sdgs=sdgs,
             ecu_variant_patterns=ecu_variant_patterns,
@@ -410,8 +397,7 @@ class DiagLayer:
                 self.negative_responses,
                 self.additional_audiences,
                 self.functional_classes,
-                self.states,
-                self.state_transitions,
+                self.state_charts,
         ):
             odxlinks[obj.odx_id] = obj
 
@@ -424,8 +410,7 @@ class DiagLayer:
                 self.additional_audiences,
                 self.functional_classes,
                 self.sdgs,
-                self.states,
-                self.state_transitions,
+                self.state_charts,
         ):
             odxlinks.update(obj._build_odxlinks())
 

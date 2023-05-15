@@ -13,7 +13,7 @@ from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parameters import Parameter
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .state import State
-from .state_transition import StateTransition
+from .statetransition import StateTransition
 from .structures import Request, Response
 from .utils import create_description_from_et, short_name_as_id
 

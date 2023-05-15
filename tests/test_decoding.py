@@ -169,8 +169,7 @@ class TestIdentifyingService(unittest.TestCase):
             diag_data_dictionary_spec=None,
             additional_audiences=[],
             functional_classes=[],
-            states=[],
-            state_transitions=[],
+            state_charts=[],
             import_refs=[],
             sdgs=[],
         )
@@ -272,8 +271,7 @@ class TestDecoding(unittest.TestCase):
             diag_data_dictionary_spec=None,
             additional_audiences=[],
             functional_classes=[],
-            states=[],
-            state_transitions=[],
+            state_charts=[],
             import_refs=[],
             sdgs=[],
         )
@@ -397,8 +395,7 @@ class TestDecoding(unittest.TestCase):
             diag_data_dictionary_spec=None,
             additional_audiences=[],
             functional_classes=[],
-            states=[],
-            state_transitions=[],
+            state_charts=[],
             import_refs=[],
             sdgs=[],
         )
@@ -568,8 +565,7 @@ class TestDecoding(unittest.TestCase):
             diag_data_dictionary_spec=None,
             additional_audiences=[],
             functional_classes=[],
-            states=[],
-            state_transitions=[],
+            state_charts=[],
             import_refs=[],
             sdgs=[],
         )
@@ -750,8 +746,7 @@ class TestDecoding(unittest.TestCase):
             diag_data_dictionary_spec=None,
             additional_audiences=[],
             functional_classes=[],
-            states=[],
-            state_transitions=[],
+            state_charts=[],
             import_refs=[],
             sdgs=[],
         )
@@ -890,8 +885,7 @@ class TestDecoding(unittest.TestCase):
             diag_data_dictionary_spec=None,
             additional_audiences=[],
             functional_classes=[],
-            states=[],
-            state_transitions=[],
+            state_charts=[],
             import_refs=[],
             sdgs=[],
         )
@@ -1060,8 +1054,7 @@ class TestDecoding(unittest.TestCase):
             diag_data_dictionary_spec=None,
             additional_audiences=[],
             functional_classes=[],
-            states=[],
-            state_transitions=[],
+            state_charts=[],
             import_refs=[],
             sdgs=[],
         )
