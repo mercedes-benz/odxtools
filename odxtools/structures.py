@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 import math
 import warnings
-from typing import (TYPE_CHECKING, Any, ByteString, Dict, Iterable, List, Optional, OrderedDict,
+from typing import (TYPE_CHECKING, ByteString, Dict, Iterable, List, Optional, OrderedDict,
                     Tuple, Union)
 
 from .dataobjectproperty import DataObjectProperty, DopBase
@@ -16,8 +16,7 @@ from .odxtypes import odxstr_to_bool
 from .parameters import (CodedConstParameter, MatchingRequestParameter, Parameter, ParameterWithDOP,
                          ValueParameter, create_any_parameter_from_et)
 from .parameters.lengthkeyparameter import LengthKeyParameter
-from .parameters.tablekeyparameter import TableKeyParameter
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .specialdata import create_sdgs_from_et
 from .utils import create_description_from_et, short_name_as_id
 
 if TYPE_CHECKING:
@@ -350,7 +349,6 @@ class BasicStructure(DopBase):
         divide_string = indent_for_byte_numbering + 8 * "+-----" + "+"
 
         error = False
-        next_line = ""
         while param_idx <= len(params) and not error:  # For each byte
             if 8 * byte_idx == stop_bit and param_idx == len(params):
                 # If we have formatted the last parameter, we're done.
