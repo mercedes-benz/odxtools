@@ -5,14 +5,9 @@ import inspect
 import os
 import time
 import zipfile
-from typing import Any, Dict, List, Optional, Tuple
-
 import jinja2
-
 import odxtools
-
-from .comparam_subset import BaseComparam, Comparam, ComplexComparam
-from .exceptions import OdxError
+from typing import Any, Dict, List, Optional, Tuple
 from .odxtypes import bool_to_odxstr
 
 odxdatabase = None
