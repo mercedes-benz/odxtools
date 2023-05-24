@@ -50,7 +50,7 @@ class SpecialData:
         pass
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SpecialData":
+    def from_et(et_element: ElementTree.Element) -> "SpecialData":
         semantic_info = et_element.get("SI")
         text_identifier = et_element.get("TI")
         value = et_element.text or ""
