@@ -2,8 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 import math
 import warnings
-from typing import (TYPE_CHECKING, ByteString, Dict, Iterable, List, Optional, OrderedDict,
-                    Tuple, Union)
+from typing import (TYPE_CHECKING, ByteString, Dict, Iterable, List, Optional, OrderedDict, Tuple, Union)
 
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState, ParameterValuePair
