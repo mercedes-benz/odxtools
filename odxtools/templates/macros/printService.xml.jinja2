@@ -4,6 +4,7 @@
  # Copyright (c) 2022 MBition GmbH
 -#}
 
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
 {%- import('macros/printAudience.xml.jinja2') as paud %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
@@ -23,6 +24,9 @@
  {{service.description}}
  </DESC>
 {%- endif %}
+ {%- if service.admin_data %}
+ {{- pad.printAdminData(service.admin_data)|indent(2, first=True) }}
+ {%- endif %}
  {{- psd.printSpecialDataGroups(service.sdgs)|indent(1, first=True) }}
 {%- if service.functional_class_refs %}
  <FUNCT-CLASS-REFS>
@@ -34,6 +38,20 @@
 {%- if service.audience %}
  {{ paud.printAudience(service.audience)|indent(1) }}
 {%- endif%}
+ {%- if service.pre_condition_state_refs %}
+ <PRE-CONDITION-STATE-REFS>
+   {%- for ps_ref in service.pre_condition_state_refs %}
+   <PRE-CONDITION-STATE-REF ID-REF="{{ps_ref.ref_id}}" />
+   {%- endfor %}
+ </PRE-CONDITION-STATE-REFS>
+ {%- endif%}
+ {%- if service.state_transition_refs %}
+ <STATE-TRANSITION-REFS>
+   {%- for st_ref in service.state_transition_refs %}
+   <STATE-TRANSITION-REF ID-REF="{{st_ref.ref_id}}" />
+   {%- endfor %}
+ </STATE-TRANSITION-REFS>
+ {%- endif%}
  <REQUEST-REF ID-REF="{{service.request_ref.ref_id}}"/>
 {%- if service.pos_res_refs %}
  <POS-RESPONSE-REFS>

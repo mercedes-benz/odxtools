@@ -19,6 +19,7 @@
 {%- import('macros/printResponse.xml.jinja2') as presp %}
 {%- import('macros/printComparamRef.xml.jinja2') as pcom %}
 {%- import('macros/printParentRef.xml.jinja2') as pparref %}
+{%- import('macros/printStateChart.xml.jinja2') as psc %}
 {%- import('macros/printAudience.xml.jinja2') as paud %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
@@ -137,7 +138,14 @@
   {{ presp.printResponse(resp, "NEG-RESPONSE")|indent(2) }}
 {%- endfor %}
  </NEG-RESPONSES>
-{%- endif %}
+ {%- endif %}
+ {%- if dl.state_charts %}
+ <STATE-CHARTS>
+   {%- for sc in dl.state_charts %}
+   {{ psc.printStateChart(sc) }}
+   {%- endfor %}
+ </STATE-CHARTS>
+ {%- endif %}
 {%- if dl.additional_audiences %}
  <ADDITIONAL-AUDIENCES>
 {%- for audience in dl.additional_audiences %}

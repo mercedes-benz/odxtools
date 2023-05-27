@@ -246,8 +246,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             diag_comm_refs=[],
             additional_audiences=[],
             functional_classes=[],
-            states=[],
-            state_transitions=[],
+            state_charts=[],
             import_refs=[],
             sdgs=[],
         )
@@ -516,8 +515,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             ),
             additional_audiences=[],
             functional_classes=[],
-            states=[],
-            state_transitions=[],
+            state_charts=[],
             import_refs=[],
             sdgs=[],
         )
@@ -808,8 +806,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             ),
             additional_audiences=[],
             functional_classes=[],
-            states=[],
-            state_transitions=[],
+            state_charts=[],
             import_refs=[],
             sdgs=[],
         )

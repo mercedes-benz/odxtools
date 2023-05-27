@@ -184,8 +184,7 @@ def ecu_variant_1(
         positive_responses=[],
         negative_responses=[],
         single_ecu_jobs=[],
-        states=[],
-        state_transitions=[],
+        state_charts=[],
         ecu_variant_patterns=[ecu_variant_pattern1],
         sdgs=[],
     )
@@ -217,8 +216,7 @@ def ecu_variant_2(
         positive_responses=[],
         negative_responses=[],
         single_ecu_jobs=[],
-        states=[],
-        state_transitions=[],
+        state_charts=[],
         ecu_variant_patterns=[ecu_variant_pattern2],
         sdgs=[],
     )
@@ -251,8 +249,7 @@ def ecu_variant_3(
         positive_responses=[],
         negative_responses=[],
         single_ecu_jobs=[],
-        states=[],
-        state_transitions=[],
+        state_charts=[],
         ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
         sdgs=[],
     )
