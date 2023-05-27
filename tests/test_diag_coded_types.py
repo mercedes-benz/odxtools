@@ -17,7 +17,6 @@ from odxtools.parameters import CodedConstParameter, LengthKeyParameter, ValuePa
 from odxtools.physicaltype import PhysicalType
 from odxtools.structures import Request
 from odxtools.utils import short_name_as_id
-from odxtools.globals import xsi
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
@@ -860,7 +859,6 @@ class TestMinMaxLengthType(unittest.TestCase):
         diag_coded_type_element = odx_element.find("DIAG-CODED-TYPE")
 
         actual = create_any_diag_coded_type_from_et(diag_coded_type_element, doc_frags)
-        print(actual)
 
         self.assertIsInstance(actual, MinMaxLengthType)
         self.assertEqual(actual.base_data_type, expected.base_data_type)
@@ -869,8 +867,6 @@ class TestMinMaxLengthType(unittest.TestCase):
         self.assertEqual(actual.max_length, expected.max_length)
         self.assertEqual(actual.termination, expected.termination)
         self.assertEqual(actual.is_highlow_byte_order, expected.is_highlow_byte_order)
-
-
 
 
 if __name__ == "__main__":
