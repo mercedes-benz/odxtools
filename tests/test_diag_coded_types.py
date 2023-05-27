@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 import unittest
+from xml.etree import ElementTree
 
 import odxtools.uds as uds
 from odxtools.compumethods import IdenticalCompuMethod, LinearCompuMethod
@@ -16,6 +17,7 @@ from odxtools.parameters import CodedConstParameter, LengthKeyParameter, ValuePa
 from odxtools.physicaltype import PhysicalType
 from odxtools.structures import Request
 from odxtools.utils import short_name_as_id
+from odxtools.globals import xsi
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
@@ -833,6 +835,42 @@ class TestMinMaxLengthType(unittest.TestCase):
         # Test encoding.
         self.assertEqual(
             request.encode(certificateClient=0x123456.to_bytes(3, "big")), coded_request)
+
+    def test_read_odx(self):
+        expected = MinMaxLengthType(
+            base_data_type="A_ASCIISTRING",
+            base_type_encoding="ISO-8859-1",
+            min_length=8,
+            max_length=16,
+            termination="ZERO",
+            is_highlow_byte_order_raw=None,
+        )
+
+        # diag-coded-type requires xsi namespace
+        diagcodedtype_odx = f"""
+        <ODX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <DIAG-CODED-TYPE BASE-TYPE-ENCODING="{expected.base_type_encoding}" BASE-DATA-TYPE="{expected.base_data_type.value}" TERMINATION="{expected.termination}" xsi:type="MIN-MAX-LENGTH-TYPE">
+                <MIN-LENGTH>{expected.min_length}</MIN-LENGTH>
+                <MAX-LENGTH>{expected.max_length}</MAX-LENGTH>
+            </DIAG-CODED-TYPE>
+        </ODX>
+        """
+
+        odx_element = ElementTree.fromstring(diagcodedtype_odx)
+        diag_coded_type_element = odx_element.find("DIAG-CODED-TYPE")
+
+        actual = create_any_diag_coded_type_from_et(diag_coded_type_element, doc_frags)
+        print(actual)
+
+        self.assertIsInstance(actual, MinMaxLengthType)
+        self.assertEqual(actual.base_data_type, expected.base_data_type)
+        self.assertEqual(actual.base_type_encoding, expected.base_type_encoding)
+        self.assertEqual(actual.min_length, expected.min_length)
+        self.assertEqual(actual.max_length, expected.max_length)
+        self.assertEqual(actual.termination, expected.termination)
+        self.assertEqual(actual.is_highlow_byte_order, expected.is_highlow_byte_order)
+
+
 
 
 if __name__ == "__main__":
