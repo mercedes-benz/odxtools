@@ -53,9 +53,9 @@ def _parse_compu_scale_to_linear_compu_method(
     factor_el = next(nums, None)
     factor = computation_python_type(factor_el.text if factor_el is not None else "0")
     denominator = 1.0
-    if coeffs.find("COMPU-DENOMINATOR/V") is not None:
-        denominator = float(coeffs.findtext("COMPU-DENOMINATOR/V"))
-        assert denominator > 0
+    if (string := coeffs.findtext("COMPU-DENOMINATOR/V")) is not None:
+        denominator = float(string)
+        assert denominator != 0
 
     # Read lower limit
     internal_lower_limit = Limit.from_et(
