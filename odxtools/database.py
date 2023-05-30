@@ -8,7 +8,8 @@ from xml.etree.ElementTree import Element
 from zipfile import ZipFile
 
 from .comparam_subset import ComparamSubset
-from .diaglayer import DiagLayer, DiagLayerContainer
+from .diaglayer import DiagLayer
+from .diaglayercontainer import DiagLayerContainer
 from .diaglayertype import DiagLayerType
 from .globals import logger
 from .nameditemlist import NamedItemList

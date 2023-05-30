@@ -20,7 +20,8 @@ from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.diaglayer import DiagLayer, DiagLayerContainer
+from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayercontainer import DiagLayerContainer
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.envdata import EnvironmentData
 from odxtools.envdatadesc import EnvironmentDataDescription
