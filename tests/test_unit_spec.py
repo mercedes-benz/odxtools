@@ -8,7 +8,7 @@ from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayertype import DIAG_LAYER_TYPE
+from odxtools.diaglayertype import DiagLayerType
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
 from odxtools.parameters import CodedConstParameter, ValueParameter
@@ -116,7 +116,7 @@ class TestUnitSpec(unittest.TestCase):
             sdgs=[],
         )
         dl = DiagLayer(
-            variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+            variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("BV_id", doc_frags),
             short_name="BaseVariant",
             long_name=None,

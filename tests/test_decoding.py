@@ -6,7 +6,7 @@ from odxtools.compumethods import IdenticalCompuMethod, LinearCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty, DiagnosticTroubleCode, DtcDop
 from odxtools.diagcodedtypes import LeadingLengthInfoType, MinMaxLengthType, StandardLengthType
 from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayertype import DIAG_LAYER_TYPE
+from odxtools.diaglayertype import DiagLayerType
 from odxtools.endofpdufield import EndOfPduField
 from odxtools.exceptions import DecodeError
 from odxtools.message import Message
@@ -153,7 +153,7 @@ class TestIdentifyingService(unittest.TestCase):
         )
 
         diag_layer = DiagLayer(
-            variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+            variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -255,7 +255,7 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
         )
         diag_layer = DiagLayer(
-            variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+            variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -379,7 +379,7 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
         )
         diag_layer = DiagLayer(
-            variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+            variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -549,7 +549,7 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
         )
         diag_layer = DiagLayer(
-            variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+            variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -730,7 +730,7 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
         )
         diag_layer = DiagLayer(
-            variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+            variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -869,7 +869,7 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
         )
         diag_layer = DiagLayer(
-            variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+            variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -1038,7 +1038,7 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
         )
         diag_layer = DiagLayer(
-            variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+            variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,

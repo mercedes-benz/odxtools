@@ -5,7 +5,7 @@ from enum import Enum
 from typing import ByteString, Dict, Generator, List, Optional, Union
 
 from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayertype import DIAG_LAYER_TYPE
+from odxtools.diaglayertype import DiagLayerType
 from odxtools.ecu_variant_patterns import MatchingParameter
 from odxtools.exceptions import OdxError
 from odxtools.service import DiagService
@@ -21,7 +21,7 @@ class EcuVariantMatcher:
     ```python
 
     # initialize the matcher with a list of ecu variants,
-    # i.e., DiagLayer instances of variant_type == DIAG_LAYER_TYPE.ECU-VARIANT
+    # i.e., DiagLayer instances of variant_type == DiagLayerType.ECU-VARIANT
     matcher = EcuVariantMatcher(ecu_variant_candidates=[...], use_cache=use_cache)
 
     # run the request loop to obtain responses for every request
@@ -95,7 +95,7 @@ class EcuVariantMatcher:
 
         self.ecus = ecu_variant_candidates
         for ecu in self.ecus:
-            assert ecu.variant_type == DIAG_LAYER_TYPE.ECU_VARIANT
+            assert ecu.variant_type == DiagLayerType.ECU_VARIANT
 
         self.use_cache = use_cache
         self.req_resp_cache: Dict[ByteString, bytes] = {}

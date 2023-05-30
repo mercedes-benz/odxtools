@@ -9,7 +9,7 @@ from zipfile import ZipFile
 
 from .comparam_subset import ComparamSubset
 from .diaglayer import DiagLayer, DiagLayerContainer
-from .diaglayertype import DIAG_LAYER_TYPE
+from .diaglayertype import DiagLayerType
 from .globals import logger
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase
@@ -108,7 +108,7 @@ class Database:
         for dlc in self.diag_layer_containers:
             dlc._resolve_references(self._odxlinks)
 
-        for dl_type_name in DIAG_LAYER_TYPE:
+        for dl_type_name in DiagLayerType:
             for dl in self.diag_layers:
                 if dl.variant_type == dl_type_name:
                     dl._resolve_references(self._odxlinks)
@@ -147,7 +147,7 @@ class Database:
         """
         result_dict = dict()
         for dl in self.diag_layers:
-            if dl.variant_type == DIAG_LAYER_TYPE.PROTOCOL:
+            if dl.variant_type == DiagLayerType.PROTOCOL:
                 result_dict[dl.short_name] = dl
 
         return NamedItemList(short_name_as_id, list(result_dict.values()))

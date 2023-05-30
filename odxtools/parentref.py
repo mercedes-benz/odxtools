@@ -3,7 +3,7 @@ import warnings
 from typing import TYPE_CHECKING, Dict, List, Union
 
 from .dataobjectproperty import DopBase
-from .diaglayertype import DIAG_LAYER_TYPE
+from .diaglayertype import DiagLayerType
 from .exceptions import OdxWarning
 from .globals import xsi
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -14,17 +14,17 @@ if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 # Defines priority of overriding objects
-PRIORITY_OF_DIAG_LAYER_TYPE: Dict[DIAG_LAYER_TYPE, int] = {
-    DIAG_LAYER_TYPE.PROTOCOL:
+PRIORITY_OF_DIAG_LAYER_TYPE: Dict[DiagLayerType, int] = {
+    DiagLayerType.PROTOCOL:
         1,
-    DIAG_LAYER_TYPE.FUNCTIONAL_GROUP:
+    DiagLayerType.FUNCTIONAL_GROUP:
         2,
-    DIAG_LAYER_TYPE.BASE_VARIANT:
+    DiagLayerType.BASE_VARIANT:
         3,
-    DIAG_LAYER_TYPE.ECU_VARIANT:
+    DiagLayerType.ECU_VARIANT:
         4,
     # Inherited services from ECU Shared Data always override inherited services from other diag layers
-    DIAG_LAYER_TYPE.ECU_SHARED_DATA:
+    DiagLayerType.ECU_SHARED_DATA:
         5,
 }
 

@@ -16,7 +16,7 @@ from .communicationparameter import CommunicationParameterRef
 from .companydata import CompanyData, create_company_datas_from_et
 from .dataobjectproperty import DopBase
 from .diagdatadictionaryspec import DiagDataDictionarySpec
-from .diaglayertype import DIAG_LAYER_TYPE
+from .diaglayertype import DiagLayerType
 from .exceptions import DecodeError, OdxWarning
 from .functionalclass import FunctionalClass
 from .globals import logger
@@ -37,7 +37,7 @@ class DiagLayer:
     def __init__(
         self,
         *,
-        variant_type: DIAG_LAYER_TYPE,
+        variant_type: DiagLayerType,
         odx_id,
         short_name,
         long_name,
@@ -103,7 +103,7 @@ class DiagLayer:
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayer":
 
-        variant_type = DIAG_LAYER_TYPE.from_str(et_element.tag)
+        variant_type = DiagLayerType.from_str(et_element.tag)
 
         short_name = et_element.findtext("SHORT-NAME")
         assert short_name is not None
@@ -196,7 +196,7 @@ class DiagLayer:
 
         ecu_variant_patterns = create_ecu_variant_patterns_from_et(
             et_element.find("ECU-VARIANT-PATTERNS"), doc_frags)
-        if variant_type is not DIAG_LAYER_TYPE.ECU_VARIANT:
+        if variant_type is not DiagLayerType.ECU_VARIANT:
             assert (
                 len(ecu_variant_patterns) == 0
             ), "DiagLayer of type other than 'ECU-VARIANT' must not define a ECU-VARIANT-PATTERN"
@@ -253,7 +253,7 @@ class DiagLayer:
             for prot in parent_ref.parent_diag_layer.protocols:
                 result_dict[prot.short_name] = prot
 
-        if self.variant_type == DIAG_LAYER_TYPE.PROTOCOL:
+        if self.variant_type == DiagLayerType.PROTOCOL:
             result_dict[self.short_name] = self
 
         return NamedItemList(short_name_as_id, list(result_dict.values()))

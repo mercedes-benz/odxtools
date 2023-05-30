@@ -21,7 +21,7 @@ from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer, DiagLayerContainer
-from odxtools.diaglayertype import DIAG_LAYER_TYPE
+from odxtools.diaglayertype import DiagLayerType
 from odxtools.envdata import EnvironmentData
 from odxtools.envdatadesc import EnvironmentDataDescription
 from odxtools.functionalclass import FunctionalClass
@@ -1719,7 +1719,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
 
 # diagnostics layer
 somersault_diaglayer = DiagLayer(
-    variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+    variant_type=DiagLayerType.BASE_VARIANT,
     odx_id=OdxLinkId("somersault", doc_frags),
     short_name="somersault",
     long_name="Somersault base variant",
@@ -1746,7 +1746,7 @@ somersault_diaglayer = DiagLayer(
 
 # TODO: inheritance (without too much code duplication)
 somersault_lazy_diaglayer = DiagLayer(
-    variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
+    variant_type=DiagLayerType.ECU_VARIANT,
     odx_id=OdxLinkId("somersault_lazy", doc_frags),
     short_name="somersault_lazy",
     long_name="Somersault lazy ECU",
@@ -1785,7 +1785,7 @@ somersault_lazy_diaglayer = DiagLayer(
 
 # TODO: inheritance (without too much code duplication)
 somersault_assiduous_diaglayer = DiagLayer(
-    variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
+    variant_type=DiagLayerType.ECU_VARIANT,
     odx_id=OdxLinkId("somersault_assiduous", doc_frags),
     short_name="somersault_assiduous",
     long_name="Somersault assiduous ECU",
