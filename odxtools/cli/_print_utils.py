@@ -43,7 +43,7 @@ def print_diagnostic_service(
 
     if print_state_transitions and len(service.state_transitions) > 0:
         state_transitions = [
-            f"{state_transition.source_short_name} -> {state_transition.target_short_name}"
+            f"{state_transition.source_snref} -> {state_transition.target_snref}"
             for state_transition in service.state_transitions
         ]
         print(f"  State-Transitions: {', '.join(state_transitions)}")

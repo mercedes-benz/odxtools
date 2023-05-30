@@ -547,7 +547,7 @@ def create_any_structure_from_et(et_element, doc_frags: List[OdxDocFragment]
             byte_size=None,
             sdgs=sdgs,
         )
-    elif et_element.tag in ["POS-RESPONSE", "NEG-RESPONSE"]:
+    elif et_element.tag in ["POS-RESPONSE", "NEG-RESPONSE", "GLOBAL-NEG-RESPONSE"]:
         res = Response(
             odx_id=odx_id,
             short_name=short_name,
