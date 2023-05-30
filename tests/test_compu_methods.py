@@ -19,9 +19,27 @@ doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
 class TestLinearCompuMethod(unittest.TestCase):
 
-    def test_read_odx(self):
-        """Test parsing of linear compumethod"""
-        expected = LinearCompuMethod(
+    def setUp(self) -> None:
+        """Prepares the jinja environment and the sample linear compumethod"""
+
+        def _get_jinja_environment():
+            __module_filname = inspect.getsourcefile(odxtools)
+            assert isinstance(__module_filname, str)
+            templates_dir = os.path.sep.join([os.path.dirname(__module_filname), "templates"])
+
+            jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
+
+            # allows to put XML attributes on a separate line while it is
+            # collapsed with the previous line in the rendering
+            jinja_env.filters["odxtools_collapse_xml_attribute"] = (lambda x: " " + x.strip()
+                                                                    if x.strip() else "")
+
+            jinja_env.globals["hasattr"] = hasattr
+            return jinja_env
+
+        self.jinja_env = _get_jinja_environment()
+
+        self.linear_compumethod = LinearCompuMethod(
             offset=0,
             factor=1,
             denominator=3600,
@@ -31,7 +49,7 @@ class TestLinearCompuMethod(unittest.TestCase):
             internal_upper_limit=None,
         )
 
-        compumethod_odx = f"""
+        self.linear_compumethod_odx = f"""
         <COMPU-METHOD>
             <CATEGORY>LINEAR</CATEGORY>
             <COMPU-INTERNAL-TO-PHYS>
@@ -39,11 +57,11 @@ class TestLinearCompuMethod(unittest.TestCase):
                     <COMPU-SCALE>
                         <COMPU-RATIONAL-COEFFS>
                             <COMPU-NUMERATOR>
-                                <V>{expected.offset}</V>
-                                <V>{expected.factor}</V>
+                                <V>{self.linear_compumethod.offset}</V>
+                                <V>{self.linear_compumethod.factor}</V>
                             </COMPU-NUMERATOR>
                             <COMPU-DENOMINATOR>
-                                <V>{expected.denominator}</V>
+                                <V>{self.linear_compumethod.denominator}</V>
                             </COMPU-DENOMINATOR>
                         </COMPU-RATIONAL-COEFFS>
                     </COMPU-SCALE>
@@ -52,7 +70,11 @@ class TestLinearCompuMethod(unittest.TestCase):
         </COMPU-METHOD>
         """
 
-        et_element = ElementTree.fromstring(compumethod_odx)
+    def test_read_odx(self):
+        """Test parsing of linear compumethod"""
+        expected = self.linear_compumethod
+
+        et_element = ElementTree.fromstring(self.linear_compumethod_odx)
         actual = create_any_compu_method_from_et(et_element, doc_frags, expected.internal_type,
                                                  expected.physical_type)
         self.assertIsInstance(actual, LinearCompuMethod)
@@ -61,6 +83,23 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertEqual(expected.offset, actual.offset)
         self.assertEqual(expected.factor, actual.factor)
         self.assertEqual(expected.denominator, actual.denominator)
+
+    def test_write_odx(self):
+        self.maxDiff = None
+        dlc_tpl = self.jinja_env.get_template("macros/printDOP.xml.jinja2")
+        module = dlc_tpl.make_module()
+
+        out = module.printCompuMethod(self.linear_compumethod)
+
+        expected_odx = self.linear_compumethod_odx
+
+        # We ignore spaces
+        def remove_spaces(string):
+            return "".join(string.split())
+
+        self.assertEqual(remove_spaces(out), remove_spaces(expected_odx))
+
+
 
     def test_linear_compu_method_type_denom_not_one(self):
         compu_method = LinearCompuMethod(
