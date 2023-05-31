@@ -8,21 +8,21 @@ from xml.etree import ElementTree
 
 from deprecation import deprecated
 
-from odxtools.ecu_variant_patterns import EcuVariantPattern, create_ecu_variant_patterns_from_et
-
 from .admindata import AdminData
 from .audience import AdditionalAudience, Audience
 from .communicationparameter import CommunicationParameterRef
 from .companydata import CompanyData, create_company_datas_from_et
 from .dataobjectproperty import DopBase
 from .diagdatadictionaryspec import DiagDataDictionarySpec
-from .diaglayertype import DIAG_LAYER_TYPE
+from .diaglayertype import DiagLayerType
+from .ecu_variant_patterns import EcuVariantPattern, create_ecu_variant_patterns_from_et
 from .exceptions import DecodeError, OdxWarning
 from .functionalclass import FunctionalClass
-from .globals import logger, xsi
+from .globals import logger
 from .message import Message
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .parentref import ParentRef
 from .service import DiagService
 from .singleecujob import SingleEcuJob
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
@@ -30,125 +30,13 @@ from .statechart import StateChart
 from .structures import Request, Response, create_any_structure_from_et
 from .utils import create_description_from_et, short_name_as_id
 
-# Defines priority of overriding objects
-PRIORITY_OF_DIAG_LAYER_TYPE: Dict[DIAG_LAYER_TYPE, int] = {
-    DIAG_LAYER_TYPE.PROTOCOL:
-        1,
-    DIAG_LAYER_TYPE.FUNCTIONAL_GROUP:
-        2,
-    DIAG_LAYER_TYPE.BASE_VARIANT:
-        3,
-    DIAG_LAYER_TYPE.ECU_VARIANT:
-        4,
-    # Inherited services from ECU Shared Data always override inherited services from other diag layers
-    DIAG_LAYER_TYPE.ECU_SHARED_DATA:
-        5,
-}
-
 
 class DiagLayer:
-
-    class ParentRef:
-
-        def __init__(
-            self,
-            *,
-            parent: Union[OdxLinkRef, "DiagLayer"],
-            ref_type: str,
-            not_inherited_diag_comms: List[str],  # short_name references
-            not_inherited_dops: List[str],
-        ):  # short_name references
-            """
-            Parameters
-            ----------
-            parent: OdxLinkRef | DiagLayer
-                A reference to the or the parent DiagLayer
-            ref_type: str
-            not_inherited_diag_comms: List[str]
-                short names of not inherited diag comms
-            not_inherited_dops: List[str]
-                short names of not inherited DOPs
-            """
-            if ref_type not in [
-                    "PROTOCOL-REF",
-                    "BASE-VARIANT-REF",
-                    "ECU-SHARED-DATA-REF",
-                    "FUNCTIONAL-GROUP-REF",
-            ]:
-                warnings.warn(f"Unknown parent ref type {ref_type}", OdxWarning)
-            if isinstance(parent, OdxLinkRef):
-                self.parent_ref = parent
-                self.parent_diag_layer = None
-            else:
-                assert isinstance(parent, DiagLayer)
-
-                self.parent_ref = OdxLinkRef.from_id(parent.odx_id)
-                self.parent_diag_layer = parent
-            self.not_inherited_diag_comms = not_inherited_diag_comms
-            self.not_inherited_dops = not_inherited_dops
-            self.ref_type = ref_type
-
-        @staticmethod
-        def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "DiagLayer.ParentRef":
-
-            parent_ref = OdxLinkRef.from_et(et_element, doc_frags)
-            assert parent_ref is not None
-
-            not_inherited_diag_comms = [
-                el.get("SHORT-NAME") for el in et_element.iterfind(
-                    "NOT-INHERITED-DIAG-COMMS/NOT-INHERITED-DIAG-COMM/DIAG-COMM-SNREF")
-            ]
-            not_inherited_dops = [
-                el.get("SHORT-NAME")
-                for el in et_element.iterfind("NOT-INHERITED-DOPS/NOT-INHERITED-DOP/DOP-BASE-SNREF")
-            ]
-            ref_type = et_element.get(f"{xsi}type")
-
-            return DiagLayer.ParentRef(
-                parent=parent_ref,
-                ref_type=ref_type,
-                not_inherited_diag_comms=not_inherited_diag_comms,
-                not_inherited_dops=not_inherited_dops,
-            )
-
-        def _resolve_references(self, odxlinks: OdxLinkDatabase):
-            self.parent_diag_layer = odxlinks.resolve(self.parent_ref)
-
-        def get_inheritance_priority(self):
-            return PRIORITY_OF_DIAG_LAYER_TYPE[self.parent_diag_layer.variant_type]
-
-        def get_inherited_services(self) -> List[Union[DiagService, SingleEcuJob]]:
-
-            if self.parent_diag_layer is None:
-                return []
-
-            services = dict()
-            for service in self.parent_diag_layer._services:
-                assert isinstance(service, (DiagService, SingleEcuJob))
-
-                if service.short_name not in self.not_inherited_diag_comms:
-                    services[service.short_name] = service
-
-            return list(services.values())
-
-        def get_inherited_data_object_properties(self) -> List[DopBase]:
-            if self.parent_diag_layer is None:
-                return []
-
-            dops = {
-                dop.short_name: dop
-                for dop in self.parent_diag_layer._data_object_properties
-                if dop.short_name not in self.not_inherited_dops
-            }
-            return list(dops.values())
-
-        def get_inherited_communication_parameters(self):
-            return self.parent_diag_layer._communication_parameters
 
     def __init__(
         self,
         *,
-        variant_type: DIAG_LAYER_TYPE,
+        variant_type: DiagLayerType,
         odx_id,
         short_name,
         long_name,
@@ -214,7 +102,7 @@ class DiagLayer:
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayer":
 
-        variant_type = DIAG_LAYER_TYPE.from_str(et_element.tag)
+        variant_type = DiagLayerType.from_str(et_element.tag)
 
         short_name = et_element.findtext("SHORT-NAME")
         assert short_name is not None
@@ -248,7 +136,7 @@ class DiagLayer:
 
         # Parse ParentRefs
         parent_refs = [
-            DiagLayer.ParentRef.from_et(pr_el, doc_frags)
+            ParentRef.from_et(pr_el, doc_frags)
             for pr_el in et_element.iterfind("PARENT-REFS/PARENT-REF")
         ]
 
@@ -307,7 +195,7 @@ class DiagLayer:
 
         ecu_variant_patterns = create_ecu_variant_patterns_from_et(
             et_element.find("ECU-VARIANT-PATTERNS"), doc_frags)
-        if variant_type is not DIAG_LAYER_TYPE.ECU_VARIANT:
+        if variant_type is not DiagLayerType.ECU_VARIANT:
             assert (
                 len(ecu_variant_patterns) == 0
             ), "DiagLayer of type other than 'ECU-VARIANT' must not define a ECU-VARIANT-PATTERN"
@@ -364,7 +252,7 @@ class DiagLayer:
             for prot in parent_ref.parent_diag_layer.protocols:
                 result_dict[prot.short_name] = prot
 
-        if self.variant_type == DIAG_LAYER_TYPE.PROTOCOL:
+        if self.variant_type == DiagLayerType.PROTOCOL:
             result_dict[self.short_name] = self
 
         return NamedItemList(short_name_as_id, list(result_dict.values()))
@@ -869,158 +757,3 @@ class DiagLayer:
 
     def __str__(self) -> str:
         return f"DiagLayer('{self.short_name}', type='{self.variant_type.value}')"
-
-
-class DiagLayerContainer:
-
-    def __init__(
-        self,
-        *,
-        odx_id: OdxLinkId,
-        short_name: str,
-        long_name: Optional[str],
-        description: Optional[str],
-        admin_data: Optional[AdminData],
-        company_datas: Optional[NamedItemList[CompanyData]],
-        ecu_shared_datas: List[DiagLayer],
-        protocols: List[DiagLayer],
-        functional_groups: List[DiagLayer],
-        base_variants: List[DiagLayer],
-        ecu_variants: List[DiagLayer],
-        sdgs: List[SpecialDataGroup],
-    ) -> None:
-        self.odx_id = odx_id
-        self.short_name = short_name
-        self.long_name = long_name
-        self.description = description
-        self.admin_data = admin_data
-        self.company_datas = company_datas
-
-        self.ecu_shared_datas = ecu_shared_datas
-        self.protocols = protocols
-        self.functional_groups = functional_groups
-        self.base_variants = base_variants
-        self.ecu_variants = ecu_variants
-        self.sdgs = sdgs
-
-        self._diag_layers = NamedItemList[DiagLayer](
-            short_name_as_id,
-            list(
-                chain(
-                    self.ecu_shared_datas,
-                    self.protocols,
-                    self.functional_groups,
-                    self.base_variants,
-                    self.ecu_variants,
-                )),
-        )
-
-    @staticmethod
-    def from_et(et_element) -> "DiagLayerContainer":
-        short_name = et_element.findtext("SHORT-NAME")
-        assert short_name is not None
-        long_name = et_element.findtext("LONG-NAME")
-
-        # create the current ODX "document fragment" (description of the
-        # current document for references and IDs)
-        doc_frags = [OdxDocFragment(short_name, "CONTAINER")]
-
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
-        description = create_description_from_et(et_element.find("DESC"))
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
-        ecu_shared_datas = [
-            DiagLayer.from_et(dl_element, doc_frags)
-            for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")
-        ]
-        protocols = [
-            DiagLayer.from_et(dl_element, doc_frags)
-            for dl_element in et_element.iterfind("PROTOCOLS/PROTOCOL")
-        ]
-        functional_groups = [
-            DiagLayer.from_et(dl_element, doc_frags)
-            for dl_element in et_element.iterfind("FUNCTIONAL-GROUPS/FUNCTIONAL-GROUP")
-        ]
-        base_variants = [
-            DiagLayer.from_et(dl_element, doc_frags)
-            for dl_element in et_element.iterfind("BASE-VARIANTS/BASE-VARIANT")
-        ]
-        ecu_variants = [
-            DiagLayer.from_et(dl_element, doc_frags)
-            for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")
-        ]
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
-
-        return DiagLayerContainer(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
-            admin_data=admin_data,
-            company_datas=company_datas,
-            ecu_shared_datas=ecu_shared_datas,
-            protocols=protocols,
-            functional_groups=functional_groups,
-            base_variants=base_variants,
-            ecu_variants=ecu_variants,
-            sdgs=sdgs,
-        )
-
-    def _build_odxlinks(self):
-        result = {}
-        result[self.odx_id] = self
-
-        if self.admin_data is not None:
-            result.update(self.admin_data._build_odxlinks())
-
-        if self.company_datas is not None:
-            for cd in self.company_datas:
-                result.update(cd._build_odxlinks())
-
-        for dl in chain(
-                self.ecu_shared_datas,
-                self.protocols,
-                self.functional_groups,
-                self.base_variants,
-                self.ecu_variants,
-        ):
-            result.update(dl._build_odxlinks())
-
-        for sdg in self.sdgs:
-            result.update(sdg._build_odxlinks())
-
-        return result
-
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
-        if self.admin_data is not None:
-            self.admin_data._resolve_references(odxlinks)
-
-        if self.company_datas is not None:
-            for cd in self.company_datas:
-                cd._resolve_references(odxlinks)
-
-        for dl in chain(
-                self.ecu_shared_datas,
-                self.protocols,
-                self.functional_groups,
-                self.base_variants,
-                self.ecu_variants,
-        ):
-            dl._resolve_references(odxlinks)
-
-        for sdg in self.sdgs:
-            sdg._resolve_references(odxlinks)
-
-    @property
-    def diag_layers(self):
-        return self._diag_layers
-
-    def __getitem__(self, key: Union[int, str]) -> DiagLayer:
-        return self.diag_layers[key]
-
-    def __repr__(self) -> str:
-        return f"DiagLayerContainer('{self.short_name}')"
-
-    def __str__(self) -> str:
-        return f"DiagLayerContainer('{self.short_name}')"

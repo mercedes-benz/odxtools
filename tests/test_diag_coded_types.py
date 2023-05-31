@@ -10,7 +10,7 @@ from odxtools.decodestate import ParameterValuePair
 from odxtools.diagcodedtypes import *
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayertype import DIAG_LAYER_TYPE
+from odxtools.diaglayertype import DiagLayerType
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
 from odxtools.parameters import CodedConstParameter, LengthKeyParameter, ValueParameter
@@ -220,7 +220,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
         # Dummy diag layer to resolve references from request parameters to DOPs
         diag_layer = DiagLayer(
-            variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+            variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("BV.dummy_DL", doc_frags),
             short_name="dummy_DL",
             long_name=None,
@@ -489,7 +489,7 @@ class TestParamLengthInfoType(unittest.TestCase):
 
         # Dummy diag layer to resolve references from request parameters to DOPs
         diag_layer = DiagLayer(
-            variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+            variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("BV.dummy_DL", doc_frags),
             short_name="dummy_DL",
             long_name=None,
@@ -780,7 +780,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
         # Dummy diag layer to resolve references from request parameters to DOPs
         diag_layer = DiagLayer(
-            variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+            variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("BV.dummy_DL", doc_frags),
             short_name="dummy_DL",
             long_name=None,

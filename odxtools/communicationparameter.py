@@ -5,7 +5,7 @@ from typing import Any, List, Optional, Union
 
 from .comparam_subset import (BaseComparam, Comparam, ComplexComparam, ComplexValue,
                               create_complex_value_from_et)
-from .diaglayertype import DIAG_LAYER_TYPE
+from .diaglayertype import DiagLayerType
 from .exceptions import OdxWarning
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from .utils import create_description_from_et
@@ -33,7 +33,7 @@ class CommunicationParameterRef:
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment],
-                dl_type: DIAG_LAYER_TYPE) -> "CommunicationParameterRef":
+                dl_type: DiagLayerType) -> "CommunicationParameterRef":
         id_ref = OdxLinkRef.from_et(et_element, doc_frags)
         assert id_ref is not None
 
@@ -47,7 +47,7 @@ class CommunicationParameterRef:
         else:
             value = create_complex_value_from_et(et_element.find("COMPLEX-VALUE"))
 
-        is_functional = dl_type == DIAG_LAYER_TYPE.FUNCTIONAL_GROUP
+        is_functional = dl_type == DiagLayerType.FUNCTIONAL_GROUP
         description = create_description_from_et(et_element.find("DESC"))
 
         prot_stack_snref = None

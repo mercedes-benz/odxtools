@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Union
 import pytest
 
 from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayertype import DIAG_LAYER_TYPE
+from odxtools.diaglayertype import DiagLayerType
 from odxtools.ecu_variant_matcher import EcuVariantMatcher
 from odxtools.ecu_variant_patterns import EcuVariantPattern, MatchingParameter
 from odxtools.exceptions import OdxError
@@ -167,7 +167,7 @@ def ecu_variant_1(
     ecu_variant_pattern1: EcuVariantPattern,
 ) -> DiagLayer:
     result = DiagLayer(
-        variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
+        variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant1", doc_fragments=doc_frags),
         short_name="ecu_variant1",
         long_name=None,
@@ -199,7 +199,7 @@ def ecu_variant_2(
     ecu_variant_pattern2: EcuVariantPattern,
 ) -> DiagLayer:
     result = DiagLayer(
-        variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
+        variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant2", doc_fragments=doc_frags),
         short_name="ecu_variant2",
         long_name=None,
@@ -232,7 +232,7 @@ def ecu_variant_3(
     ecu_variant_pattern3: EcuVariantPattern,
 ) -> DiagLayer:
     result = DiagLayer(
-        variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
+        variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant3", doc_fragments=doc_frags),
         short_name="ecu_variant3",
         long_name=None,

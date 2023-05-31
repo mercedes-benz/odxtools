@@ -20,8 +20,9 @@ from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.diaglayer import DiagLayer, DiagLayerContainer
-from odxtools.diaglayertype import DIAG_LAYER_TYPE
+from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayercontainer import DiagLayerContainer
+from odxtools.diaglayertype import DiagLayerType
 from odxtools.envdata import EnvironmentData
 from odxtools.envdatadesc import EnvironmentDataDescription
 from odxtools.functionalclass import FunctionalClass
@@ -32,6 +33,7 @@ from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.parameters import (CodedConstParameter, MatchingRequestParameter, NrcConstParameter,
                                  ValueParameter)
+from odxtools.parentref import ParentRef
 from odxtools.physicaltype import PhysicalType
 from odxtools.service import DiagService
 from odxtools.singleecujob import ProgCode, SingleEcuJob
@@ -1718,7 +1720,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
 
 # diagnostics layer
 somersault_diaglayer = DiagLayer(
-    variant_type=DIAG_LAYER_TYPE.BASE_VARIANT,
+    variant_type=DiagLayerType.BASE_VARIANT,
     odx_id=OdxLinkId("somersault", doc_frags),
     short_name="somersault",
     long_name="Somersault base variant",
@@ -1745,13 +1747,13 @@ somersault_diaglayer = DiagLayer(
 
 # TODO: inheritance (without too much code duplication)
 somersault_lazy_diaglayer = DiagLayer(
-    variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
+    variant_type=DiagLayerType.ECU_VARIANT,
     odx_id=OdxLinkId("somersault_lazy", doc_frags),
     short_name="somersault_lazy",
     long_name="Somersault lazy ECU",
     description="<p>Sloppy variant of the somersault ECU (lazy &lt; assiduous)</p>",
     parent_refs=[
-        DiagLayer.ParentRef(  # <- TODO: this is a bit sketchy IMO
+        ParentRef(
             parent=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
             ref_type="BASE-VARIANT-REF",
             # this variant does not do backflips
@@ -1784,7 +1786,7 @@ somersault_lazy_diaglayer = DiagLayer(
 
 # TODO: inheritance (without too much code duplication)
 somersault_assiduous_diaglayer = DiagLayer(
-    variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
+    variant_type=DiagLayerType.ECU_VARIANT,
     odx_id=OdxLinkId("somersault_assiduous", doc_frags),
     short_name="somersault_assiduous",
     long_name="Somersault assiduous ECU",
@@ -1802,7 +1804,7 @@ somersault_assiduous_diaglayer = DiagLayer(
         sdgs=[],
     ),
     parent_refs=[
-        DiagLayer.ParentRef(  # <- TODO: this is a bit sketchy IMO
+        ParentRef(
             parent=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
             ref_type="BASE-VARIANT-REF",
             # this variant does everything which the base variant does
