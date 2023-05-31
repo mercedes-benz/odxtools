@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from enum import IntEnum
 from itertools import chain
-from typing import ByteString, Optional, Union
+from typing import ByteString, Optional
 
 import odxtools.obd as obd
 

@@ -59,7 +59,7 @@ class StateTransition:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
-    def _resolve_references(self, states: List[State], odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_references(self, states: List[State]) -> None:
         self._source_state: State
         self._target_state: State
         for st in states:

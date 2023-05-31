@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from typing import Iterable, List, Optional, Union, cast
-from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .audience import Audience

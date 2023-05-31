@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .utils import create_description_from_et, short_name_as_id
+from .utils import create_description_from_et
 
 
 @dataclass
@@ -51,7 +50,7 @@ class SpecialData:
         pass
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SpecialData":
+    def from_et(et_element: ElementTree.Element) -> "SpecialData":
         semantic_info = et_element.get("SI")
         text_identifier = et_element.get("TI")
         value = et_element.text or ""
