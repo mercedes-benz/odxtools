@@ -105,17 +105,28 @@
  {%- endif %}
  </DIAG-DATA-DICTIONARY-SPEC>
 {%- endif %}
-{%- if dl._local_services or dl._local_single_ecu_jobs or dl._diag_comm_refs %}
+{%- if dl.diag_comms %}
  <DIAG-COMMS>
-{%- for service in dl._local_services %}
-  {{ ps.printService(service)|indent(2) }}
-{%- endfor %}
-{%- for job in dl._local_single_ecu_jobs %}
-  {{ psej.printSingleEcuJob(job)|indent(2) }}
-{%- endfor %}
-{%- for dcr in dl._diag_comm_refs %}
-  <DIAG-COMM-REF ID-REF="{{dcr.ref_id}}" />
-{%- endfor %}
+   {%- for dc in dl.diag_comms %}
+
+   {#- use some serious duck typing to determine the kind of diag-comm
+    #- object. this would not be necessary if something like
+    #- isinstance() was available in jinja...
+    #}
+
+   {%- if hasattr(dc, "ref_id") %}
+   {#- -> reference to a diag-comm object #}
+   <DIAG-COMM-REF ID-REF="{{dc.ref_id}}" />
+   {%- elif hasattr(dc, "request") %}
+   {#- -> service #}
+   {{ ps.printService(dc)|indent(2) }}
+   {%- elif hasattr(dc, "prog_codes") %}
+   {#- -> single-ECU job #}
+   {{ psej.printSingleEcuJob(dc)|indent(2) }}
+   {%- else %}
+   <!-- Error: database contains an unrecognized DIAG-COMM. -->
+   {%- endif %}
+   {%- endfor %}
  </DIAG-COMMS>
 {%- endif %}
 {%- if dl.requests %}

@@ -123,7 +123,7 @@ class TestUnitSpec(unittest.TestCase):
             description=None,
             parent_refs=[],
             communication_parameters=[],
-            services=[],
+            diag_comms=[],
             requests=[
                 Request(
                     odx_id=OdxLinkId("rq_id", doc_frags),
@@ -161,8 +161,6 @@ class TestUnitSpec(unittest.TestCase):
             ],
             positive_responses=[],
             negative_responses=[],
-            single_ecu_jobs=[],
-            diag_comm_refs=[],
             diag_data_dictionary_spec=DiagDataDictionarySpec(
                 data_object_props=[dop],
                 unit_spec=UnitSpec(

@@ -44,9 +44,7 @@ class DiagLayer:
         requests: List[Request],
         positive_responses: List[Response],
         negative_responses: List[Response],
-        services: List[DiagService],
-        single_ecu_jobs: List[SingleEcuJob],
-        diag_comm_refs: List[OdxLinkRef],
+        diag_comms: List[Union[DiagService, SingleEcuJob, OdxLinkRef]],
         parent_refs: List[ParentRef],
         diag_data_dictionary_spec: Optional[DiagDataDictionarySpec],
         communication_parameters: Iterable[CommunicationParameterRef],
@@ -75,7 +73,13 @@ class DiagLayer:
         # ParentRefs
         self.parent_refs = parent_refs
 
-        # DiagServices (note that they do not include inherited services!)
+        # diagnostic communications. For convenience, we create
+        # separate lists of diag comms for the different kinds of
+        # communication objects.
+        services = [dc for dc in diag_comms if isinstance(dc, DiagService)]
+        single_ecu_jobs = [dc for dc in diag_comms if isinstance(dc, SingleEcuJob)]
+        diag_comm_refs = [dc for dc in diag_comms if isinstance(dc, OdxLinkRef)]
+        self.diag_comms = diag_comms
         self._local_services = NamedItemList[DiagService](short_name_as_id, services)
         self._local_single_ecu_jobs = NamedItemList[SingleEcuJob](short_name_as_id, single_ecu_jobs)
         self._diag_comm_refs = diag_comm_refs
@@ -118,21 +122,20 @@ class DiagLayer:
 
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
 
-        # Parse DiagServices
-        services = [
-            DiagService.from_et(service, doc_frags)
-            for service in et_element.iterfind("DIAG-COMMS/DIAG-SERVICE")
-        ]
-        diag_comm_refs = []
-        for service in et_element.iterfind("DIAG-COMMS/DIAG-COMM-REF"):
-            ref = OdxLinkRef.from_et(service, doc_frags)
-            assert ref is not None
-            diag_comm_refs.append(ref)
+        # Parse diagnostic communications
+        diag_comms: List[Union[OdxLinkRef, DiagService, SingleEcuJob]] = []
+        if (dc_elems := et_element.find("DIAG-COMMS")) is not None:
+            for dc_proxy_elem in dc_elems:
+                dc: Union[OdxLinkRef, DiagService, SingleEcuJob]
+                if dc_proxy_elem.tag == "DIAG-COMM-REF":
+                    dc = OdxLinkRef.from_et(dc_proxy_elem, doc_frags)
+                elif dc_proxy_elem.tag == "DIAG-SERVICE":
+                    dc = DiagService.from_et(dc_proxy_elem, doc_frags)
+                else:
+                    assert dc_proxy_elem.tag == "SINGLE-ECU-JOB"
+                    dc = SingleEcuJob.from_et(dc_proxy_elem, doc_frags)
 
-        single_ecu_jobs = [
-            SingleEcuJob.from_et(sej, doc_frags)
-            for sej in et_element.iterfind("DIAG-COMMS/SINGLE-ECU-JOB")
-        ]
+                diag_comms.append(dc)
 
         # Parse ParentRefs
         parent_refs = [
@@ -210,9 +213,7 @@ class DiagLayer:
             requests=requests,
             positive_responses=positive_responses,
             negative_responses=negative_responses,
-            services=services,
-            diag_comm_refs=diag_comm_refs,
-            single_ecu_jobs=single_ecu_jobs,
+            diag_comms=diag_comms,
             parent_refs=parent_refs,
             diag_data_dictionary_spec=diag_data_dictionary_spec,
             communication_parameters=com_params,
