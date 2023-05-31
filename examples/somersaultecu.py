@@ -1753,7 +1753,7 @@ somersault_lazy_diaglayer = DiagLayer(
     long_name="Somersault lazy ECU",
     description="<p>Sloppy variant of the somersault ECU (lazy &lt; assiduous)</p>",
     parent_refs=[
-        ParentRef(  # <- TODO: this is a bit sketchy IMO
+        ParentRef(
             parent=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
             ref_type="BASE-VARIANT-REF",
             # this variant does not do backflips
@@ -1804,7 +1804,7 @@ somersault_assiduous_diaglayer = DiagLayer(
         sdgs=[],
     ),
     parent_refs=[
-        ParentRef(  # <- TODO: this is a bit sketchy IMO
+        ParentRef(
             parent=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
             ref_type="BASE-VARIANT-REF",
             # this variant does everything which the base variant does
