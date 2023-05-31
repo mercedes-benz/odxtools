@@ -22,10 +22,12 @@ from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayercontainer import DiagLayerContainer
+from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.envdata import EnvironmentData
 from odxtools.envdatadesc import EnvironmentDataDescription
 from odxtools.functionalclass import FunctionalClass
+from odxtools.globals import logger
 from odxtools.multiplexer import (Multiplexer, MultiplexerCase, MultiplexerDefaultCase,
                                   MultiplexerSwitchKey)
 from odxtools.nameditemlist import NamedItemList
@@ -1719,41 +1721,58 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
 )
 
 # diagnostics layer
-somersault_diaglayer = DiagLayer(
+somersault_diaglayer_raw = DiagLayerRaw(
     variant_type=DiagLayerType.BASE_VARIANT,
     odx_id=OdxLinkId("somersault", doc_frags),
     short_name="somersault",
     long_name="Somersault base variant",
     description="<p>Base variant of the somersault ECU &amp; cetera</p>",
-    requests=list(somersault_requests.values()),
-    diag_comms=list(somersault_services.values()),
-    positive_responses=list(somersault_positive_responses.values()),
-    negative_responses=list(somersault_negative_responses.values()),
+    admin_data=None,
+    company_datas=NamedItemList(short_name_as_id),
+    functional_classes=NamedItemList(short_name_as_id, somersault_functional_classes.values()),
     diag_data_dictionary_spec=somersault_diag_data_dictionary_spec,
-    communication_parameters=somersault_communication_parameters,
-    additional_audiences=list(somersault_additional_audiences.values()),
-    functional_classes=list(somersault_functional_classes.values()),
-    state_charts=[],
+    diag_comms=[*somersault_services.values(), *somersault_single_ecu_jobs.values()],
+    requests=NamedItemList(short_name_as_id, somersault_requests.values()),
+    positive_responses=NamedItemList(short_name_as_id, somersault_positive_responses.values()),
+    negative_responses=NamedItemList(short_name_as_id, somersault_negative_responses.values()),
+    global_negative_responses=NamedItemList(short_name_as_id),
     import_refs=[],
-    parent_refs=[],
+    state_charts=NamedItemList(short_name_as_id),
+    additional_audiences=NamedItemList(short_name_as_id, somersault_additional_audiences.values()),
     sdgs=[],
+    parent_refs=[],
+    communication_parameters=somersault_communication_parameters,
+    ecu_variant_patterns=[],
 )
+somersault_diaglayer = DiagLayer(diag_layer_raw=somersault_diaglayer_raw)
 
 ##################
 # Lazy variant of Somersault ECU: this one is lazy and cuts corners
 ##################
 
-# TODO: inheritance (without too much code duplication)
-somersault_lazy_diaglayer = DiagLayer(
+somersault_lazy_diaglayer_raw = DiagLayerRaw(
     variant_type=DiagLayerType.ECU_VARIANT,
     odx_id=OdxLinkId("somersault_lazy", doc_frags),
     short_name="somersault_lazy",
     long_name="Somersault lazy ECU",
     description="<p>Sloppy variant of the somersault ECU (lazy &lt; assiduous)</p>",
+    admin_data=None,
+    company_datas=NamedItemList(short_name_as_id),
+    functional_classes=NamedItemList(short_name_as_id),
+    diag_data_dictionary_spec=None,
+    diag_comms=[],
+    requests=NamedItemList(short_name_as_id),
+    positive_responses=NamedItemList(short_name_as_id),
+    negative_responses=NamedItemList(short_name_as_id),
+    global_negative_responses=NamedItemList(short_name_as_id),
+    import_refs=[],
+    state_charts=NamedItemList(short_name_as_id),
+    additional_audiences=NamedItemList(short_name_as_id),
+    sdgs=[],
     parent_refs=[
         ParentRef(
             parent=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
-            ref_type="BASE-VARIANT-REF",
+            ref_type=DiagLayerType.BASE_VARIANT,
             # this variant does not do backflips
             not_inherited_diag_comms=[
                 somersault_requests["backward_flips"].short_name,
@@ -1763,62 +1782,14 @@ somersault_lazy_diaglayer = DiagLayer(
         )
     ],
     communication_parameters=somersault_communication_parameters,
-    requests=[],
-    positive_responses=[],
-    negative_responses=[],
-    diag_comms=[],
-    diag_data_dictionary_spec=None,
-    additional_audiences=[],
-    functional_classes=[],
-    state_charts=[],
-    import_refs=[],
-    sdgs=[],
+    ecu_variant_patterns=[],
 )
+somersault_lazy_diaglayer = DiagLayer(diag_layer_raw=somersault_lazy_diaglayer_raw)
 
 ##################
 # Assiduous production variant of Somersault ECU: This one works
 # harder than it needs to
 ##################
-
-# TODO: inheritance (without too much code duplication)
-somersault_assiduous_diaglayer = DiagLayer(
-    variant_type=DiagLayerType.ECU_VARIANT,
-    odx_id=OdxLinkId("somersault_assiduous", doc_frags),
-    short_name="somersault_assiduous",
-    long_name="Somersault assiduous ECU",
-    description="<p>Hard-working variant of the somersault ECU (lazy &lt; assiduous)</p>",
-    diag_data_dictionary_spec=DiagDataDictionarySpec(
-        dtc_dops=NamedItemList(short_name_as_id, []),
-        data_object_props=NamedItemList(short_name_as_id, []),
-        structures=NamedItemList(short_name_as_id, []),
-        end_of_pdu_fields=NamedItemList(short_name_as_id, []),
-        tables=NamedItemList(short_name_as_id, []),
-        env_data_descs=NamedItemList(short_name_as_id, []),
-        env_datas=NamedItemList(short_name_as_id, []),
-        muxs=NamedItemList(short_name_as_id, []),
-        unit_spec=None,
-        sdgs=[],
-    ),
-    parent_refs=[
-        ParentRef(
-            parent=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
-            ref_type="BASE-VARIANT-REF",
-            # this variant does everything which the base variant does
-            not_inherited_diag_comms=[],
-            not_inherited_dops=[],
-        )
-    ],
-    communication_parameters=somersault_communication_parameters,
-    requests=[],
-    positive_responses=[],
-    negative_responses=[],
-    diag_comms=[],
-    additional_audiences=[],
-    functional_classes=[],
-    state_charts=[],
-    import_refs=[],
-    sdgs=[],
-)
 
 # the assiduous ECU also does headstands...
 somersault_assiduous_requests = {
@@ -1978,14 +1949,51 @@ somersault_assiduous_services = {
         ),
 }
 
-# fill the diagnostics layer object
-somersault_assiduous_diaglayer.requests = list(somersault_assiduous_requests.values())
-somersault_assiduous_diaglayer._local_services = NamedItemList(
-    short_name_as_id, somersault_assiduous_services.values())
-somersault_assiduous_diaglayer.positive_responses = NamedItemList(
-    short_name_as_id, somersault_assiduous_positive_responses.values())
-somersault_assiduous_diaglayer.negative_responses = NamedItemList(
-    short_name_as_id, somersault_assiduous_negative_responses.values())
+somersault_assiduous_diaglayer_raw = DiagLayerRaw(
+    variant_type=DiagLayerType.ECU_VARIANT,
+    odx_id=OdxLinkId("somersault_assiduous", doc_frags),
+    short_name="somersault_assiduous",
+    long_name="Somersault assiduous ECU",
+    description="<p>Hard-working variant of the somersault ECU (lazy &lt; assiduous)</p>",
+    admin_data=None,
+    company_datas=NamedItemList(short_name_as_id),
+    functional_classes=NamedItemList(short_name_as_id),
+    diag_data_dictionary_spec=DiagDataDictionarySpec(
+        dtc_dops=NamedItemList(short_name_as_id, []),
+        data_object_props=NamedItemList(short_name_as_id, []),
+        structures=NamedItemList(short_name_as_id, []),
+        end_of_pdu_fields=NamedItemList(short_name_as_id, []),
+        tables=NamedItemList(short_name_as_id, []),
+        env_data_descs=NamedItemList(short_name_as_id, []),
+        env_datas=NamedItemList(short_name_as_id, []),
+        muxs=NamedItemList(short_name_as_id, []),
+        unit_spec=None,
+        sdgs=[],
+    ),
+    diag_comms=list(somersault_assiduous_services.values()),
+    requests=NamedItemList(short_name_as_id, somersault_assiduous_requests.values()),
+    positive_responses=NamedItemList(short_name_as_id,
+                                     somersault_assiduous_positive_responses.values()),
+    negative_responses=NamedItemList(short_name_as_id,
+                                     somersault_assiduous_negative_responses.values()),
+    global_negative_responses=NamedItemList(short_name_as_id),
+    import_refs=[],
+    state_charts=NamedItemList(short_name_as_id),
+    additional_audiences=NamedItemList(short_name_as_id),
+    sdgs=[],
+    parent_refs=[
+        ParentRef(  # <- TODO: this is a bit sketchy IMO
+            parent=somersault_diaglayer,
+            ref_type=DiagLayerType.BASE_VARIANT,
+            # this variant does everything which the base variant does
+            not_inherited_diag_comms=[],
+            not_inherited_dops=[],
+        )
+    ],
+    communication_parameters=somersault_communication_parameters,
+    ecu_variant_patterns=[],
+)
+somersault_assiduous_diaglayer = DiagLayer(diag_layer_raw=somersault_assiduous_diaglayer_raw)
 
 ##################
 # Container with all ECUs

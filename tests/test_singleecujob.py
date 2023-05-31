@@ -13,7 +13,7 @@ from odxtools.audience import AdditionalAudience, Audience
 from odxtools.compumethods import CompuScale, Limit, LinearCompuMethod, TexttableCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagcodedtypes import StandardLengthType
-from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayer import DiagLayer, DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.functionalclass import FunctionalClass
 from odxtools.nameditemlist import NamedItemList
@@ -340,27 +340,43 @@ class TestSingleEcuJob(unittest.TestCase):
         self.assertEqual(sej.prog_codes[0].library_refs, [])
 
     def test_resolve_references(self):
-        dl = DiagLayer(
+        diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("ID.bv", doc_frags),
             short_name="bv",
             long_name=None,
             description=None,
+            admin_data=None,
+            company_datas=NamedItemList(short_name_as_id),
+            functional_classes=NamedItemList(short_name_as_id, [self.context.extensiveTask]),
+            diag_data_dictionary_spec=None,
+            diag_comms=[self.singleecujob_object],
+            requests=NamedItemList(short_name_as_id, []),
+            positive_responses=NamedItemList(short_name_as_id),
+            negative_responses=NamedItemList(short_name_as_id),
+            global_negative_responses=NamedItemList(short_name_as_id),
+            additional_audiences=NamedItemList(short_name_as_id, [self.context.specialAudience]),
+            import_refs=[],
+            state_charts=NamedItemList(short_name_as_id),
+            sdgs=[],
             parent_refs=[],
             communication_parameters=[],
-            diag_comms=[self.singleecujob_object],
-            requests=[],
-            positive_responses=[],
-            negative_responses=[],
-            diag_data_dictionary_spec=None,
-            additional_audiences=[],
-            functional_classes=[],
-            state_charts=[],
-            import_refs=[],
-            sdgs=[],
+            ecu_variant_patterns=[],
         )
+        dl = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update({val.odx_id: val for val in self.context})
+        odxlinks.update(dl._build_odxlinks())
+        # these objects are actually part of the diag layer's
+        # diag_data_dictionary_spec, but it is less hassle to
+        # "side-load" them...
+        odxlinks.update({
+            self.context.extensiveTask.odx_id: self.context.extensiveTask,
+            self.context.specialAudience.odx_id: self.context.specialAudience,
+            self.context.inputDOP.odx_id: self.context.inputDOP,
+            self.context.outputDOP.odx_id: self.context.outputDOP,
+            self.context.negOutputDOP.odx_id: self.context.negOutputDOP,
+        })
+
         dl.finalize_init(odxlinks=odxlinks)
 
         self.assertEqual(self.context.extensiveTask,

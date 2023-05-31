@@ -23,91 +23,93 @@
 {%- import('macros/printAudience.xml.jinja2') as paud %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
-{%- macro printVariant(dl, variant_tag) -%}
-<{{variant_tag}} ID="{{dl.odx_id.local_id}}">
- <SHORT-NAME>{{dl.short_name}}</SHORT-NAME>
-{%- if dl.long_name %}
- <LONG-NAME>{{dl.long_name|e}}</LONG-NAME>
+{%- macro printVariant(dl) -%}
+{%- set dlr = dl.diag_layer_raw %}
+<{{dlr.variant_type.value}} ID="{{dlr.odx_id.local_id}}">
+ <SHORT-NAME>{{dlr.short_name}}</SHORT-NAME>
+{%- if dlr.long_name %}
+ <LONG-NAME>{{dlr.long_name|e}}</LONG-NAME>
 {%- endif %}
-{%- if dl.description is string and dl.description.strip() %}
+{%- if dlr.description is string and dlr.description.strip() %}
  <DESC>
-{{dl.description}}
+{{dlr.description}}
  </DESC>
 {%- endif %}
-{%- if dl.functional_classes %}
+{%- if dlr.functional_classes %}
  <FUNCT-CLASSS>
-{%- for fc in dl.functional_classes %}
+{%- for fc in dlr.functional_classes %}
    {{ pfc.printFunctionalClass(fc)|indent(3) }}
 {%- endfor%}
  </FUNCT-CLASSS>
-{%- endif %}
-{%- if dl.local_diag_data_dictionary_spec.all_data_object_properties  %}
+ {%- endif %}
+ {%- if dlr.diag_data_dictionary_spec  %}
+ {%- set ddds = dlr.diag_data_dictionary_spec  %}
  <DIAG-DATA-DICTIONARY-SPEC>
-{%- if dl.local_diag_data_dictionary_spec.dtc_dops  %}
-  <DTC-DOPS>
- {%- for dop in dl.local_diag_data_dictionary_spec.dtc_dops -%}
-  {{ pdop.printDTCDOP(dop)|indent(3) }}
- {%- endfor %}
-  </DTC-DOPS>
-{%- endif %}
-{%- if dl.local_diag_data_dictionary_spec.env_data_descs  %}
-  <ENV-DATA-DESCS>
- {%- for env_data_desc in dl.local_diag_data_dictionary_spec.env_data_descs -%}
-  {{ pedd.printEnvDataDesc(env_data_desc)|indent(3) }}
- {%- endfor %}
-  </ENV-DATA-DESCS>
-{%- endif %}
- {%- if dl.local_diag_data_dictionary_spec.data_object_props %}
-  <DATA-OBJECT-PROPS>
- {%- for dop in dl.local_diag_data_dictionary_spec.data_object_props %}
-  {{- pdop.printDOP(dop, "DATA-OBJECT-PROP")|indent(3) }}
- {%- endfor %}
-  </DATA-OBJECT-PROPS>
- {%- endif %}
- {%- if dl.local_diag_data_dictionary_spec.structures %}
-  <STRUCTURES>
- {%- for st in dl.local_diag_data_dictionary_spec.structures %}
-   {{ pst.printStructure(st)|indent(3) }}
- {%- endfor %}
-  </STRUCTURES>
- {%- endif %}
- {%- if dl.local_diag_data_dictionary_spec.end_of_pdu_fields %}
-  <END-OF-PDU-FIELDS>
- {%- for eopdu in dl.local_diag_data_dictionary_spec.end_of_pdu_fields %}
-   {{ peopdu.printEndOfPdu(eopdu)|indent(3) }}
- {%- endfor %}
-  </END-OF-PDU-FIELDS>
- {%- endif %}
-  {%- if dl.local_diag_data_dictionary_spec.muxs %}
-   <MUXS>
-  {%- for mux in dl.local_diag_data_dictionary_spec.muxs %}
-    {{ pm.printMux(mux)|indent(3) }}
-  {%- endfor %}
-   </MUXS>
-  {%- endif %}
-   {%- if dl.local_diag_data_dictionary_spec.env_datas %}
-    <ENV-DATAS>
-   {%- for env_data in dl.local_diag_data_dictionary_spec.env_datas %}
-     {{ ped.printEnvData(env_data)|indent(3) }}
-   {%- endfor %}
-    </ENV-DATAS>
+   {%- if ddds.dtc_dops  %}
+   <DTC-DOPS>
+     {%- for dop in ddds.dtc_dops -%}
+     {{ pdop.printDTCDOP(dop)|indent(3) }}
+     {%- endfor %}
+   </DTC-DOPS>
    {%- endif %}
- {%- if dl.local_diag_data_dictionary_spec.unit_spec %}
-  {{ punit.printUnitSpec(dl.local_diag_data_dictionary_spec.unit_spec)|indent(2) }}
- {%- endif %}
- {%- if dl.local_diag_data_dictionary_spec.tables  %}
+   {%- if ddds.env_data_descs  %}
+   <ENV-DATA-DESCS>
+     {%- for env_data_desc in ddds.env_data_descs -%}
+     {{ pedd.printEnvDataDesc(env_data_desc)|indent(3) }}
+     {%- endfor %}
+   </ENV-DATA-DESCS>
+   {%- endif %}
+   {%- if ddds.data_object_props %}
+   <DATA-OBJECT-PROPS>
+     {%- for dop in ddds.data_object_props %}
+     {{- pdop.printDOP(dop, "DATA-OBJECT-PROP")|indent(3) }}
+     {%- endfor %}
+   </DATA-OBJECT-PROPS>
+   {%- endif %}
+   {%- if ddds.structures %}
+   <STRUCTURES>
+     {%- for st in ddds.structures %}
+     {{ pst.printStructure(st)|indent(3) }}
+     {%- endfor %}
+   </STRUCTURES>
+   {%- endif %}
+   {%- if ddds.end_of_pdu_fields %}
+   <END-OF-PDU-FIELDS>
+     {%- for eopdu in ddds.end_of_pdu_fields %}
+     {{ peopdu.printEndOfPdu(eopdu)|indent(3) }}
+     {%- endfor %}
+   </END-OF-PDU-FIELDS>
+   {%- endif %}
+   {%- if ddds.muxs %}
+   <MUXS>
+     {%- for mux in ddds.muxs %}
+     {{ pm.printMux(mux)|indent(3) }}
+     {%- endfor %}
+   </MUXS>
+   {%- endif %}
+   {%- if ddds.env_datas %}
+   <ENV-DATAS>
+     {%- for env_data in ddds.env_datas %}
+     {{ ped.printEnvData(env_data)|indent(3) }}
+     {%- endfor %}
+   </ENV-DATAS>
+   {%- endif %}
+   {%- if ddds.unit_spec %}
+   {{ punit.printUnitSpec(ddds.unit_spec)|indent(2) }}
+   {%- endif %}
+   {%- if ddds.tables  %}
    <TABLES>
-  {%- for table in dl.local_diag_data_dictionary_spec.tables -%}
+     {%- for table in ddds.tables -%}
    {{ pt.printTable(table)|indent(3) }}
   {%- endfor %}
    </TABLES>
-  {{- psd.printSpecialDataGroups(dl.local_diag_data_dictionary_spec.sdgs)|indent(2, first=True) }}
+  {{- psd.printSpecialDataGroups(ddds.sdgs)|indent(2, first=True) }}
  {%- endif %}
  </DIAG-DATA-DICTIONARY-SPEC>
 {%- endif %}
-{%- if dl.diag_comms %}
+{%- if dlr.diag_comms %}
  <DIAG-COMMS>
-   {%- for dc in dl.diag_comms %}
+   {%- for dc in dlr.diag_comms %}
 
    {#- use some serious duck typing to determine the kind of diag-comm
     #- object. this would not be necessary if something like
@@ -129,58 +131,58 @@
    {%- endfor %}
  </DIAG-COMMS>
 {%- endif %}
-{%- if dl.requests %}
+{%- if dlr.requests %}
  <REQUESTS>
-{%- for req in dl.requests %}
+{%- for req in dlr.requests %}
   {{ prq.printRequest(req)|indent(2) }}
 {%- endfor %}
  </REQUESTS>
 {%- endif %}
-{%- if dl.positive_responses %}
+{%- if dlr.positive_responses %}
  <POS-RESPONSES>
-{%- for resp in dl.positive_responses %}
+{%- for resp in dlr.positive_responses %}
   {{ presp.printResponse(resp)|indent(2) }}
 {%- endfor %}
  </POS-RESPONSES>
 {%- endif %}
-{%- if dl.negative_responses %}
+{%- if dlr.negative_responses %}
  <NEG-RESPONSES>
-{%- for resp in dl.negative_responses %}
+{%- for resp in dlr.negative_responses %}
   {{ presp.printResponse(resp, "NEG-RESPONSE")|indent(2) }}
 {%- endfor %}
  </NEG-RESPONSES>
  {%- endif %}
- {%- if dl.state_charts %}
+ {%- if dlr.state_charts %}
  <STATE-CHARTS>
-   {%- for sc in dl.state_charts %}
+   {%- for sc in dlr.state_charts %}
    {{ psc.printStateChart(sc) }}
    {%- endfor %}
  </STATE-CHARTS>
  {%- endif %}
-{%- if dl.additional_audiences %}
+{%- if dlr.additional_audiences %}
  <ADDITIONAL-AUDIENCES>
-{%- for audience in dl.additional_audiences %}
+{%- for audience in dlr.additional_audiences %}
   {{ paud.printAdditionalAudience(audience)|indent(2) }}
 {%- endfor %}
  </ADDITIONAL-AUDIENCES>
 {%- endif %}
-{{- psd.printSpecialDataGroups(dl.sdgs)|indent(1, first=True) }}
-{%- if dl._local_communication_parameters %}
+{{- psd.printSpecialDataGroups(dlr.sdgs)|indent(1, first=True) }}
+{%- if dlr.communication_parameters %}
  <COMPARAM-REFS>
- {%- for cp in dl._local_communication_parameters -%}
+ {%- for cp in dlr.communication_parameters -%}
  {{ pcom.printComparamRef(cp)|indent(2) }}
  {%- endfor %}
  </COMPARAM-REFS>
 {%- endif %}
-{%- if variant_tag == "PROTOCOL" %}
+{%- if dlr.variant_type.value == "PROTOCOL" %}
 	<COMPARAM-SPEC-REF ID-REF="ISO_15765_3_on_ISO_15765_2" DOCREF="UDSOnCAN_CPS" DOCTYPE="COMPARAM-SPEC" />
 {%- endif %}
-{%- if dl.parent_refs %}
+{%- if dlr.parent_refs %}
  <PARENT-REFS>
- {%- for parent in dl.parent_refs -%}
+ {%- for parent in dlr.parent_refs -%}
  {{ pparref.printParentRef(parent)|indent(2) }}
  {%- endfor %}
  </PARENT-REFS>
 {%- endif %}
-</{{variant_tag}}>
+</{{dlr.variant_type.value}}>
 {%- endmacro -%}

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 import warnings
-from typing import TYPE_CHECKING, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from .dataobjectproperty import DopBase
 from .diaglayertype import DiagLayerType
@@ -35,7 +35,7 @@ class ParentRef:
         self,
         *,
         parent: Union[OdxLinkRef, "DiagLayer"],
-        ref_type: str,
+        ref_type: DiagLayerType,
         not_inherited_diag_comms: List[str],  # short_name references
         not_inherited_dops: List[str],
     ):  # short_name references
@@ -50,20 +50,21 @@ class ParentRef:
         not_inherited_dops: List[str]
             short names of not inherited DOPs
         """
-        if ref_type not in [
-                "PROTOCOL-REF",
-                "BASE-VARIANT-REF",
-                "ECU-SHARED-DATA-REF",
-                "FUNCTIONAL-GROUP-REF",
+        if ref_type.value not in [
+                "PROTOCOL",
+                "BASE-VARIANT",
+                "ECU-SHARED-DATA",
+                "FUNCTIONAL-GROUP",
         ]:
             warnings.warn(f"Unknown parent ref type {ref_type}", OdxWarning)
         if isinstance(parent, OdxLinkRef):
             self.parent_ref = parent
             self.parent_diag_layer = None
         else:
+            from .diaglayer import DiagLayer
             assert isinstance(parent, DiagLayer)
 
-            self.parent_ref = OdxLinkRef.from_id(parent.odx_id)
+            self.parent_ref = OdxLinkRef.from_id(parent.diag_layer_raw.odx_id)
             self.parent_diag_layer = parent
         self.not_inherited_diag_comms = not_inherited_diag_comms
         self.not_inherited_dops = not_inherited_dops
@@ -84,19 +85,23 @@ class ParentRef:
             for el in et_element.iterfind("NOT-INHERITED-DOPS/NOT-INHERITED-DOP/DOP-BASE-SNREF")
         ]
         ref_type = et_element.get(f"{xsi}type")
+        ref_type = ref_type[:-len("-REF")]
 
         return ParentRef(
             parent=parent_ref,
-            ref_type=ref_type,
+            ref_type=DiagLayerType(ref_type),
             not_inherited_diag_comms=not_inherited_diag_comms,
             not_inherited_dops=not_inherited_dops,
         )
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         self.parent_diag_layer = odxlinks.resolve(self.parent_ref)
 
     def get_inheritance_priority(self):
-        return PRIORITY_OF_DIAG_LAYER_TYPE[self.parent_diag_layer.variant_type]
+        return PRIORITY_OF_DIAG_LAYER_TYPE[self.parent_diag_layer.diag_layer_raw.variant_type]
 
     def get_inherited_services(self) -> List[Union[DiagService, SingleEcuJob]]:
 
