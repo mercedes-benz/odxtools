@@ -95,6 +95,12 @@ class PhysicalDimension:
             luminous_intensity_exp=luminous_intensity_exp,
         )
 
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {self.odx_id: self}
+
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+        pass
+
 
 @dataclass
 class Unit:
@@ -188,6 +194,9 @@ class Unit:
     def physical_dimension(self) -> PhysicalDimension:
         return self._physical_dimension
 
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {self.odx_id: self}
+
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         if self.physical_dimension_ref:
             self._physical_dimension = odxlinks.resolve(self.physical_dimension_ref)
@@ -241,6 +250,9 @@ class UnitGroup:
             description=description,
         )
 
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         self._units = NamedItemList[Unit](short_name_as_id,
                                           [odxlinks.resolve(ref) for ref in self.unit_refs])
@@ -293,10 +305,11 @@ class UnitSpec:
             sdgs=sdgs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        odxlinks = {}
-        odxlinks.update({unit.odx_id: unit for unit in self.units})
-        odxlinks.update({dim.odx_id: dim for dim in self.physical_dimensions})
-
+        odxlinks: Dict[OdxLinkId, Any] = {}
+        for unit in self.units:
+            odxlinks.update(unit._build_odxlinks())
+        for dim in self.physical_dimensions:
+            odxlinks.update(dim._build_odxlinks())
         for sdg in self.sdgs:
             odxlinks.update(sdg._build_odxlinks())
 

@@ -7,6 +7,7 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
+from .specialdata import create_sdgs_from_et
 from .structures import BasicStructure
 from .utils import create_description_from_et
 
@@ -54,6 +55,7 @@ class EndOfPduField(DopBase):
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
         structure_snref = None
@@ -80,6 +82,7 @@ class EndOfPduField(DopBase):
             short_name=short_name,
             long_name=long_name,
             description=description,
+            sdgs=sdgs,
             structure_ref=structure_ref,
             structure_snref=structure_snref,
             env_data_desc_ref=env_data_desc_ref,

@@ -138,6 +138,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             short_name="flip_env_data",
             long_name="Flip Env Data",
             description=None,
+            sdgs=[],
             is_visible_raw=None,
             parameters=[
                 ValueParameter(
@@ -174,6 +175,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             short_name="flip_env_data_desc",
             long_name="Flip Env Data Desc",
             description=None,
+            sdgs=[],
             is_visible_raw=None,
             param_snref="flip_speed",
             param_snpathref=None,
@@ -185,6 +187,9 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             odx_id=OdxLinkId("somersault.multiplexer.flip_preference", doc_frags),
             short_name="flip_preference",
             long_name="Flip Preference",
+            description=None,
+            sdgs=[],
+            is_visible_raw=None,
             byte_position=0,
             switch_key=MultiplexerSwitchKey(
                 byte_position=0,

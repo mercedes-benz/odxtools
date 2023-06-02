@@ -31,7 +31,7 @@ class SpecialDataGroupCaption:
             odx_id=odx_id, short_name=short_name, long_name=long_name, description=description)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result = {}
+        result = {self.odx_id: self}
 
         result[self.odx_id] = self
 

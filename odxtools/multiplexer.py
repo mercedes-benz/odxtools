@@ -10,7 +10,10 @@ from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError
 from .globals import logger
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxtypes import odxstr_to_bool
+from .specialdata import create_sdgs_from_et
 from .structures import BasicStructure
+from .utils import create_description_from_et
 
 
 @dataclass
@@ -138,9 +141,6 @@ class Multiplexer(DopBase):
     """This class represents a Multiplexer (MUX) which are used to interpret data stream depending on the value
     of a switch-key (similar to switch-case statements in programming languages like C or Java)."""
 
-    odx_id: OdxLinkId
-    short_name: str
-    long_name: str
     byte_position: int
     switch_key: MultiplexerSwitchKey
     default_case: Optional[MultiplexerDefaultCase]
@@ -153,6 +153,9 @@ class Multiplexer(DopBase):
         assert odx_id is not None
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
+        description = create_description_from_et(et_element.find("DESC"))
+        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
         switch_key = MultiplexerSwitchKey.from_et(et_element.find("SWITCH-KEY"), doc_frags)
 
@@ -174,6 +177,9 @@ class Multiplexer(DopBase):
             odx_id=odx_id,
             short_name=short_name,
             long_name=long_name,
+            description=description,
+            sdgs=sdgs,
+            is_visible_raw=is_visible_raw,
             byte_position=byte_position,
             switch_key=switch_key,
             default_case=default_case,
@@ -277,16 +283,18 @@ class Multiplexer(DopBase):
         return mux_value, mux_next_byte
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        odxlinks = {}
-        odxlinks.update({self.odx_id: self})
+        odxlinks = super()._build_odxlinks()
+
         return odxlinks
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+        super()._resolve_references(odxlinks)
+
         self.switch_key._resolve_references(odxlinks)
         if self.default_case is not None:
             self.default_case._resolve_references(odxlinks)
 
-        for case in self.cases or []:
+        for case in self.cases:
             case._resolve_references(odxlinks)
 
     def __repr__(self) -> str:

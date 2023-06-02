@@ -189,6 +189,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             short_name="sendCertificate",
             long_name=None,
             description=None,
+            sdgs=[],
             is_visible_raw=None,
             parameters=[
                 CodedConstParameter(
@@ -448,6 +449,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             short_name="sendCertificate",
             long_name=None,
             description=None,
+            sdgs=[],
             is_visible_raw=None,
             parameters=[
                 CodedConstParameter(
@@ -748,6 +750,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             short_name="sendCertificate",
             long_name=None,
             description=None,
+            sdgs=[],
             is_visible_raw=None,
             parameters=[
                 CodedConstParameter(

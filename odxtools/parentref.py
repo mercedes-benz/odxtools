@@ -97,7 +97,7 @@ class ParentRef:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         self.parent_diag_layer = odxlinks.resolve(self.parent_ref)
 
     def get_inheritance_priority(self):

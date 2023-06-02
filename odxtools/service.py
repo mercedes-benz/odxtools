@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-from typing import Iterable, List, Optional, Union, cast
+from typing import Any, Dict, Iterable, List, Optional, Union, cast
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -218,8 +218,8 @@ class DiagService:
     def state_transitions(self):
         return self._state_transitions
 
-    def _build_odxlinks(self):
-        result = {}
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = {self.odx_id: self}
 
         for sdg in self.sdgs:
             result.update(sdg._build_odxlinks())
