@@ -292,6 +292,7 @@ class DiagLayer:
         for obj in chain(
                 self._local_services,
                 self._local_single_ecu_jobs,
+                self._local_communication_parameters,
                 self.requests,
                 self.positive_responses,
                 self.negative_responses,

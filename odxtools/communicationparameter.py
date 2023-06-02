@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 import warnings
-from typing import Any, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from .comparam_subset import (BaseComparam, Comparam, ComplexComparam, ComplexValue,
                               create_complex_value_from_et)
 from .diaglayertype import DiagLayerType
 from .exceptions import OdxWarning
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .utils import create_description_from_et
 
 
@@ -75,6 +75,9 @@ class CommunicationParameterRef:
 
     def __str__(self) -> str:
         return self.__repr__()
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
         # Temporary lenient until tests are updated
