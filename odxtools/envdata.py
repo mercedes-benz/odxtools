@@ -58,13 +58,6 @@ class EnvironmentData(BasicStructure):
             dtc_values=dtc_values,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        return super()._build_odxlinks()
-
-    def _resolve_references(  # type: ignore[override]
-            self, parent_dl: "DiagLayer", odxlinks: OdxLinkDatabase) -> None:
-        super()._resolve_references(parent_dl, odxlinks)
-
     def __repr__(self) -> str:
         return (f"EnvironmentData('{self.short_name}', " +
                 ", ".join([f"odx_id='{self.odx_id}'", f"parameters='{self.parameters}'"]) + ")")
