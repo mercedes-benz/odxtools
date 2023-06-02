@@ -334,9 +334,9 @@ class TestSingleEcuJob(unittest.TestCase):
             sdgs=[],
         )
         self.assertEqual(sej.functional_class_refs, [])
-        self.assertEqual(sej.input_params, NamedItemList(short_name_as_id, []))
-        self.assertEqual(sej.output_params, NamedItemList(short_name_as_id, []))
-        self.assertEqual(sej.neg_output_params, NamedItemList(short_name_as_id, []))
+        self.assertEqual(sej.input_params, NamedItemList(short_name_as_id))
+        self.assertEqual(sej.output_params, NamedItemList(short_name_as_id))
+        self.assertEqual(sej.neg_output_params, NamedItemList(short_name_as_id))
         self.assertEqual(sej.prog_codes[0].library_refs, [])
 
     def test_resolve_references(self):
@@ -351,7 +351,7 @@ class TestSingleEcuJob(unittest.TestCase):
             functional_classes=NamedItemList(short_name_as_id, [self.context.extensiveTask]),
             diag_data_dictionary_spec=None,
             diag_comms=[self.singleecujob_object],
-            requests=NamedItemList(short_name_as_id, []),
+            requests=NamedItemList(short_name_as_id),
             positive_responses=NamedItemList(short_name_as_id),
             negative_responses=NamedItemList(short_name_as_id),
             global_negative_responses=NamedItemList(short_name_as_id),

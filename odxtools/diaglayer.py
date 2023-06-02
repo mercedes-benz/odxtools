@@ -59,10 +59,10 @@ class DiagLayer:
 
         # Properties that include inherited objects
         self._services: NamedItemList[Union[DiagService,
-                                            SingleEcuJob]] = NamedItemList(short_name_as_id, [])
+                                            SingleEcuJob]] = NamedItemList(short_name_as_id)
         self._communication_parameters: NamedItemList[CommunicationParameterRef] = NamedItemList(
-            short_name_as_id, [])
-        self._data_object_properties: NamedItemList[DopBase] = NamedItemList(short_name_as_id, [])
+            short_name_as_id)
+        self._data_object_properties: NamedItemList[DopBase] = NamedItemList(short_name_as_id)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayer":

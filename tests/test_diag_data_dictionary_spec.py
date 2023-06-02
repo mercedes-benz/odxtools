@@ -221,8 +221,8 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             env_data_descs=NamedItemList(short_name_as_id, [env_data_desc]),
             env_datas=NamedItemList(short_name_as_id, [env_data]),
             muxs=NamedItemList(short_name_as_id, [mux]),
-            structures=NamedItemList(short_name_as_id, []),
-            end_of_pdu_fields=NamedItemList(short_name_as_id, []),
+            structures=NamedItemList(short_name_as_id),
+            end_of_pdu_fields=NamedItemList(short_name_as_id),
             unit_spec=None,
             sdgs=[],
         )
