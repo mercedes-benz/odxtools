@@ -131,14 +131,8 @@ class DiagDataDictionarySpec:
         )
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        # note that DataDictionarySpec objects do not exhibit an ODXLINK id.
         odxlinks = {}
-        for obj in chain(
-                self.data_object_props,
-                self.structures,
-                self.end_of_pdu_fields,
-                self.tables,
-        ):
-            odxlinks[obj.odx_id] = obj
 
         for obj in chain(
                 self.data_object_props,

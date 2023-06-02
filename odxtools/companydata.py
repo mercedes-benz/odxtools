@@ -92,7 +92,7 @@ class CompanySpecificInfo:
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         for sdg in self.sdgs:
             sdg._resolve_references(odxlinks)
 
@@ -151,6 +151,14 @@ class TeamMember:
             email=email,
         )
 
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = {self.odx_id: self}
+
+        return result
+
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+        pass
+
 
 @dataclass
 class CompanyData:
@@ -179,15 +187,10 @@ class CompanyData:
 
             roles = rlist
 
-        team_members = et_element.find("TEAM-MEMBERS")
-        if team_members is not None:
-            tml = NamedItemList(short_name_as_id)  # type: ignore
-
-            for tm in team_members.iterfind("TEAM-MEMBER"):
-                tml.append(TeamMember.from_et(tm, doc_frags))
-
-            team_members = tml
-
+        team_members = [
+            TeamMember.from_et(tm, doc_frags)
+            for tm in et_element.iterfind("TEAM-MEMBERS/TEAM-MEMBER")
+        ]
         company_specific_info = et_element.find("COMPANY-SPECIFIC-INFO")
         if company_specific_info is not None:
             company_specific_info = CompanySpecificInfo.from_et(company_specific_info, doc_frags)
@@ -198,7 +201,7 @@ class CompanyData:
             long_name=long_name,
             description=description,
             roles=roles,
-            team_members=team_members,
+            team_members=NamedItemList(short_name_as_id, team_members),
             company_specific_info=company_specific_info,
         )
 
@@ -206,9 +209,8 @@ class CompanyData:
         result = {self.odx_id: self}
 
         # team members
-        if self.team_members is not None:
-            for tm in self.team_members:
-                result[tm.odx_id] = tm
+        for tm in self.team_members:
+            result.update(tm._build_odxlinks())
 
         if self.company_specific_info:
             result.update(self.company_specific_info._build_odxlinks())
@@ -216,6 +218,9 @@ class CompanyData:
         return result
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
+        for tm in self.team_members:
+            tm._resolve_references(odxlinks)
+
         if self.company_specific_info:
             self.company_specific_info._resolve_references(odxlinks)
 

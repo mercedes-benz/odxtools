@@ -8,6 +8,7 @@ from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
 from .parameters import create_any_parameter_from_et
 from .parameters.parameterbase import Parameter
+from .specialdata import create_sdgs_from_et
 from .structures import BasicStructure
 from .utils import create_description_from_et
 
@@ -33,6 +34,7 @@ class EnvironmentData(BasicStructure):
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         parameters = [
             create_any_parameter_from_et(et_parameter, doc_frags)
@@ -49,6 +51,7 @@ class EnvironmentData(BasicStructure):
             short_name=short_name,
             long_name=long_name,
             description=description,
+            sdgs=sdgs,
             is_visible_raw=is_visible_raw,
             parameters=parameters,
             byte_size=byte_size,
@@ -56,11 +59,7 @@ class EnvironmentData(BasicStructure):
         )
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        odxlinks = super()._build_odxlinks()
-
-        odxlinks[self.odx_id] = self
-
-        return odxlinks
+        return super()._build_odxlinks()
 
     def _resolve_references(  # type: ignore[override]
             self, parent_dl: "DiagLayer", odxlinks: OdxLinkDatabase) -> None:

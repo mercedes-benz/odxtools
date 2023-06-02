@@ -133,6 +133,7 @@ class TestUnitSpec(unittest.TestCase):
                     short_name="rq_sn",
                     long_name=None,
                     description=None,
+                    sdgs=[],
                     is_visible_raw=None,
                     parameters=[
                         CodedConstParameter(

@@ -18,22 +18,34 @@ from .units import Unit
 from .utils import create_description_from_et, short_name_as_id
 
 
+@dataclass
 class DopBase:
     """Base class for all DOPs.
 
     Any class that a parameter can reference via a DOP-REF should inherit from this class.
     """
 
-    def __init__(self, *, odx_id, short_name, long_name, description, is_visible_raw, sdgs=[]):
-        self.odx_id = odx_id
-        self.short_name = short_name
-        self.long_name = long_name
-        self.description = description
-        self.is_visible_raw = is_visible_raw
-        self.sdgs = sdgs
+    odx_id: OdxLinkId
+    short_name: str
+    long_name: Optional[str]
+    description: Optional[str]
+    is_visible_raw: Optional[bool]
+    sdgs: List[SpecialDataGroup]
+
+    def __hash__(self) -> int:
+        result = 0
+
+        result += hash(self.short_name)
+        result += hash(self.long_name)
+        result += hash(self.description)
+        result += hash(self.is_visible_raw)
+        for sdg in self.sdgs:
+            result += hash(sdg)
+
+        return result
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result = {}
+        result = {self.odx_id: self}
 
         for sdg in self.sdgs:
             result.update(sdg._build_odxlinks())

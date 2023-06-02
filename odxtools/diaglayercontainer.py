@@ -109,8 +109,7 @@ class DiagLayerContainer:
         )
 
     def _build_odxlinks(self):
-        result = {}
-        result[self.odx_id] = self
+        result = {self.odx_id: self}
 
         if self.admin_data is not None:
             result.update(self.admin_data._build_odxlinks())

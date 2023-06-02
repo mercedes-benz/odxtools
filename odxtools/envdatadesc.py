@@ -11,6 +11,7 @@ from .exceptions import DecodeError, EncodeError
 from .globals import logger
 from .odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
+from .specialdata import create_sdgs_from_et
 from .utils import create_description_from_et
 
 
@@ -46,6 +47,7 @@ class EnvironmentDataDescription(DopBase):
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         param_snref = None
         if et_element.find("PARAM-SNREF") is not None:
@@ -72,6 +74,7 @@ class EnvironmentDataDescription(DopBase):
             short_name=short_name,
             long_name=long_name,
             description=description,
+            sdgs=sdgs,
             is_visible_raw=is_visible_raw,
             param_snref=param_snref,
             param_snpathref=param_snpathref,
@@ -80,8 +83,7 @@ class EnvironmentDataDescription(DopBase):
         )
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        odxlinks = {}
-        odxlinks[self.odx_id] = self
+        odxlinks = {self.odx_id: self}
 
         for ed in self.env_datas:
             odxlinks.update(ed._build_odxlinks())

@@ -339,8 +339,8 @@ class SingleEcuJob:
         """
         return self._functional_classes
 
-    def _build_odxlinks(self):
-        result = {}
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = {self.odx_id: self}
 
         for sdg in self.sdgs:
             result.update(sdg._build_odxlinks())

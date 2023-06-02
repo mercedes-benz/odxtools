@@ -226,11 +226,10 @@ class DiagLayerRaw:
                 self.parent_refs,
                 self.communication_parameters,
         ):
+            # the diag_comms may contain references.
             if obj is None or isinstance(obj, OdxLinkRef):
                 continue
 
-            if hasattr(obj, "odx_id"):
-                odxlinks[obj.odx_id] = obj
             odxlinks.update(obj._build_odxlinks())
 
         return odxlinks
