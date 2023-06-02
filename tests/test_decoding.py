@@ -5,11 +5,12 @@ import unittest
 from odxtools.compumethods import IdenticalCompuMethod, LinearCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty, DiagnosticTroubleCode, DtcDop
 from odxtools.diagcodedtypes import LeadingLengthInfoType, MinMaxLengthType, StandardLengthType
-from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayer import DiagLayer, DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.endofpdufield import EndOfPduField
 from odxtools.exceptions import DecodeError
 from odxtools.message import Message
+from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.parameters import (CodedConstParameter, MatchingRequestParameter,
@@ -17,6 +18,7 @@ from odxtools.parameters import (CodedConstParameter, MatchingRequestParameter,
 from odxtools.physicaltype import PhysicalType
 from odxtools.service import DiagService
 from odxtools.structures import Request, Response, Structure
+from odxtools.utils import short_name_as_id
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
@@ -152,27 +154,30 @@ class TestIdentifyingService(unittest.TestCase):
             sdgs=[],
         )
 
-        diag_layer = DiagLayer(
+        diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
             description=None,
+            admin_data=None,
+            company_datas=NamedItemList(short_name_as_id),
+            functional_classes=NamedItemList(short_name_as_id),
+            diag_data_dictionary_spec=None,
+            diag_comms=[service, service2],
+            requests=NamedItemList(short_name_as_id, [req, req2]),
+            positive_responses=NamedItemList(short_name_as_id, [resp2]),
+            negative_responses=NamedItemList(short_name_as_id),
+            global_negative_responses=NamedItemList(short_name_as_id),
+            additional_audiences=NamedItemList(short_name_as_id),
+            import_refs=[],
+            state_charts=NamedItemList(short_name_as_id),
+            sdgs=[],
             parent_refs=[],
             communication_parameters=[],
-            services=[service, service2],
-            requests=[req, req2],
-            positive_responses=[resp2],
-            negative_responses=[],
-            single_ecu_jobs=[],
-            diag_comm_refs=[],
-            diag_data_dictionary_spec=None,
-            additional_audiences=[],
-            functional_classes=[],
-            state_charts=[],
-            import_refs=[],
-            sdgs=[],
+            ecu_variant_patterns=[],
         )
+        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         diag_layer.finalize_init(odxlinks=odxlinks)
 
         self.assertEqual(
@@ -254,27 +259,30 @@ class TestDecoding(unittest.TestCase):
             negative_responses=[],
             sdgs=[],
         )
-        diag_layer = DiagLayer(
+        diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
             description=None,
+            admin_data=None,
+            company_datas=NamedItemList(short_name_as_id),
+            functional_classes=NamedItemList(short_name_as_id),
+            diag_data_dictionary_spec=None,
+            diag_comms=[service],
+            requests=NamedItemList(short_name_as_id, [req]),
+            positive_responses=NamedItemList(short_name_as_id),
+            negative_responses=NamedItemList(short_name_as_id),
+            global_negative_responses=NamedItemList(short_name_as_id),
+            additional_audiences=NamedItemList(short_name_as_id),
+            import_refs=[],
+            state_charts=NamedItemList(short_name_as_id),
+            sdgs=[],
             parent_refs=[],
             communication_parameters=[],
-            services=[service],
-            requests=[req],
-            positive_responses=[],
-            negative_responses=[],
-            single_ecu_jobs=[],
-            diag_comm_refs=[],
-            diag_data_dictionary_spec=None,
-            additional_audiences=[],
-            functional_classes=[],
-            state_charts=[],
-            import_refs=[],
-            sdgs=[],
+            ecu_variant_patterns=[],
         )
+        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         diag_layer.finalize_init(odxlinks=odxlinks)
 
         coded_message = bytes([0x7D, 0xAB])
@@ -378,27 +386,30 @@ class TestDecoding(unittest.TestCase):
             negative_responses=[],
             sdgs=[],
         )
-        diag_layer = DiagLayer(
+        diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
             description=None,
+            admin_data=None,
+            company_datas=NamedItemList(short_name_as_id),
+            functional_classes=NamedItemList(short_name_as_id),
+            diag_data_dictionary_spec=None,
+            diag_comms=[service],
+            requests=NamedItemList(short_name_as_id, [req]),
+            positive_responses=NamedItemList(short_name_as_id),
+            negative_responses=NamedItemList(short_name_as_id),
+            global_negative_responses=NamedItemList(short_name_as_id),
+            additional_audiences=NamedItemList(short_name_as_id),
+            import_refs=[],
+            state_charts=NamedItemList(short_name_as_id),
+            sdgs=[],
             parent_refs=[],
             communication_parameters=[],
-            services=[service],
-            requests=[req],
-            positive_responses=[],
-            negative_responses=[],
-            single_ecu_jobs=[],
-            diag_comm_refs=[],
-            diag_data_dictionary_spec=None,
-            additional_audiences=[],
-            functional_classes=[],
-            state_charts=[],
-            import_refs=[],
-            sdgs=[],
+            ecu_variant_patterns=[],
         )
+        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         diag_layer.finalize_init(odxlinks=odxlinks)
         self.assertDictEqual(diag_layer._build_coded_prefix_tree(),
                              {0x12: {
@@ -548,27 +559,30 @@ class TestDecoding(unittest.TestCase):
             negative_responses=[],
             sdgs=[],
         )
-        diag_layer = DiagLayer(
+        diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
             description=None,
+            admin_data=None,
+            company_datas=NamedItemList(short_name_as_id),
+            functional_classes=NamedItemList(short_name_as_id),
+            diag_data_dictionary_spec=None,
+            diag_comms=[service],
+            requests=NamedItemList(short_name_as_id, [req]),
+            positive_responses=NamedItemList(short_name_as_id),
+            negative_responses=NamedItemList(short_name_as_id),
+            global_negative_responses=NamedItemList(short_name_as_id),
+            additional_audiences=NamedItemList(short_name_as_id),
+            import_refs=[],
+            state_charts=NamedItemList(short_name_as_id),
+            sdgs=[],
             parent_refs=[],
             communication_parameters=[],
-            services=[service],
-            requests=[req],
-            positive_responses=[],
-            negative_responses=[],
-            single_ecu_jobs=[],
-            diag_comm_refs=[],
-            diag_data_dictionary_spec=None,
-            additional_audiences=[],
-            functional_classes=[],
-            state_charts=[],
-            import_refs=[],
-            sdgs=[],
+            ecu_variant_patterns=[],
         )
+        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         diag_layer.finalize_init(odxlinks=odxlinks)
 
         req_param1._resolve_references(diag_layer, odxlinks)
@@ -729,27 +743,30 @@ class TestDecoding(unittest.TestCase):
             negative_responses=[],
             sdgs=[],
         )
-        diag_layer = DiagLayer(
+        diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
             description=None,
+            admin_data=None,
+            company_datas=NamedItemList(short_name_as_id),
+            functional_classes=NamedItemList(short_name_as_id),
+            diag_data_dictionary_spec=None,
+            diag_comms=[service],
+            requests=NamedItemList(short_name_as_id, [req]),
+            positive_responses=NamedItemList(short_name_as_id),
+            negative_responses=NamedItemList(short_name_as_id),
+            global_negative_responses=NamedItemList(short_name_as_id),
+            additional_audiences=NamedItemList(short_name_as_id),
+            import_refs=[],
+            state_charts=NamedItemList(short_name_as_id),
+            sdgs=[],
             parent_refs=[],
             communication_parameters=[],
-            services=[service],
-            requests=[req],
-            positive_responses=[],
-            negative_responses=[],
-            single_ecu_jobs=[],
-            diag_comm_refs=[],
-            diag_data_dictionary_spec=None,
-            additional_audiences=[],
-            functional_classes=[],
-            state_charts=[],
-            import_refs=[],
-            sdgs=[],
+            ecu_variant_patterns=[],
         )
+        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         diag_layer.finalize_init(odxlinks=odxlinks)
 
         eopf._resolve_references(diag_layer, odxlinks)
@@ -868,27 +885,30 @@ class TestDecoding(unittest.TestCase):
             negative_responses=[],
             sdgs=[],
         )
-        diag_layer = DiagLayer(
+        diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
             description=None,
+            admin_data=None,
+            company_datas=NamedItemList(short_name_as_id),
+            functional_classes=NamedItemList(short_name_as_id),
+            diag_data_dictionary_spec=None,
+            diag_comms=[service],
+            requests=NamedItemList(short_name_as_id, [req]),
+            positive_responses=NamedItemList(short_name_as_id),
+            negative_responses=NamedItemList(short_name_as_id),
+            global_negative_responses=NamedItemList(short_name_as_id),
+            additional_audiences=NamedItemList(short_name_as_id),
+            import_refs=[],
+            state_charts=NamedItemList(short_name_as_id),
+            sdgs=[],
             parent_refs=[],
             communication_parameters=[],
-            services=[service],
-            requests=[req],
-            positive_responses=[],
-            negative_responses=[],
-            single_ecu_jobs=[],
-            diag_comm_refs=[],
-            diag_data_dictionary_spec=None,
-            additional_audiences=[],
-            functional_classes=[],
-            state_charts=[],
-            import_refs=[],
-            sdgs=[],
+            ecu_variant_patterns=[],
         )
+        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         diag_layer.finalize_init(odxlinks=odxlinks)
 
         coded_message = bytes([0x7D, 0x12])
@@ -1037,27 +1057,30 @@ class TestDecoding(unittest.TestCase):
             negative_responses=[OdxLinkRef.from_id(neg_response.odx_id)],
             sdgs=[],
         )
-        diag_layer = DiagLayer(
+        diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
             description=None,
+            admin_data=None,
+            company_datas=NamedItemList(short_name_as_id),
+            functional_classes=NamedItemList(short_name_as_id),
+            diag_data_dictionary_spec=None,
+            diag_comms=[service],
+            requests=NamedItemList(short_name_as_id, [req]),
+            positive_responses=NamedItemList(short_name_as_id, [pos_response]),
+            negative_responses=NamedItemList(short_name_as_id, [neg_response]),
+            global_negative_responses=NamedItemList(short_name_as_id),
+            additional_audiences=NamedItemList(short_name_as_id),
+            import_refs=[],
+            state_charts=NamedItemList(short_name_as_id),
+            sdgs=[],
             parent_refs=[],
             communication_parameters=[],
-            services=[service],
-            requests=[req],
-            positive_responses=[pos_response],
-            negative_responses=[neg_response],
-            single_ecu_jobs=[],
-            diag_comm_refs=[],
-            diag_data_dictionary_spec=None,
-            additional_audiences=[],
-            functional_classes=[],
-            state_charts=[],
-            import_refs=[],
-            sdgs=[],
+            ecu_variant_patterns=[],
         )
+        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         diag_layer.finalize_init(odxlinks=odxlinks)
 
         for sid, message in [(0x34, pos_response), (0x56, neg_response)]:

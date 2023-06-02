@@ -10,9 +10,10 @@ from odxtools.decodestate import ParameterValuePair
 from odxtools.diagcodedtypes import *
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
+from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.parameters import CodedConstParameter, LengthKeyParameter, ValueParameter
 from odxtools.physicaltype import PhysicalType
 from odxtools.structures import Request
@@ -219,39 +220,44 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         )
 
         # Dummy diag layer to resolve references from request parameters to DOPs
-        diag_layer = DiagLayer(
+        diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("BV.dummy_DL", doc_frags),
             short_name="dummy_DL",
             long_name=None,
             description=None,
-            parent_refs=[],
-            communication_parameters=[],
-            services=[],
-            requests=[request],
-            positive_responses=[],
-            negative_responses=[],
+            admin_data=None,
+            company_datas=NamedItemList(short_name_as_id),
+            functional_classes=NamedItemList(short_name_as_id),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
                 data_object_props=dops.values(),
-                dtc_dops=NamedItemList(short_name_as_id, []),
-                structures=NamedItemList(short_name_as_id, []),
-                end_of_pdu_fields=NamedItemList(short_name_as_id, []),
-                tables=NamedItemList(short_name_as_id, []),
-                env_data_descs=NamedItemList(short_name_as_id, []),
-                env_datas=NamedItemList(short_name_as_id, []),
-                muxs=NamedItemList(short_name_as_id, []),
+                dtc_dops=NamedItemList(short_name_as_id),
+                structures=NamedItemList(short_name_as_id),
+                end_of_pdu_fields=NamedItemList(short_name_as_id),
+                tables=NamedItemList(short_name_as_id),
+                env_data_descs=NamedItemList(short_name_as_id),
+                env_datas=NamedItemList(short_name_as_id),
+                muxs=NamedItemList(short_name_as_id),
                 unit_spec=None,
                 sdgs=[],
             ),
-            single_ecu_jobs=[],
-            diag_comm_refs=[],
-            additional_audiences=[],
-            functional_classes=[],
-            state_charts=[],
+            diag_comms=[],
+            requests=NamedItemList(short_name_as_id, [request]),
+            positive_responses=NamedItemList(short_name_as_id),
+            negative_responses=NamedItemList(short_name_as_id),
+            global_negative_responses=NamedItemList(short_name_as_id),
+            additional_audiences=NamedItemList(short_name_as_id),
             import_refs=[],
+            state_charts=NamedItemList(short_name_as_id),
             sdgs=[],
+            parent_refs=[],
+            communication_parameters=[],
+            ecu_variant_patterns=[],
         )
-        diag_layer.finalize_init()
+        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(diag_layer._build_odxlinks())
+        diag_layer.finalize_init(odxlinks=odxlinks)
 
         # Test decoding.
         coded_request = bytes([
@@ -488,39 +494,44 @@ class TestParamLengthInfoType(unittest.TestCase):
         )
 
         # Dummy diag layer to resolve references from request parameters to DOPs
-        diag_layer = DiagLayer(
+        diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("BV.dummy_DL", doc_frags),
             short_name="dummy_DL",
             long_name=None,
             description=None,
-            parent_refs=[],
-            communication_parameters=[],
-            services=[],
-            requests=[request],
-            positive_responses=[],
-            negative_responses=[],
-            single_ecu_jobs=[],
-            diag_comm_refs=[],
+            admin_data=None,
+            company_datas=NamedItemList(short_name_as_id),
+            functional_classes=NamedItemList(short_name_as_id),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
                 data_object_props=dops.values(),
-                dtc_dops=NamedItemList(short_name_as_id, []),
-                structures=NamedItemList(short_name_as_id, []),
-                end_of_pdu_fields=NamedItemList(short_name_as_id, []),
-                tables=NamedItemList(short_name_as_id, []),
-                env_data_descs=NamedItemList(short_name_as_id, []),
-                env_datas=NamedItemList(short_name_as_id, []),
-                muxs=NamedItemList(short_name_as_id, []),
+                dtc_dops=NamedItemList(short_name_as_id),
+                structures=NamedItemList(short_name_as_id),
+                end_of_pdu_fields=NamedItemList(short_name_as_id),
+                tables=NamedItemList(short_name_as_id),
+                env_data_descs=NamedItemList(short_name_as_id),
+                env_datas=NamedItemList(short_name_as_id),
+                muxs=NamedItemList(short_name_as_id),
                 unit_spec=None,
                 sdgs=[],
             ),
-            additional_audiences=[],
-            functional_classes=[],
-            state_charts=[],
+            diag_comms=[],
+            requests=NamedItemList(short_name_as_id, [request]),
+            positive_responses=NamedItemList(short_name_as_id),
+            negative_responses=NamedItemList(short_name_as_id),
+            global_negative_responses=NamedItemList(short_name_as_id),
+            additional_audiences=NamedItemList(short_name_as_id),
             import_refs=[],
+            state_charts=NamedItemList(short_name_as_id),
             sdgs=[],
+            parent_refs=[],
+            communication_parameters=[],
+            ecu_variant_patterns=[],
         )
-        diag_layer.finalize_init()
+        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(diag_layer._build_odxlinks())
+        diag_layer.finalize_init(odxlinks=odxlinks)
 
         # Test decoding.
         coded_request = bytes([
@@ -779,39 +790,44 @@ class TestMinMaxLengthType(unittest.TestCase):
         )
 
         # Dummy diag layer to resolve references from request parameters to DOPs
-        diag_layer = DiagLayer(
+        diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("BV.dummy_DL", doc_frags),
             short_name="dummy_DL",
             long_name=None,
             description=None,
-            parent_refs=[],
-            communication_parameters=[],
-            services=[],
-            requests=[request],
-            positive_responses=[],
-            negative_responses=[],
-            single_ecu_jobs=[],
-            diag_comm_refs=[],
+            admin_data=None,
+            company_datas=NamedItemList(short_name_as_id),
+            functional_classes=NamedItemList(short_name_as_id),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
                 data_object_props=dops.values(),
-                dtc_dops=NamedItemList(short_name_as_id, []),
-                structures=NamedItemList(short_name_as_id, []),
-                end_of_pdu_fields=NamedItemList(short_name_as_id, []),
-                tables=NamedItemList(short_name_as_id, []),
-                env_data_descs=NamedItemList(short_name_as_id, []),
-                env_datas=NamedItemList(short_name_as_id, []),
-                muxs=NamedItemList(short_name_as_id, []),
+                dtc_dops=NamedItemList(short_name_as_id),
+                structures=NamedItemList(short_name_as_id),
+                end_of_pdu_fields=NamedItemList(short_name_as_id),
+                tables=NamedItemList(short_name_as_id),
+                env_data_descs=NamedItemList(short_name_as_id),
+                env_datas=NamedItemList(short_name_as_id),
+                muxs=NamedItemList(short_name_as_id),
                 unit_spec=None,
                 sdgs=[],
             ),
-            additional_audiences=[],
-            functional_classes=[],
-            state_charts=[],
+            diag_comms=[],
+            requests=NamedItemList(short_name_as_id, [request]),
+            positive_responses=NamedItemList(short_name_as_id),
+            negative_responses=NamedItemList(short_name_as_id),
+            global_negative_responses=NamedItemList(short_name_as_id),
+            additional_audiences=NamedItemList(short_name_as_id),
             import_refs=[],
+            state_charts=NamedItemList(short_name_as_id),
             sdgs=[],
+            parent_refs=[],
+            communication_parameters=[],
+            ecu_variant_patterns=[],
         )
-        diag_layer.finalize_init()
+        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(diag_layer._build_odxlinks())
+        diag_layer.finalize_init(odxlinks=odxlinks)
 
         # Test decoding.
         coded_request = bytes([

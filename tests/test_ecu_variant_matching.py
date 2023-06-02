@@ -6,14 +6,16 @@ from typing import Any, Dict, List, Union
 
 import pytest
 
-from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayer import DiagLayer, DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.ecu_variant_matcher import EcuVariantMatcher
 from odxtools.ecu_variant_patterns import EcuVariantPattern, MatchingParameter
 from odxtools.exceptions import OdxError
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from odxtools.nameditemlist import NamedItemList
+from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.service import DiagService
 from odxtools.structures import Request, Response
+from odxtools.utils import short_name_as_id
 
 doc_frags = [OdxDocFragment(doc_name="pytest", doc_type="WinneThePoh")]
 
@@ -166,28 +168,31 @@ def ecu_variant_1(
     supplier_service: DiagService,
     ecu_variant_pattern1: EcuVariantPattern,
 ) -> DiagLayer:
-    result = DiagLayer(
+    raw_layer = DiagLayerRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant1", doc_fragments=doc_frags),
         short_name="ecu_variant1",
         long_name=None,
         description=None,
-        additional_audiences=[],
-        functional_classes=[],
-        parent_refs=[],
-        import_refs=[],
-        communication_parameters=[],
-        diag_comm_refs=[],
+        admin_data=None,
+        company_datas=NamedItemList(short_name_as_id),
+        functional_classes=NamedItemList(short_name_as_id),
         diag_data_dictionary_spec=None,
-        services=[ident_service, supplier_service],
-        requests=[],
-        positive_responses=[],
-        negative_responses=[],
-        single_ecu_jobs=[],
-        state_charts=[],
-        ecu_variant_patterns=[ecu_variant_pattern1],
+        diag_comms=[ident_service, supplier_service],
+        requests=NamedItemList(short_name_as_id),
+        positive_responses=NamedItemList(short_name_as_id),
+        negative_responses=NamedItemList(short_name_as_id),
+        global_negative_responses=NamedItemList(short_name_as_id),
+        import_refs=[],
+        state_charts=NamedItemList(short_name_as_id),
+        additional_audiences=NamedItemList(short_name_as_id),
         sdgs=[],
+        parent_refs=[],
+        communication_parameters=[],
+        ecu_variant_patterns=[ecu_variant_pattern1],
     )
+    result = DiagLayer(diag_layer_raw=raw_layer)
+    odxlinks.update(result._build_odxlinks())
     result.finalize_init(odxlinks)
     return result
 
@@ -198,28 +203,31 @@ def ecu_variant_2(
     supplier_service: DiagService,
     ecu_variant_pattern2: EcuVariantPattern,
 ) -> DiagLayer:
-    result = DiagLayer(
+    raw_layer = DiagLayerRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant2", doc_fragments=doc_frags),
         short_name="ecu_variant2",
         long_name=None,
         description=None,
-        functional_classes=[],
-        additional_audiences=[],
-        parent_refs=[],
-        import_refs=[],
-        communication_parameters=[],
-        diag_comm_refs=[],
+        admin_data=None,
+        company_datas=NamedItemList(short_name_as_id),
+        functional_classes=NamedItemList(short_name_as_id),
         diag_data_dictionary_spec=None,
-        services=[ident_service, supplier_service],
-        requests=[],
-        positive_responses=[],
-        negative_responses=[],
-        single_ecu_jobs=[],
-        state_charts=[],
-        ecu_variant_patterns=[ecu_variant_pattern2],
+        diag_comms=[ident_service, supplier_service],
+        requests=NamedItemList(short_name_as_id),
+        positive_responses=NamedItemList(short_name_as_id),
+        negative_responses=NamedItemList(short_name_as_id),
+        global_negative_responses=NamedItemList(short_name_as_id),
+        import_refs=[],
+        state_charts=NamedItemList(short_name_as_id),
+        additional_audiences=NamedItemList(short_name_as_id),
         sdgs=[],
+        parent_refs=[],
+        communication_parameters=[],
+        ecu_variant_patterns=[ecu_variant_pattern2],
     )
+    result = DiagLayer(diag_layer_raw=raw_layer)
+    odxlinks.update(result._build_odxlinks())
     result.finalize_init(odxlinks)
     return result
 
@@ -231,28 +239,31 @@ def ecu_variant_3(
     ecu_variant_pattern1: EcuVariantPattern,
     ecu_variant_pattern3: EcuVariantPattern,
 ) -> DiagLayer:
-    result = DiagLayer(
+    raw_layer = DiagLayerRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant3", doc_fragments=doc_frags),
         short_name="ecu_variant3",
         long_name=None,
         description=None,
-        functional_classes=[],
-        additional_audiences=[],
-        parent_refs=[],
-        import_refs=[],
-        communication_parameters=[],
-        diag_comm_refs=[],
+        admin_data=None,
+        company_datas=NamedItemList(short_name_as_id),
+        functional_classes=NamedItemList(short_name_as_id),
         diag_data_dictionary_spec=None,
-        services=[ident_service, supplier_service],
-        requests=[],
-        positive_responses=[],
-        negative_responses=[],
-        single_ecu_jobs=[],
-        state_charts=[],
-        ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
+        diag_comms=[ident_service, supplier_service],
+        requests=NamedItemList(short_name_as_id),
+        positive_responses=NamedItemList(short_name_as_id),
+        negative_responses=NamedItemList(short_name_as_id),
+        global_negative_responses=NamedItemList(short_name_as_id),
+        import_refs=[],
+        state_charts=NamedItemList(short_name_as_id),
+        additional_audiences=NamedItemList(short_name_as_id),
         sdgs=[],
+        parent_refs=[],
+        communication_parameters=[],
+        ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
     )
+    result = DiagLayer(diag_layer_raw=raw_layer)
+    odxlinks.update(result._build_odxlinks())
     result.finalize_init(odxlinks)
     return result
 

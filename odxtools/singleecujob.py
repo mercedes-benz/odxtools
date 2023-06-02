@@ -256,11 +256,11 @@ class SingleEcuJob:
 
         # Replace None attributes by empty lists
         if not self.input_params:
-            self.input_params = NamedItemList(short_name_as_id, [])
+            self.input_params = NamedItemList(short_name_as_id)
         if not self.output_params:
-            self.output_params = NamedItemList(short_name_as_id, [])
+            self.output_params = NamedItemList(short_name_as_id)
         if not self.neg_output_params:
-            self.neg_output_params = NamedItemList(short_name_as_id, [])
+            self.neg_output_params = NamedItemList(short_name_as_id)
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "SingleEcuJob":

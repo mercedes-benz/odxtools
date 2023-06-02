@@ -7,10 +7,10 @@ from odxtools.compumethods import IdenticalCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayer import DiagLayer, DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
+from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.parameters import CodedConstParameter, ValueParameter
 from odxtools.physicaltype import PhysicalType
 from odxtools.structures import Request
@@ -115,15 +115,18 @@ class TestUnitSpec(unittest.TestCase):
             unit_ref=OdxLinkRef.from_id(unit.odx_id),
             sdgs=[],
         )
-        dl = DiagLayer(
+        dl_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("BV_id", doc_frags),
             short_name="BaseVariant",
             long_name=None,
             description=None,
+            admin_data=None,
+            company_datas=NamedItemList(short_name_as_id),
             parent_refs=[],
             communication_parameters=[],
-            services=[],
+            ecu_variant_patterns=[],
+            diag_comms=[],
             requests=[
                 Request(
                     odx_id=OdxLinkId("rq_id", doc_frags),
@@ -159,10 +162,9 @@ class TestUnitSpec(unittest.TestCase):
                     byte_size=None,
                 )
             ],
-            positive_responses=[],
-            negative_responses=[],
-            single_ecu_jobs=[],
-            diag_comm_refs=[],
+            positive_responses=NamedItemList(short_name_as_id),
+            negative_responses=NamedItemList(short_name_as_id),
+            global_negative_responses=NamedItemList(short_name_as_id),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
                 data_object_props=[dop],
                 unit_spec=UnitSpec(
@@ -171,22 +173,25 @@ class TestUnitSpec(unittest.TestCase):
                     unit_groups=None,
                     sdgs=[],
                 ),
-                dtc_dops=NamedItemList(short_name_as_id, []),
-                structures=NamedItemList(short_name_as_id, []),
-                end_of_pdu_fields=NamedItemList(short_name_as_id, []),
-                tables=NamedItemList(short_name_as_id, []),
-                env_data_descs=NamedItemList(short_name_as_id, []),
-                env_datas=NamedItemList(short_name_as_id, []),
-                muxs=NamedItemList(short_name_as_id, []),
+                dtc_dops=NamedItemList(short_name_as_id),
+                structures=NamedItemList(short_name_as_id),
+                end_of_pdu_fields=NamedItemList(short_name_as_id),
+                tables=NamedItemList(short_name_as_id),
+                env_data_descs=NamedItemList(short_name_as_id),
+                env_datas=NamedItemList(short_name_as_id),
+                muxs=NamedItemList(short_name_as_id),
                 sdgs=[],
             ),
-            additional_audiences=[],
-            functional_classes=[],
-            state_charts=[],
+            additional_audiences=NamedItemList(short_name_as_id),
+            functional_classes=NamedItemList(short_name_as_id),
+            state_charts=NamedItemList(short_name_as_id),
             import_refs=[],
             sdgs=[],
         )
-        dl.finalize_init()
+        dl = DiagLayer(diag_layer_raw=dl_raw)
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(dl._build_odxlinks())
+        dl.finalize_init(odxlinks)
 
         self.assertEqual(dl.requests[0].parameters[1].dop.unit, unit)
 
