@@ -1792,7 +1792,7 @@ somersault_lazy_diaglayer_raw = DiagLayerRaw(
     sdgs=[],
     parent_refs=[
         ParentRef(
-            parent_layer_ref=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
+            layer_ref=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
             # this variant does not do backflips
             not_inherited_diag_comms=[
                 somersault_requests["backward_flips"].short_name,
@@ -2009,7 +2009,7 @@ somersault_assiduous_diaglayer_raw = DiagLayerRaw(
     sdgs=[],
     parent_refs=[
         ParentRef(
-            parent_layer_ref=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
+            layer_ref=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
             # this variant does everything which the base variant does
             not_inherited_diag_comms=[],
             not_inherited_dops=[],

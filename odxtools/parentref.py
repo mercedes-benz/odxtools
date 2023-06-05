@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class ParentRef:
-    parent_layer_ref: OdxLinkRef
+    layer_ref: OdxLinkRef
     not_inherited_diag_comms: List[str]  # short_name references
     not_inherited_variables: List[str]  # short_name references
     not_inherited_dops: List[str]  # short_name references
@@ -23,18 +23,14 @@ class ParentRef:
     not_inherited_global_neg_responses: List[str]  # short_name references
 
     @property
-    def parent_layer(self) -> "DiagLayer":
-        return self._parent_layer
-
-    @property
-    def parent_layer_type(self) -> DiagLayerType:
-        return self._parent_layer.variant_type
+    def layer(self) -> "DiagLayer":
+        return self._layer
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "ParentRef":
 
-        parent_layer_ref = OdxLinkRef.from_et(et_element, doc_frags)
-        assert parent_layer_ref is not None
+        layer_ref = OdxLinkRef.from_et(et_element, doc_frags)
+        assert layer_ref is not None
 
         not_inherited_diag_comms = [
             el.get("SHORT-NAME") for el in et_element.iterfind("NOT-INHERITED-DIAG-COMMS/"
@@ -64,7 +60,7 @@ class ParentRef:
         ]
 
         return ParentRef(
-            parent_layer_ref=parent_layer_ref,
+            layer_ref=layer_ref,
             not_inherited_diag_comms=not_inherited_diag_comms,
             not_inherited_variables=not_inherited_variables,
             not_inherited_dops=not_inherited_dops,
@@ -76,14 +72,14 @@ class ParentRef:
         return {}
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
-        self._parent_layer = odxlinks.resolve(self.parent_layer_ref)
+        self._layer = odxlinks.resolve(self.layer_ref)
 
     def get_inherited_services(self) -> List[Union[DiagService, SingleEcuJob]]:
-        if self.parent_layer is None:
+        if self.layer is None:
             return []
 
         services = dict()
-        for service in self.parent_layer._services:
+        for service in self.layer._services:
             assert isinstance(service, (DiagService, SingleEcuJob))
 
             if service.short_name not in self.not_inherited_diag_comms:
@@ -92,15 +88,15 @@ class ParentRef:
         return list(services.values())
 
     def get_inherited_data_object_properties(self) -> List[DopBase]:
-        if self.parent_layer is None:
+        if self.layer is None:
             return []
 
         dops = {
             dop.short_name: dop
-            for dop in self.parent_layer._data_object_properties
+            for dop in self.layer._data_object_properties
             if dop.short_name not in self.not_inherited_dops
         }
         return list(dops.values())
 
     def get_inherited_communication_parameters(self):
-        return self.parent_layer._communication_parameters
+        return self.layer._communication_parameters

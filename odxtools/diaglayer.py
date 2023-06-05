@@ -175,7 +175,7 @@ class DiagLayer:
         result_dict: Dict[str, DiagLayer] = dict()
 
         for parent_ref in self._get_parent_refs_sorted_by_priority():
-            for prot in parent_ref.parent_layer.protocols:
+            for prot in parent_ref.layer.protocols:
                 result_dict[prot.short_name] = prot
 
         if self.diag_layer_raw.variant_type == DiagLayerType.PROTOCOL:
@@ -216,7 +216,7 @@ class DiagLayer:
         # priority than us.
         self_prio = self.variant_type.inheritance_priority
         for parent_ref in self.diag_layer_raw.parent_refs:
-            parent_prio = parent_ref.parent_layer_type.inheritance_priority
+            parent_prio = parent_ref.layer.variant_type.inheritance_priority
             assert self_prio > parent_prio, "diagnostic layers can only inherit from layers of lower priority"
 
         services = sorted(self._compute_available_services(odxlinks), key=short_name_as_id)
@@ -297,7 +297,7 @@ class DiagLayer:
     def _get_parent_refs_sorted_by_priority(self, reverse=False):
         return sorted(
             self.diag_layer_raw.parent_refs,
-            key=lambda pr: pr.parent_layer_type.inheritance_priority,
+            key=lambda pr: pr.layer.variant_type.inheritance_priority,
             reverse=reverse)
 
     def _build_coded_prefix_tree(self):

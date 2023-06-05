@@ -5,10 +5,10 @@
 -#}
 
 {%- macro printParentRef(par) -%}
-<PARENT-REF ID-REF="{{par.parent_layer_ref.ref_id}}"
-            DOCREF="{{par.parent_layer.short_name}}"
+<PARENT-REF ID-REF="{{par.layer.odx_id.local_id}}"
+            DOCREF="{{par.layer.short_name}}"
             DOCTYPE="CONTAINER"
-            xsi:type="{{par.parent_layer_type.value}}-REF">
+            xsi:type="{{par.layer.variant_type.value}}-REF">
 {%- if par.not_inherited_diag_comms %}
  <NOT-INHERITED-DIAG-COMMS>
 {%-  for nidc in par.not_inherited_diag_comms %}
