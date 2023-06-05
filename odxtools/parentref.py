@@ -12,20 +12,10 @@ from .singleecujob import SingleEcuJob
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
-# Defines priority of overriding objects
-PRIORITY_OF_DIAG_LAYER_TYPE: Dict[DiagLayerType, int] = {
-    DiagLayerType.ECU_SHARED_DATA: 0,
-    DiagLayerType.PROTOCOL: 1,
-    DiagLayerType.FUNCTIONAL_GROUP: 2,
-    DiagLayerType.BASE_VARIANT: 3,
-    DiagLayerType.ECU_VARIANT: 4,
-}
-
 
 @dataclass
 class ParentRef:
     parent_layer_ref: OdxLinkRef
-    self_layer_type: DiagLayerType
     parent_layer_type: DiagLayerType
     not_inherited_diag_comms: List[str]  # short_name references
     not_inherited_variables: List[str]  # short_name references
@@ -33,20 +23,12 @@ class ParentRef:
     not_inherited_tables: List[str]  # short_name references
     not_inherited_global_neg_responses: List[str]  # short_name references
 
-    def __post_init__(self) -> None:
-        # make sure that the layer from which we inherit are of lower
-        # priority than us.
-        self_prio = PRIORITY_OF_DIAG_LAYER_TYPE[self.self_layer_type]
-        parent_prio = PRIORITY_OF_DIAG_LAYER_TYPE[self.parent_layer_type]
-        assert self_prio > parent_prio, "diagnostic layers can only inherit from layers of lower priority"
-
     @property
     def parent_layer(self) -> "DiagLayer":
         return self._parent_layer
 
     @staticmethod
-    def from_et(et_element, self_layer_type: DiagLayerType,
-                doc_frags: List[OdxDocFragment]) -> "ParentRef":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "ParentRef":
 
         parent_layer_ref = OdxLinkRef.from_et(et_element, doc_frags)
         assert parent_layer_ref is not None
@@ -87,7 +69,6 @@ class ParentRef:
 
         return ParentRef(
             parent_layer_ref=parent_layer_ref,
-            self_layer_type=self_layer_type,
             parent_layer_type=DiagLayerType(parent_layer_type),
             not_inherited_diag_comms=not_inherited_diag_comms,
             not_inherited_variables=not_inherited_variables,
@@ -104,9 +85,6 @@ class ParentRef:
 
         assert self._parent_layer.variant_type == self.parent_layer_type, \
             "Incorrect PARENT-REF"
-
-    def get_inheritance_priority(self):
-        return PRIORITY_OF_DIAG_LAYER_TYPE[self.parent_layer_type]
 
     def get_inherited_services(self) -> List[Union[DiagService, SingleEcuJob]]:
         if self.parent_layer is None:

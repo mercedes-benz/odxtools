@@ -212,6 +212,13 @@ class DiagLayer:
 
         self.diag_layer_raw._resolve_references(self, odxlinks)
 
+        # make sure that the layer which we inherit from are of lower
+        # priority than us.
+        self_prio = self.variant_type.inheritance_priority
+        for parent_ref in self.diag_layer_raw.parent_refs:
+            parent_prio = parent_ref.parent_layer_type.inheritance_priority
+            assert self_prio > parent_prio, "diagnostic layers can only inherit from layers of lower priority"
+
         services = sorted(self._compute_available_services(odxlinks), key=short_name_as_id)
         self._services = NamedItemList[Union[DiagService, SingleEcuJob]](short_name_as_id, services)
 
@@ -290,7 +297,7 @@ class DiagLayer:
     def _get_parent_refs_sorted_by_priority(self, reverse=False):
         return sorted(
             self.diag_layer_raw.parent_refs,
-            key=lambda pr: pr.get_inheritance_priority(),
+            key=lambda pr: pr.parent_layer_type.inheritance_priority,
             reverse=reverse)
 
     def _build_coded_prefix_tree(self):
