@@ -16,7 +16,6 @@ if TYPE_CHECKING:
 @dataclass
 class ParentRef:
     parent_layer_ref: OdxLinkRef
-    parent_layer_type: DiagLayerType
     not_inherited_diag_comms: List[str]  # short_name references
     not_inherited_variables: List[str]  # short_name references
     not_inherited_dops: List[str]  # short_name references
@@ -26,6 +25,10 @@ class ParentRef:
     @property
     def parent_layer(self) -> "DiagLayer":
         return self._parent_layer
+
+    @property
+    def parent_layer_type(self) -> DiagLayerType:
+        return self._parent_layer.variant_type
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "ParentRef":
@@ -60,16 +63,8 @@ class ParentRef:
                                                                "GLOBAL-NEG-RESPONSE-SNREF")
         ]
 
-        # determine the type of the referenced diag layer. for
-        # this, we need to strip the '-REF' suffix of the
-        # element's {xsi}type attribute
-        parent_layer_type_str = et_element.get(f"{xsi}type")
-        assert parent_layer_type_str is not None and parent_layer_type_str.endswith("-REF")
-        parent_layer_type = DiagLayerType(parent_layer_type_str[:-4])
-
         return ParentRef(
             parent_layer_ref=parent_layer_ref,
-            parent_layer_type=DiagLayerType(parent_layer_type),
             not_inherited_diag_comms=not_inherited_diag_comms,
             not_inherited_variables=not_inherited_variables,
             not_inherited_dops=not_inherited_dops,
@@ -82,9 +77,6 @@ class ParentRef:
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         self._parent_layer = odxlinks.resolve(self.parent_layer_ref)
-
-        assert self._parent_layer.variant_type == self.parent_layer_type, \
-            "Incorrect PARENT-REF"
 
     def get_inherited_services(self) -> List[Union[DiagService, SingleEcuJob]]:
         if self.parent_layer is None:
