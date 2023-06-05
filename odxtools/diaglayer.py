@@ -175,7 +175,7 @@ class DiagLayer:
         result_dict: Dict[str, DiagLayer] = dict()
 
         for parent_ref in self._get_parent_refs_sorted_by_priority():
-            for prot in parent_ref.parent_diag_layer.protocols:
+            for prot in parent_ref.parent_layer.protocols:
                 result_dict[prot.short_name] = prot
 
         if self.diag_layer_raw.variant_type == DiagLayerType.PROTOCOL:

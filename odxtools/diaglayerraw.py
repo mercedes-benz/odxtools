@@ -163,7 +163,7 @@ class DiagLayerRaw:
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         parent_refs = [
-            ParentRef.from_et(pr_el, doc_frags)
+            ParentRef.from_et(pr_el, variant_type, doc_frags)
             for pr_el in et_element.iterfind("PARENT-REFS/PARENT-REF")
         ]
 

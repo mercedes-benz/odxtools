@@ -1792,14 +1792,18 @@ somersault_lazy_diaglayer_raw = DiagLayerRaw(
     sdgs=[],
     parent_refs=[
         ParentRef(
-            parent=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
-            ref_type=DiagLayerType.BASE_VARIANT,
+            parent_layer_ref=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
+            self_layer_type=DiagLayerType.ECU_VARIANT,
+            parent_layer_type=DiagLayerType.BASE_VARIANT,
             # this variant does not do backflips
             not_inherited_diag_comms=[
                 somersault_requests["backward_flips"].short_name,
                 somersault_requests["set_operation_params"].short_name,
             ],
             not_inherited_dops=[],
+            not_inherited_variables=[],
+            not_inherited_tables=[],
+            not_inherited_global_neg_responses=[],
         )
     ],
     communication_parameters=somersault_communication_parameters,
@@ -2006,12 +2010,16 @@ somersault_assiduous_diaglayer_raw = DiagLayerRaw(
     additional_audiences=NamedItemList(short_name_as_id),
     sdgs=[],
     parent_refs=[
-        ParentRef(  # <- TODO: this is a bit sketchy IMO
-            parent=somersault_diaglayer,
-            ref_type=DiagLayerType.BASE_VARIANT,
+        ParentRef(
+            parent_layer_ref=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
+            self_layer_type=DiagLayerType.ECU_VARIANT,
+            parent_layer_type=DiagLayerType.BASE_VARIANT,
             # this variant does everything which the base variant does
             not_inherited_diag_comms=[],
             not_inherited_dops=[],
+            not_inherited_variables=[],
+            not_inherited_tables=[],
+            not_inherited_global_neg_responses=[],
         )
     ],
     communication_parameters=somersault_communication_parameters,
