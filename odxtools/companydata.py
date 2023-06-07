@@ -1,20 +1,20 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-from .nameditemlist import NamedItemList
-from .utils import create_description_from_et
-from .odxlink import OdxLinkId, OdxLinkDatabase, OdxDocFragment
-from .utils import short_name_as_id
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
-
-from xml.etree import ElementTree
 from dataclasses import dataclass, field
-from typing import Optional, Any, Dict, List
+from typing import Any, Dict, List, Optional
+from xml.etree import ElementTree
+
+from .nameditemlist import NamedItemList
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .utils import create_description_from_et, short_name_as_id
+
 
 @dataclass
 class XDoc:
-    short_name : str
-    long_name : Optional[str]
-    description : Optional[str]
+    short_name: str
+    long_name: Optional[str]
+    description: Optional[str]
     number: Optional[str]
     state: Optional[str]
     date: Optional[str]
@@ -34,16 +34,18 @@ class XDoc:
         url = xdoc.findtext("URL")
         position = xdoc.findtext("POSITION")
 
-        return XDoc(short_name=short_name,
-                    long_name=long_name,
-                    description=description,
-                    number=number,
-                    state=state,
-                    date=date,
-                    publisher=publisher,
-                    url=url,
-                    position=position,
-                    )
+        return XDoc(
+            short_name=short_name,
+            long_name=long_name,
+            description=description,
+            number=number,
+            state=state,
+            date=date,
+            publisher=publisher,
+            url=url,
+            position=position,
+        )
+
 
 @dataclass
 class RelatedDoc:
@@ -57,9 +59,10 @@ class RelatedDoc:
         if xdoc is not None:
             xdoc = XDoc.from_et(xdoc)
 
-        return RelatedDoc(description=description,
-                          xdoc=xdoc,
-                          )
+        return RelatedDoc(
+            description=description,
+            xdoc=xdoc,
+        )
 
 
 @dataclass
@@ -79,20 +82,20 @@ class CompanySpecificInfo:
 
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
-        return CompanySpecificInfo(related_docs=related_docs,
-                                   sdgs=sdgs)
+        return CompanySpecificInfo(related_docs=related_docs, sdgs=sdgs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result = { }
+        result = {}
 
         for sdg in self.sdgs:
             result.update(sdg._build_odxlinks())
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         for sdg in self.sdgs:
             sdg._resolve_references(odxlinks)
+
 
 @dataclass
 class TeamMember:
@@ -110,8 +113,7 @@ class TeamMember:
     email: Optional[str]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "TeamMember":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "TeamMember":
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
         assert odx_id is not None
         short_name = et_element.findtext("SHORT-NAME")
@@ -134,18 +136,28 @@ class TeamMember:
         fax = et_element.findtext("FAX")
         email = et_element.findtext("EMAIL")
 
-        return TeamMember(odx_id=odx_id,
-                          short_name=short_name,
-                          long_name=long_name,
-                          description=description,
-                          roles=roles,
-                          department=department,
-                          address=address,
-                          zip=zip,
-                          city=city,
-                          phone=phone,
-                          fax=fax,
-                          email=email)
+        return TeamMember(
+            odx_id=odx_id,
+            short_name=short_name,
+            long_name=long_name,
+            description=description,
+            roles=roles,
+            department=department,
+            address=address,
+            zip=zip,
+            city=city,
+            phone=phone,
+            fax=fax,
+            email=email,
+        )
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = {self.odx_id: self}
+
+        return result
+
+    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+        pass
 
 
 @dataclass
@@ -159,8 +171,7 @@ class CompanyData:
     company_specific_info: Optional[CompanySpecificInfo]
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "CompanyData":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "CompanyData":
 
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
         assert odx_id is not None
@@ -176,34 +187,30 @@ class CompanyData:
 
             roles = rlist
 
-        team_members = et_element.find("TEAM-MEMBERS")
-        if team_members is not None:
-            tml = NamedItemList(short_name_as_id) # type: ignore
-
-            for tm in team_members.iterfind("TEAM-MEMBER"):
-                tml.append(TeamMember.from_et(tm, doc_frags))
-
-            team_members = tml
-
+        team_members = [
+            TeamMember.from_et(tm, doc_frags)
+            for tm in et_element.iterfind("TEAM-MEMBERS/TEAM-MEMBER")
+        ]
         company_specific_info = et_element.find("COMPANY-SPECIFIC-INFO")
         if company_specific_info is not None:
             company_specific_info = CompanySpecificInfo.from_et(company_specific_info, doc_frags)
 
-        return CompanyData(odx_id=odx_id,
-                           short_name=short_name,
-                           long_name=long_name,
-                           description=description,
-                           roles=roles,
-                           team_members=team_members,
-                           company_specific_info=company_specific_info)
+        return CompanyData(
+            odx_id=odx_id,
+            short_name=short_name,
+            long_name=long_name,
+            description=description,
+            roles=roles,
+            team_members=NamedItemList(short_name_as_id, team_members),
+            company_specific_info=company_specific_info,
+        )
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result = { self.odx_id: self }
+        result = {self.odx_id: self}
 
         # team members
-        if self.team_members is not None:
-            for tm in self.team_members:
-                result[tm.odx_id] = tm
+        for tm in self.team_members:
+            result.update(tm._build_odxlinks())
 
         if self.company_specific_info:
             result.update(self.company_specific_info._build_odxlinks())
@@ -211,16 +218,22 @@ class CompanyData:
         return result
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase):
+        for tm in self.team_members:
+            tm._resolve_references(odxlinks)
+
         if self.company_specific_info:
             self.company_specific_info._resolve_references(odxlinks)
 
-def create_company_datas_from_et(et_element, doc_frags: List[OdxDocFragment]) \
-        -> NamedItemList[CompanyData]:
+
+def create_company_datas_from_et(et_element,
+                                 doc_frags: List[OdxDocFragment]) -> NamedItemList[CompanyData]:
     if et_element is None:
         return NamedItemList(short_name_as_id)
 
-    return NamedItemList(short_name_as_id,
-                         [
-                             CompanyData.from_et(cd_elem, doc_frags)
-                             for cd_elem in et_element.iterfind("COMPANY-DATA")
-                         ])
+    return NamedItemList(
+        short_name_as_id,
+        [
+            CompanyData.from_et(cd_elem, doc_frags)
+            for cd_elem in et_element.iterfind("COMPANY-DATA")
+        ],
+    )

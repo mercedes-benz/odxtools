@@ -3,13 +3,15 @@
 import unittest
 from xml.etree import ElementTree
 
+from odxtools.odxlink import OdxDocFragment
 from odxtools.odxtypes import DataType
 from odxtools.parameters import NrcConstParameter, create_any_parameter_from_et
-from odxtools.odxlink import OdxDocFragment
 
-doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
+doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
+
 
 class TestReadNrcParam(unittest.TestCase):
+
     def test_create_nrcconst_from_et(self):
         ODX = """
         <PARAM SEMANTIC="SUBFUNCTION-ID" xsi:type="NRC-CONST" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -31,9 +33,7 @@ class TestReadNrcParam(unittest.TestCase):
         self.assertIsInstance(param, NrcConstParameter)
         self.assertEqual("SUBFUNCTION-ID", param.semantic)
         self.assertEqual("NR_identifier", param.short_name)
-        self.assertEqual("Identifier for the negative response",
-                         param.long_name)
+        self.assertEqual("Identifier for the negative response", param.long_name)
         self.assertEqual([16, 10], param.coded_values)
-        self.assertEqual(DataType.A_UINT32,
-                         param.diag_coded_type.base_data_type)
+        self.assertEqual(DataType.A_UINT32, param.diag_coded_type.base_data_type)
         self.assertEqual(8, param.diag_coded_type.bit_length)

@@ -3,25 +3,28 @@
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Optional, Union, cast
 
-from .dataobjectproperty import DopBase
 from .admindata import AdminData
 from .audience import Audience
+from .dataobjectproperty import DopBase
+from .exceptions import DecodeError, EncodeError
 from .functionalclass import FunctionalClass
-from .utils import create_description_from_et, short_name_as_id
-from .odxtypes import odxstr_to_bool
-from .odxlink import OdxLinkRef, OdxLinkId, OdxLinkDatabase, OdxDocFragment
-from .nameditemlist import NamedItemList
 from .globals import logger
-from .exceptions import EncodeError, DecodeError
 from .message import Message
+from .nameditemlist import NamedItemList
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxtypes import odxstr_to_bool
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .utils import create_description_from_et, short_name_as_id
 
-DiagClassType = Literal["STARTCOMM",
-                        "STOPCOMM",
-                        "VARIANTIDENTIFICATION",
-                        "READ-DYN-DEFINED-MESSAGE",
-                        "DYN-DEF-MESSAGE",
-                        "CLEAR-DYN-DEF-MESSAGE"]
+DiagClassType = Literal[
+    "STARTCOMM",
+    "STOPCOMM",
+    "VARIANTIDENTIFICATION",
+    "READ-DYN-DEFINED-MESSAGE",
+    "DYN-DEF-MESSAGE",
+    "CLEAR-DYN-DEF-MESSAGE",
+]
+
 
 @dataclass
 class InputParam:
@@ -34,8 +37,7 @@ class InputParam:
     physical_default_value: Optional[str]
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "InputParam":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "InputParam":
         short_name = et_element.findtext("SHORT-NAME")
         assert short_name is not None
         long_name = et_element.findtext("LONG-NAME")
@@ -54,7 +56,7 @@ class InputParam:
             dop_base_ref=dop_base_ref,
             physical_default_value=physical_default_value,
             semantic=semantic,
-            oid=oid
+            oid=oid,
         )
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -64,6 +66,7 @@ class InputParam:
     def dop(self) -> DopBase:
         """The data object property describing this parameter."""
         return self._dop
+
 
 @dataclass
 class OutputParam:
@@ -79,8 +82,7 @@ class OutputParam:
         self._dop: Optional[DopBase] = None
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "OutputParam":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "OutputParam":
 
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
         assert odx_id is not None
@@ -101,7 +103,7 @@ class OutputParam:
             description=description,
             dop_base_ref=dop_base_ref,
             semantic=semantic,
-            oid=oid
+            oid=oid,
         )
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -124,8 +126,7 @@ class NegOutputParam:
         self._dop: Optional[DopBase] = None
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "NegOutputParam":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "NegOutputParam":
 
         short_name = et_element.findtext("SHORT-NAME")
         assert short_name is not None
@@ -138,7 +139,7 @@ class NegOutputParam:
             short_name=short_name,
             long_name=long_name,
             description=description,
-            dop_base_ref=dop_base_ref
+            dop_base_ref=dop_base_ref,
         )
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -152,8 +153,8 @@ class NegOutputParam:
 
 @dataclass
 class ProgCode:
-    """A reference to code that is executed by a single ECU job
-    """
+    """A reference to code that is executed by a single ECU job"""
+
     code_file: str
     syntax: Literal["JAVA", "CLASS", "JAR"]
     revision: str
@@ -166,8 +167,7 @@ class ProgCode:
             self.library_refs = []
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "ProgCode":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
         code_file = et_element.findtext("CODE-FILE")
 
         encryption = et_element.findtext("ENCRYPTION")
@@ -189,7 +189,7 @@ class ProgCode:
             revision=revision,
             encryption=encryption,
             entrypoint=entrypoint,
-            library_refs=library_refs
+            library_refs=library_refs,
         )
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
@@ -212,6 +212,7 @@ class SingleEcuJob:
     TODO: The following xml attributes are not internalized yet:
           PROTOCOL-SNREFS, RELATED-DIAG-COMM-REFS, PRE-CONDITION-STATE-REFS, STATE-TRANSITION-REFS
     """
+
     odx_id: OdxLinkId
     short_name: str
     prog_codes: List[ProgCode]
@@ -255,18 +256,16 @@ class SingleEcuJob:
 
         # Replace None attributes by empty lists
         if not self.input_params:
-            self.input_params = NamedItemList(short_name_as_id, [])
+            self.input_params = NamedItemList(short_name_as_id)
         if not self.output_params:
-            self.output_params = NamedItemList(short_name_as_id, [])
+            self.output_params = NamedItemList(short_name_as_id)
         if not self.neg_output_params:
-            self.neg_output_params = NamedItemList(short_name_as_id, [])
+            self.neg_output_params = NamedItemList(short_name_as_id)
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) \
-            -> "SingleEcuJob":
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "SingleEcuJob":
 
-        logger.info(
-            f"Parsing service based on ET DiagService element: {et_element}")
+        logger.info(f"Parsing service based on ET DiagService element: {et_element}")
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
         assert odx_id is not None
         short_name = et_element.findtext("SHORT-NAME")
@@ -293,13 +292,16 @@ class SingleEcuJob:
             audience = None
 
         input_params = [
-            InputParam.from_et(el, doc_frags) for el in et_element.iterfind("INPUT-PARAMS/INPUT-PARAM")
+            InputParam.from_et(el, doc_frags)
+            for el in et_element.iterfind("INPUT-PARAMS/INPUT-PARAM")
         ]
         output_params = [
-            OutputParam.from_et(el, doc_frags) for el in et_element.iterfind("OUTPUT-PARAMS/OUTPUT-PARAM")
+            OutputParam.from_et(el, doc_frags)
+            for el in et_element.iterfind("OUTPUT-PARAMS/OUTPUT-PARAM")
         ]
         neg_output_params = [
-            NegOutputParam.from_et(el, doc_frags) for el in et_element.iterfind("NEG-OUTPUT-PARAMS/NEG-OUTPUT-PARAM")
+            NegOutputParam.from_et(el, doc_frags)
+            for el in et_element.iterfind("NEG-OUTPUT-PARAMS/NEG-OUTPUT-PARAM")
         ]
 
         # Read boolean flags. Note that the "else" clause contains the default value.
@@ -309,24 +311,26 @@ class SingleEcuJob:
 
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
-        return SingleEcuJob(odx_id=odx_id,
-                            oid=None,
-                            short_name=short_name,
-                            long_name=long_name,
-                            description=description,
-                            admin_data=admin_data,
-                            prog_codes=prog_codes,
-                            semantic=semantic,
-                            audience=audience,
-                            functional_class_refs=functional_class_refs,
-                            diagnostic_class=None,
-                            input_params=input_params,
-                            output_params=output_params,
-                            neg_output_params=neg_output_params,
-                            is_mandatory_raw=is_mandatory_raw,
-                            is_executable_raw=is_executable_raw,
-                            is_final_raw=is_final_raw,
-                            sdgs=sdgs)
+        return SingleEcuJob(
+            odx_id=odx_id,
+            oid=None,
+            short_name=short_name,
+            long_name=long_name,
+            description=description,
+            admin_data=admin_data,
+            prog_codes=prog_codes,
+            semantic=semantic,
+            audience=audience,
+            functional_class_refs=functional_class_refs,
+            diagnostic_class=None,
+            input_params=input_params,
+            output_params=output_params,
+            neg_output_params=neg_output_params,
+            is_mandatory_raw=is_mandatory_raw,
+            is_executable_raw=is_executable_raw,
+            is_final_raw=is_final_raw,
+            sdgs=sdgs,
+        )
 
     @property
     def functional_classes(self) -> Optional[NamedItemList[FunctionalClass]]:
@@ -335,8 +339,8 @@ class SingleEcuJob:
         """
         return self._functional_classes
 
-    def _build_odxlinks(self):
-        result = {}
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = {self.odx_id: self}
 
         for sdg in self.sdgs:
             result.update(sdg._build_odxlinks())
@@ -345,23 +349,24 @@ class SingleEcuJob:
 
     def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
         # Resolve references to functional classes
-        self._functional_classes = NamedItemList[FunctionalClass](
-            short_name_as_id, [])
+        self._functional_classes = NamedItemList[FunctionalClass](short_name_as_id, [])
         for fc_ref in self.functional_class_refs:
             fc = odxlinks.resolve(fc_ref)
             if isinstance(fc, FunctionalClass):
                 self._functional_classes.append(fc)
             else:
-                logger.warning(
-                    f"Functional class ID {fc_ref!r} resolved to {fc!r}.")
+                logger.warning(f"Functional class ID {fc_ref!r} resolved to {fc!r}.")
 
         # Resolve references of audience
         if self.audience:
             self.audience._resolve_references(odxlinks)
 
         # Resolve references of params
-        params: List[Union[InputParam, OutputParam, NegOutputParam]] \
-            = [*self.input_params, *self.output_params, *self.neg_output_params]
+        params: List[Union[InputParam, OutputParam, NegOutputParam]] = [
+            *self.input_params,
+            *self.output_params,
+            *self.neg_output_params,
+        ]
         for p in params:
             p._resolve_references(odxlinks)
 
@@ -375,33 +380,38 @@ class SingleEcuJob:
         """This function's signature matches `DiagService.decode_message`
         and only raises an informative error.
         """
-        raise DecodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be decoded."
-                          f" You tried to decode a response for the job {self.odx_id}.")
+        raise DecodeError(
+            f"Single ECU jobs are completely executed on the tester and thus cannot be decoded."
+            f" You tried to decode a response for the job {self.odx_id}.")
 
     def encode_request(self, **params):
         """This function's signature matches `DiagService.encode_request`
         and only raises an informative error.
         """
-        raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
-                          f" You tried to encode a request for the job {self.odx_id}.")
+        raise EncodeError(
+            f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
+            f" You tried to encode a request for the job {self.odx_id}.")
 
     def encode_positive_response(self, coded_request, response_index=0, **params):
         """This function's signature matches `DiagService.encode_positive_response`
         and only raises an informative error.
         """
-        raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
-                          f" You tried to encode a response for the job {self.odx_id}.")
+        raise EncodeError(
+            f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
+            f" You tried to encode a response for the job {self.odx_id}.")
 
     def encode_negative_response(self, coded_request, response_index=0, **params):
         """This function's signature matches `DiagService.encode_negative_response`
         and only raises an informative error.
         """
-        raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
-                          f" You tried to encode the job {self.odx_id}.")
+        raise EncodeError(
+            f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
+            f" You tried to encode the job {self.odx_id}.")
 
     def __call__(self, **params) -> bytes:
-        raise EncodeError(f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
-                          f" You tried to call the job {self.odx_id}.")
+        raise EncodeError(
+            f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
+            f" You tried to call the job {self.odx_id}.")
 
     def __hash__(self) -> int:
         return hash(self.odx_id)

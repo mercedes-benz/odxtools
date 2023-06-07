@@ -1,0 +1,18 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- macro printState(state) -%}
+<STATE ID="{{state.odx_id.local_id}}">
+ <SHORT-NAME>{{state.short_name}}</SHORT-NAME>
+ {%- if state.long_name %}
+ <LONG-NAME>{{state.long_name}}</LONG-NAME>
+ {%- endif %}
+ {%- if state.description is string and state.description.strip() %}
+ <DESC>
+{{state.description}}
+ </DESC>
+ {%- endif %}
+</STATE>
+{%- endmacro -%}

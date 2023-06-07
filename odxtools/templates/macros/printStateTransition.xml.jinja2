@@ -1,0 +1,20 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- macro printStateTransition(state_transition) -%}
+<STATE-TRANSITION ID="{{state_transition.odx_id.local_id}}">
+ <SHORT-NAME>{{state_transition.short_name}}</SHORT-NAME>
+ {%- if state_transition.long_name %}
+ <LONG-NAME>{{state_transition.long_name}}</LONG-NAME>
+ {%- endif %}
+ {%- if state_transition.description is string and state_transition.description.strip() %}
+ <DESC>
+{{state_transition.description}}
+ </DESC>
+ {%- endif %}
+ <SOURCE-SNREF SHORT-NAME="{{state_transition.source_snref}}" />
+ <TARGET-SNREF SHORT-NAME="{{state_transition.target_snref}}" />
+</STATE-TRANSITION>
+{%- endmacro -%}

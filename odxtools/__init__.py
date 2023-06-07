@@ -64,43 +64,29 @@ References
 
 """
 from . import database
+from .compumethods import (IdenticalCompuMethod, LinearCompuMethod, ScaleLinearCompuMethod,
+                           TexttableCompuMethod)
 from .database import Database
-
 from .diaglayer import DiagLayer
-
+from .exceptions import *
+from .load_file import load_file
+from .load_odx_d_file import load_odx_d_file
+from .load_pdx_file import load_pdx_file
+from .parameters import (CodedConstParameter, DynamicParameter, LengthKeyParameter,
+                         MatchingRequestParameter, PhysicalConstantParameter, ReservedParameter,
+                         SystemParameter, TableEntryParameter, TableKeyParameter,
+                         TableStructParameter, ValueParameter)
 from .service import DiagService
 from .singleecujob import SingleEcuJob
-
 from .structures import Request, Response
-
-from .parameters import CodedConstParameter
-from .parameters import PhysicalConstantParameter
-from .parameters import ReservedParameter
-from .parameters import ValueParameter
-from .parameters import MatchingRequestParameter
-from .parameters import SystemParameter
-from .parameters import LengthKeyParameter
-from .parameters import DynamicParameter
-from .parameters import TableStructParameter
-from .parameters import TableKeyParameter
-from .parameters import TableEntryParameter
-
-from .compumethods import IdenticalCompuMethod
-from .compumethods import TexttableCompuMethod
-from .compumethods import LinearCompuMethod
-from .compumethods import ScaleLinearCompuMethod
-
-from .write_pdx_file import write_pdx_file
-from .load_pdx_file import load_pdx_file
-from .load_odx_d_file import load_odx_d_file
-from .load_file import load_file
-
 from .version import __version__
-from .exceptions import *
+from .write_pdx_file import write_pdx_file
 
-__author__ = 'Katrin Bauer'
+__author__ = "Katrin Bauer"
+
 
 def _main():
     # Command line tool
     from .cli import main as _main
+
     _main.start_cli()

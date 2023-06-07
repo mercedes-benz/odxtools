@@ -1,23 +1,17 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-from typing import Iterable, Union
 import re
+from typing import Iterable, Union
 
+from .compumethods import (IdenticalCompuMethod, IntervalType, Limit, LinearCompuMethod,
+                           TexttableCompuMethod)
 from .dataobjectproperty import DataObjectProperty
 from .endofpdufield import EndOfPduField
-from .parameters import CodedConstParameter
-from .parameters import MatchingRequestParameter
-from .parameters import ReservedParameter
-from .parameters import Parameter
-from .parameters import ParameterWithDOP
-from .endofpdufield import EndOfPduField
-from .compumethods import Limit
-from .compumethods import IntervalType
-from .compumethods import IdenticalCompuMethod
-from .compumethods import LinearCompuMethod
-from .compumethods import TexttableCompuMethod
+from .parameters import (CodedConstParameter, MatchingRequestParameter, Parameter, ParameterWithDOP,
+                         ReservedParameter)
 
-def parameter_info(param_list : Iterable[Union[Parameter, EndOfPduField]]) -> str:
+
+def parameter_info(param_list: Iterable[Union[Parameter, EndOfPduField]]) -> str:
     result = ""
     for param in param_list:
         if isinstance(param, CodedConstParameter):
@@ -85,12 +79,11 @@ def parameter_info(param_list : Iterable[Union[Parameter, EndOfPduField]]) -> st
             result += f": float\n"
             ll = cm.physical_lower_limit
             ul = cm.physical_upper_limit
-            result += \
-                f" range: " \
-                f"{'[' if ll.interval_type == IntervalType.CLOSED else '('}" \
-                f"{ll.value}, " \
-                f"{ul.value}" \
-                f"{']' if ul.interval_type == IntervalType.CLOSED else ')'}\n"
+            result += (f" range: "
+                       f"{'[' if ll.interval_type == IntervalType.CLOSED else '('}"
+                       f"{ll.value}, "
+                       f"{ul.value}"
+                       f"{']' if ul.interval_type == IntervalType.CLOSED else ')'}\n")
 
             unit = dop.unit
             unit_str = unit.display_name if unit is not None else None
