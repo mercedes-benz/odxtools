@@ -2,7 +2,6 @@
 # Copyright (c) 2022 MBition GmbH
 from enum import Enum
 from typing import Any, Optional, Callable, Dict, Literal, Type, Union, overload
-import logging
 
 def bytefield_to_bytearray(bytefield: str) -> bytearray:
     bytes_string = [bytefield[i:i+2] for i in range(0, len(bytefield), 2)]
