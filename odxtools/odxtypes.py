@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from enum import Enum
 from typing import Any, Optional, Callable, Dict, Literal, Type, Union, overload
+import logging
 
 def bytefield_to_bytearray(bytefield: str) -> bytearray:
     bytes_string = [bytefield[i:i+2] for i in range(0, len(bytefield), 2)]
@@ -34,6 +35,8 @@ def parse_int(value: str) -> int:
         return int(value)
     except ValueError:
         v = float(value)
+        if not v.is_integer():
+            raise Exception(f"Value {v} is not valid integer")
         assert v.is_integer()
         return int(v)
 
