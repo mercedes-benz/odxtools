@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from enum import Enum
-from typing import NamedTuple, Optional, Union
+from typing import Optional, NamedTuple, Union
 
 from ..odxtypes import DataType
-
 
 class IntervalType(Enum):
     OPEN = "OPEN"
@@ -17,7 +16,8 @@ class Limit(NamedTuple):
     interval_type: IntervalType = IntervalType.CLOSED
 
     @staticmethod
-    def from_et(et_element, internal_type: DataType) -> Optional["Limit"]:
+    def from_et(et_element, internal_type: DataType) \
+            -> Optional["Limit"]:
 
         if et_element is None:
             return None
@@ -36,10 +36,11 @@ class Limit(NamedTuple):
         elif internal_type == DataType.A_BYTEFIELD:
             hex_text = et_element.text
             if len(hex_text) % 2 == 1:
-                hex_text = "0" + hex_text
+                hex_text = '0' + hex_text
             return Limit(bytearray.fromhex(hex_text), interval_type)
         else:
-            return Limit(internal_type.from_string(et_element.text), interval_type)
+            return Limit(internal_type.from_string(et_element.text),
+                         interval_type)
 
     def complies_to_upper(self, value):
         """Checks if the value is in the range w.r.t. the upper limit.

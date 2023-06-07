@@ -5,25 +5,22 @@ from typing import TYPE_CHECKING, Optional, Union
 from ..dataobjectproperty import DataObjectProperty, DopBase, DtcDop
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..globals import logger
-from ..odxlink import OdxLinkDatabase, OdxLinkRef
 from ..physicaltype import PhysicalType
+from ..globals import logger
+from ..odxlink import OdxLinkRef, OdxLinkDatabase
+
 from .parameterbase import Parameter
 
 if TYPE_CHECKING:
     from ..diaglayer import DiagLayer
 
-
 class ParameterWithDOP(Parameter):
-
-    def __init__(
-        self,
-        *,
-        parameter_type: str,
-        dop_ref: Optional[OdxLinkRef],
-        dop_snref: Optional[str],
-        **kwargs,
-    ) -> None:
+    def __init__(self,
+                 *,
+                 parameter_type: str,
+                 dop_ref: Optional[OdxLinkRef],
+                 dop_snref: Optional[str],
+                 **kwargs) -> None:
         super().__init__(parameter_type=parameter_type, **kwargs)
         self.dop_ref = dop_ref
         self.dop_snref = dop_snref
@@ -34,7 +31,9 @@ class ParameterWithDOP(Parameter):
 
         return self._dop
 
-    def _resolve_references(self, parent_dl: "DiagLayer", odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_references(self,
+                            parent_dl: "DiagLayer",
+                            odxlinks: OdxLinkDatabase) -> None:
         super()._resolve_references(parent_dl, odxlinks)
 
         self._dop: Optional[DopBase] = None
@@ -42,17 +41,20 @@ class ParameterWithDOP(Parameter):
         if self.dop_snref:
             dop = parent_dl.data_object_properties.get(self.dop_snref)
             if dop is None:
-                logger.info(f"Param {self.short_name} could not resolve DOP-SNREF {self.dop_snref}")
+                logger.info(
+                    f"Param {self.short_name} could not resolve DOP-SNREF {self.dop_snref}")
             else:
                 self._dop = dop
         elif self.dop_ref:
-            dop = odxlinks.resolve_lenient(self.dop_ref)  # TODO: non-lenient!
+            dop = odxlinks.resolve_lenient(self.dop_ref) # TODO: non-lenient!
             if dop is None:
-                logger.info(f"Param {self.short_name} could not resolve DOP-REF {self.dop_ref}")
+                logger.info(
+                    f"Param {self.short_name} could not resolve DOP-REF {self.dop_ref}")
             else:
                 self._dop = dop
         else:
-            logger.warn(f"Param {self.short_name} without DOP-(SN)REF should not exist!")
+            logger.warn(
+                f"Param {self.short_name} without DOP-(SN)REF should not exist!")
 
     @property
     def bit_length(self):
@@ -75,18 +77,21 @@ class ParameterWithDOP(Parameter):
         assert self.dop is not None, "Reference to DOP is not resolved"
         physical_value = encode_state.parameter_values[self.short_name]
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return self.dop.convert_physical_to_bytes(
-            physical_value, encode_state, bit_position=bit_position_int)
+        return self.dop.convert_physical_to_bytes(physical_value,
+                                                  encode_state,
+                                                  bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState):
         assert self.dop is not None, "Reference to DOP is not resolved"
         if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
-            decode_state = decode_state._replace(next_byte_position=self.byte_position)
+            decode_state = decode_state._replace(
+                next_byte_position=self.byte_position)
 
         # Use DOP to decode
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        phys_val, next_byte_position = self.dop.convert_bytes_to_physical(
-            decode_state, bit_position=bit_position_int)
+        phys_val, next_byte_position = \
+            self.dop.convert_bytes_to_physical(decode_state,
+                                               bit_position=bit_position_int)
 
         return phys_val, next_byte_position
 
@@ -104,5 +109,8 @@ class ParameterWithDOP(Parameter):
         return d
 
     def __str__(self):
-        lines = [super().__str__(), " " + str(self.dop).replace("\n", "\n ")]
+        lines = [
+            super().__str__(),
+            " " + str(self.dop).replace("\n", "\n ")
+        ]
         return "\n".join(lines)

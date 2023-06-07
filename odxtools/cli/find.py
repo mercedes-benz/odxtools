@@ -3,21 +3,20 @@
 import argparse
 from typing import Dict, List
 
+from ._print_utils import print_diagnostic_service
 from .. import SingleEcuJob
 from ..database import Database
 from ..service import DiagService
 from . import _parser_utils
-from ._print_utils import print_diagnostic_service
 
 # name of the tool
 _odxtools_tool_name_ = "find"
-
 
 def get_display_value(v, _param):
     import binascii
 
     if isinstance(v, bytes):
-        return binascii.hexlify(v, " ", 1).decode("utf-8")
+        return binascii.hexlify(v, ' ', 1).decode('utf-8')
     elif isinstance(v, int):
         return f"{v} ({hex(v)})"
     else:
@@ -33,16 +32,16 @@ def print_decoded_message(service: DiagService, message: bytes):
     pass
 
 
-def print_summary(
-    odxdb: Database,
-    ecu_variants=None,
-    data=None,
-    service_names=None,
-    decode=False,
-    print_params=False,
-    allow_unknown_bit_lengths=False,
-):
-    ecu_names = ecu_variants if ecu_variants else [ecu.short_name for ecu in odxdb.ecus]
+def print_summary(odxdb: Database,
+                  ecu_variants=None,
+                  data=None,
+                  service_names=None,
+                  decode=False,
+                  print_params=False,
+                  allow_unknown_bit_lengths=False):
+    ecu_names = ecu_variants if ecu_variants else [
+        ecu.short_name for ecu in odxdb.ecus
+    ]
     services: Dict[DiagService, List[str]] = {}
     for ecu_name in ecu_names:
         ecu = odxdb.ecus[ecu_name]
@@ -65,20 +64,18 @@ def print_summary(
                         services[service] = ecu_names
 
     for service, ecu_names in services.items():
-        display_names = ", ".join(ecu_names)
-        filler = str.ljust("", len(display_names), "=")
+        display_names = ', '.join(ecu_names)
+        filler = str.ljust('', len(display_names), '=')
         print(f"\n{filler}")
         print(f"{', '.join(ecu_names)}")
         print(f"{filler}\n\n")
         if isinstance(service, DiagService):
-            print_diagnostic_service(
-                service,
-                print_params=print_params,
-                allow_unknown_bit_lengths=allow_unknown_bit_lengths,
-                print_pre_condition_states=True,
-                print_state_transitions=True,
-                print_audiences=True,
-            )
+            print_diagnostic_service(service,
+                                     print_params=print_params,
+                                     allow_unknown_bit_lengths=allow_unknown_bit_lengths,
+                                     print_pre_condition_states=True,
+                                     print_state_transitions=True,
+                                     print_audiences=True)
         elif isinstance(service, SingleEcuJob):
             print(f"SingleEcuJob: {service.odx_id}")
         else:
@@ -100,76 +97,34 @@ def add_subparser(subparsers):
             "  For displaying the service associated with the request 10 01, and decoding it:",
             "    odxtools find ./path/to/database.pdx -D 10 01",
             "  For displaying the services associated with the partial name 'Reset' without details:",
-            '    odxtools find ./path/to/database.pdx -s "Reset" --no-details',
+            "    odxtools find ./path/to/database.pdx -s \"Reset\" --no-details",
             "  For more information use:",
-            "    odxtools find -h",
+            "    odxtools find -h"
         ]),
         help="Find & print services by hex-data, or name. Can also decode the request.",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+        formatter_class=argparse.RawTextHelpFormatter)
     _parser_utils.add_pdx_argument(parser)
 
-    parser.add_argument(
-        "-v",
-        "--variants",
-        nargs="+",
-        metavar="VARIANT",
-        required=False,
-        help="Specifies which ecu variants should be included.",
-        default="all",
-    )
+    parser.add_argument("-v", "--variants", nargs='+', metavar="VARIANT",
+                        required=False, help="Specifies which ecu variants should be included.", default="all")
 
-    parser.add_argument(
-        "-d",
-        "--data",
-        nargs="*",
-        default=None,
-        metavar="DATA",
-        required=False,
-        help="Print a list of diagnostic services associated with the hex request.",
-    )
+    parser.add_argument("-d", "--data", nargs='*', default=None, metavar="DATA",
+                        required=False, help="Print a list of diagnostic services associated with the hex request.")
 
-    parser.add_argument(
-        "-D",
-        "--decode",
-        nargs="*",
-        default=None,
-        metavar="DECODE",
-        required=False,
-        help="Print a list of diagnostic services associated with the hex request and decode the request.",
-    )
+    parser.add_argument("-D", "--decode", nargs='*', default=None, metavar="DECODE",
+                        required=False, help="Print a list of diagnostic services associated with the hex request and decode the request.")
 
-    parser.add_argument(
-        "-s",
-        "--service-names",
-        nargs="*",
-        default=None,
-        metavar="SERVICES",
-        required=False,
-        help="Print a list of diagnostic services partially matching given service names",
-    )
+    parser.add_argument("-s", "--service-names", nargs='*', default=None, metavar="SERVICES",
+                        required=False, help="Print a list of diagnostic services partially matching given service names")
 
-    parser.add_argument(
-        "-nd",
-        "--no-details",
-        action="store_false",
-        required=False,
-        help="Don't show all service details",
-    )
+    parser.add_argument("-nd", "--no-details", action='store_false', required=False, help="Don't show all service details")
 
-    parser.add_argument(
-        "-ro",
-        "--relaxed-output",
-        action="store_true",
-        required=False,
-        help="Relax output formatting rules (allow unknown bitlengths for ascii representation)",
-    )
+    parser.add_argument("-ro", "--relaxed-output", action='store_true', required=False, help="Relax output formatting rules (allow unknown bitlengths for ascii representation)")
 
 
 def hex_to_binary(data):
     import binascii
-
-    return binascii.unhexlify("".join(data).replace(" ", ""))
+    return binascii.unhexlify(''.join(data).replace(' ', ''))
 
 
 def run(args):
@@ -177,17 +132,13 @@ def run(args):
 
     variants = args.variants if args.variants else None
 
-    data = (
-        hex_to_binary(args.data)
-        if args.data else hex_to_binary(args.decode) if args.decode else None)
+    data = hex_to_binary(args.data) if args.data else hex_to_binary(args.decode) if args.decode else None
     decode = True if args.decode else False
 
-    print_summary(
-        odxdb,
-        ecu_variants=None if variants == "all" else variants,
-        data=data,
-        decode=decode,
-        service_names=args.service_names,
-        print_params=args.no_details,
-        allow_unknown_bit_lengths=args.relaxed_output,
-    )
+    print_summary(odxdb,
+                  ecu_variants=None if variants == "all" else variants,
+                  data=data,
+                  decode=decode,
+                  service_names=args.service_names,
+                  print_params=args.no_details,
+                  allow_unknown_bit_lengths=args.relaxed_output)

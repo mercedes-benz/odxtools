@@ -2,11 +2,10 @@
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional
+from typing import Optional, List
 
-from .odxlink import OdxDocFragment
 from .odxtypes import DataType
-
+from .odxlink import OdxDocFragment
 
 class Radix(Enum):
     HEX = "HEX"
@@ -55,22 +54,18 @@ class PhysicalType:
         if self.display_radix is not None:
             self.display_radix = Radix(self.display_radix)
 
+
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]):
         base_data_type = et_element.get("BASE-DATA-TYPE")
-        assert base_data_type in [
-            "A_INT32",
-            "A_UINT32",
-            "A_FLOAT32",
-            "A_FLOAT64",
-            "A_ASCIISTRING",
-            "A_UTF8STRING",
-            "A_UNICODE2STRING",
-            "A_BYTEFIELD",
-        ]
+        assert base_data_type in ["A_INT32", "A_UINT32", "A_FLOAT32", "A_FLOAT64",
+                                  "A_ASCIISTRING", "A_UTF8STRING",
+                                  "A_UNICODE2STRING", "A_BYTEFIELD"]
         display_radix = et_element.get("DISPLAY-RADIX")
         precision = et_element.findtext("PRECISION")
         if precision is not None:
             precision = int(precision)
 
-        return PhysicalType(base_data_type, display_radix=display_radix, precision=precision)
+        return PhysicalType(base_data_type,
+                            display_radix=display_radix,
+                            precision=precision)

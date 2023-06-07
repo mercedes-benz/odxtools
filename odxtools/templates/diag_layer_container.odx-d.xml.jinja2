@@ -36,35 +36,35 @@
 {%- if dlc.protocols %}
   <PROTOCOLS>
  {%- for dl in dlc.protocols %}
-   {{pv.printVariant(dl)|indent(3)}}
+   {{pv.printVariant(dl, "PROTOCOL")|indent(3)}}
  {%- endfor %}
   </PROTOCOLS>
 {%- endif %}
 {%- if dlc.functional_groups %}
   <FUNCTIONAL-GROUPS>
  {%- for dl in dlc.functional_groups %}
-  {{pv.printVariant(dl)|indent(3)}}
+  {{pv.printVariant(dl, "FUNCTIONAL-GROUP")|indent(3)}}
  {%- endfor %}
   </FUNCTIONAL-GROUPS>
 {%- endif %}
 {%- if dlc.ecu_shared_datas %}
   <ECU-SHARED-DATAS>
  {%- for dl in dlc.ecu_shared_datas %}
-  {{pv.printVariant(dl)|indent(3)}}
+  {{pv.printVariant(dl, "ECU-SHARED-DATA")|indent(3)}}
  {%- endfor %}
   </ECU-SHARED-DATAS>
 {%- endif %}
 {%- if dlc.base_variants %}
   <BASE-VARIANTS>
  {%- for dl in dlc.base_variants %}
-  {{pv.printVariant(dl)|indent(3)}}
+  {{pv.printVariant(dl, "BASE-VARIANT")|indent(3)}}
  {%- endfor %}
   </BASE-VARIANTS>
 {%- endif %}
 {%- if  dlc.ecu_variants %}
   <ECU-VARIANTS>
  {%- for dl in dlc.ecu_variants %}
-  {{pv.printVariant(dl)|indent(3)}}
+  {{pv.printVariant(dl, "ECU-VARIANT")|indent(3)}}
  {%- endfor %}
   </ECU-VARIANTS>
 {%- endif %}

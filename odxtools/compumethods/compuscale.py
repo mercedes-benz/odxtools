@@ -5,7 +5,6 @@ from typing import NamedTuple, Optional, Union
 from .compurationalcoeffs import CompuRationalCoeffs
 from .limit import Limit
 
-
 class CompuScale(NamedTuple):
     """A COMPU-SCALE represents one value range of a COMPU-METHOD.
 
@@ -28,7 +27,6 @@ class CompuScale(NamedTuple):
     E.g., lower_limit must always be defined unless the COMPU-METHOD is of CATEGORY LINEAR or RAT-FUNC.
     Either `compu_const` or `compu_rational_coeffs` must be defined but never both.
     """
-
     short_label: Optional[str] = None
     description: Optional[str] = None
     lower_limit: Optional[Limit] = None

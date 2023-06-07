@@ -2,11 +2,14 @@
 # Copyright (c) 2022 MBition GmbH
 from typing import Union
 
-
 class Message:
     """A CAN message with its interpretation."""
 
-    def __init__(self, *, coded_message: Union[bytes, bytearray], service, structure,
+    def __init__(self,
+                 *,
+                 coded_message: Union[bytes, bytearray],
+                 service,
+                 structure,
                  param_dict: dict):
         """
         Parameters
@@ -25,8 +28,8 @@ class Message:
         return self.param_dict[key]
 
     def __str__(self):
-        param_string = ", ".join(
-            map(lambda param: f"{param[0]}={repr(param[1])}", self.param_dict.items()))
+        param_string = ", ".join(map(lambda param: f"{param[0]}={repr(param[1])}",
+                                     self.param_dict.items()))
         return f"{self.structure.short_name}({param_string})"
 
     def __repr__(self):

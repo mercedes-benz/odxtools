@@ -3,7 +3,7 @@
 import unittest
 
 from odxtools.load_pdx_file import load_pdx_file
-from odxtools.odxlink import OdxDocFragment, OdxLinkRef
+from odxtools.odxlink import OdxLinkRef, OdxDocFragment
 
 odxdb = load_pdx_file("./examples/somersault.pdx")
 
@@ -11,12 +11,10 @@ odxdb = load_pdx_file("./examples/somersault.pdx")
 # resolving references
 container_doc_frags = odxdb.diag_layer_containers.somersault.odx_id.doc_fragments
 
-
 class TestDataObjectProperty(unittest.TestCase):
 
     def test_bit_length(self):
-        self.dop = odxdb.odxlinks.resolve(
-            OdxLinkRef("somersault.DOP.num_flips", container_doc_frags))
+        self.dop = odxdb.odxlinks.resolve(OdxLinkRef("somersault.DOP.num_flips", container_doc_frags))
         self.assertEqual(self.dop.bit_length, 8)
 
     def test_convert_physical_to_internal(self):
@@ -28,22 +26,20 @@ class TestDataObjectProperty(unittest.TestCase):
 class TestComposeUDS(unittest.TestCase):
 
     def test_encode_with_coded_const(self):
-        request = odxdb.odxlinks.resolve(
-            OdxLinkRef("somersault.RQ.tester_present", container_doc_frags))
-        self.assertEqual(bytes(request.encode()), 0x3E00.to_bytes(2, "big"))
+        request = odxdb.odxlinks.resolve(OdxLinkRef("somersault.RQ.tester_present", container_doc_frags))
+        self.assertEqual(bytes(request.encode()),
+                         0x3e00.to_bytes(2, "big"))
 
     def test_encode_with_texttable(self):
-        request = odxdb.odxlinks.resolve(
-            OdxLinkRef("somersault.RQ.set_operation_params", container_doc_frags))
-        self.assertEqual(
-            bytes(request.encode(**{"use_fire_ring": "true"})), 0xBD01.to_bytes(2, "big"))
-        self.assertEqual(bytes(request.encode(use_fire_ring="false")), 0xBD00.to_bytes(2, "big"))
+        request = odxdb.odxlinks.resolve(OdxLinkRef("somersault.RQ.set_operation_params", container_doc_frags))
+        self.assertEqual(bytes(request.encode(
+            **{"use_fire_ring": "true"})), 0xbd01.to_bytes(2, "big"))
+        self.assertEqual(bytes(request.encode(
+            use_fire_ring = "false")), 0xbd00.to_bytes(2, "big"))
 
     def test_encode_response_with_matching_request_param_and_structure(self):
-        request = odxdb.odxlinks.resolve(
-            OdxLinkRef("somersault.RQ.do_forward_flips", container_doc_frags))
-        response = odxdb.odxlinks.resolve(
-            OdxLinkRef("somersault.PR.happy_forward", container_doc_frags))
+        request = odxdb.odxlinks.resolve(OdxLinkRef("somersault.RQ.do_forward_flips", container_doc_frags))
+        response = odxdb.odxlinks.resolve(OdxLinkRef("somersault.PR.happy_forward", container_doc_frags))
 
         coded_request = request.encode(forward_soberness_check=0x12, num_flips=12)
         coded_response = response.encode(yeha_level=3, coded_request=coded_request)
@@ -92,5 +88,5 @@ class TestNavigation(unittest.TestCase):
         self.assertEqual(service.semantic, "SESSION")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

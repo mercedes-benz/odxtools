@@ -7,14 +7,6 @@ requires = [
 
 build-backend = "setuptools.build_meta"
 
-[tool.yapf]
-based_on_style = "yapf"
-column_limit = 100
-indent_width = 4
-split_before_dict_set_generator = 1
-split_before_first_argument = 0
-split_penalty_after_opening_bracket=1000
-
 [tool.pytest.ini_options]
 filterwarnings = [
     "error::odxtools.exceptions.DecodeError",

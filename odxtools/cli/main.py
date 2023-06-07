@@ -2,20 +2,21 @@
 # Copyright (c) 2021-2022 MBition GmbH
 import argparse
 import importlib
-from typing import Any, List
+from typing import List, Any
 
 from ..version import __version__ as odxtools_version
 from .dummy_sub_parser import DummyTool
 
 # import the tool modules which can be loaded. if a tool
 # can't be loaded, add a dummy one
-tool_modules: List[Any] = []
+tool_modules : List[Any] = []
 for tool_name in ["list", "browse", "snoop", "find"]:
     try:
-        tool_modules.append(importlib.import_module(f".{tool_name}", package="odxtools.cli"))
+        tool_modules.append(
+            importlib.import_module(f".{tool_name}", package="odxtools.cli"))
     except Exception as e:
-        tool_modules.append(DummyTool(tool_name, e))
-
+        tool_modules.append(
+            DummyTool(tool_name, e))
 
 def start_cli():
     argparser = argparse.ArgumentParser(
@@ -26,16 +27,19 @@ def start_cli():
             "  For printing all services use:",
             "   odxtools list ./path/to/database.pdx --services",
             "  For browsing the data base and encoding messages use:",
-            "   odxtools browse ./path/to/database.pdx",
+            "   odxtools browse ./path/to/database.pdx"
         ]),
         prog="odxtools",
-        formatter_class=argparse.RawTextHelpFormatter,
+        formatter_class=argparse.RawTextHelpFormatter)
+
+    argparser.add_argument("--version", required=False,
+                           action='store_true',
+                           help="Print the odxtools version")
+
+    subparsers = argparser.add_subparsers(
+        help='Select a subcommand',
+        dest="subparser_name"
     )
-
-    argparser.add_argument(
-        "--version", required=False, action="store_true", help="Print the odxtools version")
-
-    subparsers = argparser.add_subparsers(help="Select a subcommand", dest="subparser_name")
 
     for tool in tool_modules:
         tool.add_subparser(subparsers)

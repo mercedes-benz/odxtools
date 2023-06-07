@@ -5,10 +5,24 @@
 -#}
 
 {%- macro printParentRef(par) -%}
-<PARENT-REF ID-REF="{{par.layer.odx_id.local_id}}"
-            DOCREF="{{par.layer.short_name}}"
+{#-
+
+
+WARNING: duck typing: assume the parent to be a document reference if
+its not_inherited_diag_comms and not_inherited_dops are
+empty. TODO: provide the xsi:type in the parent ref
+
+-#}
+{%- if not par.not_inherited_diag_comms and not  not par.not_inherited_dops %}
+<PARENT-REF ID-REF="{{par.parent_ref.ref_id}}"
+            DOCREF="{{par.parent_diag_layer.short_name}}"
             DOCTYPE="CONTAINER"
-            xsi:type="{{par.layer.variant_type.value}}-REF">
+            xsi:type="FUNCTIONAL-GROUP-REF"/>
+{%- else %}
+<PARENT-REF ID-REF="{{par.parent_ref.ref_id}}"
+            DOCREF="{{par.parent_diag_layer.short_name}}"
+            DOCTYPE="CONTAINER"
+            xsi:type="BASE-VARIANT-REF">
 {%- if par.not_inherited_diag_comms %}
  <NOT-INHERITED-DIAG-COMMS>
 {%-  for nidc in par.not_inherited_diag_comms %}
@@ -28,5 +42,6 @@
  </NOT-INHERITED-DOPS>
 {%- endif %}
 </PARENT-REF>
+{%- endif %}
 {%- endmacro -%}
 

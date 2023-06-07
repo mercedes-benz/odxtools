@@ -1,46 +1,33 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from enum import Enum
-from typing import Any, Callable, Dict, Literal, Optional, Type, Union, overload
-
+from typing import Any, Optional, Callable, Dict, Literal, Type, Union, overload
 
 def bytefield_to_bytearray(bytefield: str) -> bytearray:
-    bytes_string = [bytefield[i:i + 2] for i in range(0, len(bytefield), 2)]
+    bytes_string = [bytefield[i:i+2] for i in range(0, len(bytefield), 2)]
     return bytearray(map(lambda x: int(x, 16), bytes_string))
-
 
 PythonType = Union[str, int, float, bytearray]
 LiteralPythonType = Type[Union[str, int, float, bytearray]]
 
+@overload
+def odxstr_to_bool(str_val: None) -> None: ...
 
 @overload
-def odxstr_to_bool(str_val: None) -> None:
-    ...
-
-
-@overload
-def odxstr_to_bool(str_val: str) -> bool:
-    ...
-
+def odxstr_to_bool(str_val: str) -> bool: ...
 
 def odxstr_to_bool(str_val: Optional[str]) -> Optional[bool]:
     if str_val is None:
         return None
 
     str_val = str_val.strip()
-    assert str_val in [
-        "0",
-        "1",
-        "false",
-        "true",
-    ], f"String '{str_val}' cannot be converted to a boolean"
+    assert str_val in ["0", "1", "false", "true"], \
+        f"String '{str_val}' cannot be converted to a boolean"
 
     return str_val in ["1", "true"]
 
-
 def bool_to_odxstr(bool_val: bool) -> str:
     return "true" if bool_val else "false"
-
 
 def parse_int(value: str) -> int:
     try:
@@ -52,7 +39,6 @@ def parse_int(value: str) -> int:
         assert v.is_integer()
         return int(v)
 
-
 _ODX_TYPE_PARSER: Dict[str, Callable[[str], PythonType]] = {
     "A_INT32": parse_int,
     "A_UINT32": parse_int,
@@ -62,7 +48,7 @@ _ODX_TYPE_PARSER: Dict[str, Callable[[str], PythonType]] = {
     "A_BYTEFIELD": bytefield_to_bytearray,
     # only in DATA-TYPE not in PHYSICAL-DATA-TYPE
     "A_ASCIISTRING": str,
-    "A_UTF8STRING": str,
+    "A_UTF8STRING": str
 }
 
 _ODX_TYPE_TO_PYTHON_TYPE: Dict[str, LiteralPythonType] = {
@@ -74,7 +60,7 @@ _ODX_TYPE_TO_PYTHON_TYPE: Dict[str, LiteralPythonType] = {
     "A_BYTEFIELD": bytearray,
     # only in DATA-TYPE not in PHYSICAL-DATA-TYPE
     "A_ASCIISTRING": str,
-    "A_UTF8STRING": str,
+    "A_UTF8STRING": str
 }
 
 
@@ -88,7 +74,6 @@ class DataType(Enum):
     * p. 38 (Table 1): ASAM types correspondence with XML Schema types
     * p. 96: Restrictions to the bit length given the BASE-DATA-TYPE.
     """
-
     A_INT32 = "A_INT32"
     A_UINT32 = "A_UINT32"
     A_FLOAT32 = "A_FLOAT32"

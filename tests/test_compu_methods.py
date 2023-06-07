@@ -6,29 +6,25 @@ import unittest
 from xml.etree import ElementTree
 
 import jinja2
-
 import odxtools
-from odxtools.compumethods import IntervalType, Limit, LinearCompuMethod, TabIntpCompuMethod
+
+from odxtools.compumethods import Limit, LinearCompuMethod, IntervalType, TabIntpCompuMethod
 from odxtools.compumethods.createanycompumethod import create_any_compu_method_from_et
 from odxtools.exceptions import DecodeError, EncodeError
-from odxtools.odxlink import OdxDocFragment
 from odxtools.odxtypes import DataType
+from odxtools.odxlink import OdxDocFragment
 
-doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
-
+doc_frags = [ OdxDocFragment("UnitTest", "WinneThePoh") ]
 
 class TestLinearCompuMethod(unittest.TestCase):
-
     def test_linear_compu_method_type_int_int(self):
-        compu_method = LinearCompuMethod(
-            offset=1,
-            factor=3,
-            denominator=1,
-            internal_type="A_INT32",
-            physical_type="A_INT32",
-            internal_lower_limit=None,
-            internal_upper_limit=None,
-        )
+        compu_method = LinearCompuMethod(offset=1,
+                                         factor=3,
+                                         denominator=1,
+                                         internal_type="A_INT32",
+                                         physical_type="A_INT32",
+                                         internal_lower_limit=None,
+                                         internal_upper_limit=None)
 
         self.assertEqual(compu_method.convert_internal_to_physical(4), 13)
         self.assertEqual(compu_method.convert_internal_to_physical(0), 1)
@@ -39,15 +35,13 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertEqual(compu_method.convert_physical_to_internal(-5), -2)
 
     def test_linear_compu_method_type_int_float(self):
-        compu_method = LinearCompuMethod(
-            offset=1,
-            factor=3,
-            denominator=1,
-            internal_type="A_INT32",
-            physical_type="A_FLOAT32",
-            internal_lower_limit=None,
-            internal_upper_limit=None,
-        )
+        compu_method = LinearCompuMethod(offset=1,
+                                         factor=3,
+                                         denominator=1,
+                                         internal_type="A_INT32",
+                                         physical_type="A_FLOAT32",
+                                         internal_lower_limit=None,
+                                         internal_upper_limit=None)
         self.assertTrue(compu_method.is_valid_internal_value(123))
         self.assertFalse(compu_method.is_valid_internal_value("123"))
         self.assertFalse(compu_method.is_valid_internal_value(1.2345))
@@ -57,15 +51,13 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertFalse(compu_method.is_valid_physical_value("123"))
 
     def test_linear_compu_method_type_float_int(self):
-        compu_method = LinearCompuMethod(
-            offset=1,
-            factor=3,
-            denominator=1,
-            internal_type="A_FLOAT32",
-            physical_type="A_INT32",
-            internal_lower_limit=None,
-            internal_upper_limit=None,
-        )
+        compu_method = LinearCompuMethod(offset=1,
+                                         factor=3,
+                                         denominator=1,
+                                         internal_type="A_FLOAT32",
+                                         physical_type="A_INT32",
+                                         internal_lower_limit=None,
+                                         internal_upper_limit=None)
         self.assertTrue(compu_method.is_valid_internal_value(1.2345))
         self.assertTrue(compu_method.is_valid_internal_value(123))
         self.assertFalse(compu_method.is_valid_internal_value("123"))
@@ -75,29 +67,25 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertFalse(compu_method.is_valid_physical_value(1.2345))
 
     def test_linear_compu_method_type_string(self):
-        compu_method = LinearCompuMethod(
-            offset=1,
-            factor=3,
-            denominator=1,
-            internal_type="A_ASCIISTRING",
-            physical_type="A_UNICODE2STRING",
-            internal_lower_limit=None,
-            internal_upper_limit=None,
-        )
+        compu_method = LinearCompuMethod(offset=1,
+                                         factor=3,
+                                         denominator=1,
+                                         internal_type="A_ASCIISTRING",
+                                         physical_type="A_UNICODE2STRING",
+                                         internal_lower_limit=None,
+                                         internal_upper_limit=None)
         self.assertTrue(compu_method.is_valid_internal_value("123"))
         self.assertFalse(compu_method.is_valid_internal_value(123))
         self.assertFalse(compu_method.is_valid_internal_value(1.2345))
 
     def test_linear_compu_method_limits(self):
-        compu_method = LinearCompuMethod(
-            offset=1,
-            factor=5,
-            denominator=1,
-            internal_type="A_INT32",
-            physical_type="A_INT32",
-            internal_lower_limit=Limit(2),
-            internal_upper_limit=Limit(15),
-        )
+        compu_method = LinearCompuMethod(offset=1,
+                                         factor=5,
+                                         denominator=1,
+                                         internal_type="A_INT32",
+                                         physical_type="A_INT32",
+                                         internal_lower_limit=Limit(2),
+                                         internal_upper_limit=Limit(15))
         self.assertFalse(compu_method.is_valid_internal_value(-3))
         self.assertFalse(compu_method.is_valid_internal_value(1))
         self.assertFalse(compu_method.is_valid_internal_value(16))
@@ -118,15 +106,14 @@ class TestLinearCompuMethod(unittest.TestCase):
 
     def test_linear_compu_method_physical_limits(self):
         # Define decoding function: f: (2, 15] -> [-74, -14], f(x) = -5*x + 1
-        compu_method = LinearCompuMethod(
-            offset=1,
-            factor=-5,
-            denominator=1,
-            internal_type="A_INT32",
-            physical_type="A_INT32",
-            internal_lower_limit=Limit(2, interval_type=IntervalType.OPEN),
-            internal_upper_limit=Limit(15),
-        )
+        compu_method = LinearCompuMethod(offset=1,
+                                         factor=-5,
+                                         denominator=1,
+                                         internal_type="A_INT32",
+                                         physical_type="A_INT32",
+                                         internal_lower_limit=Limit(2,
+                                                                    interval_type=IntervalType.OPEN),
+                                         internal_upper_limit=Limit(15))
 
         self.assertEqual(compu_method.physical_lower_limit,
                          Limit(-74, interval_type=IntervalType.CLOSED))
@@ -145,33 +132,33 @@ class TestLinearCompuMethod(unittest.TestCase):
 
 
 class TestTabIntpCompuMethod(unittest.TestCase):
-
     def setUp(self) -> None:
         """Prepares the jinja environment and the sample tab-intp compumethod"""
 
         def _get_jinja_environment():
             __module_filname = inspect.getsourcefile(odxtools)
             assert isinstance(__module_filname, str)
-            templates_dir = os.path.sep.join([os.path.dirname(__module_filname), "templates"])
+            templates_dir = os.path.sep.join([os.path.dirname(__module_filname),
+                                        "templates"])
 
-            jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
+            jinja_env = jinja2.Environment(
+                loader=jinja2.FileSystemLoader(templates_dir))
 
             # allows to put XML attributes on a separate line while it is
             # collapsed with the previous line in the rendering
-            jinja_env.filters["odxtools_collapse_xml_attribute"] = (lambda x: " " + x.strip()
-                                                                    if x.strip() else "")
+            jinja_env.filters["odxtools_collapse_xml_attribute"] = \
+                lambda x: " " + x.strip() if x.strip() else ""
 
-            jinja_env.globals["hasattr"] = hasattr
+            jinja_env.globals['hasattr'] = hasattr
             return jinja_env
 
         self.jinja_env = _get_jinja_environment()
 
-        self.compumethod = TabIntpCompuMethod(
-            internal_type=DataType.A_INT32,
-            physical_type=DataType.A_FLOAT32,
-            internal_points=[0, 10, 30],
-            physical_points=[-1, 1, 2],
-        )
+        self.compumethod = TabIntpCompuMethod(internal_type=DataType.A_INT32,
+                                              physical_type=DataType.A_FLOAT32,
+                                              internal_points=[0, 10, 30],
+                                              physical_points=[-1, 1, 2]
+                                              )
 
         self.compumethod_odx = f"""
         <COMPU-METHOD>
@@ -212,24 +199,32 @@ class TestTabIntpCompuMethod(unittest.TestCase):
             (10, 1),
             (20, 1.5),
             (25, 1.75),
-            (30, 2),
+            (30, 2)
         ]:
             self.assertTrue(method.is_valid_internal_value(internal))
             self.assertTrue(method.is_valid_physical_value(physical))
-            self.assertEqual(method.convert_internal_to_physical(internal), physical)
-            self.assertEqual(method.convert_physical_to_internal(physical), internal)
+            self.assertEqual(method.convert_internal_to_physical(internal),
+                             physical)
+            self.assertEqual(method.convert_physical_to_internal(physical),
+                             internal)
 
-        self.assertRaises(DecodeError, method.convert_internal_to_physical, -2)
-        self.assertRaises(DecodeError, method.convert_internal_to_physical, 31)
-        self.assertRaises(EncodeError, method.convert_physical_to_internal, -2)
-        self.assertRaises(EncodeError, method.convert_physical_to_internal, 2.1)
+        self.assertRaises(DecodeError,
+                          method.convert_internal_to_physical, -2)
+        self.assertRaises(DecodeError,
+                          method.convert_internal_to_physical, 31)
+        self.assertRaises(EncodeError,
+                          method.convert_physical_to_internal, -2)
+        self.assertRaises(EncodeError,
+                          method.convert_physical_to_internal, 2.1)
 
     def test_read_odx(self):
         expected = self.compumethod
 
         et_element = ElementTree.fromstring(self.compumethod_odx)
-        actual = create_any_compu_method_from_et(et_element, doc_frags, expected.internal_type,
-                                                 expected.physical_type)
+        actual = create_any_compu_method_from_et(et_element,
+                                                doc_frags,
+                                                expected.internal_type,
+                                                expected.physical_type)
         self.assertIsInstance(actual, TabIntpCompuMethod)
         self.assertEqual(expected.physical_type, actual.physical_type)
         self.assertEqual(expected.internal_type, actual.internal_type)
@@ -251,5 +246,5 @@ class TestTabIntpCompuMethod(unittest.TestCase):
         self.assertEqual(remove_spaces(out), remove_spaces(expected_odx))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()

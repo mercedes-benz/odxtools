@@ -8,7 +8,6 @@ from xml.etree import ElementTree
 from odxtools.odxlink import OdxDocFragment
 from odxtools.utils import is_short_name, is_short_name_path
 
-
 class MatchingParameter:
     """According to ISO 22901, a MatchingParameter contains a string value identifying
     the active ECU variant. Moreover, it references a DIAG-COMM via snref and one of its
@@ -18,7 +17,11 @@ class MatchingParameter:
     not transferred over the network.
     """
 
-    def __init__(self, *, expected_value: str, diag_comm_snref: str, out_param_if: str):
+    def __init__(self,
+                 *,
+                 expected_value: str,
+                 diag_comm_snref: str,
+                 out_param_if: str):
         # datatype according to ISO 22901-1 Figure 141
         self.expected_value: str = expected_value
 
@@ -30,7 +33,8 @@ class MatchingParameter:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "MatchingParameter":
+                doc_frags: List[OdxDocFragment]) \
+            -> "MatchingParameter":
 
         expected_value = et_element.findtext("EXPECTED-VALUE")
         assert expected_value is not None
@@ -49,11 +53,10 @@ class MatchingParameter:
             out_param_if = out_param_snpathref_el.get("SHORT-NAME-PATH")
         assert out_param_if is not None
 
-        return MatchingParameter(
-            expected_value=expected_value,
-            diag_comm_snref=diag_comm_snref,
-            out_param_if=out_param_if,
-        )
+        return MatchingParameter(expected_value=expected_value,
+                                 diag_comm_snref=diag_comm_snref,
+                                 out_param_if=out_param_if,
+                                 )
 
     def is_match(self, ident_value: str) -> bool:
         """
@@ -69,7 +72,8 @@ class EcuVariantPattern:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "EcuVariantPattern":
+                doc_frags: List[OdxDocFragment]) \
+            -> "EcuVariantPattern":
 
         mp_collection_el = et_element.find("MATCHING-PARAMETERS")
         assert mp_collection_el is not None
@@ -84,7 +88,8 @@ class EcuVariantPattern:
 
 
 def create_ecu_variant_patterns_from_et(et_element: Optional[ElementTree.Element],
-                                        doc_frags: List[OdxDocFragment]) -> List[EcuVariantPattern]:
+                                        doc_frags: List[OdxDocFragment]) \
+        -> List[EcuVariantPattern]:
 
     if et_element is None:
         return []

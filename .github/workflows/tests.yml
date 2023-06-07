@@ -1,7 +1,4 @@
-# SPDX-License-Identifier: MIT
-# Copyright (c) 2023 MBition GmbH
-
-name: odxtools CI pipeline
+name: Run Tests
 
 on:
   push:
@@ -11,59 +8,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
+  unittest-and-lint:
+    runs-on: ${{matrix.os}}
 
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-
-      - name: Setup up Linter
-        run: |
-          pip install toml yapf
-
-      - name: Lint code formatting
-        # make yapf fail if any file needs to be formatted
-        run: |
-          yapf -r --diff examples/ odxtools/ tests/
-
-  static-type-checking:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        # restrict the matrix to the oldest and the latest Python
-        # version being supported by odxtools
-        python-version: ["3.8", "3.11"]
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Python ${{matrix.python-version}}
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{matrix.python-version}}
-          cache: "pip"
-
-      - name: Install odxtools development and testing dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install -r test-requirements.txt
-
-      - name: Static type checking with mypy
-        run: |
-          python -m mypy --ignore-missing-imports odxtools examples tests
-
-  test:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        # restrict the matrix to the oldest and the latest Python
-        # version being supported by odxtools
+        # restrict matrix to the latest Python version and one older version
         python-version: ["3.8", "3.11"]
 
         # due to the slow windows runners, we refrain from testing every python
@@ -72,8 +23,6 @@ jobs:
           - os: windows-latest
             python-version: "3.8"
 
-    runs-on: ${{matrix.os}}
-
     steps:
       - uses: actions/checkout@v3
 
@@ -81,12 +30,16 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{matrix.python-version}}
-          cache: "pip"
 
-      # dependency are likely cached on ubuntu-latest
-      - name: Install odxtools development and testing dependencies
+      - name: Install odxtools dependencies
         run: |
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      # we need additional dependencies for testing and the type checker
+      # but we avoided to specify as hard dependencies within 'requirements.txt'
+      - name: Install test dependencies
+        run: |
           pip install -r test-requirements.txt
 
       - name: Create somersault.pdx
@@ -104,3 +57,7 @@ jobs:
         run: |
           coverage run --source=odxtools --omit=tests -m pytest
           coverage report
+
+      - name: Static type checking with mypy
+        run: |
+          python -m mypy --ignore-missing-imports odxtools examples tests

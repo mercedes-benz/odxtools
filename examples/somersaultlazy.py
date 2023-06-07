@@ -4,26 +4,24 @@
 # Copyright (c) 2022 MBition GmbH
 #
 # Implementation of the "lazy" somersault ECU
-import argparse
-import asyncio
-import logging
-import random
-import time
-from typing import List
-
+import odxtools
+from odxtools.odxtypes import bytefield_to_bytearray
+import odxtools.uds as uds
 import isotp
 import somersaultecu
+import asyncio
+import time
+import argparse
+import logging
+import random
+from typing import List
 
-import odxtools
-import odxtools.uds as uds
-from odxtools.odxtypes import bytefield_to_bytearray
-
-tester_logger = logging.getLogger("somersault_lazy_tester")
-ecu_logger = logging.getLogger("somersault_lazy_ecu")
+tester_logger = logging.getLogger('somersault_lazy_tester')
+ecu_logger = logging.getLogger('somersault_lazy_ecu')
 
 is_sterile = False
 can_channel = None
-somersault_lazy_diag_layer = somersaultecu.database.ecus.somersault_lazy  # type:ignore
+somersault_lazy_diag_layer = somersaultecu.database.ecus.somersault_lazy # type:ignore
 
 # the raw payload data of the telegrams received by the ECU and by the
 # tester when in sterile mode (unittest without a CAN channel)
@@ -31,7 +29,6 @@ sterile_rx_ecu: List[bytes] = []
 sterile_rx_ecu_event = None
 sterile_rx_tester: List[bytes] = []
 sterile_rx_tester_event = None
-
 
 def create_isotp_socket(channel, rxid, txid):
     if is_sterile:
@@ -51,13 +48,12 @@ def create_isotp_socket(channel, rxid, txid):
 
     # instruct the ISO-TP subsystem to pad the last CAN frame of a
     # telegram to 8 bytes of payload using 0xcc padding bytes
-    result_socket.set_opts(txpad=0xCC)
+    result_socket.set_opts(txpad=0xcc)
 
     isotp_addr = isotp.Address(rxid=rxid, txid=txid)
     result_socket.bind(channel, address=isotp_addr)
 
     return result_socket
-
 
 async def ecu_send(isotp_socket, payload):
     """
@@ -77,7 +73,6 @@ async def ecu_send(isotp_socket, payload):
 
         loop = asyncio.get_running_loop()
         await loop.sock_sendall(isotp_socket, payload)
-
 
 async def ecu_recv(isotp_socket):
     """
@@ -103,7 +98,6 @@ async def ecu_recv(isotp_socket):
         loop = asyncio.get_running_loop()
         return await loop.sock_recv(isotp_socket, 4095)
 
-
 async def tester_send(isotp_socket, payload):
     """
     Tester sends a message, either in "sterile" or in "live" mode.
@@ -121,7 +115,6 @@ async def tester_send(isotp_socket, payload):
 
         loop = asyncio.get_running_loop()
         await loop.sock_sendall(isotp_socket, payload)
-
 
 async def tester_recv(isotp_socket):
     """
@@ -147,20 +140,17 @@ async def tester_recv(isotp_socket):
         loop = asyncio.get_running_loop()
         return await loop.sock_recv(isotp_socket, 4095)
 
-
 class SomersaultLazyEcu:
-
     def __init__(self):
         self._diag_session_open = False
         self._data_receive_event = asyncio.Event()
         self.dizziness_level = 0
         self.max_dizziness_level = 10
 
-        self.isotp_socket = create_isotp_socket(
-            can_channel,
-            rxid=somersault_lazy_diag_layer.get_receive_id(),
-            txid=somersault_lazy_diag_layer.get_send_id(),
-        )
+        self.isotp_socket = \
+            create_isotp_socket(can_channel,
+                                rxid=somersault_lazy_diag_layer.get_receive_id(),
+                                txid=somersault_lazy_diag_layer.get_send_id())
 
         ##############
         # extract the tester present parameters from the ECU's
@@ -171,25 +161,22 @@ class SomersaultLazyEcu:
         ##############
 
         # the timeout on inactivity [s]
-        cps = [
-            x for x in somersault_lazy_diag_layer.communication_parameters
-            if x.id_ref == "ISO_14230_3.CP_TesterPresentTime"
-        ]
+        cps = [ x for x in somersault_lazy_diag_layer.communication_parameters
+                if x.id_ref == "ISO_14230_3.CP_TesterPresentTime" ]
 
         if len(cps):
             assert len(cps) == 1
             self._idle_timeout = int(cps[0].value) / 1e6
         else:
-            self._idle_timeout = 3.0  # default specified by the standard
+            self._idle_timeout = 3.0 # default specified by the standard
 
         # we send a response to tester present messages. make sure
         # that this is specified
-        cps = [
-            x for x in somersault_lazy_diag_layer.communication_parameters
-            if x.id_ref == "ISO_15765_3.CP_TesterPresentReqRsp"
-        ]
+        cps = [ x for x in somersault_lazy_diag_layer.communication_parameters
+                if x.id_ref == "ISO_15765_3.CP_TesterPresentReqRsp" ]
         assert len(cps) == 1
         assert cps[0].value == "Response expected" or cps[0].value == "1"
+
 
     async def _handle_requests_task(self):
         loop = asyncio.get_running_loop()
@@ -228,22 +215,19 @@ class SomersaultLazyEcu:
             # send a positive response if have an active diagnostic
             # session, and a negative one if we don't.
             if self._diag_session_open:
-                response_payload = service.positive_responses[0].encode(
-                    coded_request=message.coded_message)
+                response_payload = service.positive_responses[0].encode(coded_request = message.coded_message)
             else:
-                response_payload = service.negative_responses[0].encode(
-                    coded_request=message.coded_message)
+                response_payload = service.negative_responses[0].encode(coded_request = message.coded_message)
 
             await ecu_send(self.isotp_socket, response_payload)
             return
 
         if service.short_name == "session_start":
             if not self._diag_session_open:
-                response_payload = service.positive_responses[0].encode(
-                    coded_request=message.coded_message, can_do_backward_flips="false")
+                response_payload = service.positive_responses[0].encode(coded_request = message.coded_message,
+                                                                        can_do_backward_flips = "false")
             else:
-                response_payload = service.negative_responses[0].encode(
-                    coded_request=message.coded_message)
+                response_payload = service.negative_responses[0].encode(coded_request = message.coded_message)
 
             self._diag_session_open = True
             await ecu_send(self.isotp_socket, response_payload)
@@ -259,17 +243,16 @@ class SomersaultLazyEcu:
 
             # send a "service not supported in active session" UDS
             # response.
-            await ecu_send(self.isotp_socket, bytes([0x7F, rq_id, 0x7F]))
+            await ecu_send(self.isotp_socket,
+                                    bytes([0x7f, rq_id, 0x7f]))
             return
 
         # stop the diagnostic session
         if service.short_name == "session_stop":
             if self._diag_session_open:
-                response_payload = service.positive_responses[0].encode(
-                    coded_request=message.coded_message)
+                response_payload = service.positive_responses[0].encode(coded_request = message.coded_message)
             else:
-                response_payload = service.negative_responses[0].encode(
-                    coded_request=message.coded_message)
+                response_payload = service.negative_responses[0].encode(coded_request = message.coded_message)
 
             self._diag_session_open = False
             await ecu_send(self.isotp_socket, response_payload)
@@ -288,13 +271,13 @@ class SomersaultLazyEcu:
         num_flips = message.param_dict["num_flips"]
 
         if soberness_check != 0x12:
-            response = [x for x in service.negative_responses if x.short_name == "flips_not_done"
-                       ][0]
-            response_data = response.encode(
-                coded_request=message.coded_message,
-                reason=0,  # -> not sober
-                flips_successfully_done=0,
-            )
+            response = [
+                x for x in service.negative_responses
+                if x.short_name == "flips_not_done"
+            ][0]
+            response_data = response.encode(coded_request = message.coded_message,
+                                            reason =  0, # -> not sober
+                                            flips_successfully_done = 0)
             await ecu_send(self.isotp_socket, response_data)
             return
 
@@ -302,13 +285,12 @@ class SomersaultLazyEcu:
         if self.dizziness_level + num_flips > self.max_dizziness_level:
 
             response = [
-                x for x in service.positive_responses if x.short_name == "grudging_forward"
+                x for x in service.positive_responses
+                if x.short_name == "grudging_forward"
             ][0]
-            response_data = response.encode(
-                coded_request=message.coded_message,
-                reason=1,  # -> too dizzy
-                flips_successfully_done=self.max_dizziness_level - self.dizziness_level,
-            )
+            response_data = response.encode(coded_request = message.coded_message,
+                                            reason =  1, # -> too dizzy
+                                            flips_successfully_done = self.max_dizziness_level - self.dizziness_level)
             await ecu_send(self.isotp_socket, response_data)
             self.dizziness_level = self.max_dizziness_level
             return
@@ -318,20 +300,22 @@ class SomersaultLazyEcu:
         for i in range(0, num_flips):
             if random.randrange(0, 10000) < 100:
                 response = [
-                    x for x in service.negative_responses if x.short_name == "flips_not_done"
+                    x for x in service.negative_responses
+                    if x.short_name == "flips_not_done"
                 ]
-                response_data = response.encode(
-                    coded_request=message.coded_message,
-                    reason=2,  # -> stumbled
-                    flips_successfully_done=i,
-                )
+                response_data = response.encode(coded_request = message.coded_message,
+                                                reason =  2, # -> stumbled
+                                                flips_successfully_done = i)
                 await ecu_send(self.isotp_socket, response_data)
                 return
 
             self.dizziness_level += 1
 
-        response = [x for x in service.positive_responses if x.short_name == "grudging_forward"][0]
-        response_data = response.encode(coded_request=message.coded_message)
+        response = [
+            x for x in service.positive_responses
+            if x.short_name == "grudging_forward"
+        ][0]
+        response_data = response.encode(coded_request = message.coded_message)
         await ecu_send(self.isotp_socket, response_data)
 
     def close_diag_session(self):
@@ -350,6 +334,7 @@ class SomersaultLazyEcu:
 
         await asyncio.gather(cst, hrt)
 
+
     async def _auto_close_session_task(self):
         # task to close the diagnostic session if the tester has not
         # been seen for longer than the timeout specified by the ECU.
@@ -357,7 +342,8 @@ class SomersaultLazyEcu:
             # sleep until we either hit our timeout or we've received
             # some data from the tester
             try:
-                await asyncio.wait_for(self._data_receive_event.wait(), self._idle_timeout * 1.05)
+                await asyncio.wait_for(self._data_receive_event.wait(),
+                                       self._idle_timeout*1.05)
             except asyncio.exceptions.TimeoutError:
                 # we ran into the idle timeout. Close the diagnostic
                 # session if it is open. note that this also happens if
@@ -372,8 +358,7 @@ class SomersaultLazyEcu:
                 self._data_receive_event.clear()
                 continue
 
-
-async def tester_await_response(isotp_socket, raw_message, timeout=0.5):
+async def tester_await_response(isotp_socket, raw_message, timeout = 0.5):
     loop = asyncio.get_running_loop()
 
     # await the answer from the server (be aware that the maximum
@@ -384,7 +369,7 @@ async def tester_await_response(isotp_socket, raw_message, timeout=0.5):
 
     try:
         replies = somersault_lazy_diag_layer.decode_response(raw_response, raw_message)
-        assert len(replies) == 1  # replies must always be uniquely decodable
+        assert len(replies) == 1 # replies must always be uniquely decodable
 
         if replies[0].structure.response_type == "POS-RESPONSE":
             rtype = "positive"
@@ -410,13 +395,11 @@ async def tester_await_response(isotp_socket, raw_message, timeout=0.5):
                     rq_name = f"0x{rq_sid:x}"
                 error_name = uds.NegativeResponseCodes(error_id).name
 
-                tester_logger.debug(
-                    f"Received negative response by service {rq_name}: {error_name}")
+                tester_logger.debug(f"Received negative response by service {rq_name}: {error_name}")
                 return raw_response
 
         tester_logger.debug(f"Could not decode response: {e}")
         return raw_response
-
 
 async def tester_main():
     loop = asyncio.get_running_loop()
@@ -426,16 +409,14 @@ async def tester_main():
     # note that ODX specifies the CAN IDs from the ECU's point of
     # view, i.e., from the tester's (our) perspective, they are
     # reversed.
-    isotp_socket = create_isotp_socket(
-        can_channel,
-        txid=somersault_lazy_diag_layer.get_receive_id(),
-        rxid=somersault_lazy_diag_layer.get_send_id(),
-    )
+    isotp_socket = create_isotp_socket(can_channel,
+                                       txid=somersault_lazy_diag_layer.get_receive_id(),
+                                       rxid=somersault_lazy_diag_layer.get_send_id())
 
     # try to to do a single forward flip without having an active session (ought to fail)
     tester_logger.debug(f"attempting a sessionless forward flip")
-    raw_message = somersault_lazy_diag_layer.services.do_forward_flips(
-        forward_soberness_check=0x12, num_flips=1)
+    raw_message = somersault_lazy_diag_layer.services.do_forward_flips(forward_soberness_check=0x12,
+                                                                       num_flips=1)
     await tester_send(isotp_socket, raw_message)
     await tester_await_response(isotp_socket, raw_message)
 
@@ -447,34 +428,33 @@ async def tester_main():
 
     # attempt to do a single forward flip
     tester_logger.debug(f"attempting a forward flip")
-    raw_message = somersault_lazy_diag_layer.services.do_forward_flips(
-        forward_soberness_check=0x12, num_flips=1)
+    raw_message = somersault_lazy_diag_layer.services.do_forward_flips(forward_soberness_check=0x12,
+                                                                       num_flips=1)
     await tester_send(isotp_socket, raw_message)
     await tester_await_response(isotp_socket, raw_message)
 
     # attempt to do a single forward flip but fail the soberness check
     tester_logger.debug(f"attempting a forward flip")
-    raw_message = somersault_lazy_diag_layer.services.do_forward_flips(
-        forward_soberness_check=0x23, num_flips=1)
+    raw_message = somersault_lazy_diag_layer.services.do_forward_flips(forward_soberness_check=0x23,
+                                                                       num_flips=1)
     await tester_send(isotp_socket, raw_message)
     await tester_await_response(isotp_socket, raw_message)
 
     # attempt to do three forward flips
     tester_logger.debug(f"attempting three forward flip")
-    raw_message = somersault_lazy_diag_layer.services.do_forward_flips(
-        forward_soberness_check=0x12, num_flips=3)
+    raw_message = somersault_lazy_diag_layer.services.do_forward_flips(forward_soberness_check=0x12,
+                                                                       num_flips=3)
     await tester_send(isotp_socket, raw_message)
     await tester_await_response(isotp_socket, raw_message)
 
     # attempt to do 50 forward flips (should always fail because of dizzyness)
     tester_logger.debug(f"attempting 50 forward flip")
-    raw_message = somersault_lazy_diag_layer.services.do_forward_flips(
-        forward_soberness_check=0x12, num_flips=50)
+    raw_message = somersault_lazy_diag_layer.services.do_forward_flips(forward_soberness_check=0x12,
+                                                                       num_flips=50)
     await tester_send(isotp_socket, raw_message)
     await tester_await_response(isotp_socket, raw_message)
 
     tester_logger.debug(f"Finished")
-
 
 async def main(args):
     global is_sterile
@@ -530,26 +510,14 @@ async def main(args):
             # avoid complaints from asyncio...
             server_task.cancel()
 
+parser = argparse.ArgumentParser(description="Provides an implementation for the 'lazy' variant of the somersault ECU")
 
-parser = argparse.ArgumentParser(
-    description="Provides an implementation for the 'lazy' variant of the somersault ECU")
+parser.add_argument("--channel", "-c", required=False, help="CAN interface name to be used (required for tester or server modes)")
+parser.add_argument("--mode", "-m", default="unittest", required=False, help="Specify whether to start the ECU side ('server'), the tester side ('tester') or both ('unittest')")
 
-parser.add_argument(
-    "--channel",
-    "-c",
-    required=False,
-    help="CAN interface name to be used (required for tester or server modes)",
-)
-parser.add_argument(
-    "--mode",
-    "-m",
-    default="unittest",
-    required=False,
-    help="Specify whether to start the ECU side ('server'), the tester side ('tester') or both ('unittest')",
-)
-
-args = parser.parse_args()  # deals with the help message handling
+args = parser.parse_args() # deals with the help message handling
 
 can_channel = args.channel
 
 asyncio.run(main(args))
+
