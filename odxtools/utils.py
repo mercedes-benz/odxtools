@@ -5,7 +5,9 @@ from typing import Any, Optional
 from xml.etree import ElementTree
 
 
-def create_description_from_et(et_element: Optional[ElementTree.Element],) -> Optional[str]:
+def create_description_from_et(
+    et_element: Optional[ElementTree.Element],
+) -> Optional[str]:
     """Read a description tag.
 
     The description is located underneath the DESC tag of an an ODX
@@ -15,8 +17,10 @@ def create_description_from_et(et_element: Optional[ElementTree.Element],) -> Op
         return None
 
     if et_element.tag != "DESC":
-        raise TypeError(f"Attempted to extract an ODX description from a "
-                        f"'{et_element.tag}' XML node. (Must be a 'DESC' node!)")
+        raise TypeError(
+            f"Attempted to extract an ODX description from a "
+            f"'{et_element.tag}' XML node. (Must be a 'DESC' node!)"
+        )
 
     # Extract the contents of the tag as a XHTML string.
     raw_string = et_element.text or ""

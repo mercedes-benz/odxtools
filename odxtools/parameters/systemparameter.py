@@ -2,27 +2,33 @@
 # Copyright (c) 2022 MBition GmbH
 from .parameterwithdop import ParameterWithDOP
 
-
 class SystemParameter(ParameterWithDOP):
-
-    def __init__(self, *, sysparam, **kwargs):
+    def __init__(self,
+                 *,
+                 sysparam,
+                 **kwargs):
         super().__init__(parameter_type="SYSTEM", **kwargs)
         self.sysparam = sysparam
 
     def is_required(self):
-        raise NotImplementedError("SystemParameter.is_required is not implemented yet.")
+        raise NotImplementedError(
+            "SystemParameter.is_required is not implemented yet.")
 
     def is_optional(self):
-        raise NotImplementedError("SystemParameter.is_optional is not implemented yet.")
+        raise NotImplementedError(
+            "SystemParameter.is_optional is not implemented yet.")
 
     def get_coded_value(self):
-        raise NotImplementedError("Encoding a SystemParameter is not implemented yet.")
+        raise NotImplementedError(
+            "Encoding a SystemParameter is not implemented yet.")
 
     def get_coded_value_as_bytes(self):
-        raise NotImplementedError("Encoding a SystemParameter is not implemented yet.")
+        raise NotImplementedError(
+            "Encoding a SystemParameter is not implemented yet.")
 
     def decode_from_pdu(self, coded_message, default_byte_position=None):
-        raise NotImplementedError("Decoding a SystemParameter is not implemented yet.")
+        raise NotImplementedError(
+            "Decoding a SystemParameter is not implemented yet.")
 
     def __repr__(self):
         repr_str = f"SystemParameter(short_name='{self.short_name}', sysparam='{self.sysparam}'"

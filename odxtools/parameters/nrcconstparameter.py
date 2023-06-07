@@ -1,15 +1,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-import warnings
 from typing import List
-
+import warnings
 from ..decodestate import DecodeState
-from ..diagcodedtypes import DiagCodedType
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, EncodeError
+from ..diagcodedtypes import DiagCodedType
 from ..odxtypes import DataType
-from .parameterbase import Parameter
+from ..exceptions import DecodeError, EncodeError
 
+from .parameterbase import Parameter
 
 class NrcConstParameter(Parameter):
     """A param of type NRC-CONST defines a set of values to be matched.
@@ -21,12 +20,17 @@ class NrcConstParameter(Parameter):
     See ASAM MCD-2 D (ODX), p. 77-79.
     """
 
-    def __init__(self, *, diag_coded_type: DiagCodedType, coded_values: List[int], **kwargs):
+    def __init__(self,
+                 *,
+                 diag_coded_type: DiagCodedType,
+                 coded_values: List[int],
+                 **kwargs):
         super().__init__(parameter_type="NRC-CONST", **kwargs)
 
         self._diag_coded_type = diag_coded_type
         # TODO: Does it have to be an integer or is that just common practice?
-        assert all(isinstance(coded_value, int) for coded_value in coded_values)
+        assert all(isinstance(coded_value, int)
+                   for coded_value in coded_values)
         self.coded_values = coded_values
 
     @property
@@ -63,18 +67,21 @@ class NrcConstParameter(Parameter):
             coded_value = self.coded_values[0]
 
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return self.diag_coded_type.convert_internal_to_bytes(
-            coded_value, encode_state, bit_position=bit_position_int)
+        return self.diag_coded_type.convert_internal_to_bytes(coded_value,
+                                                              encode_state,
+                                                              bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState):
         if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
             # Update byte position
-            decode_state = decode_state._replace(next_byte_position=self.byte_position)
+            decode_state = decode_state._replace(
+                next_byte_position=self.byte_position)
 
         # Extract coded values
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        coded_value, next_byte_position = self.diag_coded_type.convert_bytes_to_internal(
-            decode_state, bit_position=bit_position_int)
+        coded_value, next_byte_position = \
+            self.diag_coded_type.convert_bytes_to_internal(decode_state,
+                                                           bit_position=bit_position_int)
 
         # Check if the coded value in the message is correct.
         if coded_value not in self.coded_values:
@@ -82,9 +89,8 @@ class NrcConstParameter(Parameter):
                 f"Coded constant parameter does not match! "
                 f"The parameter {self.short_name} expected a coded value in {self.coded_values} but got {coded_value} "
                 f"at byte position {decode_state.next_byte_position} "
-                f"in coded message {decode_state.coded_message.hex()}.",
-                DecodeError,
-            )
+                f"in coded message {decode_state.coded_message.hex()}."
+            , DecodeError)
 
         return coded_value, next_byte_position
 
@@ -96,8 +102,7 @@ class NrcConstParameter(Parameter):
         return d
 
     def __repr__(self):
-        repr_str = (
-            f"CodedConstParameter(short_name='{self.short_name}', coded_values={self.coded_values}")
+        repr_str = f"CodedConstParameter(short_name='{self.short_name}', coded_values={self.coded_values}"
         if self.long_name is not None:
             repr_str += f", long_name='{self.long_name}'"
         if self.byte_position is not None:

@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from ..encodestate import EncodeState
-from .parameterwithdop import ParameterWithDOP
 
+from .parameterwithdop import ParameterWithDOP
 
 class LengthKeyParameter(ParameterWithDOP):
     """Length Keys specify the bit (!) length of another parameter.
@@ -14,7 +14,10 @@ class LengthKeyParameter(ParameterWithDOP):
     and its DOP must be a simple DOP with PHYSICAL-TYPE/BASE-DATA-TYPE="A_UINT32".
     """
 
-    def __init__(self, *, odx_id, **kwargs):
+    def __init__(self,
+                 *,
+                 odx_id,
+                 **kwargs):
         super().__init__(parameter_type="LENGTH-KEY", **kwargs)
         self.odx_id = odx_id
 

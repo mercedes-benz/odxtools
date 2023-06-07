@@ -1,24 +1,23 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
+import zipfile
+import os
+import odxtools
+import jinja2
+import time
 import datetime
 import inspect
-import os
-import time
-import zipfile
-from typing import Any, Dict, List, Optional, Tuple
 
-import jinja2
+from typing import Any, Dict, List, Tuple, Optional
 
-import odxtools
-
+from .exceptions import OdxError
+from .comparam_subset import BaseComparam, Comparam, ComplexComparam
 from .odxtypes import bool_to_odxstr
 
 odxdatabase = None
 
-
 def jinja2_odxraise_helper(msg: str) -> None:
     raise Exception(msg)
-
 
 def make_xml_attrib(attrib_name: str, attrib_val: Optional[Any]) -> str:
     if attrib_val is None:
@@ -26,25 +25,20 @@ def make_xml_attrib(attrib_name: str, attrib_val: Optional[Any]) -> str:
 
     return f' {attrib_name}="{attrib_val}"'
 
-
 def make_bool_xml_attrib(attrib_name: str, attrib_val: Optional[bool]) -> str:
     if attrib_val is None:
         return ""
 
     return make_xml_attrib(attrib_name, bool_to_odxstr(attrib_val))
 
-
 __module_filename = inspect.getsourcefile(odxtools)
 assert isinstance(__module_filename, str)
-__templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templates"])
-
-
-def write_pdx_file(
-    output_file_name: str,
-    database: odxtools.Database,
-    auxiliary_content_specifiers: List[Tuple[str, bytes]] = [],
-    templates_dir: str = __templates_dir,
-) -> bool:
+__templates_dir = os.path.sep.join([os.path.dirname(__module_filename),
+                                    "templates"])
+def write_pdx_file(output_file_name : str,
+                   database : odxtools.Database,
+                   auxiliary_content_specifiers : List[Tuple[str, bytes]] = [],
+                   templates_dir : str = __templates_dir) -> bool:
     """
     Write an internalized database to a PDX file.
     """
@@ -53,7 +47,9 @@ def write_pdx_file(
     odxdatabase = database
 
     file_index = list()
-    with zipfile.ZipFile(output_file_name, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+    with zipfile.ZipFile(output_file_name,
+                         mode="w",
+                         compression=zipfile.ZIP_DEFLATED) as zf:
 
         # write all files in the templates directory
         for root, dir, files in os.walk(templates_dir):
@@ -88,8 +84,9 @@ def write_pdx_file(
                 template_file_stats = os.stat(in_file_name)
                 template_file_cdate = datetime.datetime.fromtimestamp(template_file_stats.st_ctime)
                 template_file_creation_date = template_file_cdate.strftime("%Y-%m-%dT%H:%M:%S")
-                file_index.append(
-                    (template_file_name, template_file_creation_date, template_file_mime_type))
+                file_index.append( (template_file_name,
+                                    template_file_creation_date,
+                                    template_file_mime_type) )
                 with zf.open(template_file_name, "w") as out_file:
                     out_file.write(open(in_file_name, "rb").read())
 
@@ -106,14 +103,14 @@ def write_pdx_file(
 
             zf_name = os.path.basename(output_file_name)
             with zf.open(zf_name, "w") as out_file:
-                file_index.append((zf_name, creation_date, mime_type))
+                file_index.append( (zf_name, creation_date, mime_type) )
                 out_file.write(data)  # type: ignore
 
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
-        jinja_env.globals["hasattr"] = hasattr
-        jinja_env.globals["odxraise"] = jinja2_odxraise_helper
-        jinja_env.globals["make_xml_attrib"] = make_xml_attrib
-        jinja_env.globals["make_bool_xml_attrib"] = make_bool_xml_attrib
+        jinja_env.globals['hasattr'] = hasattr
+        jinja_env.globals['odxraise'] = jinja2_odxraise_helper
+        jinja_env.globals['make_xml_attrib'] = make_xml_attrib
+        jinja_env.globals['make_bool_xml_attrib'] = make_bool_xml_attrib
 
         vars: Dict[str, Any] = {}
         vars["odxtools_version"] = odxtools.__version__
@@ -128,7 +125,9 @@ def write_pdx_file(
 
             vars["comparam_subset"] = comparam_subset
 
-            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
+            file_index.append( (zf_file_name,
+                                zf_file_cdate,
+                                zf_mime_type) )
 
             zf.writestr(zf_file_name, comparam_subset_tpl.render(**vars))
         del vars["comparam_subset"]
@@ -143,7 +142,7 @@ def write_pdx_file(
             creation_date = file_cdate.strftime("%Y-%m-%dT%H:%M:%S")
             mime_type = "application/x-asam.odx.odx-d"
 
-            file_index.append((file_name, creation_date, mime_type))
+            file_index.append( (file_name, creation_date, mime_type) )
             zf.writestr(file_name, dlc_tpl.render(**vars))
         del vars["dlc"]
 

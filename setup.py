@@ -23,7 +23,7 @@ requires_list = [
     "deprecation",
 ]
 
-version_match = re.search(r"^ *__version__ *= *['\"](.*)['\"] *$",
+version_match = re.search(r"^__version__ = '(.*)'$",
                           (cwd / "odxtools" / "version.py").read_text(),
                           re.MULTILINE)
 if version_match is None:

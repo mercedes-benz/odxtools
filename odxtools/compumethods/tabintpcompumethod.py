@@ -2,12 +2,12 @@
 # Copyright (c) 2022 MBition GmbH
 from typing import List, Tuple, Union
 
-from ..exceptions import DecodeError, EncodeError
+from ..exceptions import EncodeError, DecodeError
 from ..globals import logger
 from ..odxtypes import DataType
+
 from .compumethodbase import CompuMethod
 from .limit import IntervalType, Limit
-
 
 class TabIntpCompuMethod(CompuMethod):
     """
@@ -65,22 +65,23 @@ class TabIntpCompuMethod(CompuMethod):
 
     """
 
-    def __init__(
-        self,
-        *,
-        internal_type: Union[DataType, str],
-        physical_type: Union[DataType, str],
-        internal_points: List[Union[float, int]],
-        physical_points: List[Union[float, int]],
-    ):
-        super().__init__(
-            internal_type=internal_type, physical_type=physical_type, category="TAB-INTP")
+    def __init__(self,
+                 *,
+                 internal_type: Union[DataType, str],
+                 physical_type: Union[DataType, str],
+                 internal_points: List[Union[float, int]],
+                 physical_points: List[Union[float, int]]):
+        super().__init__(internal_type=internal_type,
+                         physical_type=physical_type,
+                         category="TAB-INTP")
 
         self.internal_points = internal_points
         self.physical_points = physical_points
 
-        self._physical_lower_limit = Limit(min(physical_points), IntervalType.CLOSED)
-        self._physical_upper_limit = Limit(max(physical_points), IntervalType.CLOSED)
+        self._physical_lower_limit = Limit(
+            min(physical_points), IntervalType.CLOSED)
+        self._physical_upper_limit = Limit(
+            max(physical_points), IntervalType.CLOSED)
 
         logger.debug("Created compu method of type tab interpolated !")
         self._assert_validity()
@@ -96,24 +97,19 @@ class TabIntpCompuMethod(CompuMethod):
     def _assert_validity(self) -> None:
         assert len(self.internal_points) == len(self.physical_points)
 
-        assert self.internal_type in [
-            DataType.A_INT32,
-            DataType.A_UINT32,
-            DataType.A_FLOAT32,
-            DataType.A_FLOAT64,
-        ], ("Internal data type of tab-intp compumethod must be one of"
-            " [DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32, DataType.A_FLOAT64]")
-        assert self.physical_type in [
-            DataType.A_INT32,
-            DataType.A_UINT32,
-            DataType.A_FLOAT32,
-            DataType.A_FLOAT64,
-        ], ("Physical data type of tab-intp compumethod must be one of"
-            " [DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32, DataType.A_FLOAT64]")
+        assert self.internal_type in [DataType.A_INT32, DataType.A_UINT32,
+                                      DataType.A_FLOAT32, DataType.A_FLOAT64], \
+            ("Internal data type of tab-intp compumethod must be one of"
+             " [DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32, DataType.A_FLOAT64]")
+        assert self.physical_type in [DataType.A_INT32, DataType.A_UINT32,
+                                      DataType.A_FLOAT32, DataType.A_FLOAT64], \
+            ("Physical data type of tab-intp compumethod must be one of"
+             " [DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32, DataType.A_FLOAT64]")
 
-    def _piecewise_linear_interpolate(self, x: Union[int, float],
-                                      points: List[Tuple[Union[int, float],
-                                                         Union[int, float]]]) -> Union[float, None]:
+    def _piecewise_linear_interpolate(self,
+                                      x: Union[int, float],
+                                      points: List[Tuple[Union[int, float], Union[int, float]]]) \
+            -> Union[float, None]:
         for ((x0, y0), (x1, y1)) in zip(points[:-1], points[1:]):
             if x0 <= x and x <= x1:
                 return y0 + (x - x0) * (y1 - y0) / (x1 - x0)
@@ -121,8 +117,10 @@ class TabIntpCompuMethod(CompuMethod):
         return None
 
     def convert_physical_to_internal(self, physical_value: Union[int, float]) -> Union[int, float]:
-        reference_points = list(zip(self.physical_points, self.internal_points))
-        result = self._piecewise_linear_interpolate(physical_value, reference_points)
+        reference_points = list(zip(
+            self.physical_points, self.internal_points))
+        result = self._piecewise_linear_interpolate(
+            physical_value, reference_points)
 
         if result is None:
             raise EncodeError(f"Internal value {physical_value} must be inside the range"
@@ -132,8 +130,10 @@ class TabIntpCompuMethod(CompuMethod):
         return res
 
     def convert_internal_to_physical(self, internal_value: Union[int, float]) -> Union[int, float]:
-        reference_points = list(zip(self.internal_points, self.physical_points))
-        result = self._piecewise_linear_interpolate(internal_value, reference_points)
+        reference_points = list(zip(
+            self.internal_points, self.physical_points))
+        result = self._piecewise_linear_interpolate(
+            internal_value, reference_points)
 
         if result is None:
             raise DecodeError(f"Internal value {internal_value} must be inside the range"
@@ -143,9 +143,7 @@ class TabIntpCompuMethod(CompuMethod):
         return res
 
     def is_valid_physical_value(self, physical_value: Union[int, float]) -> bool:
-        return min(self.physical_points) <= physical_value and physical_value <= max(
-            self.physical_points)
+        return min(self.physical_points) <= physical_value and physical_value <= max(self.physical_points)
 
     def is_valid_internal_value(self, internal_value: Union[int, float]) -> bool:
-        return min(self.internal_points) <= internal_value and internal_value <= max(
-            self.internal_points)
+        return min(self.internal_points) <= internal_value and internal_value <= max(self.internal_points)
