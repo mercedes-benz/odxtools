@@ -2,13 +2,16 @@
 # Copyright (c) 2022 MBition GmbH
 import abc
 from dataclasses import dataclass, field
-from typing import Any, Dict, Iterable, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
 
 from .dataobjectproperty import DopBase
 from .globals import logger
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .utils import create_description_from_et
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 
 class TableBase(abc.ABC):
@@ -35,9 +38,13 @@ class TableBase(abc.ABC):
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         for sdg in self.sdgs:
-            sdg._resolve_references(odxlinks)
+            sdg._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(diag_layer)
 
 
 @dataclass
@@ -97,14 +104,18 @@ class TableRow:
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         if self.structure_ref is not None:
             self._structure = odxlinks.resolve(self.structure_ref)
         if self.dop_ref is not None:
             self._dop = odxlinks.resolve(self.dop_ref)
 
         for sdg in self.sdgs:
-            sdg._resolve_references(odxlinks)
+            sdg._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(diag_layer)
 
     @property
     def structure(self) -> Optional[DopBase]:
@@ -148,7 +159,7 @@ class Table(TableBase):
         )
         self._local_table_rows = table_rows
         self._ref_table_rows: List[TableRow] = []
-        self._table_row_refs = table_row_refs or []
+        self._table_row_refs = table_row_refs
         self.key_dop_ref = key_dop_ref
         self._key_dop = None
         self.description = description
@@ -210,20 +221,26 @@ class Table(TableBase):
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
-        super()._resolve_references(odxlinks)
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        super()._resolve_odxlinks(odxlinks)
 
         if self.key_dop_ref is not None:
             self._key_dop = odxlinks.resolve(self.key_dop_ref)
 
         for table_row in self._local_table_rows:
-            table_row._resolve_references(odxlinks)
+            table_row._resolve_odxlinks(odxlinks)
 
         self._ref_table_rows = []
         for ref in self._table_row_refs:
             tr = odxlinks.resolve(ref)
             assert isinstance(tr, TableRow)
             self._ref_table_rows.append(tr)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        super()._resolve_snrefs(diag_layer)
+
+        for table_row in self._local_table_rows:
+            table_row._resolve_snrefs(diag_layer)
 
     def __repr__(self) -> str:
         return (f"Table('{self.short_name}', " + ", ".join(

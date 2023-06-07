@@ -196,7 +196,8 @@ def ecu_variant_1(
     )
     result = DiagLayer(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
-    result.finalize_init(odxlinks)
+    result._resolve_odxlinks(odxlinks)
+    result._finalize_init(odxlinks)
     return result
 
 
@@ -231,7 +232,8 @@ def ecu_variant_2(
     )
     result = DiagLayer(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
-    result.finalize_init(odxlinks)
+    result._resolve_odxlinks(odxlinks)
+    result._finalize_init(odxlinks)
     return result
 
 
@@ -267,7 +269,8 @@ def ecu_variant_3(
     )
     result = DiagLayer(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
-    result.finalize_init(odxlinks)
+    result._resolve_odxlinks(odxlinks)
+    result._finalize_init(odxlinks)
     return result
 
 

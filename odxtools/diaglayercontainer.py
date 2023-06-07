@@ -132,13 +132,13 @@ class DiagLayerContainer:
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         if self.admin_data is not None:
-            self.admin_data._resolve_references(odxlinks)
+            self.admin_data._resolve_odxlinks(odxlinks)
 
         if self.company_datas is not None:
             for cd in self.company_datas:
-                cd._resolve_references(odxlinks)
+                cd._resolve_odxlinks(odxlinks)
 
         for dl in chain(
                 self.ecu_shared_datas,
@@ -147,10 +147,20 @@ class DiagLayerContainer:
                 self.base_variants,
                 self.ecu_variants,
         ):
-            dl._resolve_references(odxlinks)
+            dl._resolve_odxlinks(odxlinks)
 
         for sdg in self.sdgs:
-            sdg._resolve_references(odxlinks)
+            sdg._resolve_odxlinks(odxlinks)
+
+    def _finalize_init(self, odxlinks: OdxLinkDatabase) -> None:
+        for dl in chain(
+                self.ecu_shared_datas,
+                self.protocols,
+                self.functional_groups,
+                self.base_variants,
+                self.ecu_variants,
+        ):
+            dl._finalize_init(odxlinks)
 
     @property
     def diag_layers(self):

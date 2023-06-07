@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
 from .utils import create_description_from_et
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -35,7 +38,10 @@ class AdditionalAudience:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        pass
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
 
 
@@ -111,10 +117,16 @@ class Audience:
             is_aftermarket_raw=is_aftermarket_raw,
         )
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._enabled_audiences = [
             odxlinks.resolve(ref, AdditionalAudience) for ref in self.enabled_audience_refs
         ]
         self._disabled_audiences = [
             odxlinks.resolve(ref, AdditionalAudience) for ref in self.disabled_audience_refs
         ]
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass

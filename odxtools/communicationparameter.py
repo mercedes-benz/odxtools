@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 import warnings
-from typing import Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .comparam_subset import (BaseComparam, Comparam, ComplexComparam, ComplexValue,
                               create_complex_value_from_et)
@@ -9,6 +9,9 @@ from .diaglayertype import DiagLayerType
 from .exceptions import OdxWarning
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .utils import create_description_from_et
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 
 class CommunicationParameterRef:
@@ -29,7 +32,8 @@ class CommunicationParameterRef:
         self.description = description
         self.protocol_snref = protocol_snref
         self.prot_stack_snref = prot_stack_snref
-        self.comparam: Optional[BaseComparam] = None
+
+        self._comparam: BaseComparam
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment],
@@ -67,6 +71,15 @@ class CommunicationParameterRef:
             prot_stack_snref=prot_stack_snref,
         )
 
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        self._comparam = odxlinks.resolve(self.id_ref)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
+
     def __repr__(self) -> str:
         val = self.value
         if isinstance(val, str):
@@ -76,14 +89,9 @@ class CommunicationParameterRef:
     def __str__(self) -> str:
         return self.__repr__()
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        return {}
-
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
-        # Temporary lenient until tests are updated
-        self.comparam = odxlinks.resolve_lenient(self.id_ref)
-        if not self.comparam:
-            warnings.warn(f"Could not resolve COMPARAM '{self.id_ref}'", OdxWarning)
+    @property
+    def comparam(self) -> BaseComparam:
+        return self._comparam
 
     def get_value(self) -> Optional[str]:
         """Retrieve the value of a simple communication parameter

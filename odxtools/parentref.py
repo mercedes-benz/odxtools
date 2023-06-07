@@ -71,8 +71,11 @@ class ParentRef:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._layer = odxlinks.resolve(self.layer_ref)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
 
     def get_inherited_services(self) -> List[Union[DiagService, SingleEcuJob]]:
         if self.layer is None:

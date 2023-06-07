@@ -145,17 +145,20 @@ class EndOfPduField(DopBase):
 
         return value, next_byte_position
 
-    def _resolve_references(  # type: ignore[override]
-            self, parent_dl: "DiagLayer", odxlinks: OdxLinkDatabase) -> None:
-        """Recursively resolve any references (odxlinks or sn-refs)"""
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        """Recursively resolve any odxlinks references"""
         if self.structure_ref is not None:
             self._structure = odxlinks.resolve(self.structure_ref)
-        elif self.structure_snref is not None:
-            self._structure = parent_dl.data_object_properties[self.structure_snref]
 
         if self.env_data_desc_ref is not None:
             self._env_data_desc = odxlinks.resolve(self.env_data_desc_ref)
-        elif self.env_data_desc_snref is not None:
+
+    def _resolve_snrefs(self, parent_dl: "DiagLayer") -> None:
+        """Recursively resolve any short-name references"""
+        if self.structure_snref is not None:
+            self._structure = parent_dl.data_object_properties[self.structure_snref]
+
+        if self.env_data_desc_snref is not None:
             self._env_data_desc = parent_dl.data_object_properties[self.env_data_desc_snref]
 
     def __repr__(self) -> str:

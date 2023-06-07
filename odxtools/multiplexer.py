@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from collections import OrderedDict
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState
@@ -14,6 +14,9 @@ from .odxtypes import odxstr_to_bool
 from .specialdata import create_sdgs_from_et
 from .structures import BasicStructure
 from .utils import create_description_from_et
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -47,8 +50,14 @@ class MultiplexerCase:
             upper_limit=upper_limit,
         )
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._structure = odxlinks.resolve(self.structure_ref)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
 
     def __repr__(self) -> str:
         return (f"MultiplexerCase('{self.short_name}', " + ", ".join([
@@ -83,9 +92,15 @@ class MultiplexerDefaultCase:
             structure_ref=structure_ref,
         )
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         if self.structure_ref is not None:
             self._structure = odxlinks.resolve(self.structure_ref)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
 
     def __repr__(self) -> str:
         return (f"MultiplexerDefaultCase('{self.short_name}', " + ", ".join([
@@ -120,13 +135,19 @@ class MultiplexerSwitchKey:
             dop_ref=dop_ref,
         )
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         dop = odxlinks.resolve(self.dop_ref)
         if isinstance(dop, DataObjectProperty):
             self._dop = dop
         else:
             logger.warning(
                 f"DATA-OBJECT-PROP-REF '{self.dop_ref}' could not be resolved in SWITCH-KEY.")
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
 
     def __repr__(self) -> str:
         return (f"MultiplexerSwitchKey(" + ", ".join([
@@ -287,15 +308,25 @@ class Multiplexer(DopBase):
 
         return odxlinks
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
-        super()._resolve_references(odxlinks)
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        super()._resolve_odxlinks(odxlinks)
 
-        self.switch_key._resolve_references(odxlinks)
+        self.switch_key._resolve_odxlinks(odxlinks)
         if self.default_case is not None:
-            self.default_case._resolve_references(odxlinks)
+            self.default_case._resolve_odxlinks(odxlinks)
 
         for case in self.cases:
-            case._resolve_references(odxlinks)
+            case._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer"):
+        super()._resolve_snrefs(diag_layer)
+
+        self.switch_key._resolve_snrefs(diag_layer)
+        if self.default_case is not None:
+            self.default_case._resolve_snrefs(diag_layer)
+
+        for case in self.cases:
+            case._resolve_snrefs(diag_layer)
 
     def __repr__(self) -> str:
         return (f"Multiplexer('{self.short_name}', " + ", ".join([

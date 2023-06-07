@@ -1568,6 +1568,7 @@ somersault_single_ecu_jobs = {
                     syntax="JAR",
                     entrypoint="com.supervisor.jobs.CompulsoryProgram",
                     revision="1.23.4",
+                    library_refs=[],
                 ),
             ],
             input_params=[],
@@ -2069,7 +2070,7 @@ database._diag_layer_containers = NamedItemList(short_name_as_id, [somersault_dl
 database._comparam_subsets = NamedItemList(short_name_as_id, comparam_subsets)
 
 # Create ID mapping and resolve references
-database.finalize_init()
+database.refresh()
 
 # delete all variables except "database"
 for name in dir():

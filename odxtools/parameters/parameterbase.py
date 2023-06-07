@@ -2,13 +2,13 @@
 # Copyright (c) 2022 MBition GmbH
 import abc
 import warnings
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import OdxWarning
 from ..globals import logger
-from ..odxlink import OdxLinkDatabase
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..specialdata import SpecialDataGroup
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ class Parameter(abc.ABC):
         self.description: Optional[str] = description
         self.sdgs = sdgs
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
 
         for sdg in self.sdgs:
@@ -46,9 +46,13 @@ class Parameter(abc.ABC):
 
         return result
 
-    def _resolve_references(self, parent_dl: "DiagLayer", odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         for sdg in self.sdgs:
-            sdg._resolve_references(odxlinks)
+            sdg._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, parent_dl: "DiagLayer") -> None:
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(parent_dl)
 
     @property
     def bit_length(self) -> Optional[int]:

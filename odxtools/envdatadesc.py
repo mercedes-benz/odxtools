@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from .dataobjectproperty import DopBase
 from .decodestate import DecodeState
@@ -9,10 +9,13 @@ from .encodestate import EncodeState
 from .envdata import EnvironmentData
 from .exceptions import DecodeError, EncodeError
 from .globals import logger
-from .odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
 from .specialdata import create_sdgs_from_et
 from .utils import create_description_from_et
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 
 class EnvironmentDataDescription(DopBase):
@@ -89,6 +92,22 @@ class EnvironmentDataDescription(DopBase):
             odxlinks.update(ed._build_odxlinks())
 
         return odxlinks
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        # ODX 2.0 specifies environment data objects here, ODX 2.2
+        # uses references
+        if self.env_data_refs:
+            self.env_datas = [odxlinks.resolve(x) for x in self.env_data_refs]
+        else:
+            for ed in self.env_datas:
+                ed._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        # ODX 2.0 specifies environment data objects here, ODX 2.2
+        # uses references
+        if self.env_data_refs:
+            for ed in self.env_datas:
+                ed._resolve_snrefs(diag_layer)
 
     def __repr__(self) -> str:
         return (f"EnvironmentDataDescription('{self.short_name}', " + ", ".join([

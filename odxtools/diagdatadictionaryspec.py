@@ -152,29 +152,24 @@ class DiagDataDictionarySpec:
 
         return odxlinks
 
-    def _resolve_references(self, parent_dl: "DiagLayer", odxlinks: OdxLinkDatabase):
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
 
-        for obj in self.data_object_props:
-            obj._resolve_references(odxlinks)
-        for obj in self.dtc_dops:
-            obj._resolve_references(odxlinks)
-        for obj in self.end_of_pdu_fields:
-            obj._resolve_references(parent_dl, odxlinks)
-        for obj in self.env_data_descs:
-            obj._resolve_references(odxlinks)
-        for obj in self.env_datas:
-            obj._resolve_references(parent_dl, odxlinks)
-        for obj in self.muxs:
-            obj._resolve_references(odxlinks)
-        for obj in self.sdgs:
-            obj._resolve_references(odxlinks)
-        for obj in self.structures:
-            obj._resolve_references(parent_dl, odxlinks)
-        for obj in self.tables:
-            obj._resolve_references(odxlinks)
+        for obj in chain(self.data_object_props, self.dtc_dops, self.end_of_pdu_fields,
+                         self.env_data_descs, self.env_datas, self.muxs, self.sdgs, self.structures,
+                         self.tables):
+            obj._resolve_odxlinks(odxlinks)
 
         if self.unit_spec:
-            self.unit_spec._resolve_references(odxlinks)
+            self.unit_spec._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, parent_dl: "DiagLayer") -> None:
+        for obj in chain(self.data_object_props, self.dtc_dops, self.end_of_pdu_fields,
+                         self.env_data_descs, self.env_datas, self.muxs, self.sdgs, self.structures,
+                         self.tables):
+            obj._resolve_snrefs(parent_dl)
+
+        if self.unit_spec:
+            self.unit_spec._resolve_snrefs(parent_dl)
 
     @property
     def all_data_object_properties(self):

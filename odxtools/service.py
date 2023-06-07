@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
-from typing import Any, Dict, Iterable, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union, cast
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -16,6 +16,9 @@ from .state import State
 from .statetransition import StateTransition
 from .structures import Request, Response
 from .utils import create_description_from_et, short_name_as_id
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 
 class DiagService:
@@ -227,7 +230,7 @@ class DiagService:
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._request = odxlinks.resolve(self.request_ref)
         self._positive_responses = NamedItemList(short_name_as_id, [
             odxlinks.resolve(pr_id) for pr_id in self.pos_res_refs
@@ -244,11 +247,25 @@ class DiagService:
         self._state_transitions = NamedItemList(short_name_as_id, [
             odxlinks.resolve(stt_id) for stt_id in self.state_transition_refs
         ])
+
+        if self.admin_data:
+            self.admin_data._resolve_odxlinks(odxlinks)
+
         if self.audience:
-            self.audience._resolve_references(odxlinks)
+            self.audience._resolve_odxlinks(odxlinks)
 
         for sdg in self.sdgs:
-            sdg._resolve_references(odxlinks)
+            sdg._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        if self.admin_data:
+            self.admin_data._resolve_snrefs(diag_layer)
+
+        if self.audience:
+            self.audience._resolve_snrefs(diag_layer)
+
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(diag_layer)
 
     def decode_message(self, message: Union[bytes, bytearray]) -> Message:
 

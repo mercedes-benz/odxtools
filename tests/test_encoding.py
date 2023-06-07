@@ -158,7 +158,7 @@ class TestEncodeRequest(unittest.TestCase):
             byte_size=None,
         )
 
-        param1._resolve_references(None, odxlinks)  # type: ignore
+        param1._resolve_odxlinks(odxlinks)
 
         # Missing mandatory parameter.
         with self.assertRaises(TypeError) as cm:

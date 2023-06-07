@@ -183,20 +183,6 @@ class DiagLayer:
 
         return NamedItemList(short_name_as_id, list(result_dict.values()))
 
-    def finalize_init(self, odxlinks: Optional[OdxLinkDatabase] = None):
-        """Resolves all references.
-
-        This method should be called whenever the diag layer (or a referenced object) was changed.
-        Particularly, this method assumes that all inherited diag layer are correctly initialized,
-        i.e., have resolved their references.
-        """
-
-        if odxlinks is None:
-            odxlinks = OdxLinkDatabase()
-
-        odxlinks.update(self._build_odxlinks())
-        self._resolve_references(odxlinks)
-
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
         result = self.diag_layer_raw._build_odxlinks()
@@ -207,10 +193,26 @@ class DiagLayer:
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         """Recursively resolve all references."""
 
-        self.diag_layer_raw._resolve_references(self, odxlinks)
+        self.diag_layer_raw._resolve_odxlinks(odxlinks)
+
+    def _finalize_init(self, odxlinks: OdxLinkDatabase) -> None:
+        """This method deals with everything inheritence related and
+        -- after the final set of objects covered by the diagnostic
+        layer is determined -- resolves any short name references in
+        the diagnostic layer.
+
+        TODO: In some corner cases, the short name resolution is not
+        correct: E.g. Given three layers A, B, and C, where B and C
+        derive from A and A defines the diagnostic communication
+        SA. If now B overrides SA and there are short name references
+        to SA in A, the object to which this reference is resolved is
+        undefined. An easy fix for this problem is to copy all
+        inherited objects in derived layers, but that would lead to
+        excessive memory consumption for large databases...
+        """
 
         # make sure that the layer which we inherit from are of lower
         # priority than us.
@@ -227,6 +229,8 @@ class DiagLayer:
 
         self._communication_parameters = NamedItemList[CommunicationParameterRef](
             short_name_as_id, self._compute_available_commmunication_parameters())
+
+        self.diag_layer_raw._resolve_snrefs(self)
 
     def __gather_local_services(
             self, odxlinks: OdxLinkDatabase) -> List[Union[DiagService, SingleEcuJob]]:

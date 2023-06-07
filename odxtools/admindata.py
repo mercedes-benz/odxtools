@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .companydata import CompanyData, TeamMember
@@ -9,6 +9,9 @@ from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .utils import create_description_from_et
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -51,7 +54,7 @@ class CompanyDocInfo:
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase):
         self._company_data = odxlinks.resolve(self.company_data_ref, CompanyData)
 
         self._team_member: Optional[TeamMember] = None
@@ -59,7 +62,11 @@ class CompanyDocInfo:
             self._team_member = odxlinks.resolve(self.team_member_ref, TeamMember)
 
         for sdg in self.sdgs:
-            sdg._resolve_references(odxlinks)
+            sdg._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer"):
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(diag_layer)
 
 
 @dataclass
@@ -73,6 +80,15 @@ class Modification:
         reason = et_element.findtext("REASON")
 
         return Modification(change=change, reason=reason)
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase):
+        pass
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer"):
+        pass
 
 
 @dataclass
@@ -98,8 +114,14 @@ class CompanyRevisionInfo:
         return CompanyRevisionInfo(
             company_data_ref=company_data_ref, revision_label=revision_label, state=state)
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase):
         self._company_data = odxlinks.resolve(self.company_data_ref, CompanyData)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
 
 
 @dataclass
@@ -151,13 +173,26 @@ class DocRevision:
             modifications=modlist,
         )
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase):
         self._team_member: Optional[TeamMember] = None
         if self.team_member_ref is not None:
             self._team_member = odxlinks.resolve(self.team_member_ref, TeamMember)
 
         for cri in self.company_revision_infos:
-            cri._resolve_references(odxlinks)
+            cri._resolve_odxlinks(odxlinks)
+
+        for mod in self.modifications:
+            mod._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        for cri in self.company_revision_infos:
+            cri._resolve_snrefs(diag_layer)
+
+        for mod in self.modifications:
+            mod._resolve_snrefs(diag_layer)
 
 
 @dataclass
@@ -196,9 +231,16 @@ class AdminData:
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         for cdi in self.company_doc_infos:
-            cdi._resolve_references(odxlinks)
+            cdi._resolve_odxlinks(odxlinks)
 
         for dr in self.doc_revisions:
-            dr._resolve_references(odxlinks)
+            dr._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        for cdi in self.company_doc_infos:
+            cdi._resolve_snrefs(diag_layer)
+
+        for dr in self.doc_revisions:
+            dr._resolve_snrefs(diag_layer)

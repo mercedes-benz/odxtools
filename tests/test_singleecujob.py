@@ -317,6 +317,7 @@ class TestSingleEcuJob(unittest.TestCase):
             prog_codes=[
                 ProgCode(
                     code_file="abc.jar",
+                    library_refs=[],
                     encryption=None,
                     entrypoint=None,
                     syntax="abc",
@@ -339,7 +340,7 @@ class TestSingleEcuJob(unittest.TestCase):
         self.assertEqual(sej.neg_output_params, NamedItemList(short_name_as_id))
         self.assertEqual(sej.prog_codes[0].library_refs, [])
 
-    def test_resolve_references(self):
+    def test_resolve_odxlinks(self):
         diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("ID.bv", doc_frags),
@@ -377,7 +378,8 @@ class TestSingleEcuJob(unittest.TestCase):
             self.context.negOutputDOP.odx_id: self.context.negOutputDOP,
         })
 
-        dl.finalize_init(odxlinks=odxlinks)
+        dl._resolve_odxlinks(odxlinks)
+        dl._finalize_init(odxlinks)
 
         self.assertEqual(self.context.extensiveTask,
                          self.singleecujob_object.functional_classes.extensiveTask)
