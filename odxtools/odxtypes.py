@@ -34,6 +34,8 @@ def parse_int(value: str) -> int:
         return int(value)
     except ValueError:
         v = float(value)
+        if not v.is_integer():
+            raise Exception(f'Value "{v}" is not valid integer')
         assert v.is_integer()
         return int(v)
 
