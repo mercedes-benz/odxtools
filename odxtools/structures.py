@@ -313,12 +313,12 @@ class BasicStructure(DopBase):
         for p in self.parameters:
             p._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, parent_dl: "DiagLayer") -> None:
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         """Recursively resolve any references (odxlinks or sn-refs)"""
-        super()._resolve_snrefs(parent_dl)
+        super()._resolve_snrefs(diag_layer)
 
         for p in self.parameters:
-            p._resolve_snrefs(parent_dl)
+            p._resolve_snrefs(diag_layer)
 
     def __message_format_lines(self, allow_unknown_lengths: bool = False) -> List[str]:
         # sort parameters

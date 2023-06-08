@@ -162,14 +162,14 @@ class DiagDataDictionarySpec:
         if self.unit_spec:
             self.unit_spec._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, parent_dl: "DiagLayer") -> None:
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         for obj in chain(self.data_object_props, self.dtc_dops, self.end_of_pdu_fields,
                          self.env_data_descs, self.env_datas, self.muxs, self.sdgs, self.structures,
                          self.tables):
-            obj._resolve_snrefs(parent_dl)
+            obj._resolve_snrefs(diag_layer)
 
         if self.unit_spec:
-            self.unit_spec._resolve_snrefs(parent_dl)
+            self.unit_spec._resolve_snrefs(diag_layer)
 
     @property
     def all_data_object_properties(self):

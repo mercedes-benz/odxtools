@@ -39,13 +39,14 @@ class TableKeyParameter(Parameter):
         if self.table_row_ref:
             self._table_row = odxlinks.resolve(self.table_row_ref)
 
-    def _resolve_snrefs(self, parent_dl: "DiagLayer") -> None:
-        super()._resolve_snrefs(parent_dl)
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        super()._resolve_snrefs(diag_layer)
 
         if self.table_snref:
-            self._table = parent_dl.local_diag_data_dictionary_spec.tables[self.table_snref]
+            self._table = diag_layer.local_diag_data_dictionary_spec.tables[self.table_snref]
         if self.table_row_snref:
-            self._table_row = parent_dl.local_diag_data_dictionary_spec.tables[self.table_row_snref]
+            self._table_row = diag_layer.local_diag_data_dictionary_spec.tables[
+                self.table_row_snref]
 
     @property
     def table(self) -> "Table":

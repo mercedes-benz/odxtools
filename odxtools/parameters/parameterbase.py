@@ -50,9 +50,9 @@ class Parameter(abc.ABC):
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, parent_dl: "DiagLayer") -> None:
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         for sdg in self.sdgs:
-            sdg._resolve_snrefs(parent_dl)
+            sdg._resolve_snrefs(diag_layer)
 
     @property
     def bit_length(self) -> Optional[int]:

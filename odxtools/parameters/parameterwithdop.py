@@ -42,11 +42,11 @@ class ParameterWithDOP(Parameter):
             # TODO: Non-lenient
             self._dop = odxlinks.resolve_lenient(self.dop_ref)
 
-    def _resolve_snrefs(self, parent_dl: "DiagLayer") -> None:
-        super()._resolve_snrefs(parent_dl)
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        super()._resolve_snrefs(diag_layer)
 
         if self.dop_snref:
-            self._dop = parent_dl.data_object_properties[self.dop_snref]
+            self._dop = diag_layer.data_object_properties[self.dop_snref]
 
     @property
     def dop(self) -> Optional[DopBase]:
