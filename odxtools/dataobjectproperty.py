@@ -83,30 +83,18 @@ class DataObjectProperty(DopBase):
     def __init__(
         self,
         *,
-        odx_id: OdxLinkId,
-        short_name: str,
         diag_coded_type: DiagCodedType,
         physical_type: PhysicalType,
         compu_method: CompuMethod,
         unit_ref: Optional[OdxLinkRef],
-        long_name: Optional[str],
-        description: Optional[str],
-        is_visible_raw: Optional[bool],
-        sdgs: List[SpecialDataGroup],
+        **kwargs,
     ):
-        super().__init__(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
-            is_visible_raw=is_visible_raw,
-            sdgs=sdgs,
-        )
+        super().__init__(**kwargs)
+
         self.diag_coded_type = diag_coded_type
         self.physical_type = physical_type
         self.compu_method = compu_method
         self.unit_ref = unit_ref
-        self._unit = None
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "DataObjectProperty":
@@ -184,8 +172,9 @@ class DataObjectProperty(DopBase):
         """Resolves the reference to the unit"""
         super()._resolve_odxlinks(odxlinks)
 
+        self._unit: Optional[Unit] = None
         if self.unit_ref:
-            self._unit = odxlinks.resolve(self.unit_ref)
+            self._unit = odxlinks.resolve(self.unit_ref, Unit)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
@@ -326,31 +315,11 @@ class DtcDop(DataObjectProperty):
     def __init__(
         self,
         *,
-        odx_id: Optional[OdxLinkId],
-        short_name: str,
-        diag_coded_type: DiagCodedType,
-        physical_type: PhysicalType,
-        compu_method: CompuMethod,
-        unit_ref: Optional[OdxLinkRef],
         dtcs_raw: List[Union[DiagnosticTroubleCode, OdxLinkRef]],
-        is_visible_raw: bool,
         linked_dtc_dop_refs: List[OdxLinkRef],
-        long_name: Optional[str],
-        description: Optional[str],
-        sdgs: List[SpecialDataGroup],
+        **kwargs,
     ):
-        super().__init__(
-            odx_id=odx_id,  # type: ignore[arg-type]
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
-            diag_coded_type=diag_coded_type,
-            physical_type=physical_type,
-            compu_method=compu_method,
-            unit_ref=unit_ref,
-            is_visible_raw=is_visible_raw,
-            sdgs=sdgs,
-        )
+        super().__init__(**kwargs)
         self.dtcs_raw = dtcs_raw
         self.linked_dtc_dop_refs = linked_dtc_dop_refs
 
@@ -409,7 +378,6 @@ class DtcDop(DataObjectProperty):
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
-        odxlinks[self.odx_id] = self
 
         for dtc_proxy in self.dtcs_raw:
             if isinstance(dtc_proxy, DiagnosticTroubleCode):
