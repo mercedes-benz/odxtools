@@ -63,6 +63,9 @@ class NamedItemList(Generic[T]):
     def sort(self, key=None, reverse=False):
         return self._list.sort(key=key, reverse=reverse)
 
+    def __contains__(self, x) -> bool:
+        return x in self._list
+
     def __len__(self):
         return len(self._list)
 
