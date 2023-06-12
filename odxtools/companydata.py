@@ -23,16 +23,16 @@ class XDoc:
     position: Optional[str]
 
     @staticmethod
-    def from_et(xdoc) -> "XDoc":
-        short_name = xdoc.findtext("SHORT-NAME")
-        long_name = xdoc.findtext("LONG-NAME")
-        description = create_description_from_et(xdoc.find("DESC"))
-        number = xdoc.findtext("NUMBER")
-        state = xdoc.findtext("STATE")
-        date = xdoc.findtext("DATE")
-        publisher = xdoc.findtext("PUBLISHER")
-        url = xdoc.findtext("URL")
-        position = xdoc.findtext("POSITION")
+    def from_et(et_element) -> "XDoc":
+        short_name = et_element.findtext("SHORT-NAME")
+        long_name = et_element.findtext("LONG-NAME")
+        description = create_description_from_et(et_element.find("DESC"))
+        number = et_element.findtext("NUMBER")
+        state = et_element.findtext("STATE")
+        date = et_element.findtext("DATE")
+        publisher = et_element.findtext("PUBLISHER")
+        url = et_element.findtext("URL")
+        position = et_element.findtext("POSITION")
 
         return XDoc(
             short_name=short_name,
