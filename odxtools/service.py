@@ -55,6 +55,7 @@ class DiagService:
         self.long_name: Optional[str] = long_name
         self.description: Optional[str] = description
         self.semantic: Optional[str] = semantic
+        self.admin_data: Optional[AdminData] = admin_data
         self.audience: Optional[Audience] = audience
         self.functional_class_refs: List[OdxLinkRef] = list(functional_class_refs)
         self._functional_classes: Union[List[FunctionalClass], NamedItemList[FunctionalClass]] = []

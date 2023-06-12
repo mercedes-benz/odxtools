@@ -88,6 +88,10 @@ class Database:
         # Create wrapper objects
         self._diag_layers = NamedItemList(
             short_name_as_id, chain(*[dlc.diag_layers for dlc in self.diag_layer_containers]))
+
+        self._protocols = NamedItemList(
+            short_name_as_id, chain(*[dlc.protocols for dlc in self.diag_layer_containers]))
+
         self._ecus = NamedItemList(short_name_as_id,
                                    chain(*[dlc.ecu_variants for dlc in self.diag_layer_containers]))
 
@@ -120,13 +124,20 @@ class Database:
         return self._odxlinks
 
     @property
+    def protocols(self) -> NamedItemList[DiagLayer]:
+        """
+        All protocols defined by this database
+        """
+        return self._protocols
+
+    @property
     def ecus(self) -> NamedItemList[DiagLayer]:
-        """ECU-variants defined in the data base"""
+        """ECU-variants defined in the database"""
         return self._ecus
 
     @property
     def diag_layers(self) -> NamedItemList[DiagLayer]:
-        """all diagnostic layers defined in the data base"""
+        """All diagnostic layers defined in the database"""
         return self._diag_layers
 
     @property
@@ -140,15 +151,3 @@ class Database:
     @property
     def comparam_subsets(self):
         return self._comparam_subsets
-
-    @property
-    def protocols(self) -> NamedItemList[DiagLayer]:
-        """
-        Return a list of all protocols defined by this database
-        """
-        result_dict = dict()
-        for dl in self.diag_layers:
-            if dl.variant_type == DiagLayerType.PROTOCOL:
-                result_dict[dl.short_name] = dl
-
-        return NamedItemList(short_name_as_id, list(result_dict.values()))

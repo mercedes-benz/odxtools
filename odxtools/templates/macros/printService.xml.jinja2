@@ -25,7 +25,7 @@
  </DESC>
 {%- endif %}
  {%- if service.admin_data %}
- {{- pad.printAdminData(service.admin_data)|indent(2, first=True) }}
+ {{- pad.printAdminData(service.admin_data)|indent(1, first=True) }}
  {%- endif %}
  {{- psd.printSpecialDataGroups(service.sdgs)|indent(1, first=True) }}
 {%- if service.functional_class_refs %}
