@@ -2,11 +2,14 @@
 # Copyright (c) 2022 MBition GmbH
 import warnings
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .utils import create_description_from_et, short_name_as_id
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -37,6 +40,12 @@ class SpecialDataGroupCaption:
 
         return result
 
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        pass
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
+
 
 @dataclass
 class SpecialData:
@@ -47,7 +56,10 @@ class SpecialData:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        pass
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
 
     @staticmethod
@@ -110,14 +122,25 @@ class SpecialDataGroup:
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         if self.sdg_caption_ref is not None:
-            caption = odxlinks.resolve(self.sdg_caption_ref)
-            assert isinstance(caption, SpecialDataGroupCaption)
-            self.sdg_caption = caption
+            self.sdg_caption = odxlinks.resolve(self.sdg_caption_ref, SpecialDataGroupCaption)
+        elif self.sdg_caption is not None:
+            # resolve the ODXLINK references of the caption, but only
+            # if the caption was specified by value, not by reference
+            self.sdg_caption._resolve_odxlinks(odxlinks)
 
         for val in self.values:
-            val._resolve_references(odxlinks)
+            val._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        # resolve the SNREFs of the caption, but only if the caption
+        # was specified by value, not by reference
+        if self.sdg_caption is not None and self.sdg_caption_ref is None:
+            self.sdg_caption._resolve_snrefs(diag_layer)
+
+        for val in self.values:
+            val._resolve_snrefs(diag_layer)
 
 
 def create_sdgs_from_et(et_element: Optional[ElementTree.Element],

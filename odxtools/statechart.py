@@ -1,11 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .state import State
 from .statetransition import StateTransition
 from .utils import create_description_from_et
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -73,12 +76,9 @@ class StateChart:
 
         return odxlinks
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         for st in self.states:
-            st._resolve_references(odxlinks)
-
-        for strans in self.state_transitions:
-            strans._resolve_references(self.states, odxlinks)
+            st._resolve_odxlinks(odxlinks)
 
         # For now, we assume that the start state short name ref
         # points to a state local to the state chart. TODO: The XML
@@ -91,3 +91,14 @@ class StateChart:
             if st.short_name == self.start_state_snref:
                 self._start_state = st
                 break
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        for st in self.states:
+            st._resolve_snrefs(diag_layer)
+
+        for strans in self.state_transitions:
+            # note that the signature of the state transition's
+            # _resolve_snrefs() method is non-standard as the
+            # namespace of these SNREFs is the state chart, not the
+            # whole diag layer...
+            strans._resolve_snrefs(diag_layer, states=self.states)

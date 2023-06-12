@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
 
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .utils import create_description_from_et, short_name_as_id
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 UnitGroupCategory = Literal["COUNTRY", "EQUIV-UNITS"]
 
@@ -67,8 +70,8 @@ class PhysicalDimension:
         description = create_description_from_et(et_element.find("DESC"))
 
         def read_optional_int(element, name):
-            if element.findtext(name):
-                return int(element.findtext(name))
+            if val_str := element.findtext(name):
+                return int(val_str)
             else:
                 return 0
 
@@ -98,7 +101,10 @@ class PhysicalDimension:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        pass
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
 
 
@@ -197,13 +203,16 @@ class Unit:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         if self.physical_dimension_ref:
             self._physical_dimension = odxlinks.resolve(self.physical_dimension_ref)
 
             assert isinstance(self._physical_dimension, PhysicalDimension), (
                 f"The physical_dimension_ref must be resolved to a PhysicalDimension."
                 f" {self.physical_dimension_ref} referenced {self._physical_dimension}")
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
 
 
 @dataclass
@@ -253,9 +262,12 @@ class UnitGroup:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._units = NamedItemList[Unit](short_name_as_id,
                                           [odxlinks.resolve(ref) for ref in self.unit_refs])
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
 
     @property
     def units(self) -> NamedItemList[Unit]:
@@ -315,10 +327,18 @@ class UnitSpec:
 
         return odxlinks
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         for unit in self.units:
-            unit._resolve_references(odxlinks)
+            unit._resolve_odxlinks(odxlinks)
         for group in self.unit_groups:
-            group._resolve_references(odxlinks)
+            group._resolve_odxlinks(odxlinks)
         for sdg in self.sdgs:
-            sdg._resolve_references(odxlinks)
+            sdg._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        for unit in self.units:
+            unit._resolve_snrefs(diag_layer)
+        for group in self.unit_groups:
+            group._resolve_snrefs(diag_layer)
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(diag_layer)

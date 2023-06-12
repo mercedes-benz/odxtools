@@ -123,9 +123,9 @@ class TestEncodeRequest(unittest.TestCase):
             internal_upper_limit=None,
         )
         dop = DataObjectProperty(
-            odx_id=OdxLinkId("dop-odx_id", doc_frags),
-            short_name="example dop",
-            long_name=None,
+            odx_id=OdxLinkId("dop.id", doc_frags),
+            short_name="dop_sn",
+            long_name="example dop",
             description=None,
             is_visible_raw=None,
             diag_coded_type=diag_coded_type,
@@ -136,7 +136,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
         odxlinks.update({dop.odx_id: dop})
         param1 = ValueParameter(
-            short_name="linear_value_parameter",
+            short_name="value_parameter",
             long_name=None,
             description=None,
             semantic=None,
@@ -148,7 +148,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
         )
         req = Request(
-            odx_id=OdxLinkId("request_id", doc_frags),
+            odx_id=OdxLinkId("request.id", doc_frags),
             short_name="request_sn",
             long_name=None,
             description=None,
@@ -158,14 +158,14 @@ class TestEncodeRequest(unittest.TestCase):
             byte_size=None,
         )
 
-        param1._resolve_references(None, odxlinks)  # type: ignore
+        param1._resolve_odxlinks(odxlinks)
 
         # Missing mandatory parameter.
         with self.assertRaises(TypeError) as cm:
             req.encode()
 
         self.assertEqual(
-            req.encode(linear_value_parameter=14),
+            req.encode(value_parameter=14),
             bytearray([0x3])  # encode(14) = (14-8)/2 = 3
         )
 

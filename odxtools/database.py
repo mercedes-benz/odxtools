@@ -82,9 +82,10 @@ class Database:
         self._diag_layer_containers.sort(key=short_name_as_id)
         self._comparam_subsets = NamedItemList(short_name_as_id, comparam_subsets)
         self._comparam_subsets.sort(key=short_name_as_id)
-        self.finalize_init()
 
-    def finalize_init(self) -> None:
+        self.refresh()
+
+    def refresh(self) -> None:
         # Create wrapper objects
         self._diag_layers = NamedItemList(
             short_name_as_id, chain(*[dlc.diag_layers for dlc in self.diag_layer_containers]))
@@ -104,19 +105,17 @@ class Database:
         for dlc in self.diag_layer_containers:
             self._odxlinks.update(dlc._build_odxlinks())
 
-        for dl in self.diag_layers:
-            self._odxlinks.update(dl._build_odxlinks())
-
-        # Resolve references
+        # Resolve ODXLINK references
         for subset in self.comparam_subsets:
-            subset._resolve_references(self._odxlinks)
-        for dlc in self.diag_layer_containers:
-            dlc._resolve_references(self._odxlinks)
+            subset._resolve_odxlinks(self._odxlinks)
 
-        for dl_type_name in DiagLayerType:
-            for dl in self.diag_layers:
-                if dl.variant_type == dl_type_name:
-                    dl._resolve_references(self._odxlinks)
+        for dlc in self.diag_layer_containers:
+            dlc._resolve_odxlinks(self._odxlinks)
+
+        # let the diaglayers sort out the inherited objects and the
+        # short name references
+        for dlc in self.diag_layer_containers:
+            dlc._finalize_init(self._odxlinks)
 
     @property
     def odxlinks(self) -> OdxLinkDatabase:

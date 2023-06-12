@@ -301,18 +301,24 @@ class BasicStructure(DopBase):
     def _build_odxlinks(self):
         result = super()._build_odxlinks()
 
-        for param in self.parameters:
-            result.update(param._build_odxlinks())
+        for p in self.parameters:
+            result.update(p._build_odxlinks())
 
         return result
 
-    def _resolve_references(  # type: ignore[override]
-            self, parent_dl: "DiagLayer", odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         """Recursively resolve any references (odxlinks or sn-refs)"""
-        super()._resolve_references(odxlinks)
+        super()._resolve_odxlinks(odxlinks)
 
         for p in self.parameters:
-            p._resolve_references(parent_dl, odxlinks)
+            p._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        """Recursively resolve any references (odxlinks or sn-refs)"""
+        super()._resolve_snrefs(diag_layer)
+
+        for p in self.parameters:
+            p._resolve_snrefs(diag_layer)
 
     def __message_format_lines(self, allow_unknown_lengths: bool = False) -> List[str]:
         # sort parameters

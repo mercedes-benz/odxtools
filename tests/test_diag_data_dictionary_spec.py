@@ -43,7 +43,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             is_visible_raw=None,
             diag_coded_type=uint_type,
             physical_type=PhysicalType("A_UINT32", display_radix=None, precision=None),
-            linked_dtc_dops=[],
+            linked_dtc_dop_refs=[],
             compu_method=ident_compu_method,
             unit_ref=None,
             dtcs_raw=[

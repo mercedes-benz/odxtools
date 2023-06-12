@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Literal, Optional, Union, cast
+from itertools import chain
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union, cast
 
 from .admindata import AdminData
 from .audience import Audience
@@ -15,6 +16,9 @@ from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .utils import create_description_from_et, short_name_as_id
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 DiagClassType = Literal[
     "STARTCOMM",
@@ -59,8 +63,14 @@ class InputParam:
             oid=oid,
         )
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._dop = odxlinks.resolve(self.dop_base_ref, DopBase)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
 
     @property
     def dop(self) -> DopBase:
@@ -106,8 +116,14 @@ class OutputParam:
             oid=oid,
         )
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._dop = odxlinks.resolve(self.dop_base_ref)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
 
     @property
     def dop(self) -> Optional[DopBase]:
@@ -142,8 +158,14 @@ class NegOutputParam:
             dop_base_ref=dop_base_ref,
         )
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._dop = odxlinks.resolve(self.dop_base_ref)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
 
     @property
     def dop(self) -> Optional[DopBase]:
@@ -160,11 +182,7 @@ class ProgCode:
     revision: str
     encryption: Optional[str]
     entrypoint: Optional[str]
-    library_refs: List[OdxLinkRef] = field(default_factory=list)
-
-    def __post_init__(self):
-        if not self.library_refs:
-            self.library_refs = []
+    library_refs: List[OdxLinkRef]
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
@@ -192,9 +210,15 @@ class ProgCode:
             library_refs=library_refs,
         )
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         # TODO: Libraries are currently not internalized.
-        #       Once they are internalized, resolve the references `library_refs` here.
+        #       Once they are internalized, resolve the `library_refs` references here.
+        pass
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
 
 
@@ -342,12 +366,22 @@ class SingleEcuJob:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
-        for sdg in self.sdgs:
-            result.update(sdg._build_odxlinks())
+        for obj in chain(self.prog_codes, self.input_params, self.output_params,
+                         self.neg_output_params, self.sdgs):
+            result.update(obj._build_odxlinks())
+
+        if self.admin_data:
+            result.update(self.admin_data._build_odxlinks())
+
+        if self.audience:
+            result.update(self.audience._build_odxlinks())
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        for code in self.prog_codes:
+            code._resolve_odxlinks(odxlinks)
+
         # Resolve references to functional classes
         self._functional_classes = NamedItemList[FunctionalClass](short_name_as_id, [])
         for fc_ref in self.functional_class_refs:
@@ -357,24 +391,30 @@ class SingleEcuJob:
             else:
                 logger.warning(f"Functional class ID {fc_ref!r} resolved to {fc!r}.")
 
+        for obj in chain(self.prog_codes, self.input_params, self.output_params,
+                         self.neg_output_params, self.sdgs):
+            obj._resolve_odxlinks(odxlinks)
+
+        # Resolve references of admin data
+        if self.admin_data:
+            self.admin_data._resolve_odxlinks(odxlinks)
+
         # Resolve references of audience
         if self.audience:
-            self.audience._resolve_references(odxlinks)
+            self.audience._resolve_odxlinks(odxlinks)
 
-        # Resolve references of params
-        params: List[Union[InputParam, OutputParam, NegOutputParam]] = [
-            *self.input_params,
-            *self.output_params,
-            *self.neg_output_params,
-        ]
-        for p in params:
-            p._resolve_references(odxlinks)
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        for obj in chain(self.prog_codes, self.input_params, self.output_params,
+                         self.neg_output_params, self.sdgs):
+            obj._resolve_snrefs(diag_layer)
 
-        for code in self.prog_codes:
-            code._resolve_references(odxlinks)
+        # Resolve references of admin data
+        if self.admin_data:
+            self.admin_data._resolve_snrefs(diag_layer)
 
-        for sdg in self.sdgs:
-            sdg._resolve_references(odxlinks)
+        # Resolve references of audience
+        if self.audience:
+            self.audience._resolve_snrefs(diag_layer)
 
     def decode_message(self, message: Union[bytes, bytearray]) -> Message:
         """This function's signature matches `DiagService.decode_message`

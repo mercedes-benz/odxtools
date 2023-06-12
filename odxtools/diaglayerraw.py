@@ -234,7 +234,7 @@ class DiagLayerRaw:
 
         return odxlinks
 
-    def _resolve_references(self, diag_layer: "DiagLayer", odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         """Recursively resolve all references."""
 
         # do reference resolution for the objects that do not use
@@ -243,7 +243,11 @@ class DiagLayerRaw:
             [self.admin_data],
                 self.company_datas,
                 self.functional_classes,
+            [self.diag_data_dictionary_spec],
                 self.diag_comms,
+                self.requests,
+                self.positive_responses,
+                self.negative_responses,
                 self.global_negative_responses,
                 self.state_charts,
                 self.additional_audiences,
@@ -254,29 +258,31 @@ class DiagLayerRaw:
             if obj is None or isinstance(obj, OdxLinkRef):
                 continue
 
-            obj._resolve_references(odxlinks)
+            obj._resolve_odxlinks(odxlinks)
 
-        # Resolve references for objects that may contain SNREFs
-        for struct in chain(self.requests, self.positive_responses, self.negative_responses):
-            struct._resolve_references(self, odxlinks)
-
-        if self.diag_data_dictionary_spec is not None:
-            self.diag_data_dictionary_spec._resolve_references(diag_layer, odxlinks)
-
-    def finalize_init(self, diag_layer: "DiagLayer", odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         # do reference resolution for the objects that may use short name
         # references
         for obj in chain(
+            [self.admin_data],
+                self.company_datas,
+                self.functional_classes,
             [self.diag_data_dictionary_spec],
+                self.diag_comms,
                 self.requests,
                 self.positive_responses,
                 self.negative_responses,
                 self.global_negative_responses,
+                self.state_charts,
+                self.additional_audiences,
+                self.sdgs,
+                self.parent_refs,
+                self.communication_parameters,
         ):
             if obj is None or isinstance(obj, OdxLinkRef):
                 continue
 
-            obj.finalize_init(diag_layer, odxlinks)
+            obj._resolve_snrefs(diag_layer)
 
     def __str__(self) -> str:
         return f"DiagLayerRaw('{self.short_name}', type='{self.variant_type.value}')"

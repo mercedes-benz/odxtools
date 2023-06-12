@@ -1,13 +1,16 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .utils import create_description_from_et, short_name_as_id
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -46,6 +49,15 @@ class XDoc:
             position=position,
         )
 
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        pass
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass
+
 
 @dataclass
 class RelatedDoc:
@@ -63,6 +75,22 @@ class RelatedDoc:
             description=description,
             xdoc=xdoc,
         )
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = {}
+
+        if self.xdoc:
+            result.update(self.xdoc._build_odxlinks())
+
+        return result
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        if self.xdoc:
+            self.xdoc._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        if self.xdoc:
+            self.xdoc._resolve_snrefs(diag_layer)
 
 
 @dataclass
@@ -92,9 +120,19 @@ class CompanySpecificInfo:
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        for rd in self.related_docs:
+            rd._resolve_odxlinks(odxlinks)
+
         for sdg in self.sdgs:
-            sdg._resolve_references(odxlinks)
+            sdg._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        for rd in self.related_docs:
+            rd._resolve_snrefs(diag_layer)
+
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(diag_layer)
 
 
 @dataclass
@@ -156,7 +194,10 @@ class TeamMember:
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        pass
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
 
 
@@ -217,12 +258,19 @@ class CompanyData:
 
         return result
 
-    def _resolve_references(self, odxlinks: OdxLinkDatabase):
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         for tm in self.team_members:
-            tm._resolve_references(odxlinks)
+            tm._resolve_odxlinks(odxlinks)
 
         if self.company_specific_info:
-            self.company_specific_info._resolve_references(odxlinks)
+            self.company_specific_info._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        for tm in self.team_members:
+            tm._resolve_snrefs(diag_layer)
+
+        if self.company_specific_info:
+            self.company_specific_info._resolve_snrefs(diag_layer)
 
 
 def create_company_datas_from_et(et_element,

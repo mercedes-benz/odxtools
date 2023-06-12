@@ -258,7 +258,8 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
-        diag_layer.finalize_init(odxlinks=odxlinks)
+        diag_layer._resolve_odxlinks(odxlinks)
+        diag_layer._finalize_init(odxlinks)
 
         # Test decoding.
         coded_request = bytes([
@@ -533,7 +534,8 @@ class TestParamLengthInfoType(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
-        diag_layer.finalize_init(odxlinks=odxlinks)
+        diag_layer._resolve_odxlinks(odxlinks)
+        diag_layer._finalize_init(odxlinks)
 
         # Test decoding.
         coded_request = bytes([
@@ -830,7 +832,8 @@ class TestMinMaxLengthType(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
-        diag_layer.finalize_init(odxlinks=odxlinks)
+        diag_layer._resolve_odxlinks(odxlinks)
+        diag_layer._finalize_init(odxlinks)
 
         # Test decoding.
         coded_request = bytes([

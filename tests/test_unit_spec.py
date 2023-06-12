@@ -83,7 +83,7 @@ class TestUnitSpec(unittest.TestCase):
         self.assertEqual(expected.unit_groups, spec.unit_groups)
         self.assertEqual(expected, spec)
 
-    def test_resolve_references(self):
+    def test_resolve_odxlinks(self):
         unit = Unit(
             odx_id=OdxLinkId("unit_time_id", doc_frags),
             oid=None,
@@ -192,7 +192,8 @@ class TestUnitSpec(unittest.TestCase):
         dl = DiagLayer(diag_layer_raw=dl_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(dl._build_odxlinks())
-        dl.finalize_init(odxlinks)
+        dl._resolve_odxlinks(odxlinks)
+        dl._finalize_init(odxlinks)
 
         self.assertEqual(dl.requests[0].parameters[1].dop.unit, unit)
 
