@@ -452,7 +452,6 @@ class TestDecoding(unittest.TestCase):
 
     def test_decode_request_structure(self):
         """Test the decoding for a structure."""
-        odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(
             base_data_type="A_UINT32",
             base_type_encoding=None,
@@ -483,7 +482,6 @@ class TestDecoding(unittest.TestCase):
             unit_ref=None,
             sdgs=[],
         )
-        odxlinks.update({dop.odx_id: dop})
 
         req_param1 = CodedConstParameter(
             short_name="SID",
@@ -530,7 +528,6 @@ class TestDecoding(unittest.TestCase):
             parameters=[struct_param1, struct_param2],
             byte_size=None,
         )
-        odxlinks.update({struct.odx_id: struct})
         req_param2 = ValueParameter(
             short_name="structured_param",
             long_name=None,
@@ -554,7 +551,6 @@ class TestDecoding(unittest.TestCase):
             parameters=[req_param1, req_param2],
             byte_size=None,
         )
-        odxlinks.update({req.odx_id: req})
         service = DiagService(
             odx_id=OdxLinkId("service_id", doc_frags),
             short_name="service_sn",
@@ -580,7 +576,17 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             company_datas=NamedItemList(short_name_as_id),
             functional_classes=NamedItemList(short_name_as_id),
-            diag_data_dictionary_spec=None,
+            diag_data_dictionary_spec=DiagDataDictionarySpec(
+                dtc_dops=NamedItemList(short_name_as_id),
+                data_object_props=NamedItemList(short_name_as_id, [dop]),
+                structures=NamedItemList(short_name_as_id, [struct]),
+                end_of_pdu_fields=NamedItemList(short_name_as_id),
+                tables=NamedItemList(short_name_as_id),
+                env_data_descs=NamedItemList(short_name_as_id),
+                env_datas=NamedItemList(short_name_as_id),
+                muxs=NamedItemList(short_name_as_id),
+                unit_spec=None,
+                sdgs=[]),
             diag_comms=[service],
             requests=NamedItemList(short_name_as_id, [req]),
             positive_responses=NamedItemList(short_name_as_id),
@@ -595,13 +601,10 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(diag_layer._build_odxlinks())
         diag_layer._resolve_odxlinks(odxlinks)
         diag_layer._finalize_init(odxlinks)
-
-        req_param1._resolve_odxlinks(odxlinks)
-        req_param2._resolve_odxlinks(odxlinks)
-        struct_param1._resolve_odxlinks(odxlinks)
-        struct_param2._resolve_odxlinks(odxlinks)
 
         coded_message = bytes([0x12, 0x34])
         expected_message = Message(
@@ -624,7 +627,6 @@ class TestDecoding(unittest.TestCase):
 
     def test_decode_request_end_of_pdu_field(self):
         """Test the decoding for a structure."""
-        odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(
             base_data_type="A_UINT32",
             base_type_encoding=None,
@@ -644,7 +646,7 @@ class TestDecoding(unittest.TestCase):
 
         compu_method = IdenticalCompuMethod(internal_type="A_INT32", physical_type="A_INT32")
         dop = DataObjectProperty(
-            odx_id=OdxLinkId("dop.odx_id", doc_frags),
+            odx_id=OdxLinkId("dop.id", doc_frags),
             short_name="dop_sn",
             long_name=None,
             description=None,
@@ -655,7 +657,6 @@ class TestDecoding(unittest.TestCase):
             unit_ref=None,
             sdgs=[],
         )
-        odxlinks.update({dop.odx_id: dop})
 
         req_param1 = CodedConstParameter(
             short_name="SID",
@@ -702,7 +703,6 @@ class TestDecoding(unittest.TestCase):
             parameters=[struct_param1, struct_param2],
             byte_size=None,
         )
-        odxlinks.update({struct.odx_id: struct})
         eopf = EndOfPduField(
             odx_id=OdxLinkId("eopf_id", doc_frags),
             short_name="eopf_sn",
@@ -717,8 +717,6 @@ class TestDecoding(unittest.TestCase):
             max_number_of_items=None,
             is_visible_raw=True,
         )
-        odxlinks.update({eopf.odx_id: eopf})
-
         req_param2 = ValueParameter(
             short_name="eopf_param",
             long_name=None,
@@ -742,7 +740,6 @@ class TestDecoding(unittest.TestCase):
             parameters=[req_param1, req_param2],
             byte_size=None,
         )
-        odxlinks.update({req.odx_id: req})
         service = DiagService(
             odx_id=OdxLinkId("service_id", doc_frags),
             short_name="service_sn",
@@ -768,7 +765,17 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             company_datas=NamedItemList(short_name_as_id),
             functional_classes=NamedItemList(short_name_as_id),
-            diag_data_dictionary_spec=None,
+            diag_data_dictionary_spec=DiagDataDictionarySpec(
+                dtc_dops=NamedItemList(short_name_as_id),
+                data_object_props=NamedItemList(short_name_as_id, [dop]),
+                structures=NamedItemList(short_name_as_id, [struct]),
+                end_of_pdu_fields=NamedItemList(short_name_as_id, [eopf]),
+                tables=NamedItemList(short_name_as_id),
+                env_data_descs=NamedItemList(short_name_as_id),
+                env_datas=NamedItemList(short_name_as_id),
+                muxs=NamedItemList(short_name_as_id),
+                unit_spec=None,
+                sdgs=[]),
             diag_comms=[service],
             requests=NamedItemList(short_name_as_id, [req]),
             positive_responses=NamedItemList(short_name_as_id),
@@ -783,15 +790,10 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(diag_layer._build_odxlinks())
         diag_layer._resolve_odxlinks(odxlinks)
         diag_layer._finalize_init(odxlinks)
-
-        eopf._resolve_odxlinks(odxlinks)
-        struct_param2._resolve_odxlinks(odxlinks)
-        req_param2._resolve_odxlinks(odxlinks)
-        req._resolve_odxlinks(odxlinks)
-        service._resolve_odxlinks(odxlinks)
-        diag_layer._resolve_odxlinks(odxlinks)
 
         coded_message = bytes([0x12, 0x34, 0x34])
         expected_message = Message(
@@ -1065,12 +1067,6 @@ class TestDecoding(unittest.TestCase):
             byte_size=None,
         )
 
-        odxlinks = OdxLinkDatabase()
-        odxlinks.update({
-            req.odx_id: req,
-            pos_response.odx_id: pos_response,
-            neg_response.odx_id: neg_response
-        })
         service = DiagService(
             odx_id=OdxLinkId("service_id", doc_frags),
             short_name="service_sn",
@@ -1111,6 +1107,8 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(diag_layer._build_odxlinks())
         diag_layer._resolve_odxlinks(odxlinks)
         diag_layer._finalize_init(odxlinks)
 
@@ -1164,8 +1162,6 @@ class TestDecoding(unittest.TestCase):
             is_temporary_raw=None,
             sdgs=[],
         )
-        dtcs = [dtc1, dtc2]
-        odxlinks.update({dtc1.odx_id: dtc1, dtc2.odx_id: dtc2})
         dop = DtcDop(
             odx_id=OdxLinkId("dtc.dop.odx_id", doc_frags),
             short_name="dtc_dop_sn",
@@ -1176,11 +1172,11 @@ class TestDecoding(unittest.TestCase):
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=compu_method,
             unit_ref=None,
-            dtcs_raw=dtcs,
+            dtcs_raw=[dtc1, dtc2],
             is_visible_raw=True,
             sdgs=[],
         )
-        odxlinks.update({dop.odx_id: dop})
+        odxlinks.update(dop._build_odxlinks())
         resp_param1 = CodedConstParameter(
             short_name="SID",
             long_name=None,
@@ -1215,10 +1211,9 @@ class TestDecoding(unittest.TestCase):
             byte_size=None,
             response_type="POS-RESPONSE",
         )
+        odxlinks.update(pos_response._build_odxlinks())
 
         dop._resolve_odxlinks(odxlinks)
-        resp_param1._resolve_odxlinks(odxlinks)
-        resp_param2._resolve_odxlinks(odxlinks)
         pos_response._resolve_odxlinks(odxlinks)
 
         coded_message = bytes([0x12, 0x34])
@@ -1252,7 +1247,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
             sdgs=[],
         )
         dop = self.dop_bytes_termination_end_of_pdu
-        odxlinks.update({dop.odx_id: dop})
+        odxlinks.update(dop._build_odxlinks())
         self.parameter_termination_end_of_pdu = ValueParameter(
             short_name="min_max_parameter",
             long_name=None,
@@ -1325,7 +1320,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
             parameters=[struct_param],
             byte_size=None,
         )
-        odxlinks.update({structure.odx_id: structure})
+        odxlinks.update(structure._build_odxlinks())
 
         req_param1 = self.parameter_sid
         req_param2 = ValueParameter(
@@ -1400,7 +1395,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
             unit_ref=None,
             sdgs=[],
         )
-        odxlinks.update({dop.odx_id: dop})
+        odxlinks.update(dop._build_odxlinks())
         req_param1 = CodedConstParameter(
             short_name="SID",
             long_name=None,
