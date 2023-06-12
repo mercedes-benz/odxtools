@@ -54,14 +54,9 @@ class DiagLayer:
         # DOP, units, etc
         self.local_diag_data_dictionary_spec = diag_layer_raw.diag_data_dictionary_spec
 
-        # Communication parameters, e.g. CAN-IDs
-        self._local_communication_parameters = diag_layer_raw.communication_parameters
-
         # Properties that include inherited objects
         self._services: NamedItemList[Union[DiagService,
                                             SingleEcuJob]] = NamedItemList(short_name_as_id)
-        self._communication_parameters: NamedItemList[CommunicationParameterRef] = NamedItemList(
-            short_name_as_id)
         self._data_object_properties: NamedItemList[DopBase] = NamedItemList(short_name_as_id)
 
     @staticmethod
@@ -156,22 +151,9 @@ class DiagLayer:
     # </stuff subject to value inheritance>
     #######
 
-    #######
-    # <communication parameters>
-    #######
-
-    @property
-    def communication_parameters(self) -> NamedItemList[CommunicationParameterRef]:
-        """All communication parameters including inherited ones."""
-        return self._communication_parameters
-
-    #######
-    # </communication parameters>
-    #######
-
     @property
     def protocols(self) -> NamedItemList["DiagLayer"]:
-        """Return the set of all protocols which are applicable for this diagnostic layer"""
+        """Return the set of all protocols which are applicable to the diagnostic layer"""
         result_dict: Dict[str, DiagLayer] = dict()
 
         for parent_ref in self._get_parent_refs_sorted_by_priority():
@@ -181,7 +163,7 @@ class DiagLayer:
         if self.diag_layer_raw.variant_type == DiagLayerType.PROTOCOL:
             result_dict[self.diag_layer_raw.short_name] = self
 
-        return NamedItemList(short_name_as_id, list(result_dict.values()))
+        return NamedItemList(short_name_as_id, result_dict.values())
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
@@ -227,8 +209,11 @@ class DiagLayer:
         dops = sorted(self._compute_available_data_object_properties(), key=short_name_as_id)
         self._data_object_properties = NamedItemList[DopBase](short_name_as_id, dops)
 
-        self._communication_parameters = NamedItemList[CommunicationParameterRef](
-            short_name_as_id, self._compute_available_commmunication_parameters())
+        #####
+        # compute the communication parameters applicable to the
+        # diagnostic layer
+        #####
+        self._communication_parameters = self._compute_available_commmunication_parameters()
 
         self.diag_layer_raw._resolve_snrefs(self)
 
@@ -280,23 +265,6 @@ class DiagLayer:
                 result_dict[dop.short_name] = dop
 
         return list(result_dict.values())
-
-    def _compute_available_commmunication_parameters(self) -> List[CommunicationParameterRef]:
-        com_params_dict: Dict[Tuple[str, str], CommunicationParameterRef] = dict()
-
-        # Look in parent refs for inherited communication
-        # parameters. First fetch the communication parameters from
-        # low priority parents first, then update with increasing
-        # priority.
-        for parent_ref in self._get_parent_refs_sorted_by_priority():
-            for cp in parent_ref.get_inherited_communication_parameters():
-                com_params_dict[(cp.short_name, cp.protocol_snref)] = cp
-
-        # finally, handle the locally specified communication parameters
-        for cp in self._local_communication_parameters:
-            com_params_dict[(cp.short_name, cp.protocol_snref)] = cp
-
-        return list(com_params_dict.values())
 
     def _get_parent_refs_sorted_by_priority(self, reverse=False):
         return sorted(
@@ -416,24 +384,79 @@ class DiagLayer:
                 f"None of the services {possible_services} could parse {response.hex()}.")
         return decoded_messages
 
+    #####
+    # <communication parameter handling>
+    #####
+    def _compute_available_commmunication_parameters(self) -> List[CommunicationParameterRef]:
+        """Compute the list of communication parameters that apply to
+        the diagnostic layer
+
+        Be aware that the inheritance scheme for communication
+        parameters is slightly different than for objects that are
+        subject to value inheritance:
+
+        - The ODXLINK ID id of communication parameters is used to
+          override inherited parameters instead of the short name.
+        - A parameter is only overridden if the specified protocol
+          matches.
+
+        Note that the specification leaves some room for
+        interpretation here: It says that if no protocol is specified,
+        the parameter shall apply to any protocol. But what happens if
+        the the same comparam is specified with and without a
+        protocol? Is this allowed at all? If yes, which of these
+        definitions gets priority? How does this interact with
+        inheritance? The approach taken here is to allow such cases
+        and to use the specific comparams if possible whilst the ones
+        without a specified protocol are taken as fallbacks...
+
+        """
+        com_params_dict: Dict[Tuple[str, Optional[str]], CommunicationParameterRef] = dict()
+
+        # Look in parent refs for inherited communication
+        # parameters. First fetch the communication parameters from
+        # low priority parents, then update with increasing priority.
+        for parent_ref in self._get_parent_refs_sorted_by_priority():
+            for cp in parent_ref.layer._compute_available_commmunication_parameters():
+                com_params_dict[(cp.id_ref.ref_id, cp.protocol_snref)] = cp
+
+        # finally, handle the locally defined communication parameters
+        for cp in self.diag_layer_raw.communication_parameters:
+            com_params_dict[(cp.id_ref.ref_id, cp.protocol_snref)] = cp
+
+        return list(com_params_dict.values())
+
+    @property
+    def communication_parameters(self) -> List[CommunicationParameterRef]:
+        """All communication parameters applicable to this DiagLayer
+
+        Note that, although communication parameters use inheritance,
+        it is *not* the "value inheritance" scheme used by e.g. DOPs,
+        tables, state charts, ...
+        """
+        return self._communication_parameters
+
     def get_communication_parameter(
         self,
-        name: str,
+        cp_id: str,
         *,
         is_functional: Optional[bool] = None,
         protocol_name: Optional[str] = None,
     ) -> Optional[CommunicationParameterRef]:
+        """Find a specific communication parameter according to some criteria.
 
-        cps = [cp for cp in self.communication_parameters if cp.short_name == name]
+        Setting a given parameter to `None` means "don't care"."""
 
+        # determine the set of applicable communication parameters
+        cps = [cp for cp in self.communication_parameters if cp.id_ref.ref_id == cp_id]
         if is_functional is not None:
-            cps = [cp for cp in cps if cp.is_functional == is_functional]
-        if protocol_name:
+            cps = [cp for cp in cps if cp.is_functional in (None, is_functional)]
+        if protocol_name is not None:
             cps = [cp for cp in cps if cp.protocol_snref in (None, protocol_name)]
 
         if len(cps) > 1:
             warnings.warn(
-                f"Communication parameter `{name}` specified more "
+                f"Communication parameter `{cp_id}` specified more "
                 f"than once. Using first occurence.",
                 OdxWarning,
             )
@@ -445,7 +468,7 @@ class DiagLayer:
     def get_can_receive_id(self, protocol_name: Optional[str] = None) -> Optional[int]:
         """CAN ID to which the ECU listens for diagnostic messages"""
         com_param = self.get_communication_parameter(
-            "CP_UniqueRespIdTable", protocol_name=protocol_name)
+            "ISO_15765_2.CP_UniqueRespIdTable", protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -469,7 +492,7 @@ class DiagLayer:
     def get_can_send_id(self, protocol_name: Optional[str] = None) -> Optional[int]:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
         com_param = self.get_communication_parameter(
-            "CP_UniqueRespIdTable", protocol_name=protocol_name)
+            "ISO_15765_2.CP_UniqueRespIdTable", protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -492,7 +515,8 @@ class DiagLayer:
 
     def get_can_func_req_id(self, protocol_name: Optional[str] = None) -> Optional[int]:
         """CAN Functional Request Id."""
-        com_param = self.get_communication_parameter("CP_CanFuncReqId", protocol_name=protocol_name)
+        com_param = self.get_communication_parameter(
+            "ISO_15765_2.CP_CanFuncReqId", protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -504,7 +528,7 @@ class DiagLayer:
         return int(result)
 
     def get_doip_logical_ecu_address(self, protocol_name: Optional[str] = None) -> Optional[int]:
-        """Return the CP_DoIPLogicalEcuAddress.
+        """Return the address of the ECU when using functional addressing.
 
         The parameter protocol_name is used to distinguish between
         different interfaces, e.g., offboard and onboard DoIP
@@ -512,16 +536,18 @@ class DiagLayer:
         """
 
         com_param = self.get_communication_parameter(
-            "CP_UniqueRespIdTable", protocol_name=protocol_name, is_functional=False)
+            "ISO_13400_2_DIS_2015.CP_UniqueRespIdTable",
+            protocol_name=protocol_name,
+            is_functional=False)
 
         if com_param is None:
             return None
 
         # The CP_DoIPLogicalEcuAddress is specified by the
         # "CP_DoIPLogicalEcuAddress" subvalue of the complex Comparam
-        # CP_UniqueRespIdTable. Depending of the underlying transport
-        # protocol, (i.e., CAN using ISO-TP) this subvalue might not
-        # exist.
+        # CP_UniqueRespIdTable of the ISO_13400_2_DIS_2015 comparam
+        # subset. Depending of the underlying transport protocol,
+        # (i.e., CAN using ISO-TP) this subvalue might not exist.
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=OdxWarning)
             ecu_addr = com_param.get_subvalue("CP_DoIPLogicalEcuAddress")
@@ -534,7 +560,7 @@ class DiagLayer:
                                          protocol_name: Optional[str] = None) -> Optional[int]:
         """The logical gateway address for the diagnosis over IP transport protocol"""
         com_param = self.get_communication_parameter(
-            "CP_DoIPLogicalGatewayAddress",
+            "ISO_13400_2_DIS_2015.CP_DoIPLogicalGatewayAddress",
             is_functional=is_functional,
             protocol_name=protocol_name)
         if com_param is None:
@@ -552,7 +578,9 @@ class DiagLayer:
                                         protocol_name: Optional[str] = None) -> Optional[int]:
         """DoIp logical gateway address"""
         com_param = self.get_communication_parameter(
-            "CP_DoIPLogicalTesterAddress", is_functional=is_functional, protocol_name=protocol_name)
+            "ISO_13400_2_DIS_2015.CP_DoIPLogicalTesterAddress",
+            is_functional=is_functional,
+            protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -568,7 +596,7 @@ class DiagLayer:
                                             protocol_name: Optional[str] = None) -> Optional[int]:
         """The logical functional DoIP address of the ECU."""
         com_param = self.get_communication_parameter(
-            "CP_DoIPLogicalFunctionalAddress",
+            "ISO_13400_2_DIS_2015.CP_DoIPLogicalFunctionalAddress",
             is_functional=is_functional,
             protocol_name=protocol_name,
         )
@@ -586,7 +614,7 @@ class DiagLayer:
                                             protocol_name: Optional[str] = None) -> Optional[float]:
         """The timout for the DoIP routing activation request in seconds"""
         com_param = self.get_communication_parameter(
-            "CP_DoIPRoutingActivationTimeout", protocol_name=protocol_name)
+            "ISO_13400_2_DIS_2015.CP_DoIPRoutingActivationTimeout", protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -601,7 +629,7 @@ class DiagLayer:
                                          protocol_name: Optional[str] = None) -> Optional[int]:
         """The  DoIP routing type"""
         com_param = self.get_communication_parameter(
-            "CP_DoIPRoutingActivationType", protocol_name=protocol_name)
+            "ISO_13400_2_DIS_2015.CP_DoIPRoutingActivationType", protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -618,13 +646,23 @@ class DiagLayer:
         This is defined by the communication parameter "CP_TesterPresentTime".
         If the variant does not define this parameter, the default value 3.0 is returned.
 
-        Description of the comparam: "Time between a response and the next subsequent tester present message
-        (if no other request is sent to this ECU) in case of physically addressed requests."
+        Description of the comparam: "Time between a response and the
+        next subsequent tester present message (if no other request is
+        sent to this ECU) in case of physically addressed requests."
         """
+
+        # try the tester present time for CAN
         com_param = self.get_communication_parameter(
-            "CP_TesterPresentTime", protocol_name=protocol_name)
+            "ISO_15765_3.CP_TesterPresentTime", protocol_name=protocol_name)
         if com_param is None:
-            return None
+            # if no applicable parameter was found, try the parameter
+            # for DoIP
+            com_param = self.get_communication_parameter(
+                "ISO_14229_5_DIS_2015.CP_TesterPresentTime", protocol_name=protocol_name)
+            if com_param is None:
+                # if that one was not specified either, we assume that
+                # no applicable tester timeout has been specified
+                return None
 
         result = com_param.get_value()
         if not result:
@@ -632,6 +670,10 @@ class DiagLayer:
         assert isinstance(result, str)
 
         return float(result) / 1e6
+
+    #####
+    # </communication parameter handling>
+    #####
 
     def __repr__(self) -> str:
         return f"""DiagLayer(variant_type={self.diag_layer_raw.variant_type.value},
