@@ -438,7 +438,7 @@ class DiagLayer:
 
     def get_communication_parameter(
         self,
-        cp_id: str,
+        cp_short_name: str,
         *,
         is_functional: Optional[bool] = None,
         protocol_name: Optional[str] = None,
@@ -448,7 +448,7 @@ class DiagLayer:
         Setting a given parameter to `None` means "don't care"."""
 
         # determine the set of applicable communication parameters
-        cps = [cp for cp in self.communication_parameters if cp.id_ref.ref_id == cp_id]
+        cps = [cp for cp in self.communication_parameters if cp.short_name == cp_short_name]
         if is_functional is not None:
             cps = [cp for cp in cps if cp.is_functional in (None, is_functional)]
         if protocol_name is not None:
@@ -456,7 +456,7 @@ class DiagLayer:
 
         if len(cps) > 1:
             warnings.warn(
-                f"Communication parameter `{cp_id}` specified more "
+                f"Communication parameter `{cp_short_name}` specified more "
                 f"than once. Using first occurence.",
                 OdxWarning,
             )
@@ -468,7 +468,7 @@ class DiagLayer:
     def get_can_receive_id(self, protocol_name: Optional[str] = None) -> Optional[int]:
         """CAN ID to which the ECU listens for diagnostic messages"""
         com_param = self.get_communication_parameter(
-            "ISO_15765_2.CP_UniqueRespIdTable", protocol_name=protocol_name)
+            "CP_UniqueRespIdTable", protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -491,8 +491,14 @@ class DiagLayer:
 
     def get_can_send_id(self, protocol_name: Optional[str] = None) -> Optional[int]:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
+
+        # this hopefully resolves to the 'CP_UniqueRespIdTable'
+        # parameter from the ISO_15765_2 comparam subset. (There is a
+        # parameter with the same name in the ISO_13400_2_DIS_2015
+        # subset for DoIP. If the wrong one is retrieved, try
+        # specifying the protocol_name.)
         com_param = self.get_communication_parameter(
-            "ISO_15765_2.CP_UniqueRespIdTable", protocol_name=protocol_name)
+            "CP_UniqueRespIdTable", protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -535,10 +541,13 @@ class DiagLayer:
         Ethernet.
         """
 
+        # this hopefully resolves to the 'CP_UniqueRespIdTable'
+        # parameter from the ISO_13400_2_DIS_2015 comparam
+        # subset. (There is a parameter with the same name in the
+        # ISO_15765_2 subset for CAN. If the wrong one is retrieved,
+        # try specifying the protocol_name.)
         com_param = self.get_communication_parameter(
-            "ISO_13400_2_DIS_2015.CP_UniqueRespIdTable",
-            protocol_name=protocol_name,
-            is_functional=False)
+            "CP_UniqueRespIdTable", protocol_name=protocol_name, is_functional=False)
 
         if com_param is None:
             return None
@@ -556,11 +565,14 @@ class DiagLayer:
         return int(ecu_addr)
 
     def get_doip_logical_gateway_address(self,
-                                         is_functional: Optional[bool] = False,
-                                         protocol_name: Optional[str] = None) -> Optional[int]:
+                                         protocol_name: Optional[str] = None,
+                                         is_functional: Optional[bool] = False) -> Optional[int]:
         """The logical gateway address for the diagnosis over IP transport protocol"""
+
+        # retrieve CP_DoIPLogicalGatewayAddress from the
+        # ISO_13400_2_DIS_2015 subset. hopefully.
         com_param = self.get_communication_parameter(
-            "ISO_13400_2_DIS_2015.CP_DoIPLogicalGatewayAddress",
+            "CP_DoIPLogicalGatewayAddress",
             is_functional=is_functional,
             protocol_name=protocol_name)
         if com_param is None:
@@ -574,13 +586,14 @@ class DiagLayer:
         return int(result)
 
     def get_doip_logical_tester_address(self,
-                                        is_functional: Optional[bool] = False,
-                                        protocol_name: Optional[str] = None) -> Optional[int]:
+                                        protocol_name: Optional[str] = None,
+                                        is_functional: Optional[bool] = False) -> Optional[int]:
         """DoIp logical gateway address"""
+
+        # retrieve CP_DoIPLogicalTesterAddress from the
+        # ISO_13400_2_DIS_2015 subset. hopefully.
         com_param = self.get_communication_parameter(
-            "ISO_13400_2_DIS_2015.CP_DoIPLogicalTesterAddress",
-            is_functional=is_functional,
-            protocol_name=protocol_name)
+            "CP_DoIPLogicalTesterAddress", is_functional=is_functional, protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -592,11 +605,14 @@ class DiagLayer:
         return int(result)
 
     def get_doip_logical_functional_address(self,
-                                            is_functional: Optional[bool] = False,
-                                            protocol_name: Optional[str] = None) -> Optional[int]:
+                                            protocol_name: Optional[str] = None,
+                                            is_functional: Optional[bool] = False) -> Optional[int]:
         """The logical functional DoIP address of the ECU."""
+
+        # retrieve CP_DoIPLogicalFunctionalAddress from the
+        # ISO_13400_2_DIS_2015 subset. hopefully.
         com_param = self.get_communication_parameter(
-            "ISO_13400_2_DIS_2015.CP_DoIPLogicalFunctionalAddress",
+            "CP_DoIPLogicalFunctionalAddress",
             is_functional=is_functional,
             protocol_name=protocol_name,
         )
@@ -613,8 +629,11 @@ class DiagLayer:
     def get_doip_routing_activation_timeout(self,
                                             protocol_name: Optional[str] = None) -> Optional[float]:
         """The timout for the DoIP routing activation request in seconds"""
+
+        # retrieve CP_DoIPRoutingActivationTimeout from the
+        # ISO_13400_2_DIS_2015 subset. hopefully.
         com_param = self.get_communication_parameter(
-            "ISO_13400_2_DIS_2015.CP_DoIPRoutingActivationTimeout", protocol_name=protocol_name)
+            "CP_DoIPRoutingActivationTimeout", protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -627,9 +646,20 @@ class DiagLayer:
 
     def get_doip_routing_activation_type(self,
                                          protocol_name: Optional[str] = None) -> Optional[int]:
-        """The  DoIP routing type"""
+        """The DoIP routing activation type
+
+        The number returned has the following meaning:
+
+        0          Default
+        1          WWH-OBD (worldwide harmonized onboard diagnostic).
+        2-0xDF     reserved
+        0xE0-0xFF  OEM-specific
+        """
+
+        # retrieve CP_DoIPRoutingActivationType from the
+        # ISO_13400_2_DIS_2015 subset. hopefully.
         com_param = self.get_communication_parameter(
-            "ISO_13400_2_DIS_2015.CP_DoIPRoutingActivationType", protocol_name=protocol_name)
+            "CP_DoIPRoutingActivationType", protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -651,24 +681,19 @@ class DiagLayer:
         sent to this ECU) in case of physically addressed requests."
         """
 
-        # try the tester present time for CAN
+        # retrieve CP_TesterPresentTime from either the
+        # ISO_13400_2_DIS_2015 or the ISO_15765_2 subset.
         com_param = self.get_communication_parameter(
-            "ISO_15765_3.CP_TesterPresentTime", protocol_name=protocol_name)
+            "CP_TesterPresentTime", protocol_name=protocol_name)
         if com_param is None:
-            # if no applicable parameter was found, try the parameter
-            # for DoIP
-            com_param = self.get_communication_parameter(
-                "ISO_14229_5_DIS_2015.CP_TesterPresentTime", protocol_name=protocol_name)
-            if com_param is None:
-                # if that one was not specified either, we assume that
-                # no applicable tester timeout has been specified
-                return None
+            return None
 
         result = com_param.get_value()
         if not result:
             return None
         assert isinstance(result, str)
 
+        # the comparam specifies microseconds. convert this to seconds
         return float(result) / 1e6
 
     #####
