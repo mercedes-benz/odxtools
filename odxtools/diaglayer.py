@@ -521,8 +521,7 @@ class DiagLayer:
 
     def get_can_func_req_id(self, protocol_name: Optional[str] = None) -> Optional[int]:
         """CAN Functional Request Id."""
-        com_param = self.get_communication_parameter(
-            "ISO_15765_2.CP_CanFuncReqId", protocol_name=protocol_name)
+        com_param = self.get_communication_parameter("CP_CanFuncReqId", protocol_name=protocol_name)
         if com_param is None:
             return None
 
