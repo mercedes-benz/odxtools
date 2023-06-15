@@ -108,6 +108,7 @@ class ComplexComparam(BaseComparam):
             if cp_el.tag in ("COMPARAM", "COMPLEX-COMPARAM"):
                 self.comparams.append(create_any_comparam_from_et(cp_el, doc_frags))
 
+        self.complex_physical_default_value = None
         if cpdv_elem := et_element.find("COMPLEX-PHYSICAL-DEFAULT-VALUE"):
             self.complex_physical_default_value = create_complex_value_from_et(cpdv_elem)
 

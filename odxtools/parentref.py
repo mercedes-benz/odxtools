@@ -100,6 +100,3 @@ class ParentRef:
             if dop.short_name not in self.not_inherited_dops
         }
         return list(dops.values())
-
-    def get_inherited_communication_parameters(self):
-        return self.layer._communication_parameters
