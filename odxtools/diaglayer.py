@@ -66,6 +66,58 @@ class DiagLayer:
         # Create DiagLayer
         return DiagLayer(diag_layer_raw=diag_layer_raw)
 
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
+        result = self.diag_layer_raw._build_odxlinks()
+
+        # we want to get the full diag layer, not just the raw layer
+        # when referencing...
+        result[self.odx_id] = self
+
+        return result
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        """Recursively resolve all references."""
+
+        self.diag_layer_raw._resolve_odxlinks(odxlinks)
+
+    def _finalize_init(self, odxlinks: OdxLinkDatabase) -> None:
+        """This method deals with everything inheritance related and
+        -- after the final set of objects covered by the diagnostic
+        layer is determined -- resolves any short name references in
+        the diagnostic layer.
+
+        TODO: In some corner cases, the short name resolution is not
+        correct: E.g. Given three layers A, B, and C, where B and C
+        derive from A and A defines the diagnostic communication
+        SA. If now B overrides SA and there are short name references
+        to SA in A, the object to which this reference is resolved is
+        undefined. An easy fix for this problem is to copy all
+        inherited objects in derived layers, but that would lead to
+        excessive memory consumption for large databases...
+        """
+
+        # make sure that the layer which we inherit from are of lower
+        # priority than us.
+        self_prio = self.variant_type.inheritance_priority
+        for parent_ref in self.diag_layer_raw.parent_refs:
+            parent_prio = parent_ref.layer.variant_type.inheritance_priority
+            assert self_prio > parent_prio, "diagnostic layers can only inherit from layers of lower priority"
+
+        services = sorted(self._compute_available_services(odxlinks), key=short_name_as_id)
+        self._services = NamedItemList[Union[DiagService, SingleEcuJob]](short_name_as_id, services)
+
+        dops = sorted(self._compute_available_data_object_properties(), key=short_name_as_id)
+        self._data_object_properties = NamedItemList[DopBase](short_name_as_id, dops)
+
+        #####
+        # compute the communication parameters applicable to the
+        # diagnostic layer
+        #####
+        self._communication_parameters = self._compute_available_commmunication_parameters()
+
+        self.diag_layer_raw._resolve_snrefs(self)
+
     #####
     # <properties forwarded to the "raw" diag layer>
     #####
@@ -151,71 +203,14 @@ class DiagLayer:
     # </stuff subject to value inheritance>
     #######
 
-    @property
-    def protocols(self) -> NamedItemList["DiagLayer"]:
-        """Return the set of all protocols which are applicable to the diagnostic layer"""
-        result_dict: Dict[str, DiagLayer] = dict()
-
-        for parent_ref in self._get_parent_refs_sorted_by_priority():
-            for prot in parent_ref.layer.protocols:
-                result_dict[prot.short_name] = prot
-
-        if self.diag_layer_raw.variant_type == DiagLayerType.PROTOCOL:
-            result_dict[self.diag_layer_raw.short_name] = self
-
-        return NamedItemList(short_name_as_id, result_dict.values())
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
-        result = self.diag_layer_raw._build_odxlinks()
-
-        # we want to get the full diag layer, not just the raw layer
-        # when referencing...
-        result[self.odx_id] = self
-
-        return result
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        """Recursively resolve all references."""
-
-        self.diag_layer_raw._resolve_odxlinks(odxlinks)
-
-    def _finalize_init(self, odxlinks: OdxLinkDatabase) -> None:
-        """This method deals with everything inheritence related and
-        -- after the final set of objects covered by the diagnostic
-        layer is determined -- resolves any short name references in
-        the diagnostic layer.
-
-        TODO: In some corner cases, the short name resolution is not
-        correct: E.g. Given three layers A, B, and C, where B and C
-        derive from A and A defines the diagnostic communication
-        SA. If now B overrides SA and there are short name references
-        to SA in A, the object to which this reference is resolved is
-        undefined. An easy fix for this problem is to copy all
-        inherited objects in derived layers, but that would lead to
-        excessive memory consumption for large databases...
-        """
-
-        # make sure that the layer which we inherit from are of lower
-        # priority than us.
-        self_prio = self.variant_type.inheritance_priority
-        for parent_ref in self.diag_layer_raw.parent_refs:
-            parent_prio = parent_ref.layer.variant_type.inheritance_priority
-            assert self_prio > parent_prio, "diagnostic layers can only inherit from layers of lower priority"
-
-        services = sorted(self._compute_available_services(odxlinks), key=short_name_as_id)
-        self._services = NamedItemList[Union[DiagService, SingleEcuJob]](short_name_as_id, services)
-
-        dops = sorted(self._compute_available_data_object_properties(), key=short_name_as_id)
-        self._data_object_properties = NamedItemList[DopBase](short_name_as_id, dops)
-
-        #####
-        # compute the communication parameters applicable to the
-        # diagnostic layer
-        #####
-        self._communication_parameters = self._compute_available_commmunication_parameters()
-
-        self.diag_layer_raw._resolve_snrefs(self)
+    #####
+    # <value inheritance mechanism helpers>
+    #####
+    def _get_parent_refs_sorted_by_priority(self, reverse=False):
+        return sorted(
+            self.diag_layer_raw.parent_refs,
+            key=lambda pr: pr.layer.variant_type.inheritance_priority,
+            reverse=reverse)
 
     def __gather_local_services(
             self, odxlinks: OdxLinkDatabase) -> List[Union[DiagService, SingleEcuJob]]:
@@ -266,123 +261,9 @@ class DiagLayer:
 
         return list(result_dict.values())
 
-    def _get_parent_refs_sorted_by_priority(self, reverse=False):
-        return sorted(
-            self.diag_layer_raw.parent_refs,
-            key=lambda pr: pr.layer.variant_type.inheritance_priority,
-            reverse=reverse)
-
-    def _build_coded_prefix_tree(self):
-        """Constructs the coded prefix tree of the services.
-        Each leaf node is a list of `DiagService`s.
-        (This is because navigating from a service to the request/ responses is easier than finding the service for a given request/response object.)
-
-        Example:
-        Let there be four services with corresponding requests:
-        * Request 1 has the coded constant prefix `12 34`.
-        * Request 2 has the coded constant prefix `12 34`.
-        * Request 3 has the coded constant prefix `12 56`.
-        * Request 4 has the coded constant prefix `12 56 00`.
-
-        Then, the constructed prefix tree is the dict
-        ```
-        {0x12: {0x34: {-1: [<Service 1>, <Service 2>]},
-                0x56: {-1: [<Service 3>],
-                       0x0: {-1: [<Service 4>]}
-                       }}}
-        ```
-        Note, that the inner `-1` are constant to distinguish them from possible service IDs.
-
-        Also note, that it is actually allowed that
-        (a) SIDs for different services are the same like for service 1 and 2 (thus each leaf node is a list) and
-        (b) one SID is the prefix of another SID like for service 3 and 4 (thus the constant `-1` key).
-        """
-        services = [s for s in self._services if isinstance(s, DiagService)]
-        prefix_tree = {}
-        for s in services:
-            # Compute prefixes for the request and all responses
-            request_prefix = s.request.coded_const_prefix()
-            prefixes = [request_prefix] + [
-                message.coded_const_prefix(request_prefix=request_prefix)
-                for message in chain(s.positive_responses, s.negative_responses)
-            ]
-            for coded_prefix in prefixes:
-                # Traverse prefix tree
-                sub_tree = prefix_tree
-                for b in coded_prefix:
-                    if sub_tree.get(b) is None:
-                        sub_tree[b] = {}
-                    sub_tree = sub_tree.get(b)
-
-                    assert isinstance(
-                        sub_tree,
-                        dict), f"{sub_tree} has type {type(sub_tree)}. How did this happen?"
-                # Add service as leaf to prefix tree
-                if sub_tree.get(-1) is None:
-                    sub_tree[-1] = [s]
-                else:
-                    sub_tree[-1].append(s)
-        return prefix_tree
-
-    def _find_services_for_uds(self, message: Union[bytes, bytearray]):
-        if not hasattr(self, "_prefix_tree"):
-            # Compute the prefix tree the first time this decode function is called.
-            self._prefix_tree = self._build_coded_prefix_tree()
-        prefix_tree = self._prefix_tree
-
-        # Find matching service(s) in prefix tree
-        possible_services = []
-        for b in message:
-            if prefix_tree.get(b) is not None:
-                assert isinstance(prefix_tree.get(b), dict)
-                prefix_tree = prefix_tree.get(b)
-            else:
-                break
-            if -1 in prefix_tree:
-                possible_services += prefix_tree[-1]
-        return possible_services
-
-    def decode(self, message: Union[bytes, bytearray]) -> Iterable[Message]:
-        possible_services = self._find_services_for_uds(message)
-
-        if possible_services is None:
-            raise DecodeError(f"Couldn't find corresponding service for message {message.hex()}.")
-
-        decoded_messages = []
-
-        for service in possible_services:
-            try:
-                decoded_messages.append(service.decode_message(message))
-            except DecodeError as e:
-                pass
-        if len(decoded_messages) == 0:
-            raise DecodeError(
-                f"None of the services {possible_services} could parse {message.hex()}.")
-        return decoded_messages
-
-    def decode_response(self, response: Union[bytes, bytearray],
-                        request: Union[bytes, bytearray, Message]) -> Iterable[Message]:
-        if isinstance(request, Message):
-            possible_services = [request.service]
-        else:
-            if not isinstance(request, (bytes, bytearray)):
-                raise TypeError(f"Request parameter must have type "
-                                f"Message, bytes or bytearray but was {type(request)}")
-            possible_services = self._find_services_for_uds(request)
-        if possible_services is None:
-            raise DecodeError(f"Couldn't find corresponding service for request {request.hex()}.")
-
-        decoded_messages = []
-
-        for service in possible_services:
-            try:
-                decoded_messages.append(service.decode_message(response))
-            except DecodeError as e:
-                pass
-        if len(decoded_messages) == 0:
-            raise DecodeError(
-                f"None of the services {possible_services} could parse {response.hex()}.")
-        return decoded_messages
+    #####
+    # </value inheritance mechanism helpers>
+    #####
 
     #####
     # <communication parameter handling>
@@ -435,6 +316,20 @@ class DiagLayer:
         tables, state charts, ...
         """
         return self._communication_parameters
+
+    @property
+    def protocols(self) -> NamedItemList["DiagLayer"]:
+        """Return the set of all protocols which are applicable to the diagnostic layer"""
+        result_dict: Dict[str, DiagLayer] = dict()
+
+        for parent_ref in self._get_parent_refs_sorted_by_priority():
+            for prot in parent_ref.layer.protocols:
+                result_dict[prot.short_name] = prot
+
+        if self.diag_layer_raw.variant_type == DiagLayerType.PROTOCOL:
+            result_dict[self.diag_layer_raw.short_name] = self
+
+        return NamedItemList(short_name_as_id, result_dict.values())
 
     def get_communication_parameter(
         self,
@@ -697,6 +592,126 @@ class DiagLayer:
 
     #####
     # </communication parameter handling>
+    #####
+
+    #####
+    # <PDU decoding>
+    #####
+
+    def _build_coded_prefix_tree(self):
+        """Constructs the coded prefix tree of the services.
+        Each leaf node is a list of `DiagService`s.
+        (This is because navigating from a service to the request/ responses is easier than finding the service for a given request/response object.)
+
+        Example:
+        Let there be four services with corresponding requests:
+        * Request 1 has the coded constant prefix `12 34`.
+        * Request 2 has the coded constant prefix `12 34`.
+        * Request 3 has the coded constant prefix `12 56`.
+        * Request 4 has the coded constant prefix `12 56 00`.
+
+        Then, the constructed prefix tree is the dict
+        ```
+        {0x12: {0x34: {-1: [<Service 1>, <Service 2>]},
+                0x56: {-1: [<Service 3>],
+                       0x0: {-1: [<Service 4>]}
+                       }}}
+        ```
+        Note, that the inner `-1` are constant to distinguish them from possible service IDs.
+
+        Also note, that it is actually allowed that
+        (a) SIDs for different services are the same like for service 1 and 2 (thus each leaf node is a list) and
+        (b) one SID is the prefix of another SID like for service 3 and 4 (thus the constant `-1` key).
+        """
+        services = [s for s in self._services if isinstance(s, DiagService)]
+        prefix_tree = {}
+        for s in services:
+            # Compute prefixes for the request and all responses
+            request_prefix = s.request.coded_const_prefix()
+            prefixes = [request_prefix] + [
+                message.coded_const_prefix(request_prefix=request_prefix)
+                for message in chain(s.positive_responses, s.negative_responses)
+            ]
+            for coded_prefix in prefixes:
+                # Traverse prefix tree
+                sub_tree = prefix_tree
+                for b in coded_prefix:
+                    if sub_tree.get(b) is None:
+                        sub_tree[b] = {}
+                    sub_tree = sub_tree.get(b)
+
+                    assert isinstance(
+                        sub_tree,
+                        dict), f"{sub_tree} has type {type(sub_tree)}. How did this happen?"
+                # Add service as leaf to prefix tree
+                if sub_tree.get(-1) is None:
+                    sub_tree[-1] = [s]
+                else:
+                    sub_tree[-1].append(s)
+        return prefix_tree
+
+    def _find_services_for_uds(self, message: Union[bytes, bytearray]):
+        if not hasattr(self, "_prefix_tree"):
+            # Compute the prefix tree the first time this decode function is called.
+            self._prefix_tree = self._build_coded_prefix_tree()
+        prefix_tree = self._prefix_tree
+
+        # Find matching service(s) in prefix tree
+        possible_services = []
+        for b in message:
+            if prefix_tree.get(b) is not None:
+                assert isinstance(prefix_tree.get(b), dict)
+                prefix_tree = prefix_tree.get(b)
+            else:
+                break
+            if -1 in prefix_tree:
+                possible_services += prefix_tree[-1]
+        return possible_services
+
+    def decode(self, message: Union[bytes, bytearray]) -> Iterable[Message]:
+        possible_services = self._find_services_for_uds(message)
+
+        if possible_services is None:
+            raise DecodeError(f"Couldn't find corresponding service for message {message.hex()}.")
+
+        decoded_messages = []
+
+        for service in possible_services:
+            try:
+                decoded_messages.append(service.decode_message(message))
+            except DecodeError as e:
+                pass
+        if len(decoded_messages) == 0:
+            raise DecodeError(
+                f"None of the services {possible_services} could parse {message.hex()}.")
+        return decoded_messages
+
+    def decode_response(self, response: Union[bytes, bytearray],
+                        request: Union[bytes, bytearray, Message]) -> Iterable[Message]:
+        if isinstance(request, Message):
+            possible_services = [request.service]
+        else:
+            if not isinstance(request, (bytes, bytearray)):
+                raise TypeError(f"Request parameter must have type "
+                                f"Message, bytes or bytearray but was {type(request)}")
+            possible_services = self._find_services_for_uds(request)
+        if possible_services is None:
+            raise DecodeError(f"Couldn't find corresponding service for request {request.hex()}.")
+
+        decoded_messages = []
+
+        for service in possible_services:
+            try:
+                decoded_messages.append(service.decode_message(response))
+            except DecodeError as e:
+                pass
+        if len(decoded_messages) == 0:
+            raise DecodeError(
+                f"None of the services {possible_services} could parse {response.hex()}.")
+        return decoded_messages
+
+    #####
+    # </PDU decoding>
     #####
 
     def __repr__(self) -> str:
