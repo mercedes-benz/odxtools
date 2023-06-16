@@ -1,30 +1,34 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 import abc
-from typing import TYPE_CHECKING, Optional, Union, List
 import warnings
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import OdxWarning
-from ..odxlink import OdxLinkDatabase
 from ..globals import logger
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..specialdata import SpecialDataGroup
 
 if TYPE_CHECKING:
     from ..diaglayer import DiagLayer
 
+
 class Parameter(abc.ABC):
-    def __init__(self,
-                 *,
-                 short_name: str,
-                 parameter_type: str,
-                 long_name: Optional[str],
-                 byte_position: Optional[int],
-                 bit_position: Optional[int],
-                 semantic: Optional[str],
-                 description: Optional[str],
-                 sdgs: List[SpecialDataGroup]) -> None:
+
+    def __init__(
+        self,
+        *,
+        short_name: str,
+        parameter_type: str,
+        long_name: Optional[str],
+        byte_position: Optional[int],
+        bit_position: Optional[int],
+        semantic: Optional[str],
+        description: Optional[str],
+        sdgs: List[SpecialDataGroup],
+    ) -> None:
         self.short_name: str = short_name
         self.long_name: Optional[str] = long_name
         self.byte_position: Optional[int] = byte_position
@@ -34,7 +38,7 @@ class Parameter(abc.ABC):
         self.description: Optional[str] = description
         self.sdgs = sdgs
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
 
         for sdg in self.sdgs:
@@ -42,11 +46,13 @@ class Parameter(abc.ABC):
 
         return result
 
-    def _resolve_references(self,
-                            parent_dl: "DiagLayer",
-                            odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         for sdg in self.sdgs:
-            sdg._resolve_references(odxlinks)
+            sdg._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(diag_layer)
 
     @property
     def bit_length(self) -> Optional[int]:
@@ -144,7 +150,8 @@ class Parameter(abc.ABC):
             if new_rpc[byte_idx_rpc] & byte_value[byte_idx_val] != 0:
                 warnings.warn(
                     f"Parameter {self.short_name} overlaps with another parameter (bytes are already set)",
-                    OdxWarning)
+                    OdxWarning,
+                )
             new_rpc[byte_idx_rpc] |= byte_value[byte_idx_val]
 
         logger.debug(f"Param {self.short_name} inserts"
@@ -155,19 +162,16 @@ class Parameter(abc.ABC):
         """
         Mostly for pretty printing purposes (specifically not for reconstructing the object)
         """
-        d = {
-            'short_name': self.short_name,
-            'type': self.parameter_type,
-            'semantic': self.semantic
-        }
+        d = {"short_name": self.short_name, "type": self.parameter_type, "semantic": self.semantic}
         if self.byte_position is not None:
-            d['byte_position'] = self.byte_position
+            d["byte_position"] = self.byte_position
         if self.bit_position is not None:
-            d['bit_position'] = self.bit_position
+            d["bit_position"] = self.bit_position
         return d
 
     def __repr__(self):
-        repr_str = f"Parameter(parameter_type='{self.parameter_type}', short_name='{self.short_name}'"
+        repr_str = (
+            f"Parameter(parameter_type='{self.parameter_type}', short_name='{self.short_name}'")
         if self.long_name is not None:
             repr_str += f", long_name='{self.long_name}'"
         if self.byte_position is not None:

@@ -2,14 +2,12 @@
 # Copyright (c) 2022 MBition GmbH
 from ..dataobjectproperty import DataObjectProperty
 from ..encodestate import EncodeState
-
 from .parameterwithdop import ParameterWithDOP
 
+
 class ValueParameter(ParameterWithDOP):
-    def __init__(self,
-                 *,
-                 physical_default_value_raw,
-                 **kwargs):
+
+    def __init__(self, *, physical_default_value_raw, **kwargs):
         super().__init__(parameter_type="VALUE", **kwargs)
         # physical_default_value is a string. Conversion to actual type must happen after parsing
         self.physical_default_value_raw = physical_default_value_raw
@@ -19,7 +17,8 @@ class ValueParameter(ParameterWithDOP):
         if self.physical_default_value_raw is None:
             return None
         else:
-            return self.dop.physical_type.base_data_type.from_string(self.physical_default_value_raw)
+            return self.dop.physical_type.base_data_type.from_string(
+                self.physical_default_value_raw)
 
     def is_required(self):
         return self.physical_default_value is None
@@ -39,12 +38,12 @@ class ValueParameter(ParameterWithDOP):
         if physical_value is None:
             raise TypeError(f"A value for parameter '{self.short_name}' must be specified"
                             f" as the parameter does not exhibit a default.")
-        assert self.dop is not None, f"Param {self.short_name} does not have a DOP. Maybe resolving references failed?"
+        assert (self.dop is not None
+               ), f"Param {self.short_name} does not have a DOP. Maybe resolving references failed?"
 
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return self.dop.convert_physical_to_bytes(physical_value,
-                                                  encode_state=encode_state,
-                                                  bit_position=bit_position_int)
+        return self.dop.convert_physical_to_bytes(
+            physical_value, encode_state=encode_state, bit_position=bit_position_int)
 
     def get_valid_physical_values(self):
         if isinstance(self.dop, DataObjectProperty):

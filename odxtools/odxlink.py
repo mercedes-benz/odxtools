@@ -64,9 +64,7 @@ class OdxLinkId:
         return f"OdxLinkId('{self.local_id}')"
 
     @staticmethod
-    def from_et(
-        et: Element, doc_fragments: List[OdxDocFragment]
-    ) -> Optional["OdxLinkId"]:
+    def from_et(et: Element, doc_fragments: List[OdxDocFragment]) -> Optional["OdxLinkId"]:
         """Construct an OdxLinkId for a given XML node (ElementTree object).
 
         Returns None if the given XML node does not exhibit an ID.
@@ -105,9 +103,8 @@ class OdxLinkRef:
         ...
 
     @staticmethod
-    def from_et(
-        et: Optional[Element], source_doc_frags: List[OdxDocFragment]
-    ) -> Optional["OdxLinkRef"]:
+    def from_et(et: Optional[Element],
+                source_doc_frags: List[OdxDocFragment]) -> Optional["OdxLinkRef"]:
         """Construct an OdxLinkRef for a given XML node (ElementTree object).
 
         Returns None if the given XML node does not represent a reference.
@@ -124,8 +121,8 @@ class OdxLinkRef:
         doc_type = et.attrib.get("DOCTYPE")
 
         assert (doc_ref is not None and doc_type is not None) or (
-            doc_ref is None and doc_type is None
-        ), "DOCREF and DOCTYPE must both either be specified or omitted"
+            doc_ref is None and
+            doc_type is None), "DOCREF and DOCTYPE must both either be specified or omitted"
 
         # if the target document fragment is specified by the
         # reference, use it, else use the document fragment containing
@@ -211,10 +208,8 @@ class OdxLinkDatabase:
 
                 return obj
 
-        raise KeyError(
-            f"ODXLINK reference {ref} could not be resolved for any "
-            f"of the document fragments {ref.ref_docs}"
-        )
+        raise KeyError(f"ODXLINK reference {ref} could not be resolved for any "
+                       f"of the document fragments {ref.ref_docs}")
 
     def resolve_lenient(self, ref: OdxLinkRef) -> Optional[Any]:
         """

@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 import warnings
-from typing import Callable, Dict, Iterable, List, Optional, Union, Generic, TypeVar
+from typing import Callable, Dict, Generic, Iterable, List, Optional, TypeVar, Union
 
-T = TypeVar('T')
+T = TypeVar("T")
+
 
 class NamedItemList(Generic[T]):
     """A list that provides direct access to its items as named attributes.
@@ -19,7 +20,9 @@ class NamedItemList(Generic[T]):
     returned by the item-to-name function are valid identifiers in python.
     """
 
-    def __init__(self, item_to_name_fn: Callable[[T], str], input_list: Optional[Iterable[T]] = None):
+    def __init__(self,
+                 item_to_name_fn: Callable[[T], str],
+                 input_list: Optional[Iterable[T]] = None):
         self._item_to_name_fn = item_to_name_fn
         self._list: List[T] = []
         # TODO (?): This duplicates self.__dict__ -> Is there a prettier type-safe way?
@@ -60,6 +63,9 @@ class NamedItemList(Generic[T]):
     def sort(self, key=None, reverse=False):
         return self._list.sort(key=key, reverse=reverse)
 
+    def __contains__(self, x) -> bool:
+        return x in self._list
+
     def __len__(self):
         return len(self._list)
 
@@ -78,12 +84,11 @@ class NamedItemList(Generic[T]):
             # item. (alternatively, the return type of this method
             # could be defined as Union[T, List[T]], but this leads
             # mypy to produce *many* spurious and hard to fix errors.
-            return self._list[key] # type: ignore
+            return self._list[key]  # type: ignore
         else:
             return self._typed_dict[key]
 
-    def get(self, key: Union[int, str], default: Optional[T] = None) \
-        -> Optional[T]:
+    def get(self, key: Union[int, str], default: Optional[T] = None) -> Optional[T]:
 
         if isinstance(key, int):
             if abs(key) < -len(self._list) or key >= len(self._list):

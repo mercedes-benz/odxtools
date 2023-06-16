@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from enum import IntEnum
 
+
 class SID(IntEnum):
     """The standardized service IDs for ODB-II (SAE J1979).
 

@@ -6,14 +6,16 @@ from typing import Any, Dict, List, Union
 
 import pytest
 
-from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayertype import DIAG_LAYER_TYPE
+from odxtools.diaglayer import DiagLayer, DiagLayerRaw
+from odxtools.diaglayertype import DiagLayerType
 from odxtools.ecu_variant_matcher import EcuVariantMatcher
 from odxtools.ecu_variant_patterns import EcuVariantPattern, MatchingParameter
 from odxtools.exceptions import OdxError
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from odxtools.nameditemlist import NamedItemList
+from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.service import DiagService
 from odxtools.structures import Request, Response
+from odxtools.utils import short_name_as_id
 
 doc_frags = [OdxDocFragment(doc_name="pytest", doc_type="WinneThePoh")]
 
@@ -27,6 +29,7 @@ def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
         short_name="dummy_resp",
         long_name=None,
         description=None,
+        sdgs=[],
         is_visible_raw=None,
         parameters=[],
         response_type="POS-RESPONSE",
@@ -50,6 +53,7 @@ def ident_service(monkeypatch, dummy_response: Response) -> DiagService:
         short_name="dummy_req",
         long_name=None,
         description=None,
+        sdgs=[],
         is_visible_raw=None,
         parameters=[],
         byte_size=None,
@@ -87,6 +91,7 @@ def supplier_service(monkeypatch, dummy_response: Response) -> DiagService:
         short_name="dummy_req",
         long_name=None,
         description=None,
+        sdgs=[],
         is_visible_raw=None,
         parameters=[],
         byte_size=None,
@@ -119,51 +124,45 @@ def supplier_service(monkeypatch, dummy_response: Response) -> DiagService:
 
 @pytest.fixture
 def ecu_variant_pattern1() -> EcuVariantPattern:
-    return EcuVariantPattern(
-        matching_parameters=[
-            MatchingParameter(
-                diag_comm_snref="identService",
-                expected_value="1000",
-                out_param_if="id",
-            ),
-            MatchingParameter(
-                diag_comm_snref="supplierService",
-                expected_value="supplier_A",
-                out_param_if="name.english",
-            ),
-        ]
-    )
+    return EcuVariantPattern(matching_parameters=[
+        MatchingParameter(
+            diag_comm_snref="identService",
+            expected_value="1000",
+            out_param_if="id",
+        ),
+        MatchingParameter(
+            diag_comm_snref="supplierService",
+            expected_value="supplier_A",
+            out_param_if="name.english",
+        ),
+    ])
 
 
 @pytest.fixture
 def ecu_variant_pattern2() -> EcuVariantPattern:
-    return EcuVariantPattern(
-        matching_parameters=[
-            MatchingParameter(
-                diag_comm_snref="identService",
-                expected_value="2000",
-                out_param_if="id",
-            ),
-            MatchingParameter(
-                diag_comm_snref="supplierService",
-                expected_value="supplier_B",
-                out_param_if="name.english",
-            ),
-        ]
-    )
+    return EcuVariantPattern(matching_parameters=[
+        MatchingParameter(
+            diag_comm_snref="identService",
+            expected_value="2000",
+            out_param_if="id",
+        ),
+        MatchingParameter(
+            diag_comm_snref="supplierService",
+            expected_value="supplier_B",
+            out_param_if="name.english",
+        ),
+    ])
 
 
 @pytest.fixture
 def ecu_variant_pattern3() -> EcuVariantPattern:
-    return EcuVariantPattern(
-        matching_parameters=[
-            MatchingParameter(
-                diag_comm_snref="supplierService",
-                expected_value="supplier_C",
-                out_param_if="name.english",
-            )
-        ]
-    )
+    return EcuVariantPattern(matching_parameters=[
+        MatchingParameter(
+            diag_comm_snref="supplierService",
+            expected_value="supplier_C",
+            out_param_if="name.english",
+        )
+    ])
 
 
 @pytest.fixture
@@ -172,31 +171,35 @@ def ecu_variant_1(
     supplier_service: DiagService,
     ecu_variant_pattern1: EcuVariantPattern,
 ) -> DiagLayer:
-    result = DiagLayer(
-        variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
+    raw_layer = DiagLayerRaw(
+        variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant1", doc_fragments=doc_frags),
         short_name="ecu_variant1",
         long_name=None,
         description=None,
-        additional_audiences=[],
-        functional_classes=[],
-        parent_refs=[],
-        import_refs=[],
-        communication_parameters=[],
-        diag_comm_refs=[],
+        admin_data=None,
+        company_datas=NamedItemList(short_name_as_id),
+        functional_classes=NamedItemList(short_name_as_id),
         diag_data_dictionary_spec=None,
-        services=[ident_service, supplier_service],
-        requests=[],
-        positive_responses=[],
-        negative_responses=[],
-        single_ecu_jobs=[],
-        states=[],
-        state_transitions=[],
-        ecu_variant_patterns=[ecu_variant_pattern1],
+        diag_comms=[ident_service, supplier_service],
+        requests=NamedItemList(short_name_as_id),
+        positive_responses=NamedItemList(short_name_as_id),
+        negative_responses=NamedItemList(short_name_as_id),
+        global_negative_responses=NamedItemList(short_name_as_id),
+        import_refs=[],
+        state_charts=NamedItemList(short_name_as_id),
+        additional_audiences=NamedItemList(short_name_as_id),
         sdgs=[],
+        parent_refs=[],
+        communication_parameters=[],
+        ecu_variant_patterns=[ecu_variant_pattern1],
     )
-    result.finalize_init(odxlinks)
+    result = DiagLayer(diag_layer_raw=raw_layer)
+    odxlinks.update(result._build_odxlinks())
+    result._resolve_odxlinks(odxlinks)
+    result._finalize_init(odxlinks)
     return result
+
 
 @pytest.fixture
 def ecu_variant_2(
@@ -204,30 +207,33 @@ def ecu_variant_2(
     supplier_service: DiagService,
     ecu_variant_pattern2: EcuVariantPattern,
 ) -> DiagLayer:
-    result = DiagLayer(
-        variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
+    raw_layer = DiagLayerRaw(
+        variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant2", doc_fragments=doc_frags),
         short_name="ecu_variant2",
         long_name=None,
         description=None,
-        functional_classes=[],
-        additional_audiences=[],
-        parent_refs=[],
-        import_refs=[],
-        communication_parameters=[],
-        diag_comm_refs=[],
+        admin_data=None,
+        company_datas=NamedItemList(short_name_as_id),
+        functional_classes=NamedItemList(short_name_as_id),
         diag_data_dictionary_spec=None,
-        services=[ident_service, supplier_service],
-        requests=[],
-        positive_responses=[],
-        negative_responses=[],
-        single_ecu_jobs=[],
-        states=[],
-        state_transitions=[],
-        ecu_variant_patterns=[ecu_variant_pattern2],
+        diag_comms=[ident_service, supplier_service],
+        requests=NamedItemList(short_name_as_id),
+        positive_responses=NamedItemList(short_name_as_id),
+        negative_responses=NamedItemList(short_name_as_id),
+        global_negative_responses=NamedItemList(short_name_as_id),
+        import_refs=[],
+        state_charts=NamedItemList(short_name_as_id),
+        additional_audiences=NamedItemList(short_name_as_id),
         sdgs=[],
+        parent_refs=[],
+        communication_parameters=[],
+        ecu_variant_patterns=[ecu_variant_pattern2],
     )
-    result.finalize_init(odxlinks)
+    result = DiagLayer(diag_layer_raw=raw_layer)
+    odxlinks.update(result._build_odxlinks())
+    result._resolve_odxlinks(odxlinks)
+    result._finalize_init(odxlinks)
     return result
 
 
@@ -238,36 +244,39 @@ def ecu_variant_3(
     ecu_variant_pattern1: EcuVariantPattern,
     ecu_variant_pattern3: EcuVariantPattern,
 ) -> DiagLayer:
-    result = DiagLayer(
-        variant_type=DIAG_LAYER_TYPE.ECU_VARIANT,
+    raw_layer = DiagLayerRaw(
+        variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant3", doc_fragments=doc_frags),
         short_name="ecu_variant3",
         long_name=None,
         description=None,
-        functional_classes=[],
-        additional_audiences=[],
-        parent_refs=[],
-        import_refs=[],
-        communication_parameters=[],
-        diag_comm_refs=[],
+        admin_data=None,
+        company_datas=NamedItemList(short_name_as_id),
+        functional_classes=NamedItemList(short_name_as_id),
         diag_data_dictionary_spec=None,
-        services=[ident_service, supplier_service],
-        requests=[],
-        positive_responses=[],
-        negative_responses=[],
-        single_ecu_jobs=[],
-        states=[],
-        state_transitions=[],
-        ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
+        diag_comms=[ident_service, supplier_service],
+        requests=NamedItemList(short_name_as_id),
+        positive_responses=NamedItemList(short_name_as_id),
+        negative_responses=NamedItemList(short_name_as_id),
+        global_negative_responses=NamedItemList(short_name_as_id),
+        import_refs=[],
+        state_charts=NamedItemList(short_name_as_id),
+        additional_audiences=NamedItemList(short_name_as_id),
         sdgs=[],
+        parent_refs=[],
+        communication_parameters=[],
+        ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
     )
-    result.finalize_init(odxlinks)
+    result = DiagLayer(diag_layer_raw=raw_layer)
+    odxlinks.update(result._build_odxlinks())
+    result._resolve_odxlinks(odxlinks)
+    result._finalize_init(odxlinks)
     return result
 
+
 @pytest.fixture
-def ecu_variants(
-    ecu_variant_1: DiagLayer, ecu_variant_2: DiagLayer, ecu_variant_3: DiagLayer
-) -> List[DiagLayer]:
+def ecu_variants(ecu_variant_1: DiagLayer, ecu_variant_2: DiagLayer,
+                 ecu_variant_3: DiagLayer) -> List[DiagLayer]:
     return [ecu_variant_1, ecu_variant_2, ecu_variant_3]
 
 
@@ -284,7 +293,9 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
         (
             {
                 b"\x22\x10\00": as_bytes({"id": 2000}),
-                b"\x22\x20\00": as_bytes({"name": {"english": "supplier_B"}}),
+                b"\x22\x20\00": as_bytes({"name": {
+                    "english": "supplier_B"
+                }}),
             },
             "ecu_variant2",
         ),
@@ -292,7 +303,9 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
         (
             {
                 b"\x22\x10\00": as_bytes({"id": 2000}),
-                b"\x22\x20\00": as_bytes({"name": {"english": "supplier_C"}}),
+                b"\x22\x20\00": as_bytes({"name": {
+                    "english": "supplier_C"
+                }}),
             },
             "ecu_variant3",
         ),
@@ -300,7 +313,9 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
         (
             {
                 b"\x22\x10\00": as_bytes({"id": 1000}),
-                b"\x22\x20\00": as_bytes({"name": {"english": "supplier_A"}}),
+                b"\x22\x20\00": as_bytes({"name": {
+                    "english": "supplier_A"
+                }}),
             },
             "ecu_variant1",
         ),
@@ -328,7 +343,9 @@ def test_no_match(ecu_variants: List[DiagLayer], use_cache: bool):
     # stores the responses for each request for the ecu-under-test
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 1000}),
-        b"\x22\x20\00": as_bytes({"name": {"english": "supplier_D"}}),
+        b"\x22\x20\00": as_bytes({"name": {
+            "english": "supplier_D"
+        }}),
     }
 
     matcher = EcuVariantMatcher(
@@ -373,7 +390,9 @@ def test_request_loop_misuse(ecu_variants: List[DiagLayer], use_cache: bool):
 def test_request_loop_idempotency(ecu_variants: List[DiagLayer], use_cache: bool):
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 2000}),
-        b"\x22\x20\00": as_bytes({"name": {"english": "supplier_B"}}),
+        b"\x22\x20\00": as_bytes({"name": {
+            "english": "supplier_B"
+        }}),
     }
 
     matcher = EcuVariantMatcher(

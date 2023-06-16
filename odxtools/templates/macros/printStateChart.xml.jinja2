@@ -1,0 +1,37 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printState.xml.jinja2') as ps %}
+{%- import('macros/printStateTransition.xml.jinja2') as pst %}
+
+{%- macro printStateChart(state_chart) -%}
+<STATE-CHART ID="{{state_chart.odx_id.local_id}}">
+ <SHORT-NAME>{{state_chart.short_name}}</SHORT-NAME>
+{%- if state_chart.long_name %}
+ <LONG-NAME>{{state_chart.long_name}}</LONG-NAME>
+{%- endif %}
+{%- if state_chart.description is string and state_chart.description.strip() %}
+ <DESC>
+{{state_chart.description}}
+ </DESC>
+ <SEMANTIC>{{state_chart.semantic}}</SEMANTIC>
+ {%- if state_chart.state_transitions %}
+ <STATE-TRANSITIONS>
+  {%- for st in state_chart.state_transitions %}
+  {{ pst.printStateTransition(st) | indent(2) }}
+  {%- endfor %}
+ </STATE-TRANSITIONS>
+ {%- endif %}
+ <START-STATE-SNREF SHORT-NAME="{{state_chart.start_state_snref}}" />
+ {%- if state_chart.states %}
+ <STATES>
+  {%- for st in state_chart.states %}
+  {{ ps.printState(st) | indent(2) }}
+  {%- endfor %}
+ </STATES>
+ {%- endif %}
+{%- endif %}
+</STATE-CHART>
+{%- endmacro -%}

@@ -12,8 +12,8 @@
 {%- if st.long_name %}
  <LONG-NAME>{{st.long_name|e}}</LONG-NAME>
 {%- endif %}
-{%- if st.bit_length is not none %}
- <BYTE-SIZE>{{((st.bit_length + 7)/8)|int}}</BYTE-SIZE>
+{%- if st.byte_size is not none %}
+ <BYTE-SIZE>{{st.byte_size}}</BYTE-SIZE>
 {%- endif %}
  <PARAMS>
 {%- for param in st.parameters -%}
