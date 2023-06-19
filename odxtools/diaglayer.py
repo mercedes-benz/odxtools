@@ -618,7 +618,6 @@ class DiagLayer:
         """Timeout on inactivity in seconds.
 
         This is defined by the communication parameter "CP_TesterPresentTime".
-        If the variant does not define this parameter, the default value 3.0 is returned.
 
         Description of the comparam: "Time between a response and the
         next subsequent tester present message (if no other request is
