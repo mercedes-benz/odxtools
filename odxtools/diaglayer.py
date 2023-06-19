@@ -40,11 +40,7 @@ class DiagLayer:
     encoding/decoding of data, etc.
     """
 
-    def __init__(
-        self,
-        *,
-        diag_layer_raw: DiagLayerRaw,
-    ):
+    def __init__(self, *, diag_layer_raw: DiagLayerRaw) -> None:
         self.diag_layer_raw = diag_layer_raw
 
         # diagnostic communications. For convenience, we create
