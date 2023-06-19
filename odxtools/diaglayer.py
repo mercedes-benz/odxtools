@@ -763,12 +763,5 @@ class DiagLayer:
     # </PDU decoding>
     #####
 
-    def __repr__(self) -> str:
-        return f"""DiagLayer(variant_type={self.diag_layer_raw.variant_type.value},
-          odx_id={repr(self.diag_layer_raw.odx_id)},
-          short_name={repr(self.diag_layer_raw.short_name)})"""
-
     def __str__(self) -> str:
-        return \
-            f"DiagLayer('{self.diag_layer_raw.short_name}', " \
-            f"type='{self.diag_layer_raw.variant_type.value}')"
+        return f"DiagLayer('{self.short_name}', type='{self.variant_type.value}')"
