@@ -33,6 +33,12 @@ from .utils import create_description_from_et, short_name_as_id
 
 
 class DiagLayer:
+    """This class represents a "logical view" upon a diagnostic layer
+    according to the ODX standard.
+
+    i.e. it handles the value inheritance, communication parameters,
+    encoding/decoding of data, etc.
+    """
 
     def __init__(
         self,
