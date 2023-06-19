@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from itertools import chain
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from .dataobjectproperty import DataObjectProperty, DtcDop
+from .dataobjectproperty import DataObjectProperty, DopBase, DtcDop
 from .endofpdufield import EndOfPduField
 from .envdata import EnvironmentData
 from .envdatadesc import EnvironmentDataDescription
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 @dataclass
 class DiagDataDictionarySpec:
     dtc_dops: NamedItemList[DtcDop]
-    data_object_props: NamedItemList[DataObjectProperty]
+    data_object_props: NamedItemList[DopBase]
     structures: NamedItemList[BasicStructure]
     end_of_pdu_fields: NamedItemList[EndOfPduField]
     tables: NamedItemList[Table]
