@@ -12,7 +12,7 @@ from .admindata import AdminData
 from .audience import AdditionalAudience, Audience
 from .communicationparameter import CommunicationParameterRef
 from .companydata import CompanyData, create_company_datas_from_et
-from .dataobjectproperty import DopBase, DtcDop
+from .dataobjectproperty import DataObjectProperty, DtcDop
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayerraw import DiagLayerRaw
 from .diaglayertype import DiagLayerType
@@ -65,7 +65,8 @@ class DiagLayer:
         # Properties that include inherited objects
         self._services: NamedItemList[Union[DiagService,
                                             SingleEcuJob]] = NamedItemList(short_name_as_id)
-        self._data_object_properties: NamedItemList[DopBase] = NamedItemList(short_name_as_id)
+        self._data_object_properties: NamedItemList[DataObjectProperty] = NamedItemList(
+            short_name_as_id)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayer":
@@ -115,8 +116,8 @@ class DiagLayer:
         services = sorted(self._compute_available_services(odxlinks), key=short_name_as_id)
         self._services = NamedItemList[Union[DiagService, SingleEcuJob]](short_name_as_id, services)
 
-        dops = NamedItemList[DopBase](short_name_as_id,
-                                      self._compute_available_data_object_properties())
+        dops = NamedItemList[DataObjectProperty](short_name_as_id,
+                                                 self._compute_available_data_object_properties())
         dtc_dops: NamedItemList[DtcDop]
         structures: NamedItemList[BasicStructure]
         end_of_pdu_fields: NamedItemList[EndOfPduField]
@@ -293,7 +294,7 @@ class DiagLayer:
 
         return list(result_dict.values())
 
-    def _compute_available_data_object_properties(self) -> List[DopBase]:
+    def _compute_available_data_object_properties(self) -> List[DataObjectProperty]:
         """Returns the locally defined and inherited DOPs."""
         result_dict = {}
 
