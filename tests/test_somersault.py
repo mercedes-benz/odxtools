@@ -118,15 +118,16 @@ class TestDatabase(unittest.TestCase):
         ecu = odxdb.ecus.somersault_lazy
 
         self.assertEqual(
-            [x.short_name for x in ecu.services],
-            [
+            {x.short_name
+             for x in ecu.diag_comms},
+            {
                 "compulsory_program",
                 "do_forward_flips",
                 "report_status",
                 "session_start",
                 "session_stop",
                 "tester_present",
-            ],
+            },
         )
 
         service = ecu.services.do_forward_flips
@@ -248,7 +249,7 @@ class TestNavigation(unittest.TestCase):
         self.assertIsNotNone(odxdb.ecus.somersault_assiduous.services.do_backward_flips)
         self.assertIsNotNone(odxdb.ecus.somersault_assiduous.services.do_forward_flips)
         self.assertIsNotNone(odxdb.ecus.somersault_assiduous.services.report_status)
-        self.assertIsNotNone(odxdb.ecus.somersault_assiduous.services.compulsory_program)
+        self.assertIsNotNone(odxdb.ecus.somersault_assiduous.single_ecu_jobs.compulsory_program)
 
         # The lazy ECU variant only inherits services but does not add any.
         self.assertIsNotNone(odxdb.ecus.somersault_lazy.services.do_forward_flips)
