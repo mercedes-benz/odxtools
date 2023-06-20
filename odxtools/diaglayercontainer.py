@@ -46,14 +46,13 @@ class DiagLayerContainer:
 
         self._diag_layers = NamedItemList[DiagLayer](
             short_name_as_id,
-            list(
-                chain(
-                    self.ecu_shared_datas,
-                    self.protocols,
-                    self.functional_groups,
-                    self.base_variants,
-                    self.ecu_variants,
-                )),
+            chain(
+                self.ecu_shared_datas,
+                self.protocols,
+                self.functional_groups,
+                self.base_variants,
+                self.ecu_variants,
+            ),
         )
 
     @staticmethod

@@ -41,9 +41,7 @@ def print_summary(
         all_services: List[Union[DiagService, SingleEcuJob]] = sorted(
             dl.services, key=lambda x: x.short_name)
 
-        data_object_properties: Collection[DopBase] = []
-        if dl.local_diag_data_dictionary_spec is not None:
-            data_object_properties = dl.local_diag_data_dictionary_spec.data_object_props
+        data_object_properties = dl.diag_data_dictionary_spec.data_object_props
         com_params = dl.communication_parameters
 
         print(f"{dl.variant_type} '{dl.short_name}'")

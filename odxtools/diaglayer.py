@@ -12,15 +12,19 @@ from .admindata import AdminData
 from .audience import AdditionalAudience, Audience
 from .communicationparameter import CommunicationParameterRef
 from .companydata import CompanyData, create_company_datas_from_et
-from .dataobjectproperty import DopBase
+from .dataobjectproperty import DataObjectProperty, DtcDop
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayerraw import DiagLayerRaw
 from .diaglayertype import DiagLayerType
 from .ecu_variant_patterns import EcuVariantPattern, create_ecu_variant_patterns_from_et
+from .endofpdufield import EndOfPduField
+from .envdata import EnvironmentData
+from .envdatadesc import EnvironmentDataDescription
 from .exceptions import DecodeError, OdxWarning
 from .functionalclass import FunctionalClass
 from .globals import logger
 from .message import Message
+from .multiplexer import Multiplexer
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parentref import ParentRef
@@ -28,17 +32,21 @@ from .service import DiagService
 from .singleecujob import SingleEcuJob
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .statechart import StateChart
-from .structures import Request, Response, create_any_structure_from_et
+from .structures import BasicStructure, Request, Response, create_any_structure_from_et
+from .table import Table
+from .units import UnitGroup, UnitSpec
 from .utils import create_description_from_et, short_name_as_id
 
 
 class DiagLayer:
+    """This class represents a "logical view" upon a diagnostic layer
+    according to the ODX standard.
 
-    def __init__(
-        self,
-        *,
-        diag_layer_raw: DiagLayerRaw,
-    ):
+    i.e. it handles the value inheritance, communication parameters,
+    encoding/decoding of data, etc.
+    """
+
+    def __init__(self, *, diag_layer_raw: DiagLayerRaw) -> None:
         self.diag_layer_raw = diag_layer_raw
 
         # diagnostic communications. For convenience, we create
@@ -57,7 +65,8 @@ class DiagLayer:
         # Properties that include inherited objects
         self._services: NamedItemList[Union[DiagService,
                                             SingleEcuJob]] = NamedItemList(short_name_as_id)
-        self._data_object_properties: NamedItemList[DopBase] = NamedItemList(short_name_as_id)
+        self._data_object_properties: NamedItemList[DataObjectProperty] = NamedItemList(
+            short_name_as_id)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayer":
@@ -107,8 +116,53 @@ class DiagLayer:
         services = sorted(self._compute_available_services(odxlinks), key=short_name_as_id)
         self._services = NamedItemList[Union[DiagService, SingleEcuJob]](short_name_as_id, services)
 
-        dops = sorted(self._compute_available_data_object_properties(), key=short_name_as_id)
-        self._data_object_properties = NamedItemList[DopBase](short_name_as_id, dops)
+        dops = NamedItemList[DataObjectProperty](short_name_as_id,
+                                                 self._compute_available_data_object_properties())
+        dtc_dops: NamedItemList[DtcDop]
+        structures: NamedItemList[BasicStructure]
+        end_of_pdu_fields: NamedItemList[EndOfPduField]
+        tables: NamedItemList[Table]
+        env_data_descs: NamedItemList[EnvironmentDataDescription]
+        env_datas: NamedItemList[EnvironmentData]
+        muxs: NamedItemList[Multiplexer]
+        unit_spec: Optional[UnitSpec]
+        ddds_sdgs: List[SpecialDataGroup]
+        if self.diag_layer_raw.diag_data_dictionary_spec:
+            dtc_dops = self.diag_layer_raw.diag_data_dictionary_spec.dtc_dops
+            structures = self.diag_layer_raw.diag_data_dictionary_spec.structures
+            end_of_pdu_fields = self.diag_layer_raw.diag_data_dictionary_spec.end_of_pdu_fields
+            tables = self.diag_layer_raw.diag_data_dictionary_spec.tables
+            env_data_descs = self.diag_layer_raw.diag_data_dictionary_spec.env_data_descs
+            env_datas = self.diag_layer_raw.diag_data_dictionary_spec.env_datas
+            muxs = self.diag_layer_raw.diag_data_dictionary_spec.muxs
+            unit_spec = self.diag_layer_raw.diag_data_dictionary_spec.unit_spec
+            ddds_sdgs = self.diag_layer_raw.diag_data_dictionary_spec.sdgs
+        else:
+            dtc_dops = NamedItemList(short_name_as_id)
+            structures = NamedItemList(short_name_as_id)
+            end_of_pdu_fields = NamedItemList(short_name_as_id)
+            tables = NamedItemList(short_name_as_id)
+            env_data_descs = NamedItemList(short_name_as_id)
+            env_datas = NamedItemList(short_name_as_id)
+            muxs = NamedItemList(short_name_as_id)
+            unit_spec = None
+            ddds_sdgs = []
+
+        # create a DiagDataDictionarySpec which includes all the
+        # inherited objects. To me, this seems rather inelegant, but
+        # hey, it's described like this in the standard.
+        self._diag_data_dictionary_spec = \
+            DiagDataDictionarySpec(
+                data_object_props=dops,
+                dtc_dops=dtc_dops,
+                structures=structures,
+                end_of_pdu_fields=end_of_pdu_fields,
+                tables=NamedItemList(short_name_as_id, tables),
+                env_data_descs=env_data_descs,
+                env_datas=env_datas,
+                muxs=muxs,
+                unit_spec=unit_spec,
+                sdgs=ddds_sdgs)
 
         #####
         # compute the communication parameters applicable to the
@@ -191,13 +245,9 @@ class DiagLayer:
         return self._services
 
     @property
-    def data_object_properties(self) -> NamedItemList[DopBase]:
-        """All data object properties including inherited ones.
-        This attribute corresponds to all specializations of DOP-BASE
-        defined in the DIAG-DATA-DICTIONARY-SPEC of this diag layer as well as
-        in the DIAG-DATA-DICTIONARY-SPEC of any parent.
-        """
-        return self._data_object_properties
+    def diag_data_dictionary_spec(self) -> DiagDataDictionarySpec:
+        """The DiagDataDictionarySpec applicable to this DiagLayer"""
+        return self._diag_data_dictionary_spec
 
     #######
     # </stuff subject to value inheritance>
@@ -244,7 +294,7 @@ class DiagLayer:
 
         return list(result_dict.values())
 
-    def _compute_available_data_object_properties(self) -> List[DopBase]:
+    def _compute_available_data_object_properties(self) -> List[DataObjectProperty]:
         """Returns the locally defined and inherited DOPs."""
         result_dict = {}
 
@@ -568,7 +618,6 @@ class DiagLayer:
         """Timeout on inactivity in seconds.
 
         This is defined by the communication parameter "CP_TesterPresentTime".
-        If the variant does not define this parameter, the default value 3.0 is returned.
 
         Description of the comparam: "Time between a response and the
         next subsequent tester present message (if no other request is
@@ -714,12 +763,5 @@ class DiagLayer:
     # </PDU decoding>
     #####
 
-    def __repr__(self) -> str:
-        return f"""DiagLayer(variant_type={self.diag_layer_raw.variant_type.value},
-          odx_id={repr(self.diag_layer_raw.odx_id)},
-          short_name={repr(self.diag_layer_raw.short_name)})"""
-
     def __str__(self) -> str:
-        return \
-            f"DiagLayer('{self.diag_layer_raw.short_name}', " \
-            f"type='{self.diag_layer_raw.variant_type.value}')"
+        return f"DiagLayer('{self.short_name}', type='{self.variant_type.value}')"
