@@ -196,7 +196,10 @@ class DiagLayer:
 
         #####
         # compute the communication parameters applicable to the
-        # diagnostic layer
+        # diagnostic layer. Note that communication parameters do
+        # *not* use value inheritance, but a slightly different
+        # scheme, cf the docstring of
+        # _compute_available_commmunication_parameters().
         #####
         self._communication_parameters = self._compute_available_commmunication_parameters()
 
@@ -533,7 +536,11 @@ class DiagLayer:
 
     @property
     def protocols(self) -> NamedItemList["DiagLayer"]:
-        """Return the set of all protocols which are applicable to the diagnostic layer"""
+        """Return the set of all protocols which are applicable to the diagnostic layer
+
+        Note that protocols are *not* explicitly inherited objects,
+        but the parent diagnostic layers of variant type "PROTOCOL".
+        """
         result_dict: Dict[str, DiagLayer] = dict()
 
         for parent_ref in self._get_parent_refs_sorted_by_priority():
