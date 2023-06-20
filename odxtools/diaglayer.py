@@ -201,9 +201,10 @@ class DiagLayer:
         self._communication_parameters = self._compute_available_commmunication_parameters()
 
         #####
-        # resolve all SNREFs. TODO: We allow SNREFS to inherited
-        # objects. This might not be allowed by the spec (So far, I
-        # haven't found any definitive statement...)
+        # resolve all SNREFs. TODO: We allow SNREFS to objects that
+        # were inherited by the diaglayer. This might not be allowed
+        # by the spec (So far, I haven't found any definitive
+        # statement...)
         #####
         self.diag_layer_raw._resolve_snrefs(self)
 
