@@ -156,12 +156,12 @@ class EndOfPduField(DopBase):
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         """Recursively resolve any short-name references"""
         if self.structure_snref is not None:
-            self._structure = diag_layer.diag_data_dictionary_spec.data_object_props[
-                self.structure_snref]
+            dops = diag_layer.diag_data_dictionary_spec.data_object_props
+            self._structure = dops[self.structure_snref]
 
         if self.env_data_desc_snref is not None:
-            self._env_data_desc = diag_layer.diag_data_dictionary_spec.data_object_props[
-                self.env_data_desc_snref]
+            dops = diag_layer.diag_data_dictionary_spec.data_object_props
+            self._env_data_desc = dops[self.env_data_desc_snref]
 
     def __repr__(self) -> str:
         return f"EndOfPduField(short_name='{self.short_name}', ref='{self.structure.odx_id}')"
