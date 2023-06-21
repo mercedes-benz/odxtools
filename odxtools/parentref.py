@@ -76,27 +76,3 @@ class ParentRef:
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
-
-    def get_inherited_services(self) -> List[Union[DiagService, SingleEcuJob]]:
-        if self.layer is None:
-            return []
-
-        services = dict()
-        for service in self.layer._services:
-            assert isinstance(service, (DiagService, SingleEcuJob))
-
-            if service.short_name not in self.not_inherited_diag_comms:
-                services[service.short_name] = service
-
-        return list(services.values())
-
-    def get_inherited_data_object_properties(self) -> List[DopBase]:
-        if self.layer is None:
-            return []
-
-        dops = {
-            dop.short_name: dop
-            for dop in self.layer._data_object_properties
-            if dop.short_name not in self.not_inherited_dops
-        }
-        return list(dops.values())

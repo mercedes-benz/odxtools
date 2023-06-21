@@ -3,7 +3,7 @@
 import warnings
 from copy import copy
 from itertools import chain
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union, cast
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union
 from xml.etree import ElementTree
 
 from deprecation import deprecated
@@ -37,6 +37,8 @@ from .table import Table
 from .units import UnitGroup, UnitSpec
 from .utils import create_description_from_et, short_name_as_id
 
+T = TypeVar("T")
+
 
 class DiagLayer:
     """This class represents a "logical view" upon a diagnostic layer
@@ -48,25 +50,6 @@ class DiagLayer:
 
     def __init__(self, *, diag_layer_raw: DiagLayerRaw) -> None:
         self.diag_layer_raw = diag_layer_raw
-
-        # diagnostic communications. For convenience, we create
-        # separate lists of diag comms for the different kinds of
-        # communication objects.
-        services = [dc for dc in diag_layer_raw.diag_comms if isinstance(dc, DiagService)]
-        single_ecu_jobs = [dc for dc in diag_layer_raw.diag_comms if isinstance(dc, SingleEcuJob)]
-        diag_comm_refs = [dc for dc in diag_layer_raw.diag_comms if isinstance(dc, OdxLinkRef)]
-        self._local_services = NamedItemList[DiagService](short_name_as_id, services)
-        self._local_single_ecu_jobs = NamedItemList[SingleEcuJob](short_name_as_id, single_ecu_jobs)
-        self._diag_comm_refs = diag_comm_refs
-
-        # DOP, units, etc
-        self.local_diag_data_dictionary_spec = diag_layer_raw.diag_data_dictionary_spec
-
-        # Properties that include inherited objects
-        self._services: NamedItemList[Union[DiagService,
-                                            SingleEcuJob]] = NamedItemList(short_name_as_id)
-        self._data_object_properties: NamedItemList[DataObjectProperty] = NamedItemList(
-            short_name_as_id)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayer":
@@ -106,46 +89,93 @@ class DiagLayer:
         excessive memory consumption for large databases...
         """
 
-        # make sure that the layer which we inherit from are of lower
-        # priority than us.
-        self_prio = self.variant_type.inheritance_priority
-        for parent_ref in self.diag_layer_raw.parent_refs:
-            parent_prio = parent_ref.layer.variant_type.inheritance_priority
-            assert self_prio > parent_prio, "diagnostic layers can only inherit from layers of lower priority"
+        #####
+        # fill in all applicable objects that use value inheritance
+        #####
 
-        services = sorted(self._compute_available_services(odxlinks), key=short_name_as_id)
-        self._services = NamedItemList[Union[DiagService, SingleEcuJob]](short_name_as_id, services)
+        # diagnostic communication objects with the ODXLINKs resolved
+        diag_comms = self._compute_available_diag_comms(odxlinks)
+        self._diag_comms = NamedItemList(short_name_as_id, diag_comms)
 
-        dops = NamedItemList[DataObjectProperty](short_name_as_id,
-                                                 self._compute_available_data_object_properties())
+        # filter the diag comms for services and single-ECU jobs
+        services = [dc for dc in diag_comms if isinstance(dc, DiagService)]
+        single_ecu_jobs = [dc for dc in diag_comms if isinstance(dc, SingleEcuJob)]
+        self._services = NamedItemList(short_name_as_id, services)
+        self._single_ecu_jobs = NamedItemList(short_name_as_id, single_ecu_jobs)
+
+        global_negative_responses = self._compute_available_global_neg_responses(odxlinks)
+        self._global_negative_responses = NamedItemList(short_name_as_id, global_negative_responses)
+
+        tables = self._compute_available_tables()
+        self._tables = NamedItemList(short_name_as_id, tables)
+
+        functional_classes = self._compute_available_functional_classes()
+        self._functional_classes = NamedItemList(short_name_as_id, functional_classes)
+
+        additional_audiences = self._compute_available_additional_audiences()
+        self._additional_audiences = NamedItemList(short_name_as_id, additional_audiences)
+
+        state_charts = self._compute_available_state_charts()
+        self._state_charts = NamedItemList(short_name_as_id, state_charts)
+
+        ############
+        # create a new unit_spec object. This is necessary because
+        # unit_groups are subject to value inheritance.
+
+        # unit groups applicable to this diaglayer (i.e., including
+        # value inheritance)
+        unit_groups = self._compute_available_unit_groups()
+
+        # convenience variable for the locally-defined unit spec
+        local_unit_spec: Optional[UnitSpec]
+        if self.diag_layer_raw.diag_data_dictionary_spec is not None:
+            local_unit_spec = self.diag_layer_raw.diag_data_dictionary_spec.unit_spec
+        else:
+            local_unit_spec = None
+
+        unit_spec: Optional[UnitSpec]
+        if local_unit_spec is None and not unit_groups:
+            # no locally defined unit spec and no inherited unit groups
+            unit_spec = None
+        elif local_unit_spec is None:
+            # no locally defined unit spec but inherited unit groups
+            unit_spec = UnitSpec(
+                unit_groups=NamedItemList(short_name_as_id, unit_groups),
+                units=NamedItemList(short_name_as_id, []),
+                physical_dimensions=NamedItemList(short_name_as_id, []),
+                sdgs=[])
+        else:
+            # locally defined unit spec and inherited unit groups
+            unit_spec = UnitSpec(
+                unit_groups=NamedItemList(short_name_as_id, unit_groups),
+                units=local_unit_spec.units,
+                physical_dimensions=local_unit_spec.physical_dimensions,
+                sdgs=[])
+        ############
+
+        dops = NamedItemList(short_name_as_id, self._compute_available_data_object_props())
         dtc_dops: NamedItemList[DtcDop]
         structures: NamedItemList[BasicStructure]
         end_of_pdu_fields: NamedItemList[EndOfPduField]
-        tables: NamedItemList[Table]
         env_data_descs: NamedItemList[EnvironmentDataDescription]
         env_datas: NamedItemList[EnvironmentData]
         muxs: NamedItemList[Multiplexer]
-        unit_spec: Optional[UnitSpec]
         ddds_sdgs: List[SpecialDataGroup]
         if self.diag_layer_raw.diag_data_dictionary_spec:
             dtc_dops = self.diag_layer_raw.diag_data_dictionary_spec.dtc_dops
             structures = self.diag_layer_raw.diag_data_dictionary_spec.structures
             end_of_pdu_fields = self.diag_layer_raw.diag_data_dictionary_spec.end_of_pdu_fields
-            tables = self.diag_layer_raw.diag_data_dictionary_spec.tables
             env_data_descs = self.diag_layer_raw.diag_data_dictionary_spec.env_data_descs
             env_datas = self.diag_layer_raw.diag_data_dictionary_spec.env_datas
             muxs = self.diag_layer_raw.diag_data_dictionary_spec.muxs
-            unit_spec = self.diag_layer_raw.diag_data_dictionary_spec.unit_spec
             ddds_sdgs = self.diag_layer_raw.diag_data_dictionary_spec.sdgs
         else:
             dtc_dops = NamedItemList(short_name_as_id)
             structures = NamedItemList(short_name_as_id)
             end_of_pdu_fields = NamedItemList(short_name_as_id)
-            tables = NamedItemList(short_name_as_id)
             env_data_descs = NamedItemList(short_name_as_id)
             env_datas = NamedItemList(short_name_as_id)
             muxs = NamedItemList(short_name_as_id)
-            unit_spec = None
             ddds_sdgs = []
 
         # create a DiagDataDictionarySpec which includes all the
@@ -166,10 +196,19 @@ class DiagLayer:
 
         #####
         # compute the communication parameters applicable to the
-        # diagnostic layer
+        # diagnostic layer. Note that communication parameters do
+        # *not* use value inheritance, but a slightly different
+        # scheme, cf the docstring of
+        # _compute_available_commmunication_parameters().
         #####
         self._communication_parameters = self._compute_available_commmunication_parameters()
 
+        #####
+        # resolve all SNREFs. TODO: We allow SNREFS to objects that
+        # were inherited by the diaglayer. This might not be allowed
+        # by the spec (So far, I haven't found any definitive
+        # statement...)
+        #####
         self.diag_layer_raw._resolve_snrefs(self)
 
     #####
@@ -238,11 +277,58 @@ class DiagLayer:
     #######
     # <stuff subject to value inheritance>
     #######
+    @property
+    def diag_comms(self) -> NamedItemList[Union[DiagService, SingleEcuJob]]:
+        """All diagnostic communication primitives applicable to this DiagLayer
+
+        Diagnostic communication primitives are diagnostic services as
+        well as single-ECU jobs. This list has all references
+        resolved.
+        """
+        return self._diag_comms
 
     @property
-    def services(self) -> NamedItemList[Union[DiagService, SingleEcuJob]]:
-        """All services that this diagnostic layer offers including inherited services."""
+    def services(self) -> NamedItemList[DiagService]:
+        """All diagnostic services applicable to this DiagLayer
+
+        This is a subset of all diagnostic communication
+        primitives. All references are resolved in the list returned.
+        """
         return self._services
+
+    @property
+    def single_ecu_jobs(self) -> NamedItemList[SingleEcuJob]:
+        """All single-ECU jobs applicable to this DiagLayer
+
+        This is a subset of all diagnostic communication
+        primitives. All references are resolved in the list returned.
+        """
+        return self._single_ecu_jobs
+
+    @property
+    def global_negative_responses(self) -> NamedItemList[Response]:
+        """All global negative responses applicable to this DiagLayer"""
+        return self._global_negative_responses
+
+    @property
+    def tables(self) -> NamedItemList[Table]:
+        """All tables applicable to this DiagLayer"""
+        return self._tables
+
+    @property
+    def functional_classes(self) -> NamedItemList[FunctionalClass]:
+        """All functional classes applicable to this DiagLayer"""
+        return self._functional_classes
+
+    @property
+    def state_charts(self) -> NamedItemList[StateChart]:
+        """All state charts applicable to this DiagLayer"""
+        return self._state_charts
+
+    @property
+    def additional_audiences(self) -> NamedItemList[AdditionalAudience]:
+        """All audiences applicable to this DiagLayer"""
+        return self._additional_audiences
 
     @property
     def diag_data_dictionary_spec(self) -> DiagDataDictionarySpec:
@@ -256,60 +342,141 @@ class DiagLayer:
     #####
     # <value inheritance mechanism helpers>
     #####
-    def _get_parent_refs_sorted_by_priority(self, reverse=False):
+    def _get_parent_refs_sorted_by_priority(self, reverse=False) -> Iterable[ParentRef]:
         return sorted(
             self.diag_layer_raw.parent_refs,
             key=lambda pr: pr.layer.variant_type.inheritance_priority,
             reverse=reverse)
 
-    def __gather_local_services(
-            self, odxlinks: OdxLinkDatabase) -> List[Union[DiagService, SingleEcuJob]]:
-        diagcomms_by_name: Dict[str, Union[DiagService, SingleEcuJob]] = {}
+    def _compute_available_objects(
+        self,
+        get_local_objects: Callable[["DiagLayer"], Iterable[T]],
+        get_not_inherited: Callable[[ParentRef], Iterable[str]],
+    ) -> Iterable[T]:
+        """Helper method to compute the set of all objects applicable
+        to the DiagLayer if these objects are subject to the value
+        inheritance mechanism
 
-        for ref in self._diag_comm_refs:
-            if (obj := odxlinks.resolve_lenient(ref)) is not None:
-                diagcomms_by_name[obj.short_name] = obj
+        Note that all objects subject to the value inheritance
+        mechanism exhibit a short_name attribute.
+
+        :param get_local_objects: Function mapping a DiagLayer to the
+        set of objects that are locally defined by that DiagLayer. If
+        any of these objects have already been defined in any of the
+        parents, the locally defined instance overrides them.
+
+        :param get_not_inherited: Function mapping a ParentRef to the
+        set of short names of the objects which shall not be inherited
+        from the parents.
+
+        """
+
+        result_dict: Dict[str, T] = {}
+
+        # populate the result dictionary with the inherited objects
+        #
+        # TODO (?): make sure that there are no "illegal" collisions
+        # i.e., different objects with the same short name stemming
+        # from parent layers exhibiting the same priority that are not
+        # overwritten by a locally defined object. (IMO, this is quite
+        # a corner case.)
+        for parent_ref in self._get_parent_refs_sorted_by_priority():
+            parent_dl = parent_ref.layer
+            for dc in parent_dl._compute_available_objects(get_local_objects, get_not_inherited):
+                result_dict[dc.short_name] = dc  # type: ignore[attr-defined]
+
+            # remove the explictly not inherited objects
+            for sn in get_not_inherited(parent_ref):
+                if sn in result_dict:
+                    del result_dict[sn]
+
+        # consider the locally defined objects (override the
+        # inherited entries or add new ones)
+        for obj in get_local_objects(self):
+            result_dict[obj.short_name] = obj  # type: ignore[attr-defined]
+
+        return result_dict.values()
+
+    def _get_local_diag_comms(self, odxlinks: OdxLinkDatabase
+                             ) -> Iterable[Union[DiagService, SingleEcuJob]]:
+        """Return the list of locally defined diagnostic communications.
+
+        This is not completely trivial as it requires to resolving the
+        references specified in the <DIAG-COMMS> XML tag.
+        """
+        result_dict: Dict[str, Union[DiagService, SingleEcuJob]] = {}
+
+        # TODO (?): add objects from the import-refs
+
+        for dc_proxy in self.diag_layer_raw.diag_comms:
+            if isinstance(dc_proxy, OdxLinkRef):
+                dc = odxlinks.resolve(dc_proxy)
             else:
-                logger.warning(f"Diag comm ref {ref!r} could not be resolved.")
+                dc = dc_proxy
 
-        diagcomms_by_name.update({service.short_name: service for service in self._local_services})
-        diagcomms_by_name.update({secuj.short_name: secuj for secuj in self._local_single_ecu_jobs})
-        return list(diagcomms_by_name.values())
+            assert isinstance(dc, (DiagService, SingleEcuJob))
+            assert dc.short_name not in result_dict, (
+                f"Multiple definitions of DIAG-COMM '{dc.short_name}' in "
+                f"layer '{self.short_name}'")
+            result_dict[dc.short_name] = dc
 
-    def _compute_available_services(self, odxlinks: OdxLinkDatabase
-                                   ) -> List[Union[DiagService, SingleEcuJob]]:
-        """Helper method for initializing the available services.
-        This computes the services that are inherited from other diagnostic layers."""
-        result_dict = {}
+        return result_dict.values()
 
-        # Look in parent refs for inherited services Fetch services
-        # from low priority parents first, then update with increasing
-        # priority
-        for parent_ref in self._get_parent_refs_sorted_by_priority():
-            for service in parent_ref.get_inherited_services():
-                result_dict[service.short_name] = service
+    def _get_local_unit_groups(self) -> Iterable[UnitGroup]:
+        if self.diag_layer_raw.diag_data_dictionary_spec is None:
+            return []
 
-        for service in self.__gather_local_services(odxlinks):
-            result_dict[service.short_name] = service
+        unit_spec = self.diag_layer_raw.diag_data_dictionary_spec.unit_spec
+        if unit_spec is None:
+            return []
 
-        return list(result_dict.values())
+        return unit_spec.unit_groups
 
-    def _compute_available_data_object_properties(self) -> List[DataObjectProperty]:
-        """Returns the locally defined and inherited DOPs."""
-        result_dict = {}
+    def _compute_available_diag_comms(self, odxlinks: OdxLinkDatabase
+                                     ) -> Iterable[Union[DiagService, SingleEcuJob]]:
+        get_local_objects_fn = lambda dl: dl._get_local_diag_comms(odxlinks)
+        not_inherited_fn = lambda parent_ref: parent_ref.not_inherited_diag_comms
+        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
-        # Look in parent refs for inherited DOPs. Fetch the DOPs from
-        # low priority parents first, then update with increasing
-        # priority
-        for parent_ref in self._get_parent_refs_sorted_by_priority():
-            for dop in parent_ref.get_inherited_data_object_properties():
-                result_dict[dop.short_name] = dop
+    def _compute_available_global_neg_responses(self, odxlinks: OdxLinkDatabase) \
+            -> Iterable[Response]:
+        get_local_objects_fn = lambda dl: dl.diag_layer_raw.global_negative_responses
+        not_inherited_fn = lambda parent_ref: parent_ref.not_inherited_global_neg_responses
+        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
-        if self.local_diag_data_dictionary_spec:
-            for dop in self.local_diag_data_dictionary_spec.all_data_object_properties:
-                result_dict[dop.short_name] = dop
+    def _compute_available_data_object_props(self) -> Iterable[DataObjectProperty]:
+        get_local_objects_fn = lambda dl: \
+            [] if dl.diag_layer_raw.diag_data_dictionary_spec is None \
+            else dl.diag_layer_raw.diag_data_dictionary_spec.data_object_props
+        not_inherited_fn = lambda parent_ref: parent_ref.not_inherited_dops
+        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
-        return list(result_dict.values())
+    def _compute_available_tables(self) -> Iterable[Table]:
+        get_local_objects_fn = lambda dl: \
+            [] if dl.diag_layer_raw.diag_data_dictionary_spec is None \
+            else dl.diag_layer_raw.diag_data_dictionary_spec.tables
+        not_inherited_fn = lambda parent_ref: parent_ref.not_inherited_tables
+        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+
+    def _compute_available_functional_classes(self) -> Iterable[FunctionalClass]:
+        get_local_objects_fn = lambda dl: dl.diag_layer_raw.functional_classes
+        not_inherited_fn: Callable[[ParentRef], List[str]] = lambda parent_ref: []
+        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+
+    def _compute_available_additional_audiences(self) -> Iterable[AdditionalAudience]:
+        get_local_objects_fn = lambda dl: dl.diag_layer_raw.additional_audiences
+        not_inherited_fn: Callable[[ParentRef], List[str]] = lambda parent_ref: []
+        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+
+    def _compute_available_state_charts(self) -> Iterable[StateChart]:
+        get_local_objects_fn = lambda dl: dl.diag_layer_raw.state_charts
+        not_inherited_fn: Callable[[ParentRef], List[str]] = lambda parent_ref: []
+        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+
+    def _compute_available_unit_groups(self) -> Iterable[UnitGroup]:
+        get_local_objects_fn = lambda dl: dl._get_local_unit_groups()
+        not_inherited_fn: Callable[[ParentRef], List[str]] = lambda parent_ref: []
+        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
     #####
     # </value inheritance mechanism helpers>
@@ -369,7 +536,11 @@ class DiagLayer:
 
     @property
     def protocols(self) -> NamedItemList["DiagLayer"]:
-        """Return the set of all protocols which are applicable to the diagnostic layer"""
+        """Return the set of all protocols which are applicable to the diagnostic layer
+
+        Note that protocols are *not* explicitly inherited objects,
+        but the parent diagnostic layers of variant type "PROTOCOL".
+        """
         result_dict: Dict[str, DiagLayer] = dict()
 
         for parent_ref in self._get_parent_refs_sorted_by_priority():

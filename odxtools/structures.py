@@ -507,8 +507,8 @@ class Response(BasicStructure):
         self.response_type = response_type
 
     def encode(self, coded_request: Optional[ByteString] = None, **params) -> ByteString:
-        logger.info(f"Compose response message to the request {coded_request}")
         if coded_request is not None:
+            logger.info(f"Compose response message to the request {coded_request.hex()}")
             # Extract MATCHING-REQUEST-PARAMs from the coded request
             for param in self.parameters:
                 if param.parameter_type == "MATCHING-REQUEST-PARAM":

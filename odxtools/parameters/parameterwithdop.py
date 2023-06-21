@@ -38,8 +38,11 @@ class ParameterWithDOP(Parameter):
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         super()._resolve_odxlinks(odxlinks)
 
-        if self.dop_ref:
-            # TODO: Non-lenient
+        if self.dop_ref is not None:
+            assert self.dop_snref is None
+            # TODO: do not do lenient resolves here. The problem is
+            # that currently not all kinds of DOPs are internalized
+            # (e.g., static and dynamic fields)
             self._dop = odxlinks.resolve_lenient(self.dop_ref)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
