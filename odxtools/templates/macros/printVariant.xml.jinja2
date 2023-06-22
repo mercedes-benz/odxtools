@@ -152,6 +152,13 @@
 {%- endfor %}
  </NEG-RESPONSES>
  {%- endif %}
+{%- if dlr.global_negative_responses %}
+ <GLOBAL-NEG-RESPONSES>
+{%- for resp in dlr.global_negative_responses %}
+  {{ presp.printResponse(resp, "GLOBAL-NEG-RESPONSE")|indent(2) }}
+{%- endfor %}
+ </GLOBAL-NEG-RESPONSES>
+ {%- endif %}
  {%- if dlr.state_charts %}
  <STATE-CHARTS>
    {%- for sc in dlr.state_charts %}
