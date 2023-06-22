@@ -3,7 +3,7 @@
 import warnings
 from copy import copy
 from itertools import chain
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union, cast
 from xml.etree import ElementTree
 
 from deprecation import deprecated
@@ -38,6 +38,8 @@ from .units import UnitGroup, UnitSpec
 from .utils import create_description_from_et, short_name_as_id
 
 T = TypeVar("T")
+
+PrefixTree = Dict[int, Union[List[DiagService], "PrefixTree"]]
 
 
 class DiagLayer:
@@ -818,7 +820,7 @@ class DiagLayer:
     # <PDU decoding>
     #####
 
-    def _build_coded_prefix_tree(self):
+    def _build_coded_prefix_tree(self) -> PrefixTree:
         """Constructs the coded prefix tree of the services.
         Each leaf node is a list of `DiagService`s.
         (This is because navigating from a service to the request/ responses is easier than finding the service for a given request/response object.)
@@ -843,67 +845,90 @@ class DiagLayer:
         (a) SIDs for different services are the same like for service 1 and 2 (thus each leaf node is a list) and
         (b) one SID is the prefix of another SID like for service 3 and 4 (thus the constant `-1` key).
         """
-        services = [s for s in self._services if isinstance(s, DiagService)]
-        prefix_tree = {}
-        for s in services:
-            # Compute prefixes for the request and all responses
+        prefix_tree: PrefixTree = {}
+        for s in self.services:
+            # Compute prefixes for the service's request and all
+            # possible responses. We need to consider the global
+            # negative responses here, because they might contain
+            # MATCHING-REQUEST parameters. If these global responses
+            # do not contain such parameters, this will potentially
+            # result in an enormous amount of decoded messages for
+            # global negative responses. (I.e., one for each
+            # service. This can be avoided by specifying the
+            # corresponding request for `decode_response()`.)
             request_prefix = s.request.coded_const_prefix()
-            prefixes = [request_prefix] + [
-                message.coded_const_prefix(request_prefix=request_prefix)
-                for message in chain(s.positive_responses, s.negative_responses)
+            prefixes = [request_prefix]
+            prefixes += [
+                x.coded_const_prefix(request_prefix=request_prefix) for x in chain(
+                    s.positive_responses, s.negative_responses, self.global_negative_responses)
             ]
             for coded_prefix in prefixes:
-                # Traverse prefix tree
-                sub_tree = prefix_tree
-                for b in coded_prefix:
-                    if sub_tree.get(b) is None:
-                        sub_tree[b] = {}
-                    sub_tree = sub_tree.get(b)
+                self._extend_prefix_tree(prefix_tree, coded_prefix, s)
 
-                    assert isinstance(
-                        sub_tree,
-                        dict), f"{sub_tree} has type {type(sub_tree)}. How did this happen?"
-                # Add service as leaf to prefix tree
-                if sub_tree.get(-1) is None:
-                    sub_tree[-1] = [s]
-                else:
-                    sub_tree[-1].append(s)
         return prefix_tree
 
-    def _find_services_for_uds(self, message: Union[bytes, bytearray]):
+    @staticmethod
+    def _extend_prefix_tree(prefix_tree: PrefixTree, coded_prefix: bytes,
+                            service: DiagService) -> None:
+
+        # make sure that tree has an entry for the given prefix
+        sub_tree = prefix_tree
+        for b in coded_prefix:
+            if b not in sub_tree:
+                sub_tree[b] = {}
+            sub_tree = cast(PrefixTree, sub_tree[b])
+
+        # Store the object as in the prefix tree. This is done by
+        # assigning the list of possible objects to the key -1 of the
+        # dictionary (this is quite hacky...)
+        if sub_tree.get(-1) is None:
+            sub_tree[-1] = [service]
+        else:
+            cast(List[DiagService], sub_tree[-1]).append(service)
+
+    def _find_services_for_uds(self, message: Union[bytes, bytearray]) -> List[DiagService]:
         if not hasattr(self, "_prefix_tree"):
             # Compute the prefix tree the first time this decode function is called.
             self._prefix_tree = self._build_coded_prefix_tree()
         prefix_tree = self._prefix_tree
 
         # Find matching service(s) in prefix tree
-        possible_services = []
+        possible_services: List[DiagService] = []
         for b in message:
-            if prefix_tree.get(b) is not None:
-                assert isinstance(prefix_tree.get(b), dict)
-                prefix_tree = prefix_tree.get(b)
+            if b in prefix_tree:
+                assert isinstance(prefix_tree[b], dict)
+                prefix_tree = cast(PrefixTree, prefix_tree[b])
             else:
                 break
             if -1 in prefix_tree:
-                possible_services += prefix_tree[-1]
+                possible_services += cast(List[DiagService], prefix_tree[-1])
         return possible_services
 
-    def decode(self, message: Union[bytes, bytearray]) -> Iterable[Message]:
+    def decode(self, message: Union[bytes, bytearray]) -> List[Message]:
+        decoded_messages: List[Message] = []
         possible_services = self._find_services_for_uds(message)
-
-        if possible_services is None:
-            raise DecodeError(f"Couldn't find corresponding service for message {message.hex()}.")
-
-        decoded_messages = []
-
         for service in possible_services:
             try:
                 decoded_messages.append(service.decode_message(message))
             except DecodeError as e:
-                pass
+                # check if the message can be decoded as a global
+                # negative response for the service
+                for gnr in self.global_negative_responses:
+                    try:
+                        decoded_gnr = gnr.decode(message)
+                        decoded_messages.append(
+                            Message(
+                                coded_message=message,
+                                service=service,
+                                structure=gnr,
+                                param_dict=decoded_gnr))
+                    except DecodeError:
+                        pass
+
         if len(decoded_messages) == 0:
             raise DecodeError(
                 f"None of the services {possible_services} could parse {message.hex()}.")
+
         return decoded_messages
 
     def decode_response(self, response: Union[bytes, bytearray],
@@ -924,7 +949,20 @@ class DiagLayer:
             try:
                 decoded_messages.append(service.decode_message(response))
             except DecodeError as e:
-                pass
+                # check if the response is a global negative response
+                # for the service
+                for gnr in self.global_negative_responses:
+                    try:
+                        decoded_gnr = gnr.decode(response)
+                        decoded_messages.append(
+                            Message(
+                                coded_message=response,
+                                service=service,
+                                structure=gnr,
+                                param_dict=decoded_gnr))
+                    except DecodeError:
+                        pass
+
         if len(decoded_messages) == 0:
             raise DecodeError(
                 f"None of the services {possible_services} could parse {response.hex()}.")

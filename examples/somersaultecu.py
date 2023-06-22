@@ -295,16 +295,31 @@ somersault_diagcodedtypes = {
 }
 
 somersault_physical_dimensions = {
-    "second":
+    "time":
         PhysicalDimension(
-            odx_id=OdxLinkId("somersault.PD.second", doc_frags),
-            short_name="second",
-            long_name="Second",
+            odx_id=OdxLinkId("somersault.PD.time", doc_frags),
+            short_name="time",
+            long_name="Time",
             time_exp=1,
             length_exp=0,
             mass_exp=0,
             current_exp=0,
             temperature_exp=0,
+            molar_amount_exp=0,
+            luminous_intensity_exp=0,
+            oid=None,
+            description=None,
+        ),
+    "temperature":
+        PhysicalDimension(
+            odx_id=OdxLinkId("somersault.PD.temperature", doc_frags),
+            short_name="temperature",
+            long_name="Temperature",
+            time_exp=0,
+            length_exp=0,
+            mass_exp=0,
+            current_exp=0,
+            temperature_exp=1,
             molar_amount_exp=0,
             luminous_intensity_exp=0,
             oid=None,
@@ -324,7 +339,7 @@ somersault_units = {
             factor_si_to_unit=1,
             offset_si_to_unit=0,
             physical_dimension_ref=OdxLinkRef.from_id(
-                somersault_physical_dimensions["second"].odx_id),
+                somersault_physical_dimensions["time"].odx_id),
         ),
     "minute":
         Unit(
@@ -337,7 +352,20 @@ somersault_units = {
             factor_si_to_unit=60,
             offset_si_to_unit=0,
             physical_dimension_ref=OdxLinkRef.from_id(
-                somersault_physical_dimensions["second"].odx_id),
+                somersault_physical_dimensions["time"].odx_id),
+        ),
+    "celsius":
+        Unit(
+            odx_id=OdxLinkId("somersault.unit.celsius", doc_frags),
+            oid=None,
+            short_name="celsius",
+            display_name="°C",
+            long_name="Degrees Celcius",
+            description=None,
+            factor_si_to_unit=1,
+            offset_si_to_unit=-273.15,
+            physical_dimension_ref=OdxLinkRef.from_id(
+                somersault_physical_dimensions["temperature"].odx_id),
         ),
 }
 
@@ -434,6 +462,19 @@ somersault_dops = {
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=OdxLinkRef.from_id(somersault_units["second"].odx_id),
+            is_visible_raw=None,
+            sdgs=[],
+        ),
+    "temperature":
+        DataObjectProperty(
+            odx_id=OdxLinkId("somersault.DOP.temperature", doc_frags),
+            short_name="temperature",
+            long_name=None,
+            description=None,
+            diag_coded_type=somersault_diagcodedtypes["uint8"],
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            compu_method=somersault_compumethods["uint_passthrough"],
+            unit_ref=OdxLinkRef.from_id(somersault_units["celsius"].odx_id),
             is_visible_raw=None,
             sdgs=[],
         ),
@@ -1340,6 +1381,70 @@ somersault_negative_responses = {
         ),
 }
 
+somersault_global_negative_responses = {
+    "general":
+        Response(
+            odx_id=OdxLinkId("GNR.too_hot", doc_frags),
+            short_name="too_hot",
+            long_name=None,
+            description=None,
+            sdgs=[],
+            is_visible_raw=None,
+            response_type="GLOBAL-NEG-RESPONSE",
+            parameters=NamedItemList(
+                short_name_as_id,
+                [
+                    CodedConstParameter(
+                        short_name="sid",
+                        long_name=None,
+                        semantic=None,
+                        description=None,
+                        diag_coded_type=somersault_diagcodedtypes["uint8"],
+                        byte_position=0,
+                        coded_value=uds.NegativeResponseId,
+                        bit_position=None,
+                        sdgs=[],
+                    ),
+                    CodedConstParameter(
+                        short_name="too_hot_dummy",
+                        long_name=None,
+                        semantic=None,
+                        description=None,
+                        diag_coded_type=somersault_diagcodedtypes["uint8"],
+                        byte_position=1,
+                        coded_value=0xfe,
+                        bit_position=None,
+                        sdgs=[],
+                    ),
+                    CodedConstParameter(
+                        short_name="too_hot_id",
+                        long_name=None,
+                        semantic=None,
+                        description=None,
+                        diag_coded_type=somersault_diagcodedtypes["uint8"],
+                        byte_position=2,
+                        coded_value=0xa7,
+                        bit_position=None,
+                        sdgs=[],
+                    ),
+                    ValueParameter(
+                        short_name="temperature",
+                        long_name=None,
+                        semantic=None,
+                        description=None,
+                        physical_default_value_raw=None,
+                        byte_position=3,
+                        dop_ref=OdxLinkRef("somersault.DOP.temperature", doc_frags),
+                        dop_snref=None,
+                        bit_position=None,
+                        sdgs=[],
+                    ),
+                ],
+            ),
+            byte_size=None,
+        )
+}
+
 # services
 somersault_services = {
     "start_session":
@@ -1757,7 +1862,8 @@ somersault_diaglayer_raw = DiagLayerRaw(
     requests=NamedItemList(short_name_as_id, somersault_requests.values()),
     positive_responses=NamedItemList(short_name_as_id, somersault_positive_responses.values()),
     negative_responses=NamedItemList(short_name_as_id, somersault_negative_responses.values()),
-    global_negative_responses=NamedItemList(short_name_as_id),
+    global_negative_responses=NamedItemList(short_name_as_id,
+                                            somersault_global_negative_responses.values()),
     import_refs=[],
     state_charts=NamedItemList(short_name_as_id),
     additional_audiences=NamedItemList(short_name_as_id, somersault_additional_audiences.values()),

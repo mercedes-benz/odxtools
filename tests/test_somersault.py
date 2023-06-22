@@ -172,6 +172,30 @@ class TestDecode(unittest.TestCase):
         self.assertEqual(m.structure, odxdb.ecus.somersault_assiduous.services.headstand.request)
         self.assertEqual(m.param_dict, {"sid": 0x03, "duration": 0x45})
 
+    def test_decode_global_negative_response(self):
+        ecu = odxdb.ecus.somersault_assiduous
+        coded_request = bytes([0x03, 0x45])
+
+        self.assertEqual(len(ecu.global_negative_responses), 1)
+
+        gnr = ecu.global_negative_responses.too_hot
+        coded_response = gnr.encode(coded_request=coded_request, temperature=35)
+
+        decoded = ecu.decode(coded_response)
+        # the global negative response for the somersault ECUs does
+        # not include any matching-request parameter, so decode()
+        # returns one possible instance per service
+        self.assertEqual(len(decoded), len(ecu.services))
+
+        # if we specify the request, the result should become unique
+        decoded = ecu.decode_response(coded_response, request=coded_request)
+        self.assertEqual(len(decoded), 1)
+
+        # make sure that the global negative response was decoded
+        # correctly
+        gnr = decoded[0]
+        self.assertEqual(gnr.param_dict['temperature'], 35)
+
     def test_decode_inherited_request(self):
         raw_message = odxdb.ecus.somersault_assiduous.services.do_backward_flips(
             backward_soberness_check=0x21, num_flips=2)
