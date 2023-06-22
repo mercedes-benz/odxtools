@@ -17,6 +17,7 @@ _odxtools_tool_name_ = "list"
 
 def print_summary(
     odxdb: Database,
+    print_global_neg_responses=False,
     print_services=False,
     print_dops=False,
     print_params=False,
@@ -60,10 +61,15 @@ def print_summary(
             desc = format_desc(dl.description, ident=2)
             print(f" Description: " + desc)
 
+        if print_global_neg_responses and dl.global_negative_responses:
+            print(f"The global negative responses of '{dl.short_name}' are: ")
+            for gnr in dl.global_negative_responses:
+                print(f" {gnr}")
+
         if print_services and len(all_services) > 0:
             services = [s for s in all_services if service_filter(s)]
             if len(services) > 0:
-                print(f"The services of the {dl.variant_type.value} '{dl.short_name}' are: ")
+                print(f"The services of '{dl.short_name}' are: ")
                 for service in services:
                     if isinstance(service, DiagService):
                         print_diagnostic_service(
@@ -122,6 +128,16 @@ def add_subparser(subparsers):
         default="all",
     )
 
+    parser.add_argument(
+        "-g",
+        "--global-negative-responses",
+        default=False,
+        action="store_const",
+        const=True,
+        required=False,
+        help="Print a list of the global negative responses for the selected ECUs.",
+    )
+
     # The service option is None if option is not passed at all (-> do not print services). It is an empty list if --services is passed
     parser.add_argument(
         "-s",
@@ -171,6 +187,7 @@ def run(args):
     variants = args.variants if args.variants else None
     print_summary(
         odxdb,
+        print_global_neg_responses=args.all or args.global_neg_responses,
         print_services=args.all or args.params or args.services is not None,
         service_filter=(lambda s: s.short_name in args.services
                         if args.services and len(args.services) > 0 else lambda s: True),
