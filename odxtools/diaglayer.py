@@ -907,10 +907,11 @@ class DiagLayer:
                 possible_services += cast(List[DiagService], prefix_tree[-1])
         return possible_services
 
-    def decode(self, message: Union[bytes, bytearray]) -> List[Message]:
+    def _decode(self, message: Union[bytes, bytearray],
+                candidate_services: Iterable[DiagService]) -> List[Message]:
         decoded_messages: List[Message] = []
-        possible_services = self._find_services_for_uds(message)
-        for service in possible_services:
+
+        for service in candidate_services:
             try:
                 decoded_messages.append(service.decode_message(message))
             except DecodeError as e:
@@ -930,46 +931,28 @@ class DiagLayer:
 
         if len(decoded_messages) == 0:
             raise DecodeError(
-                f"None of the services {possible_services} could parse {message.hex()}.")
+                f"None of the services {candidate_services} could parse {message.hex()}.")
 
         return decoded_messages
+
+    def decode(self, message: Union[bytes, bytearray]) -> List[Message]:
+        candidate_services = self._find_services_for_uds(message)
+
+        return self._decode(message, candidate_services)
 
     def decode_response(self, response: Union[bytes, bytearray],
                         request: Union[bytes, bytearray, Message]) -> Iterable[Message]:
         if isinstance(request, Message):
-            possible_services = [request.service]
+            candidate_services = [request.service]
         else:
             if not isinstance(request, (bytes, bytearray)):
                 raise TypeError(f"Request parameter must have type "
                                 f"Message, bytes or bytearray but was {type(request)}")
-            possible_services = self._find_services_for_uds(request)
-        if possible_services is None:
+            candidate_services = self._find_services_for_uds(request)
+        if candidate_services is None:
             raise DecodeError(f"Couldn't find corresponding service for request {request.hex()}.")
 
-        decoded_messages = []
-
-        for service in possible_services:
-            try:
-                decoded_messages.append(service.decode_message(response))
-            except DecodeError as e:
-                # check if the response is a global negative response
-                # for the service
-                for gnr in self.global_negative_responses:
-                    try:
-                        decoded_gnr = gnr.decode(response)
-                        decoded_messages.append(
-                            Message(
-                                coded_message=response,
-                                service=service,
-                                structure=gnr,
-                                param_dict=decoded_gnr))
-                    except DecodeError:
-                        pass
-
-        if len(decoded_messages) == 0:
-            raise DecodeError(
-                f"None of the services {possible_services} could parse {response.hex()}.")
-        return decoded_messages
+        return self._decode(response, candidate_services)
 
     #####
     # </PDU decoding>
