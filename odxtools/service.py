@@ -274,8 +274,8 @@ class DiagService:
 
         if (self.request is None or self.positive_responses is None or
                 self.negative_responses is None):
-            raise ValueError("References couldn't be resolved or have not been resolved yet."
-                             " Try calling `database.resolve_references()`.")
+            raise RuntimeError("References couldn't be resolved or have not been resolved yet."
+                               " Try calling `database.resolve_odxlinks()`.")
 
         for message_type in [self.request, *self.positive_responses, *self.negative_responses]:
             prefix = message_type.coded_const_prefix(

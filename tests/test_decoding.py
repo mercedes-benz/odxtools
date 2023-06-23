@@ -187,7 +187,7 @@ class TestIdentifyingService(unittest.TestCase):
         diag_layer._finalize_init(odxlinks)
 
         self.assertEqual(
-            diag_layer._build_coded_prefix_tree(),
+            diag_layer._prefix_tree,
             {0x7D: {
                 0xAB: {
                     -1: [service]
@@ -421,7 +421,7 @@ class TestDecoding(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         diag_layer._resolve_odxlinks(odxlinks)
         diag_layer._finalize_init(odxlinks)
-        self.assertDictEqual(diag_layer._build_coded_prefix_tree(),
+        self.assertDictEqual(diag_layer._prefix_tree,
                              {0x12: {
                                  0x34: {
                                      0x56: {

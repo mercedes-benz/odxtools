@@ -169,5 +169,6 @@ class EcuVariantMatcher:
 
     def _get_ident_response(self) -> bytes:
         if not self._recent_ident_response:
-            raise RuntimeError("No response available. Mayby forgot to call 'evaluate' in loop?")
+            raise RuntimeError(
+                "No response available. Did you forget to call 'evaluate()' in a loop?")
         return self._recent_ident_response

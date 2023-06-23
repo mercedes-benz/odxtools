@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
+from ..exceptions import EncodeError
 from .parameterbase import Parameter
 
 
@@ -33,8 +34,8 @@ class MatchingRequestParameter(Parameter):
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
         if not encode_state.triggering_request:
-            raise TypeError(f"Parameter '{self.short_name}' is of matching request type,"
-                            " but no original request has been specified.")
+            raise EncodeError(f"Parameter '{self.short_name}' is of matching request type,"
+                              " but no original request has been specified.")
         return encode_state.triggering_request[self
                                                .request_byte_position:self.request_byte_position +
                                                self.byte_length]
