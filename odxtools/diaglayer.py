@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 import warnings
 from copy import copy
+from functools import cached_property
 from itertools import chain
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union, cast
 from xml.etree import ElementTree
@@ -820,10 +821,13 @@ class DiagLayer:
     # <PDU decoding>
     #####
 
-    def _build_coded_prefix_tree(self) -> PrefixTree:
+    @cached_property
+    def _prefix_tree(self) -> PrefixTree:
         """Constructs the coded prefix tree of the services.
-        Each leaf node is a list of `DiagService`s.
-        (This is because navigating from a service to the request/ responses is easier than finding the service for a given request/response object.)
+
+        Each leaf node is a list of `DiagService`s.  (This is because
+        navigating from a service to the request/ responses is easier
+        than finding the service for a given request/response object.)
 
         Example:
         Let there be four services with corresponding requests:
@@ -839,11 +843,13 @@ class DiagLayer:
                        0x0: {-1: [<Service 4>]}
                        }}}
         ```
-        Note, that the inner `-1` are constant to distinguish them from possible service IDs.
+        Note, that the inner `-1` are constant to distinguish them
+        from possible service IDs.
 
         Also note, that it is actually allowed that
         (a) SIDs for different services are the same like for service 1 and 2 (thus each leaf node is a list) and
         (b) one SID is the prefix of another SID like for service 3 and 4 (thus the constant `-1` key).
+
         """
         prefix_tree: PrefixTree = {}
         for s in self.services:
@@ -887,9 +893,6 @@ class DiagLayer:
             cast(List[DiagService], sub_tree[-1]).append(service)
 
     def _find_services_for_uds(self, message: Union[bytes, bytearray]) -> List[DiagService]:
-        if not hasattr(self, "_prefix_tree"):
-            # Compute the prefix tree the first time this decode function is called.
-            self._prefix_tree = self._build_coded_prefix_tree()
         prefix_tree = self._prefix_tree
 
         # Find matching service(s) in prefix tree
