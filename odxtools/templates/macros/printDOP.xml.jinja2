@@ -72,11 +72,11 @@
    {%- endif %}
    {%- if cs.compu_inverse_value is not none %}
     <COMPU-INVERSE-VALUE>
-     <V>{{cs.compu_inverse_value | int }}</V>
+     <V>{{cs.compu_inverse_value}}</V>
     </COMPU-INVERSE-VALUE>
    {%- endif %}
     <COMPU-CONST>
-     <VT>{{cs.compu_const | e }}</VT>
+     <VT>{{cs.compu_const | e}}</VT>
     </COMPU-CONST>
    </COMPU-SCALE>
   {%- endfor %}
@@ -94,12 +94,12 @@
    {%- endif %}
 				<COMPU-RATIONAL-COEFFS>
 					<COMPU-NUMERATOR>
-						<V>{{cm.offset | int}}</V>
-						<V>{{(cm.factor) | int}}</V>
+						<V>{{cm.offset}}</V>
+						<V>{{cm.factor}}</V>
 					</COMPU-NUMERATOR>
    {%- if cm.denominator != 1 %}
 					<COMPU-DENOMINATOR>
-							<V>{{cm.denominator | int}}</V>
+							<V>{{cm.denominator}}</V>
 					</COMPU-DENOMINATOR>
    {%- endif %}
 				</COMPU-RATIONAL-COEFFS>
@@ -119,13 +119,12 @@
    {%- endif %}
 				<COMPU-RATIONAL-COEFFS>
 					<COMPU-NUMERATOR>
-							<V>{{(lm.offset) | int}}</V>
-							<V>{{(lm.factor*lm.denominator) | int}}</V>
+							<V>{{lm.offset}}</V>
+							<V>{{lm.factor}}</V>
 					</COMPU-NUMERATOR>
    {%- if lm.denominator != 1 %}
 					<COMPU-DENOMINATOR>
-							<V>1</V>{# TODO: currently we always assume the offset to be an integer #}
-							<V>{{lm.denominator | int}}</V>
+							<V>{{lm.denominator}}</V>
 					</COMPU-DENOMINATOR>
    {%- endif %}
 				</COMPU-RATIONAL-COEFFS>
