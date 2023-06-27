@@ -23,9 +23,9 @@ class TestLinearCompuMethod(unittest.TestCase):
         """Prepares the jinja environment and the sample linear compumethod"""
 
         def _get_jinja_environment():
-            __module_filname = inspect.getsourcefile(odxtools)
-            assert isinstance(__module_filname, str)
-            templates_dir = os.path.sep.join([os.path.dirname(__module_filname), "templates"])
+            __module_filename = inspect.getsourcefile(odxtools)
+            assert isinstance(__module_filename, str)
+            templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templates"])
 
             jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
 
@@ -98,8 +98,6 @@ class TestLinearCompuMethod(unittest.TestCase):
             return "".join(string.split())
 
         self.assertEqual(remove_spaces(out), remove_spaces(expected_odx))
-
-
 
     def test_linear_compu_method_type_denom_not_one(self):
         compu_method = LinearCompuMethod(
@@ -246,9 +244,9 @@ class TestTabIntpCompuMethod(unittest.TestCase):
         """Prepares the jinja environment and the sample tab-intp compumethod"""
 
         def _get_jinja_environment():
-            __module_filname = inspect.getsourcefile(odxtools)
-            assert isinstance(__module_filname, str)
-            templates_dir = os.path.sep.join([os.path.dirname(__module_filname), "templates"])
+            __module_filename = inspect.getsourcefile(odxtools)
+            assert isinstance(__module_filename, str)
+            templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templates"])
 
             jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
 
