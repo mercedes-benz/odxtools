@@ -100,13 +100,10 @@ class CompanySpecificInfo:
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "CompanySpecificInfo":
-        related_docs = et_element.find("RELATED-DOCS")
-        if related_docs is not None:
-            rdlist = list()
-            for rd in related_docs.iterfind("RELATED-DOC"):
-                rdlist.append(RelatedDoc.from_et(rd))
-
-            related_docs = rdlist
+        related_docs = [
+            RelatedDoc.from_et(rd)
+            for rd in et_element.iterfind("RELATED-DOCS/RELATED-DOC")
+        ]
 
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 

@@ -49,7 +49,8 @@ class ParameterWithDOP(Parameter):
         super()._resolve_snrefs(diag_layer)
 
         if self.dop_snref:
-            self._dop = diag_layer.diag_data_dictionary_spec.data_object_props[self.dop_snref]
+            spec = diag_layer.diag_data_dictionary_spec
+            self._dop = spec.data_object_props.get(self.dop_snref) or spec.structures.get(self.dop_snref)
 
     @property
     def dop(self) -> Optional[DopBase]:
