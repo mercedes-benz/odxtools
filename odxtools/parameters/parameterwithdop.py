@@ -50,7 +50,10 @@ class ParameterWithDOP(Parameter):
 
         if self.dop_snref:
             spec = diag_layer.diag_data_dictionary_spec
-            self._dop = spec.data_object_props.get(self.dop_snref) or spec.structures.get(self.dop_snref)
+            self._dop = (
+                spec.data_object_props.get(self.dop_snref)
+                or spec.structures.get(self.dop_snref)
+            )
 
     @property
     def dop(self) -> Optional[DopBase]:
