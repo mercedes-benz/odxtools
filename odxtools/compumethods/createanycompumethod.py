@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
+import warnings
 from typing import Any, Dict, List, Optional, Type, Union
 
+from ..exceptions import OdxWarning
 from ..globals import logger
 from ..odxlink import OdxDocFragment
 from ..odxtypes import DataType
@@ -55,8 +57,9 @@ def _parse_compu_scale_to_linear_compu_method(
     denominator = 1.0
     if (string := coeffs.findtext("COMPU-DENOMINATOR/V")) is not None:
         denominator = float(string)
-        assert denominator != 0
-
+        if denominator == 0:
+            warnings.warn("CompuMethod: A denominator of zero will lead to divisions by zero.",
+                          OdxWarning)
     # Read lower limit
     internal_lower_limit = Limit.from_et(
         scale_element.find("LOWER-LIMIT"),
