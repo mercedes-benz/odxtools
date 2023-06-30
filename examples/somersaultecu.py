@@ -507,426 +507,6 @@ somersault_dops = {
         ),
 }
 
-# tables
-somersault_tables = {
-    "flip_quality":
-        Table(
-            odx_id=OdxLinkId("somersault.table.flip_quality", doc_frags),
-            short_name="flip_quality",
-            long_name="Flip Quality",
-            description="<p>The quality the flip (average, good or best)</p>",
-            semantic="QUALITY",
-            key_dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-            table_rows=[
-                TableRow(
-                    odx_id=OdxLinkId("somersault.table.flip_quality.average", doc_frags),
-                    short_name="average",
-                    long_name="Average",
-                    key=3,
-                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-                    description="<p>The quality of the flip is average</p>",
-                    semantic="QUALITY-KEY",
-                    dop_ref=None,
-                    sdgs=[],
-                ),
-                TableRow(
-                    odx_id=OdxLinkId("somersault.table.flip_quality.good", doc_frags),
-                    short_name="good",
-                    long_name="Good",
-                    description=None,
-                    semantic=None,
-                    key=5,
-                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-                    dop_ref=None,
-                    sdgs=[],
-                ),
-                TableRow(
-                    odx_id=OdxLinkId("somersault.table.flip_quality.best", doc_frags),
-                    short_name="best",
-                    long_name="Best",
-                    description=None,
-                    semantic=None,
-                    key=10,
-                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-                    dop_ref=None,
-                    sdgs=[],
-                ),
-            ],
-            table_row_refs=[],
-            sdgs=[],
-        )
-}
-
-# muxs
-somersault_muxs = {
-    "flip_preference":
-        Multiplexer(
-            odx_id=OdxLinkId("somersault.multiplexer.flip_preference", doc_frags),
-            short_name="flip_preference",
-            long_name="Flip Preference",
-            description=None,
-            is_visible_raw=None,
-            sdgs=[],
-            byte_position=0,
-            switch_key=MultiplexerSwitchKey(
-                byte_position=0,
-                bit_position=0,
-                dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-            ),
-            default_case=MultiplexerDefaultCase(
-                short_name="default_case",
-                long_name="Default Case",
-                structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-            ),
-            cases=[
-                MultiplexerCase(
-                    short_name="forward_flip",
-                    long_name="Forward Flip",
-                    lower_limit="1",
-                    upper_limit="3",
-                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-                ),
-                MultiplexerCase(
-                    short_name="backward_flip",
-                    long_name="Backward Flip",
-                    lower_limit="1",
-                    upper_limit="3",
-                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-                ),
-            ],
-        )
-}
-
-# env-data
-somersault_env_datas = {
-    "flip_env_data":
-        EnvironmentData(
-            odx_id=OdxLinkId("somersault.env_data.flip_env_data", doc_frags),
-            short_name="flip_env_data",
-            long_name="Flip Env Data",
-            description=None,
-            sdgs=[],
-            is_visible_raw=None,
-            byte_size=None,
-            dtc_values=[],
-            parameters=[
-                ValueParameter(
-                    short_name="flip_speed",
-                    long_name="Flip Speed",
-                    description=None,
-                    physical_default_value_raw=None,
-                    byte_position=0,
-                    semantic="DATA",
-                    dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-                    dop_snref=None,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                PhysicalConstantParameter(
-                    short_name="flip_direction",
-                    long_name="Flip Direction",
-                    description=None,
-                    byte_position=1,
-                    semantic="DATA",
-                    physical_constant_value="1",
-                    dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-                    dop_snref=None,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-            ],
-        )
-}
-
-# env-data-desc
-somersault_env_data_descs = {
-    "flip_env_data_desc":
-        EnvironmentDataDescription(
-            odx_id=OdxLinkId("somersault.env_data_desc.flip_env_data_desc", doc_frags),
-            short_name="flip_env_data_desc",
-            long_name="Flip Env Data Desc",
-            description=None,
-            param_snref="flip_speed",
-            param_snpathref=None,
-            is_visible_raw=None,
-            env_datas=[],
-            env_data_refs=[OdxLinkRef("somersault.env_data.flip_env_data", doc_frags)],
-            sdgs=[],
-        )
-}
-
-# requests
-somersault_requests = {
-    "start_session":
-        Request(
-            odx_id=OdxLinkId("somersault.RQ.start_session", doc_frags),
-            short_name="start_session",
-            long_name="Start the diagnostic session & do some mischief",
-            description=None,
-            sdgs=[],
-            is_visible_raw=None,
-            parameters=[
-                CodedConstParameter(
-                    short_name="sid",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint8"],
-                    byte_position=0,
-                    coded_value=SID.DiagnosticSessionControl.value,  # type: ignore
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                CodedConstParameter(
-                    short_name="odx_id",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint8"],
-                    byte_position=1,
-                    coded_value=0x0,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-            ],
-            byte_size=None,
-        ),
-    "stop_session":
-        Request(
-            odx_id=OdxLinkId("somersault.RQ.stop_session", doc_frags),
-            short_name="stop_session",
-            long_name="Terminate the current diagnostic session",
-            description=None,
-            sdgs=[],
-            is_visible_raw=None,
-            parameters=[
-                CodedConstParameter(
-                    short_name="sid",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint8"],
-                    byte_position=0,
-                    coded_value=SID.DiagnosticSessionControl.value,  # type: ignore
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                CodedConstParameter(
-                    short_name="odx_id",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint8"],
-                    byte_position=1,
-                    coded_value=0x1,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-            ],
-            byte_size=None,
-        ),
-    "tester_present":
-        Request(
-            odx_id=OdxLinkId("somersault.RQ.tester_present", doc_frags),
-            short_name="tester_present",
-            long_name="Prevent the current diagnostic session from timing out",
-            description=None,
-            sdgs=[],
-            is_visible_raw=None,
-            parameters=[
-                CodedConstParameter(
-                    short_name="sid",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint8"],
-                    byte_position=0,
-                    coded_value=SID.TesterPresent.value,  # type: ignore
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                CodedConstParameter(
-                    short_name="odx_id",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint8"],
-                    byte_position=1,
-                    coded_value=0x0,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-            ],
-            byte_size=None,
-        ),
-    "set_operation_params":
-        Request(
-            odx_id=OdxLinkId("somersault.RQ.set_operation_params", doc_frags),
-            short_name="set_operation_params",
-            long_name="Specify the mode of operation for the ECU; e.g. if rings "
-            "of fire ought to be used for maximum effect",
-            description=None,
-            sdgs=[],
-            is_visible_raw=None,
-            parameters=[
-                CodedConstParameter(
-                    short_name="sid",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint8"],
-                    byte_position=0,
-                    coded_value=SID.ForwardFlipCondition.value,  # type: ignore
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                ValueParameter(
-                    short_name="use_fire_ring",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    physical_default_value_raw=None,
-                    byte_position=1,
-                    dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),
-                    dop_snref=None,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-            ],
-            byte_size=None,
-        ),
-    "forward_flips":
-        Request(
-            odx_id=OdxLinkId("somersault.RQ.do_forward_flips", doc_frags),
-            short_name="do_forward_flips",
-            long_name="Do forward somersaults & some other mischief",
-            description=None,
-            sdgs=[],
-            is_visible_raw=None,
-            parameters=[
-                CodedConstParameter(
-                    short_name="sid",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint8"],
-                    byte_position=0,
-                    coded_value=SID.ForwardFlip.value,  # type: ignore
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                ValueParameter(
-                    short_name="forward_soberness_check",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    physical_default_value_raw=None,
-                    dop_ref=OdxLinkRef("somersault.DOP.soberness_check", doc_frags),
-                    dop_snref=None,
-                    byte_position=1,
-                    # value must be 0x12 for the request to be accepted
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                ValueParameter(
-                    short_name="num_flips",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    physical_default_value_raw=None,
-                    byte_position=2,
-                    dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frags),
-                    dop_snref=None,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-            ],
-            byte_size=None,
-        ),
-    "backward_flips":
-        Request(
-            odx_id=OdxLinkId("somersault.RQ.do_backward_flips", doc_frags),
-            short_name="do_backward_flips",
-            long_name="Do a backward somersault & some other mischief",
-            description=None,
-            sdgs=[],
-            is_visible_raw=None,
-            parameters=[
-                CodedConstParameter(
-                    short_name="sid",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint8"],
-                    byte_position=0,
-                    coded_value=SID.BackwardFlip.value,  # type: ignore
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                ValueParameter(
-                    short_name="backward_soberness_check",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    physical_default_value_raw=None,
-                    dop_ref=OdxLinkRef("somersault.DOP.soberness_check", doc_frags),
-                    dop_snref=None,
-                    byte_position=1,
-                    # value must be 0x21 for the request to be accepted
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                ValueParameter(
-                    short_name="num_flips",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    physical_default_value_raw=None,
-                    byte_position=2,
-                    dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frags),
-                    dop_snref=None,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-            ],
-            byte_size=None,
-        ),
-    "report_status":
-        Request(
-            odx_id=OdxLinkId("somersault.RQ.report_status", doc_frags),
-            short_name="report_status",
-            long_name="Report back the current level of dizzy- & happiness.",
-            description=None,
-            sdgs=[],
-            is_visible_raw=None,
-            parameters=[
-                CodedConstParameter(
-                    short_name="sid",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint8"],
-                    byte_position=0,
-                    coded_value=SID.ReadDataByIdentifier.value,  # type: ignore
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                CodedConstParameter(
-                    short_name="odx_id",
-                    long_name=None,
-                    semantic=None,
-                    description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint8"],
-                    byte_position=1,
-                    coded_value=0x0,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-            ],
-            byte_size=None,
-        ),
-}
-
 # positive responses
 somersault_positive_responses = {
     "session":
@@ -1443,6 +1023,426 @@ somersault_global_negative_responses = {
             ),
             byte_size=None,
         )
+}
+
+# tables
+somersault_tables = {
+    "flip_quality":
+        Table(
+            odx_id=OdxLinkId("somersault.table.flip_quality", doc_frags),
+            short_name="flip_quality",
+            long_name="Flip Quality",
+            description="<p>The quality the flip (average, good or best)</p>",
+            semantic="QUALITY",
+            key_dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+            table_rows=[
+                TableRow(
+                    odx_id=OdxLinkId("somersault.table.flip_quality.average", doc_frags),
+                    short_name="average",
+                    long_name="Average",
+                    key=3,
+                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                    description="<p>The quality of the flip is average</p>",
+                    semantic="QUALITY-KEY",
+                    dop_ref=None,
+                    sdgs=[],
+                ),
+                TableRow(
+                    odx_id=OdxLinkId("somersault.table.flip_quality.good", doc_frags),
+                    short_name="good",
+                    long_name="Good",
+                    description=None,
+                    semantic=None,
+                    key=5,
+                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                    dop_ref=None,
+                    sdgs=[],
+                ),
+                TableRow(
+                    odx_id=OdxLinkId("somersault.table.flip_quality.best", doc_frags),
+                    short_name="best",
+                    long_name="Best",
+                    description=None,
+                    semantic=None,
+                    key=10,
+                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                    dop_ref=None,
+                    sdgs=[],
+                ),
+            ],
+            table_row_refs=[],
+            sdgs=[],
+        )
+}
+
+# muxs
+somersault_muxs = {
+    "flip_preference":
+        Multiplexer(
+            odx_id=OdxLinkId("somersault.multiplexer.flip_preference", doc_frags),
+            short_name="flip_preference",
+            long_name="Flip Preference",
+            description=None,
+            is_visible_raw=None,
+            sdgs=[],
+            byte_position=0,
+            switch_key=MultiplexerSwitchKey(
+                byte_position=0,
+                bit_position=0,
+                dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+            ),
+            default_case=MultiplexerDefaultCase(
+                short_name="default_case",
+                long_name="Default Case",
+                structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+            ),
+            cases=[
+                MultiplexerCase(
+                    short_name="forward_flip",
+                    long_name="Forward Flip",
+                    lower_limit="1",
+                    upper_limit="3",
+                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                ),
+                MultiplexerCase(
+                    short_name="backward_flip",
+                    long_name="Backward Flip",
+                    lower_limit="1",
+                    upper_limit="3",
+                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                ),
+            ],
+        )
+}
+
+# env-data
+somersault_env_datas = {
+    "flip_env_data":
+        EnvironmentData(
+            odx_id=OdxLinkId("somersault.env_data.flip_env_data", doc_frags),
+            short_name="flip_env_data",
+            long_name="Flip Env Data",
+            description=None,
+            sdgs=[],
+            is_visible_raw=None,
+            byte_size=None,
+            dtc_values=[],
+            parameters=[
+                ValueParameter(
+                    short_name="flip_speed",
+                    long_name="Flip Speed",
+                    description=None,
+                    physical_default_value_raw=None,
+                    byte_position=0,
+                    semantic="DATA",
+                    dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                    dop_snref=None,
+                    bit_position=None,
+                    sdgs=[],
+                ),
+                PhysicalConstantParameter(
+                    short_name="flip_direction",
+                    long_name="Flip Direction",
+                    description=None,
+                    byte_position=1,
+                    semantic="DATA",
+                    physical_constant_value="1",
+                    dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                    dop_snref=None,
+                    bit_position=None,
+                    sdgs=[],
+                ),
+            ],
+        )
+}
+
+# env-data-desc
+somersault_env_data_descs = {
+    "flip_env_data_desc":
+        EnvironmentDataDescription(
+            odx_id=OdxLinkId("somersault.env_data_desc.flip_env_data_desc", doc_frags),
+            short_name="flip_env_data_desc",
+            long_name="Flip Env Data Desc",
+            description=None,
+            param_snref="flip_speed",
+            param_snpathref=None,
+            is_visible_raw=None,
+            env_datas=[],
+            env_data_refs=[OdxLinkRef("somersault.env_data.flip_env_data", doc_frags)],
+            sdgs=[],
+        )
+}
+
+# requests
+somersault_requests = {
+    "start_session":
+        Request(
+            odx_id=OdxLinkId("somersault.RQ.start_session", doc_frags),
+            short_name="start_session",
+            long_name="Start the diagnostic session & do some mischief",
+            description=None,
+            sdgs=[],
+            is_visible_raw=None,
+            parameters=[
+                CodedConstParameter(
+                    short_name="sid",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    diag_coded_type=somersault_diagcodedtypes["uint8"],
+                    byte_position=0,
+                    coded_value=SID.DiagnosticSessionControl.value,  # type: ignore
+                    bit_position=None,
+                    sdgs=[],
+                ),
+                CodedConstParameter(
+                    short_name="odx_id",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    diag_coded_type=somersault_diagcodedtypes["uint8"],
+                    byte_position=1,
+                    coded_value=0x0,
+                    bit_position=None,
+                    sdgs=[],
+                ),
+            ],
+            byte_size=None,
+        ),
+    "stop_session":
+        Request(
+            odx_id=OdxLinkId("somersault.RQ.stop_session", doc_frags),
+            short_name="stop_session",
+            long_name="Terminate the current diagnostic session",
+            description=None,
+            sdgs=[],
+            is_visible_raw=None,
+            parameters=[
+                CodedConstParameter(
+                    short_name="sid",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    diag_coded_type=somersault_diagcodedtypes["uint8"],
+                    byte_position=0,
+                    coded_value=SID.DiagnosticSessionControl.value,  # type: ignore
+                    bit_position=None,
+                    sdgs=[],
+                ),
+                CodedConstParameter(
+                    short_name="odx_id",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    diag_coded_type=somersault_diagcodedtypes["uint8"],
+                    byte_position=1,
+                    coded_value=0x1,
+                    bit_position=None,
+                    sdgs=[],
+                ),
+            ],
+            byte_size=None,
+        ),
+    "tester_present":
+        Request(
+            odx_id=OdxLinkId("somersault.RQ.tester_present", doc_frags),
+            short_name="tester_present",
+            long_name="Prevent the current diagnostic session from timing out",
+            description=None,
+            sdgs=[],
+            is_visible_raw=None,
+            parameters=[
+                CodedConstParameter(
+                    short_name="sid",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    diag_coded_type=somersault_diagcodedtypes["uint8"],
+                    byte_position=0,
+                    coded_value=SID.TesterPresent.value,  # type: ignore
+                    bit_position=None,
+                    sdgs=[],
+                ),
+                CodedConstParameter(
+                    short_name="odx_id",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    diag_coded_type=somersault_diagcodedtypes["uint8"],
+                    byte_position=1,
+                    coded_value=0x0,
+                    bit_position=None,
+                    sdgs=[],
+                ),
+            ],
+            byte_size=None,
+        ),
+    "set_operation_params":
+        Request(
+            odx_id=OdxLinkId("somersault.RQ.set_operation_params", doc_frags),
+            short_name="set_operation_params",
+            long_name="Specify the mode of operation for the ECU; e.g. if rings "
+            "of fire ought to be used for maximum effect",
+            description=None,
+            sdgs=[],
+            is_visible_raw=None,
+            parameters=[
+                CodedConstParameter(
+                    short_name="sid",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    diag_coded_type=somersault_diagcodedtypes["uint8"],
+                    byte_position=0,
+                    coded_value=SID.ForwardFlipCondition.value,  # type: ignore
+                    bit_position=None,
+                    sdgs=[],
+                ),
+                ValueParameter(
+                    short_name="use_fire_ring",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    physical_default_value_raw=None,
+                    byte_position=1,
+                    dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),
+                    dop_snref=None,
+                    bit_position=None,
+                    sdgs=[],
+                ),
+            ],
+            byte_size=None,
+        ),
+    "forward_flips":
+        Request(
+            odx_id=OdxLinkId("somersault.RQ.do_forward_flips", doc_frags),
+            short_name="do_forward_flips",
+            long_name="Do forward somersaults & some other mischief",
+            description=None,
+            sdgs=[],
+            is_visible_raw=None,
+            parameters=[
+                CodedConstParameter(
+                    short_name="sid",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    diag_coded_type=somersault_diagcodedtypes["uint8"],
+                    byte_position=0,
+                    coded_value=SID.ForwardFlip.value,  # type: ignore
+                    bit_position=None,
+                    sdgs=[],
+                ),
+                ValueParameter(
+                    short_name="forward_soberness_check",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    physical_default_value_raw=None,
+                    dop_ref=OdxLinkRef("somersault.DOP.soberness_check", doc_frags),
+                    dop_snref=None,
+                    byte_position=1,
+                    # value must be 0x12 for the request to be accepted
+                    bit_position=None,
+                    sdgs=[],
+                ),
+                ValueParameter(
+                    short_name="num_flips",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    physical_default_value_raw=None,
+                    byte_position=2,
+                    dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frags),
+                    dop_snref=None,
+                    bit_position=None,
+                    sdgs=[],
+                ),
+            ],
+            byte_size=None,
+        ),
+    "backward_flips":
+        Request(
+            odx_id=OdxLinkId("somersault.RQ.do_backward_flips", doc_frags),
+            short_name="do_backward_flips",
+            long_name="Do a backward somersault & some other mischief",
+            description=None,
+            sdgs=[],
+            is_visible_raw=None,
+            parameters=[
+                CodedConstParameter(
+                    short_name="sid",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    diag_coded_type=somersault_diagcodedtypes["uint8"],
+                    byte_position=0,
+                    coded_value=SID.BackwardFlip.value,  # type: ignore
+                    bit_position=None,
+                    sdgs=[],
+                ),
+                ValueParameter(
+                    short_name="backward_soberness_check",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    physical_default_value_raw=None,
+                    dop_ref=OdxLinkRef("somersault.DOP.soberness_check", doc_frags),
+                    dop_snref=None,
+                    byte_position=1,
+                    # value must be 0x21 for the request to be accepted
+                    bit_position=None,
+                    sdgs=[],
+                ),
+                ValueParameter(
+                    short_name="num_flips",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    physical_default_value_raw=None,
+                    byte_position=2,
+                    dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frags),
+                    dop_snref=None,
+                    bit_position=None,
+                    sdgs=[],
+                ),
+            ],
+            byte_size=None,
+        ),
+    "report_status":
+        Request(
+            odx_id=OdxLinkId("somersault.RQ.report_status", doc_frags),
+            short_name="report_status",
+            long_name="Report back the current level of dizzy- & happiness.",
+            description=None,
+            sdgs=[],
+            is_visible_raw=None,
+            parameters=[
+                CodedConstParameter(
+                    short_name="sid",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    diag_coded_type=somersault_diagcodedtypes["uint8"],
+                    byte_position=0,
+                    coded_value=SID.ReadDataByIdentifier.value,  # type: ignore
+                    bit_position=None,
+                    sdgs=[],
+                ),
+                CodedConstParameter(
+                    short_name="odx_id",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    diag_coded_type=somersault_diagcodedtypes["uint8"],
+                    byte_position=1,
+                    coded_value=0x0,
+                    bit_position=None,
+                    sdgs=[],
+                ),
+            ],
+            byte_size=None,
+        ),
 }
 
 # services
