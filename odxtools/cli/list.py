@@ -17,7 +17,7 @@ _odxtools_tool_name_ = "list"
 
 def print_summary(
     odxdb: Database,
-    print_global_neg_responses=False,
+    print_global_negative_responses=False,
     print_services=False,
     print_dops=False,
     print_params=False,
@@ -61,7 +61,7 @@ def print_summary(
             desc = format_desc(dl.description, ident=2)
             print(f" Description: " + desc)
 
-        if print_global_neg_responses and dl.global_negative_responses:
+        if print_global_negative_responses and dl.global_negative_responses:
             print(f"The global negative responses of '{dl.short_name}' are: ")
             for gnr in dl.global_negative_responses:
                 print(f" {gnr}")
@@ -187,7 +187,7 @@ def run(args):
     variants = args.variants if args.variants else None
     print_summary(
         odxdb,
-        print_global_neg_responses=args.all or args.global_neg_responses,
+        print_global_negative_responses=args.all or args.global_negative_responses,
         print_services=args.all or args.params or args.services is not None,
         service_filter=(lambda s: s.short_name in args.services
                         if args.services and len(args.services) > 0 else lambda s: True),
