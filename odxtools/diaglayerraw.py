@@ -174,7 +174,7 @@ class DiagLayerRaw:
 
         ecu_variant_patterns = [
             EcuVariantPattern.from_et(el, doc_frags)
-            for el in et_element.iterfind("ECU-VARIANT-PATTERN/ECU-VARIANT-PATTERN")
+            for el in et_element.iterfind("ECU-VARIANT-PATTERNS/ECU-VARIANT-PATTERN")
         ]
         if variant_type is not DiagLayerType.ECU_VARIANT:
             assert (
