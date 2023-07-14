@@ -158,38 +158,24 @@ class SomersaultLazyEcu:
 
         self.isotp_socket = create_isotp_socket(
             can_channel,
-            rxid=somersault_lazy_diag_layer.get_receive_id(),
-            txid=somersault_lazy_diag_layer.get_send_id(),
+            rxid=somersault_lazy_diag_layer.get_can_receive_id(),
+            txid=somersault_lazy_diag_layer.get_can_send_id(),
         )
 
         ##############
         # extract the tester present parameters from the ECU's
         # communication parameters.
-        #
-        # TODO: move this into the DiagLayer analogous to
-        # get_receive_id() plus deal with more parameters.
         ##############
 
-        # the timeout on inactivity [s]
-        cps = [
-            x for x in somersault_lazy_diag_layer.communication_parameters
-            if x.id_ref == "ISO_14230_3.CP_TesterPresentTime"
-        ]
-
-        if len(cps):
-            assert len(cps) == 1
-            self._idle_timeout = int(cps[0].value) / 1e6
-        else:
+        # determine the timeout on inactivity [s]
+        self._idle_timeout = somersault_lazy_diag_layer.get_tester_present_time()
+        if self._idle_timeout is None:
             self._idle_timeout = 3.0  # default specified by the standard
 
         # we send a response to tester present messages. make sure
         # that this is specified
-        cps = [
-            x for x in somersault_lazy_diag_layer.communication_parameters
-            if x.id_ref == "ISO_15765_3.CP_TesterPresentReqRsp"
-        ]
-        assert len(cps) == 1
-        assert cps[0].value == "Response expected" or cps[0].value == "1"
+        cp = somersault_lazy_diag_layer.get_communication_parameter("CP_TesterPresentReqRsp")
+        assert cp.value == "Response expected" or cp.value == "1"
 
     async def _handle_requests_task(self):
         loop = asyncio.get_running_loop()
@@ -288,8 +274,7 @@ class SomersaultLazyEcu:
         num_flips = message.param_dict["num_flips"]
 
         if soberness_check != 0x12:
-            response = [x for x in service.negative_responses if x.short_name == "flips_not_done"
-                       ][0]
+            response = service.negative_responses.flips_not_done
             response_data = response.encode(
                 coded_request=message.coded_message,
                 reason=0,  # -> not sober
@@ -301,9 +286,7 @@ class SomersaultLazyEcu:
         # we cannot do all flips because we are too dizzy
         if self.dizziness_level + num_flips > self.max_dizziness_level:
 
-            response = [
-                x for x in service.positive_responses if x.short_name == "grudging_forward"
-            ][0]
+            response = service.positive_responses.grudging_forward
             response_data = response.encode(
                 coded_request=message.coded_message,
                 reason=1,  # -> too dizzy
@@ -317,9 +300,7 @@ class SomersaultLazyEcu:
         # because we stumble
         for i in range(0, num_flips):
             if random.randrange(0, 10000) < 100:
-                response = [
-                    x for x in service.negative_responses if x.short_name == "flips_not_done"
-                ]
+                response = service.negative_responses.flips_not_done
                 response_data = response.encode(
                     coded_request=message.coded_message,
                     reason=2,  # -> stumbled
@@ -330,7 +311,7 @@ class SomersaultLazyEcu:
 
             self.dizziness_level += 1
 
-        response = [x for x in service.positive_responses if x.short_name == "grudging_forward"][0]
+        response = service.positive_responses.grudging_forward
         response_data = response.encode(coded_request=message.coded_message)
         await ecu_send(self.isotp_socket, response_data)
 
@@ -428,8 +409,8 @@ async def tester_main():
     # reversed.
     isotp_socket = create_isotp_socket(
         can_channel,
-        txid=somersault_lazy_diag_layer.get_receive_id(),
-        rxid=somersault_lazy_diag_layer.get_send_id(),
+        txid=somersault_lazy_diag_layer.get_can_receive_id(),
+        rxid=somersault_lazy_diag_layer.get_can_send_id(),
     )
 
     # try to to do a single forward flip without having an active session (ought to fail)
@@ -549,6 +530,8 @@ parser.add_argument(
 )
 
 args = parser.parse_args()  # deals with the help message handling
+
+#logging.basicConfig(level=logging.INFO)
 
 can_channel = args.channel
 
