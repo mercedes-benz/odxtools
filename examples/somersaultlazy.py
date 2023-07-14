@@ -488,9 +488,6 @@ async def main(args):
     else:
         assert args.mode == "unittest"
 
-        logging.basicConfig(level=logging.DEBUG)
-        logging.getLogger("odxtools").setLevel(logging.WARNING)
-
         # run both tasks in parallel. Since the server task does not
         # complete, we need to wait until the first task is completed
         # and then manually that this was the server task
@@ -531,7 +528,10 @@ parser.add_argument(
 
 args = parser.parse_args()  # deals with the help message handling
 
-#logging.basicConfig(level=logging.INFO)
+# set the verbosity of the log output
+logging.basicConfig(level=logging.DEBUG)  # log messages from the ECU itself
+logging.getLogger("odxtools").setLevel(
+    logging.WARNING)  # log messages stemming from the odxtools library
 
 can_channel = args.channel
 
