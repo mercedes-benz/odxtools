@@ -166,11 +166,15 @@ class DataObjectProperty(DopBase):
         return dop
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        return super()._build_odxlinks()
+        result = super()._build_odxlinks()
+        result.update(self.diag_coded_type._build_odxlinks())
+        return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase):
         """Resolves the reference to the unit"""
         super()._resolve_odxlinks(odxlinks)
+
+        self.diag_coded_type._resolve_odxlinks(odxlinks)
 
         self._unit: Optional[Unit] = None
         if self.unit_ref:
@@ -178,6 +182,8 @@ class DataObjectProperty(DopBase):
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
+
+        self.diag_coded_type._resolve_snrefs(diag_layer)
 
     @property
     def unit(self) -> Optional[Unit]:

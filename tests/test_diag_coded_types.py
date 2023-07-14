@@ -333,31 +333,31 @@ class TestParamLengthInfoType(unittest.TestCase):
 
     def test_decode_param_info_length_type_uint(self):
         length_key_id = OdxLinkId("param.length_key", doc_frags)
+        length_key_ref = OdxLinkRef.from_id(length_key_id)
+        length_key = LengthKeyParameter(
+            odx_id=length_key_id,
+            short_name="length_key",
+            long_name=None,
+            description=None,
+            semantic=None,
+            sdgs=[],
+            dop_ref=OdxLinkRef("DOP.uint8", doc_frags),
+            dop_snref=None,
+            byte_position=1,
+            bit_position=None,
+        )
         dct = ParamLengthInfoType(
             base_data_type="A_UINT32",
             base_type_encoding=None,
-            length_key_id=length_key_id,
+            length_key_ref=length_key_ref,
             is_highlow_byte_order_raw=None,
         )
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update({length_key_id: length_key})
+        dct._resolve_odxlinks(odxlinks)
         state = DecodeState(
             bytes([0x10, 0x12, 0x34, 0x56]),
-            [
-                ParameterValuePair(
-                    parameter=LengthKeyParameter(
-                        short_name="length_key",
-                        long_name=None,
-                        description=None,
-                        semantic=None,
-                        odx_id=length_key_id,
-                        dop_ref=OdxLinkRef("some_dop", doc_frags),
-                        dop_snref=None,
-                        byte_position=None,
-                        bit_position=None,
-                        sdgs=[],
-                    ),
-                    value=16,
-                )
-            ],
+            [ParameterValuePair(parameter=length_key, value=16)],
             next_byte_position=1,
         )
         internal, next_byte = dct.convert_bytes_to_internal(state, bit_position=0)
@@ -366,12 +366,28 @@ class TestParamLengthInfoType(unittest.TestCase):
 
     def test_encode_param_info_length_type_uint(self):
         length_key_id = OdxLinkId("param.length_key", doc_frags)
+        length_key = LengthKeyParameter(
+            odx_id=length_key_id,
+            short_name="length_key",
+            long_name=None,
+            description=None,
+            semantic=None,
+            sdgs=[],
+            dop_ref=OdxLinkRef("DOP.uint8", doc_frags),
+            dop_snref=None,
+            byte_position=1,
+            bit_position=None,
+        )
+        length_key_ref = OdxLinkRef.from_id(length_key_id)
         dct = ParamLengthInfoType(
             base_data_type="A_UINT32",
             base_type_encoding=None,
-            length_key_id=length_key_id,
+            length_key_ref=OdxLinkRef.from_id(length_key_id),
             is_highlow_byte_order_raw=None,
         )
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update({length_key_id: length_key})
+        dct._resolve_odxlinks(odxlinks)
         state = EncodeState(bytes([0x10]), {}, length_keys={length_key_id: 40})
         byte_val = dct.convert_internal_to_bytes(0x12345, state, bit_position=0)
         self.assertEqual(byte_val, bytes([0x0, 0x0, 0x1, 0x23, 0x45]))
@@ -392,8 +408,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                 ParamLengthInfoType(
                     base_data_type="A_UINT32",
                     base_type_encoding=None,
-                    length_key_id=OdxLinkId(
-                        "BV.dummy_DL.RQ.sendCertificate.lengthOfCertificateClient", doc_frags),
+                    length_key_ref=OdxLinkRef("param.dummy_length_key", doc_frags),
                     is_highlow_byte_order_raw=None,
                 ),
         }
@@ -470,8 +485,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     description="Length parameter for certificateClient.",
                     semantic=None,
                     # LengthKeyParams have an ID to be referenced by a ParamLengthInfoType (which is a diag coded type)
-                    odx_id=diagcodedtypes["length_key_id_to_lengthOfCertificateClient"]
-                    .length_key_id,
+                    odx_id=OdxLinkId("param.dummy_length_key", doc_frags),
                     byte_position=1,
                     bit_position=None,
                     # The DOP multiplies the coded value by 8, since the length key ref expects the number of bits.
