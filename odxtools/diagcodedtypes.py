@@ -551,7 +551,7 @@ class ParamLengthInfoType(DiagCodedType):
             # if isinstance(param_value.parameter, LengthKeyParameter) would be prettier,
             # but leads to cyclic import...
             if (parameter.parameter_type == "LENGTH-KEY" and
-                    parameter.odx_id == self.length_key.odx_id  # type: ignore
+                    parameter.odx_id == self.length_key.odx_id  # type: ignore[attr-defined]
                ):
                 # The bit length of the parameter to be extracted is given by the length key.
                 assert isinstance(value, int)
