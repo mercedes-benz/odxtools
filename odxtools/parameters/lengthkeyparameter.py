@@ -1,7 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
+from typing import TYPE_CHECKING, Any, Dict, Tuple
+
 from ..encodestate import EncodeState
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parameterwithdop import ParameterWithDOP
+
+if TYPE_CHECKING:
+    from diaglayer import DiagLayer
 
 
 class LengthKeyParameter(ParameterWithDOP):
@@ -17,6 +23,19 @@ class LengthKeyParameter(ParameterWithDOP):
     def __init__(self, *, odx_id, **kwargs):
         super().__init__(parameter_type="LENGTH-KEY", **kwargs)
         self.odx_id = odx_id
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = super()._build_odxlinks()
+
+        result[self.odx_id] = self
+
+        return result
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        super()._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        super()._resolve_snrefs(diag_layer)
 
     def is_required(self):
         return False

@@ -1,14 +1,18 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 import warnings
-from typing import ByteString, Union
+from typing import TYPE_CHECKING, Any, ByteString, Dict, List, Union
 
 from ..decodestate import DecodeState
 from ..diagcodedtypes import DiagCodedType
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import DataType
 from .parameterbase import Parameter
+
+if TYPE_CHECKING:
+    from ..diaglayer import DiagLayer
 
 
 class CodedConstParameter(Parameter):
@@ -17,13 +21,22 @@ class CodedConstParameter(Parameter):
                  **kwargs):
         super().__init__(parameter_type="CODED-CONST", **kwargs)
 
-        self._diag_coded_type = diag_coded_type
+        self.diag_coded_type = diag_coded_type
         assert isinstance(coded_value, (int, bytes, bytearray))
         self.coded_value = coded_value
 
-    @property
-    def diag_coded_type(self):
-        return self._diag_coded_type
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = super()._build_odxlinks()
+
+        result.update(self.diag_coded_type._build_odxlinks())
+
+        return result
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        super()._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        super()._resolve_snrefs(diag_layer)
 
     @property
     def bit_length(self):

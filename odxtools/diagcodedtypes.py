@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 import abc
 import math
-from typing import Any, List, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 import bitstruct
 
@@ -10,8 +10,12 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError
 from .globals import logger, xsi
-from .odxlink import OdxDocFragment, OdxLinkId
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import DataType, odxstr_to_bool
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
+    from .parameters.lengthkeyparameter import LengthKeyParameter
 
 ODX_TYPE_TO_FORMAT_LETTER = {
     DataType.A_INT32: "s",
@@ -39,6 +43,17 @@ class DiagCodedType(abc.ABC):
         self.dct_type = dct_type
         self.base_type_encoding = base_type_encoding
         self.is_highlow_byte_order_raw = is_highlow_byte_order_raw
+
+    def _build_odxlinks(self):
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        """Recursively resolve any odxlinks references"""
+        pass
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        """Recursively resolve any short-name references"""
+        pass
 
     @property
     def is_highlow_byte_order(self) -> bool:
@@ -468,7 +483,7 @@ class ParamLengthInfoType(DiagCodedType):
         self,
         *,
         base_data_type: Union[str, DataType],
-        length_key_id: OdxLinkId,
+        length_key_ref: OdxLinkRef,
         base_type_encoding: Optional[str],
         is_highlow_byte_order_raw: Optional[bool],
     ):
@@ -478,11 +493,28 @@ class ParamLengthInfoType(DiagCodedType):
             base_type_encoding=base_type_encoding,
             is_highlow_byte_order_raw=is_highlow_byte_order_raw,
         )
-        self.length_key_id = length_key_id
+        self.length_key_ref = length_key_ref
+
+    def _build_odxlinks(self):
+        return super()._build_odxlinks()
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        """Recursively resolve any odxlinks references"""
+        super()._resolve_odxlinks(odxlinks)
+
+        self._length_key = odxlinks.resolve(self.length_key_ref)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        """Recursively resolve any short-name references"""
+        super()._resolve_snrefs(diag_layer)
+
+    @property
+    def length_key(self) -> "LengthKeyParameter":
+        return self._length_key
 
     def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
-        bit_length = encode_state.length_keys.get(self.length_key_id, None)
+        bit_length = encode_state.length_keys.get(self.length_key.odx_id, None)
 
         if bit_length is None:
             if self.base_data_type in [
@@ -502,7 +534,7 @@ class ParamLengthInfoType(DiagCodedType):
                 bit_length = math.ceil(bit_length / 8.0) * 8
 
         assert bit_length is not None
-        encode_state.length_keys[self.length_key_id] = bit_length
+        encode_state.length_keys[self.length_key.odx_id] = bit_length
 
         return self._to_bytes(
             internal_value,
@@ -519,14 +551,14 @@ class ParamLengthInfoType(DiagCodedType):
             # if isinstance(param_value.parameter, LengthKeyParameter) would be prettier,
             # but leads to cyclic import...
             if (parameter.parameter_type == "LENGTH-KEY" and
-                    parameter.odx_id == self.length_key_id  # type: ignore
+                    parameter.odx_id == self.length_key.odx_id  # type: ignore[attr-defined]
                ):
                 # The bit length of the parameter to be extracted is given by the length key.
                 assert isinstance(value, int)
                 bit_length = value
                 break
 
-        assert bit_length is not None, f"Did not find any length key with ID {self.length_key_id}"
+        assert bit_length is not None, f"Did not find any length key with ID {self.length_key.odx_id}"
 
         # Extract the internal value and return.
         return self._extract_internal(
@@ -539,7 +571,7 @@ class ParamLengthInfoType(DiagCodedType):
         )
 
     def __repr__(self) -> str:
-        repr_str = f"ParamLengthInfoType(base_data_type='{self.base_data_type}', length_key_id={self.length_key_id}"
+        repr_str = f"ParamLengthInfoType(base_data_type='{self.base_data_type}', length_key={self.length_key.short_name}"
         if self.base_type_encoding is not None:
             repr_str += f", base_type_encoding={self.base_type_encoding}"
         if not self.is_highlow_byte_order:
@@ -654,19 +686,11 @@ def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragmen
             is_highlow_byte_order_raw=is_highlow_byte_order_raw,
         )
     elif dct_type == "PARAM-LENGTH-INFO-TYPE":
-        # TODO: This is a bit hacky: we make an ID where the data
-        # specifies a reference. The reason is that we need to store
-        # the result in an associative array which is not possible
-        # with references. Note that we currently ignore the DOCREF
-        # attribute of the reference, so if there are any ID conflicts
-        # between document fragments, the encoding process will go
-        # wrong...
-        length_key_elem = et_element.find("LENGTH-KEY-REF")
-        length_key_id = OdxLinkId(length_key_elem.attrib["ID-REF"], doc_frags)
+        length_key_ref = OdxLinkRef.from_et(et_element.find("LENGTH-KEY-REF"), doc_frags)
 
         return ParamLengthInfoType(
             base_data_type=base_data_type,
-            length_key_id=length_key_id,
+            length_key_ref=length_key_ref,
             base_type_encoding=base_type_encoding,
             is_highlow_byte_order_raw=is_highlow_byte_order_raw,
         )
