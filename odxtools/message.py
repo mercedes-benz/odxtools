@@ -6,12 +6,11 @@ from typing import Union
 class Message:
     """A CAN message with its interpretation."""
 
-    def __init__(self, *, coded_message: Union[bytes, bytearray], service, structure,
-                 param_dict: dict):
+    def __init__(self, *, coded_message: bytes, service, structure, param_dict: dict):
         """
         Parameters
         ----------
-        coded_message : bytes or bytearray
+        coded_message : bytes
         service : DiagService
         structure : Request or Response
         param_dict : dict

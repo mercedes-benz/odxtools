@@ -43,7 +43,7 @@ class LengthKeyParameter(ParameterWithDOP):
     def is_optional(self):
         return True
 
-    def encode_into_pdu(self, encode_state: EncodeState) -> bytearray:
+    def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         physical_value = encode_state.parameter_values.get(self.short_name,)
 
         if physical_value is None:

@@ -1196,7 +1196,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 CodedConstParameter(
-                    short_name="odx_id",
+                    short_name="id",
                     long_name=None,
                     semantic=None,
                     description=None,
@@ -1230,7 +1230,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 CodedConstParameter(
-                    short_name="odx_id",
+                    short_name="id",
                     long_name=None,
                     semantic=None,
                     description=None,
@@ -1264,7 +1264,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 CodedConstParameter(
-                    short_name="odx_id",
+                    short_name="id",
                     long_name=None,
                     semantic=None,
                     description=None,
@@ -1430,7 +1430,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 CodedConstParameter(
-                    short_name="odx_id",
+                    short_name="id",
                     long_name=None,
                     semantic=None,
                     description=None,

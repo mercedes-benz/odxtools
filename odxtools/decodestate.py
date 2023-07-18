@@ -8,13 +8,13 @@ if TYPE_CHECKING:
 
 class ParameterValuePair(NamedTuple):
     parameter: "Parameter"
-    value: Union[str, int, bytes, bytearray, Dict]
+    value: Union[str, int, bytes, Dict]
 
 
 class DecodeState(NamedTuple):
     """Utility class to be used while decoding a message."""
 
-    coded_message: Union[bytes, bytearray]
+    coded_message: bytes
     """bytes to be decoded"""
     parameter_value_pairs: List[ParameterValuePair]
     """values of already decoded parameters"""

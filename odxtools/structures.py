@@ -2,8 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 import math
 import warnings
-from typing import (TYPE_CHECKING, Any, ByteString, Dict, Iterable, List, Optional, OrderedDict,
-                    Tuple, Union)
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, OrderedDict, Tuple, Union
 
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState, ParameterValuePair
@@ -12,7 +11,7 @@ from .exceptions import DecodeError, EncodeError, OdxWarning
 from .globals import logger
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
-from .odxtypes import odxstr_to_bool
+from .odxtypes import ParameterDict, ParameterValueDict, odxstr_to_bool
 from .parameters import (CodedConstParameter, MatchingRequestParameter, Parameter, ParameterWithDOP,
                          ValueParameter, create_any_parameter_from_et)
 from .parameters.lengthkeyparameter import LengthKeyParameter
@@ -23,8 +22,6 @@ from .utils import create_description_from_et, short_name_as_id
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
     from .endofpdufield import EndOfPduField
-
-ParameterDict = Dict[str, Union[Parameter, "ParameterDict"]]
 
 
 class BasicStructure(DopBase):
@@ -72,8 +69,8 @@ class BasicStructure(DopBase):
         # We were not able to calculate a static bit length
         return None
 
-    def coded_const_prefix(self, request_prefix: Union[bytes, bytearray] = bytes()):
-        prefix = bytearray()
+    def coded_const_prefix(self, request_prefix: bytes = bytes()) -> bytes:
+        prefix = bytes()
         encode_state = EncodeState(prefix, parameter_values={}, triggering_request=request_prefix)
         for p in self.parameters:
             if isinstance(p, CodedConstParameter) and p.bit_length % 8 == 0:
@@ -184,7 +181,7 @@ class BasicStructure(DopBase):
 
         return bytearray(coded_rpc)
 
-    def _validate_coded_rpc(self, coded_rpc: bytearray):
+    def _validate_coded_rpc(self, coded_rpc: bytes):
 
         if self.byte_size is not None:
             # We definitely broke something if we didn't respect the explicit byte_size
@@ -206,7 +203,7 @@ class BasicStructure(DopBase):
             warnings.warn(
                 self._get_encode_error_str("may have been", coded_rpc, bit_length), OdxWarning)
 
-    def _get_encode_error_str(self, verb: str, coded_rpc: bytearray, bit_length: int):
+    def _get_encode_error_str(self, verb: str, coded_rpc: bytes, bit_length: int):
 
         return str(f"Structure {self.short_name} {verb} encoded uncorrectly:" +
                    f" actual length is {len(coded_rpc)}," +
@@ -252,7 +249,7 @@ class BasicStructure(DopBase):
 
         return param_dict, decode_state.next_byte_position + inner_decode_state.next_byte_position
 
-    def encode(self, coded_request: Optional[ByteString] = None, **params) -> ByteString:
+    def encode(self, coded_request: Optional[bytes] = None, **params) -> bytes:
         """
         Composes an UDS message as bytes for this service.
         Parameters:
@@ -265,7 +262,7 @@ class BasicStructure(DopBase):
         return self.convert_physical_to_internal(
             params, triggering_coded_request=coded_request, is_end_of_pdu=True)
 
-    def decode(self, message: Union[bytes, bytearray]):
+    def decode(self, message: bytes):
         # dummy decode state to be passed to convert_bytes_to_physical
         decode_state = DecodeState(
             coded_message=message, parameter_value_pairs=[], next_byte_position=0)
@@ -506,7 +503,7 @@ class Response(BasicStructure):
 
         self.response_type = response_type
 
-    def encode(self, coded_request: Optional[ByteString] = None, **params) -> ByteString:
+    def encode(self, coded_request: Optional[bytes] = None, **params) -> bytes:
         if coded_request is not None:
             logger.info(f"Compose response message to the request {coded_request.hex()}")
             # Extract MATCHING-REQUEST-PARAMs from the coded request

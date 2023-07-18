@@ -107,7 +107,7 @@ class Parameter(abc.ABC):
         """
         pass
 
-    def encode_into_pdu(self, encode_state: EncodeState) -> bytearray:
+    def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         """Insert the encoded value of a parameter into the coded RPC.
 
         If the byte position of the parameter is not defined,
@@ -127,8 +127,9 @@ class Parameter(abc.ABC):
 
         Returns:
         -------
-        bytearray
-            the updated, coded message after encoding the parameter into it
+        bytes
+            the message's blob after adding the encoded parameter into it
+
         """
         byte_value = self.get_coded_value_as_bytes(encode_state)
 

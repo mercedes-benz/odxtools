@@ -6,7 +6,7 @@ from .dataobjectproperty import DopBase
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import odxstr_to_bool
+from .odxtypes import ParameterValueDict, odxstr_to_bool
 from .specialdata import create_sdgs_from_et
 from .structures import BasicStructure
 from .utils import create_description_from_et
@@ -108,7 +108,7 @@ class EndOfPduField(DopBase):
 
     def convert_physical_to_bytes(
         self,
-        physical_value: Union[dict, List[dict]],
+        physical_value: ParameterValueDict,
         encode_state: EncodeState,
         bit_position: int = 0,
     ):

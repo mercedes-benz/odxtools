@@ -37,7 +37,7 @@ class Limit(NamedTuple):
             hex_text = et_element.text
             if len(hex_text) % 2 == 1:
                 hex_text = "0" + hex_text
-            return Limit(bytearray.fromhex(hex_text), interval_type)
+            return Limit(bytes.fromhex(hex_text), interval_type)
         else:
             return Limit(internal_type.from_string(et_element.text), interval_type)
 

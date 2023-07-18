@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from enum import IntEnum
 from itertools import chain
-from typing import ByteString, Optional, Union
+from typing import Optional, Union
 
 import odxtools.obd as obd
 
@@ -102,7 +102,7 @@ def negative_response_id(service_id: int) -> int:
     return NegativeResponseId
 
 
-def is_reponse_pending(telegram_payload: ByteString, request_sid: Optional[int] = None) -> bool:
+def is_reponse_pending(telegram_payload: bytes, request_sid: Optional[int] = None) -> bool:
     # "response pending" responses exhibit at least three bytes
     if len(telegram_payload) < 3:
         return False

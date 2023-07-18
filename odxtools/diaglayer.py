@@ -892,7 +892,7 @@ class DiagLayer:
         else:
             cast(List[DiagService], sub_tree[-1]).append(service)
 
-    def _find_services_for_uds(self, message: Union[bytes, bytearray]) -> List[DiagService]:
+    def _find_services_for_uds(self, message: bytes) -> List[DiagService]:
         prefix_tree = self._prefix_tree
 
         # Find matching service(s) in prefix tree
@@ -907,8 +907,7 @@ class DiagLayer:
                 possible_services += cast(List[DiagService], prefix_tree[-1])
         return possible_services
 
-    def _decode(self, message: Union[bytes, bytearray],
-                candidate_services: Iterable[DiagService]) -> List[Message]:
+    def _decode(self, message: bytes, candidate_services: Iterable[DiagService]) -> List[Message]:
         decoded_messages: List[Message] = []
 
         for service in candidate_services:
@@ -935,13 +934,12 @@ class DiagLayer:
 
         return decoded_messages
 
-    def decode(self, message: Union[bytes, bytearray]) -> List[Message]:
+    def decode(self, message: bytes) -> List[Message]:
         candidate_services = self._find_services_for_uds(message)
 
         return self._decode(message, candidate_services)
 
-    def decode_response(self, response: Union[bytes, bytearray],
-                        request: Union[bytes, bytearray, Message]) -> Iterable[Message]:
+    def decode_response(self, response: bytes, request: Union[bytes, Message]) -> Iterable[Message]:
         if isinstance(request, Message):
             candidate_services = [request.service]
         else:

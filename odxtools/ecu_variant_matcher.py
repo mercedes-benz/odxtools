@@ -2,14 +2,15 @@
 # Copyright (c) 2023 MBition GmbH
 
 from enum import Enum
-from typing import ByteString, Dict, Generator, List, Optional, Union
+from typing import Dict, Generator, List, Optional, Union
 
-from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayertype import DiagLayerType
-from odxtools.ecu_variant_patterns import MatchingParameter
-from odxtools.exceptions import OdxError
-from odxtools.service import DiagService
-from odxtools.structures import Response
+from .diaglayer import DiagLayer
+from .diaglayertype import DiagLayerType
+from .ecu_variant_patterns import MatchingParameter
+from .exceptions import OdxError
+from .odxtypes import ParameterValue
+from .service import DiagService
+from .structures import Response
 
 
 class EcuVariantMatcher:
@@ -58,7 +59,7 @@ class EcuVariantMatcher:
     def decode_ident_response(
         diag_layer: DiagLayer,
         matching_param: MatchingParameter,
-        response_bytes: Union[bytes, bytearray],
+        response_bytes: bytes,
     ) -> str:
         """Decode a binary response and extract the identification string according
         to the snref or snpathref of the matching_param.
@@ -74,11 +75,11 @@ class EcuVariantMatcher:
             pos_neg_responses.extend(service.negative_responses)
 
         for any_response in pos_neg_responses:
-            decoded_val = any_response.decode(response_bytes)
+            decoded_val: Optional[ParameterValue] = any_response.decode(response_bytes)
             # disassemble snref / snpathref
             path_ref = matching_param.out_param_if.split(".")
             for ref in path_ref:
-                if ref in decoded_val:
+                if isinstance(decoded_val, dict) and ref in decoded_val:
                     decoded_val = decoded_val[ref]
                 else:
                     decoded_val = None
@@ -98,7 +99,7 @@ class EcuVariantMatcher:
             assert ecu.variant_type == DiagLayerType.ECU_VARIANT
 
         self.use_cache = use_cache
-        self.req_resp_cache: Dict[ByteString, bytes] = {}
+        self.req_resp_cache: Dict[bytes, bytes] = {}
         self._recent_ident_response: Optional[bytes] = None
 
         self._state = EcuVariantMatcher.State.PENDING
@@ -136,7 +137,7 @@ class EcuVariantMatcher:
             # no pattern has matched for any ecu variant
             self._state = EcuVariantMatcher.State.NO_MATCH
 
-    def evaluate(self, resp_bytes: Union[bytes, bytearray]) -> None:
+    def evaluate(self, resp_bytes: bytes) -> None:
         """Update the matcher with the response to a requst.
 
         Warning: Use this method EXACTLY once within the loop body of the request loop.
