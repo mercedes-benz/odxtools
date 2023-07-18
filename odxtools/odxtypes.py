@@ -26,7 +26,7 @@ ParameterDict = Dict[str, Union["Parameter", "ParameterDict"]]
 # sub-parameters, so this is a recursive type, and fields encompass
 # multiple items, so this can be a list of objects.
 ParameterValue = Union[AtomicOdxType, "ParameterValueDict", List["ParameterValue"]]
-ParameterValueDict = OrderedDict[str, ParameterValue]
+ParameterValueDict = Dict[str, ParameterValue]
 
 
 @overload
