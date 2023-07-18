@@ -204,14 +204,23 @@ class OdxLinkDatabase:
             if obj is not None:
                 if expected_type is not None:
                     assert isinstance(obj, expected_type)
-                    return obj
 
                 return obj
 
         raise KeyError(f"ODXLINK reference {ref} could not be resolved for any "
                        f"of the document fragments {ref.ref_docs}")
 
-    def resolve_lenient(self, ref: OdxLinkRef) -> Optional[Any]:
+    @overload
+    def resolve_lenient(self, ref: OdxLinkRef, expected_type: None = None) -> Any:
+        ...
+
+    @overload
+    def resolve_lenient(self, ref: OdxLinkRef, expected_type: Type[T]) -> Optional[T]:
+        ...
+
+    def resolve_lenient(self,
+                        ref: OdxLinkRef,
+                        expected_type: Optional[Type[T]] = None) -> Optional[Any]:
         """
         Resolve a reference to an object
 
@@ -236,6 +245,9 @@ class OdxLinkDatabase:
 
             obj = doc_frag_db.get(odx_id)
             if obj is not None:
+                if expected_type is not None:
+                    assert isinstance(obj, expected_type)
+
                 return obj
 
         return None
