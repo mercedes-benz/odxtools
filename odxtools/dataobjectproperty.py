@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
 
 from .compumethods import CompuMethod, create_any_compu_method_from_et
 from .decodestate import DecodeState
@@ -198,14 +198,21 @@ class DataObjectProperty(DopBase):
         else:
             return None
 
-    def convert_physical_to_internal(self, physical_value):
+    def convert_physical_to_internal(self, physical_value: Any) -> Any:
+        """
+        Convert a physical representation of a parameter to its internal counterpart
+        """
         assert self.physical_type.base_data_type.isinstance(
             physical_value
         ), f"Expected {self.physical_type.base_data_type.value}, got {type(physical_value)}"
 
         return self.compu_method.convert_physical_to_internal(physical_value)
 
-    def convert_physical_to_bytes(self, physical_value, encode_state, bit_position):
+    def convert_physical_to_bytes(self, physical_value: Any, encode_state: EncodeState,
+                                  bit_position: int) -> bytes:
+        """
+        Convert a physical representation of a parameter to a string bytes that can be send over the wire
+        """
         if not self.is_valid_physical_value(physical_value):
             raise EncodeError(f"The value {repr(physical_value)} of type {type(physical_value)}"
                               f" is not a valid." +
@@ -217,7 +224,14 @@ class DataObjectProperty(DopBase):
         return self.diag_coded_type.convert_internal_to_bytes(
             internal_val, encode_state, bit_position=bit_position)
 
-    def convert_bytes_to_physical(self, decode_state, bit_position: int = 0):
+    def convert_bytes_to_physical(self,
+                                  decode_state: DecodeState,
+                                  bit_position: int = 0) -> Tuple[Any, int]:
+        """
+        Convert the internal representation of a value into its physical value.
+
+        Returns a (physical_value, start_position_of_next_parameter) tuple.
+        """
         assert 0 <= bit_position and bit_position < 8
 
         internal, next_byte_position = self.diag_coded_type.convert_bytes_to_internal(
