@@ -267,7 +267,7 @@ class DiagService:
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)
 
-    def decode_message(self, message: Union[bytes, bytearray]) -> Message:
+    def decode_message(self, message: bytes) -> Message:
 
         # Check if message is a request or positive or negative response
         interpretable_message_types = []

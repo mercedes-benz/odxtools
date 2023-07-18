@@ -23,7 +23,7 @@ class EncodeState(NamedTuple):
     """payload that is constructed so far"""
     parameter_values: Dict[str, Any]
     """a mapping from short name to value for each parameter"""
-    triggering_request: Optional[Union[bytes, bytearray]] = None
+    triggering_request: Optional[bytes] = None
     """If encoding a response: request that triggered the response"""
     length_keys: Dict[OdxLinkId, int] = {}
     """Mapping from IDs to bit lengths (specified by LengthKeyParameters)"""

@@ -58,7 +58,7 @@ class EcuVariantMatcher:
     def decode_ident_response(
         diag_layer: DiagLayer,
         matching_param: MatchingParameter,
-        response_bytes: Union[bytes, bytearray],
+        response_bytes: bytes,
     ) -> str:
         """Decode a binary response and extract the identification string according
         to the snref or snpathref of the matching_param.
@@ -98,7 +98,7 @@ class EcuVariantMatcher:
             assert ecu.variant_type == DiagLayerType.ECU_VARIANT
 
         self.use_cache = use_cache
-        self.req_resp_cache: Dict[bytes] = {}
+        self.req_resp_cache: Dict[bytes, bytes] = {}
         self._recent_ident_response: Optional[bytes] = None
 
         self._state = EcuVariantMatcher.State.PENDING
@@ -136,7 +136,7 @@ class EcuVariantMatcher:
             # no pattern has matched for any ecu variant
             self._state = EcuVariantMatcher.State.NO_MATCH
 
-    def evaluate(self, resp_bytes: Union[bytes, bytearray]) -> None:
+    def evaluate(self, resp_bytes: bytes) -> None:
         """Update the matcher with the response to a requst.
 
         Warning: Use this method EXACTLY once within the loop body of the request loop.

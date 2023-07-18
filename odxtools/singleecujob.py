@@ -416,7 +416,7 @@ class SingleEcuJob:
         if self.audience:
             self.audience._resolve_snrefs(diag_layer)
 
-    def decode_message(self, message: Union[bytes, bytearray]) -> Message:
+    def decode_message(self, message: bytes) -> Message:
         """This function's signature matches `DiagService.decode_message`
         and only raises an informative error.
         """

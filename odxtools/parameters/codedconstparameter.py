@@ -17,8 +17,7 @@ if TYPE_CHECKING:
 
 class CodedConstParameter(Parameter):
 
-    def __init__(self, *, diag_coded_type: DiagCodedType, coded_value: Union[int, bytes],
-                 **kwargs):
+    def __init__(self, *, diag_coded_type: DiagCodedType, coded_value: Union[int, bytes], **kwargs):
         super().__init__(parameter_type="CODED-CONST", **kwargs)
 
         self.diag_coded_type = diag_coded_type

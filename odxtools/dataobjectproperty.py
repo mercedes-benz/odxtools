@@ -261,7 +261,7 @@ class DiagnosticTroubleCode:
     short_name: Optional[str]
     text: Optional[str]
     display_trouble_code: Optional[str]
-    level: Union[bytes, bytearray, None]
+    level: Union[bytes, None]
     is_temporary_raw: Optional[bool]
     sdgs: List[SpecialDataGroup]
 

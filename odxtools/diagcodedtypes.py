@@ -192,7 +192,7 @@ class DiagCodedType(abc.ABC):
 
     @abc.abstractmethod
     def convert_internal_to_bytes(self, internal_value: Any, encode_state: EncodeState,
-                                  bit_position: int) -> Union[bytes, bytearray]:
+                                  bit_position: int) -> bytes:
         """Encode the internal value.
 
         Parameters
@@ -218,7 +218,7 @@ class DiagCodedType(abc.ABC):
 
         Returns
         -------
-        str or int or bytes or bytearray or dict
+        str or int or bytes or dict
             the decoded parameter value
         int
             the next byte position after the extracted parameter
@@ -253,7 +253,7 @@ class LeadingLengthInfoType(DiagCodedType):
         ], f"A leading length info type cannot have the base data type {self.base_data_type}."
 
     def convert_internal_to_bytes(self, internal_value: Any, encode_state: EncodeState,
-                                  bit_position: int) -> Union[bytes, bytearray]:
+                                  bit_position: int) -> bytes:
 
         byte_length = self._minimal_byte_length_of(internal_value)
 

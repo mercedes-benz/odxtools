@@ -9,8 +9,8 @@ def bytefield_to_bytearray(bytefield: str) -> bytearray:
     return bytearray(map(lambda x: int(x, 16), bytes_string))
 
 
-PythonType = Union[str, int, float, bytearray]
-LiteralPythonType = Type[Union[str, int, float, bytearray]]
+PythonType = Union[str, int, float, bytes]
+LiteralPythonType = Type[Union[str, int, float, bytes]]
 
 
 @overload
@@ -100,10 +100,10 @@ class DataType(Enum):
     def as_python_type(self) -> type:
         return _ODX_TYPE_TO_PYTHON_TYPE[self.value]
 
-    def from_string(self, value: str) -> Union[int, float, str, bytearray]:
+    def from_string(self, value: str) -> Union[int, float, str, bytes]:
         return _ODX_TYPE_PARSER[self.value](value)
 
-    def make_from(self, value: Any) -> Union[int, float, str, bytearray]:
+    def make_from(self, value: Any) -> Union[int, float, str, bytes]:
         if isinstance(value, str):
             # parse the string
             return self.from_string(value)
