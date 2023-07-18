@@ -159,7 +159,7 @@ class DiagDataDictionarySpec:
                          self.tables):
             obj._resolve_odxlinks(odxlinks)
 
-        if self.unit_spec:
+        if self.unit_spec is not None:
             self.unit_spec._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
@@ -168,7 +168,7 @@ class DiagDataDictionarySpec:
                          self.tables):
             obj._resolve_snrefs(diag_layer)
 
-        if self.unit_spec:
+        if self.unit_spec is not None:
             self.unit_spec._resolve_snrefs(diag_layer)
 
     @property
