@@ -2,7 +2,7 @@
 # Copyright (c) 2023 MBition GmbH
 
 from enum import Enum
-from typing import ByteString, Dict, Generator, List, Optional, Union
+from typing import Dict, Generator, List, Optional, Union
 
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayertype import DiagLayerType
@@ -98,7 +98,7 @@ class EcuVariantMatcher:
             assert ecu.variant_type == DiagLayerType.ECU_VARIANT
 
         self.use_cache = use_cache
-        self.req_resp_cache: Dict[ByteString, bytes] = {}
+        self.req_resp_cache: Dict[bytes] = {}
         self._recent_ident_response: Optional[bytes] = None
 
         self._state = EcuVariantMatcher.State.PENDING

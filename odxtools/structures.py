@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 import math
 import warnings
-from typing import (TYPE_CHECKING, Any, ByteString, Dict, Iterable, List, Optional, OrderedDict,
+from typing import (TYPE_CHECKING, Any, Dict, Iterable, List, Optional, OrderedDict,
                     Tuple, Union)
 
 from .dataobjectproperty import DataObjectProperty, DopBase
@@ -252,7 +252,7 @@ class BasicStructure(DopBase):
 
         return param_dict, decode_state.next_byte_position + inner_decode_state.next_byte_position
 
-    def encode(self, coded_request: Optional[ByteString] = None, **params) -> ByteString:
+    def encode(self, coded_request: Optional[bytes] = None, **params) -> bytes
         """
         Composes an UDS message as bytes for this service.
         Parameters:
@@ -506,7 +506,7 @@ class Response(BasicStructure):
 
         self.response_type = response_type
 
-    def encode(self, coded_request: Optional[ByteString] = None, **params) -> ByteString:
+    def encode(self, coded_request: Optional[bytes] = None, **params) -> bytes:
         if coded_request is not None:
             logger.info(f"Compose response message to the request {coded_request.hex()}")
             # Extract MATCHING-REQUEST-PARAMs from the coded request
