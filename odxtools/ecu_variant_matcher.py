@@ -4,12 +4,13 @@
 from enum import Enum
 from typing import Dict, Generator, List, Optional, Union
 
-from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayertype import DiagLayerType
-from odxtools.ecu_variant_patterns import MatchingParameter
-from odxtools.exceptions import OdxError
-from odxtools.service import DiagService
-from odxtools.structures import Response
+from .diaglayer import DiagLayer
+from .diaglayertype import DiagLayerType
+from .ecu_variant_patterns import MatchingParameter
+from .exceptions import OdxError
+from .odxtypes import ParameterValue
+from .service import DiagService
+from .structures import Response
 
 
 class EcuVariantMatcher:
@@ -74,11 +75,11 @@ class EcuVariantMatcher:
             pos_neg_responses.extend(service.negative_responses)
 
         for any_response in pos_neg_responses:
-            decoded_val = any_response.decode(response_bytes)
+            decoded_val: Optional[ParameterValue] = any_response.decode(response_bytes)
             # disassemble snref / snpathref
             path_ref = matching_param.out_param_if.split(".")
             for ref in path_ref:
-                if ref in decoded_val:
+                if isinstance(decoded_val, dict) and ref in decoded_val:
                     decoded_val = decoded_val[ref]
                 else:
                     decoded_val = None
