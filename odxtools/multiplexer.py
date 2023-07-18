@@ -10,7 +10,7 @@ from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError
 from .globals import logger
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import ParameterValueDict, odxstr_to_bool
+from .odxtypes import odxstr_to_bool
 from .specialdata import create_sdgs_from_et
 from .structures import BasicStructure
 from .utils import create_description_from_et
