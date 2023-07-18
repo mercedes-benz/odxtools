@@ -1,7 +1,12 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
+from collections import OrderedDict
 from enum import Enum
-from typing import Any, Callable, Dict, Literal, Optional, Type, Union, overload
+from typing import (TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Type, Union,
+                    overload)
+
+if TYPE_CHECKING:
+    from odxtools.parameters.parameterbase import Parameter
 
 
 def bytefield_to_bytearray(bytefield: str) -> bytearray:
@@ -9,8 +14,19 @@ def bytefield_to_bytearray(bytefield: str) -> bytearray:
     return bytearray(map(lambda x: int(x, 16), bytes_string))
 
 
-PythonType = Union[str, int, float, bytes]
-LiteralPythonType = Type[Union[str, int, float, bytes]]
+AtomicOdxType = Union[str, int, float, bytes]
+
+# dictionary mapping short names to a Parameter that needs to be
+# specified. Complex parameters (structures) may contain
+# sub-parameters, so this is a recursive type...
+ParameterDict = Dict[str, Union["Parameter", "ParameterDict"]]
+
+# Dictionary mapping short names of parameters to the value it
+# exhibits. Complex parameters (structures) may contain
+# sub-parameters, so this is a recursive type, and fields encompass
+# multiple items, so this can be a list of objects.
+ParameterValue = Union[AtomicOdxType, "ParameterValueDict", List["ParameterValue"]]
+ParameterValueDict = OrderedDict[str, ParameterValue]
 
 
 @overload
@@ -51,26 +67,28 @@ def parse_int(value: str) -> int:
         return int(v)
 
 
-_ODX_TYPE_PARSER: Dict[str, Callable[[str], PythonType]] = {
+#: conversion functions for strings from the XML to the types stored
+#: by the internalized database
+_PARSE_ODX_TYPE: Dict[str, Callable[[str], AtomicOdxType]] = {
     "A_INT32": parse_int,
     "A_UINT32": parse_int,
     "A_FLOAT32": float,
     "A_FLOAT64": float,
     "A_UNICODE2STRING": str,
     "A_BYTEFIELD": bytefield_to_bytearray,
-    # only in DATA-TYPE not in PHYSICAL-DATA-TYPE
     "A_ASCIISTRING": str,
     "A_UTF8STRING": str,
 }
 
-_ODX_TYPE_TO_PYTHON_TYPE: Dict[str, LiteralPythonType] = {
+#: mapping from type name strings specified by the XML to the types
+#: used by the internalized database
+_ODX_TYPE_TO_PYTHON_TYPE: Dict[str, Type[AtomicOdxType]] = {
     "A_INT32": int,
     "A_UINT32": int,
     "A_FLOAT32": float,
     "A_FLOAT64": float,
     "A_UNICODE2STRING": str,
     "A_BYTEFIELD": bytearray,
-    # only in DATA-TYPE not in PHYSICAL-DATA-TYPE
     "A_ASCIISTRING": str,
     "A_UTF8STRING": str,
 }
@@ -93,17 +111,19 @@ class DataType(Enum):
     A_FLOAT64 = "A_FLOAT64"
     A_UNICODE2STRING = "A_UNICODE2STRING"
     A_BYTEFIELD = "A_BYTEFIELD"
-    # only in DATA-TYPE not in PHYSICAL-DATA-TYPE
+
+    # these two enums are only used by internal data type objects (DATA-TYPE)
+    # not by the ones for physical values (PHYSICAL-DATA-TYPE)
     A_ASCIISTRING = "A_ASCIISTRING"
     A_UTF8STRING = "A_UTF8STRING"
 
     def as_python_type(self) -> type:
         return _ODX_TYPE_TO_PYTHON_TYPE[self.value]
 
-    def from_string(self, value: str) -> Union[int, float, str, bytes]:
-        return _ODX_TYPE_PARSER[self.value](value)
+    def from_string(self, value: str) -> AtomicOdxType:
+        return _PARSE_ODX_TYPE[self.value](value)
 
-    def make_from(self, value: Any) -> Union[int, float, str, bytes]:
+    def make_from(self, value: Any) -> AtomicOdxType:
         if isinstance(value, str):
             # parse the string
             return self.from_string(value)

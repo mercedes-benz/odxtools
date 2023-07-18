@@ -3,6 +3,7 @@
 from typing import Any, Dict, NamedTuple, Optional, Union
 
 from .odxlink import OdxLinkId
+from .odxtypes import AtomicOdxType
 
 
 class EncodeState(NamedTuple):

@@ -11,7 +11,7 @@ from .exceptions import DecodeError, EncodeError, OdxWarning
 from .globals import logger
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
-from .odxtypes import odxstr_to_bool
+from .odxtypes import ParameterDict, ParameterValueDict, odxstr_to_bool
 from .parameters import (CodedConstParameter, MatchingRequestParameter, Parameter, ParameterWithDOP,
                          ValueParameter, create_any_parameter_from_et)
 from .parameters.lengthkeyparameter import LengthKeyParameter
@@ -22,8 +22,6 @@ from .utils import create_description_from_et, short_name_as_id
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
     from .endofpdufield import EndOfPduField
-
-ParameterDict = Dict[str, Union[Parameter, "ParameterDict"]]
 
 
 class BasicStructure(DopBase):

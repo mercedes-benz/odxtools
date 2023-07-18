@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from typing import NamedTuple, Optional, Union
 
+from ..odxtypes import AtomicOdxType
 from .compurationalcoeffs import CompuRationalCoeffs
 from .limit import Limit
 
@@ -33,6 +34,6 @@ class CompuScale(NamedTuple):
     description: Optional[str] = None
     lower_limit: Optional[Limit] = None
     upper_limit: Optional[Limit] = None
-    compu_inverse_value: Optional[Union[float, str, bytes]] = None
+    compu_inverse_value: Optional[AtomicOdxType] = None
     compu_const: Optional[Union[float, str]] = None
     compu_rational_coeffs: Optional[CompuRationalCoeffs] = None

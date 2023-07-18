@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING, Any, Dict
 
 from ..odxlink import OdxLinkDatabase, OdxLinkId
+from ..odxtypes import AtomicOdxType
 from .parameterbase import Parameter
 
 if TYPE_CHECKING:
