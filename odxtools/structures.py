@@ -157,7 +157,7 @@ class BasicStructure(DopBase):
 
             if implicit_length_encoding:
                 # Undo length_keys changes
-                encode_state.length_keys.pop(param.odx_id)
+                encode_state.length_keys.pop(param.short_name)
 
         if self.byte_size is not None and len(coded_rpc) < self.byte_size:
             # Padding bytes needed
@@ -165,7 +165,7 @@ class BasicStructure(DopBase):
 
         for (param, encode_state) in length_encodings:
             # Same as previous, but all bytes as 0.
-            param_value = encode_state.length_keys[param.odx_id]
+            param_value = encode_state.length_keys[param.short_name]
             state = encode_state._replace(
                 coded_message=bytearray(len(encode_state.coded_message)),
                 parameter_values={param.short_name: param_value},

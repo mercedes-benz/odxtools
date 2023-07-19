@@ -26,7 +26,7 @@ class EncodeState(NamedTuple):
     """a mapping from short name to value for each parameter"""
     triggering_request: Optional[bytes] = None
     """If encoding a response: request that triggered the response"""
-    length_keys: Dict[OdxLinkId, int] = {}
-    """Mapping from IDs to bit lengths (specified by LengthKeyParameters)"""
+    length_keys: Dict[str, int] = {}
+    """Mapping from short names to bit lengths (specified by LengthKeyParameters)"""
     is_end_of_pdu: bool = False
     """Flag whether the parameter is the last on the PDU (needed for MinMaxLengthType)"""
