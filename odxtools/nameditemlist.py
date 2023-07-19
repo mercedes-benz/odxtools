@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 import warnings
+from keyword import iskeyword
 from typing import Callable, Dict, Generic, Iterable, List, Optional, TypeVar, Union
 
 T = TypeVar("T")
@@ -49,6 +50,11 @@ class NamedItemList(Generic[T]):
                           f"Encountered name '{item_name}' which is not an "
                           f"identifier!")
 
+        # make sure that the name of the item in question is not a
+        # python keyword (this would lead to syntax errors)
+        if iskeyword(item_name):
+            item_name = f"{item_name}_"
+
         i = 1
         tmp = item_name
         while True:
@@ -58,7 +64,10 @@ class NamedItemList(Generic[T]):
                 return tmp
 
             i += 1
-            tmp = f"{item_name}_{i}"
+            if item_name.endswith("_"):
+                tmp = f"{item_name}{i}"
+            else:
+                tmp = f"{item_name}_{i}"
 
     def sort(self, key=None, reverse=False):
         return self._list.sort(key=key, reverse=reverse)
