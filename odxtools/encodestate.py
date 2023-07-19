@@ -20,13 +20,18 @@ class EncodeState(NamedTuple):
 
     """
 
+    #: payload that is constructed so far
     coded_message: bytes
-    """payload that is constructed so far"""
+
+    #: a mapping from short name to value for each parameter
     parameter_values: Dict[str, Any]
-    """a mapping from short name to value for each parameter"""
+
+    #: If encoding a response: request that triggered the response
     triggering_request: Optional[bytes] = None
-    """If encoding a response: request that triggered the response"""
+
+    #: Mapping from the short name of a length-key parameter to bit
+    #: lengths (specified by LengthKeyParameter)
     length_keys: Dict[str, int] = {}
-    """Mapping from short names to bit lengths (specified by LengthKeyParameters)"""
+
+    #: Flag whether the parameter is the last on the PDU (needed for MinMaxLengthType)
     is_end_of_pdu: bool = False
-    """Flag whether the parameter is the last on the PDU (needed for MinMaxLengthType)"""
