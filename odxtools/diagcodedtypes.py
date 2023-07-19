@@ -547,8 +547,8 @@ class ParamLengthInfoType(DiagCodedType):
     def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
         # Find length key with matching ID.
         bit_length = 0
-        for parameter, value in decode_state.parameter_value_pairs:
-            if parameter.short_name == self.length_key.short_name:
+        for parameter_name, value in decode_state.parameter_values.items():
+            if parameter_name == self.length_key.short_name:
                 # The bit length of the parameter to be extracted is given by the length key.
                 assert isinstance(value, int)
                 bit_length = value

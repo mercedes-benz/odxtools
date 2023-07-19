@@ -263,7 +263,7 @@ class Multiplexer(DopBase):
         byte_code = decode_state.coded_message[decode_state.next_byte_position:]
         key_decode_state = DecodeState(
             coded_message=byte_code[self.switch_key.byte_position:],
-            parameter_value_pairs=[],
+            parameter_values=dict(),
             next_byte_position=0,
         )
         bit_position_int = (
@@ -273,7 +273,7 @@ class Multiplexer(DopBase):
 
         case_decode_state = DecodeState(
             coded_message=byte_code[self.byte_position:],
-            parameter_value_pairs=[],
+            parameter_values=dict(),
             next_byte_position=0,
         )
         case_found = False

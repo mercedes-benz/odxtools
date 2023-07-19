@@ -5,7 +5,7 @@ import warnings
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, OrderedDict, Tuple, Union
 
 from .dataobjectproperty import DataObjectProperty, DopBase
-from .decodestate import DecodeState, ParameterValuePair
+from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, OdxWarning
 from .globals import logger
@@ -224,30 +224,27 @@ class BasicStructure(DopBase):
             is_end_of_pdu=encode_state.is_end_of_pdu,
         )
 
-    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
+    def convert_bytes_to_physical(self,
+                                  decode_state: DecodeState,
+                                  bit_position: int = 0) -> Tuple[ParameterValueDict, int]:
         if bit_position != 0:
             raise DecodeError("Structures must be aligned, i.e. bit_position=0, but "
                               f"{self.short_name} was passed the bit position {bit_position}")
         byte_code = decode_state.coded_message[decode_state.next_byte_position:]
         inner_decode_state = DecodeState(
-            coded_message=byte_code, parameter_value_pairs=[], next_byte_position=0)
+            coded_message=byte_code, parameter_values=dict(), next_byte_position=0)
 
         for parameter in self.parameters:
             value, next_byte_position = parameter.decode_from_pdu(inner_decode_state)
 
-            inner_decode_state.parameter_value_pairs.append(ParameterValuePair(parameter, value))
+            inner_decode_state.parameter_values[parameter.short_name] = value
             inner_decode_state = DecodeState(
                 coded_message=byte_code,
-                parameter_value_pairs=inner_decode_state.parameter_value_pairs,
+                parameter_values=inner_decode_state.parameter_values,
                 next_byte_position=max(inner_decode_state.next_byte_position, next_byte_position),
             )
-        # Construct the param dict.
-        # TODO: Wouldn't it be prettier if we kept the information of each parameter
-        #       instead of just using the short_name as the key and "forgetting" everything else?
-        param_dict = OrderedDict(
-            (pv.parameter.short_name, pv.value) for pv in inner_decode_state.parameter_value_pairs)
 
-        return param_dict, decode_state.next_byte_position + inner_decode_state.next_byte_position
+        return inner_decode_state.parameter_values, decode_state.next_byte_position + inner_decode_state.next_byte_position
 
     def encode(self, coded_request: Optional[bytes] = None, **params) -> bytes:
         """
@@ -265,7 +262,7 @@ class BasicStructure(DopBase):
     def decode(self, message: bytes):
         # dummy decode state to be passed to convert_bytes_to_physical
         decode_state = DecodeState(
-            coded_message=message, parameter_value_pairs=[], next_byte_position=0)
+            coded_message=message, parameter_values=dict(), next_byte_position=0)
         param_values, next_byte_position = self.convert_bytes_to_physical(decode_state)
         if len(message) != next_byte_position:
             warnings.warn(
