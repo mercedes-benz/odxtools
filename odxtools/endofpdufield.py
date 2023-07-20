@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
+from copy import copy
 from typing import TYPE_CHECKING, List, Optional, Union
 
 from .dataobjectproperty import DopBase
@@ -128,6 +129,7 @@ class EndOfPduField(DopBase):
             return coded_rpc
 
     def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
+        decode_state = copy(decode_state)
         next_byte_position = decode_state.next_byte_position
         byte_code = decode_state.coded_message
 
@@ -140,7 +142,7 @@ class EndOfPduField(DopBase):
             new_value, next_byte_position = self.structure.convert_bytes_to_physical(
                 decode_state, bit_position=bit_position)
             # Update next byte_position
-            decode_state = decode_state._replace(next_byte_position=next_byte_position)
+            decode_state.next_byte_position = next_byte_position
             value.append(new_value)
 
         return value, next_byte_position

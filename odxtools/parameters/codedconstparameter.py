@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 import warnings
+from copy import copy
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from ..decodestate import DecodeState
@@ -64,9 +65,10 @@ class CodedConstParameter(Parameter):
             self.coded_value, encode_state=encode_state, bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState):
+        decode_state = copy(decode_state)
         if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
             # Update byte position
-            decode_state = decode_state._replace(next_byte_position=self.byte_position)
+            decode_state.next_byte_position = self.byte_position
 
         # Extract coded values
         bit_position_int = self.bit_position if self.bit_position is not None else 0

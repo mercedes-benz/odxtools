@@ -70,18 +70,15 @@ class BasicStructure(DopBase):
         return None
 
     def coded_const_prefix(self, request_prefix: bytes = bytes()) -> bytes:
-        prefix = bytes()
-        encode_state = EncodeState(prefix, parameter_values={}, triggering_request=request_prefix)
+        encode_state = EncodeState(b'', parameter_values={}, triggering_request=request_prefix)
         for p in self.parameters:
             if isinstance(p, CodedConstParameter) and p.bit_length % 8 == 0:
-                prefix = p.encode_into_pdu(encode_state)
-                encode_state = EncodeState(prefix, *encode_state[1:])
+                encode_state.coded_message = p.encode_into_pdu(encode_state)
             elif isinstance(p, MatchingRequestParameter):
-                prefix = p.encode_into_pdu(encode_state)
-                encode_state = EncodeState(prefix, *encode_state[1:])
+                encode_state.coded_message = p.encode_into_pdu(encode_state)
             else:
                 break
-        return prefix
+        return encode_state.coded_message
 
     @property
     def required_parameters(self) -> List[Parameter]:
@@ -141,8 +138,11 @@ class BasicStructure(DopBase):
         length_encodings: List[Tuple[LengthKeyParameter, EncodeState]] = []
         for param in self.parameters:
             if param == self.parameters[-1]:
-                # The last parameter is at the end of the PDU if the structure itself is at the end of the PDU
-                encode_state = encode_state._replace(is_end_of_pdu=is_end_of_pdu)
+                # The last parameter is at the end of the PDU if the
+                # structure itself is at the end of the PDU. TODO:
+                # This assumes that the last parameter specified in
+                # the ODX is located last in the PDU...
+                encode_state.is_end_of_pdu = is_end_of_pdu
 
             implicit_length_encoding = (
                 isinstance(param, LengthKeyParameter) and param.short_name not in param_values)
@@ -153,7 +153,7 @@ class BasicStructure(DopBase):
                 encode_state.parameter_values[param.short_name] = 0
 
             coded_rpc = param.encode_into_pdu(encode_state)
-            encode_state = encode_state._replace(coded_message=coded_rpc)
+            encode_state.coded_message = coded_rpc
 
             if implicit_length_encoding:
                 # Undo length_keys changes
@@ -166,12 +166,11 @@ class BasicStructure(DopBase):
         for (param, encode_state) in length_encodings:
             # Same as previous, but all bytes as 0.
             param_value = encode_state.length_keys[param.short_name]
-            state = encode_state._replace(
-                coded_message=bytearray(len(encode_state.coded_message)),
-                parameter_values={param.short_name: param_value},
-            )
+            encode_state.coded_message = bytearray(len(encode_state.coded_message))
+            encode_state.parameter_values = {param.short_name: param_value}
+
             # Encode the length into the zeros coded message
-            param_bytes = param.encode_into_pdu(state)
+            param_bytes = param.encode_into_pdu(encode_state)
             # Bits that changed value needs to be updated in coded_rpc
             for i, b in enumerate(param_bytes):
                 coded_rpc[i] |= b
