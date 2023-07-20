@@ -123,7 +123,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(coded_message=bytes([0x12]), parameter_values={}, length_keys={})
+        state = EncodeState(coded_message=bytes([0x12]), parameter_values={})
         byte_val = dct.convert_internal_to_bytes("a9", state, bit_position=0)
         self.assertEqual(byte_val, bytes([0x4, 0x00, 0x61, 0x00, 0x39]))
 

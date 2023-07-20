@@ -108,7 +108,7 @@ class Parameter(abc.ABC):
         pass
 
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
-        """Insert the encoded value of a parameter into a binary blob of a message.
+        """Encode the value of a parameter into a binary blob and return it
 
         If the byte position of the parameter is not defined,
         the byte code is appended to the blob.
@@ -140,9 +140,9 @@ class Parameter(abc.ABC):
         else:
             byte_position = len(msg_blob)
 
-        return self._insert_into_blob(msg_blob, param_blob, byte_position)
+        return self._encode_into_blob(msg_blob, param_blob, byte_position)
 
-    def _insert_into_blob(self, blob: bytes, new_data: bytes, pos: Optional[int] = None) -> bytes:
+    def _encode_into_blob(self, blob: bytes, new_data: bytes, pos: Optional[int] = None) -> bytes:
         if pos is None:
             pos = len(blob)
 
