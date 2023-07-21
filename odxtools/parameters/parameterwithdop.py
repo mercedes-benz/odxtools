@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
+from copy import copy
 from typing import TYPE_CHECKING, Any, Dict, Optional, Union
 
 from ..dataobjectproperty import DataObjectProperty, DopBase, DtcDop
@@ -85,8 +86,9 @@ class ParameterWithDOP(Parameter):
 
     def decode_from_pdu(self, decode_state: DecodeState):
         assert self.dop is not None, "Reference to DOP is not resolved"
+        decode_state = copy(decode_state)
         if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
-            decode_state = decode_state._replace(next_byte_position=self.byte_position)
+            decode_state.next_byte_position = self.byte_position
 
         # Use DOP to decode
         bit_position_int = self.bit_position if self.bit_position is not None else 0

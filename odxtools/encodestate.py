@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
+from dataclasses import dataclass, field
 from typing import Any, Dict, NamedTuple, Optional, Union
 
 from .odxlink import OdxLinkId
 from .odxtypes import AtomicOdxType
 
 
-class EncodeState(NamedTuple):
+@dataclass
+class EncodeState:
     """Utility class to be used while encoding a message.
 
     While encoding parameters may update the dicts with new keys
@@ -20,13 +22,18 @@ class EncodeState(NamedTuple):
 
     """
 
+    #: payload that is constructed so far
     coded_message: bytes
-    """payload that is constructed so far"""
+
+    #: a mapping from short name to value for each parameter
     parameter_values: Dict[str, Any]
-    """a mapping from short name to value for each parameter"""
+
+    #: If encoding a response: request that triggered the response
     triggering_request: Optional[bytes] = None
-    """If encoding a response: request that triggered the response"""
-    length_keys: Dict[OdxLinkId, int] = {}
-    """Mapping from IDs to bit lengths (specified by LengthKeyParameters)"""
+
+    #: Mapping from the short name of a length-key parameter to bit
+    #: lengths (specified by LengthKeyParameter)
+    length_keys: Dict[str, int] = field(default_factory=dict)
+
+    #: Flag whether the parameter is the last on the PDU (needed for MinMaxLengthType)
     is_end_of_pdu: bool = False
-    """Flag whether the parameter is the last on the PDU (needed for MinMaxLengthType)"""

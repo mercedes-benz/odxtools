@@ -44,13 +44,15 @@ class LengthKeyParameter(ParameterWithDOP):
         return True
 
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
-        physical_value = encode_state.parameter_values.get(self.short_name,)
+        physical_value = encode_state.parameter_values.get(self.short_name)
 
         if physical_value is None:
             raise TypeError(f"A value for the length key '{self.short_name}'"
                             f" must be specified.")
 
         # Set the value of the length key in the length key dict.
-        encode_state.length_keys[self.odx_id] = physical_value
+        encode_state.length_keys[self.short_name] = physical_value
+
+        return super().encode_into_pdu(encode_state)
 
         return super(ParameterWithDOP, self).encode_into_pdu(encode_state)

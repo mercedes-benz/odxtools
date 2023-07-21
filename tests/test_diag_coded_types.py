@@ -6,7 +6,6 @@ from xml.etree import ElementTree
 import odxtools.uds as uds
 from odxtools.compumethods import IdenticalCompuMethod, LinearCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
-from odxtools.decodestate import ParameterValuePair
 from odxtools.diagcodedtypes import *
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
@@ -357,7 +356,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         dct._resolve_odxlinks(odxlinks)
         state = DecodeState(
             bytes([0x10, 0x12, 0x34, 0x56]),
-            [ParameterValuePair(parameter=length_key, value=16)],
+            {length_key.short_name: 16},
             next_byte_position=1,
         )
         internal, next_byte = dct.convert_bytes_to_internal(state, bit_position=0)
@@ -388,7 +387,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         odxlinks = OdxLinkDatabase()
         odxlinks.update({length_key_id: length_key})
         dct._resolve_odxlinks(odxlinks)
-        state = EncodeState(bytes([0x10]), {}, length_keys={length_key_id: 40})
+        state = EncodeState(bytes([0x10]), {}, length_keys={length_key.short_name: 40})
         byte_val = dct.convert_internal_to_bytes(0x12345, state, bit_position=0)
         self.assertEqual(byte_val, bytes([0x0, 0x0, 0x1, 0x23, 0x45]))
 

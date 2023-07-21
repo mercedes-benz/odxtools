@@ -514,7 +514,7 @@ class ParamLengthInfoType(DiagCodedType):
 
     def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
-        bit_length = encode_state.length_keys.get(self.length_key.odx_id, None)
+        bit_length = encode_state.length_keys.get(self.length_key.short_name, None)
 
         if bit_length is None:
             if self.base_data_type in [
@@ -534,7 +534,7 @@ class ParamLengthInfoType(DiagCodedType):
                 bit_length = math.ceil(bit_length / 8.0) * 8
 
         assert bit_length is not None
-        encode_state.length_keys[self.length_key.odx_id] = bit_length
+        encode_state.length_keys[self.length_key.short_name] = bit_length
 
         return self._to_bytes(
             internal_value,
@@ -547,18 +547,14 @@ class ParamLengthInfoType(DiagCodedType):
     def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
         # Find length key with matching ID.
         bit_length = 0
-        for parameter, value in decode_state.parameter_value_pairs:
-            # if isinstance(param_value.parameter, LengthKeyParameter) would be prettier,
-            # but leads to cyclic import...
-            if (parameter.parameter_type == "LENGTH-KEY" and
-                    parameter.odx_id == self.length_key.odx_id  # type: ignore[attr-defined]
-               ):
+        for parameter_name, value in decode_state.parameter_values.items():
+            if parameter_name == self.length_key.short_name:
                 # The bit length of the parameter to be extracted is given by the length key.
                 assert isinstance(value, int)
                 bit_length = value
                 break
 
-        assert bit_length is not None, f"Did not find any length key with ID {self.length_key.odx_id}"
+        assert bit_length is not None, f"Did not find any length key with short name {self.length_key.short_name}"
 
         # Extract the internal value and return.
         return self._extract_internal(

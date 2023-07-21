@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 import abc
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -78,10 +78,10 @@ class Parameter(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def decode_from_pdu(self, decode_state: DecodeState):
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
         """Decode the parameter value from the coded message.
 
-        If the paramter does have a byte position property, the coded bytes the parameter covers are extracted
+        If the parameter does have a byte position property, the coded bytes the parameter covers are extracted
         at this byte position and the function parameter `default_byte_position` is ignored.
 
         If the parameter does not have a byte position and a byte position is passed,
@@ -108,15 +108,16 @@ class Parameter(abc.ABC):
         pass
 
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
-        """Insert the encoded value of a parameter into the coded RPC.
+        """Encode the value of a parameter into a binary blob and return it
 
         If the byte position of the parameter is not defined,
-        the byte code is appended to the coded RPC.
+        the byte code is appended to the blob.
 
-        Technical note for subclasses:
-        The default implementation tries to compute the coded value
-        via `self.get_coded_value_as_bytes(encoded_state)` and inserts it into
-        the PDU. Thus it suffices to overwrite `get_coded_value_as_bytes()`.
+        Technical note for subclasses: The default implementation
+        tries to compute the coded value via
+        `self.get_coded_value_as_bytes(encoded_state)` and inserts it
+        into the PDU. Thus it usually suffices to overwrite
+        `get_coded_value_as_bytes()` instead of `encode_into_pdu()`.
 
         Parameters:
         ----------
@@ -131,33 +132,37 @@ class Parameter(abc.ABC):
             the message's blob after adding the encoded parameter into it
 
         """
-        byte_value = self.get_coded_value_as_bytes(encode_state)
-
-        old_rpc = encode_state.coded_message
-        new_rpc = bytearray(old_rpc)
+        msg_blob = encode_state.coded_message
+        param_blob = self.get_coded_value_as_bytes(encode_state)
 
         if self.byte_position is not None:
             byte_position = self.byte_position
         else:
-            byte_position = len(old_rpc)
+            byte_position = len(msg_blob)
 
-        min_length = byte_position + len(byte_value)
-        if len(old_rpc) < min_length:
-            # Make byte code longer if necessary
-            new_rpc += bytearray([0] * (min_length - len(old_rpc)))
-        for byte_idx_val, byte_idx_rpc in enumerate(
-                range(byte_position, byte_position + len(byte_value))):
+        return self._encode_into_blob(msg_blob, param_blob, byte_position)
+
+    def _encode_into_blob(self, blob: bytes, new_data: bytes, pos: Optional[int] = None) -> bytes:
+        if pos is None:
+            pos = len(blob)
+
+        # Make blob longer if necessary
+        min_length = pos + len(new_data)
+
+        result_blob = bytearray(blob)
+        if len(blob) < min_length:
+            result_blob.extend([0] * (min_length - len(blob)))
+
+        for byte_idx_val, byte_idx_rpc in enumerate(range(pos, pos + len(new_data))):
             # insert byte value
-            if new_rpc[byte_idx_rpc] & byte_value[byte_idx_val] != 0:
+            if result_blob[byte_idx_rpc] & new_data[byte_idx_val] != 0:
                 warnings.warn(
                     f"Parameter {self.short_name} overlaps with another parameter (bytes are already set)",
                     OdxWarning,
                 )
-            new_rpc[byte_idx_rpc] |= byte_value[byte_idx_val]
+            result_blob[byte_idx_rpc] |= new_data[byte_idx_val]
 
-        logger.debug(f"Param {self.short_name} inserts"
-                     f" 0x{byte_value.hex()} at byte pos {byte_position}")
-        return new_rpc
+        return result_blob
 
     def _as_dict(self):
         """
