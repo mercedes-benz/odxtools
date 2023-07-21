@@ -19,7 +19,8 @@
 {%- if table.key_dop_ref %}
  <KEY-DOP-REF ID-REF="{{ table.key_dop_ref.ref_id }}" />
 {%- endif %}
-{%- for table_row in table.table_rows %}
+ {%- for table_row in table.table_rows_raw %}
+ {%- if hasattr(table_row, "key") %}
  <TABLE-ROW ID="{{table_row.odx_id.local_id}}"
             {{-make_xml_attrib("SEMANTIC", table_row.semantic)}}>
   <SHORT-NAME>{{table_row.short_name}}</SHORT-NAME>
@@ -35,6 +36,9 @@
   {%- endif %}
   {{- psd.printSpecialDataGroups(table_row.sdgs)|indent(2, first=True) }}
  </TABLE-ROW>
+ {%- else %}
+ <TABLE-ROW-REF ID-REF="{{ table_row.ref_id }}" />
+ {%- endif %}
 {%- endfor %}
  {{- psd.printSpecialDataGroups(table.sdgs)|indent(1, first=True) }}
 </TABLE>

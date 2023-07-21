@@ -12,7 +12,7 @@ from odxtools.envdatadesc import EnvironmentDataDescription
 from odxtools.multiplexer import (Multiplexer, MultiplexerCase, MultiplexerDefaultCase,
                                   MultiplexerSwitchKey)
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
+from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.physicaltype import PhysicalType
 from odxtools.table import Table, TableRow
 from odxtools.utils import short_name_as_id
@@ -87,50 +87,63 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             sdgs=[],
         )
 
+        flip_quality_id = OdxLinkId("somersault.table.flip_quality", doc_frags)
+        flip_quality_ref = OdxLinkRef.from_id(flip_quality_id)
         table = Table(
-            odx_id=OdxLinkId("somersault.table.flip_quality", doc_frags),
+            odx_id=flip_quality_id,
             short_name="flip_quality",
             long_name="Flip Quality",
             description=None,
-            key_dop_ref="",
+            key_label=None,
+            struct_label=None,
+            admin_data=None,
+            key_dop_ref=None,
             semantic=None,
-            table_rows=[
+            table_rows_raw=[
                 TableRow(
                     odx_id=OdxLinkId("somersault.table.flip_quality.average", doc_frags),
+                    table_ref=flip_quality_ref,
                     short_name="average",
                     long_name="Average",
                     description=None,
                     semantic=None,
                     dop_ref=None,
-                    key=3,
+                    dop_snref=None,
+                    key_raw="3",
                     structure_ref=None,
+                    structure_snref=None,
                     sdgs=[],
                 ),
                 TableRow(
                     odx_id=OdxLinkId("somersault.table.flip_quality.good", doc_frags),
+                    table_ref=flip_quality_ref,
                     short_name="good",
                     long_name="Good",
                     description=None,
                     semantic=None,
                     dop_ref=None,
-                    key=5,
+                    dop_snref=None,
+                    key_raw="5",
                     structure_ref=None,
+                    structure_snref=None,
                     sdgs=[],
                 ),
                 TableRow(
                     odx_id=OdxLinkId("somersault.table.flip_quality.best", doc_frags),
+                    table_ref=flip_quality_ref,
                     short_name="best",
                     long_name="Best",
                     description=None,
                     semantic=None,
                     dop_ref=None,
-                    key=10,
+                    dop_snref=None,
+                    key_raw="10",
                     structure_ref=None,
+                    structure_snref=None,
                     sdgs=[],
                 ),
             ],
-            table_row_refs=[],
-            sdgs=None,
+            sdgs=[],
         )
 
         env_data = EnvironmentData(
@@ -147,7 +160,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     description=None,
                     semantic="DATA",
                     byte_position=0,
-                    dop_ref="dop-ref",
+                    dop_ref=OdxLinkRef("somersault.DOP.float", doc_frags),
                     dop_snref=None,
                     physical_default_value_raw=None,
                     bit_position=None,
@@ -160,7 +173,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     semantic="DATA",
                     byte_position=1,
                     physical_constant_value=1,
-                    dop_ref="dop-ref",
+                    dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),
                     dop_snref=None,
                     bit_position=None,
                     sdgs=[],
@@ -194,7 +207,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             switch_key=MultiplexerSwitchKey(
                 byte_position=0,
                 bit_position=0,
-                dop_ref="dop-ref",
+                dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),
             ),
             default_case=MultiplexerDefaultCase(
                 short_name="default_case",
@@ -243,7 +256,10 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         self.assertEqual(len(ddds.structures), 0)
         self.assertEqual(len(ddds.end_of_pdu_fields), 0)
 
-        self.assertEqual(set(ddds.all_data_object_properties), set([dtc_dop, dop_1, dop_2, table]))
+        self.assertEqual({x.short_name
+                          for x in ddds.all_data_object_properties},
+                         {x.short_name
+                          for x in (dtc_dop, dop_1, dop_2, table)})
 
 
 if __name__ == "__main__":

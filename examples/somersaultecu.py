@@ -1026,51 +1026,67 @@ somersault_global_negative_responses = {
 }
 
 # tables
+flip_quality_table_id = OdxLinkId("somersault.table.flip_quality", doc_frags)
+flip_quality_table_ref = OdxLinkRef.from_id(flip_quality_table_id)
 somersault_tables = {
     "flip_quality":
         Table(
-            odx_id=OdxLinkId("somersault.table.flip_quality", doc_frags),
+            odx_id=flip_quality_table_id,
             short_name="flip_quality",
             long_name="Flip Quality",
             description="<p>The quality the flip (average, good or best)</p>",
             semantic="QUALITY",
+            key_label="key",
+            admin_data=None,
+            struct_label="response",
             key_dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-            table_rows=[
+            table_rows_raw=[
                 TableRow(
+                    table_ref=flip_quality_table_ref,
                     odx_id=OdxLinkId("somersault.table.flip_quality.average", doc_frags),
                     short_name="average",
                     long_name="Average",
-                    key=3,
-                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
                     description="<p>The quality of the flip is average</p>",
                     semantic="QUALITY-KEY",
+                    key_raw="3",
+                    structure_ref=OdxLinkRef.from_id(
+                        somersault_positive_responses["forward_flips_grudgingly_done"].odx_id),
+                    structure_snref=None,
                     dop_ref=None,
+                    dop_snref=None,
                     sdgs=[],
                 ),
                 TableRow(
+                    table_ref=flip_quality_table_ref,
                     odx_id=OdxLinkId("somersault.table.flip_quality.good", doc_frags),
                     short_name="good",
                     long_name="Good",
                     description=None,
                     semantic=None,
-                    key=5,
-                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                    key_raw="5",
+                    structure_ref=OdxLinkRef.from_id(
+                        somersault_positive_responses["forward_flips_happily_done"].odx_id),
+                    structure_snref=None,
                     dop_ref=None,
+                    dop_snref=None,
                     sdgs=[],
                 ),
                 TableRow(
+                    table_ref=flip_quality_table_ref,
                     odx_id=OdxLinkId("somersault.table.flip_quality.best", doc_frags),
                     short_name="best",
                     long_name="Best",
                     description=None,
                     semantic=None,
-                    key=10,
-                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                    key_raw="10",
+                    structure_ref=OdxLinkRef.from_id(
+                        somersault_positive_responses["backward_flips_grudgingly_done"].odx_id),
+                    structure_snref=None,
                     dop_ref=None,
+                    dop_snref=None,
                     sdgs=[],
                 ),
             ],
-            table_row_refs=[],
             sdgs=[],
         )
 }
