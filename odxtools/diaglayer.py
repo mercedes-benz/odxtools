@@ -109,9 +109,6 @@ class DiagLayer:
         global_negative_responses = self._compute_available_global_neg_responses(odxlinks)
         self._global_negative_responses = NamedItemList(short_name_as_id, global_negative_responses)
 
-        tables = self._compute_available_tables()
-        self._tables = NamedItemList(short_name_as_id, tables)
-
         functional_classes = self._compute_available_functional_classes()
         self._functional_classes = NamedItemList(short_name_as_id, functional_classes)
 
@@ -157,6 +154,7 @@ class DiagLayer:
         ############
 
         dops = NamedItemList(short_name_as_id, self._compute_available_data_object_props())
+        tables = NamedItemList(short_name_as_id, self._compute_available_tables())
         dtc_dops: NamedItemList[DtcDop]
         structures: NamedItemList[BasicStructure]
         end_of_pdu_fields: NamedItemList[EndOfPduField]
@@ -190,7 +188,7 @@ class DiagLayer:
                 dtc_dops=dtc_dops,
                 structures=structures,
                 end_of_pdu_fields=end_of_pdu_fields,
-                tables=NamedItemList(short_name_as_id, tables),
+                tables=tables,
                 env_data_descs=env_data_descs,
                 env_datas=env_datas,
                 muxs=muxs,
@@ -312,11 +310,6 @@ class DiagLayer:
     def global_negative_responses(self) -> NamedItemList[Response]:
         """All global negative responses applicable to this DiagLayer"""
         return self._global_negative_responses
-
-    @property
-    def tables(self) -> NamedItemList[Table]:
-        """All tables applicable to this DiagLayer"""
-        return self._tables
 
     @property
     def functional_classes(self) -> NamedItemList[FunctionalClass]:
