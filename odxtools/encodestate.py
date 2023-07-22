@@ -9,17 +9,7 @@ from .odxtypes import AtomicOdxType
 
 @dataclass
 class EncodeState:
-    """Utility class to be used while encoding a message.
-
-    While encoding parameters may update the dicts with new keys
-    but this is the only allowed change.
-    In particular the coded_message is not updated in-place.
-    Instead the new encode state can be constructed with::
-
-        for p in self.parameters:
-            prefix = p.encode_into_pdu(encode_state)
-            encode_state = encode_state._replace(coded_message=prefix)
-
+    """Utility class to holding the state variables needed for encoding a message.
     """
 
     #: payload that is constructed so far

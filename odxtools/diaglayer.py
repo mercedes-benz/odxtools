@@ -312,6 +312,11 @@ class DiagLayer:
         return self._global_negative_responses
 
     @property
+    @deprecated(details="use diag_data_dictionary_spec.tables")
+    def tables(self) -> NamedItemList[Table]:
+        return self.diag_data_dictionary_spec.tables
+
+    @property
     def functional_classes(self) -> NamedItemList[FunctionalClass]:
         """All functional classes applicable to this DiagLayer"""
         return self._functional_classes
