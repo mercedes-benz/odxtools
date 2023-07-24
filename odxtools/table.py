@@ -2,168 +2,36 @@
 # Copyright (c) 2022 MBition GmbH
 import abc
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
 
-from .dataobjectproperty import DopBase
-from .globals import logger
+from .admindata import AdminData
+from .dataobjectproperty import DataObjectProperty
+from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
-from .utils import create_description_from_et
+from .tablerow import TableRow
+from .utils import create_description_from_et, short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
-class TableBase(abc.ABC):
-    """Base class for all Tables."""
-
-    def __init__(
-        self,
-        *,
-        odx_id: OdxLinkId,
-        short_name: str,
-        long_name: Optional[str],
-        sdgs: List[SpecialDataGroup],
-    ):
-        self.odx_id = odx_id
-        self.short_name = short_name
-        self.long_name = long_name
-        self.sdgs = sdgs
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result = {self.odx_id: self}
-
-        for sdg in self.sdgs:
-            result.update(sdg._build_odxlinks())
-
-        return result
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        for sdg in self.sdgs:
-            sdg._resolve_odxlinks(odxlinks)
-
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        for sdg in self.sdgs:
-            sdg._resolve_snrefs(diag_layer)
-
-
 @dataclass
-class TableRow:
-    """This class represents a TABLE-ROW."""
-
-    odx_id: OdxLinkId
-    short_name: str
-    long_name: str
-    key: int
-    structure_ref: Optional[OdxLinkRef]
-    dop_ref: Optional[OdxLinkRef]
-    description: Optional[str]
-    semantic: Optional[str]
-    sdgs: List[SpecialDataGroup]
-
-    def __post_init__(self) -> None:
-        self._structure: Optional[DopBase] = None
-        self._dop: Optional[DopBase] = None
-
-    @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "TableRow":
-        """Reads a TABLE-ROW."""
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
-        short_name = et_element.findtext("SHORT-NAME")
-        assert short_name is not None
-        long_name = et_element.findtext("LONG-NAME")
-        semantic = et_element.get("SEMANTIC")
-        description = create_description_from_et(et_element.find("DESC"))
-        key = et_element.findtext("KEY")
-        structure_ref = None
-        if et_element.find("STRUCTURE-REF") is not None:
-            structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
-        dop_ref = None
-        if et_element.find("DATA-OBJECT-PROP-REF") is not None:
-            dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
-
-        return TableRow(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            semantic=semantic,
-            description=description,
-            key=key,
-            structure_ref=structure_ref,
-            dop_ref=dop_ref,
-            sdgs=sdgs,
-        )
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result = {self.odx_id: self}
-
-        for sdg in self.sdgs:
-            result.update(sdg._build_odxlinks())
-
-        return result
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        if self.structure_ref is not None:
-            self._structure = odxlinks.resolve(self.structure_ref)
-        if self.dop_ref is not None:
-            self._dop = odxlinks.resolve(self.dop_ref)
-
-        for sdg in self.sdgs:
-            sdg._resolve_odxlinks(odxlinks)
-
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        for sdg in self.sdgs:
-            sdg._resolve_snrefs(diag_layer)
-
-    @property
-    def structure(self) -> Optional[DopBase]:
-        """The structure associated with this table row."""
-        return self._structure
-
-    @property
-    def dop(self) -> Optional[DopBase]:
-        """The dop object resolved by dop_ref."""
-        return self._dop
-
-    def __repr__(self) -> str:
-        return (f"TableRow('{self.short_name}', " + ", ".join([
-            f"key='{self.key}'",
-            f"structure_ref='{self.structure_ref}'",
-            f"dop_ref='{self.dop_ref}'",
-        ]) + ")")
-
-
-class Table(TableBase):
+class Table:
     """This class represents a TABLE."""
 
-    def __init__(
-        self,
-        *,
-        odx_id: OdxLinkId,
-        short_name: str,
-        table_rows: List[TableRow],
-        table_row_refs: List[OdxLinkRef],
-        long_name: Optional[str],
-        key_dop_ref: Optional[OdxLinkRef],
-        description: Optional[str],
-        semantic: Optional[str],
-        sdgs: List[SpecialDataGroup],
-    ):
-        super().__init__(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            sdgs=sdgs,
-        )
-        self._local_table_rows = table_rows
-        self._ref_table_rows: List[TableRow] = []
-        self._table_row_refs = table_row_refs
-        self.key_dop_ref = key_dop_ref
-        self._key_dop = None
-        self.description = description
-        self.semantic = semantic
+    odx_id: OdxLinkId
+    semantic: Optional[str]
+    short_name: str
+    long_name: Optional[str]
+    description: Optional[str]
+    key_label: Optional[str]
+    struct_label: Optional[str]
+    admin_data: Optional[AdminData]
+    key_dop_ref: Optional[OdxLinkRef]
+    table_rows_raw: List[Union[TableRow, OdxLinkRef]]
+    # TODO: table_diag_comm_connectors
+    sdgs: List[SpecialDataGroup]
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Table":
@@ -175,72 +43,76 @@ class Table(TableBase):
         long_name = et_element.findtext("LONG-NAME")
         semantic = et_element.get("SEMANTIC")
         description = create_description_from_et(et_element.find("DESC"))
-        key_dop_ref = None
-        if et_element.find("KEY-DOP-REF") is not None:
-            key_dop_ref = OdxLinkRef.from_et(et_element.find("KEY-DOP-REF"), doc_frags)
-        logger.debug("Parsing TABLE " + short_name)
+        key_label = et_element.findtext("KEY-LABEL")
+        struct_label = et_element.findtext("STRUCT-LABEL")
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        key_dop_ref = OdxLinkRef.from_et(et_element.find("KEY-DOP-REF"), doc_frags)
 
-        table_rows = [
-            TableRow.from_et(tr_elem, doc_frags) for tr_elem in et_element.iterfind("TABLE-ROW")
-        ]
+        table_rows_raw: List[Union[OdxLinkRef, TableRow]] = []
+        for sub_elem in et_element:
+            if sub_elem.tag == "TABLE-ROW":
+                table_rows_raw.append(
+                    TableRow.from_et(sub_elem, doc_frags, table_ref=OdxLinkRef.from_id(odx_id)))
+            elif sub_elem.tag == "TABLE-ROW-REF":
+                table_rows_raw.append(OdxLinkRef.from_et(sub_elem, doc_frags))
 
-        table_row_refs = []
-        for el in et_element.iterfind("TABLE-ROW-REF"):
-            ref = OdxLinkRef.from_et(el, doc_frags)
-            assert ref is not None
-            table_row_refs.append(ref)
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return Table(
             odx_id=odx_id,
+            semantic=semantic,
             short_name=short_name,
             long_name=long_name,
-            semantic=semantic,
             description=description,
+            key_label=key_label,
+            struct_label=struct_label,
+            admin_data=admin_data,
             key_dop_ref=key_dop_ref,
-            table_rows=table_rows,
-            table_row_refs=table_row_refs,
+            table_rows_raw=table_rows_raw,
             sdgs=sdgs,
         )
 
     @property
-    def key_dop(self) -> Optional[DopBase]:
+    def key_dop(self) -> Optional[DataObjectProperty]:
         """The key data object property associated with this table."""
         return self._key_dop
 
     @property
-    def table_rows(self) -> Iterable[TableRow]:
+    def table_rows(self) -> NamedItemList[TableRow]:
         """The table rows (both local and referenced) in this table."""
-        return self._local_table_rows + self._ref_table_rows
+        return self._table_rows
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result = super()._build_odxlinks()
+        result = {self.odx_id: self}
 
-        for tr in self._local_table_rows:
-            result.update(tr._build_odxlinks())
+        for table_row_wrapper in self.table_rows_raw:
+            if isinstance(table_row_wrapper, TableRow):
+                result.update(table_row_wrapper._build_odxlinks())
 
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        super()._resolve_odxlinks(odxlinks)
-
+        self._key_dop: Optional[DataObjectProperty] = None
         if self.key_dop_ref is not None:
-            self._key_dop = odxlinks.resolve(self.key_dop_ref)
+            self._key_dop = odxlinks.resolve(self.key_dop_ref, DataObjectProperty)
 
-        for table_row in self._local_table_rows:
-            table_row._resolve_odxlinks(odxlinks)
+        table_rows = []
+        for table_row_wrapper in self.table_rows_raw:
+            if isinstance(table_row_wrapper, TableRow):
+                table_row = table_row_wrapper
+                table_row._resolve_odxlinks(odxlinks)
+            else:
+                assert isinstance(table_row_wrapper, OdxLinkRef)
+                table_row = odxlinks.resolve(table_row_wrapper, TableRow)
 
-        self._ref_table_rows = []
-        for ref in self._table_row_refs:
-            tr = odxlinks.resolve(ref)
-            assert isinstance(tr, TableRow)
-            self._ref_table_rows.append(tr)
+            table_rows.append(table_row)
+
+        self._table_rows = NamedItemList(short_name_as_id, table_rows)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        super()._resolve_snrefs(diag_layer)
-
-        for table_row in self._local_table_rows:
-            table_row._resolve_snrefs(diag_layer)
+        for table_row_wrapper in self.table_rows_raw:
+            if isinstance(table_row_wrapper, TableRow):
+                table_row_wrapper._resolve_snrefs(diag_layer)
 
     def __repr__(self) -> str:
         return (f"Table('{self.short_name}', " + ", ".join(

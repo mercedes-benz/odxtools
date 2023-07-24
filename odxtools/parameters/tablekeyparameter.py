@@ -7,7 +7,8 @@ from ..odxtypes import AtomicOdxType
 from .parameterbase import Parameter
 
 if TYPE_CHECKING:
-    from ..table import Table, TableRow
+    from ..table import Table
+    from ..tablerow import TableRow
     from .diaglayer import DiagLayer
 
 

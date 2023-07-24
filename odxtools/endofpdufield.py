@@ -112,7 +112,7 @@ class EndOfPduField(DopBase):
         physical_value: ParameterValueDict,
         encode_state: EncodeState,
         bit_position: int = 0,
-    ):
+    ) -> bytes:
         assert (bit_position == 0
                ), "End of PDU field must be byte aligned. Is there an error in reading the .odx?"
         if isinstance(physical_value, dict):
@@ -124,7 +124,6 @@ class EndOfPduField(DopBase):
             # If the value is given as a list, each list element is a encoded seperately using the structure.
             coded_rpc = bytes()
             for value in physical_value:
-                encode_state = encode_state._replace(coded_message=bytes())
                 coded_rpc += self.structure.convert_physical_to_bytes(value, encode_state)
             return coded_rpc
 
