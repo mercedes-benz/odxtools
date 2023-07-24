@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, OrderedDi
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, OdxWarning
+from .exceptions import DecodeError, EncodeError, OdxError, OdxWarning
 from .globals import logger
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
@@ -39,7 +39,7 @@ class BasicStructure(DopBase):
         self.byte_size = byte_size
 
     @property
-    def bit_length(self):
+    def bit_length(self) -> Optional[int]:
         # Explicit size was specified
         if self.byte_size:
             return 8 * self.byte_size
@@ -70,7 +70,8 @@ class BasicStructure(DopBase):
         return None
 
     def coded_const_prefix(self, request_prefix: bytes = bytes()) -> bytes:
-        encode_state = EncodeState(b'', parameter_values={}, triggering_request=request_prefix)
+        prefix = bytes()
+        encode_state = EncodeState(prefix, parameter_values={}, triggering_request=request_prefix)
         for p in self.parameters:
             if isinstance(p, CodedConstParameter) and p.bit_length % 8 == 0:
                 encode_state.coded_message = p.encode_into_pdu(encode_state)
@@ -121,16 +122,15 @@ class BasicStructure(DopBase):
         print(parameter_info(self.free_parameters), end="")
 
     def convert_physical_to_internal(self,
-                                     param_values: dict,
-                                     triggering_coded_request,
-                                     is_end_of_pdu=True):
-        logger.debug(f"{self.short_name} encode RPC"
-                     f" with params={param_values}")
-
+                                     param_values: ParameterValueDict,
+                                     triggering_coded_request: Optional[bytes],
+                                     is_end_of_pdu: bool = True) -> bytes:
         coded_rpc = bytearray()
         encode_state = EncodeState(
             coded_rpc,
             dict(param_values),
+            length_keys={},
+            table_keys={},
             triggering_request=triggering_coded_request,
             is_end_of_pdu=False,
         )
@@ -180,7 +180,7 @@ class BasicStructure(DopBase):
 
         return bytearray(coded_rpc)
 
-    def _validate_coded_rpc(self, coded_rpc: bytes):
+    def _validate_coded_rpc(self, coded_rpc: bytes) -> None:
 
         if self.byte_size is not None:
             # We definitely broke something if we didn't respect the explicit byte_size
@@ -202,18 +202,17 @@ class BasicStructure(DopBase):
             warnings.warn(
                 self._get_encode_error_str("may have been", coded_rpc, bit_length), OdxWarning)
 
-    def _get_encode_error_str(self, verb: str, coded_rpc: bytes, bit_length: int):
-
-        return str(f"Structure {self.short_name} {verb} encoded uncorrectly:" +
+    def _get_encode_error_str(self, verb: str, coded_rpc: bytes, bit_length: int) -> str:
+        return str(f"Structure {self.short_name} {verb} encoded incorrectly:" +
                    f" actual length is {len(coded_rpc)}," +
                    f" computed byte length is {bit_length // 8}," +
                    f" computed_rpc is {coded_rpc.hex()}\n" +
                    "\n".join(self.__message_format_lines()))
 
     def convert_physical_to_bytes(self,
-                                  param_values: dict,
+                                  param_values: ParameterValueDict,
                                   encode_state: EncodeState,
-                                  bit_position: int = 0):
+                                  bit_position: int = 0) -> bytes:
         if bit_position != 0:
             raise EncodeError("Structures must be aligned, i.e. bit_position=0, but "
                               f"{self.short_name} was passed the bit position {bit_position}")
@@ -231,7 +230,7 @@ class BasicStructure(DopBase):
                               f"{self.short_name} was passed the bit position {bit_position}")
         byte_code = decode_state.coded_message[decode_state.next_byte_position:]
         inner_decode_state = DecodeState(
-            coded_message=byte_code, parameter_values=dict(), next_byte_position=0)
+            coded_message=byte_code, table_keys={}, parameter_values={}, next_byte_position=0)
 
         for parameter in self.parameters:
             value, next_byte_position = parameter.decode_from_pdu(inner_decode_state)
@@ -240,6 +239,7 @@ class BasicStructure(DopBase):
             inner_decode_state = DecodeState(
                 coded_message=byte_code,
                 parameter_values=inner_decode_state.parameter_values,
+                table_keys=decode_state.table_keys,
                 next_byte_position=max(inner_decode_state.next_byte_position, next_byte_position),
             )
 
@@ -256,12 +256,14 @@ class BasicStructure(DopBase):
             Parameters of the RPC as mapping from SHORT-NAME of the parameter to the value
         """
         return self.convert_physical_to_internal(
-            params, triggering_coded_request=coded_request, is_end_of_pdu=True)
+            params,  # type: ignore[arg-type]
+            triggering_coded_request=coded_request,
+            is_end_of_pdu=True)
 
-    def decode(self, message: bytes):
+    def decode(self, message: bytes) -> ParameterValueDict:
         # dummy decode state to be passed to convert_bytes_to_physical
         decode_state = DecodeState(
-            coded_message=message, parameter_values=dict(), next_byte_position=0)
+            parameter_values={}, coded_message=message, table_keys={}, next_byte_position=0)
         param_values, next_byte_position = self.convert_bytes_to_physical(decode_state)
         if len(message) != next_byte_position:
             warnings.warn(
@@ -273,7 +275,8 @@ class BasicStructure(DopBase):
 
     def parameter_dict(self) -> ParameterDict:
         """
-        Returns a dict with parameter short names as keys.
+        Returns a dictionary with all parameter short names as keys.
+
         The values are parameters for simple types or a nested dict for structures.
         """
         assert all(not isinstance(p, ParameterWithDOP) or isinstance(p.dop, DataObjectProperty) or

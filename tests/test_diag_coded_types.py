@@ -355,8 +355,8 @@ class TestParamLengthInfoType(unittest.TestCase):
         odxlinks.update({length_key_id: length_key})
         dct._resolve_odxlinks(odxlinks)
         state = DecodeState(
-            bytes([0x10, 0x12, 0x34, 0x56]),
-            {length_key.short_name: 16},
+            coded_message=bytes([0x10, 0x12, 0x34, 0x56]),
+            parameter_values={length_key.short_name: 16},
             next_byte_position=1,
         )
         internal, next_byte = dct.convert_bytes_to_internal(state, bit_position=0)

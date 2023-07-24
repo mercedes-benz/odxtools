@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from typing import TYPE_CHECKING, Any, Dict, Tuple
 
+from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parameterwithdop import ParameterWithDOP
@@ -43,6 +44,14 @@ class LengthKeyParameter(ParameterWithDOP):
     def is_optional(self):
         return True
 
+    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
+        physical_value = encode_state.length_keys[self.short_name]
+
+        bit_pos = self.bit_position or 0
+        dop = super().dop
+        assert dop is not None, f"A DOP is required for length key parameter {self.short_name}"
+        return dop.convert_physical_to_bytes(physical_value, encode_state, bit_position=bit_pos)
+
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         physical_value = encode_state.parameter_values.get(self.short_name)
 
@@ -55,4 +64,5 @@ class LengthKeyParameter(ParameterWithDOP):
 
         return super().encode_into_pdu(encode_state)
 
-        return super(ParameterWithDOP, self).encode_into_pdu(encode_state)
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
+        return super().decode_from_pdu(decode_state)

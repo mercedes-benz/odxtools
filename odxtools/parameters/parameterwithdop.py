@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from copy import copy
-from typing import TYPE_CHECKING, Any, Dict, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 
 from ..dataobjectproperty import DataObjectProperty, DopBase, DtcDop
 from ..decodestate import DecodeState
@@ -84,7 +84,7 @@ class ParameterWithDOP(Parameter):
         return self.dop.convert_physical_to_bytes(
             physical_value, encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState):
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
         assert self.dop is not None, "Reference to DOP is not resolved"
         decode_state = copy(decode_state)
         if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:

@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass, field
-from typing import Any, Dict, NamedTuple, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, NamedTuple, Optional, Union
 
 from .odxlink import OdxLinkId
 from .odxtypes import AtomicOdxType
+
+if TYPE_CHECKING:
+    from .table import TableRow
 
 
 @dataclass
@@ -25,5 +28,10 @@ class EncodeState:
     #: lengths (specified by LengthKeyParameter)
     length_keys: Dict[str, int] = field(default_factory=dict)
 
-    #: Flag whether the parameter is the last on the PDU (needed for MinMaxLengthType)
+    #: Mapping from the short name of a table-key parameter to the
+    #: corresponding row of the table (specified by TableKeyParameter)
+    table_keys: Dict[str, "TableRow"] = field(default_factory=dict)
+
+    #: Flag whether we are currently the last parameter of the PDU
+    #: (needed for MinMaxLengthType)
     is_end_of_pdu: bool = False
