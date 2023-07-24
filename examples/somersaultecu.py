@@ -34,7 +34,7 @@ from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.parameters import (CodedConstParameter, MatchingRequestParameter, NrcConstParameter,
-                                 ValueParameter)
+                                 TableKeyParameter, TableStructParameter, ValueParameter)
 from odxtools.parentref import ParentRef
 from odxtools.physicaltype import PhysicalType
 from odxtools.service import DiagService
@@ -292,6 +292,15 @@ somersault_diagcodedtypes = {
             is_condensed_raw=None,
             is_highlow_byte_order_raw=None,
         ),
+    "float32":
+        StandardLengthType(
+            base_data_type="A_FLOAT32",
+            bit_length=32,
+            bit_mask=None,
+            is_condensed_raw=None,
+            is_highlow_byte_order_raw=None,
+            base_type_encoding=None,
+        ),
 }
 
 somersault_physical_dimensions = {
@@ -388,6 +397,8 @@ somersault_unit_groups = {
 somersault_compumethods = {
     "uint_passthrough":
         IdenticalCompuMethod(internal_type="A_UINT32", physical_type="A_UINT32"),
+    "float_passthrough":
+        IdenticalCompuMethod(internal_type="A_FLOAT32", physical_type="A_FLOAT32"),
     "boolean":
         TexttableCompuMethod(
             internal_type="A_UINT32",
@@ -505,7 +516,36 @@ somersault_dops = {
             is_visible_raw=None,
             sdgs=[],
         ),
+    "uint8":
+        DataObjectProperty(
+            odx_id=OdxLinkId("somersault.DOP.uint8", doc_frags),
+            short_name="uint8",
+            long_name=None,
+            description=None,
+            diag_coded_type=somersault_diagcodedtypes["uint8"],
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            compu_method=somersault_compumethods["uint_passthrough"],
+            unit_ref=None,
+            is_visible_raw=None,
+            sdgs=[],
+        ),
+    "float":
+        DataObjectProperty(
+            odx_id=OdxLinkId("somersault.DOP.float", doc_frags),
+            short_name="float",
+            long_name=None,
+            description=None,
+            diag_coded_type=somersault_diagcodedtypes["float32"],
+            physical_type=PhysicalType(DataType.A_FLOAT32, display_radix=None, precision=None),
+            compu_method=somersault_compumethods["float_passthrough"],
+            unit_ref=None,
+            is_visible_raw=None,
+            sdgs=[],
+        ),
 }
+
+last_flip_details_table_id = OdxLinkId("somersault.table.last_flip_details", doc_frags)
+last_flip_details_table_ref = OdxLinkRef.from_id(last_flip_details_table_id)
 
 # positive responses
 somersault_positive_responses = {
@@ -702,15 +742,27 @@ somersault_positive_responses = {
                         bit_position=None,
                         sdgs=[],
                     ),
-                    # TODO (?): non-byte aligned MatchingRequestParameters
-                    MatchingRequestParameter(
+                    ValueParameter(
                         short_name="num_flips_done",
                         long_name=None,
                         semantic=None,
                         description=None,
-                        request_byte_position=3,
-                        byte_position=1,
-                        byte_length=1,
+                        physical_default_value_raw=None,
+                        dop_ref=OdxLinkRef("somersault.DOP.uint8", doc_frags),
+                        dop_snref=None,
+                        byte_position=None,
+                        bit_position=None,
+                        sdgs=[],
+                    ),
+                    ValueParameter(
+                        short_name="grumpiness_level",
+                        long_name=None,
+                        semantic=None,
+                        description=None,
+                        physical_default_value_raw=None,
+                        dop_ref=OdxLinkRef("somersault.DOP.uint8", doc_frags),
+                        dop_snref=None,
+                        byte_position=None,
                         bit_position=None,
                         sdgs=[],
                     ),
@@ -764,6 +816,33 @@ somersault_positive_responses = {
                         byte_position=2,
                         dop_ref=OdxLinkRef("somersault.DOP.happiness_level", doc_frags),
                         dop_snref=None,
+                        bit_position=None,
+                        sdgs=[],
+                    ),
+                    TableKeyParameter(
+                        odx_id=OdxLinkId("somersault.PR.report_status.last_pos_response_key",
+                                         doc_frags),
+                        short_name="last_pos_response_key",
+                        long_name=None,
+                        semantic=None,
+                        description=None,
+                        table_ref=last_flip_details_table_ref,
+                        table_snref=None,
+                        table_row_ref=None,
+                        table_row_snref=None,
+                        byte_position=3,
+                        bit_position=None,
+                        sdgs=[],
+                    ),
+                    TableStructParameter(
+                        short_name="last_pos_response",
+                        long_name=None,
+                        semantic=None,
+                        description=None,
+                        table_key_ref=OdxLinkRef(
+                            "somersault.PR.report_status.last_pos_response_key", doc_frags),
+                        table_key_snref=None,
+                        byte_position=None,
                         bit_position=None,
                         sdgs=[],
                     ),
@@ -1029,38 +1108,53 @@ somersault_global_negative_responses = {
 flip_quality_table_id = OdxLinkId("somersault.table.flip_quality", doc_frags)
 flip_quality_table_ref = OdxLinkRef.from_id(flip_quality_table_id)
 somersault_tables = {
-    "flip_quality":
+    "last_flip_details":
         Table(
-            odx_id=flip_quality_table_id,
-            short_name="flip_quality",
-            long_name="Flip Quality",
-            description="<p>The quality the flip (average, good or best)</p>",
-            semantic="QUALITY",
-            key_label="key",
+            odx_id=last_flip_details_table_id,
+            short_name="last_flip_details",
+            long_name="Flip Details",
+            description="<p>The details the last successfully executed request</p>",
+            semantic="DETAILS",
             admin_data=None,
+            key_label="key",
             struct_label="response",
-            key_dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+            key_dop_ref=OdxLinkRef.from_id(somersault_dops["uint8"].odx_id),
             table_rows_raw=[
                 TableRow(
-                    table_ref=flip_quality_table_ref,
-                    odx_id=OdxLinkId("somersault.table.flip_quality.average", doc_frags),
-                    short_name="average",
-                    long_name="Average",
-                    description="<p>The quality of the flip is average</p>",
-                    semantic="QUALITY-KEY",
-                    key_raw="3",
-                    structure_ref=OdxLinkRef.from_id(
-                        somersault_positive_responses["forward_flips_grudgingly_done"].odx_id),
+                    table_ref=last_flip_details_table_ref,
+                    odx_id=OdxLinkId("somersault.table.last_flip_details.none", doc_frags),
+                    short_name="none",
+                    long_name="No Flips Done Yet",
+                    key_raw="0",
+                    structure_ref=None,
                     structure_snref=None,
+                    description="<p>We have not done any flips yet!</p>",
+                    semantic="DETAILS-KEY",
                     dop_ref=None,
                     dop_snref=None,
                     sdgs=[],
                 ),
                 TableRow(
-                    table_ref=flip_quality_table_ref,
-                    odx_id=OdxLinkId("somersault.table.flip_quality.good", doc_frags),
-                    short_name="good",
-                    long_name="Good",
+                    table_ref=last_flip_details_table_ref,
+                    odx_id=OdxLinkId("somersault.table.last_flip_details.forward_grudging",
+                                     doc_frags),
+                    short_name="forward_grudging",
+                    long_name="Forward Flips Grudgingly Done",
+                    key_raw="3",
+                    structure_ref=OdxLinkRef.from_id(
+                        somersault_positive_responses["forward_flips_grudgingly_done"].odx_id),
+                    structure_snref=None,
+                    description="<p>The the last forward flip was grudgingly done</p>",
+                    semantic="DETAILS-KEY",
+                    dop_ref=None,
+                    dop_snref=None,
+                    sdgs=[],
+                ),
+                TableRow(
+                    table_ref=last_flip_details_table_ref,
+                    odx_id=OdxLinkId("somersault.table.last_flip_details.forward_happy", doc_frags),
+                    short_name="forward_happily",
+                    long_name="Forward Flips Happily Done",
                     description=None,
                     semantic=None,
                     key_raw="5",
@@ -1072,10 +1166,10 @@ somersault_tables = {
                     sdgs=[],
                 ),
                 TableRow(
-                    table_ref=flip_quality_table_ref,
-                    odx_id=OdxLinkId("somersault.table.flip_quality.best", doc_frags),
-                    short_name="best",
-                    long_name="Best",
+                    table_ref=last_flip_details_table_ref,
+                    odx_id=OdxLinkId("somersault.table.last_flip_details.backward", doc_frags),
+                    short_name="backward",
+                    long_name="Backward Flips",
                     description=None,
                     semantic=None,
                     key_raw="10",

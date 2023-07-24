@@ -196,6 +196,67 @@ class TestDecode(unittest.TestCase):
         gnr = decoded[0]
         self.assertEqual(gnr.param_dict['temperature'], 35)
 
+    def test_code_table_params(self):
+        """en- and decode table parameters"""
+        ecu = odxdb.ecus.somersault_assiduous
+        pr = ecu.services.report_status.positive_responses.status_report
+
+        # test the "no flips done yet" response
+        resp_data = pr.encode(
+            dizzyness_level=12,
+            happiness_level=100,
+            last_pos_response_key=0,  # <- "no flips done yet"
+            last_pos_response={})
+        self.assertEqual(resp_data.hex(), "620c6400")
+
+        decoded_resp_data = pr.decode(resp_data)
+        self.assertEqual(decoded_resp_data["dizzyness_level"], 12)
+        self.assertEqual(decoded_resp_data["happiness_level"], 100)
+        self.assertEqual(decoded_resp_data["last_pos_response_key"], 0)
+        self.assertEqual(decoded_resp_data["last_pos_response"], None)
+
+        # test the "forward flips grudgingly done" response
+        resp_data = pr.encode(
+            coded_request=bytearray([123] * 15),
+            dizzyness_level=42,
+            happiness_level=92,
+            last_pos_response_key=3,  # <- "forward flips grudgingly done"
+            last_pos_response={'dizzyness_level': 42})
+        self.assertEqual(resp_data.hex(), "622a5c03fa7b")
+
+        decoded_resp_data = pr.decode(resp_data)
+        self.assertEqual(decoded_resp_data["dizzyness_level"], 42)
+        self.assertEqual(decoded_resp_data["happiness_level"], 92)
+        self.assertEqual(decoded_resp_data["last_pos_response_key"], 3)
+        self.assertEqual(
+            set(decoded_resp_data["last_pos_response"]), set(["sid", "num_flips_done"]))
+        # the num_flips_done parameter is a matching request parameter
+        # for this response, so it produces a binary blob. possibly,
+        # it should be changed to a ValueParameter...
+        self.assertEqual(decoded_resp_data["last_pos_response"]["num_flips_done"], bytes([123]))
+
+        # test the "backward flips grudgingly done" response
+        resp_data = pr.encode(
+            dizzyness_level=75,
+            happiness_level=3,
+            last_pos_response_key=10,  # <- "backward flips grudgingly done"
+            last_pos_response={
+                'dizzyness_level': 75,
+                'num_flips_done': 5,
+                'grumpiness_level': 150
+            })
+        self.assertEqual(resp_data.hex(), "624b030afb0596")
+
+        decoded_resp_data = pr.decode(resp_data)
+        self.assertEqual(decoded_resp_data["dizzyness_level"], 75)
+        self.assertEqual(decoded_resp_data["happiness_level"], 3)
+        self.assertEqual(decoded_resp_data["last_pos_response_key"], 10)
+        self.assertEqual(
+            set(decoded_resp_data["last_pos_response"]),
+            set(["sid", "num_flips_done", "grumpiness_level"]))
+        self.assertEqual(decoded_resp_data["last_pos_response"]["num_flips_done"], 5)
+        self.assertEqual(decoded_resp_data["last_pos_response"]["grumpiness_level"], 150)
+
     def test_decode_inherited_request(self):
         raw_message = odxdb.ecus.somersault_assiduous.services.do_backward_flips(
             backward_soberness_check=0x21, num_flips=2)
