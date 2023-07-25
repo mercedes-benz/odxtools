@@ -77,10 +77,14 @@ class TableKeyParameter(Parameter):
         return self._table_row is None
 
     def is_optional(self):
-        return not is_required
+        return not self.is_required
 
-    def get_coded_value(self, physical_value=None):
+    def get_coded_value(self, physical_value=None) -> Any:
         key_dop = self.table.key_dop
+        if key_dop is None:
+            raise EncodeError(f"Table '{self.table.short_name}' does not define "
+                              f"a KEY-DOP, but is used in TABLE-KEY parameter "
+                              f"'{self.short_name}'")
         return key_dop.convert_physical_to_internal(physical_value)
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
@@ -94,7 +98,7 @@ class TableKeyParameter(Parameter):
         return key_dop.convert_physical_to_bytes(tr.key, encode_state, bit_position=bit_position)
 
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
-        # Set the value of the length key in the length key dict.
+        # Set the value of the table key in the table key dict.
         if self.table_row is not None:
             # the table row to be used is statically specified -> no
             # need to encode anything!

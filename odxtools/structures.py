@@ -129,8 +129,6 @@ class BasicStructure(DopBase):
         encode_state = EncodeState(
             coded_rpc,
             dict(param_values),
-            length_keys={},
-            table_keys={},
             triggering_request=triggering_coded_request,
             is_end_of_pdu=False,
         )

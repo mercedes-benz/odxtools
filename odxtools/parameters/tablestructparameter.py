@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: MIT
+import warnings
 from copy import copy
 from typing import TYPE_CHECKING, Any, Dict, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import EncodeError
+from ..exceptions import EncodeError, OdxWarning
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..odxtypes import AtomicOdxType
 from .parameterbase import Parameter
@@ -38,8 +39,9 @@ class TableStructParameter(Parameter):
         super()._resolve_snrefs(diag_layer)
 
         if self.table_key_snref is not None:
-            raise NotImplementedError("Table keys cannot yet defined using SNREFs"
-                                      " for TableStructParameters.")
+            warnings.warn(
+                "Table keys cannot yet be defined using SNREFs"
+                " in TableStructParameters.", OdxWarning)
 
     @property
     def table_key(self) -> TableKeyParameter:
@@ -86,7 +88,7 @@ class TableStructParameter(Parameter):
                 encode_state)
         else:
             # the table row associated with the key neither defines a
-            # DOP not a structure -> ignore it
+            # DOP nor a structure -> ignore it
             return b''
 
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
