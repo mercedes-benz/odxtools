@@ -387,9 +387,9 @@ class TestParamLengthInfoType(unittest.TestCase):
         odxlinks = OdxLinkDatabase()
         odxlinks.update({length_key_id: length_key})
         dct._resolve_odxlinks(odxlinks)
-        state = EncodeState(bytes([0x10]), {}, length_keys={length_key.short_name: 40})
+        state = EncodeState(bytes([0x10]), {length_key.short_name: 40})
         byte_val = dct.convert_internal_to_bytes(0x12345, state, bit_position=0)
-        self.assertEqual(byte_val, bytes([0x0, 0x0, 0x1, 0x23, 0x45]))
+        self.assertEqual(byte_val.hex(), "0000012345")
 
     def test_end_to_end(self):
         # diag coded types

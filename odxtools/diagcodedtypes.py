@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 import abc
-import math
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
 import bitstruct
@@ -514,7 +513,7 @@ class ParamLengthInfoType(DiagCodedType):
 
     def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
-        bit_length = encode_state.length_keys.get(self.length_key.short_name, None)
+        bit_length = encode_state.parameter_values.get(self.length_key.short_name, None)
 
         if bit_length is None:
             if self.base_data_type in [
@@ -531,10 +530,11 @@ class ParamLengthInfoType(DiagCodedType):
                 if self.base_data_type == DataType.A_INT32:
                     bit_length += 1
                 # Round up
-                bit_length = math.ceil(bit_length / 8.0) * 8
+                bit_length = ((bit_length + 7) // 8) * 8
+
+            encode_state.parameter_values[self.length_key.short_name] = bit_length
 
         assert bit_length is not None
-        encode_state.length_keys[self.length_key.short_name] = bit_length
 
         return self._to_bytes(
             internal_value,

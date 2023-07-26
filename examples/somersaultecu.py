@@ -1130,7 +1130,7 @@ somersault_tables = {
                     structure_snref=None,
                     description="<p>We have not done any flips yet!</p>",
                     semantic="DETAILS-KEY",
-                    dop_ref=None,
+                    dop_ref=OdxLinkRef.from_id(somersault_dops["soberness_check"].odx_id),
                     dop_snref=None,
                     sdgs=[],
                 ),
@@ -1168,7 +1168,7 @@ somersault_tables = {
                 TableRow(
                     table_ref=last_flip_details_table_ref,
                     odx_id=OdxLinkId("somersault.table.last_flip_details.backward", doc_frags),
-                    short_name="backward",
+                    short_name="backward_grudging",
                     long_name="Backward Flips",
                     description=None,
                     semantic=None,

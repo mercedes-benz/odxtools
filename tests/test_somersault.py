@@ -205,29 +205,32 @@ class TestDecode(unittest.TestCase):
         resp_data = pr.encode(
             dizzyness_level=12,
             happiness_level=100,
-            last_pos_response_key=0,  # <- "no flips done yet"
-            last_pos_response={})
-        self.assertEqual(resp_data.hex(), "620c6400")
+            last_pos_response_key="none",  # <- name of the selected table row
+            last_pos_response={"none": 123})
+        self.assertEqual(resp_data.hex(), "620c64007b")
 
         decoded_resp_data = pr.decode(resp_data)
         self.assertEqual(decoded_resp_data["dizzyness_level"], 12)
         self.assertEqual(decoded_resp_data["happiness_level"], 100)
-        self.assertEqual(decoded_resp_data["last_pos_response_key"], 0)
-        self.assertEqual(decoded_resp_data["last_pos_response"], None)
+        self.assertEqual(decoded_resp_data["last_pos_response_key"], "none")
+        self.assertEqual(decoded_resp_data["last_pos_response"], 123)
 
-        # test the "forward flips grudgingly done" response
+        # test the "forward flips grudgingly done" response. we define
+        # the table key implicitly by the 'last_pos_response'
+        # table-struct parameter this time
         resp_data = pr.encode(
             coded_request=bytearray([123] * 15),
             dizzyness_level=42,
             happiness_level=92,
-            last_pos_response_key=3,  # <- "forward flips grudgingly done"
-            last_pos_response={'dizzyness_level': 42})
+            last_pos_response={"forward_grudging": {
+                "dizzyness_level": 42
+            }})
         self.assertEqual(resp_data.hex(), "622a5c03fa7b")
 
         decoded_resp_data = pr.decode(resp_data)
         self.assertEqual(decoded_resp_data["dizzyness_level"], 42)
         self.assertEqual(decoded_resp_data["happiness_level"], 92)
-        self.assertEqual(decoded_resp_data["last_pos_response_key"], 3)
+        self.assertEqual(decoded_resp_data["last_pos_response_key"], "forward_grudging")
         self.assertEqual(
             set(decoded_resp_data["last_pos_response"]), set(["sid", "num_flips_done"]))
         # the num_flips_done parameter is a matching request parameter
@@ -239,18 +242,19 @@ class TestDecode(unittest.TestCase):
         resp_data = pr.encode(
             dizzyness_level=75,
             happiness_level=3,
-            last_pos_response_key=10,  # <- "backward flips grudgingly done"
             last_pos_response={
-                'dizzyness_level': 75,
-                'num_flips_done': 5,
-                'grumpiness_level': 150
+                "backward_grudging": {
+                    'dizzyness_level': 75,
+                    'num_flips_done': 5,
+                    'grumpiness_level': 150
+                }
             })
         self.assertEqual(resp_data.hex(), "624b030afb0596")
 
         decoded_resp_data = pr.decode(resp_data)
         self.assertEqual(decoded_resp_data["dizzyness_level"], 75)
         self.assertEqual(decoded_resp_data["happiness_level"], 3)
-        self.assertEqual(decoded_resp_data["last_pos_response_key"], 10)
+        self.assertEqual(decoded_resp_data["last_pos_response_key"], "backward_grudging")
         self.assertEqual(
             set(decoded_resp_data["last_pos_response"]),
             set(["sid", "num_flips_done", "grumpiness_level"]))

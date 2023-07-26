@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from copy import copy
-from typing import TYPE_CHECKING, Any, Dict, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError, OdxWarning
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from ..odxtypes import AtomicOdxType
+from ..odxtypes import AtomicOdxType, ParameterValue
 from .parameterbase import Parameter
 from .tablekeyparameter import TableKeyParameter
 
@@ -58,38 +58,67 @@ class TableStructParameter(Parameter):
                           "internal values without a table row.")
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        physical_value = encode_state.parameter_values[self.short_name]
-        if not isinstance(physical_value, dict):
-            raise EncodeError("The physical values to be encoded must be "
-                              "specified using a 'name' -> 'value' dictionary")
+        physical_value = encode_state.parameter_values.get(self.short_name)
 
-        # find the selected table row
-        key_name = self.table_key.short_name
-        table_row = encode_state.table_keys[key_name]
+        if not isinstance(physical_value, dict) or \
+           len(physical_value) != 1 or \
+           not isinstance(next(iter(physical_value.keys())), str):
+            raise EncodeError("The physical value of TableStructParameters must be a "
+                              "dictionary mapping the short name of the selected table "
+                              "row to the physical value for the row's structure or DOP.")
 
-        # use the referenced structure or DOP to encode the parameter
-        if table_row.dop is not None:
-            dop = table_row.dop
+        tr_short_name = next(iter(physical_value.keys()))
 
-            bit_position = 0 if self.bit_position is None else self.bit_position
-            return dop.convert_physical_to_bytes(
-                encode_state.parameter_values[self.short_name],
-                encode_state,
-                bit_position=bit_position)
-        elif table_row.structure is not None:
-            structure = table_row.structure
+        # make sure that the same table row is selected for all
+        # TABLE-STRUCT parameters that are using the same key
+        tk_short_name = self.table_key.short_name
+        tk_value = encode_state.parameter_values.get(tk_short_name)
+        if tk_value is None:
+            # no value for the key has been set yet. Set it to the
+            # value which we are using right now
+            encode_state.parameter_values[tk_short_name] = tr_short_name
+        elif tk_value != tr_short_name:
+            raise EncodeError(f"Cannot determine a unique value for table key '{tk_short_name}':  "
+                              f"Requested are '{tk_value}' and '{tr_short_name}'")
 
-            inner_params = encode_state.parameter_values[self.short_name]
-            if not isinstance(inner_params, dict):
-                raise EncodeError(f"The sub-parameters for '{self.short_name}' must be "
-                                  f"specified using a key->value dictionary")
-            return structure.convert_physical_to_bytes(
-                inner_params,  # type: ignore [arg-type]
-                encode_state)
-        else:
-            # the table row associated with the key neither defines a
-            # DOP nor a structure -> ignore it
-            return b''
+        # deal with the static case (i.e., the table row is selected
+        # by the table key object itself)
+        if self.table_key.table_row is not None and \
+           self.table_key.table_row.short_name != tr_short_name:
+            raise EncodeError(f"The selected table row for the {self.short_name} "
+                              f"parameter must be '{self.table_key.table_row.short_name}' "
+                              f"(is: '{tr_short_name}')")
+
+        # encode the user specified value using the structure (or DOP)
+        # of the selected table row
+        table = self.table_key.table
+        candidate_trs = [tr for tr in table.table_rows if tr.short_name == tr_short_name]
+        if len(candidate_trs) != 1:
+            raise EncodeError(f"Could not uniquely resolve a table row named "
+                              f"'{tr_short_name}' in table '{table.short_name}' ")
+        tr = candidate_trs[0]
+        tr_value = physical_value[tr_short_name]
+
+        bit_position = self.bit_position or 0
+        if tr.structure is not None:
+            # the selected table row references a structure
+            if not isinstance(tr_value, dict):
+                raise EncodeError(f"The value of `{tr_short_name}` must "
+                                  f"be a key-value dictionary.")
+
+            inner_encode_state = EncodeState(
+                coded_message=b'',
+                parameter_values=tr_value,
+                triggering_request=encode_state.triggering_request)
+
+            return tr.structure.convert_physical_to_bytes(
+                tr_value, inner_encode_state, bit_position=bit_position)
+
+        # if the table row does not reference a structure, it must
+        # point to a DOP!
+        assert tr.dop is not None
+        return tr.dop.convert_physical_to_bytes(
+            tr_value, encode_state=encode_state, bit_position=bit_position)
 
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         return super().encode_into_pdu(encode_state)
@@ -102,7 +131,14 @@ class TableStructParameter(Parameter):
 
         # find the selected table row
         key_name = self.table_key.short_name
-        table_row = decode_state.table_keys[key_name]
+
+        table = self.table_key.table
+        tr_short_name = decode_state.parameter_values[key_name]
+        candidate_trs = [tr for tr in table.table_rows if tr.short_name == tr_short_name]
+        if len(candidate_trs) != 1:
+            raise EncodeError(f"Could not uniquely resolve a table row named "
+                              f"'{str(tr_short_name)}' in table '{str(table.short_name)}' ")
+        table_row = candidate_trs[0]
 
         # Use DOP or structure to decode the value
         if table_row.dop is not None:

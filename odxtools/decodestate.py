@@ -22,7 +22,3 @@ class DecodeState:
 
     #: Position of the next parameter if its position is not specified in ODX
     next_byte_position: int
-
-    #: Mapping from the short name of a table-key parameter to the
-    #: corresponding row of the table
-    table_keys: Dict[str, "TableRow"] = field(default_factory=dict)

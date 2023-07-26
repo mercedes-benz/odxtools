@@ -88,38 +88,48 @@ class TableKeyParameter(Parameter):
         return key_dop.convert_physical_to_internal(physical_value)
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        tr = encode_state.table_keys[self.short_name]
+        tr_short_name = encode_state.parameter_values.get(self.short_name)
+
+        if tr_short_name is None:
+            # the table key has not been defined explicitly yet, but
+            # it is most likely implicitly defined by the associated
+            # TABLE-STRUCT parameters. Use all-zeros as a standin for
+            # the real data...
+            key_dop = self.table.key_dop
+            if key_dop is None:
+                raise EncodeError(f"Table '{self.table.short_name}' does not define "
+                                  f"a KEY-DOP, but is used in TABLE-KEY parameter "
+                                  f"'{self.short_name}'")
+
+            byte_pos = len(encode_state.coded_message
+                          ) if self.byte_position is not None else self.byte_position
+            byte_len = (key_dop.bit_length + 7) // 8
+            if self.bit_position is not None and self.bit_position > 0:
+                byte_len += 1
+
+            return bytes([0] * byte_len)
+
+        # the table key is known. We need to encode the associated DOP
+        # into the PDU.
+        tr_candidates = [x for x in self.table.table_rows if x.short_name == tr_short_name]
+        if len(tr_candidates) == 0:
+            raise EncodeError(f"No table row with short name '{tr_short_name}' found")
+        elif len(tr_candidates) > 1:
+            raise EncodeError(f"Multiple rows exhibiting short name '{tr_short_name}'")
+        tr = tr_candidates[0]
+
         key_dop = self.table.key_dop
-        bit_position = 0 if self.bit_position is None else self.bit_position
         if key_dop is None:
             raise EncodeError(f"Table '{self.table.short_name}' does not define "
                               f"a KEY-DOP, but is used in TABLE-KEY parameter "
                               f"'{self.short_name}'")
+        bit_position = 0 if self.bit_position is None else self.bit_position
         return key_dop.convert_physical_to_bytes(tr.key, encode_state, bit_position=bit_position)
 
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
-        # Set the value of the table key in the table key dict.
-        if self.table_row is not None:
-            # the table row to be used is statically specified -> no
-            # need to encode anything!
-            encode_state.table_keys[self.short_name] = self.table_row
-            return encode_state.coded_message
-        else:
-            physical_value = encode_state.parameter_values.get(self.short_name)
+        tr_short_name = encode_state.parameter_values.get(self.short_name)
 
-            if not isinstance(physical_value, (str, int, float, bytes)):
-                raise TypeError(f"Only simple types can be used for table keys. "
-                                f"Value for parameter '{self.short_name}' is of type "
-                                f"'{type(physical_value)}'")
-            table_row_candidates = [x for x in self.table.table_rows if x.key == physical_value]
-            if len(table_row_candidates) == 0:
-                raise EncodeError(f"No table row exhibiting the key '{str(physical_value)}' found")
-            elif len(table_row_candidates) > 1:
-                raise EncodeError(
-                    f"Multiple rows exhibiting key '{str(physical_value)}' found in table")
-            encode_state.table_keys[self.short_name] = table_row_candidates[0]
-
-            return super().encode_into_pdu(encode_state)
+        return super().encode_into_pdu(encode_state)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
         if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
@@ -129,22 +139,22 @@ class TableKeyParameter(Parameter):
         if self.table_row is not None:
             # the table row to be used is statically specified -> no
             # need to decode anything!
-            decode_state.table_keys[self.short_name] = self.table_row
-            phys_val = self.table_row.key
+            phys_val = self.table_row.short_name
             next_byte_position = decode_state.next_byte_position
         else:
             # Use DOP to decode
             key_dop = self.table.key_dop
             assert key_dop is not None
             bit_position_int = self.bit_position if self.bit_position is not None else 0
-            phys_val, next_byte_position = key_dop.convert_bytes_to_physical(
+            key_dop_val, next_byte_position = key_dop.convert_bytes_to_physical(
                 decode_state, bit_position=bit_position_int)
 
-            table_row_candidates = [x for x in self.table.table_rows if x.key == phys_val]
+            table_row_candidates = [x for x in self.table.table_rows if x.key == key_dop_val]
             if len(table_row_candidates) == 0:
-                raise DecodeError(f"No table row exhibiting the key '{str(phys_val)}' found")
+                raise DecodeError(f"No table row exhibiting the key '{str(key_dop_val)}' found")
             elif len(table_row_candidates) > 1:
-                raise DecodeError(f"Multiple rows exhibiting key '{str(phys_val)}' found in table")
-            decode_state.table_keys[self.short_name] = table_row_candidates[0]
+                raise DecodeError(
+                    f"Multiple rows exhibiting key '{str(key_dop_val)}' found in table")
+            phys_val = table_row_candidates[0].short_name
 
         return phys_val, next_byte_position

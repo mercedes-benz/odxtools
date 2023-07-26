@@ -125,15 +125,14 @@ class BasicStructure(DopBase):
                                      param_values: ParameterValueDict,
                                      triggering_coded_request: Optional[bytes],
                                      is_end_of_pdu: bool = True) -> bytes:
-        coded_rpc = bytearray()
+
         encode_state = EncodeState(
-            coded_rpc,
+            bytes(),
             dict(param_values),
             triggering_request=triggering_coded_request,
             is_end_of_pdu=False,
         )
 
-        length_encodings: List[Tuple[LengthKeyParameter, EncodeState]] = []
         for param in self.parameters:
             if param == self.parameters[-1]:
                 # The last parameter is at the end of the PDU if the
@@ -142,48 +141,34 @@ class BasicStructure(DopBase):
                 # the ODX is located last in the PDU...
                 encode_state.is_end_of_pdu = is_end_of_pdu
 
-            implicit_length_encoding = (
-                isinstance(param, LengthKeyParameter) and param.short_name not in param_values)
-            if implicit_length_encoding:
-                # Mark this parameter since we need to re-encode it later on
-                length_encodings.append((param, encode_state))
-                # Give it a default value for now
-                encode_state.parameter_values[param.short_name] = 0
+            encode_state.coded_message = param.encode_into_pdu(encode_state)
 
-            coded_rpc = param.encode_into_pdu(encode_state)
-            encode_state.coded_message = coded_rpc
-
-            if implicit_length_encoding:
-                # Undo length_keys changes
-                encode_state.length_keys.pop(param.short_name)
-
-        if self.byte_size is not None and len(coded_rpc) < self.byte_size:
+        if self.byte_size is not None and len(encode_state.coded_message) < self.byte_size:
             # Padding bytes needed
-            coded_rpc = coded_rpc.ljust(self.byte_size, b"\0")
+            encode_state.coded_message = encode_state.coded_message.ljust(self.byte_size, b"\0")
 
-        for (param, encode_state) in length_encodings:
-            # Same as previous, but all bytes as 0.
-            param_value = encode_state.length_keys[param.short_name]
-            encode_state.coded_message = bytearray(len(encode_state.coded_message))
-            encode_state.parameter_values = {param.short_name: param_value}
+        # encode the length- and table keys. This cannot be done above
+        # because we allow these to be defined implicitly (i.e. they
+        # are defined by their respective users)
+        for param in self.parameters:
+            if not isinstance(param, (LengthKeyParameter, TableKeyParameter)):
+                # the current parameter is neither a length- nor a table key
+                continue
 
-            # Encode the length into the zeros coded message
-            param_bytes = param.encode_into_pdu(encode_state)
-            # Bits that changed value needs to be updated in coded_rpc
-            for i, b in enumerate(param_bytes):
-                coded_rpc[i] |= b
+            # Encode the key parameter into the message
+            encode_state.coded_message = param.encode_into_pdu(encode_state)
 
         # Assert that length is as expected
-        self._validate_coded_rpc(coded_rpc)
+        self._validate_coded_message(encode_state.coded_message)
 
-        return bytearray(coded_rpc)
+        return bytearray(encode_state.coded_message)
 
-    def _validate_coded_rpc(self, coded_rpc: bytes) -> None:
+    def _validate_coded_message(self, coded_message: bytes) -> None:
 
         if self.byte_size is not None:
             # We definitely broke something if we didn't respect the explicit byte_size
-            assert len(coded_rpc) == self.byte_size, self._get_encode_error_str(
-                "was", coded_rpc, self.byte_size * 8)
+            assert len(coded_message) == self.byte_size, self._get_encode_error_str(
+                "was", coded_message, self.byte_size * 8)
             # No need to check further
             return
 
@@ -193,18 +178,18 @@ class BasicStructure(DopBase):
             # Nothing to check
             return
 
-        if len(coded_rpc) * 8 != bit_length:
+        if len(coded_message) * 8 != bit_length:
             # We may have broke something
             # but it could be that bit_length was mis calculated and not the actual bytes are wrong
             # Could happen with overlapping parameters and parameters with gaps
             warnings.warn(
-                self._get_encode_error_str("may have been", coded_rpc, bit_length), OdxWarning)
+                self._get_encode_error_str("may have been", coded_message, bit_length), OdxWarning)
 
-    def _get_encode_error_str(self, verb: str, coded_rpc: bytes, bit_length: int) -> str:
+    def _get_encode_error_str(self, verb: str, coded_message: bytes, bit_length: int) -> str:
         return str(f"Structure {self.short_name} {verb} encoded incorrectly:" +
-                   f" actual length is {len(coded_rpc)}," +
+                   f" actual length is {len(coded_message)}," +
                    f" computed byte length is {bit_length // 8}," +
-                   f" computed_rpc is {coded_rpc.hex()}\n" +
+                   f" computed_rpc is {coded_message.hex()}\n" +
                    "\n".join(self.__message_format_lines()))
 
     def convert_physical_to_bytes(self,
@@ -228,7 +213,7 @@ class BasicStructure(DopBase):
                               f"{self.short_name} was passed the bit position {bit_position}")
         byte_code = decode_state.coded_message[decode_state.next_byte_position:]
         inner_decode_state = DecodeState(
-            coded_message=byte_code, table_keys={}, parameter_values={}, next_byte_position=0)
+            coded_message=byte_code, parameter_values={}, next_byte_position=0)
 
         for parameter in self.parameters:
             value, next_byte_position = parameter.decode_from_pdu(inner_decode_state)
@@ -237,7 +222,6 @@ class BasicStructure(DopBase):
             inner_decode_state = DecodeState(
                 coded_message=byte_code,
                 parameter_values=inner_decode_state.parameter_values,
-                table_keys=decode_state.table_keys,
                 next_byte_position=max(inner_decode_state.next_byte_position, next_byte_position),
             )
 
@@ -260,8 +244,7 @@ class BasicStructure(DopBase):
 
     def decode(self, message: bytes) -> ParameterValueDict:
         # dummy decode state to be passed to convert_bytes_to_physical
-        decode_state = DecodeState(
-            parameter_values={}, coded_message=message, table_keys={}, next_byte_position=0)
+        decode_state = DecodeState(parameter_values={}, coded_message=message, next_byte_position=0)
         param_values, next_byte_position = self.convert_bytes_to_physical(decode_state)
         if len(message) != next_byte_position:
             warnings.warn(

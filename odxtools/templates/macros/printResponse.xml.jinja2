@@ -10,7 +10,9 @@
 {%- macro printResponse(resp, tag_name="POS-RESPONSE") -%}
 <{{tag_name}} ID="{{resp.odx_id.local_id}}">
  <SHORT-NAME>{{resp.short_name}}</SHORT-NAME>
+{%- if resp.long_name %}
  <LONG-NAME>{{resp.long_name|e}}</LONG-NAME>
+{%- endif %}
 {%- if resp.description and resp.description.strip() %}
  <DESC>
  {{resp.description}}

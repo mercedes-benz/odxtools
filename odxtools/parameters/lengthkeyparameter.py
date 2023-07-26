@@ -45,7 +45,7 @@ class LengthKeyParameter(ParameterWithDOP):
         return True
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        physical_value = encode_state.length_keys[self.short_name]
+        physical_value = encode_state.parameter_values.get(self.short_name, 0)
 
         bit_pos = self.bit_position or 0
         dop = super().dop
@@ -53,15 +53,6 @@ class LengthKeyParameter(ParameterWithDOP):
         return dop.convert_physical_to_bytes(physical_value, encode_state, bit_position=bit_pos)
 
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
-        physical_value = encode_state.parameter_values.get(self.short_name)
-
-        if physical_value is None:
-            raise TypeError(f"A value for the length key '{self.short_name}'"
-                            f" must be specified.")
-
-        # Set the value of the length key in the length key dict.
-        encode_state.length_keys[self.short_name] = physical_value
-
         return super().encode_into_pdu(encode_state)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
