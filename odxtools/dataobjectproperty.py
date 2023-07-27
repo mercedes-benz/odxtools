@@ -42,8 +42,6 @@ class DopBase:
         result += hash(self.long_name)
         result += hash(self.description)
         result += hash(self.is_visible_raw)
-        for sdg in self.sdgs:
-            result += hash(sdg)
 
         return result
 
