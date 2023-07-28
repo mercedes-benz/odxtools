@@ -152,7 +152,9 @@
 {%- macro printDOP(dop, tag_name) %}
 <{{tag_name}} ID="{{dop.odx_id.local_id}}">
  <SHORT-NAME>{{dop.short_name}}</SHORT-NAME>
+ {%- if dop.long_name %}
  <LONG-NAME>{{dop.long_name|e}}</LONG-NAME>
+ {%- endif %}
  {%- if dop.description %}
  <DESC>{{dop.description}}</DESC>
  {%- endif %}

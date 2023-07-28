@@ -2,7 +2,8 @@
 # Copyright (c) 2022 MBition GmbH
 import unittest
 
-from odxtools import PhysicalConstantParameter, ValueParameter
+from examples import somersaultecu
+from odxtools import PhysicalConstantParameter, TableKeyParameter, ValueParameter
 from odxtools.compumethods import IdenticalCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty, DiagnosticTroubleCode, DtcDop
 from odxtools.diagcodedtypes import StandardLengthType
@@ -178,6 +179,20 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     bit_position=None,
                     sdgs=[],
                 ),
+                TableKeyParameter(
+                    short_name="flip_quality",
+                    long_name=None,
+                    description=None,
+                    sdgs=[],
+                    semantic="DATA",
+                    byte_position=2,
+                    bit_position=None,
+                    odx_id=OdxLinkId("somersault.env_data.flip_quality", doc_frags),
+                    table_ref=None,
+                    table_row_ref=None,
+                    table_snref="flip_quality",  # cf. somersaultecu
+                    table_row_snref="good",
+                ),
             ],
             byte_size=None,
             dtc_values=[],
@@ -244,6 +259,13 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             unit_spec=None,
             sdgs=[],
         )
+
+        # test the short name resolution of TableKeyParameter.
+        odxlinks = OdxLinkDatabase()
+        ecu = somersaultecu.database.ecus.somersault_lazy
+        ecu.diag_layer_raw.diag_data_dictionary_spec = ddds
+        odxlinks.update(ecu._build_odxlinks())
+        table._resolve_odxlinks(odxlinks)
 
         self.assertEqual(ddds.dtc_dops[0], dtc_dop)
         self.assertEqual(ddds.data_object_props[0], dop_1)

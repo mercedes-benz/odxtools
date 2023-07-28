@@ -31,6 +31,9 @@
   <DESC>{{table_row.description}}</DESC>
   {%- endif %}
   <KEY>{{table_row.key|e}}</KEY>
+  {%- if table_row.dop_ref %}
+  <DATA-OBJECT-PROP-REF ID-REF="{{ table_row.dop_ref.ref_id }}" />
+  {%- endif %}
   {%- if table_row.structure_ref %}
   <STRUCTURE-REF ID-REF="{{ table_row.structure_ref.ref_id }}" />
   {%- endif %}

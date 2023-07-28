@@ -6,6 +6,7 @@ from typing import Iterable, Union
 from .compumethods import (IdenticalCompuMethod, IntervalType, Limit, LinearCompuMethod,
                            TexttableCompuMethod)
 from .dataobjectproperty import DataObjectProperty
+from .diagcodedtypes import ParamLengthInfoType
 from .endofpdufield import EndOfPduField
 from .parameters import (CodedConstParameter, MatchingRequestParameter, Parameter, ParameterWithDOP,
                          ReservedParameter)
