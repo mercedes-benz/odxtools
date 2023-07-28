@@ -206,14 +206,15 @@ class TestDecode(unittest.TestCase):
             dizzyness_level=12,
             happiness_level=100,
             last_pos_response_key="none",  # <- name of the selected table row
-            last_pos_response={"none": 123})
+            last_pos_response=("none", 123))
         self.assertEqual(resp_data.hex(), "620c64007b")
 
         decoded_resp_data = pr.decode(resp_data)
         self.assertEqual(decoded_resp_data["dizzyness_level"], 12)
         self.assertEqual(decoded_resp_data["happiness_level"], 100)
         self.assertEqual(decoded_resp_data["last_pos_response_key"], "none")
-        self.assertEqual(decoded_resp_data["last_pos_response"], 123)
+        self.assertEqual(decoded_resp_data["last_pos_response"][0], "none")
+        self.assertEqual(decoded_resp_data["last_pos_response"][1], 123)
 
         # test the "forward flips grudgingly done" response. we define
         # the table key implicitly by the 'last_pos_response'
@@ -222,44 +223,47 @@ class TestDecode(unittest.TestCase):
             coded_request=bytearray([123] * 15),
             dizzyness_level=42,
             happiness_level=92,
-            last_pos_response={"forward_grudging": {
+            last_pos_response=("forward_grudging", {
                 "dizzyness_level": 42
-            }})
+            }))
         self.assertEqual(resp_data.hex(), "622a5c03fa7b")
 
         decoded_resp_data = pr.decode(resp_data)
         self.assertEqual(decoded_resp_data["dizzyness_level"], 42)
         self.assertEqual(decoded_resp_data["happiness_level"], 92)
         self.assertEqual(decoded_resp_data["last_pos_response_key"], "forward_grudging")
+        self.assertEqual(decoded_resp_data["last_pos_response"][0], "forward_grudging")
         self.assertEqual(
-            set(decoded_resp_data["last_pos_response"]), set(["sid", "num_flips_done"]))
+            set(decoded_resp_data["last_pos_response"][1].keys()), set(["sid", "num_flips_done"]))
         # the num_flips_done parameter is a matching request parameter
         # for this response, so it produces a binary blob. possibly,
         # it should be changed to a ValueParameter...
-        self.assertEqual(decoded_resp_data["last_pos_response"]["num_flips_done"], bytes([123]))
+        self.assertEqual(decoded_resp_data["last_pos_response"][1]["num_flips_done"], bytes([123]))
 
         # test the "backward flips grudgingly done" response
         resp_data = pr.encode(
             dizzyness_level=75,
             happiness_level=3,
-            last_pos_response={
-                "backward_grudging": {
-                    'dizzyness_level': 75,
-                    'num_flips_done': 5,
-                    'grumpiness_level': 150
-                }
-            })
+            last_pos_response=("backward_grudging", {
+                'dizzyness_level': 75,
+                'num_flips_done': 5,
+                'grumpiness_level': 150
+            }))
         self.assertEqual(resp_data.hex(), "624b030afb0596")
 
         decoded_resp_data = pr.decode(resp_data)
         self.assertEqual(decoded_resp_data["dizzyness_level"], 75)
         self.assertEqual(decoded_resp_data["happiness_level"], 3)
         self.assertEqual(decoded_resp_data["last_pos_response_key"], "backward_grudging")
+        self.assertEqual(decoded_resp_data["last_pos_response"][0], "backward_grudging")
         self.assertEqual(
-            set(decoded_resp_data["last_pos_response"]),
+            set(decoded_resp_data["last_pos_response"][1].keys()),
             set(["sid", "num_flips_done", "grumpiness_level"]))
-        self.assertEqual(decoded_resp_data["last_pos_response"]["num_flips_done"], 5)
-        self.assertEqual(decoded_resp_data["last_pos_response"]["grumpiness_level"], 150)
+        self.assertTrue(isinstance(decoded_resp_data["last_pos_response"], tuple))
+        self.assertEqual(len(decoded_resp_data["last_pos_response"]), 2)
+        self.assertEqual(decoded_resp_data["last_pos_response"][0], "backward_grudging")
+        self.assertEqual(decoded_resp_data["last_pos_response"][1]["num_flips_done"], 5)
+        self.assertEqual(decoded_resp_data["last_pos_response"][1]["grumpiness_level"], 150)
 
     def test_decode_inherited_request(self):
         raw_message = odxdb.ecus.somersault_assiduous.services.do_backward_flips(

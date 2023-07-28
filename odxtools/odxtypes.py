@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from collections import OrderedDict
 from enum import Enum
-from typing import (TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Type, Union,
+from typing import (TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple, Type, Union,
                     overload)
 
 if TYPE_CHECKING:
@@ -25,7 +25,9 @@ ParameterDict = Dict[str, Union["Parameter", "ParameterDict"]]
 # exhibits. Complex parameters (structures) may contain
 # sub-parameters, so this is a recursive type, and fields encompass
 # multiple items, so this can be a list of objects.
-ParameterValue = Union[AtomicOdxType, "ParameterValueDict", List["ParameterValue"]]
+TableStructParameterValue = Tuple[str, "ParameterValue"]
+ParameterValue = Union[AtomicOdxType, "ParameterValueDict", TableStructParameterValue,
+                       List["ParameterValue"]]
 ParameterValueDict = Dict[str, ParameterValue]
 
 

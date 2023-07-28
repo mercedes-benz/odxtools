@@ -60,14 +60,15 @@ class TableStructParameter(Parameter):
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         physical_value = encode_state.parameter_values.get(self.short_name)
 
-        if not isinstance(physical_value, dict) or \
-           len(physical_value) != 1 or \
-           not isinstance(next(iter(physical_value.keys())), str):
-            raise EncodeError("The physical value of TableStructParameters must be a "
-                              "dictionary mapping the short name of the selected table "
-                              "row to the physical value for the row's structure or DOP.")
+        if not isinstance(physical_value, tuple) or \
+           len(physical_value) != 2 or \
+           not isinstance(physical_value[0], str):
+            raise EncodeError(f"The physical value of TableStructParameter 'self.short_name' "
+                              f"must be a tuple with  the short name of the selected table "
+                              f"row as the first element and the physical value for the "
+                              f"row's structure or DOP as the second.")
 
-        tr_short_name = next(iter(physical_value.keys()))
+        tr_short_name = physical_value[0]
 
         # make sure that the same table row is selected for all
         # TABLE-STRUCT parameters that are using the same key
@@ -97,7 +98,7 @@ class TableStructParameter(Parameter):
             raise EncodeError(f"Could not uniquely resolve a table row named "
                               f"'{tr_short_name}' in table '{table.short_name}' ")
         tr = candidate_trs[0]
-        tr_value = physical_value[tr_short_name]
+        tr_value = physical_value[1]
 
         bit_position = self.bit_position or 0
         if tr.structure is not None:
@@ -143,14 +144,13 @@ class TableStructParameter(Parameter):
         # Use DOP or structure to decode the value
         if table_row.dop is not None:
             dop = table_row.dop
-
-            return dop.convert_bytes_to_physical(decode_state)
+            val, i = dop.convert_bytes_to_physical(decode_state)
+            return (table_row.short_name, val), i
         elif table_row.structure is not None:
             structure = table_row.structure
-
-            return structure.convert_bytes_to_physical(decode_state)
-
+            val, i = structure.convert_bytes_to_physical(decode_state)
+            return (table_row.short_name, val), i
         else:
             # the table row associated with the key neither defines a
             # DOP not a structure -> ignore it
-            return None, decode_state.next_byte_position
+            return (table_row.short_name, None), decode_state.next_byte_position
