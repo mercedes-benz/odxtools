@@ -12,7 +12,7 @@ from .parameterbase import Parameter
 if TYPE_CHECKING:
     from ..table import Table
     from ..tablerow import TableRow
-    from .diaglayer import DiagLayer
+    from ..diaglayer import DiagLayer
 
 
 class TableKeyParameter(Parameter):
