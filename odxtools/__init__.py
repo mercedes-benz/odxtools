@@ -63,12 +63,14 @@ References
 - _`[ISO22901]` The ISO 22901 Standard: https://www.iso.org/standard/41207.html
 
 """
+import odxtools.exceptions as exceptions
+
 from . import database
 from .compumethods import (IdenticalCompuMethod, LinearCompuMethod, ScaleLinearCompuMethod,
                            TexttableCompuMethod)
 from .database import Database
 from .diaglayer import DiagLayer
-from .exceptions import *
+from .exceptions import DecodeError, EncodeError, OdxError, OdxWarning
 from .load_file import load_file
 from .load_odx_d_file import load_odx_d_file
 from .load_pdx_file import load_pdx_file

@@ -1,7 +1,9 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree.ElementTree import Element
 
+from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .state import State
 from .statetransition import StateTransition
@@ -31,24 +33,19 @@ class StateChart:
         return self._start_state
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "StateChart":
-        short_name = et_element.findtext("SHORT-NAME")
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
-
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "StateChart":
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
-
-        semantic = et_element.findtext("SEMANTIC")
-        assert semantic is not None
+        semantic: str = odxrequire(et_element.findtext("SEMANTIC"))
 
         state_transitions = [
             StateTransition.from_et(st_elem, doc_frags)
             for st_elem in et_element.iterfind("STATE-TRANSITIONS/STATE-TRANSITION")
         ]
 
-        start_state_snref_elem = et_element.find("START-STATE-SNREF")
-        assert start_state_snref_elem is not None
+        start_state_snref_elem = odxrequire(et_element.find("START-STATE-SNREF"))
         start_state_snref = start_state_snref_elem.attrib["SHORT-NAME"]
 
         states = [

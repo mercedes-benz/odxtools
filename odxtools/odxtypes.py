@@ -5,6 +5,8 @@ from enum import Enum
 from typing import (TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple, Type, Union,
                     overload)
 
+from .exceptions import odxassert, odxraise
+
 if TYPE_CHECKING:
     from odxtools.parameters.parameterbase import Parameter
 
@@ -46,12 +48,12 @@ def odxstr_to_bool(str_val: Optional[str]) -> Optional[bool]:
         return None
 
     str_val = str_val.strip()
-    assert str_val in [
+    odxassert(str_val in [
         "0",
         "1",
         "false",
         "true",
-    ], f"String '{str_val}' cannot be converted to a boolean"
+    ], f"String '{str_val}' cannot be converted to a boolean")
 
     return str_val in ["1", "true"]
 
@@ -64,8 +66,13 @@ def parse_int(value: str) -> int:
     try:
         return int(value)
     except ValueError:
-        v = float(value)
-        assert v.is_integer()
+        try:
+            v = float(value)
+        except Exception as e:
+            odxraise(f"Error parsing numerical value '{value}': {e}")
+
+        if not v.is_integer():
+            odxraise(f"Expected an integer value, got {v}")
         return int(v)
 
 

@@ -5,6 +5,7 @@ from xml.etree.ElementTree import Element
 from .admindata import AdminData
 from .companydata import CompanyData, create_company_datas_from_et
 from .dataobjectproperty import DataObjectProperty
+from .exceptions import odxassert, odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
@@ -54,15 +55,13 @@ class BaseComparam:
     display_level: Optional[int]
 
     def __init_from_et__(self, et_element, doc_frags: List[OdxDocFragment]) -> None:
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
-        self.odx_id = odx_id
-        self.short_name = et_element.findtext("SHORT-NAME")
+        self.odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        self.short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         self.long_name = et_element.findtext("LONG-NAME")
         self.description = create_description_from_et(et_element.find("DESC"))
-        self.param_class = et_element.attrib.get("PARAM-CLASS")
-        self.cptype = et_element.attrib.get("CPTYPE")
-        self.cpusage = et_element.attrib.get("CPUSAGE")
+        self.param_class = odxrequire(et_element.attrib.get("PARAM-CLASS"))
+        self.cptype = odxrequire(et_element.attrib.get("CPTYPE"))
+        self.cpusage = odxrequire(et_element.attrib.get("CPUSAGE"))
         dl = et_element.attrib.get("DISPLAY_LEVEL")
         self.display_level = None if dl is None else int(dl)
 
@@ -150,11 +149,10 @@ class Comparam(BaseComparam):
 
         return result
 
-    def __init_from_et__(self, et_element, doc_frags: List[OdxDocFragment]) -> None:
+    def __init_from_et__(self, et_element: Element, doc_frags: List[OdxDocFragment]) -> None:
         super().__init_from_et__(et_element, doc_frags)
 
-        dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
-        assert dop_ref is not None
+        dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags))
 
         self.dop_ref = dop_ref
         self.physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
@@ -172,7 +170,8 @@ class Comparam(BaseComparam):
         super()._resolve_odxlinks(odxlinks)
 
         self._dop = odxlinks.resolve(self.dop_ref)
-        assert isinstance(self._dop, DataObjectProperty)
+        if not isinstance(self._dop, DataObjectProperty):
+            odxraise()
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
@@ -199,9 +198,7 @@ class ComparamSubset:
 
         category = et_element.get("CATEGORY")
 
-        short_name = et_element.findtext("SHORT-NAME")
-        assert short_name is not None
-
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         doc_frags = [OdxDocFragment(short_name, str(et_element.tag))]
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
         long_name = et_element.findtext("LONG-NAME")

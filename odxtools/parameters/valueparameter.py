@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from ..dataobjectproperty import DataObjectProperty
 from ..encodestate import EncodeState
+from ..exceptions import odxrequire
 from .parameterwithdop import ParameterWithDOP
 
 
@@ -38,11 +39,12 @@ class ValueParameter(ParameterWithDOP):
         if physical_value is None:
             raise TypeError(f"A value for parameter '{self.short_name}' must be specified"
                             f" as the parameter does not exhibit a default.")
-        assert (self.dop is not None
-               ), f"Param {self.short_name} does not have a DOP. Maybe resolving references failed?"
+        dop = odxrequire(
+            self.dop,
+            f"Param {self.short_name} does not have a DOP. Maybe resolving references failed?")
 
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return self.dop.convert_physical_to_bytes(
+        return dop.convert_physical_to_bytes(
             physical_value, encode_state=encode_state, bit_position=bit_position_int)
 
     def get_valid_physical_values(self):

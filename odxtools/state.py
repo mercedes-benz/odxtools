@@ -2,7 +2,9 @@
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree.ElementTree import Element
 
+from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .utils import create_description_from_et
 
@@ -22,11 +24,9 @@ class State:
     description: Optional[str]
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "State":
-        short_name = et_element.findtext("SHORT-NAME")
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
-
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "State":
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
 

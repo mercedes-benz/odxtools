@@ -4,16 +4,16 @@ import warnings
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError
+from ..exceptions import DecodeError, odxassert, odxrequire
+from ..odxtypes import ParameterValue
 from .parameterwithdop import ParameterWithDOP
 
 
 class PhysicalConstantParameter(ParameterWithDOP):
 
-    def __init__(self, *, physical_constant_value, **kwargs):
+    def __init__(self, *, physical_constant_value: ParameterValue, **kwargs) -> None:
         super().__init__(parameter_type="PHYS-CONST", **kwargs)
 
-        assert physical_constant_value is not None
         self._physical_constant_value = physical_constant_value
 
     @property
@@ -31,7 +31,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
         return self.dop.convert_physical_to_internal(self.physical_constant_value)
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
-        assert self.dop is not None, "Reference to DOP is not resolved"
+        dop = odxrequire(self.dop, "Reference to DOP is not resolved")
         if (self.short_name in encode_state.parameter_values and
                 encode_state.parameter_values[self.short_name] != self.physical_constant_value):
             raise TypeError(
@@ -39,7 +39,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
                 " and thus can not be changed.")
 
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return self.dop.convert_physical_to_bytes(
+        return dop.convert_physical_to_bytes(
             self.physical_constant_value, encode_state, bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState):

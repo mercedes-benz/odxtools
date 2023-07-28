@@ -3,14 +3,15 @@
 from collections import OrderedDict
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree.ElementTree import Element
 
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError
+from .exceptions import DecodeError, EncodeError, odxrequire
 from .globals import logger
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import odxstr_to_bool
+from .odxtypes import ParameterValueDict, odxstr_to_bool
 from .specialdata import create_sdgs_from_et
 from .structures import BasicStructure
 from .utils import create_description_from_et
@@ -24,7 +25,7 @@ class MultiplexerCase:
     """This class represents a Case which represents multiple options in a Multiplexer."""
 
     short_name: str
-    long_name: str
+    long_name: Optional[str]
     structure_ref: OdxLinkRef
     lower_limit: str
     upper_limit: str
@@ -33,14 +34,13 @@ class MultiplexerCase:
         self._structure: Optional[BasicStructure] = None
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "MultiplexerCase":
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "MultiplexerCase":
         """Reads a Case for a Multiplexer."""
-        short_name = et_element.findtext("SHORT-NAME")
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
-        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
-        assert structure_ref is not None
-        lower_limit = et_element.findtext("LOWER-LIMIT")
-        upper_limit = et_element.findtext("UPPER-LIMIT")
+        structure_ref = odxrequire(OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags))
+        lower_limit = odxrequire(et_element.findtext("LOWER-LIMIT"))
+        upper_limit = odxrequire(et_element.findtext("UPPER-LIMIT"))
 
         return MultiplexerCase(
             short_name=short_name,
@@ -120,14 +120,12 @@ class MultiplexerSwitchKey:
         self._dop: DataObjectProperty = None  # type: ignore
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "MultiplexerSwitchKey":
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "MultiplexerSwitchKey":
         """Reads a Switch Key for a Multiplexer."""
-        byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
-        assert byte_position is not None
+        byte_position = int(odxrequire(et_element.findtext("BYTE-POSITION", "0")))
         bit_position_str = et_element.findtext("BIT-POSITION")
         bit_position = int(bit_position_str) if bit_position_str is not None else None
-        dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
-        assert dop_ref is not None
+        dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags))
 
         return MultiplexerSwitchKey(
             byte_position=byte_position,
@@ -170,8 +168,7 @@ class Multiplexer(DopBase):
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Multiplexer":
         """Reads a Multiplexer from Diag Layer."""
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))

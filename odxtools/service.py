@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union, cast
-from xml.etree import ElementTree
+from xml.etree.ElementTree import Element
 
 from .admindata import AdminData
 from .audience import Audience
-from .exceptions import DecodeError
+from .exceptions import DecodeError, odxassert, odxrequire
 from .functionalclass import FunctionalClass
 from .message import Message
 from .nameditemlist import NamedItemList
@@ -114,48 +114,40 @@ class DiagService:
         self.sdgs = sdgs
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]):
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "DiagService":
 
         # logger.info(f"Parsing service based on ET DiagService element: {et_element}")
-        short_name = et_element.findtext("SHORT-NAME")
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
-
-        request_ref = OdxLinkRef.from_et(et_element.find("REQUEST-REF"), doc_frags)
-        assert request_ref is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
+        long_name = et_element.findtext("LONG-NAME")
+        description = create_description_from_et(et_element.find("DESC"))
+        request_ref = odxrequire(OdxLinkRef.from_et(et_element.find("REQUEST-REF"), doc_frags))
 
         pos_res_refs = []
         for el in et_element.iterfind("POS-RESPONSE-REFS/POS-RESPONSE-REF"):
-            ref = OdxLinkRef.from_et(el, doc_frags)
-            assert ref is not None
+            ref = odxrequire(OdxLinkRef.from_et(el, doc_frags))
             pos_res_refs.append(ref)
 
         neg_res_refs = []
         for el in et_element.iterfind("NEG-RESPONSE-REFS/NEG-RESPONSE-REF"):
-            ref = OdxLinkRef.from_et(el, doc_frags)
-            assert ref is not None
+            ref = odxrequire(OdxLinkRef.from_et(el, doc_frags))
             neg_res_refs.append(ref)
 
         functional_class_refs = []
         for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF"):
-            ref = OdxLinkRef.from_et(el, doc_frags)
-            assert ref is not None
+            ref = odxrequire(OdxLinkRef.from_et(el, doc_frags))
             functional_class_refs.append(ref)
 
         pre_condition_state_refs = []
         for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF"):
-            ref = OdxLinkRef.from_et(el, doc_frags)
-            assert ref is not None
+            ref = odxrequire(OdxLinkRef.from_et(el, doc_frags))
             pre_condition_state_refs.append(ref)
 
         state_transition_refs = []
         for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF"):
-            ref = OdxLinkRef.from_et(el, doc_frags)
-            assert ref is not None
+            ref = odxrequire(OdxLinkRef.from_et(el, doc_frags))
             state_transition_refs.append(ref)
 
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         semantic = et_element.get("SEMANTIC")
 
@@ -304,13 +296,14 @@ class DiagService:
         # optional)
         missing_params = {x.short_name
                           for x in self.request.required_parameters}.difference(params.keys())
-        assert not missing_params, f"The parameters {missing_params} are required but missing!"
+        odxassert(not missing_params, f"The parameters {missing_params} are required but missing!")
 
         # make sure that no unknown parameters are specified
         rq_all_param_names = {x.short_name for x in self.request.parameters}
-        assert set(params.keys()).issubset(
-            rq_all_param_names
-        ), f"Unknown parameters specified for encoding: {params.keys()}, known parameters are: {rq_all_param_names}"
+        odxassert(
+            set(params.keys()).issubset(rq_all_param_names),
+            f"Unknown parameters specified for encoding: {params.keys()}, "
+            f"known parameters are: {rq_all_param_names}")
         return self.request.encode(**params)
 
     def encode_positive_response(self, coded_request, response_index=0, **params):

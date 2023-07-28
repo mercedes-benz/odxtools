@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
 
 from .admindata import AdminData
 from .dataobjectproperty import DataObjectProperty
+from .exceptions import odxassert, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
@@ -36,10 +37,8 @@ class Table:
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Table":
         """Reads a TABLE."""
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
-        short_name = et_element.findtext("SHORT-NAME")
-        assert short_name is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        short_name: str = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         semantic = et_element.get("SEMANTIC")
         description = create_description_from_et(et_element.find("DESC"))
@@ -102,7 +101,7 @@ class Table:
                 table_row = table_row_wrapper
                 table_row._resolve_odxlinks(odxlinks)
             else:
-                assert isinstance(table_row_wrapper, OdxLinkRef)
+                odxassert(isinstance(table_row_wrapper, OdxLinkRef))
                 table_row = odxlinks.resolve(table_row_wrapper, TableRow)
 
             table_rows.append(table_row)

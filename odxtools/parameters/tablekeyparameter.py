@@ -4,15 +4,15 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, EncodeError
+from ..exceptions import DecodeError, EncodeError, odxassert, odxrequire
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType
 from .parameterbase import Parameter
 
 if TYPE_CHECKING:
+    from ..diaglayer import DiagLayer
     from ..table import Table
     from ..tablerow import TableRow
-    from ..diaglayer import DiagLayer
 
 
 class TableKeyParameter(Parameter):
@@ -55,15 +55,16 @@ class TableKeyParameter(Parameter):
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 
-        if self.table_snref:
+        if self.table_snref is not None:
             ddd_spec = diag_layer.diag_data_dictionary_spec
             self._table = ddd_spec.tables[self.table_snref]
-        if self.table_row_snref:
+        if self.table_row_snref is not None:
             # make sure that we know the table to which the table row
             # SNREF is relative to.
-            assert self._table is not None, "If a table-row short name " \
-                "reference is defined, a table must also be specified."
-            self._table_row = self._table.table_rows[self.table_row_snref]
+            table = odxrequire(
+                self._table, "If a table-row short name reference is defined, a "
+                "table must also be specified.")
+            self._table_row = table.table_rows[self.table_row_snref]
 
     @property
     def table(self) -> "Table":
@@ -143,8 +144,7 @@ class TableKeyParameter(Parameter):
             next_byte_position = decode_state.next_byte_position
         else:
             # Use DOP to decode
-            key_dop = self.table.key_dop
-            assert key_dop is not None
+            key_dop = odxrequire(self.table.key_dop)
             bit_position_int = self.bit_position if self.bit_position is not None else 0
             key_dop_val, next_byte_position = key_dop.convert_bytes_to_physical(
                 decode_state, bit_position=bit_position_int)

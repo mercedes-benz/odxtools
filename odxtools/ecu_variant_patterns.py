@@ -2,11 +2,12 @@
 # Copyright (c) 2023 MBition GmbH
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 from xml.etree import ElementTree
 
-from odxtools.odxlink import OdxDocFragment
-from odxtools.utils import is_short_name, is_short_name_path
+from .exceptions import OdxError, odxassert, odxrequire, strict_mode
+from .odxlink import OdxDocFragment
+from .utils import is_short_name, is_short_name_path
 
 
 class MatchingParameter:
@@ -22,24 +23,19 @@ class MatchingParameter:
         # datatype according to ISO 22901-1 Figure 141
         self.expected_value: str = expected_value
 
-        assert is_short_name(diag_comm_snref)  # const-correctness
+        odxassert(is_short_name(diag_comm_snref))
         self.diag_comm_snref: str = diag_comm_snref
 
-        assert is_short_name_path(out_param_if)  # const-correctness
+        odxassert(is_short_name_path(out_param_if))
         self.out_param_if: str = out_param_if
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "MatchingParameter":
 
-        expected_value = et_element.findtext("EXPECTED-VALUE")
-        assert expected_value is not None
-
-        diag_com_snref_el = et_element.find("DIAG-COMM-SNREF")
-        assert diag_com_snref_el is not None
-        diag_comm_snref = diag_com_snref_el.get("SHORT-NAME")
-        assert diag_comm_snref is not None
-
+        expected_value = odxrequire(et_element.findtext("EXPECTED-VALUE"))
+        diag_com_snref_el = odxrequire(et_element.find("DIAG-COMM-SNREF"))
+        diag_comm_snref = odxrequire(diag_com_snref_el.get("SHORT-NAME"))
         out_param_snref_el = et_element.find("OUT-PARAM-IF-SNREF")
         out_param_snpathref_el = et_element.find("OUT-PARAM-IF-SNPATHREF")
         out_param_if = None
@@ -47,7 +43,11 @@ class MatchingParameter:
             out_param_if = out_param_snref_el.get("SHORT-NAME")
         elif out_param_snpathref_el is not None:
             out_param_if = out_param_snpathref_el.get("SHORT-NAME-PATH")
-        assert out_param_if is not None
+        if out_param_if is None:
+            if TYPE_CHECKING:
+                raise OdxError("Output parameter must not left unspecified")
+            if strict_mode:
+                raise OdxError("Output parameter must not left unspecified")
 
         return MatchingParameter(
             expected_value=expected_value,
@@ -71,15 +71,14 @@ class EcuVariantPattern:
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "EcuVariantPattern":
 
-        mp_collection_el = et_element.find("MATCHING-PARAMETERS")
-        assert mp_collection_el is not None
+        mp_collection_el = odxrequire(et_element.find("MATCHING-PARAMETERS"))
 
         matching_params = [
             MatchingParameter.from_et(mp_el, doc_frags)
             for mp_el in mp_collection_el.iterfind("MATCHING-PARAMETER")
         ]
 
-        assert len(matching_params) > 0  # required by ISO 22901-1 Figure 141
+        odxassert(len(matching_params) > 0)  # required by ISO 22901-1 Figure 141
         return EcuVariantPattern(matching_params)
 
 

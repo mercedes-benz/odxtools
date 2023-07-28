@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
+from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
@@ -148,19 +149,12 @@ class TeamMember:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "TeamMember":
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
-        short_name = et_element.findtext("SHORT-NAME")
-        assert short_name is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
 
-        roles = list()
-        if (roles_elem := et_element.find("ROLES")) is not None:
-            for role_elem in roles_elem.iterfind("ROLE"):
-                role = role_elem.text
-                assert role is not None
-                roles.append(role)
+        roles = [odxrequire(role_elem.text) for role_elem in et_element.iterfind("ROLES/ROLE")]
 
         department = et_element.findtext("DEPARTMENT")
         address = et_element.findtext("ADDRESS")
@@ -210,8 +204,7 @@ class CompanyData:
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "CompanyData":
 
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))

@@ -2,7 +2,9 @@
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree.ElementTree import Element
 
+from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .state import State
 from .utils import create_description_from_et
@@ -34,21 +36,18 @@ class StateTransition:
         return self._target_state
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "StateTransition":
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "StateTransition":
 
-        short_name = et_element.findtext("SHORT-NAME")
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
 
-        source_snref_elem = et_element.find("SOURCE-SNREF")
-        assert source_snref_elem is not None
-        source_snref = source_snref_elem.attrib["SHORT-NAME"]
+        source_snref_elem = odxrequire(et_element.find("SOURCE-SNREF"))
+        source_snref = odxrequire(source_snref_elem.attrib["SHORT-NAME"])
 
-        target_snref_elem = et_element.find("TARGET-SNREF")
-        assert target_snref_elem is not None
-        target_snref = target_snref_elem.attrib["SHORT-NAME"]
+        target_snref_elem = odxrequire(et_element.find("TARGET-SNREF"))
+        target_snref = odxrequire(target_snref_elem.attrib["SHORT-NAME"])
 
         return StateTransition(
             odx_id=odx_id,

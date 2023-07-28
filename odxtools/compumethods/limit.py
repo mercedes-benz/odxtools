@@ -3,6 +3,7 @@
 from enum import Enum
 from typing import NamedTuple, Optional, Union
 
+from ..exceptions import odxassert
 from ..odxtypes import DataType
 
 
@@ -31,7 +32,7 @@ class Limit(NamedTuple):
             if et_element.tag == "LOWER-LIMIT":
                 return Limit(float("-inf"), interval_type)
             else:
-                assert et_element.tag == "UPPER-LIMIT"
+                odxassert(et_element.tag == "UPPER-LIMIT")
                 return Limit(float("inf"), interval_type)
         elif internal_type == DataType.A_BYTEFIELD:
             hex_text = et_element.text

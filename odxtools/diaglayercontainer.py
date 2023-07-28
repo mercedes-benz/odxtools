@@ -2,10 +2,12 @@
 
 from itertools import chain
 from typing import List, Optional, Union
+from xml.etree.ElementTree import Element
 
 from .admindata import AdminData
 from .companydata import CompanyData, create_company_datas_from_et
 from .diaglayer import DiagLayer
+from .exceptions import odxassert, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
@@ -56,17 +58,15 @@ class DiagLayerContainer:
         )
 
     @staticmethod
-    def from_et(et_element) -> "DiagLayerContainer":
-        short_name = et_element.findtext("SHORT-NAME")
-        assert short_name is not None
+    def from_et(et_element: Element) -> "DiagLayerContainer":
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
 
         # create the current ODX "document fragment" (description of the
         # current document for references and IDs)
         doc_frags = [OdxDocFragment(short_name, "CONTAINER")]
 
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         description = create_description_from_et(et_element.find("DESC"))
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)

@@ -2,6 +2,8 @@
 # Copyright (c) 2022 MBition GmbH
 import unittest
 
+import odxtools
+from odxtools.exceptions import OdxError
 from odxtools.load_pdx_file import load_pdx_file
 from odxtools.odxlink import OdxDocFragment, OdxLinkRef
 
@@ -10,6 +12,40 @@ odxdb = load_pdx_file("./examples/somersault.pdx")
 # use the diag layer container's document fragments as the default for
 # resolving references
 container_doc_frags = odxdb.diag_layer_containers.somersault.odx_id.doc_fragments
+
+
+class TestStrictMode(unittest.TestCase):
+
+    def test_strict_mode(self):
+        # by default, we must be in strict mode
+        self.assertTrue(odxtools.exceptions.strict_mode)
+
+        # in strict mode, odxraise() must raise OdxError ...
+        with self.assertRaises(OdxError):
+            odxtools.exceptions.odxraise()
+        # ... odxassert() must raise OdxError for failed
+        # assertations ...
+        odxtools.exceptions.odxassert(True)  # nothing happens
+        with self.assertRaises(OdxError):
+            odxtools.exceptions.odxassert(False)
+        # ... and odxrequire() raises OdxError if passed `None` and
+        # passes through everything else.
+        with self.assertRaises(OdxError):
+            odxtools.exceptions.odxrequire(None)
+        self.assertEqual(odxtools.exceptions.odxrequire(123), 123)
+
+        # change to non-strict mode
+        odxtools.exceptions.strict_mode = False
+
+        # in non-strict mode none of the above functions raises anything
+        odxtools.exceptions.odxraise()
+        odxtools.exceptions.odxassert(True)  # nothing happens
+        odxtools.exceptions.odxassert(False)
+        odxtools.exceptions.odxrequire(None)
+        self.assertEqual(odxtools.exceptions.odxrequire(123), 123)
+
+        # go back to strict mode
+        odxtools.exceptions.strict_mode = True
 
 
 class TestDataObjectProperty(unittest.TestCase):

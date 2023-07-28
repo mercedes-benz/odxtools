@@ -2,12 +2,13 @@
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree.ElementTree import Element
 
 from .dataobjectproperty import DopBase
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .envdata import EnvironmentData
-from .exceptions import DecodeError, EncodeError
+from .exceptions import DecodeError, EncodeError, odxrequire
 from .globals import logger
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
@@ -43,34 +44,33 @@ class EnvironmentDataDescription(DopBase):
         self.param_snpathref = param_snpathref
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "EnvironmentDataDescription":
+    def from_et(et_element: Element,
+                doc_frags: List[OdxDocFragment]) -> "EnvironmentDataDescription":
         """Reads Environment Data Description from Diag Layer."""
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
+        param_snref_elem = et_element.find("PARAM-SNREF")
         param_snref = None
-        if et_element.find("PARAM-SNREF") is not None:
-            param_snref = et_element.find("PARAM-SNREF").get("SHORT-NAME")
+        if param_snref_elem is not None:
+            param_snref = odxrequire(param_snref_elem.get("SHORT-NAME"))
+        param_snpathref_elem = et_element.find("PARAM-SNPATHREF")
         param_snpathref = None
-        if et_element.find("PARAM-SNPATHREF") is not None:
-            param_snpathref = et_element.find("PARAM-SNPATHREF").get("SHORT-NAME-PATH")
-        env_data_refs = []
-        for env_data_ref in et_element.iterfind("ENV-DATA-REFS/ENV-DATA-REF"):
-            ref = OdxLinkRef.from_et(env_data_ref, doc_frags)
-            assert ref is not None
-            env_data_refs.append(ref)
+        if param_snpathref_elem is not None:
+            param_snpathref = odxrequire(param_snpathref_elem.get("SHORT-NAME-PATH"))
+        env_data_refs = [
+            odxrequire(OdxLinkRef.from_et(env_data_ref, doc_frags))
+            for env_data_ref in et_element.iterfind("ENV-DATA-REFS/ENV-DATA-REF")
+        ]
 
         # ODX 2.0.0 says ENV-DATA-DESC could contain a list of ENV-DATAS
-        env_datas = []
-        for env_data_elem in et_element.iterfind("ENV-DATAS/ENV-DATA"):
-            env_data = EnvironmentData.from_et(env_data_elem, doc_frags)
-            env_datas.append(env_data)
-
-        logger.debug("Parsing ENV-DATA-DESC " + short_name)
+        env_datas = [
+            EnvironmentData.from_et(env_data_elem, doc_frags)
+            for env_data_elem in et_element.iterfind("ENV-DATAS/ENV-DATA")
+        ]
 
         return EnvironmentDataDescription(
             odx_id=odx_id,

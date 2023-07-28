@@ -4,6 +4,8 @@ import re
 from typing import Any, Optional
 from xml.etree import ElementTree
 
+from .exceptions import odxraise, odxrequire
+
 
 def create_description_from_et(et_element: Optional[ElementTree.Element],) -> Optional[str]:
     """Read a description tag.
@@ -34,8 +36,7 @@ def short_name_as_id(obj: Any) -> str:
     prepends an underscore to such such shortnames.
     """
 
-    sn = obj.short_name
-    assert isinstance(sn, str)
+    sn: str = odxrequire(obj.short_name)
 
     if sn[0].isdigit():
         return f"_{sn}"

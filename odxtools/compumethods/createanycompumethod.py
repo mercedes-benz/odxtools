@@ -3,7 +3,7 @@
 import warnings
 from typing import Any, Dict, List, Optional, Type, Union
 
-from ..exceptions import OdxWarning
+from ..exceptions import OdxWarning, odxassert
 from ..globals import logger
 from ..odxlink import OdxDocFragment
 from ..odxtypes import DataType
@@ -26,18 +26,18 @@ def _parse_compu_scale_to_linear_compu_method(
     is_scale_linear=False,
     **kwargs,
 ):
-    assert physical_type in [
+    odxassert(physical_type in [
         DataType.A_FLOAT32,
         DataType.A_FLOAT64,
         DataType.A_INT32,
         DataType.A_UINT32,
-    ]
-    assert internal_type in [
+    ])
+    odxassert(internal_type in [
         DataType.A_FLOAT32,
         DataType.A_FLOAT64,
         DataType.A_INT32,
         DataType.A_UINT32,
-    ]
+    ])
 
     if physical_type.as_python_type() == float:
         computation_python_type = physical_type.from_string
@@ -78,8 +78,8 @@ def _parse_compu_scale_to_linear_compu_method(
         if not is_scale_linear:
             internal_upper_limit = Limit(float("inf"), IntervalType.INFINITE)
         else:
-            assert (internal_lower_limit is not None and
-                    internal_lower_limit.interval_type == IntervalType.CLOSED)
+            odxassert(internal_lower_limit is not None and
+                      internal_lower_limit.interval_type == IntervalType.CLOSED)
             logger.info("Scale linear without UPPER-LIMIT")
             internal_upper_limit = internal_lower_limit
     kwargs["internal_upper_limit"] = internal_upper_limit
@@ -94,7 +94,7 @@ def create_any_compu_method_from_et(et_element, doc_frags: List[OdxDocFragment],
                                     internal_type: DataType,
                                     physical_type: DataType) -> CompuMethod:
     compu_category = et_element.findtext("CATEGORY")
-    assert compu_category in [
+    odxassert(compu_category in [
         "IDENTICAL",
         "LINEAR",
         "SCALE-LINEAR",
@@ -103,7 +103,7 @@ def create_any_compu_method_from_et(et_element, doc_frags: List[OdxDocFragment],
         "TAB-INTP",
         "RAT-FUNC",
         "SCALE-RAT-FUNC",
-    ]
+    ])
 
     if et_element.find("COMPU-PHYS-TO-INTERNAL") is not None:  # TODO: Is this never used?
         raise NotImplementedError(f"Found COMPU-PHYS-TO-INTERNAL for category {compu_category}")
@@ -111,15 +111,16 @@ def create_any_compu_method_from_et(et_element, doc_frags: List[OdxDocFragment],
     kwargs: Dict[str, Any] = {"internal_type": internal_type}
 
     if compu_category == "IDENTICAL":
-        assert internal_type == physical_type or (
-            internal_type in [DataType.A_ASCIISTRING, DataType.A_UTF8STRING] and
-            physical_type == DataType.A_UNICODE2STRING), (
-                f"Internal type '{internal_type}' and physical type '{physical_type}'"
-                f" must be the same for compu methods of category '{compu_category}'")
+        odxassert(
+            internal_type == physical_type or
+            (internal_type in [DataType.A_ASCIISTRING, DataType.A_UTF8STRING] and
+             physical_type == DataType.A_UNICODE2STRING),
+            f"Internal type '{internal_type}' and physical type '{physical_type}'"
+            f" must be the same for compu methods of category '{compu_category}'")
         return IdenticalCompuMethod(internal_type=internal_type, physical_type=physical_type)
 
     if compu_category == "TEXTTABLE":
-        assert physical_type == DataType.A_UNICODE2STRING
+        odxassert(physical_type == DataType.A_UNICODE2STRING)
         compu_internal_to_phys = et_element.find("COMPU-INTERNAL-TO-PHYS")
 
         internal_to_phys: List[CompuScale] = []

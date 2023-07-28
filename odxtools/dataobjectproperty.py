@@ -2,12 +2,13 @@
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
+from xml.etree.ElementTree import Element
 
 from .compumethods import CompuMethod, create_any_compu_method_from_et
 from .decodestate import DecodeState
 from .diagcodedtypes import DiagCodedType, StandardLengthType, create_any_diag_coded_type_from_et
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError
+from .exceptions import DecodeError, EncodeError, odxassert, odxrequire
 from .globals import logger
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -95,11 +96,10 @@ class DataObjectProperty(DopBase):
         self.unit_ref = unit_ref
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "DataObjectProperty":
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "DataObjectProperty":
         """Reads a DATA-OBJECT-PROP or a DTC-DOP."""
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
-        short_name = et_element.findtext("SHORT-NAME")
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
@@ -200,9 +200,9 @@ class DataObjectProperty(DopBase):
         """
         Convert a physical representation of a parameter to its internal counterpart
         """
-        assert self.physical_type.base_data_type.isinstance(
-            physical_value
-        ), f"Expected {self.physical_type.base_data_type.value}, got {type(physical_value)}"
+        odxassert(
+            self.physical_type.base_data_type.isinstance(physical_value),
+            f"Expected {self.physical_type.base_data_type.value}, got {type(physical_value)}")
 
         return self.compu_method.convert_physical_to_internal(physical_value)
 
@@ -230,7 +230,7 @@ class DataObjectProperty(DopBase):
 
         Returns a (physical_value, start_position_of_next_parameter) tuple.
         """
-        assert 0 <= bit_position and bit_position < 8
+        odxassert(0 <= bit_position and bit_position < 8)
 
         internal, next_byte_position = self.diag_coded_type.convert_bytes_to_internal(
             decode_state, bit_position=bit_position)
@@ -355,7 +355,7 @@ class DtcDop(DataObjectProperty):
 
         dtcs = [x for x in self.dtcs if x.trouble_code == trouble_code]
 
-        assert len(dtcs) < 2, f"Multiple matching DTCs for trouble code 0x{trouble_code:06x}"
+        odxassert(len(dtcs) < 2, f"Multiple matching DTCs for trouble code 0x{trouble_code:06x}")
 
         if len(dtcs) == 1:
             # we found exactly one described DTC

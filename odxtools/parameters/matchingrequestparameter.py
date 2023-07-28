@@ -8,10 +8,8 @@ from .parameterbase import Parameter
 
 class MatchingRequestParameter(Parameter):
 
-    def __init__(self, *, request_byte_position, byte_length, **kwargs):
+    def __init__(self, *, request_byte_position: int, byte_length: int, **kwargs):
         super().__init__(parameter_type="MATCHING-REQUEST-PARAM", **kwargs)
-        assert byte_length is not None
-        assert request_byte_position is not None
         self.request_byte_position = request_byte_position
         self._byte_length = byte_length
 

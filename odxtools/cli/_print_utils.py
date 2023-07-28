@@ -4,8 +4,8 @@ import re
 
 import markdownify
 
-from odxtools import DiagService
-from odxtools.structures import Request, Response
+from ..service import DiagService
+from ..structures import Request, Response
 
 
 def format_desc(desc, ident=0):

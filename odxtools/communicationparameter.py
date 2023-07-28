@@ -2,11 +2,12 @@
 # Copyright (c) 2022 MBition GmbH
 import warnings
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from xml.etree.ElementTree import Element
 
 from .comparam_subset import (BaseComparam, Comparam, ComplexComparam, ComplexValue,
                               create_complex_value_from_et)
 from .diaglayertype import DiagLayerType
-from .exceptions import OdxWarning
+from .exceptions import OdxWarning, odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .utils import create_description_from_et
 
@@ -36,20 +37,20 @@ class CommunicationParameterRef:
         self._comparam: BaseComparam
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment],
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment],
                 dl_type: DiagLayerType) -> "CommunicationParameterRef":
-        id_ref = OdxLinkRef.from_et(et_element, doc_frags)
-        assert id_ref is not None
+        id_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
 
         # ODX standard v2.0.0 defined only VALUE. ODX v2.0.1 decided
         # to break things and change it to choice between SIMPLE-VALUE
         # and COMPLEX-VALUE
+        value: Union[str, List[Union[str, ComplexValue]]]
         if et_element.find("VALUE") is not None:
-            value = et_element.findtext("VALUE")
+            value = odxrequire(et_element.findtext("VALUE"))
         elif et_element.find("SIMPLE-VALUE") is not None:
-            value = et_element.findtext("SIMPLE-VALUE")
+            value = odxrequire(et_element.findtext("SIMPLE-VALUE"))
         else:
-            value = create_complex_value_from_et(et_element.find("COMPLEX-VALUE"))
+            value = odxrequire(create_complex_value_from_et(et_element.find("COMPLEX-VALUE")))
 
         is_functional = dl_type == DiagLayerType.FUNCTIONAL_GROUP
         description = create_description_from_et(et_element.find("DESC"))
@@ -100,7 +101,8 @@ class CommunicationParameterRef:
         account.
         """
 
-        assert isinstance(self.comparam, Comparam)
+        if not isinstance(self.comparam, Comparam):
+            odxraise()
 
         result: Any = None
         if self.value:
@@ -108,7 +110,7 @@ class CommunicationParameterRef:
         else:
             result = self.comparam.physical_default_value
 
-        assert isinstance(result, str)
+        odxassert(isinstance(result, str))
 
         return result
 
@@ -119,7 +121,8 @@ class CommunicationParameterRef:
         account.
         """
         comparam_spec = self.comparam
-        assert isinstance(comparam_spec, ComplexComparam)
+        if not isinstance(comparam_spec, ComplexComparam):
+            odxraise()
 
         value_list = self.value
         if not isinstance(value_list, list):
@@ -145,7 +148,8 @@ class CommunicationParameterRef:
         result = value_list[idx]
         if not result and (default_values := comparam_spec.complex_physical_default_value):
             result = default_values[idx]
-        assert isinstance(result, str)
+        if not isinstance(result, str):
+            odxraise()
 
         return result
 

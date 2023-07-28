@@ -7,7 +7,7 @@ import bitstruct
 
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError
+from .exceptions import DecodeError, EncodeError, OdxError, odxassert, odxraise, odxrequire
 from .globals import logger, xsi
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import DataType, odxstr_to_bool
@@ -144,8 +144,8 @@ class DiagCodedType(abc.ABC):
 
         # The coded byte is divided into (0..0)(value)(0..0) with bit lengths (left_pad)(bit_length)(bit_position)
         offset = (8 - ((bit_length + bit_position) % 8)) % 8
-        assert (0 <= offset and offset < 8 and (offset + bit_length + bit_position) % 8
-                == 0), f"Computational mistake, offset={offset}"
+        odxassert((0 <= offset and offset < 8 and (offset + bit_length + bit_position) % 8 == 0),
+                  f"Computational mistake, offset={offset}")
         left_pad = f"p{offset}" if offset > 0 else ""
 
         # Convert string to bytes with utf-16 encoding
@@ -179,14 +179,19 @@ class DiagCodedType(abc.ABC):
         if self.base_data_type == DataType.A_BYTEFIELD:
             byte_length = len(internal_value)
         elif self.base_data_type in [DataType.A_ASCIISTRING, DataType.A_UTF8STRING]:
-            assert isinstance(internal_value, str)
+            if not isinstance(internal_value, str):
+                odxraise()
+
             # TODO: Handle different encodings
             byte_length = len(bytes(internal_value, "utf-8"))
         elif self.base_data_type == DataType.A_UNICODE2STRING:
-            assert isinstance(internal_value, str)
+            if not isinstance(internal_value, str):
+                odxraise()
+
             byte_length = len(bytes(internal_value, "utf-16-le"))
-            assert byte_length % 2 == 0, (f"The bit length of A_UNICODE2STRING must"
-                                          f" be a multiple of 16 but is {8*byte_length}")
+            odxassert(
+                byte_length % 2 == 0, f"The bit length of A_UNICODE2STRING must"
+                f" be a multiple of 16 but is {8*byte_length}")
         return byte_length
 
     @abc.abstractmethod
@@ -242,14 +247,15 @@ class LeadingLengthInfoType(DiagCodedType):
             is_highlow_byte_order_raw=is_highlow_byte_order_raw,
         )
         self.bit_length = bit_length
-        assert (self.bit_length
-                > 0), "A Leading length info type with bit length == 0 does not make sense."
-        assert self.base_data_type in [
-            DataType.A_BYTEFIELD,
-            DataType.A_ASCIISTRING,
-            DataType.A_UNICODE2STRING,
-            DataType.A_UTF8STRING,
-        ], f"A leading length info type cannot have the base data type {self.base_data_type}."
+        odxassert(self.bit_length > 0,
+                  "A Leading length info type with bit length == 0 does not make sense.")
+        odxassert(
+            self.base_data_type in [
+                DataType.A_BYTEFIELD,
+                DataType.A_ASCIISTRING,
+                DataType.A_UNICODE2STRING,
+                DataType.A_UTF8STRING,
+            ], f"A leading length info type cannot have the base data type {self.base_data_type}.")
 
     def convert_internal_to_bytes(self, internal_value: Any, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
@@ -331,22 +337,23 @@ class MinMaxLengthType(DiagCodedType):
             base_type_encoding=base_type_encoding,
             is_highlow_byte_order_raw=is_highlow_byte_order_raw,
         )
-        assert max_length is None or min_length <= max_length
+        odxassert(max_length is None or min_length <= max_length)
         self.min_length = min_length
         self.max_length = max_length
         self.termination = termination
 
-        assert self.base_data_type in [
-            DataType.A_BYTEFIELD,
-            DataType.A_ASCIISTRING,
-            DataType.A_UNICODE2STRING,
-            DataType.A_UTF8STRING,
-        ], f"A min-max length type cannot have the base data type {self.base_data_type}."
-        assert self.termination in [
+        odxassert(
+            self.base_data_type in [
+                DataType.A_BYTEFIELD,
+                DataType.A_ASCIISTRING,
+                DataType.A_UNICODE2STRING,
+                DataType.A_UTF8STRING,
+            ], f"A min-max length type cannot have the base data type {self.base_data_type}.")
+        odxassert(self.termination in [
             "ZERO",
             "HEX-FF",
             "END-OF-PDU",
-        ], f"A min-max length type cannot have the termination {self.termination}"
+        ], f"A min-max length type cannot have the termination {self.termination}")
 
     def __termination_character(self):
         """Returns the termination character or None if it isn't defined."""
@@ -393,7 +400,8 @@ class MinMaxLengthType(DiagCodedType):
             termination_char = self.__termination_character()
             if self.termination == "END-OF-PDU":
                 termination_char = bytes()
-            assert termination_char is not None, (
+            odxassert(
+                termination_char is not None,
                 f"MinMaxLengthType with termination {self.termination}"
                 f"(min: {self.min_length}, max: {self.max_length}) failed encoding {internal_value}"
             )
@@ -438,7 +446,7 @@ class MinMaxLengthType(DiagCodedType):
                 base_data_type=self.base_data_type,
                 is_highlow_byte_order=self.is_highlow_byte_order,
             )
-            assert byte == termination_byte
+            odxassert(byte == termination_byte)
 
             # next byte starts after the termination character
             next_byte_position = byte + char_length if found_char else byte
@@ -534,7 +542,8 @@ class ParamLengthInfoType(DiagCodedType):
 
             encode_state.parameter_values[self.length_key.short_name] = bit_length
 
-        assert bit_length is not None
+        if bit_length is None:
+            odxraise()
 
         return self._to_bytes(
             internal_value,
@@ -546,15 +555,17 @@ class ParamLengthInfoType(DiagCodedType):
 
     def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
         # Find length key with matching ID.
-        bit_length = 0
+        bit_length = None
         for parameter_name, value in decode_state.parameter_values.items():
             if parameter_name == self.length_key.short_name:
                 # The bit length of the parameter to be extracted is given by the length key.
-                assert isinstance(value, int)
                 bit_length = value
+                if not isinstance(bit_length, int):
+                    odxraise(f"The bit length must be an integer, is {type(bit_length)}")
                 break
 
-        assert bit_length is not None, f"Did not find any length key with short name {self.length_key.short_name}"
+        if not isinstance(bit_length, int):
+            odxraise(f"Did not find any length key with short name {self.length_key.short_name}")
 
         # Extract the internal value and return.
         return self._extract_internal(
@@ -642,7 +653,7 @@ def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragmen
     base_type_encoding = et_element.get("BASE-TYPE-ENCODING")
 
     base_data_type = et_element.get("BASE-DATA-TYPE")
-    assert base_data_type in [
+    odxassert(base_data_type in [
         "A_INT32",
         "A_UINT32",
         "A_FLOAT32",
@@ -651,7 +662,7 @@ def create_any_diag_coded_type_from_et(et_element, doc_frags: List[OdxDocFragmen
         "A_UTF8STRING",
         "A_UNICODE2STRING",
         "A_BYTEFIELD",
-    ]
+    ])
 
     is_highlow_byte_order_raw = odxstr_to_bool(et_element.get("IS-HIGHLOW-BYTE-ORDER"))
 
