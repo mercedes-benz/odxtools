@@ -100,8 +100,6 @@ class CompanyRevisionInfo:
 
     @property
     def company_data(self) -> CompanyData:
-        if self._company_data is None:
-            odxraise()
         return self._company_data
 
     @staticmethod

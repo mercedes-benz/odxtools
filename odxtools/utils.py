@@ -36,7 +36,9 @@ def short_name_as_id(obj: Any) -> str:
     prepends an underscore to such such shortnames.
     """
 
-    sn: str = odxrequire(obj.short_name)
+    sn = obj.short_name
+    if not isinstance(sn, str):
+        odxraise()
 
     if sn[0].isdigit():
         return f"_{sn}"
