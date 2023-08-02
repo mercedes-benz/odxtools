@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
 from ..dataobjectproperty import DataObjectProperty, DopBase, DtcDop
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
+from ..exceptions import odxassert, odxrequire
 from ..globals import logger
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..physicaltype import PhysicalType
@@ -40,7 +41,7 @@ class ParameterWithDOP(Parameter):
         super()._resolve_odxlinks(odxlinks)
 
         if self.dop_ref is not None:
-            assert self.dop_snref is None
+            odxassert(self.dop_snref is None)
             # TODO: do not do lenient resolves here. The problem is
             # that currently not all kinds of DOPs are internalized
             # (e.g., static and dynamic fields)
@@ -78,21 +79,21 @@ class ParameterWithDOP(Parameter):
         return self.dop.convert_physical_to_internal(physical_value)
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
-        assert self.dop is not None, "Reference to DOP is not resolved"
+        dop = odxrequire(self.dop, "Reference to DOP is not resolved")
         physical_value = encode_state.parameter_values[self.short_name]
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return self.dop.convert_physical_to_bytes(
+        return dop.convert_physical_to_bytes(
             physical_value, encode_state, bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
-        assert self.dop is not None, "Reference to DOP is not resolved"
+        dop = odxrequire(self.dop, "Reference to DOP is not resolved")
         decode_state = copy(decode_state)
         if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
             decode_state.next_byte_position = self.byte_position
 
         # Use DOP to decode
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        phys_val, next_byte_position = self.dop.convert_bytes_to_physical(
+        phys_val, next_byte_position = dop.convert_bytes_to_physical(
             decode_state, bit_position=bit_position_int)
 
         return phys_val, next_byte_position

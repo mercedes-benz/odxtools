@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, List, Optional, Union
 from .dataobjectproperty import DopBase
 from .decodestate import DecodeState
 from .encodestate import EncodeState
+from .exceptions import odxassert
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValueDict, odxstr_to_bool
 from .specialdata import create_sdgs_from_et
@@ -37,7 +38,8 @@ class EndOfPduField(DopBase):
 
         num_edd_refs = 0 if env_data_desc_ref is None else 1
         num_edd_refs += 0 if env_data_desc_snref is None else 1
-        assert num_struct_refs + num_edd_refs == 1, (
+        odxassert(
+            num_struct_refs + num_edd_refs == 1,
             "END-OF-PDU-FIELDs need to specify exactly one reference to a "
             "structure of an environment data description")
 
@@ -52,7 +54,7 @@ class EndOfPduField(DopBase):
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "EndOfPduField":
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
+        odxassert(odx_id is not None)
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
@@ -113,14 +115,16 @@ class EndOfPduField(DopBase):
         encode_state: EncodeState,
         bit_position: int = 0,
     ) -> bytes:
-        assert (bit_position == 0
-               ), "End of PDU field must be byte aligned. Is there an error in reading the .odx?"
+        odxassert(
+            bit_position == 0, "End of PDU field must be byte aligned. "
+            "Is there an error in reading the .odx?")
         if isinstance(physical_value, dict):
             # If the value is given as a dict, the End of PDU field behaves like the underlying structure.
             return self.structure.convert_physical_to_bytes(physical_value, encode_state)
         else:
-            assert isinstance(physical_value,
-                              list), "The value of an End-of-PDU-field must be a list or a dict."
+            odxassert(
+                isinstance(physical_value, list),
+                "The value of an End-of-PDU-field must be a list or a dict.")
             # If the value is given as a list, each list element is a encoded seperately using the structure.
             coded_rpc = bytes()
             for value in physical_value:

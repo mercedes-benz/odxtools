@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .companydata import CompanyData, TeamMember
+from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
@@ -33,8 +34,8 @@ class CompanyDocInfo:
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "CompanyDocInfo":
         # the company data reference is mandatory
-        company_data_ref = OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), doc_frags)
-        assert company_data_ref is not None
+        company_data_ref = odxrequire(
+            OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), doc_frags))
         team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), doc_frags)
         doc_label = et_element.findtext("DOC-LABEL")
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
@@ -99,15 +100,14 @@ class CompanyRevisionInfo:
 
     @property
     def company_data(self) -> CompanyData:
-        assert self._company_data is not None
         return self._company_data
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "CompanyRevisionInfo":
 
-        company_data_ref = OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), doc_frags)
-        assert company_data_ref is not None
+        company_data_ref = odxrequire(
+            OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), doc_frags))
         revision_label = et_element.findtext("REVISION_LABEL")
         state = et_element.findtext("STATE")
 
@@ -148,8 +148,7 @@ class DocRevision:
         team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), doc_frags)
         revision_label = et_element.findtext("REVISION-LABEL")
         state = et_element.findtext("STATE")
-        date = et_element.findtext("DATE")
-        assert date is not None
+        date = odxrequire(et_element.findtext("DATE"))
         tool = et_element.findtext("TOOL")
 
         crilist = [

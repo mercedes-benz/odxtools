@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from typing import Optional, Union
 
+from ..exceptions import odxassert
 from ..odxtypes import DataType
 from .compumethodbase import CompuMethod
 from .limit import IntervalType, Limit
@@ -82,8 +83,8 @@ class LinearCompuMethod(CompuMethod):
                 internal_upper_limit.interval_type == IntervalType.INFINITE):
             self.internal_upper_limit = Limit(float("inf"), IntervalType.INFINITE)
 
-        assert self.internal_lower_limit is not None and self.internal_upper_limit is not None
-        assert denominator > 0 and isinstance(denominator, (int, float))
+        odxassert(self.internal_lower_limit is not None and self.internal_upper_limit is not None)
+        odxassert(denominator > 0 and isinstance(denominator, (int, float)))
 
         self.__compute_physical_limits()
 
@@ -111,7 +112,7 @@ class LinearCompuMethod(CompuMethod):
             is_upper_limit
                 True iff limit is the internal upper limit
             """
-            assert isinstance(limit.value, (int, float))
+            odxassert(isinstance(limit.value, (int, float)))
             if limit.interval_type == IntervalType.INFINITE:
                 return limit
             elif (limit.interval_type == limit.interval_type.OPEN and
@@ -159,13 +160,15 @@ class LinearCompuMethod(CompuMethod):
         return self.physical_type.make_from(result)
 
     def convert_internal_to_physical(self, internal_value) -> Union[int, float]:
-        assert self.is_valid_internal_value(internal_value)
+        odxassert(self.is_valid_internal_value(internal_value))
         return self._convert_internal_to_physical(internal_value)
 
     def convert_physical_to_internal(self, physical_value):
-        assert self.is_valid_physical_value(
-            physical_value
-        ), f"physical value {physical_value} of type {type(physical_value)} is not valid. Expected type {self.physical_type} with internal range {self.internal_lower_limit} to {self.internal_upper_limit}"
+        odxassert(
+            self.is_valid_physical_value(physical_value),
+            f"physical value {physical_value} of type {type(physical_value)} "
+            f"is not valid. Expected type {self.physical_type} with internal "
+            f"range {self.internal_lower_limit} to {self.internal_upper_limit}")
         if self.denominator is None:
             result = (physical_value - self.offset) / self.factor
         else:

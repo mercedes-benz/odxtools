@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Dict, List
 from ..decodestate import DecodeState
 from ..diagcodedtypes import DiagCodedType
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, EncodeError
+from ..exceptions import DecodeError, EncodeError, odxassert
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import DataType
 from .parameterbase import Parameter
@@ -31,7 +31,7 @@ class NrcConstParameter(Parameter):
 
         self.diag_coded_type = diag_coded_type
         # TODO: Does it have to be an integer or is that just common practice?
-        assert all(isinstance(coded_value, int) for coded_value in coded_values)
+        odxassert(all(isinstance(coded_value, int) for coded_value in coded_values))
         self.coded_values = coded_values
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

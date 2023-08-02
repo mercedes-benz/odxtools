@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Type, TypeVar, overload
 from xml.etree.ElementTree import Element
 
-from .exceptions import OdxWarning
+from .exceptions import OdxWarning, odxassert
 
 
 @dataclass(frozen=True)
@@ -120,9 +120,9 @@ class OdxLinkRef:
         doc_ref = et.attrib.get("DOCREF")
         doc_type = et.attrib.get("DOCTYPE")
 
-        assert (doc_ref is not None and doc_type is not None) or (
-            doc_ref is None and
-            doc_type is None), "DOCREF and DOCTYPE must both either be specified or omitted"
+        odxassert((doc_ref is not None and doc_type is not None) or
+                  (doc_ref is None and doc_type is None),
+                  "DOCREF and DOCTYPE must both either be specified or omitted")
 
         # if the target document fragment is specified by the
         # reference, use it, else use the document fragment containing
@@ -184,8 +184,6 @@ class OdxLinkDatabase:
         If the database does not contain any object which is referred to, a
         KeyError exception is raised.
         """
-        assert isinstance(ref, OdxLinkRef)
-
         odx_id = OdxLinkId(ref.ref_id, ref.ref_docs)
         for ref_frag in reversed(ref.ref_docs):
             doc_frag_db = self._db.get(ref_frag)
@@ -203,7 +201,7 @@ class OdxLinkDatabase:
             obj = doc_frag_db.get(odx_id)
             if obj is not None:
                 if expected_type is not None:
-                    assert isinstance(obj, expected_type)
+                    odxassert(isinstance(obj, expected_type))
 
                 return obj
 
@@ -227,7 +225,6 @@ class OdxLinkDatabase:
         If the database does not contain any object which is referred to, None
         is returned.
         """
-        assert isinstance(ref, OdxLinkRef)
 
         odx_id = OdxLinkId(ref.ref_id, ref.ref_docs)
         for ref_frag in reversed(ref.ref_docs):
@@ -246,7 +243,7 @@ class OdxLinkDatabase:
             obj = doc_frag_db.get(odx_id)
             if obj is not None:
                 if expected_type is not None:
-                    assert isinstance(obj, expected_type)
+                    odxassert(isinstance(obj, expected_type))
 
                 return obj
 

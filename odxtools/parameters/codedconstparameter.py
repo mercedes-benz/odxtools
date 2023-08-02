@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 from ..decodestate import DecodeState
 from ..diagcodedtypes import DiagCodedType
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError
+from ..exceptions import DecodeError, odxraise
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import DataType
 from .parameterbase import Parameter
@@ -22,7 +22,8 @@ class CodedConstParameter(Parameter):
         super().__init__(parameter_type="CODED-CONST", **kwargs)
 
         self.diag_coded_type = diag_coded_type
-        assert isinstance(coded_value, (int, bytes, bytearray))
+        if not isinstance(coded_value, (int, bytes, bytearray)):
+            odxraise()
         self.coded_value = coded_value
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

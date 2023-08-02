@@ -7,7 +7,7 @@ from typing import Dict, Generator, List, Optional, Union
 from .diaglayer import DiagLayer
 from .diaglayertype import DiagLayerType
 from .ecu_variant_patterns import MatchingParameter
-from .exceptions import OdxError
+from .exceptions import OdxError, odxassert
 from .odxtypes import ParameterValue
 from .service import DiagService
 from .structures import Response
@@ -44,10 +44,9 @@ class EcuVariantMatcher:
     @staticmethod
     def get_ident_service(diag_layer: DiagLayer, matching_param: MatchingParameter) -> DiagService:
         service_name = matching_param.diag_comm_snref
-        # TODO this is not working since NamedItemList.__contains__() is not implemented
-        # assert service_name in diag_layer.services
+        odxassert(service_name in [x.short_name for x in diag_layer.services])
         service = diag_layer.services[service_name]
-        assert isinstance(service, DiagService)
+        odxassert(isinstance(service, DiagService))
         return service
 
     @staticmethod
@@ -96,7 +95,7 @@ class EcuVariantMatcher:
 
         self.ecus = ecu_variant_candidates
         for ecu in self.ecus:
-            assert ecu.variant_type == DiagLayerType.ECU_VARIANT
+            odxassert(ecu.variant_type == DiagLayerType.ECU_VARIANT)
 
         self.use_cache = use_cache
         self.req_resp_cache: Dict[bytes, bytes] = {}
@@ -161,7 +160,7 @@ class EcuVariantMatcher:
 
     def get_active_ecu_variant(self) -> DiagLayer:
         """Returns the matched, i.e., active ecu variant if such a variant has been found."""
-        assert self.has_match()
+        odxassert(self.has_match())
         return self._match
 
     def _update_cache(self, req_bytes: bytes, resp_bytes: bytes) -> None:

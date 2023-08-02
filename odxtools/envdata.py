@@ -3,6 +3,7 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+from .exceptions import odxrequire
 from .globals import logger
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
@@ -29,8 +30,7 @@ class EnvironmentData(BasicStructure):
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "EnvironmentData":
         """Reads Environment Data from Diag Layer."""
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))

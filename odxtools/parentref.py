@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Union
+from xml.etree.ElementTree import Element
 
 from .dataobjectproperty import DopBase
 from .diaglayertype import DiagLayerType
+from .exceptions import odxrequire
 from .globals import xsi
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .service import DiagService
@@ -27,36 +29,38 @@ class ParentRef:
         return self._layer
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "ParentRef":
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "ParentRef":
 
-        layer_ref = OdxLinkRef.from_et(et_element, doc_frags)
-        assert layer_ref is not None
+        layer_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
 
         not_inherited_diag_comms = [
-            el.get("SHORT-NAME") for el in et_element.iterfind("NOT-INHERITED-DIAG-COMMS/"
-                                                               "NOT-INHERITED-DIAG-COMM/"
-                                                               "DIAG-COMM-SNREF")
+            odxrequire(el.get("SHORT-NAME"))
+            for el in et_element.iterfind("NOT-INHERITED-DIAG-COMMS/"
+                                          "NOT-INHERITED-DIAG-COMM/"
+                                          "DIAG-COMM-SNREF")
         ]
         not_inherited_dops = [
-            el.get("SHORT-NAME") for el in et_element.iterfind("NOT-INHERITED-DOPS/"
-                                                               "NOT-INHERITED-DOP/"
-                                                               "DOP-BASE-SNREF")
+            odxrequire(el.get("SHORT-NAME")) for el in et_element.iterfind("NOT-INHERITED-DOPS/"
+                                                                           "NOT-INHERITED-DOP/"
+                                                                           "DOP-BASE-SNREF")
         ]
         not_inherited_tables = [
-            el.get("SHORT-NAME") for el in et_element.iterfind("NOT-INHERITED-TABLES/"
-                                                               "NOT-INHERITED-TABLE/"
-                                                               "TABLE-SNREF")
+            odxrequire(el.get("SHORT-NAME")) for el in et_element.iterfind("NOT-INHERITED-TABLES/"
+                                                                           "NOT-INHERITED-TABLE/"
+                                                                           "TABLE-SNREF")
         ]
         not_inherited_variables = [
-            el.get("SHORT-NAME") for el in et_element.iterfind("NOT-INHERITED-VARIABLES/"
-                                                               "NOT-INHERITED-VARIABLE/"
-                                                               "DIAG-VARIABLE-SNREF")
+            odxrequire(el.get("SHORT-NAME"))
+            for el in et_element.iterfind("NOT-INHERITED-VARIABLES/"
+                                          "NOT-INHERITED-VARIABLE/"
+                                          "DIAG-VARIABLE-SNREF")
         ]
 
         not_inherited_global_neg_responses = [
-            el.get("SHORT-NAME") for el in et_element.iterfind("NOT-INHERITED-GLOBAL-NEG-RESPONSES/"
-                                                               "NOT-INHERITED-GLOBAL-NEG-RESPONSE/"
-                                                               "GLOBAL-NEG-RESPONSE-SNREF")
+            odxrequire(el.get("SHORT-NAME"))
+            for el in et_element.iterfind("NOT-INHERITED-GLOBAL-NEG-RESPONSES/"
+                                          "NOT-INHERITED-GLOBAL-NEG-RESPONSE/"
+                                          "GLOBAL-NEG-RESPONSE-SNREF")
         ]
 
         return ParentRef(

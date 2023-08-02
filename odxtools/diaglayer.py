@@ -21,7 +21,7 @@ from .ecu_variant_patterns import EcuVariantPattern, create_ecu_variant_patterns
 from .endofpdufield import EndOfPduField
 from .envdata import EnvironmentData
 from .envdatadesc import EnvironmentDataDescription
-from .exceptions import DecodeError, OdxWarning
+from .exceptions import DecodeError, OdxWarning, odxassert
 from .functionalclass import FunctionalClass
 from .globals import logger
 from .message import Message
@@ -415,8 +415,9 @@ class DiagLayer:
             else:
                 dc = dc_proxy
 
-            assert isinstance(dc, (DiagService, SingleEcuJob))
-            assert dc.short_name not in result_dict, (
+            odxassert(isinstance(dc, (DiagService, SingleEcuJob)))
+            odxassert(
+                dc.short_name not in result_dict,
                 f"Multiple definitions of DIAG-COMM '{dc.short_name}' in "
                 f"layer '{self.short_name}'")
             result_dict[dc.short_name] = dc
@@ -596,9 +597,9 @@ class DiagLayer:
             # warning and simply return None...
             warnings.simplefilter("ignore", category=OdxWarning)
             result = com_param.get_subvalue("CP_CanPhysReqId")
-        if not result:
+        if result is None:
             return None
-        assert isinstance(result, str)
+        odxassert(isinstance(result, str))
 
         return int(result)
 
@@ -626,9 +627,9 @@ class DiagLayer:
             # warning and simply return None...
             warnings.simplefilter("ignore", category=OdxWarning)
             result = com_param.get_subvalue("CP_CanRespUSDTId")
-        if not result:
+        if result is None:
             return None
-        assert isinstance(result, str)
+        odxassert(isinstance(result, str))
 
         return int(result)
 
@@ -643,9 +644,9 @@ class DiagLayer:
             return None
 
         result = com_param.get_value()
-        if not result:
+        if result is None:
             return None
-        assert isinstance(result, str)
+        odxassert(isinstance(result, str))
 
         return int(result)
 
@@ -695,9 +696,9 @@ class DiagLayer:
             return None
 
         result = com_param.get_value()
-        if not result:
+        if result is None:
             return None
-        assert isinstance(result, str)
+        odxassert(isinstance(result, str))
 
         return int(result)
 
@@ -714,9 +715,9 @@ class DiagLayer:
             return None
 
         result = com_param.get_value()
-        if not result:
+        if result is None:
             return None
-        assert isinstance(result, str)
+        odxassert(isinstance(result, str))
 
         return int(result)
 
@@ -736,9 +737,9 @@ class DiagLayer:
             return None
 
         result = com_param.get_value()
-        if not result:
+        if result is None:
             return None
-        assert isinstance(result, str)
+        odxassert(isinstance(result, str))
 
         return int(result)
 
@@ -754,9 +755,9 @@ class DiagLayer:
             return None
 
         result = com_param.get_value()
-        if not result:
+        if result is None:
             return None
-        assert isinstance(result, str)
+        odxassert(isinstance(result, str))
 
         return float(result) / 1e6
 
@@ -780,9 +781,9 @@ class DiagLayer:
             return None
 
         result = com_param.get_value()
-        if not result:
+        if result is None:
             return None
-        assert isinstance(result, str)
+        odxassert(isinstance(result, str))
 
         return int(result)
 
@@ -804,9 +805,9 @@ class DiagLayer:
             return None
 
         result = com_param.get_value()
-        if not result:
+        if result is None:
             return None
-        assert isinstance(result, str)
+        odxassert(isinstance(result, str))
 
         # the comparam specifies microseconds. convert this to seconds
         return float(result) / 1e6
@@ -897,7 +898,7 @@ class DiagLayer:
         possible_services: List[DiagService] = []
         for b in message:
             if b in prefix_tree:
-                assert isinstance(prefix_tree[b], dict)
+                odxassert(isinstance(prefix_tree[b], dict))
                 prefix_tree = cast(PrefixTree, prefix_tree[b])
             else:
                 break

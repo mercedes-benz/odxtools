@@ -647,7 +647,8 @@ somersault_positive_responses = {
                         description=None,
                         diag_coded_type=somersault_diagcodedtypes["uint8"],
                         byte_position=0,
-                        coded_value=uds.positive_response_id(SID.ForwardFlip.value),  # type: ignore
+                        coded_value=uds.positive_response_id(
+                            SID.ForwardFlip.value),  # type: ignore[attr-defined]
                         bit_position=None,
                         sdgs=[],
                     ),

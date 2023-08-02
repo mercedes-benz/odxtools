@@ -13,6 +13,7 @@ from .dataobjectproperty import DopBase
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayertype import DiagLayerType
 from .ecu_variant_patterns import EcuVariantPattern
+from .exceptions import odxassert, odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .globals import xsi
 from .nameditemlist import NamedItemList
@@ -76,17 +77,14 @@ class DiagLayerRaw:
 
         variant_type = DiagLayerType(et_element.tag)
 
-        short_name = et_element.findtext("SHORT-NAME")
-        assert short_name is not None
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
 
         # extend the applicable ODX "document fragments" for the diag layer objects
         doc_frags = copy(doc_frags)
         doc_frags.append(OdxDocFragment(short_name, "LAYER"))
-
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
 
         admin_data = None
         if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:
@@ -116,33 +114,37 @@ class DiagLayerRaw:
                 elif dc_proxy_elem.tag == "DIAG-SERVICE":
                     dc = DiagService.from_et(dc_proxy_elem, doc_frags)
                 else:
-                    assert dc_proxy_elem.tag == "SINGLE-ECU-JOB"
+                    odxassert(dc_proxy_elem.tag == "SINGLE-ECU-JOB")
                     dc = SingleEcuJob.from_et(dc_proxy_elem, doc_frags)
 
                 diag_comms.append(dc)
 
         requests = []
         for rq_elem in et_element.iterfind("REQUESTS/REQUEST"):
-            rq = create_any_structure_from_et(rq_elem, doc_frags)
-            assert isinstance(rq, Request)
+            rq = odxrequire(create_any_structure_from_et(rq_elem, doc_frags))
+            if not isinstance(rq, Request):
+                odxraise()
             requests.append(rq)
 
         positive_responses = []
         for pr_elem in et_element.iterfind("POS-RESPONSES/POS-RESPONSE"):
-            pr = create_any_structure_from_et(pr_elem, doc_frags)
-            assert isinstance(pr, Response)
+            pr = odxrequire(create_any_structure_from_et(pr_elem, doc_frags))
+            if not isinstance(pr, Response):
+                odxraise()
             positive_responses.append(pr)
 
         negative_responses = []
         for nr_elem in et_element.iterfind("NEG-RESPONSES/NEG-RESPONSE"):
-            nr = create_any_structure_from_et(nr_elem, doc_frags)
-            assert isinstance(nr, Response)
+            nr = odxrequire(create_any_structure_from_et(nr_elem, doc_frags))
+            if not isinstance(nr, Response):
+                odxraise()
             negative_responses.append(nr)
 
         global_negative_responses = []
         for nr_elem in et_element.iterfind("GLOBAL-NEG-RESPONSES/GLOBAL-NEG-RESPONSE"):
-            nr = create_any_structure_from_et(nr_elem, doc_frags)
-            assert isinstance(nr, Response)
+            nr = odxrequire(create_any_structure_from_et(nr_elem, doc_frags))
+            if not isinstance(nr, Response):
+                odxraise()
             global_negative_responses.append(nr)
 
         import_refs = [
@@ -177,9 +179,9 @@ class DiagLayerRaw:
             for el in et_element.iterfind("ECU-VARIANT-PATTERNS/ECU-VARIANT-PATTERN")
         ]
         if variant_type is not DiagLayerType.ECU_VARIANT:
-            assert (
-                len(ecu_variant_patterns) == 0
-            ), "DiagLayer of type other than 'ECU-VARIANT' must not define a ECU-VARIANT-PATTERN"
+            odxassert(
+                len(ecu_variant_patterns) == 0,
+                "DiagLayer of type other than 'ECU-VARIANT' must not define a ECU-VARIANT-PATTERN")
 
         # Create DiagLayer
         return DiagLayerRaw(

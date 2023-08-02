@@ -1,13 +1,15 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass, field
+from enum import Enum
 from itertools import chain
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union, cast
+from xml.etree.ElementTree import Element
 
 from .admindata import AdminData
 from .audience import Audience
 from .dataobjectproperty import DopBase
-from .exceptions import DecodeError, EncodeError
+from .exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .globals import logger
 from .message import Message
@@ -41,13 +43,11 @@ class InputParam:
     physical_default_value: Optional[str]
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "InputParam":
-        short_name = et_element.findtext("SHORT-NAME")
-        assert short_name is not None
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "InputParam":
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
-        dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags)
-        assert dop_base_ref is not None
+        dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
         physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
 
         semantic = et_element.get("SEMANTIC")
@@ -92,17 +92,13 @@ class OutputParam:
         self._dop: Optional[DopBase] = None
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "OutputParam":
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "OutputParam":
 
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
-        short_name = et_element.findtext("SHORT-NAME")
-        assert short_name is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
-        dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags)
-        assert dop_base_ref is not None
-
+        dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
         semantic = et_element.get("SEMANTIC")
         oid = et_element.get("OID")
 
@@ -142,14 +138,12 @@ class NegOutputParam:
         self._dop: Optional[DopBase] = None
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "NegOutputParam":
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "NegOutputParam":
 
-        short_name = et_element.findtext("SHORT-NAME")
-        assert short_name is not None
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
-        dop_base_ref = OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags)
-        assert dop_base_ref is not None
+        dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
 
         return NegOutputParam(
             short_name=short_name,
@@ -176,7 +170,6 @@ class NegOutputParam:
 @dataclass
 class ProgCode:
     """A reference to code that is executed by a single ECU job"""
-
     code_file: str
     syntax: Literal["JAVA", "CLASS", "JAR"]
     revision: str
@@ -185,25 +178,24 @@ class ProgCode:
     library_refs: List[OdxLinkRef]
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
-        code_file = et_element.findtext("CODE-FILE")
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
+        code_file = odxrequire(et_element.findtext("CODE-FILE"))
 
         encryption = et_element.findtext("ENCRYPTION")
 
         syntax = et_element.findtext("SYNTAX")
-        revision = et_element.findtext("REVISION")
 
+        revision = odxrequire(et_element.findtext("REVISION"))
         entrypoint = et_element.findtext("ENTRYPOINT")
 
-        library_refs = []
-        for el in et_element.iterfind("LIBRARY-REFS/LIBRARY-REF"):
-            ref = OdxLinkRef.from_et(el, doc_frags)
-            assert ref is not None
-            library_refs.append(ref)
+        library_refs = [
+            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            for el in et_element.iterfind("LIBRARY-REFS/LIBRARY-REF")
+        ]
 
         return ProgCode(
             code_file=code_file,
-            syntax=syntax,
+            syntax=syntax,  # type: ignore[arg-type]
             revision=revision,
             encryption=encryption,
             entrypoint=entrypoint,
@@ -287,23 +279,20 @@ class SingleEcuJob:
             self.neg_output_params = NamedItemList(short_name_as_id)
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "SingleEcuJob":
+    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "SingleEcuJob":
 
         logger.info(f"Parsing service based on ET DiagService element: {et_element}")
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
-        short_name = et_element.findtext("SHORT-NAME")
-        assert short_name is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         semantic = et_element.get("SEMANTIC")
 
-        functional_class_refs = []
-        for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF"):
-            ref = OdxLinkRef.from_et(el, doc_frags)
-            assert ref is not None
-            functional_class_refs.append(ref)
+        functional_class_refs = [
+            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF")
+        ]
 
         prog_codes = [
             ProgCode.from_et(pc_elem, doc_frags)

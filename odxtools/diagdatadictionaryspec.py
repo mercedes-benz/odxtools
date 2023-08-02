@@ -8,6 +8,7 @@ from .dataobjectproperty import DataObjectProperty, DtcDop
 from .endofpdufield import EndOfPduField
 from .envdata import EnvironmentData
 from .envdatadesc import EnvironmentDataDescription
+from .exceptions import odxraise, odxrequire
 from .globals import logger
 from .multiplexer import Multiplexer
 from .nameditemlist import NamedItemList
@@ -55,11 +56,10 @@ class DiagDataDictionarySpec:
             for dop_element in et_element.iterfind("DATA-OBJECT-PROPS/DATA-OBJECT-PROP")
         ]
 
-        structures = []
-        for structure_element in et_element.iterfind("STRUCTURES/STRUCTURE"):
-            structure = create_any_structure_from_et(structure_element, doc_frags)
-            assert structure is not None
-            structures.append(structure)
+        structures = [
+            odxrequire(create_any_structure_from_et(structure_element, doc_frags))
+            for structure_element in et_element.iterfind("STRUCTURES/STRUCTURE")
+        ]
 
         end_of_pdu_fields = [
             EndOfPduField.from_et(eofp_element, doc_frags)
@@ -67,10 +67,11 @@ class DiagDataDictionarySpec:
         ]
 
         dtc_dops = []
-        for dop_element in et_element.iterfind("DTC-DOPS/DTC-DOP"):
-            dop = DtcDop.from_et(dop_element, doc_frags)
-            assert isinstance(dop, DtcDop)
-            dtc_dops.append(dop)
+        for dtc_dop_elem in et_element.iterfind("DTC-DOPS/DTC-DOP"):
+            dtc_dop = DtcDop.from_et(dtc_dop_elem, doc_frags)
+            if not isinstance(dtc_dop, DtcDop):
+                odxraise()
+            dtc_dops.append(dtc_dop)
 
         tables = [
             Table.from_et(table_element, doc_frags)

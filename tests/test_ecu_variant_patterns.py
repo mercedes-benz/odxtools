@@ -6,6 +6,7 @@ from xml.etree import ElementTree
 import pytest
 
 from odxtools.ecu_variant_patterns import create_ecu_variant_patterns_from_et
+from odxtools.exceptions import OdxError
 from odxtools.odxlink import OdxDocFragment
 
 doc_frags = [OdxDocFragment(doc_name="pytest", doc_type="WinneThePoh")]
@@ -65,5 +66,5 @@ def test_create_evp_from_et(valid_evp_et: ElementTree.Element) -> None:
 
 
 def test_create_invalid_evp_from_et(invalid_evp_et: ElementTree.Element) -> None:
-    with pytest.raises(AssertionError):
+    with pytest.raises(OdxError):
         _ = create_ecu_variant_patterns_from_et(invalid_evp_et, doc_frags)

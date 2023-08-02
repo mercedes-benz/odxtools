@@ -6,6 +6,8 @@ from typing import Optional, Union
 
 import odxtools.obd as obd
 
+from .exceptions import odxassert
+
 
 class UDSSID(IntEnum):
     """The service IDs standardized by UDS.
@@ -87,10 +89,9 @@ class NegativeResponseCodes(IntEnum):
 
 
 # get the ID of a positive response
-def positive_response_id(service_id: int) -> int:
+def positive_response_id(request_service_id: int) -> int:
     """Given a service ID of a request, return the corresponding SID for a positive response"""
-    assert service_id != 0x7F - 0x40
-    return service_id + 0x40
+    return request_service_id + 0x40
 
 
 NegativeResponseId = 0x7F
@@ -98,7 +99,6 @@ NegativeResponseId = 0x7F
 
 def negative_response_id(service_id: int) -> int:
     """Given a service ID of a request, return the corresponding SID for a negative response"""
-    assert service_id != 0x7F - 0x40  # TODO: What is this assert supposed to do?
     return NegativeResponseId
 
 

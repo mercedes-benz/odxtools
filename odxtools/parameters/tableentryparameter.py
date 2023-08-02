@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
+from ..exceptions import odxassert
 from ..odxlink import OdxLinkRef
 from .parameterbase import Parameter
 
@@ -9,7 +10,7 @@ class TableEntryParameter(Parameter):
     def __init__(self, *, target: str, table_row_ref: OdxLinkRef, **kwargs):
         super().__init__(parameter_type="TABLE-ENTRY", **kwargs)
 
-        assert target in ["KEY", "STRUCT"]
+        odxassert(target in ["KEY", "STRUCT"])
         self.target = target
         self.table_row_ref = table_row_ref
 

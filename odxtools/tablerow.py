@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
 
 from .dataobjectproperty import DataObjectProperty
+from .exceptions import odxassert, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType
@@ -37,18 +38,22 @@ class TableRow:
         self._dop: Optional[DataObjectProperty] = None
 
         n = sum([0 if x is None else 1 for x in (self.structure_ref, self.structure_snref)])
-        assert n <= 1, f"Table row {self.short_name}: The structure can either be defined using ODXLINK or SNREF but not both."
+        odxassert(
+            n <= 1,
+            f"Table row {self.short_name}: The structure can either be defined using ODXLINK or SNREF but not both."
+        )
         n = sum([0 if x is None else 1 for x in (self.dop_ref, self.dop_snref)])
-        assert n <= 1, f"Table row {self.short_name}: The dop can either be defined using ODXLINK or SNREF but not both."
+        odxassert(
+            n <= 1,
+            f"Table row {self.short_name}: The dop can either be defined using ODXLINK or SNREF but not both."
+        )
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment], *,
                 table_ref: OdxLinkRef) -> "TableRow":
         """Reads a TABLE-ROW."""
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
-        short_name = et_element.findtext("SHORT-NAME")
-        assert short_name is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        short_name: str = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         semantic = et_element.get("SEMANTIC")
         description = create_description_from_et(et_element.find("DESC"))

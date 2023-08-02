@@ -356,7 +356,7 @@ def test_no_match(ecu_variants: List[DiagLayer], use_cache: bool):
         resp = req_resp_mapping[req]
         matcher.evaluate(resp)
     assert not matcher.has_match()
-    with pytest.raises(AssertionError):
+    with pytest.raises(OdxError):
         matcher.get_active_ecu_variant()
 
 

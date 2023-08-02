@@ -2,7 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from typing import List
 
-from ..exceptions import DecodeError
+from ..exceptions import DecodeError, odxassert
 from ..odxtypes import DataType
 from .compumethodbase import CompuMethod
 from .compuscale import CompuScale
@@ -18,8 +18,10 @@ class TexttableCompuMethod(CompuMethod):
         )
         self.internal_to_phys = internal_to_phys
 
-        assert all(scale.lower_limit is not None or scale.upper_limit is not None for scale in
-                   self.internal_to_phys), "Text table compu method doesn't have expected format!"
+        odxassert(
+            all(scale.lower_limit is not None or scale.upper_limit is not None
+                for scale in self.internal_to_phys),
+            "Text table compu method doesn't have expected format!")
 
     def convert_physical_to_internal(self, physical_value):
         scale = next(
@@ -28,7 +30,7 @@ class TexttableCompuMethod(CompuMethod):
             res = (
                 scale.compu_inverse_value
                 if scale.compu_inverse_value is not None else scale.lower_limit.value)
-            assert self.internal_type.isinstance(res)
+            odxassert(self.internal_type.isinstance(res))
             return res
 
     def __is_internal_in_scale(self, internal_value, scale: CompuScale):

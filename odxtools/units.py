@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
 
+from .exceptions import odxassert, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
@@ -62,8 +63,7 @@ class PhysicalDimension:
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "PhysicalDimension":
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         oid = et_element.get("OID")
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
@@ -165,8 +165,7 @@ class Unit:
 
     @staticmethod
     def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Unit":
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        assert odx_id is not None
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         oid = et_element.get("OID")
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
@@ -207,7 +206,8 @@ class Unit:
         if self.physical_dimension_ref:
             self._physical_dimension = odxlinks.resolve(self.physical_dimension_ref)
 
-            assert isinstance(self._physical_dimension, PhysicalDimension), (
+            odxassert(
+                isinstance(self._physical_dimension, PhysicalDimension),
                 f"The physical_dimension_ref must be resolved to a PhysicalDimension."
                 f" {self.physical_dimension_ref} referenced {self._physical_dimension}")
 
@@ -239,15 +239,14 @@ class UnitGroup:
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
         category = et_element.findtext("CATEGORY")
-        assert category in [
-            "COUNTRY",
-            "EQUIV-UNITS",
-        ], f'A UNIT-GROUP-CATEGORY must be "COUNTRY" or "EQUIV-UNITS". It was {category}.'
+        odxassert(
+            category in ["COUNTRY", "EQUIV-UNITS"],
+            f'A UNIT-GROUP-CATEGORY must be "COUNTRY" or "EQUIV-UNITS". It was "{category}".')
         unit_refs = []
 
         for el in et_element.iterfind("UNIT-REFS/UNIT-REF"):
             ref = OdxLinkRef.from_et(el, doc_frags)
-            assert isinstance(ref, OdxLinkRef)
+            odxassert(isinstance(ref, OdxLinkRef))
             unit_refs.append(ref)
 
         return UnitGroup(

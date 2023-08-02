@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from typing import Iterable
 
+from ..exceptions import odxassert
 from ..globals import logger
 from .compumethodbase import CompuMethod
 from .linearcompumethod import LinearCompuMethod
@@ -19,9 +20,10 @@ class ScaleLinearCompuMethod(CompuMethod):
         logger.debug("Created scale linear compu method!")
 
     def convert_physical_to_internal(self, physical_value):
-        assert self.is_valid_physical_value(
-            physical_value
-        ), f"cannot convert the invalid physical value {physical_value} of type {type(physical_value)}"
+        odxassert(
+            self.is_valid_physical_value(physical_value),
+            f"cannot convert the invalid physical value {physical_value} "
+            f"of type {type(physical_value)}")
         lin_method = next(
             scale for scale in self.linear_methods if scale.is_valid_physical_value(physical_value))
         return lin_method.convert_physical_to_internal(physical_value)

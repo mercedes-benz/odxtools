@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
+from ..exceptions import odxrequire
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parameterwithdop import ParameterWithDOP
 
@@ -48,8 +49,8 @@ class LengthKeyParameter(ParameterWithDOP):
         physical_value = encode_state.parameter_values.get(self.short_name, 0)
 
         bit_pos = self.bit_position or 0
-        dop = super().dop
-        assert dop is not None, f"A DOP is required for length key parameter {self.short_name}"
+        dop = odxrequire(super().dop,
+                         f"A DOP is required for length key parameter {self.short_name}")
         return dop.convert_physical_to_bytes(physical_value, encode_state, bit_position=bit_pos)
 
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:

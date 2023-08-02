@@ -200,6 +200,30 @@ python3 -m odxtools list -a "$YOUR_PDX_FILE"
   # -> decoded response: [session()]
   ```
 
+## Using the non-strict mode
+
+By default, odxtools raises exceptions if it suspects that it cannot
+fulfill a requested operation correctly. For example, if the dataset
+it is instructed to load is detected to be not conformant with the ODX
+specification, or if completing the operation requires missing
+features of odxtools. To be able to deal with such cases, odxtools
+provides a "non-strict" mode where such issues are ignored, but where
+the results are undefined. The following snippet shows how to instruct
+odxtools to load a non-conforming file in non-strict mode, and after
+this is done, enables the safety checks again:
+
+  ```python
+  import odxtools
+
+  [...]
+
+  odxtools.exceptions.strict_mode = False
+  botched_db = odxtools.load_file("my_non-conforming_database.pdx")
+  odxtools.exceptions.strict_mode = True
+
+  [...]
+  ```
+
 ## Interactive Usage
 
 ### Python REPL

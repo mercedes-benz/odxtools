@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, OrderedDi
 from .dataobjectproperty import DataObjectProperty, DopBase
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, OdxError, OdxWarning
+from .exceptions import DecodeError, EncodeError, OdxError, OdxWarning, odxassert
 from .globals import logger
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
@@ -167,8 +167,9 @@ class BasicStructure(DopBase):
 
         if self.byte_size is not None:
             # We definitely broke something if we didn't respect the explicit byte_size
-            assert len(coded_message) == self.byte_size, self._get_encode_error_str(
-                "was", coded_message, self.byte_size * 8)
+            odxassert(
+                len(coded_message) == self.byte_size,
+                self._get_encode_error_str("was", coded_message, self.byte_size * 8))
             # No need to check further
             return
 
@@ -260,8 +261,9 @@ class BasicStructure(DopBase):
 
         The values are parameters for simple types or a nested dict for structures.
         """
-        assert all(not isinstance(p, ParameterWithDOP) or isinstance(p.dop, DataObjectProperty) or
-                   isinstance(p.dop, Structure) for p in self.parameters)
+        odxassert(
+            all(not isinstance(p, ParameterWithDOP) or isinstance(p.dop, DataObjectProperty) or
+                isinstance(p.dop, Structure) for p in self.parameters))
         param_dict: ParameterDict = {
             p.short_name: p
             for p in self.parameters
@@ -352,7 +354,7 @@ class BasicStructure(DopBase):
                 f"{(len(indent_for_byte_numbering) - 1 - len(str(byte_idx))) * ' '}{byte_idx} ")
 
             for bit_idx in range(8):
-                assert 8 * byte_idx + bit_idx <= stop_bit
+                odxassert(8 * byte_idx + bit_idx <= stop_bit)
 
                 if 8 * byte_idx + bit_idx == stop_bit:
                     # END-OF-PDU fields do not exhibit a fixed bit
