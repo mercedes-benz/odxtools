@@ -38,7 +38,7 @@ from odxtools.parameters import (CodedConstParameter, MatchingRequestParameter, 
 from odxtools.parentref import ParentRef
 from odxtools.physicaltype import PhysicalType
 from odxtools.service import DiagService
-from odxtools.singleecujob import ProgCode, SingleEcuJob
+from odxtools.singleecujob import ProgCode, ProgCodeSyntax, SingleEcuJob
 from odxtools.structures import Request, Response
 from odxtools.table import Table, TableRow
 from odxtools.units import PhysicalDimension, Unit, UnitGroup, UnitSpec
@@ -1781,7 +1781,7 @@ somersault_single_ecu_jobs = {
                 ProgCode(
                     code_file="jobs.jar",
                     encryption=None,
-                    syntax="JAR",
+                    syntax=ProgCodeSyntax.JAR,
                     entrypoint="com.supervisor.jobs.CompulsoryProgram",
                     revision="1.23.4",
                     library_refs=[],

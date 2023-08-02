@@ -167,11 +167,17 @@ class NegOutputParam:
         return self._dop
 
 
+class ProgCodeSyntax(Enum):
+    JAVA = "JAVA"
+    CLASS = "CLASS"
+    JAR = "JAR"
+
+
 @dataclass
 class ProgCode:
     """A reference to code that is executed by a single ECU job"""
     code_file: str
-    syntax: Literal["JAVA", "CLASS", "JAR"]
+    syntax: ProgCodeSyntax
     revision: str
     encryption: Optional[str]
     entrypoint: Optional[str]
@@ -183,7 +189,14 @@ class ProgCode:
 
         encryption = et_element.findtext("ENCRYPTION")
 
-        syntax = et_element.findtext("SYNTAX")
+        syntax = ProgCodeSyntax("JAR")
+        try:
+            syntax = ProgCodeSyntax(odxrequire(et_element.findtext("SYNTAX")))
+        except ValueError as e:
+            try:
+                odxraise(f"Could not parse program code syntax")
+            except Exception as ee:
+                raise ee from e
 
         revision = odxrequire(et_element.findtext("REVISION"))
         entrypoint = et_element.findtext("ENTRYPOINT")
