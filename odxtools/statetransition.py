@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
 from xml.etree.ElementTree import Element
 
 from .exceptions import odxrequire
@@ -68,7 +68,7 @@ class StateTransition:
     # the namespace of these SNREFs is the corresponding state
     # chart. To mitigate this a bit, the non-standard parameters are
     # keyword-only...
-    def _resolve_snrefs(self, diag_layer: "DiagLayer", *, states: List[State]) -> None:
+    def _resolve_snrefs(self, diag_layer: "DiagLayer", *, states: Iterable[State]) -> None:
         self._source_state: State
         self._target_state: State
         for st in states:
