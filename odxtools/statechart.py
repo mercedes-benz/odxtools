@@ -4,10 +4,11 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree.ElementTree import Element
 
 from .exceptions import odxrequire
+from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .state import State
 from .statetransition import StateTransition
-from .utils import create_description_from_et
+from .utils import create_description_from_et, short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -26,7 +27,7 @@ class StateChart:
     semantic: str
     state_transitions: List[StateTransition]
     start_state_snref: str
-    states: List[State]
+    states: NamedItemList[State]
 
     @property
     def start_state(self) -> State:
@@ -60,7 +61,7 @@ class StateChart:
             semantic=semantic,
             state_transitions=state_transitions,
             start_state_snref=start_state_snref,
-            states=states)
+            states=NamedItemList(short_name_as_id, states))
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {self.odx_id: self}

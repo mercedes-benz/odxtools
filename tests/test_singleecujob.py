@@ -20,7 +20,8 @@ from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.physicaltype import PhysicalType
-from odxtools.singleecujob import InputParam, NegOutputParam, OutputParam, ProgCode, SingleEcuJob
+from odxtools.singleecujob import (InputParam, NegOutputParam, OutputParam, ProgCode,
+                                   ProgCodeSyntax, SingleEcuJob)
 from odxtools.utils import short_name_as_id
 from odxtools.write_pdx_file import jinja2_odxraise_helper, make_bool_xml_attrib, make_xml_attrib
 
@@ -198,7 +199,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 ProgCode(
                     code_file="abc.jar",
                     encryption="RSA512",
-                    syntax="JAR",
+                    syntax=ProgCodeSyntax.JAR,
                     revision="0.12.34",
                     entrypoint="CalledClass",
                     library_refs=[OdxLinkRef("my.favourite.lib", doc_frags)],
@@ -228,7 +229,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     <PROG-CODE>
                         <CODE-FILE>{self.singleecujob_object.prog_codes[0].code_file}</CODE-FILE>
                         <ENCRYPTION>{self.singleecujob_object.prog_codes[0].encryption}</ENCRYPTION>
-                        <SYNTAX>{self.singleecujob_object.prog_codes[0].syntax}</SYNTAX>
+                        <SYNTAX>{self.singleecujob_object.prog_codes[0].syntax.value}</SYNTAX>
                         <REVISION>{self.singleecujob_object.prog_codes[0].revision}</REVISION>
                         <ENTRYPOINT>{self.singleecujob_object.prog_codes[0].entrypoint}</ENTRYPOINT>
                         <LIBRARY-REFS>

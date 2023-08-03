@@ -5,6 +5,7 @@ import unittest
 import odxtools
 from odxtools.exceptions import OdxError
 from odxtools.load_pdx_file import load_pdx_file
+from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkRef
 
 odxdb = load_pdx_file("./examples/somersault.pdx")
@@ -84,6 +85,65 @@ class TestComposeUDS(unittest.TestCase):
         coded_request = request.encode(forward_soberness_check=0x12, num_flips=12)
         coded_response = response.encode(yeha_level=3, coded_request=coded_request)
         self.assertEqual(bytes(coded_response), 0xFA0003.to_bytes(3, "big"))
+
+
+class TestNamedItemList(unittest.TestCase):
+
+    def test_NamedItemList(self):
+        foo = NamedItemList(lambda x: x[0], [("hello", 0), ("world", 1)])
+        self.assertEqual(foo.hello, ("hello", 0))
+        self.assertEqual(foo[0], ("hello", 0))
+        self.assertEqual(foo[1], ("world", 1))
+        self.assertEqual(foo[:1], [("hello", 0)])
+        self.assertEqual(foo[-1:], [("world", 1)])
+        with self.assertRaises(KeyError):
+            foo[2]
+        self.assertEqual(foo["hello"], ("hello", 0))
+        self.assertEqual(foo["world"], ("world", 1))
+        self.assertEqual(foo.hello, ("hello", 0))
+        self.assertEqual(foo.world, ("world", 1))
+
+        foo.append(("hello", 2))
+        self.assertEqual(foo[2], ("hello", 2))
+        self.assertEqual(foo["hello"], ("hello", 0))
+        self.assertEqual(foo["hello_2"], ("hello", 2))
+        self.assertEqual(foo.hello, ("hello", 0))
+        self.assertEqual(foo.hello_2, ("hello", 2))
+
+        # try to append an item that cannot be mapped to a name
+        with self.assertRaises(AttributeError):
+            foo.append((0, 3))
+
+        # add a keyword identifier
+        foo.append(("as", 3))
+        self.assertEqual(foo[3], ("as", 3))
+        self.assertEqual(foo["as_"], ("as", 3))
+        self.assertEqual(foo.as_, ("as", 3))
+
+        # add an object which's name conflicts with a method of the class
+        foo.append(("sort", 4))
+        self.assertEqual(foo[4], ("sort", 4))
+        self.assertEqual(foo["sort_2"], ("sort", 4))
+        self.assertEqual(foo.sort_2, ("sort", 4))
+
+        # test the get() function
+        self.assertEqual(foo.get(0), ("hello", 0))
+        self.assertEqual(foo.get(1234), None)
+        self.assertEqual(foo.get(1234, 5678), 5678)
+
+        self.assertEqual(foo.get("hello"), ("hello", 0))
+        self.assertEqual(foo.get("dunno"), None)
+        self.assertEqual(foo.get("dunno", "woho!"), "woho!")
+
+        # ensure that we can iterate over NamedItemList objects
+        for i, x in enumerate(foo):
+            self.assertTrue(x in foo)
+        self.assertEqual(i, len(foo) - 1)
+
+        # make sure that the keys(), values() and items() exist
+        self.assertEqual(set(foo.keys()), {"hello", "world", "hello_2", "as_", "sort_2"})
+        self.assertEqual(len(foo.items()), len(foo))
+        self.assertEqual(len(foo.values()), len(foo))
 
 
 class TestNavigation(unittest.TestCase):
