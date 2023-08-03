@@ -189,14 +189,10 @@ class ProgCode:
 
         encryption = et_element.findtext("ENCRYPTION")
 
-        syntax = ProgCodeSyntax("JAR")
-        try:
-            syntax = ProgCodeSyntax(odxrequire(et_element.findtext("SYNTAX")))
-        except ValueError as e:
-            try:
-                odxraise(f"Could not parse program code syntax")
-            except Exception as ee:
-                raise ee from e
+        syntax_str = odxrequire(et_element.findtext("SYNTAX"))
+        if syntax_str not in ProgCodeSyntax.__members__:
+            odxraise(f"Encountered unknown program code syntax '{syntax_str}'")
+        syntax = ProgCodeSyntax(syntax_str)
 
         revision = odxrequire(et_element.findtext("REVISION"))
         entrypoint = et_element.findtext("ENTRYPOINT")
