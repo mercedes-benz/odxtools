@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from typing import NamedTuple, Optional, Union
 
 from ..odxtypes import AtomicOdxType

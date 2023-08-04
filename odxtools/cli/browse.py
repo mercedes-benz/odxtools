@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import argparse
 import logging
 import sys
@@ -9,13 +8,13 @@ import PyInquirer
 
 from ..database import Database
 from ..diaglayer import DiagLayer
+from ..diagservice import DiagService
 from ..odxtypes import DataType
-from ..parameters import Parameter, ParameterWithDOP
-from ..service import DiagService
-from ..structures import Request, Response
+from ..parameters.parameter import Parameter
+from ..parameters.parameterwithdop import ParameterWithDOP
+from ..request import Request
+from ..response import Response
 from . import _parser_utils
-
-# logging.basicConfig(level=logging.DEBUG)
 
 # name of the tool
 _odxtools_tool_name_ = "browse"

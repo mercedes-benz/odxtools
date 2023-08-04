@@ -1,22 +1,24 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from itertools import chain
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from .dataobjectproperty import DataObjectProperty, DtcDop
+from .basicstructure import BasicStructure
+from .createanystructure import create_any_structure_from_et
+from .createsdgs import create_sdgs_from_et
+from .dataobjectproperty import DataObjectProperty
+from .dtcdop import DtcDop
 from .endofpdufield import EndOfPduField
-from .envdata import EnvironmentData
-from .envdatadesc import EnvironmentDataDescription
+from .environmentdata import EnvironmentData
+from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxraise, odxrequire
 from .globals import logger
 from .multiplexer import Multiplexer
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
-from .structures import BasicStructure, create_any_structure_from_et
+from .specialdatagroup import SpecialDataGroup
 from .table import Table
-from .units import UnitSpec
+from .unitspec import UnitSpec
 from .utils import short_name_as_id
 
 if TYPE_CHECKING:

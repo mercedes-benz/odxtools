@@ -1,21 +1,30 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import unittest
 from xml.etree import ElementTree
 
 import odxtools.uds as uds
-from odxtools.compumethods import IdenticalCompuMethod, LinearCompuMethod
+from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
+from odxtools.compumethods.linearcompumethod import LinearCompuMethod
+from odxtools.createanydiagcodedtype import create_any_diag_coded_type_from_et
 from odxtools.dataobjectproperty import DataObjectProperty
-from odxtools.diagcodedtypes import *
+from odxtools.decodestate import DecodeState
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
+from odxtools.encodestate import EncodeState
+from odxtools.exceptions import DecodeError, EncodeError
+from odxtools.leadinglengthinfotype import LeadingLengthInfoType
+from odxtools.minmaxlengthtype import MinMaxLengthType
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from odxtools.parameters import CodedConstParameter, LengthKeyParameter, ValueParameter
+from odxtools.parameters.codedconstparameter import CodedConstParameter
+from odxtools.parameters.lengthkeyparameter import LengthKeyParameter
+from odxtools.parameters.valueparameter import ValueParameter
+from odxtools.paramlengthinfotype import ParamLengthInfoType
 from odxtools.physicaltype import PhysicalType
-from odxtools.structures import Request
+from odxtools.request import Request
+from odxtools.standardlengthtype import StandardLengthType
 from odxtools.utils import short_name_as_id
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]

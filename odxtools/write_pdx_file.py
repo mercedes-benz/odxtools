@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import datetime
 import inspect
 import os
@@ -11,6 +10,7 @@ import jinja2
 
 import odxtools
 
+from .database import Database
 from .odxtypes import bool_to_odxstr
 
 odxdatabase = None
@@ -41,7 +41,7 @@ __templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templat
 
 def write_pdx_file(
     output_file_name: str,
-    database: odxtools.Database,
+    database: Database,
     auxiliary_content_specifiers: List[Tuple[str, bytes]] = [],
     templates_dir: str = __templates_dir,
 ) -> bool:

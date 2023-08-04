@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import unittest
 from xml.etree import ElementTree
 
 from odxtools.odxlink import OdxDocFragment
 from odxtools.odxtypes import DataType
-from odxtools.parameters import NrcConstParameter, create_any_parameter_from_et
+from odxtools.parameters.createanyparameter import create_any_parameter_from_et
+from odxtools.parameters.nrcconstparameter import NrcConstParameter
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 

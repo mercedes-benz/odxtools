@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
-from .parameterbase import Parameter
+from .parameter import Parameter
 
 
 class DynamicParameter(Parameter):

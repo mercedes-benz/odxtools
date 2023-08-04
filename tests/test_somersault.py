@@ -1,9 +1,7 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import unittest
 
 from odxtools.load_pdx_file import load_pdx_file
-from odxtools.odxlink import OdxLinkRef
 
 try:
     from unittest.mock import patch  # type: ignore

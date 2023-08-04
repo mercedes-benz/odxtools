@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from typing import List, Tuple, Union
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
 from ..globals import logger
 from ..odxtypes import DataType
-from .compumethodbase import CompuMethod
+from .compumethod import CompuMethod
 from .limit import IntervalType, Limit
 
 

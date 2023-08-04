@@ -1,7 +1,6 @@
 #! /usr/bin/python3
 #
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from ..load_file import load_file as _load_file
 
 

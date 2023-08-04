@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import warnings
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Type, TypeVar, overload

@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from .parameterwithdop import ParameterWithDOP
 
 

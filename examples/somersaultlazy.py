@@ -1,14 +1,12 @@
 #! /usr/bin/python3
 #
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 #
 # Implementation of the "lazy" somersault ECU
 import argparse
 import asyncio
 import logging
 import random
-import time
 from typing import List
 
 import isotp
@@ -16,7 +14,6 @@ import somersaultecu
 
 import odxtools
 import odxtools.uds as uds
-from odxtools.odxtypes import bytefield_to_bytearray
 
 tester_logger = logging.getLogger("somersault_lazy_tester")
 ecu_logger = logging.getLogger("somersault_lazy_ecu")

@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import warnings
 
 from ..decodestate import DecodeState
 from ..exceptions import DecodeError
-from .parameterbase import Parameter
+from .parameter import Parameter
 
 
 class ReservedParameter(Parameter):

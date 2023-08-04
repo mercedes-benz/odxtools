@@ -1,16 +1,15 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from copy import copy
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional
 
-from .dataobjectproperty import DopBase
+from .basicstructure import BasicStructure
+from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
+from .dopbase import DopBase
 from .encodestate import EncodeState
 from .exceptions import odxassert
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValueDict, odxstr_to_bool
-from .specialdata import create_sdgs_from_et
-from .structures import BasicStructure
 from .utils import create_description_from_et
 
 if TYPE_CHECKING:

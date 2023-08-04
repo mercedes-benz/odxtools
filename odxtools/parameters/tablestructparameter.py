@@ -1,14 +1,13 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from copy import copy
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import EncodeError, OdxWarning
-from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from ..odxtypes import AtomicOdxType, ParameterValue
-from .parameterbase import Parameter
+from ..exceptions import EncodeError, OdxWarning, odxraise
+from ..odxlink import OdxLinkDatabase, OdxLinkId
+from .parameter import Parameter
 from .tablekeyparameter import TableKeyParameter
 
 if TYPE_CHECKING:
@@ -117,7 +116,9 @@ class TableStructParameter(Parameter):
 
         # if the table row does not reference a structure, it must
         # point to a DOP!
-        assert tr.dop is not None
+        if tr.dop is None:
+            odxraise()
+
         return tr.dop.convert_physical_to_bytes(
             tr_value, encode_state=encode_state, bit_position=bit_position)
 

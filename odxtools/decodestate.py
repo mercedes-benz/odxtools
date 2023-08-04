@@ -1,13 +1,7 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, List, NamedTuple, Union
+from dataclasses import dataclass
 
 from .odxtypes import ParameterValueDict
-
-if TYPE_CHECKING:
-    from .parameters.parameterbase import Parameter
-    from .tablerow import TableRow
 
 
 @dataclass

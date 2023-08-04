@@ -1,15 +1,13 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import abc
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import OdxWarning
-from ..globals import logger
 from ..odxlink import OdxLinkDatabase, OdxLinkId
-from ..specialdata import SpecialDataGroup
+from ..specialdatagroup import SpecialDataGroup
 
 if TYPE_CHECKING:
     from ..diaglayer import DiagLayer

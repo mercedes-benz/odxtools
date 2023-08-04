@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from typing import Union
 
 from ..odxtypes import DataType
-from .compumethodbase import CompuMethod
+from .compumethod import CompuMethod
 
 
 class IdenticalCompuMethod(CompuMethod):

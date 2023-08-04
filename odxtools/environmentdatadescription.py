@@ -1,18 +1,15 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
-from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree.ElementTree import Element
 
-from .dataobjectproperty import DopBase
+from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
+from .dopbase import DopBase
 from .encodestate import EncodeState
-from .envdata import EnvironmentData
+from .environmentdata import EnvironmentData
 from .exceptions import DecodeError, EncodeError, odxrequire
-from .globals import logger
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
-from .specialdata import create_sdgs_from_et
 from .utils import create_description_from_et
 
 if TYPE_CHECKING:

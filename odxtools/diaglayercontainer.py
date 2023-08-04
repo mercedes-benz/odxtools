@@ -1,16 +1,17 @@
 # SPDX-License-Identifier: MIT
-
 from itertools import chain
 from typing import List, Optional, Union
 from xml.etree.ElementTree import Element
 
 from .admindata import AdminData
-from .companydata import CompanyData, create_company_datas_from_et
+from .companydata import CompanyData
+from .createcompanydatas import create_company_datas_from_et
+from .createsdgs import create_sdgs_from_et
 from .diaglayer import DiagLayer
-from .exceptions import odxassert, odxrequire
+from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .specialdatagroup import SpecialDataGroup
 from .utils import create_description_from_et, short_name_as_id
 
 

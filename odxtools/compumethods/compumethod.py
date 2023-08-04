@@ -1,6 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
-import abc
 from typing import Union
 
 from ..odxtypes import DataType

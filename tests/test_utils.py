@@ -1,6 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023 MBition GmbH
-
 import pytest
 
 from odxtools.utils import is_short_name, is_short_name_path

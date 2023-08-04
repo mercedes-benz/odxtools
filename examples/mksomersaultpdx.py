@@ -1,7 +1,6 @@
 #! /usr/bin/python3
 #
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023 MBition GmbH
 import argparse
 
 import odxtools

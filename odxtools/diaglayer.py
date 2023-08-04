@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import warnings
-from copy import copy
 from functools import cached_property
 from itertools import chain
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union, cast
@@ -9,34 +7,37 @@ from xml.etree import ElementTree
 
 from deprecation import deprecated
 
+from .additionalaudience import AdditionalAudience
 from .admindata import AdminData
-from .audience import AdditionalAudience, Audience
-from .communicationparameter import CommunicationParameterRef
-from .companydata import CompanyData, create_company_datas_from_et
-from .dataobjectproperty import DataObjectProperty, DtcDop
+from .basicstructure import BasicStructure
+from .communicationparameterref import CommunicationParameterRef
+from .companydata import CompanyData
+from .dataobjectproperty import DataObjectProperty
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayerraw import DiagLayerRaw
 from .diaglayertype import DiagLayerType
-from .ecu_variant_patterns import EcuVariantPattern, create_ecu_variant_patterns_from_et
+from .diagservice import DiagService
+from .dtcdop import DtcDop
+from .ecuvariantpattern import EcuVariantPattern
 from .endofpdufield import EndOfPduField
-from .envdata import EnvironmentData
-from .envdatadesc import EnvironmentDataDescription
+from .environmentdata import EnvironmentData
+from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import DecodeError, OdxWarning, odxassert
 from .functionalclass import FunctionalClass
-from .globals import logger
 from .message import Message
 from .multiplexer import Multiplexer
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parentref import ParentRef
-from .service import DiagService
+from .request import Request
+from .response import Response
 from .singleecujob import SingleEcuJob
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .specialdatagroup import SpecialDataGroup
 from .statechart import StateChart
-from .structures import BasicStructure, Request, Response, create_any_structure_from_et
 from .table import Table
-from .units import UnitGroup, UnitSpec
-from .utils import create_description_from_et, short_name_as_id
+from .unitgroup import UnitGroup
+from .unitspec import UnitSpec
+from .utils import short_name_as_id
 
 T = TypeVar("T")
 

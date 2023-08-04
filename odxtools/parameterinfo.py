@@ -1,15 +1,18 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import re
 from typing import Iterable, Union
 
-from .compumethods import (IdenticalCompuMethod, IntervalType, Limit, LinearCompuMethod,
-                           TexttableCompuMethod)
+from .compumethods.identicalcompumethod import IdenticalCompuMethod
+from .compumethods.limit import IntervalType
+from .compumethods.linearcompumethod import LinearCompuMethod
+from .compumethods.texttablecompumethod import TexttableCompuMethod
 from .dataobjectproperty import DataObjectProperty
-from .diagcodedtypes import ParamLengthInfoType
 from .endofpdufield import EndOfPduField
-from .parameters import (CodedConstParameter, MatchingRequestParameter, Parameter, ParameterWithDOP,
-                         ReservedParameter)
+from .parameters.codedconstparameter import CodedConstParameter
+from .parameters.matchingrequestparameter import MatchingRequestParameter
+from .parameters.parameter import Parameter
+from .parameters.parameterwithdop import ParameterWithDOP
+from .parameters.reservedparameter import ReservedParameter
 
 
 def parameter_info(param_list: Iterable[Union[Parameter, EndOfPduField]]) -> str:

@@ -1,16 +1,15 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import warnings
 from copy import copy
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, Union
 
 from ..decodestate import DecodeState
-from ..diagcodedtypes import DiagCodedType
+from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, odxraise
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import DataType
-from .parameterbase import Parameter
+from .parameter import Parameter
 
 if TYPE_CHECKING:
     from ..diaglayer import DiagLayer

@@ -1,14 +1,13 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import warnings
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Dict, List
 
 from ..exceptions import OdxWarning, odxassert
 from ..globals import logger
 from ..odxlink import OdxDocFragment
 from ..odxtypes import DataType
 from ..utils import create_description_from_et
-from .compumethodbase import CompuMethod
+from .compumethod import CompuMethod
 from .compuscale import CompuScale
 from .identicalcompumethod import IdenticalCompuMethod
 from .limit import IntervalType, Limit

@@ -1,11 +1,9 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023 MBition GmbH
-
 from xml.etree import ElementTree
 
 import pytest
 
-from odxtools.ecu_variant_patterns import create_ecu_variant_patterns_from_et
+from odxtools.createecuvariantpatterns import create_ecu_variant_patterns_from_et
 from odxtools.exceptions import OdxError
 from odxtools.odxlink import OdxDocFragment
 

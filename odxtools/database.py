@@ -1,16 +1,14 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from itertools import chain
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import List, Optional
 from xml.etree import ElementTree
 from xml.etree.ElementTree import Element
 from zipfile import ZipFile
 
-from .comparam_subset import ComparamSubset
+from .comparamsubset import ComparamSubset
 from .diaglayer import DiagLayer
 from .diaglayercontainer import DiagLayerContainer
-from .diaglayertype import DiagLayerType
 from .globals import logger
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase

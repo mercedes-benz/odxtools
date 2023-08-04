@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 """odxtools is a set of utilities to deal with automotive diagnostic
 descriptions of electronic control units using ODX-formatted
 description files.
@@ -63,24 +62,9 @@ References
 - _`[ISO22901]` The ISO 22901 Standard: https://www.iso.org/standard/41207.html
 
 """
-import odxtools.exceptions as exceptions
-
-from . import database
-from .compumethods import (IdenticalCompuMethod, LinearCompuMethod, ScaleLinearCompuMethod,
-                           TexttableCompuMethod)
-from .database import Database
-from .diaglayer import DiagLayer
-from .exceptions import DecodeError, EncodeError, OdxError, OdxWarning
 from .load_file import load_file
 from .load_odx_d_file import load_odx_d_file
 from .load_pdx_file import load_pdx_file
-from .parameters import (CodedConstParameter, DynamicParameter, LengthKeyParameter,
-                         MatchingRequestParameter, PhysicalConstantParameter, ReservedParameter,
-                         SystemParameter, TableEntryParameter, TableKeyParameter,
-                         TableStructParameter, ValueParameter)
-from .service import DiagService
-from .singleecujob import SingleEcuJob
-from .structures import Request, Response
 from .version import __version__
 from .write_pdx_file import write_pdx_file
 

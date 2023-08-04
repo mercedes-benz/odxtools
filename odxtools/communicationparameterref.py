@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import warnings
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree.ElementTree import Element
 
-from .comparam_subset import (BaseComparam, Comparam, ComplexComparam, ComplexValue,
-                              create_complex_value_from_et)
+from .basecomparam import BaseComparam
+from .comparam import Comparam
+from .complexcomparam import ComplexComparam, ComplexValue, create_complex_value_from_et
 from .diaglayertype import DiagLayerType
 from .exceptions import OdxWarning, odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef

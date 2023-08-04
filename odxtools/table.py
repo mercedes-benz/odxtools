@@ -1,15 +1,14 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
-import abc
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 
 from .admindata import AdminData
+from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
 from .exceptions import odxassert, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .specialdatagroup import SpecialDataGroup
 from .tablerow import TableRow
 from .utils import create_description_from_et, short_name_as_id
 

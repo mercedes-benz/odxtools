@@ -1,20 +1,21 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union, cast
 from xml.etree.ElementTree import Element
 
 from .admindata import AdminData
 from .audience import Audience
+from .createsdgs import create_sdgs_from_et
 from .exceptions import DecodeError, odxassert, odxrequire
 from .functionalclass import FunctionalClass
 from .message import Message
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .parameters import Parameter
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .parameters.parameter import Parameter
+from .request import Request
+from .response import Response
+from .specialdatagroup import SpecialDataGroup
 from .state import State
 from .statetransition import StateTransition
-from .structures import Request, Response
 from .utils import create_description_from_et, short_name_as_id
 
 if TYPE_CHECKING:
@@ -152,8 +153,8 @@ class DiagService:
         semantic = et_element.get("SEMANTIC")
 
         audience = None
-        if et_element.find("AUDIENCE"):
-            audience = Audience.from_et(et_element.find("AUDIENCE"), doc_frags)
+        if (audience_elem := et_element.find("AUDIENCE")) is not None:
+            audience = Audience.from_et(audience_elem, doc_frags)
 
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 

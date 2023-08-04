@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from .load_odx_d_file import load_odx_d_file
 from .load_pdx_file import load_pdx_file
 

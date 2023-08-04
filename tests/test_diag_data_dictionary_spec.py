@@ -1,21 +1,27 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import unittest
 
 from examples import somersaultecu
-from odxtools import PhysicalConstantParameter, TableKeyParameter, ValueParameter
-from odxtools.compumethods import IdenticalCompuMethod
-from odxtools.dataobjectproperty import DataObjectProperty, DiagnosticTroubleCode, DtcDop
-from odxtools.diagcodedtypes import StandardLengthType
+from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
+from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.envdata import EnvironmentData
-from odxtools.envdatadesc import EnvironmentDataDescription
-from odxtools.multiplexer import (Multiplexer, MultiplexerCase, MultiplexerDefaultCase,
-                                  MultiplexerSwitchKey)
+from odxtools.diagnostictroublecode import DiagnosticTroubleCode
+from odxtools.dtcdop import DtcDop
+from odxtools.environmentdata import EnvironmentData
+from odxtools.environmentdatadescription import EnvironmentDataDescription
+from odxtools.multiplexer import Multiplexer
+from odxtools.multiplexercase import MultiplexerCase
+from odxtools.multiplexerdefaultcase import MultiplexerDefaultCase
+from odxtools.multiplexerswitchkey import MultiplexerSwitchKey
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from odxtools.parameters.physicalconstantparameter import PhysicalConstantParameter
+from odxtools.parameters.tablekeyparameter import TableKeyParameter
+from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaltype import PhysicalType
-from odxtools.table import Table, TableRow
+from odxtools.standardlengthtype import StandardLengthType
+from odxtools.table import Table
+from odxtools.tablerow import TableRow
 from odxtools.utils import short_name_as_id
 
 # the document fragment which is used throughout the test

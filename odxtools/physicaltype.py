@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional

@@ -1,12 +1,11 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import unittest
 
 import odxtools
 from odxtools.exceptions import OdxError
 from odxtools.load_pdx_file import load_pdx_file
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkRef
+from odxtools.odxlink import OdxLinkRef
 
 odxdb = load_pdx_file("./examples/somersault.pdx")
 

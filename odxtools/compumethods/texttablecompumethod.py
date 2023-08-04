@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from typing import List
 
 from ..exceptions import DecodeError, odxassert
 from ..odxtypes import DataType
-from .compumethodbase import CompuMethod
+from .compumethod import CompuMethod
 from .compuscale import CompuScale
 
 
