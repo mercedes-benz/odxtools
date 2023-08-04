@@ -1,14 +1,11 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
-from collections import OrderedDict
 from enum import Enum
-from typing import (TYPE_CHECKING, Any, Callable, Dict, List, Literal, Optional, Tuple, Type, Union,
-                    overload)
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Type, Union, overload
 
 from .exceptions import odxassert, odxraise
 
 if TYPE_CHECKING:
-    from odxtools.parameters.parameterbase import Parameter
+    from odxtools.parameters.parameter import Parameter
 
 
 def bytefield_to_bytearray(bytefield: str) -> bytearray:

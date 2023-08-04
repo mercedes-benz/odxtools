@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from typing import Iterable
 
 from ..exceptions import odxassert
 from ..globals import logger
-from .compumethodbase import CompuMethod
+from .compumethod import CompuMethod
 from .linearcompumethod import LinearCompuMethod
 
 

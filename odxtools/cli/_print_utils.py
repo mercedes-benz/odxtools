@@ -1,11 +1,9 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import re
 
 import markdownify
 
-from ..service import DiagService
-from ..structures import Request, Response
+from ..diagservice import DiagService
 
 
 def format_desc(desc, ident=0):

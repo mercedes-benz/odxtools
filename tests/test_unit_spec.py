@@ -1,20 +1,23 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import unittest
 from xml.etree import ElementTree
 
-from odxtools.compumethods import IdenticalCompuMethod
+from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
-from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.diaglayer import DiagLayer, DiagLayerRaw
+from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from odxtools.parameters import CodedConstParameter, ValueParameter
+from odxtools.parameters.codedconstparameter import CodedConstParameter
+from odxtools.parameters.valueparameter import ValueParameter
+from odxtools.physicaldimension import PhysicalDimension
 from odxtools.physicaltype import PhysicalType
-from odxtools.structures import Request
-from odxtools.units import PhysicalDimension, Unit, UnitSpec
+from odxtools.request import Request
+from odxtools.standardlengthtype import StandardLengthType
+from odxtools.unit import Unit
+from odxtools.unitspec import UnitSpec
 from odxtools.utils import short_name_as_id
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]

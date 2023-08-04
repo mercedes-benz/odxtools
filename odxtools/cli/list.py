@@ -1,12 +1,10 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import argparse
-from typing import Collection, List, Union, cast
+from typing import List, Union
 
 from ..database import Database
-from ..dataobjectproperty import DopBase
 from ..diaglayer import DiagLayer
-from ..service import DiagService
+from ..diagservice import DiagService
 from ..singleecujob import SingleEcuJob
 from . import _parser_utils
 from ._print_utils import format_desc, print_diagnostic_service

@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 #
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 
 from setuptools import setup
 from setuptools import find_packages

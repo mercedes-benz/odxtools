@@ -1,7 +1,6 @@
 {#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
  #
  # SPDX-License-Identifier: MIT
- # Copyright (c) 2022 MBition GmbH
 -#}
 
 {%- macro printComplexValue(cv) %}
@@ -39,9 +38,9 @@
 {%- macro printSimpleComparam(cp) %}
 <COMPARAM ID="{{cp.odx_id.local_id}}"
           PARAM-CLASS="{{cp.param_class}}"
-          CPTYPE="{{cp.cptype}}"
+          CPTYPE="{{cp.cptype.value}}"
          {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}
-          CPUSAGE="{{cp.cpusage}}">
+          CPUSAGE="{{cp.cpusage.value}}">
  <SHORT-NAME>{{cp.short_name}}</SHORT-NAME>
  {%- if cp.long_name and cp.long_name.strip() %}
  <LONG-NAME>{{cp.long_name|e}}</LONG-NAME>
@@ -59,9 +58,9 @@
 {%- macro printComplexComparam(cp) %}
 <COMPLEX-COMPARAM ID="{{cp.odx_id.local_id}}"
                   PARAM-CLASS="{{cp.param_class}}"
-                  CPTYPE="{{cp.cptype}}"
+                  CPTYPE="{{cp.cptype.value}}"
                  {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}
-                  CPUSAGE="{{cp.cpusage}}"
+                  CPUSAGE="{{cp.cpusage.value}}"
                  {{make_bool_xml_attrib("ALLOW-MULTIPLE-VALUES", cp.allow_multiple_values_raw)}}
                   {#- #}>
  <SHORT-NAME>{{cp.short_name}}</SHORT-NAME>

@@ -1,23 +1,24 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import math
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, OrderedDict, Tuple, Union
+from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple, Union
 
-from .dataobjectproperty import DataObjectProperty, DopBase
+from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
+from .dopbase import DopBase
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, OdxError, OdxWarning, odxassert
-from .globals import logger
+from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
-from .odxtypes import ParameterDict, ParameterValueDict, odxstr_to_bool
-from .parameters import (CodedConstParameter, MatchingRequestParameter, Parameter, ParameterWithDOP,
-                         ValueParameter, create_any_parameter_from_et)
+from .odxlink import OdxLinkDatabase
+from .odxtypes import ParameterDict, ParameterValueDict
+from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.lengthkeyparameter import LengthKeyParameter
+from .parameters.matchingrequestparameter import MatchingRequestParameter
+from .parameters.parameter import Parameter
+from .parameters.parameterwithdop import ParameterWithDOP
 from .parameters.tablekeyparameter import TableKeyParameter
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
-from .utils import create_description_from_et, short_name_as_id
+from .parameters.valueparameter import ValueParameter
+from .utils import short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -117,7 +118,7 @@ class BasicStructure(DopBase):
         """Return a human readable description of the structure's
         free parameters.
         """
-        from .parameter_info import parameter_info
+        from .parameterinfo import parameter_info
 
         print(parameter_info(self.free_parameters), end="")
 
@@ -261,6 +262,7 @@ class BasicStructure(DopBase):
 
         The values are parameters for simple types or a nested dict for structures.
         """
+        from .structure import Structure
         odxassert(
             all(not isinstance(p, ParameterWithDOP) or isinstance(p.dop, DataObjectProperty) or
                 isinstance(p.dop, Structure) for p in self.parameters))
@@ -448,117 +450,3 @@ class BasicStructure(DopBase):
             print("Sorry, couldn't pretty print message layout. :(")
         for p in self.parameters:
             print(indent * " " + str(p).replace("\n", f"\n{indent * ' '}"))
-
-
-class Structure(BasicStructure):
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def __repr__(self) -> str:
-        return f"Structure('{self.short_name}', byte_size={self.byte_size})"
-
-    def __str__(self) -> str:
-        params = ("[\n" + "\n".join([" " + str(p).replace("\n", "\n ") for p in self.parameters]) +
-                  "\n]")
-
-        return (f"Structure '{self.short_name}': " + f"Byte size={self.byte_size}, " +
-                f"Parameters={params}")
-
-
-class Request(BasicStructure):
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def __repr__(self) -> str:
-        return f"Request('{self.short_name}')"
-
-    def __str__(self) -> str:
-        return f"Request('{self.short_name}')"
-
-
-class Response(BasicStructure):
-
-    def __init__(self, *, response_type: str, **kwargs):  # "POS-RESPONSE" or "NEG-RESPONSE"
-        super().__init__(**kwargs)
-
-        self.response_type = response_type
-
-    def encode(self, coded_request: Optional[bytes] = None, **params) -> bytes:
-        if coded_request is not None:
-            logger.info(f"Compose response message to the request {coded_request.hex()}")
-            # Extract MATCHING-REQUEST-PARAMs from the coded request
-            for param in self.parameters:
-                if param.parameter_type == "MATCHING-REQUEST-PARAM":
-                    logger.info(f"set matching request param value {param.short_name}")
-                    byte_pos = param.request_byte_position
-                    byte_length = param.byte_length
-
-                    val = coded_request[byte_pos:byte_pos + byte_length]
-                    params[param.short_name] = val
-
-        return super().encode(coded_request=coded_request, **params)
-
-    def __repr__(self) -> str:
-        return f"Response('{self.short_name}')"
-
-    def __str__(self) -> str:
-        return f"Response('{self.short_name}')"
-
-
-def create_any_structure_from_et(et_element, doc_frags: List[OdxDocFragment]
-                                ) -> Union[Structure, Request, Response, None]:
-
-    odx_id = OdxLinkId.from_et(et_element, doc_frags)
-    short_name = et_element.findtext("SHORT-NAME")
-    long_name = et_element.findtext("LONG-NAME")
-    description = create_description_from_et(et_element.find("DESC"))
-    parameters = [
-        create_any_parameter_from_et(et_parameter, doc_frags)
-        for et_parameter in et_element.iterfind("PARAMS/PARAM")
-    ]
-    sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
-
-    res: Union[Structure, Request, Response, None]
-    if et_element.tag == "REQUEST":
-        res = Request(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
-            is_visible_raw=None,
-            parameters=parameters,
-            byte_size=None,
-            sdgs=sdgs,
-        )
-    elif et_element.tag in ["POS-RESPONSE", "NEG-RESPONSE", "GLOBAL-NEG-RESPONSE"]:
-        res = Response(
-            odx_id=odx_id,
-            short_name=short_name,
-            response_type=et_element.tag,
-            long_name=long_name,
-            description=description,
-            is_visible_raw=None,
-            parameters=parameters,
-            byte_size=None,
-            sdgs=sdgs,
-        )
-    elif et_element.tag == "STRUCTURE":
-        byte_size_text = et_element.findtext("BYTE-SIZE")
-        byte_size = int(byte_size_text) if byte_size_text is not None else None
-        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
-        res = Structure(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
-            is_visible_raw=is_visible_raw,
-            parameters=parameters,
-            byte_size=byte_size,
-            sdgs=sdgs,
-        )
-    else:
-        res = None
-        logger.critical(f"Did not recognize structure {et_element.tag} {short_name}")
-    return res

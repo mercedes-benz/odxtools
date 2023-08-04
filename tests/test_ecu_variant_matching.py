@@ -1,20 +1,21 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023 MBition GmbH
-
 import json
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 
 import pytest
 
-from odxtools.diaglayer import DiagLayer, DiagLayerRaw
+from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
-from odxtools.ecu_variant_matcher import EcuVariantMatcher
-from odxtools.ecu_variant_patterns import EcuVariantPattern, MatchingParameter
+from odxtools.diagservice import DiagService
+from odxtools.ecuvariantmatcher import EcuVariantMatcher
+from odxtools.ecuvariantpattern import EcuVariantPattern
 from odxtools.exceptions import OdxError
+from odxtools.matchingparameter import MatchingParameter
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from odxtools.service import DiagService
-from odxtools.structures import Request, Response
+from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from odxtools.request import Request
+from odxtools.response import Response
 from odxtools.utils import short_name_as_id
 
 doc_frags = [OdxDocFragment(doc_name="pytest", doc_type="WinneThePoh")]

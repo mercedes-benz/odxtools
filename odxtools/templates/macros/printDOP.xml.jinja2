@@ -1,7 +1,6 @@
 {#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
  #
  # SPDX-License-Identifier: MIT
- # Copyright (c) 2022 MBition GmbH
 -#}
 
 {%- import('macros/printAdminData.xml.jinja2') as pad %}
@@ -17,6 +16,10 @@
                  {#- #} xsi:type="{{dct.dct_type}}">
  {%- if dct.dct_type in ("STANDARD-LENGTH-TYPE", "LEADING-LENGTH-INFO-TYPE") %}
  <BIT-LENGTH>{{dct.bit_length}}</BIT-LENGTH>
+ {%- if dct.dct_type in ("STANDARD-LENGTH-TYPE", ) and dct.bit_mask is not none %}
+ {%- set num_nibbles = (dct.bit_mask.bit_length() + 7) // 8 * 2 %}
+ <BIT-MASK>{{ ("%%0%dX" | format(num_nibbles | int)) | format(dct.bit_mask | int) }}</BIT-MASK>
+ {%- endif %}
  {%- else %}
  {%- if dct.max_length is not none %}
  <MAX-LENGTH>{{dct.max_length}}</MAX-LENGTH>

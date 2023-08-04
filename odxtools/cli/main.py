@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2021-2022 MBition GmbH
 import argparse
 import importlib
 from typing import Any, List

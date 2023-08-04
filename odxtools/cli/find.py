@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import argparse
 from typing import Dict, List
 
-from .. import SingleEcuJob
 from ..database import Database
 from ..service import DiagService
+from ..singleecujob import SingleEcuJob
 from . import _parser_utils
 from ._print_utils import print_diagnostic_service
 

@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from ..exceptions import odxassert
 from ..odxlink import OdxLinkRef
-from .parameterbase import Parameter
+from .parameter import Parameter
 
 
 class TableEntryParameter(Parameter):

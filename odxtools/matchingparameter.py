@@ -1,11 +1,8 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023 MBition GmbH
-
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Optional
+from typing import List
 from xml.etree import ElementTree
 
-from .exceptions import OdxError, odxassert, odxrequire, strict_mode
+from .exceptions import odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment
 from .utils import is_short_name, is_short_name_path
 
@@ -44,10 +41,7 @@ class MatchingParameter:
         elif out_param_snpathref_el is not None:
             out_param_if = out_param_snpathref_el.get("SHORT-NAME-PATH")
         if out_param_if is None:
-            if TYPE_CHECKING:
-                raise OdxError("Output parameter must not left unspecified")
-            if strict_mode:
-                raise OdxError("Output parameter must not left unspecified")
+            odxraise("Output parameter must not left unspecified")
 
         return MatchingParameter(
             expected_value=expected_value,
@@ -61,34 +55,3 @@ class MatchingParameter:
         expected value.
         """
         return self.expected_value == ident_value
-
-
-@dataclass
-class EcuVariantPattern:
-    matching_parameters: List[MatchingParameter]
-
-    @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "EcuVariantPattern":
-
-        mp_collection_el = odxrequire(et_element.find("MATCHING-PARAMETERS"))
-
-        matching_params = [
-            MatchingParameter.from_et(mp_el, doc_frags)
-            for mp_el in mp_collection_el.iterfind("MATCHING-PARAMETER")
-        ]
-
-        odxassert(len(matching_params) > 0)  # required by ISO 22901-1 Figure 141
-        return EcuVariantPattern(matching_params)
-
-
-def create_ecu_variant_patterns_from_et(et_element: Optional[ElementTree.Element],
-                                        doc_frags: List[OdxDocFragment]) -> List[EcuVariantPattern]:
-
-    if et_element is None:
-        return []
-
-    return [
-        EcuVariantPattern.from_et(evp_elem, doc_frags)
-        for evp_elem in et_element.iterfind("ECU-VARIANT-PATTERN")
-    ]

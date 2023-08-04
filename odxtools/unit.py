@@ -1,0 +1,118 @@
+# SPDX-License-Identifier: MIT
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+
+from .exceptions import odxassert, odxrequire
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .physicaldimension import PhysicalDimension
+from .utils import create_description_from_et
+
+if TYPE_CHECKING:
+    from .diaglayer import DiagLayer
+
+
+@dataclass
+class Unit:
+    """
+    A unit consists of an ID, short name and a display name.
+
+    Additionally, a unit may reference an SI unit (`.physical_dimension`)
+    and an offset to that unit (`factor_si_to_unit`, `offset_si_to_unit`).
+    The factor and offset are defined such that the following equation holds true:
+
+    UNIT = FACTOR-SI-TO-UNIT * SI-UNIT + OFFSET-SI-TO-UNIT
+
+    For example: 1km = 1000 * 1m + 0
+
+    Examples
+    --------
+
+    A minimal unit representing kilometres:
+
+    ```
+    Unit(
+        odx_id="kilometre",
+        short_name="kilometre",
+        display_name="km"
+    )
+    ```
+
+    A unit that also references a physical dimension:
+
+    ```
+    Unit(
+        odx_id=OdxLinkId("ID.kilometre", doc_frags),
+        short_name="Kilometre",
+        display_name="km",
+        physical_dimension_ref=OdxLinkRef("ID.metre", doc_frags),
+        factor_si_to_unit=1000,
+        offset_si_to_unit=0
+    )
+    # where the physical_dimension_ref references, e.g.:
+    PhysicalDimension(odx_id=OdxLinkId("ID.metre", doc_frags), short_name="metre", length_exp=1)
+    ```
+    """
+
+    odx_id: OdxLinkId
+    short_name: str
+    display_name: str
+    oid: Optional[str]
+    long_name: Optional[str]
+    description: Optional[str]
+    factor_si_to_unit: Optional[float]
+    offset_si_to_unit: Optional[float]
+    physical_dimension_ref: Optional[OdxLinkRef]
+
+    def __post_init__(self):
+        self._physical_dimension = None
+
+    @staticmethod
+    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Unit":
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        oid = et_element.get("OID")
+        short_name = et_element.findtext("SHORT-NAME")
+        long_name = et_element.findtext("LONG-NAME")
+        description = create_description_from_et(et_element.find("DESC"))
+        display_name = et_element.findtext("DISPLAY-NAME")
+
+        def read_optional_float(element, name):
+            if element.findtext(name):
+                return float(element.findtext(name))
+            else:
+                return None
+
+        factor_si_to_unit = read_optional_float(et_element, "FACTOR-SI-TO-UNIT")
+        offset_si_to_unit = read_optional_float(et_element, "OFFSET-SI-TO-UNIT")
+        physical_dimension_ref = OdxLinkRef.from_et(
+            et_element.find("PHYSICAL-DIMENSION-REF"), doc_frags)
+
+        return Unit(
+            odx_id=odx_id,
+            short_name=short_name,
+            display_name=display_name,
+            oid=oid,
+            long_name=long_name,
+            description=description,
+            factor_si_to_unit=factor_si_to_unit,
+            offset_si_to_unit=offset_si_to_unit,
+            physical_dimension_ref=physical_dimension_ref,
+        )
+
+    @property
+    def physical_dimension(self) -> PhysicalDimension:
+        return self._physical_dimension
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {self.odx_id: self}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        if self.physical_dimension_ref:
+            self._physical_dimension = odxlinks.resolve(self.physical_dimension_ref)
+
+            odxassert(
+                isinstance(self._physical_dimension, PhysicalDimension),
+                f"The physical_dimension_ref must be resolved to a PhysicalDimension."
+                f" {self.physical_dimension_ref} referenced {self._physical_dimension}")
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        pass

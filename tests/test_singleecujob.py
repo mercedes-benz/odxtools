@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import inspect
 import os
 import unittest
@@ -9,19 +8,27 @@ from xml.etree import ElementTree
 import jinja2
 
 import odxtools
-from odxtools.audience import AdditionalAudience, Audience
-from odxtools.compumethods import CompuScale, Limit, LinearCompuMethod, TexttableCompuMethod
+from odxtools.additionalaudience import AdditionalAudience
+from odxtools.audience import Audience
+from odxtools.compumethods.compuscale import CompuScale
+from odxtools.compumethods.limit import Limit
+from odxtools.compumethods.linearcompumethod import LinearCompuMethod
+from odxtools.compumethods.texttablecompumethod import TexttableCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
-from odxtools.diagcodedtypes import StandardLengthType
-from odxtools.diaglayer import DiagLayer, DiagLayerRaw
+from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.functionalclass import FunctionalClass
+from odxtools.inputparam import InputParam
 from odxtools.nameditemlist import NamedItemList
+from odxtools.negoutputparam import NegOutputParam
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
+from odxtools.outputparam import OutputParam
 from odxtools.physicaltype import PhysicalType
-from odxtools.singleecujob import (InputParam, NegOutputParam, OutputParam, ProgCode,
-                                   ProgCodeSyntax, SingleEcuJob)
+from odxtools.progcode import ProgCode, ProgCodeSyntax
+from odxtools.singleecujob import SingleEcuJob
+from odxtools.standardlengthtype import StandardLengthType
 from odxtools.utils import short_name_as_id
 from odxtools.write_pdx_file import jinja2_odxraise_helper, make_bool_xml_attrib, make_xml_attrib
 

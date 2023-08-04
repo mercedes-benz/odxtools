@@ -1,20 +1,14 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import List
 
+from .basicstructure import BasicStructure
+from .createsdgs import create_sdgs_from_et
 from .exceptions import odxrequire
-from .globals import logger
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxlink import OdxDocFragment, OdxLinkId
 from .odxtypes import odxstr_to_bool
-from .parameters import create_any_parameter_from_et
-from .parameters.parameterbase import Parameter
-from .specialdata import create_sdgs_from_et
-from .structures import BasicStructure
+from .parameters.createanyparameter import create_any_parameter_from_et
 from .utils import create_description_from_et
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass

@@ -1,48 +1,70 @@
 #! /usr/bin/python3
 #
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import pathlib
 from enum import IntEnum
 from itertools import chain
-from typing import Any
+from typing import Any, Dict
 from xml.etree import ElementTree
 
 import odxtools.uds as uds
-from odxtools import PhysicalConstantParameter
-from odxtools.admindata import AdminData, CompanyDocInfo, DocRevision, Modification
-from odxtools.audience import AdditionalAudience, Audience
-from odxtools.communicationparameter import CommunicationParameterRef
-from odxtools.companydata import CompanyData, CompanySpecificInfo, RelatedDoc, TeamMember, XDoc
-from odxtools.comparam_subset import ComparamSubset
-from odxtools.compumethods import CompuScale, IdenticalCompuMethod, Limit, TexttableCompuMethod
+from odxtools.additionalaudience import AdditionalAudience
+from odxtools.admindata import AdminData
+from odxtools.audience import Audience
+from odxtools.communicationparameterref import CommunicationParameterRef
+from odxtools.companydata import CompanyData
+from odxtools.companydocinfo import CompanyDocInfo
+from odxtools.companyspecificinfo import CompanySpecificInfo
+from odxtools.comparamsubset import ComparamSubset
+from odxtools.compumethods.compumethod import CompuMethod
+from odxtools.compumethods.compuscale import CompuScale
+from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
+from odxtools.compumethods.limit import Limit
+from odxtools.compumethods.texttablecompumethod import TexttableCompuMethod
 from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
-from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayercontainer import DiagLayerContainer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
-from odxtools.envdata import EnvironmentData
-from odxtools.envdatadesc import EnvironmentDataDescription
+from odxtools.diagservice import DiagService
+from odxtools.docrevision import DocRevision
+from odxtools.environmentdata import EnvironmentData
+from odxtools.environmentdatadescription import EnvironmentDataDescription
 from odxtools.functionalclass import FunctionalClass
-from odxtools.globals import logger
-from odxtools.multiplexer import (Multiplexer, MultiplexerCase, MultiplexerDefaultCase,
-                                  MultiplexerSwitchKey)
+from odxtools.modification import Modification
+from odxtools.multiplexer import Multiplexer
+from odxtools.multiplexercase import MultiplexerCase
+from odxtools.multiplexerdefaultcase import MultiplexerDefaultCase
+from odxtools.multiplexerswitchkey import MultiplexerSwitchKey
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
-from odxtools.parameters import (CodedConstParameter, MatchingRequestParameter, NrcConstParameter,
-                                 TableKeyParameter, TableStructParameter, ValueParameter)
+from odxtools.parameters.codedconstparameter import CodedConstParameter
+from odxtools.parameters.matchingrequestparameter import MatchingRequestParameter
+from odxtools.parameters.nrcconstparameter import NrcConstParameter
+from odxtools.parameters.physicalconstantparameter import PhysicalConstantParameter
+from odxtools.parameters.tablekeyparameter import TableKeyParameter
+from odxtools.parameters.tablestructparameter import TableStructParameter
+from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.parentref import ParentRef
+from odxtools.physicaldimension import PhysicalDimension
 from odxtools.physicaltype import PhysicalType
-from odxtools.service import DiagService
-from odxtools.singleecujob import ProgCode, ProgCodeSyntax, SingleEcuJob
-from odxtools.structures import Request, Response
-from odxtools.table import Table, TableRow
-from odxtools.units import PhysicalDimension, Unit, UnitGroup, UnitSpec
+from odxtools.progcode import ProgCode, ProgCodeSyntax
+from odxtools.relateddoc import RelatedDoc
+from odxtools.request import Request
+from odxtools.response import Response
+from odxtools.singleecujob import SingleEcuJob
+from odxtools.standardlengthtype import StandardLengthType
+from odxtools.table import Table
+from odxtools.tablerow import TableRow
+from odxtools.teammember import TeamMember
+from odxtools.unit import Unit
+from odxtools.unitgroup import UnitGroup
+from odxtools.unitspec import UnitSpec
 from odxtools.utils import short_name_as_id
+from odxtools.xdoc import XDoc
 
 
 class SomersaultSID(IntEnum):
@@ -394,7 +416,7 @@ somersault_unit_groups = {
 }
 
 # computation methods
-somersault_compumethods = {
+somersault_compumethods: Dict[str, CompuMethod] = {
     "uint_passthrough":
         IdenticalCompuMethod(internal_type="A_UINT32", physical_type="A_UINT32"),
     "float_passthrough":

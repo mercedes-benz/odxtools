@@ -1,11 +1,8 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
-from typing import List
-
-from ..diagcodedtypes import create_any_diag_coded_type_from_et
+from ..createanydiagcodedtype import create_any_diag_coded_type_from_et
+from ..createsdgs import create_sdgs_from_et
 from ..globals import xsi
-from ..odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
-from ..specialdata import SpecialDataGroup, create_sdgs_from_et
+from ..odxlink import OdxLinkId, OdxLinkRef
 from ..utils import create_description_from_et
 from .codedconstparameter import CodedConstParameter
 from .dynamicparameter import DynamicParameter

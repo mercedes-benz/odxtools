@@ -1,22 +1,24 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
-from dataclasses import dataclass, field
-from enum import Enum
+from dataclasses import dataclass
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
 from xml.etree.ElementTree import Element
 
 from .admindata import AdminData
 from .audience import Audience
-from .dataobjectproperty import DopBase
-from .exceptions import DecodeError, EncodeError, odxraise, odxrequire
+from .createsdgs import create_sdgs_from_et
+from .exceptions import DecodeError, EncodeError, odxrequire
 from .functionalclass import FunctionalClass
 from .globals import logger
+from .inputparam import InputParam
 from .message import Message
 from .nameditemlist import NamedItemList
+from .negoutputparam import NegOutputParam
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .outputparam import OutputParam
+from .progcode import ProgCode
+from .specialdatagroup import SpecialDataGroup
 from .utils import create_description_from_et, short_name_as_id
 
 if TYPE_CHECKING:
@@ -30,197 +32,6 @@ DiagClassType = Literal[
     "DYN-DEF-MESSAGE",
     "CLEAR-DYN-DEF-MESSAGE",
 ]
-
-
-@dataclass
-class InputParam:
-    short_name: str
-    dop_base_ref: OdxLinkRef
-    long_name: Optional[str]
-    description: Optional[str]
-    oid: Optional[str]
-    semantic: Optional[str]
-    physical_default_value: Optional[str]
-
-    @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "InputParam":
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
-        dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
-        physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
-
-        semantic = et_element.get("SEMANTIC")
-        oid = et_element.get("OID")
-
-        return InputParam(
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
-            dop_base_ref=dop_base_ref,
-            physical_default_value=physical_default_value,
-            semantic=semantic,
-            oid=oid,
-        )
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        return {}
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._dop = odxlinks.resolve(self.dop_base_ref, DopBase)
-
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        pass
-
-    @property
-    def dop(self) -> DopBase:
-        """The data object property describing this parameter."""
-        return self._dop
-
-
-@dataclass
-class OutputParam:
-    odx_id: OdxLinkId
-    short_name: str
-    dop_base_ref: OdxLinkRef
-    long_name: Optional[str]
-    description: Optional[str]
-    oid: Optional[str]
-    semantic: Optional[str]
-
-    def __post_init__(self) -> None:
-        self._dop: Optional[DopBase] = None
-
-    @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "OutputParam":
-
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
-        dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
-        semantic = et_element.get("SEMANTIC")
-        oid = et_element.get("OID")
-
-        return OutputParam(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
-            dop_base_ref=dop_base_ref,
-            semantic=semantic,
-            oid=oid,
-        )
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        return {}
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._dop = odxlinks.resolve(self.dop_base_ref)
-
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        pass
-
-    @property
-    def dop(self) -> Optional[DopBase]:
-        """The data object property describing this parameter."""
-        return self._dop
-
-
-@dataclass
-class NegOutputParam:
-    short_name: str
-    dop_base_ref: OdxLinkRef
-    long_name: Optional[str]
-    description: Optional[str]
-
-    def __post_init__(self) -> None:
-        self._dop: Optional[DopBase] = None
-
-    @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "NegOutputParam":
-
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
-        dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
-
-        return NegOutputParam(
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
-            dop_base_ref=dop_base_ref,
-        )
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        return {}
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._dop = odxlinks.resolve(self.dop_base_ref)
-
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        pass
-
-    @property
-    def dop(self) -> Optional[DopBase]:
-        """The data object property describing this parameter."""
-        return self._dop
-
-
-class ProgCodeSyntax(Enum):
-    JAVA = "JAVA"
-    CLASS = "CLASS"
-    JAR = "JAR"
-
-
-@dataclass
-class ProgCode:
-    """A reference to code that is executed by a single ECU job"""
-    code_file: str
-    syntax: ProgCodeSyntax
-    revision: str
-    encryption: Optional[str]
-    entrypoint: Optional[str]
-    library_refs: List[OdxLinkRef]
-
-    @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
-        code_file = odxrequire(et_element.findtext("CODE-FILE"))
-
-        encryption = et_element.findtext("ENCRYPTION")
-
-        syntax_str = odxrequire(et_element.findtext("SYNTAX"))
-        if syntax_str not in ProgCodeSyntax.__members__:
-            odxraise(f"Encountered unknown program code syntax '{syntax_str}'")
-        syntax = ProgCodeSyntax(syntax_str)
-
-        revision = odxrequire(et_element.findtext("REVISION"))
-        entrypoint = et_element.findtext("ENTRYPOINT")
-
-        library_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
-            for el in et_element.iterfind("LIBRARY-REFS/LIBRARY-REF")
-        ]
-
-        return ProgCode(
-            code_file=code_file,
-            syntax=syntax,  # type: ignore[arg-type]
-            revision=revision,
-            encryption=encryption,
-            entrypoint=entrypoint,
-            library_refs=library_refs,
-        )
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        return {}
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        # TODO: Libraries are currently not internalized.
-        #       Once they are internalized, resolve the `library_refs` references here.
-        pass
-
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        pass
 
 
 @dataclass
@@ -308,8 +119,8 @@ class SingleEcuJob:
             for pc_elem in et_element.iterfind("PROG-CODES/PROG-CODE")
         ]
 
-        if et_element.find("AUDIENCE"):
-            audience = Audience.from_et(et_element.find("AUDIENCE"), doc_frags)
+        if (audience_elem := et_element.find("AUDIENCE")) is not None:
+            audience = Audience.from_et(audience_elem, doc_frags)
         else:
             audience = None
 

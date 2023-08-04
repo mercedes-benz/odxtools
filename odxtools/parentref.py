@@ -1,15 +1,10 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List
 from xml.etree.ElementTree import Element
 
-from .dataobjectproperty import DopBase
-from .diaglayertype import DiagLayerType
 from .exceptions import odxrequire
-from .globals import xsi
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .service import DiagService
-from .singleecujob import SingleEcuJob
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer

@@ -1,16 +1,14 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2023 MBition GmbH
-
 from enum import Enum
-from typing import Dict, Generator, List, Optional, Union
+from typing import Dict, Generator, List, Optional
 
 from .diaglayer import DiagLayer
 from .diaglayertype import DiagLayerType
-from .ecu_variant_patterns import MatchingParameter
+from .diagservice import DiagService
 from .exceptions import OdxError, odxassert
+from .matchingparameter import MatchingParameter
 from .odxtypes import ParameterValue
-from .service import DiagService
-from .structures import Response
+from .response import Response
 
 
 class EcuVariantMatcher:

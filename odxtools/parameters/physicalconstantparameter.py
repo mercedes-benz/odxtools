@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import warnings
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, odxassert, odxrequire
+from ..exceptions import DecodeError, odxrequire
 from ..odxtypes import ParameterValue
 from .parameterwithdop import ParameterWithDOP
 

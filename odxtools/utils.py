@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import re
 from typing import Any, Optional
 from xml.etree import ElementTree
 
-from .exceptions import odxraise, odxrequire
+from .exceptions import odxraise
 
 
 def create_description_from_et(et_element: Optional[ElementTree.Element],) -> Optional[str]:

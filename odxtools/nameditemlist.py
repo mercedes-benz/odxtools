@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import warnings
 from keyword import iskeyword
-from typing import (Callable, Dict, Generic, Iterable, Iterator, List, Optional, Tuple, TypeVar,
-                    Union, cast, overload)
+from typing import (Callable, Generic, Iterable, List, Optional, Tuple, TypeVar, Union, cast,
+                    overload)
 
 T = TypeVar("T")
 

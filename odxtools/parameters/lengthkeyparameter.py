@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from typing import TYPE_CHECKING, Any, Dict, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import odxrequire
-from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from .parameterwithdop import ParameterWithDOP
 
 if TYPE_CHECKING:

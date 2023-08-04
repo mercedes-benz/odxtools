@@ -1,16 +1,17 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from copy import copy
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
-from ..dataobjectproperty import DataObjectProperty, DopBase, DtcDop
+from ..dataobjectproperty import DataObjectProperty
 from ..decodestate import DecodeState
+from ..dopbase import DopBase
+from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
 from ..exceptions import odxassert, odxrequire
 from ..globals import logger
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..physicaltype import PhysicalType
-from .parameterbase import Parameter
+from .parameter import Parameter
 
 if TYPE_CHECKING:
     from ..diaglayer import DiagLayer

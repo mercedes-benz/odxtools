@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+from .basicstructure import BasicStructure
+from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
 from .exceptions import odxassert, odxrequire
-from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
-from .structures import BasicStructure
-from .utils import create_description_from_et, short_name_as_id
+from .specialdatagroup import SpecialDataGroup
+from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer

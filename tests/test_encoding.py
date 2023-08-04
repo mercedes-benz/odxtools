@@ -1,15 +1,17 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import unittest
 
-from odxtools.compumethods import LinearCompuMethod
+from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
-from odxtools.diagcodedtypes import StandardLengthType
 from odxtools.exceptions import EncodeError
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from odxtools.parameters import CodedConstParameter, NrcConstParameter, ValueParameter
+from odxtools.parameters.codedconstparameter import CodedConstParameter
+from odxtools.parameters.nrcconstparameter import NrcConstParameter
+from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaltype import PhysicalType
-from odxtools.structures import Request, Response
+from odxtools.request import Request
+from odxtools.response import Response
+from odxtools.standardlengthtype import StandardLengthType
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 

@@ -5,26 +5,26 @@ from itertools import chain
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
+from .additionalaudience import AdditionalAudience
 from .admindata import AdminData
-from .audience import AdditionalAudience, Audience
-from .communicationparameter import CommunicationParameterRef
-from .companydata import CompanyData, create_company_datas_from_et
-from .dataobjectproperty import DopBase
+from .communicationparameterref import CommunicationParameterRef
+from .companydata import CompanyData
+from .createanystructure import create_any_structure_from_et
+from .createsdgs import create_sdgs_from_et
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayertype import DiagLayerType
-from .ecu_variant_patterns import EcuVariantPattern
+from .diagservice import DiagService
+from .ecuvariantpattern import EcuVariantPattern
 from .exceptions import odxassert, odxraise, odxrequire
 from .functionalclass import FunctionalClass
-from .globals import xsi
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parentref import ParentRef
-from .service import DiagService
+from .request import Request
+from .response import Response
 from .singleecujob import SingleEcuJob
-from .specialdata import SpecialDataGroup, create_sdgs_from_et
+from .specialdatagroup import SpecialDataGroup
 from .statechart import StateChart
-from .structures import Request, Response, create_any_structure_from_et
-from .table import Table
 from .utils import create_description_from_et, short_name_as_id
 
 if TYPE_CHECKING:

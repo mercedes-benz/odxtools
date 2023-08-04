@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import inspect
 import os
 import unittest
@@ -8,8 +7,10 @@ from xml.etree import ElementTree
 import jinja2
 
 import odxtools
-from odxtools.compumethods import IntervalType, Limit, LinearCompuMethod, TabIntpCompuMethod
 from odxtools.compumethods.createanycompumethod import create_any_compu_method_from_et
+from odxtools.compumethods.limit import IntervalType, Limit
+from odxtools.compumethods.linearcompumethod import LinearCompuMethod
+from odxtools.compumethods.tabintpcompumethod import TabIntpCompuMethod
 from odxtools.exceptions import DecodeError, EncodeError
 from odxtools.odxlink import OdxDocFragment
 from odxtools.odxtypes import DataType

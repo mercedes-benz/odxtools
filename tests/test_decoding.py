@@ -1,25 +1,32 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 import unittest
 
-from odxtools.compumethods import IdenticalCompuMethod, LinearCompuMethod
-from odxtools.dataobjectproperty import DataObjectProperty, DiagnosticTroubleCode, DtcDop
-from odxtools.diagcodedtypes import LeadingLengthInfoType, MinMaxLengthType, StandardLengthType
+from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
+from odxtools.compumethods.linearcompumethod import LinearCompuMethod
+from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
+from odxtools.diagnostictroublecode import DiagnosticTroubleCode
+from odxtools.diagservice import DiagService
+from odxtools.dtcdop import DtcDop
 from odxtools.endofpdufield import EndOfPduField
 from odxtools.exceptions import DecodeError
 from odxtools.message import Message
+from odxtools.minmaxlengthtype import MinMaxLengthType
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
-from odxtools.parameters import (CodedConstParameter, MatchingRequestParameter,
-                                 PhysicalConstantParameter, ValueParameter)
+from odxtools.parameters.codedconstparameter import CodedConstParameter
+from odxtools.parameters.matchingrequestparameter import MatchingRequestParameter
+from odxtools.parameters.physicalconstantparameter import PhysicalConstantParameter
+from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaltype import PhysicalType
-from odxtools.service import DiagService
-from odxtools.structures import Request, Response, Structure
+from odxtools.request import Request
+from odxtools.response import Response
+from odxtools.standardlengthtype import StandardLengthType
+from odxtools.structure import Structure
 from odxtools.utils import short_name_as_id
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]

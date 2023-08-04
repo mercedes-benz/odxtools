@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
-from typing import List, NamedTuple, Optional
+from typing import List, NamedTuple
 
 
 class CompuRationalCoeffs(NamedTuple):

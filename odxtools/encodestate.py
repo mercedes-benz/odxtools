@@ -1,13 +1,9 @@
 # SPDX-License-Identifier: MIT
-# Copyright (c) 2022 MBition GmbH
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, NamedTuple, Optional, Union
-
-from .odxlink import OdxLinkId
-from .odxtypes import AtomicOdxType
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 if TYPE_CHECKING:
-    from .table import TableRow
+    from .tablerow import TableRow
 
 
 @dataclass
