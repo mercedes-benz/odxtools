@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .compumethods.compumethod import CompuMethod
 from .compumethods.createanycompumethod import create_any_compu_method_from_et
@@ -43,7 +43,8 @@ class DataObjectProperty(DopBase):
         self.unit_ref = unit_ref
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "DataObjectProperty":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "DataObjectProperty":
         """Reads a DATA-OBJECT-PROP or a DTC-DOP."""
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))

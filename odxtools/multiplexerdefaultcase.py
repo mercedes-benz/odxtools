@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
 from .exceptions import odxrequire
@@ -23,7 +23,8 @@ class MultiplexerDefaultCase:
         self._structure: Optional[BasicStructure] = None
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "MultiplexerDefaultCase":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "MultiplexerDefaultCase":
         """Reads a Default Case for a Multiplexer."""
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")

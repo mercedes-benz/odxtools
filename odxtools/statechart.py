@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
@@ -34,7 +34,7 @@ class StateChart:
         return self._start_state
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "StateChart":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "StateChart":
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")

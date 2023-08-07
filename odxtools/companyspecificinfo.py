@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .createsdgs import create_sdgs_from_et
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
@@ -18,7 +18,8 @@ class CompanySpecificInfo:
     sdgs: List[SpecialDataGroup]
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "CompanySpecificInfo":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "CompanySpecificInfo":
         related_docs = [
             RelatedDoc.from_et(rd) for rd in et_element.iterfind("RELATED-DOCS/RELATED-DOC")
         ]

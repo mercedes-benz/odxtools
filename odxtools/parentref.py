@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -24,7 +24,7 @@ class ParentRef:
         return self._layer
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "ParentRef":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ParentRef":
 
         layer_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
 

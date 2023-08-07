@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .dopbase import DopBase
 from .exceptions import odxrequire
@@ -23,7 +23,8 @@ class NegOutputParam:
         self._dop: Optional[DopBase] = None
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "NegOutputParam":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "NegOutputParam":
 
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")

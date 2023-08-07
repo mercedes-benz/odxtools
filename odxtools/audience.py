@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .additionalaudience import AdditionalAudience
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -55,7 +55,7 @@ class Audience:
         return self._disabled_audiences
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "Audience":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Audience":
 
         enabled_audience_refs = [
             OdxLinkRef.from_et(ref, doc_frags)

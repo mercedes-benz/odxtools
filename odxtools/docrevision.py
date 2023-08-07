@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .companyrevisioninfo import CompanyRevisionInfo
 from .exceptions import odxrequire
@@ -32,7 +32,7 @@ class DocRevision:
         return self._team_member
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "DocRevision":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DocRevision":
 
         team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), doc_frags)
         revision_label = et_element.findtext("REVISION-LABEL")

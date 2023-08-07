@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .basecomparam import BaseComparam
 from .nameditemlist import NamedItemList
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 ComplexValue = List[Union[str, "ComplexValue"]]
 
 
-def create_complex_value_from_et(et_element: Element) -> ComplexValue:
+def create_complex_value_from_et(et_element: ElementTree.Element) -> ComplexValue:
     result: ComplexValue = []
     for el in et_element:
         if el.tag == "SIMPLE-VALUE":
@@ -36,7 +36,8 @@ class ComplexComparam(BaseComparam):
         return self.allow_multiple_values_raw == True
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "ComplexComparam":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "ComplexComparam":
         # create an "empty" ComplexComparam object without calling the
         # "official" constructor. We need to do this because we need
         # all data attributes of the class to call the constructor,
@@ -49,7 +50,8 @@ class ComplexComparam(BaseComparam):
 
         return result
 
-    def __init_from_et__(self, et_element: Element, doc_frags: List[OdxDocFragment]) -> None:
+    def __init_from_et__(self, et_element: ElementTree.Element,
+                         doc_frags: List[OdxDocFragment]) -> None:
         super().__init_from_et__(et_element, doc_frags)
 
         # to avoid a cyclic import, create_any_comparam_from_et cannot

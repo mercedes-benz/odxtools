@@ -2,7 +2,7 @@
 from collections import OrderedDict
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
@@ -31,7 +31,7 @@ class Multiplexer(DopBase):
     cases: List[MultiplexerCase]
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "Multiplexer":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Multiplexer":
         """Reads a Multiplexer from Diag Layer."""
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))

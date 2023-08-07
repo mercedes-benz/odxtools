@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from itertools import chain
 from typing import List, Optional, Union
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .companydata import CompanyData
@@ -59,7 +59,7 @@ class DiagLayerContainer:
         )
 
     @staticmethod
-    def from_et(et_element: Element) -> "DiagLayerContainer":
+    def from_et(et_element: ElementTree.Element) -> "DiagLayerContainer":
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
 

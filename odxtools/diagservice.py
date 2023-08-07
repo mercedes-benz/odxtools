@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union, cast
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .audience import Audience
@@ -115,7 +115,7 @@ class DiagService:
         self.sdgs = sdgs
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "DiagService":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagService":
 
         # logger.info(f"Parsing service based on ET DiagService element: {et_element}")
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))

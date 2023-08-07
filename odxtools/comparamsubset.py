@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .companydata import CompanyData
@@ -38,7 +38,7 @@ class ComparamSubset:
     sdgs: List[SpecialDataGroup]
 
     @staticmethod
-    def from_et(et_element: Element) -> "ComparamSubset":
+    def from_et(et_element: ElementTree.Element) -> "ComparamSubset":
 
         category = et_element.get("CATEGORY")
 

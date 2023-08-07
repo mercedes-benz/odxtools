@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 
@@ -15,7 +15,7 @@ class Modification:
     reason: Optional[str]
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "Modification":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Modification":
         change = et_element.findtext("CHANGE")
         reason = et_element.findtext("REASON")
 

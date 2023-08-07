@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from enum import Enum
 from itertools import chain
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .audience import Audience
@@ -99,7 +99,7 @@ class SingleEcuJob:
             self.neg_output_params = NamedItemList(short_name_as_id)
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "SingleEcuJob":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SingleEcuJob":
 
         logger.info(f"Parsing service based on ET DiagService element: {et_element}")
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))

@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -28,7 +28,7 @@ class ProgCode:
     library_refs: List[OdxLinkRef]
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
         code_file = odxrequire(et_element.findtext("CODE-FILE"))
 
         encryption = et_element.findtext("ENCRYPTION")

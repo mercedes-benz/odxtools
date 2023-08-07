@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
@@ -37,7 +37,8 @@ class BaseComparam:
     cpusage: Usage
     display_level: Optional[int]
 
-    def __init_from_et__(self, et_element: Element, doc_frags: List[OdxDocFragment]) -> None:
+    def __init_from_et__(self, et_element: ElementTree.Element,
+                         doc_frags: List[OdxDocFragment]) -> None:
         self.odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         self.short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         self.long_name = et_element.findtext("LONG-NAME")
