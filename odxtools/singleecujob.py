@@ -52,7 +52,6 @@ class SingleEcuJob:
     odx_id: OdxLinkId
     short_name: str
     prog_codes: List[ProgCode]
-    """Pointers to the code that is executed when calling this job."""
     # optional xsd:elements inherited from DIAG-COMM (and thus shared with DIAG-SERVICE)
     oid: Optional[str]
     long_name: Optional[str]

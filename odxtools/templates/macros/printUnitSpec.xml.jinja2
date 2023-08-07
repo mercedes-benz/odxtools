@@ -54,7 +54,7 @@
 {%- macro printUnitGroup(group) -%}
 <UNIT-GROUP {%- if group.oid %} OID="{{group.oid}}" {%- endif %}>
  {{ peid.printElementID(group) }}
- <CATEGORY>{{ group.category }}</CATEGORY>
+ <CATEGORY>{{ group.category.value }}</CATEGORY>
  {%- if group.unit_refs %}
  <UNIT-REFS>
  {%- for ref in group.unit_refs %}
