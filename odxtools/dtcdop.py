@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from .dataobjectproperty import DataObjectProperty
 from .diagnostictroublecode import DiagnosticTroubleCode
-from .exceptions import odxassert
+from .exceptions import EncodeError, odxassert
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .utils import short_name_as_id

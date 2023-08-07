@@ -163,7 +163,7 @@ class TestEncodeRequest(unittest.TestCase):
         param1._resolve_odxlinks(odxlinks)
 
         # Missing mandatory parameter.
-        with self.assertRaises(TypeError) as cm:
+        with self.assertRaises(TypeError):
             req.encode()
 
         self.assertEqual(

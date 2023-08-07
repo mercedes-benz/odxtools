@@ -19,7 +19,7 @@ class DummyTool:
         self._error = error
 
     def add_subparser(self, subparser_list):
-        parser = subparser_list.add_parser(
+        subparser_list.add_parser(
             self._odxtools_tool_name_,
             description=f"Tool '{self._odxtools_tool_name_}' is unavailable: {self._error}",
             help="Dummy tool",

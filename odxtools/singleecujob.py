@@ -144,11 +144,11 @@ class SingleEcuJob:
         is_executable_raw = odxstr_to_bool(et_element.get("IS-MANDATORY"))
         is_final_raw = odxstr_to_bool(et_element.get("IS-FINAL"))
 
-        diag_class_type: Optional[DiagClassType] = None
-        if (diag_class_type_str := et_element.get("DIAGNOSTIC-CLASS")) is not None:
-            if diag_class_type_str not in DiagClassType.__members__:
-                odxraise(f"Encountered unknown diagnostic class type '{diag_class_type_str}'")
-            diag_class_type = DiagClassType(diag_class_type_str)
+        diag_class: Optional[DiagClassType] = None
+        if (diag_class_str := et_element.get("DIAGNOSTIC-CLASS")) is not None:
+            if diag_class_str not in DiagClassType.__members__:
+                odxraise(f"Encountered unknown diagnostic class type '{diag_class_str}'")
+            diag_class = DiagClassType(diag_class_str)
 
         return SingleEcuJob(
             odx_id=odx_id,
@@ -161,7 +161,7 @@ class SingleEcuJob:
             semantic=semantic,
             audience=audience,
             functional_class_refs=functional_class_refs,
-            diagnostic_class=None,
+            diagnostic_class=diag_class,
             input_params=input_params,
             output_params=output_params,
             neg_output_params=neg_output_params,

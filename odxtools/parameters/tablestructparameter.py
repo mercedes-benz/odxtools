@@ -22,8 +22,7 @@ class TableStructParameter(Parameter):
         self.table_key_ref = table_key_ref
         self.table_key_snref = table_key_snref
         if self.table_key_ref is None and self.table_key_snref is None:
-            raise OdxError("Either table_key_ref or table_key_snref "
-                           "must be defined.")
+            odxraise("Either table_key_ref or table_key_snref must be defined.")
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return super()._build_odxlinks()

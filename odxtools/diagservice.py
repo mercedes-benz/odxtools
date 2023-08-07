@@ -20,6 +20,7 @@ from .utils import create_description_from_et, short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
+    from .endofpdufield import EndOfPduField
 
 
 class DiagService:
