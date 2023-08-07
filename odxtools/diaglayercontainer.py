@@ -25,7 +25,7 @@ class DiagLayerContainer:
         long_name: Optional[str],
         description: Optional[str],
         admin_data: Optional[AdminData],
-        company_datas: Optional[NamedItemList[CompanyData]],
+        company_datas: NamedItemList[CompanyData],
         ecu_shared_datas: List[DiagLayer],
         protocols: List[DiagLayer],
         functional_groups: List[DiagLayer],

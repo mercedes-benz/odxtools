@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Union
+from xml.etree import ElementTree
 
 from .createsdgs import create_sdgs_from_et
 from .nameditemlist import NamedItemList
@@ -39,7 +40,7 @@ class UnitSpec:
         self.physical_dimensions = NamedItemList(short_name_as_id, self.physical_dimensions)
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]):
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]):
 
         unit_groups = [
             UnitGroup.from_et(el, doc_frags) for el in et_element.iterfind("UNIT-GROUPS/UNIT-GROUP")

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .basecomparam import BaseComparam
 from .dataobjectproperty import DataObjectProperty
@@ -18,7 +18,7 @@ class Comparam(BaseComparam):
     physical_default_value: Optional[str]
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Comparam":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Comparam":
         # create an "empty" Comparam object without calling the
         # "official" constructor. We need to do this because we need
         # all data attributes of the class to call the constructor,
@@ -31,7 +31,8 @@ class Comparam(BaseComparam):
 
         return result
 
-    def __init_from_et__(self, et_element: Element, doc_frags: List[OdxDocFragment]) -> None:
+    def __init_from_et__(self, et_element: ElementTree.Element,
+                         doc_frags: List[OdxDocFragment]) -> None:
         super().__init_from_et__(et_element, doc_frags)
 
         dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags))

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import List
+from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
 from .createsdgs import create_sdgs_from_et
@@ -22,7 +23,8 @@ class EnvironmentData(BasicStructure):
         self.dtc_values = dtc_values
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "EnvironmentData":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "EnvironmentData":
         """Reads Environment Data from Diag Layer."""
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         short_name = et_element.findtext("SHORT-NAME")
@@ -37,7 +39,8 @@ class EnvironmentData(BasicStructure):
         byte_size_text = et_element.findtext("BYTE-SIZE")
         byte_size = None if byte_size_text is None else int(byte_size_text)
         dtc_values = [
-            int(dtcv_elem.text) for dtcv_elem in et_element.iterfind("DTC-VALUES/DTC-VALUE")
+            int(odxrequire(dtcv_elem.text))
+            for dtcv_elem in et_element.iterfind("DTC-VALUES/DTC-VALUE")
         ]
 
         return EnvironmentData(

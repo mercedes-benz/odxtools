@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
 from enum import Enum
 from typing import NamedTuple, Optional, Union
+from xml.etree import ElementTree
 
-from ..exceptions import odxassert
+from ..exceptions import odxassert, odxrequire
 from ..odxtypes import DataType
 
 
@@ -17,7 +18,8 @@ class Limit(NamedTuple):
     interval_type: IntervalType = IntervalType.CLOSED
 
     @staticmethod
-    def from_et(et_element, internal_type: DataType) -> Optional["Limit"]:
+    def from_et(et_element: Optional[ElementTree.Element],
+                internal_type: DataType) -> Optional["Limit"]:
 
         if et_element is None:
             return None
@@ -34,12 +36,12 @@ class Limit(NamedTuple):
                 odxassert(et_element.tag == "UPPER-LIMIT")
                 return Limit(float("inf"), interval_type)
         elif internal_type == DataType.A_BYTEFIELD:
-            hex_text = et_element.text
+            hex_text = odxrequire(et_element.text)
             if len(hex_text) % 2 == 1:
                 hex_text = "0" + hex_text
             return Limit(bytes.fromhex(hex_text), interval_type)
         else:
-            return Limit(internal_type.from_string(et_element.text), interval_type)
+            return Limit(internal_type.from_string(odxrequire(et_element.text)), interval_type)
 
     def complies_to_upper(self, value):
         """Checks if the value is in the range w.r.t. the upper limit.

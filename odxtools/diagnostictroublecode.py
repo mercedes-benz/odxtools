@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from xml.etree import ElementTree
 
 from .createsdgs import create_sdgs_from_et
+from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
 from .specialdatagroup import SpecialDataGroup
@@ -18,7 +20,7 @@ class DiagnosticTroubleCode:
     short_name: Optional[str]
     text: Optional[str]
     display_trouble_code: Optional[str]
-    level: Union[bytes, None]
+    level: Union[int, None]
     is_temporary_raw: Optional[bool]
     sdgs: List[SpecialDataGroup]
 
@@ -27,14 +29,15 @@ class DiagnosticTroubleCode:
         return self.is_temporary_raw == True
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "DiagnosticTroubleCode":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "DiagnosticTroubleCode":
         if et_element.find("DISPLAY-TROUBLE-CODE") is not None:
             display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
         else:
             display_trouble_code = None
 
-        if et_element.find("LEVEL") is not None:
-            level = et_element.findtext("LEVEL")
+        if (level_str := et_element.findtext("LEVEL")) is not None:
+            level = int(level_str)
         else:
             level = None
 
@@ -44,7 +47,7 @@ class DiagnosticTroubleCode:
         return DiagnosticTroubleCode(
             odx_id=OdxLinkId.from_et(et_element, doc_frags),
             short_name=et_element.findtext("SHORT-NAME"),
-            trouble_code=int(et_element.findtext("TROUBLE-CODE")),
+            trouble_code=int(odxrequire(et_element.findtext("TROUBLE-CODE"))),
             text=et_element.findtext("TEXT"),
             display_trouble_code=display_trouble_code,
             level=level,

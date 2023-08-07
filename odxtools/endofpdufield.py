@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from copy import copy
 from typing import TYPE_CHECKING, List, Optional
+from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
 from .createsdgs import create_sdgs_from_et
@@ -51,7 +52,8 @@ class EndOfPduField(DopBase):
         self.max_number_of_items = max_number_of_items
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "EndOfPduField":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "EndOfPduField":
         odx_id = OdxLinkId.from_et(et_element, doc_frags)
         odxassert(odx_id is not None)
         short_name = et_element.findtext("SHORT-NAME")
@@ -69,12 +71,12 @@ class EndOfPduField(DopBase):
         if (edsnr_elem := et_element.find("ENV-DATA-DESC-SNREF")) is not None:
             env_data_desc_snref = edsnr_elem.get("SHORT-NAME")
 
-        if et_element.find("MIN-NUMBER-OF-ITEMS") is not None:
-            min_number_of_items = int(et_element.findtext("MIN-NUMBER-OF-ITEMS"))
+        if (min_n_str := et_element.findtext("MIN-NUMBER-OF-ITEMS")) is not None:
+            min_number_of_items = int(min_n_str)
         else:
             min_number_of_items = None
-        if et_element.find("MAX-NUMBER-OF-ITEMS") is not None:
-            max_number_of_items = int(et_element.findtext("MAX-NUMBER-OF-ITEMS"))
+        if (max_n_str := et_element.findtext("MAX-NUMBER-OF-ITEMS")) is not None:
+            max_number_of_items = int(max_n_str)
         else:
             max_number_of_items = None
 

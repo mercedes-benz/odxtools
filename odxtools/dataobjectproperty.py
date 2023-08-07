@@ -55,9 +55,10 @@ class DataObjectProperty(DopBase):
         diag_coded_type = create_any_diag_coded_type_from_et(
             odxrequire(et_element.find("DIAG-CODED-TYPE")), doc_frags)
 
-        physical_type = PhysicalType.from_et(et_element.find("PHYSICAL-TYPE"), doc_frags)
+        physical_type = PhysicalType.from_et(
+            odxrequire(et_element.find("PHYSICAL-TYPE")), doc_frags)
         compu_method = create_any_compu_method_from_et(
-            et_element.find("COMPU-METHOD"),
+            odxrequire(et_element.find("COMPU-METHOD")),
             doc_frags,
             diag_coded_type.base_data_type,
             physical_type.base_data_type,

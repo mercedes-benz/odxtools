@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
-from typing import List
+from typing import List, Optional
+from xml.etree import ElementTree
 
 from .companydata import CompanyData
 from .nameditemlist import NamedItemList
@@ -7,7 +8,7 @@ from .odxlink import OdxDocFragment
 from .utils import short_name_as_id
 
 
-def create_company_datas_from_et(et_element,
+def create_company_datas_from_et(et_element: Optional[ElementTree.Element],
                                  doc_frags: List[OdxDocFragment]) -> NamedItemList[CompanyData]:
     if et_element is None:
         return NamedItemList(short_name_as_id)

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree import ElementTree
 
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
@@ -57,10 +58,11 @@ class PhysicalDimension:
     luminous_intensity_exp: int
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "PhysicalDimension":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "PhysicalDimension":
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         oid = et_element.get("OID")
-        short_name = et_element.findtext("SHORT-NAME")
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
 

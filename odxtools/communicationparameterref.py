@@ -50,7 +50,7 @@ class CommunicationParameterRef:
         elif et_element.find("SIMPLE-VALUE") is not None:
             value = odxrequire(et_element.findtext("SIMPLE-VALUE"))
         else:
-            value = odxrequire(create_complex_value_from_et(et_element.find("COMPLEX-VALUE")))
+            value = create_complex_value_from_et(odxrequire(et_element.find("COMPLEX-VALUE")))
 
         is_functional = dl_type == DiagLayerType.FUNCTIONAL_GROUP
         description = create_description_from_et(et_element.find("DESC"))

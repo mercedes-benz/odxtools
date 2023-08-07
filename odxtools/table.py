@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .createsdgs import create_sdgs_from_et
@@ -34,7 +35,7 @@ class Table:
     sdgs: List[SpecialDataGroup]
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Table":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Table":
         """Reads a TABLE."""
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         short_name: str = odxrequire(et_element.findtext("SHORT-NAME"))

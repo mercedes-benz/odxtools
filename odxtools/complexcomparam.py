@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 ComplexValue = List[Union[str, "ComplexValue"]]
 
 
-def create_complex_value_from_et(et_element) -> ComplexValue:
-    result = []
+def create_complex_value_from_et(et_element: Element) -> ComplexValue:
+    result: ComplexValue = []
     for el in et_element:
         if el.tag == "SIMPLE-VALUE":
             result.append("" if el.text is None else el.text)
@@ -49,7 +49,7 @@ class ComplexComparam(BaseComparam):
 
         return result
 
-    def __init_from_et__(self, et_element, doc_frags: List[OdxDocFragment]) -> None:
+    def __init_from_et__(self, et_element: Element, doc_frags: List[OdxDocFragment]) -> None:
         super().__init_from_et__(et_element, doc_frags)
 
         # to avoid a cyclic import, create_any_comparam_from_et cannot

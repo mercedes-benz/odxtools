@@ -2,8 +2,9 @@
 from dataclasses import dataclass
 from enum import Enum
 from typing import List, Optional
+from xml.etree import ElementTree
 
-from .exceptions import odxassert
+from .exceptions import odxraise
 from .odxlink import OdxDocFragment
 from .odxtypes import DataType
 
@@ -56,21 +57,21 @@ class PhysicalType:
             self.display_radix = Radix(self.display_radix)
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]):
-        base_data_type = et_element.get("BASE-DATA-TYPE")
-        odxassert(base_data_type in [
-            "A_INT32",
-            "A_UINT32",
-            "A_FLOAT32",
-            "A_FLOAT64",
-            "A_ASCIISTRING",
-            "A_UTF8STRING",
-            "A_UNICODE2STRING",
-            "A_BYTEFIELD",
-        ])
-        display_radix = et_element.get("DISPLAY-RADIX")
-        precision = et_element.findtext("PRECISION")
-        if precision is not None:
-            precision = int(precision)
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]):
+        base_data_type_str = et_element.get("BASE-DATA-TYPE")
+        if base_data_type_str not in DataType.__members__:
+            odxraise(f"Encountered unknown base data type '{base_data_type_str}'")
+        base_data_type = DataType(base_data_type_str)
+
+        display_radix_str = et_element.get("DISPLAY-RADIX")
+        if display_radix_str is not None:
+            if display_radix_str not in Radix.__members__:
+                odxraise(f"Encountered unknown display radix '{display_radix_str}'")
+            display_radix = Radix(display_radix_str)
+        else:
+            display_radix = None
+
+        precision_str = et_element.findtext("PRECISION")
+        precision = int(precision_str) if precision_str is not None else None
 
         return PhysicalType(base_data_type, display_radix=display_radix, precision=precision)
