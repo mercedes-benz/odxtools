@@ -11,7 +11,7 @@
 <SINGLE-ECU-JOB ID="{{job.odx_id.local_id}}"
                 {{-make_xml_attrib("OID", job.oid)}}
                 {{-make_xml_attrib("SEMANTIC", job.semantic)}}
-                {{-make_xml_attrib("DIAGNOSTIC-CLASS", job.diagnostic_class)}}
+                {{-make_xml_attrib("DIAGNOSTIC-CLASS", job.diagnostic_class and job.diagnostic_class.value)}}
                 {{-make_bool_xml_attrib("IS-MANDATORY", job.is_mandatory_raw)}}
                 {{-make_bool_xml_attrib("IS-EXECUTABLE", job.is_executable_raw)}}
                 {{-make_bool_xml_attrib("IS-FINAL", job.is_final_raw)}}>

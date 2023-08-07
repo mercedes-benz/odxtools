@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
 from enum import Enum
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
