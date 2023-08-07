@@ -61,7 +61,7 @@ from odxtools.table import Table
 from odxtools.tablerow import TableRow
 from odxtools.teammember import TeamMember
 from odxtools.unit import Unit
-from odxtools.unitgroup import UnitGroup
+from odxtools.unitgroup import UnitGroup, UnitGroupCategory
 from odxtools.unitspec import UnitSpec
 from odxtools.utils import short_name_as_id
 from odxtools.xdoc import XDoc
@@ -405,7 +405,7 @@ somersault_unit_groups = {
         UnitGroup(
             oid=None,
             short_name="european_duration",
-            category="COUNTRY",
+            category=UnitGroupCategory.COUNTRY,
             unit_refs=[
                 OdxLinkRef.from_id(somersault_units["second"].odx_id),
                 OdxLinkRef.from_id(somersault_units["minute"].odx_id),

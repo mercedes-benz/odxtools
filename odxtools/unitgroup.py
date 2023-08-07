@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
+from enum import Enum
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
-from .exceptions import odxassert
+from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .unit import Unit
@@ -11,7 +12,10 @@ from .utils import create_description_from_et, short_name_as_id
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
-UnitGroupCategory = Literal["COUNTRY", "EQUIV-UNITS"]
+
+class UnitGroupCategory(Enum):
+    COUNTRY = "COUNTRY"
+    EQUIV_UNITS = "EQUIV-UNITS"
 
 
 @dataclass
@@ -37,16 +41,15 @@ class UnitGroup:
         short_name = et_element.findtext("SHORT-NAME")
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
-        category = et_element.findtext("CATEGORY")
-        odxassert(
-            category in ["COUNTRY", "EQUIV-UNITS"],
-            f'A UNIT-GROUP-CATEGORY must be "COUNTRY" or "EQUIV-UNITS". It was "{category}".')
-        unit_refs = []
+        category_str = et_element.findtext("CATEGORY")
+        if category_str not in UnitGroupCategory.__members__:
+            odxraise(f"Encountered unknown unit group category '{category_str}'")
+        category = UnitGroupCategory(category_str)
 
-        for el in et_element.iterfind("UNIT-REFS/UNIT-REF"):
-            ref = OdxLinkRef.from_et(el, doc_frags)
-            odxassert(isinstance(ref, OdxLinkRef))
-            unit_refs.append(ref)
+        unit_refs: List[OdxLinkRef] = [
+            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            for el in et_element.iterfind("UNIT-REFS/UNIT-REF")
+        ]
 
         return UnitGroup(
             short_name=short_name,

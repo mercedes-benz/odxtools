@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
+from enum import Enum
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree.ElementTree import Element
 
 from .admindata import AdminData
 from .audience import Audience
 from .createsdgs import create_sdgs_from_et
-from .exceptions import DecodeError, EncodeError, odxrequire
+from .exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .globals import logger
 from .inputparam import InputParam
@@ -24,14 +25,14 @@ from .utils import create_description_from_et, short_name_as_id
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
-DiagClassType = Literal[
-    "STARTCOMM",
-    "STOPCOMM",
-    "VARIANTIDENTIFICATION",
-    "READ-DYN-DEFINED-MESSAGE",
-    "DYN-DEF-MESSAGE",
-    "CLEAR-DYN-DEF-MESSAGE",
-]
+
+class DiagClassType(Enum):
+    STARTCOMM = "STARTCOMM"
+    STOPCOMM = "STOPCOMM"
+    VARIANTIDENTIFICATION = "VARIANTIDENTIFICATION"
+    READ_DYN_DEFINED_MESSAGE = "READ-DYN-DEFINED-MESSAGE"
+    DYN_DEF_MESSAGE = "DYN-DEF-MESSAGE"
+    CLEAR_DYN_DEF_MESSAGE = "CLEAR-DYN-DEF-MESSAGE"
 
 
 @dataclass
@@ -52,7 +53,6 @@ class SingleEcuJob:
     odx_id: OdxLinkId
     short_name: str
     prog_codes: List[ProgCode]
-    """Pointers to the code that is executed when calling this job."""
     # optional xsd:elements inherited from DIAG-COMM (and thus shared with DIAG-SERVICE)
     oid: Optional[str]
     long_name: Optional[str]
@@ -137,12 +137,18 @@ class SingleEcuJob:
             for el in et_element.iterfind("NEG-OUTPUT-PARAMS/NEG-OUTPUT-PARAM")
         ]
 
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+
         # Read boolean flags. Note that the "else" clause contains the default value.
         is_mandatory_raw = odxstr_to_bool(et_element.get("IS-MANDATORY"))
         is_executable_raw = odxstr_to_bool(et_element.get("IS-MANDATORY"))
         is_final_raw = odxstr_to_bool(et_element.get("IS-FINAL"))
 
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        diag_class_type: Optional[DiagClassType] = None
+        if (diag_class_type_str := et_element.get("DIAGNOSTIC-CLASS")) is not None:
+            if diag_class_type_str not in DiagClassType.__members__:
+                odxraise(f"Encountered unknown diagnostic class type '{diag_class_type_str}'")
+            diag_class_type = DiagClassType(diag_class_type_str)
 
         return SingleEcuJob(
             odx_id=odx_id,
