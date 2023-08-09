@@ -437,48 +437,88 @@ class DiagLayer:
 
     def _compute_available_diag_comms(self, odxlinks: OdxLinkDatabase
                                      ) -> Iterable[Union[DiagService, SingleEcuJob]]:
-        get_local_objects_fn = lambda dl: dl._get_local_diag_comms(odxlinks)
-        not_inherited_fn = lambda parent_ref: parent_ref.not_inherited_diag_comms
+
+        def get_local_objects_fn(dl):
+            return dl._get_local_diag_comms(odxlinks)
+
+        def not_inherited_fn(parent_ref):
+            return parent_ref.not_inherited_diag_comms
+
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
     def _compute_available_global_neg_responses(self, odxlinks: OdxLinkDatabase) \
             -> Iterable[Response]:
-        get_local_objects_fn = lambda dl: dl.diag_layer_raw.global_negative_responses
-        not_inherited_fn = lambda parent_ref: parent_ref.not_inherited_global_neg_responses
+
+        def get_local_objects_fn(dl):
+            return dl.diag_layer_raw.global_negative_responses
+
+        def not_inherited_fn(parent_ref):
+            return parent_ref.not_inherited_global_neg_responses
+
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
     def _compute_available_data_object_props(self) -> Iterable[DataObjectProperty]:
-        get_local_objects_fn = lambda dl: \
-            [] if dl.diag_layer_raw.diag_data_dictionary_spec is None \
-            else dl.diag_layer_raw.diag_data_dictionary_spec.data_object_props
-        not_inherited_fn = lambda parent_ref: parent_ref.not_inherited_dops
+
+        def get_local_objects_fn(dl):
+            if dl.diag_layer_raw.diag_data_dictionary_spec is None:
+                return []
+            return dl.diag_layer_raw.diag_data_dictionary_spec.data_object_props
+
+        def not_inherited_fn(parent_ref):
+            return parent_ref.not_inherited_dops
+
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
     def _compute_available_tables(self) -> Iterable[Table]:
-        get_local_objects_fn = lambda dl: \
-            [] if dl.diag_layer_raw.diag_data_dictionary_spec is None \
-            else dl.diag_layer_raw.diag_data_dictionary_spec.tables
-        not_inherited_fn = lambda parent_ref: parent_ref.not_inherited_tables
+
+        def get_local_objects_fn(dl):
+            if dl.diag_layer_raw.diag_data_dictionary_spec is None:
+                return []
+            return dl.diag_layer_raw.diag_data_dictionary_spec.tables
+
+        def not_inherited_fn(parent_ref):
+            return parent_ref.not_inherited_tables
+
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
     def _compute_available_functional_classes(self) -> Iterable[FunctionalClass]:
-        get_local_objects_fn = lambda dl: dl.diag_layer_raw.functional_classes
-        not_inherited_fn: Callable[[ParentRef], List[str]] = lambda parent_ref: []
+
+        def get_local_objects_fn(dl):
+            return dl.diag_layer_raw.functional_classes
+
+        def not_inherited_fn(parent_ref):
+            return []
+
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
     def _compute_available_additional_audiences(self) -> Iterable[AdditionalAudience]:
-        get_local_objects_fn = lambda dl: dl.diag_layer_raw.additional_audiences
-        not_inherited_fn: Callable[[ParentRef], List[str]] = lambda parent_ref: []
+
+        def get_local_objects_fn(dl):
+            return dl.diag_layer_raw.additional_audiences
+
+        def not_inherited_fn(parent_ref):
+            return []
+
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
     def _compute_available_state_charts(self) -> Iterable[StateChart]:
-        get_local_objects_fn = lambda dl: dl.diag_layer_raw.state_charts
-        not_inherited_fn: Callable[[ParentRef], List[str]] = lambda parent_ref: []
+
+        def get_local_objects_fn(dl):
+            return dl.diag_layer_raw.state_charts
+
+        def not_inherited_fn(parent_ref):
+            return []
+
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
     def _compute_available_unit_groups(self) -> Iterable[UnitGroup]:
-        get_local_objects_fn = lambda dl: dl._get_local_unit_groups()
-        not_inherited_fn: Callable[[ParentRef], List[str]] = lambda parent_ref: []
+
+        def get_local_objects_fn(dl):
+            return dl._get_local_unit_groups()
+
+        def not_inherited_fn(parent_ref):
+            return []
+
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
     #####
@@ -913,7 +953,7 @@ class DiagLayer:
         for service in candidate_services:
             try:
                 decoded_messages.append(service.decode_message(message))
-            except DecodeError as e:
+            except DecodeError:
                 # check if the message can be decoded as a global
                 # negative response for the service
                 for gnr in self.global_negative_responses:

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree import ElementTree
 
 from .exceptions import odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -67,13 +68,13 @@ class Unit:
         self._physical_dimension = None
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "Unit":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Unit":
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         oid = et_element.get("OID")
-        short_name = et_element.findtext("SHORT-NAME")
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
-        display_name = et_element.findtext("DISPLAY-NAME")
+        display_name = odxrequire(et_element.findtext("DISPLAY-NAME"))
 
         def read_optional_float(element, name):
             if element.findtext(name):

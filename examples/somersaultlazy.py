@@ -175,8 +175,6 @@ class SomersaultLazyEcu:
         assert cp.value == "Response expected" or cp.value == "1"
 
     async def _handle_requests_task(self):
-        loop = asyncio.get_running_loop()
-
         while True:
             data = await ecu_recv(self.isotp_socket)
 
@@ -201,7 +199,6 @@ class SomersaultLazyEcu:
                 return
 
     async def _handle_request(self, message):
-        loop = asyncio.get_running_loop()
         service = message.service
 
         ecu_logger.info(f"received UDS message: {service.short_name}")
@@ -263,7 +260,6 @@ class SomersaultLazyEcu:
             return
 
     async def _handle_forward_flip_request(self, message):
-        loop = asyncio.get_running_loop()
         service = message.service
         # TODO: the need for .param_dict is quite ugly IMO,
         # i.e. provide a __getitem__() method for the Message class() (?)
@@ -352,8 +348,6 @@ class SomersaultLazyEcu:
 
 
 async def tester_await_response(isotp_socket, raw_message, timeout=0.5):
-    loop = asyncio.get_running_loop()
-
     # await the answer from the server (be aware that the maximum
     # length of ISO-TP telegrams over the CAN bus is 4095 bytes)
     raw_response = await tester_recv(isotp_socket)
@@ -397,8 +391,6 @@ async def tester_await_response(isotp_socket, raw_message, timeout=0.5):
 
 
 async def tester_main():
-    loop = asyncio.get_running_loop()
-
     tester_logger.info("running diagnostic tester")
 
     # note that ODX specifies the CAN IDs from the ECU's point of

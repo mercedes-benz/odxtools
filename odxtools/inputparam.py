@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .dopbase import DopBase
 from .exceptions import odxrequire
@@ -23,7 +23,7 @@ class InputParam:
     physical_default_value: Optional[str]
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "InputParam":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "InputParam":
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))

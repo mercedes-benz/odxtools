@@ -386,7 +386,6 @@ class TestParamLengthInfoType(unittest.TestCase):
             byte_position=1,
             bit_position=None,
         )
-        length_key_ref = OdxLinkRef.from_id(length_key_id)
         dct = ParamLengthInfoType(
             base_data_type="A_UINT32",
             base_type_encoding=None,

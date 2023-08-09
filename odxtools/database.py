@@ -3,7 +3,6 @@ from itertools import chain
 from pathlib import Path
 from typing import List, Optional
 from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
 from zipfile import ZipFile
 
 from .comparamsubset import ComparamSubset
@@ -39,7 +38,7 @@ class Database:
         if pdx_zip is not None and odx_d_file_name is not None:
             raise TypeError("The 'pdx_zip' and 'odx_d_file_name' parameters are mutually exclusive")
 
-        documents: List[Element] = []
+        documents: List[ElementTree.Element] = []
         if pdx_zip is not None:
             names = list(pdx_zip.namelist())
             names.sort()

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from typing import List
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .diagcodedtype import DiagCodedType
 from .exceptions import odxassert, odxrequire
@@ -13,7 +13,7 @@ from .paramlengthinfotype import ParamLengthInfoType
 from .standardlengthtype import StandardLengthType
 
 
-def create_any_diag_coded_type_from_et(et_element: Element,
+def create_any_diag_coded_type_from_et(et_element: ElementTree.Element,
                                        doc_frags: List[OdxDocFragment]) -> DiagCodedType:
     base_type_encoding = et_element.get("BASE-TYPE-ENCODING")
 
@@ -44,7 +44,6 @@ def create_any_diag_coded_type_from_et(et_element: Element,
     elif dct_type == "MIN-MAX-LENGTH-TYPE":
         min_length = int(odxrequire(et_element.findtext("MIN-LENGTH")))
         max_length = None
-        # comparison has to be 'is not None' as Element overwrites __bool__(), and always returns false for MAX-LENGTH elements
         if et_element.find("MAX-LENGTH") is not None:
             max_length = int(odxrequire(et_element.findtext("MAX-LENGTH")))
         termination = odxrequire(et_element.get("TERMINATION"))

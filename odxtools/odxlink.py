@@ -2,7 +2,7 @@
 import warnings
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Type, TypeVar, overload
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .exceptions import OdxWarning, odxassert
 
@@ -63,7 +63,8 @@ class OdxLinkId:
         return f"OdxLinkId('{self.local_id}')"
 
     @staticmethod
-    def from_et(et: Element, doc_fragments: List[OdxDocFragment]) -> Optional["OdxLinkId"]:
+    def from_et(et: ElementTree.Element,
+                doc_fragments: List[OdxDocFragment]) -> Optional["OdxLinkId"]:
         """Construct an OdxLinkId for a given XML node (ElementTree object).
 
         Returns None if the given XML node does not exhibit an ID.
@@ -98,11 +99,11 @@ class OdxLinkRef:
 
     @overload
     @staticmethod
-    def from_et(et: Element, source_doc_frags: List[OdxDocFragment]) -> "OdxLinkRef":
+    def from_et(et: ElementTree.Element, source_doc_frags: List[OdxDocFragment]) -> "OdxLinkRef":
         ...
 
     @staticmethod
-    def from_et(et: Optional[Element],
+    def from_et(et: Optional[ElementTree.Element],
                 source_doc_frags: List[OdxDocFragment]) -> Optional["OdxLinkRef"]:
         """Construct an OdxLinkRef for a given XML node (ElementTree object).
 

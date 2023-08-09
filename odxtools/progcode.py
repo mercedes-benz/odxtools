@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from xml.etree import ElementTree
 
 from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -28,15 +28,17 @@ class ProgCode:
     library_refs: List[OdxLinkRef]
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
         code_file = odxrequire(et_element.findtext("CODE-FILE"))
 
         encryption = et_element.findtext("ENCRYPTION")
 
         syntax_str = odxrequire(et_element.findtext("SYNTAX"))
-        if syntax_str not in ProgCodeSyntax.__members__:
+        try:
+            syntax = ProgCodeSyntax(syntax_str)
+        except ValueError:
+            syntax = cast(ProgCodeSyntax, None)
             odxraise(f"Encountered unknown program code syntax '{syntax_str}'")
-        syntax = ProgCodeSyntax(syntax_str)
 
         revision = odxrequire(et_element.findtext("REVISION"))
         entrypoint = et_element.findtext("ENTRYPOINT")

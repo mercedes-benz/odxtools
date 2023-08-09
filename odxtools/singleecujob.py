@@ -2,8 +2,8 @@
 from dataclasses import dataclass
 from enum import Enum
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-from xml.etree.ElementTree import Element
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
+from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .audience import Audience
@@ -99,7 +99,7 @@ class SingleEcuJob:
             self.neg_output_params = NamedItemList(short_name_as_id)
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "SingleEcuJob":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SingleEcuJob":
 
         logger.info(f"Parsing service based on ET DiagService element: {et_element}")
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
@@ -144,11 +144,13 @@ class SingleEcuJob:
         is_executable_raw = odxstr_to_bool(et_element.get("IS-MANDATORY"))
         is_final_raw = odxstr_to_bool(et_element.get("IS-FINAL"))
 
-        diag_class_type: Optional[DiagClassType] = None
-        if (diag_class_type_str := et_element.get("DIAGNOSTIC-CLASS")) is not None:
-            if diag_class_type_str not in DiagClassType.__members__:
-                odxraise(f"Encountered unknown diagnostic class type '{diag_class_type_str}'")
-            diag_class_type = DiagClassType(diag_class_type_str)
+        diag_class: Optional[DiagClassType] = None
+        if (diag_class_str := et_element.get("DIAGNOSTIC-CLASS")) is not None:
+            try:
+                diag_class = DiagClassType(diag_class_str)
+            except ValueError:
+                diag_class = cast(DiagClassType, None)
+                odxraise(f"Encountered unknown diagnostic class type '{diag_class_str}'")
 
         return SingleEcuJob(
             odx_id=odx_id,
@@ -161,7 +163,7 @@ class SingleEcuJob:
             semantic=semantic,
             audience=audience,
             functional_class_refs=functional_class_refs,
-            diagnostic_class=None,
+            diagnostic_class=diag_class,
             input_params=input_params,
             output_params=output_params,
             neg_output_params=neg_output_params,

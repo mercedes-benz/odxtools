@@ -100,8 +100,6 @@ class TableKeyParameter(Parameter):
                                   f"a KEY-DOP, but is used in TABLE-KEY parameter "
                                   f"'{self.short_name}'")
 
-            byte_pos = len(encode_state.coded_message
-                          ) if self.byte_position is not None else self.byte_position
             byte_len = (key_dop.bit_length + 7) // 8
             if self.bit_position is not None and self.bit_position > 0:
                 byte_len += 1
@@ -126,8 +124,6 @@ class TableKeyParameter(Parameter):
         return key_dop.convert_physical_to_bytes(tr.key, encode_state, bit_position=bit_position)
 
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
-        tr_short_name = encode_state.parameter_values.get(self.short_name)
-
         return super().encode_into_pdu(encode_state)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:

@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from copy import copy
-from typing import TYPE_CHECKING, Any, Dict, Union
+from typing import TYPE_CHECKING, Any, Dict
 
 from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, odxraise
 from ..odxlink import OdxLinkDatabase, OdxLinkId
-from ..odxtypes import DataType
+from ..odxtypes import AtomicOdxType, DataType
 from .parameter import Parameter
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
 class CodedConstParameter(Parameter):
 
-    def __init__(self, *, diag_coded_type: DiagCodedType, coded_value: Union[int, bytes], **kwargs):
+    def __init__(self, *, diag_coded_type: DiagCodedType, coded_value: AtomicOdxType, **kwargs):
         super().__init__(parameter_type="CODED-CONST", **kwargs)
 
         self.diag_coded_type = diag_coded_type

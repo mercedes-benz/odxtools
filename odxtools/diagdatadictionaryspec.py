@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 from itertools import chain
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
 from .createanystructure import create_any_structure_from_et
@@ -51,7 +52,8 @@ class DiagDataDictionarySpec:
         )
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment]) -> "DiagDataDictionarySpec":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "DiagDataDictionarySpec":
         # Parse DOP-BASEs
         data_object_props = [
             DataObjectProperty.from_et(dop_element, doc_frags)
@@ -100,8 +102,8 @@ class DiagDataDictionarySpec:
             for mux_element in et_element.iterfind("MUXS/MUX")
         ]
 
-        if et_element.find("UNIT-SPEC") is not None:
-            unit_spec = UnitSpec.from_et(et_element.find("UNIT-SPEC"), doc_frags)
+        if (spec_elem := et_element.find("UNIT-SPEC")) is not None:
+            unit_spec = UnitSpec.from_et(spec_elem, doc_frags)
         else:
             unit_spec = None
 

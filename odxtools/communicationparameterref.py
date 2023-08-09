@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .basecomparam import BaseComparam
 from .comparam import Comparam
@@ -37,7 +37,7 @@ class CommunicationParameterRef:
         self._comparam: BaseComparam
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment],
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment],
                 dl_type: DiagLayerType) -> "CommunicationParameterRef":
         id_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
 
@@ -50,7 +50,7 @@ class CommunicationParameterRef:
         elif et_element.find("SIMPLE-VALUE") is not None:
             value = odxrequire(et_element.findtext("SIMPLE-VALUE"))
         else:
-            value = odxrequire(create_complex_value_from_et(et_element.find("COMPLEX-VALUE")))
+            value = create_complex_value_from_et(odxrequire(et_element.find("COMPLEX-VALUE")))
 
         is_functional = dl_type == DiagLayerType.FUNCTIONAL_GROUP
         description = create_description_from_et(et_element.find("DESC"))

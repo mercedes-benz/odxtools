@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 from typing import TYPE_CHECKING, List, Union
+from xml.etree import ElementTree
 
 from .createsdgs import create_sdgs_from_et
 from .globals import logger
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
     from .response import Response
 
 
-def create_any_structure_from_et(et_element, doc_frags: List[OdxDocFragment]
+def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]
                                 ) -> Union[Structure, "Request", "Response", None]:
     from .request import Request
     from .response import Response

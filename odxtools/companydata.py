@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .companyspecificinfo import CompanySpecificInfo
 from .exceptions import odxrequire
@@ -25,7 +25,7 @@ class CompanyData:
     company_specific_info: Optional[CompanySpecificInfo]
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "CompanyData":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "CompanyData":
 
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
@@ -79,17 +79,3 @@ class CompanyData:
 
         if self.company_specific_info:
             self.company_specific_info._resolve_snrefs(diag_layer)
-
-
-def create_company_datas_from_et(et_element,
-                                 doc_frags: List[OdxDocFragment]) -> NamedItemList[CompanyData]:
-    if et_element is None:
-        return NamedItemList(short_name_as_id)
-
-    return NamedItemList(
-        short_name_as_id,
-        [
-            CompanyData.from_et(cd_elem, doc_frags)
-            for cd_elem in et_element.iterfind("COMPANY-DATA")
-        ],
-    )

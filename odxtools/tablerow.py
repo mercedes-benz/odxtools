@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
 from .createsdgs import create_sdgs_from_et
@@ -22,7 +23,7 @@ class TableRow:
 
     odx_id: OdxLinkId
     short_name: str
-    long_name: str
+    long_name: Optional[str]
     table_ref: OdxLinkRef
     key_raw: str
     structure_ref: Optional[OdxLinkRef]
@@ -49,7 +50,7 @@ class TableRow:
         )
 
     @staticmethod
-    def from_et(et_element, doc_frags: List[OdxDocFragment], *,
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
                 table_ref: OdxLinkRef) -> "TableRow":
         """Reads a TABLE-ROW."""
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
@@ -57,7 +58,7 @@ class TableRow:
         long_name = et_element.findtext("LONG-NAME")
         semantic = et_element.get("SEMANTIC")
         description = create_description_from_et(et_element.find("DESC"))
-        key_raw = et_element.findtext("KEY")
+        key_raw = odxrequire(et_element.findtext("KEY"))
         structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
         structure_snref: Optional[str] = None
         if (structure_snref_elem := et_element.find("STRUCTURE-SNREF")) is not None:

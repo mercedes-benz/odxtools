@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
@@ -41,7 +41,7 @@ class EnvironmentDataDescription(DopBase):
         self.param_snpathref = param_snpathref
 
     @staticmethod
-    def from_et(et_element: Element,
+    def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "EnvironmentDataDescription":
         """Reads Environment Data Description from Diag Layer."""
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .compumethods.compumethod import CompuMethod
 from .compumethods.createanycompumethod import create_any_compu_method_from_et
@@ -43,7 +43,8 @@ class DataObjectProperty(DopBase):
         self.unit_ref = unit_ref
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "DataObjectProperty":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "DataObjectProperty":
         """Reads a DATA-OBJECT-PROP or a DTC-DOP."""
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
@@ -55,9 +56,10 @@ class DataObjectProperty(DopBase):
         diag_coded_type = create_any_diag_coded_type_from_et(
             odxrequire(et_element.find("DIAG-CODED-TYPE")), doc_frags)
 
-        physical_type = PhysicalType.from_et(et_element.find("PHYSICAL-TYPE"), doc_frags)
+        physical_type = PhysicalType.from_et(
+            odxrequire(et_element.find("PHYSICAL-TYPE")), doc_frags)
         compu_method = create_any_compu_method_from_et(
-            et_element.find("COMPU-METHOD"),
+            odxrequire(et_element.find("COMPU-METHOD")),
             doc_frags,
             diag_coded_type.base_data_type,
             physical_type.base_data_type,

@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from typing import Any, Dict, List
+from xml.etree import ElementTree
 
-from ..exceptions import OdxWarning, odxassert
+from ..exceptions import OdxWarning, odxassert, odxraise, odxrequire
 from ..globals import logger
 from ..odxlink import OdxDocFragment
 from ..odxtypes import DataType
@@ -89,8 +90,8 @@ def _parse_compu_scale_to_linear_compu_method(
     return LinearCompuMethod(**kwargs)
 
 
-def create_any_compu_method_from_et(et_element, doc_frags: List[OdxDocFragment],
-                                    internal_type: DataType,
+def create_any_compu_method_from_et(et_element: ElementTree.Element,
+                                    doc_frags: List[OdxDocFragment], internal_type: DataType,
                                     physical_type: DataType) -> CompuMethod:
     compu_category = et_element.findtext("CATEGORY")
     odxassert(compu_category in [
@@ -120,7 +121,7 @@ def create_any_compu_method_from_et(et_element, doc_frags: List[OdxDocFragment],
 
     if compu_category == "TEXTTABLE":
         odxassert(physical_type == DataType.A_UNICODE2STRING)
-        compu_internal_to_phys = et_element.find("COMPU-INTERNAL-TO-PHYS")
+        compu_internal_to_phys = odxrequire(et_element.find("COMPU-INTERNAL-TO-PHYS"))
 
         internal_to_phys: List[CompuScale] = []
         for scale in compu_internal_to_phys.iterfind("COMPU-SCALES/COMPU-SCALE"):
@@ -128,9 +129,9 @@ def create_any_compu_method_from_et(et_element, doc_frags: List[OdxDocFragment],
             upper_limit = Limit.from_et(scale.find("UPPER-LIMIT"), internal_type=internal_type)
 
             if (vt := scale.find("COMPU-INVERSE-VALUE/VT")) is not None:
-                compu_inverse_value = internal_type.from_string(vt.text)
+                compu_inverse_value = internal_type.from_string(odxrequire(vt.text))
             elif (v := scale.find("COMPU-INVERSE-VALUE/V")) is not None:
-                compu_inverse_value = internal_type.from_string(v.text)
+                compu_inverse_value = internal_type.from_string(odxrequire(v.text))
             else:
                 compu_inverse_value = None
 
@@ -142,7 +143,7 @@ def create_any_compu_method_from_et(et_element, doc_frags: List[OdxDocFragment],
                     lower_limit=lower_limit,
                     upper_limit=upper_limit,
                     compu_inverse_value=compu_inverse_value,
-                    compu_const=scale.find("COMPU-CONST").findtext("VT"),
+                    compu_const=odxrequire(scale.findtext("COMPU-CONST/VT")),
                 ))
 
         kwargs["internal_to_phys"] = internal_to_phys
@@ -151,10 +152,10 @@ def create_any_compu_method_from_et(et_element, doc_frags: List[OdxDocFragment],
     elif compu_category == "LINEAR":
         # Compu method can be described by the function f(x) = (offset + factor * x) / denominator
 
-        scale = et_element.find("COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE")
+        scale_elem = odxrequire(et_element.find("COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE"))
         kwargs["internal_type"] = internal_type
         kwargs["physical_type"] = physical_type
-        return _parse_compu_scale_to_linear_compu_method(scale_element=scale, **kwargs)
+        return _parse_compu_scale_to_linear_compu_method(scale_element=scale_elem, **kwargs)
 
     elif compu_category == "SCALE-LINEAR":
 
@@ -168,19 +169,27 @@ def create_any_compu_method_from_et(et_element, doc_frags: List[OdxDocFragment],
         return ScaleLinearCompuMethod(linear_methods=linear_methods)
 
     elif compu_category == "TAB-INTP":
+        internal_points = []
+        physical_points = []
+        for scale_elem in et_element.iterfind("COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE"):
+            internal_point = internal_type.from_string(
+                odxrequire(scale_elem.findtext("LOWER-LIMIT")))
+            physical_point = physical_type.from_string(
+                odxrequire(scale_elem.findtext("COMPU-CONST/V")))
 
-        scales = et_element.findall("COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE")
-        internal = [scale.findtext("LOWER-LIMIT") for scale in scales]
-        physical = [scale.findtext("COMPU-CONST/V") for scale in scales]
+            if not isinstance(internal_point, (float, int)):
+                odxraise()
+            if not isinstance(physical_point, (float, int)):
+                odxraise()
 
-        internal = [internal_type.from_string(x) for x in internal]
-        physical = [physical_type.from_string(x) for x in physical]
+            internal_points.append(internal_point)
+            physical_points.append(physical_point)
 
         return TabIntpCompuMethod(
             internal_type=internal_type,
             physical_type=physical_type,
-            internal_points=internal,
-            physical_points=physical,
+            internal_points=internal_points,
+            physical_points=physical_points,
         )
 
     # TODO: Implement other categories (never instantiate CompuMethod)

@@ -8,7 +8,7 @@ from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxassert
 from ..odxlink import OdxLinkDatabase, OdxLinkId
-from ..odxtypes import DataType
+from ..odxtypes import AtomicOdxType, DataType
 from .parameter import Parameter
 
 if TYPE_CHECKING:
@@ -25,7 +25,8 @@ class NrcConstParameter(Parameter):
     See ASAM MCD-2 D (ODX), p. 77-79.
     """
 
-    def __init__(self, *, diag_coded_type: DiagCodedType, coded_values: List[int], **kwargs):
+    def __init__(self, *, diag_coded_type: DiagCodedType, coded_values: List[AtomicOdxType],
+                 **kwargs):
         super().__init__(parameter_type="NRC-CONST", **kwargs)
 
         self.diag_coded_type = diag_coded_type

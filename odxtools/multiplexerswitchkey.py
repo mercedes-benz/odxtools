@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
-from xml.etree.ElementTree import Element
+from xml.etree import ElementTree
 
 from .dataobjectproperty import DataObjectProperty
 from .exceptions import odxrequire
@@ -24,7 +24,8 @@ class MultiplexerSwitchKey:
         self._dop: DataObjectProperty = None  # type: ignore
 
     @staticmethod
-    def from_et(et_element: Element, doc_frags: List[OdxDocFragment]) -> "MultiplexerSwitchKey":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "MultiplexerSwitchKey":
         """Reads a Switch Key for a Multiplexer."""
         byte_position = int(odxrequire(et_element.findtext("BYTE-POSITION", "0")))
         bit_position_str = et_element.findtext("BIT-POSITION")

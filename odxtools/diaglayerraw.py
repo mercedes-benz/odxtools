@@ -101,9 +101,8 @@ class DiagLayerRaw:
         ]
 
         diag_data_dictionary_spec = None
-        if et_element.find("DIAG-DATA-DICTIONARY-SPEC"):
-            diag_data_dictionary_spec = DiagDataDictionarySpec.from_et(
-                et_element.find("DIAG-DATA-DICTIONARY-SPEC"), doc_frags)
+        if (ddds_elem := et_element.find("DIAG-DATA-DICTIONARY-SPEC")) is not None:
+            diag_data_dictionary_spec = DiagDataDictionarySpec.from_et(ddds_elem, doc_frags)
 
         diag_comms: List[Union[OdxLinkRef, DiagService, SingleEcuJob]] = []
         if (dc_elems := et_element.find("DIAG-COMMS")) is not None:
