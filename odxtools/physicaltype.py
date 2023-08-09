@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
+from enum import IntEnum
 from typing import List, Optional
 from xml.etree import ElementTree
 
@@ -9,11 +9,11 @@ from .odxlink import OdxDocFragment
 from .odxtypes import DataType
 
 
-class Radix(Enum):
-    HEX = "HEX"
-    DEC = "DEC"
-    BIN = "BIN"
-    OCT = "OCT"
+class Radix(IntEnum):
+    HEX = 16
+    DEC = 10
+    BIN = 2
+    OCT = 8
 
 
 @dataclass
@@ -67,7 +67,7 @@ class PhysicalType:
         if display_radix_str is not None:
             if display_radix_str not in Radix.__members__:
                 odxraise(f"Encountered unknown display radix '{display_radix_str}'")
-            display_radix = Radix(display_radix_str)
+            display_radix = Radix.__members__[display_radix_str]
         else:
             display_radix = None
 
