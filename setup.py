@@ -16,7 +16,7 @@ requires_list = [
     "argparse_addons",
     "PyInquirer",
     "jinja2",
-    "python-can < 4.0",
+    "python-can",
     "can-isotp",
     "markdownify",
     "deprecation",
