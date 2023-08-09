@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from enum import Enum
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -149,6 +149,7 @@ class SingleEcuJob:
             try:
                 diag_class = DiagClassType(diag_class_str)
             except ValueError:
+                diag_class = cast(DiagClassType, None)
                 odxraise(f"Encountered unknown diagnostic class type '{diag_class_str}'")
 
         return SingleEcuJob(

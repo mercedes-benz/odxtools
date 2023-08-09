@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from .exceptions import odxraise, odxrequire
@@ -37,6 +37,7 @@ class ProgCode:
         try:
             syntax = ProgCodeSyntax(syntax_str)
         except ValueError:
+            syntax = cast(ProgCodeSyntax, None)
             odxraise(f"Encountered unknown program code syntax '{syntax_str}'")
 
         revision = odxrequire(et_element.findtext("REVISION"))

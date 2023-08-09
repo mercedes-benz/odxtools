@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 from enum import Enum
-from typing import NamedTuple, Optional, Union
+from typing import NamedTuple, Optional, Union, cast
 from xml.etree import ElementTree
 
-from ..exceptions import odxassert, odxrequire
+from ..exceptions import odxassert, odxraise, odxrequire
 from ..odxtypes import DataType
 
 
@@ -24,8 +24,12 @@ class Limit(NamedTuple):
         if et_element is None:
             return None
 
-        if et_element.get("INTERVAL-TYPE"):
-            interval_type = IntervalType(et_element.get("INTERVAL-TYPE"))
+        if (interval_type_str := et_element.get("INTERVAL-TYPE")) is not None:
+            try:
+                interval_type = IntervalType(interval_type_str)
+            except ValueError:
+                interval_type = IntervalType.CLOSED
+                odxraise(f"Encountered unknown interval type '{interval_type_str}'")
         else:
             interval_type = IntervalType.CLOSED
 

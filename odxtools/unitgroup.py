@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from .exceptions import odxraise, odxrequire
@@ -42,10 +42,11 @@ class UnitGroup:
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
-        category_str = et_element.findtext("CATEGORY")
+        category_str = odxrequire(et_element.findtext("CATEGORY"))
         try:
             category = UnitGroupCategory(category_str)
         except ValueError:
+            category = cast(UnitGroupCategory, None)
             odxraise(f"Encountered unknown unit group category '{category_str}'")
 
         unit_refs: List[OdxLinkRef] = [

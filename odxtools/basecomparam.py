@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
-from .exceptions import odxrequire
+from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .utils import create_description_from_et
 
@@ -44,8 +44,21 @@ class BaseComparam:
         self.long_name = et_element.findtext("LONG-NAME")
         self.description = create_description_from_et(et_element.find("DESC"))
         self.param_class = odxrequire(et_element.attrib.get("PARAM-CLASS"))
-        self.cptype = StandardizationLevel(odxrequire(et_element.attrib.get("CPTYPE")))
-        self.cpusage = Usage(odxrequire(et_element.attrib.get("CPUSAGE")))
+
+        cptype_str = odxrequire(et_element.attrib.get("CPTYPE"))
+        try:
+            self.cptype = StandardizationLevel(cptype_str)
+        except ValueError:
+            self.cptype = cast(StandardizationLevel, None)
+            odxraise(f"Encountered unknown CPTYPE '{cptype_str}'")
+
+        cpusage_str = odxrequire(et_element.attrib.get("CPUSAGE"))
+        try:
+            self.cpusage = Usage(cpusage_str)
+        except ValueError:
+            self.cpusage = cast(Usage, None)
+            odxraise(f"Encountered unknown CPUSAGE '{cpusage_str}'")
+
         dl = et_element.attrib.get("DISPLAY_LEVEL")
         self.display_level = None if dl is None else int(dl)
 
