@@ -146,9 +146,10 @@ class SingleEcuJob:
 
         diag_class: Optional[DiagClassType] = None
         if (diag_class_str := et_element.get("DIAGNOSTIC-CLASS")) is not None:
-            if diag_class_str not in DiagClassType.__members__:
+            try:
+                diag_class = DiagClassType(diag_class_str)
+            except ValueError:
                 odxraise(f"Encountered unknown diagnostic class type '{diag_class_str}'")
-            diag_class = DiagClassType(diag_class_str)
 
         return SingleEcuJob(
             odx_id=odx_id,

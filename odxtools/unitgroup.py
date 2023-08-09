@@ -43,9 +43,10 @@ class UnitGroup:
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
         category_str = et_element.findtext("CATEGORY")
-        if category_str not in UnitGroupCategory.__members__:
+        try:
+            category = UnitGroupCategory(category_str)
+        except ValueError:
             odxraise(f"Encountered unknown unit group category '{category_str}'")
-        category = UnitGroupCategory(category_str)
 
         unit_refs: List[OdxLinkRef] = [
             odxrequire(OdxLinkRef.from_et(el, doc_frags))

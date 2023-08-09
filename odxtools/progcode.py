@@ -34,9 +34,10 @@ class ProgCode:
         encryption = et_element.findtext("ENCRYPTION")
 
         syntax_str = odxrequire(et_element.findtext("SYNTAX"))
-        if syntax_str not in ProgCodeSyntax.__members__:
+        try:
+            syntax = ProgCodeSyntax(syntax_str)
+        except ValueError:
             odxraise(f"Encountered unknown program code syntax '{syntax_str}'")
-        syntax = ProgCodeSyntax(syntax_str)
 
         revision = odxrequire(et_element.findtext("REVISION"))
         entrypoint = et_element.findtext("ENTRYPOINT")
