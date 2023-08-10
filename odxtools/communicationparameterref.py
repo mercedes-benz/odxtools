@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import warnings
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
@@ -15,26 +16,14 @@ if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
+@dataclass
 class CommunicationParameterRef:
-
-    def __init__(
-        self,
-        *,
-        value: Union[str, ComplexValue],
-        id_ref: OdxLinkRef,
-        is_functional: bool,
-        description: Optional[str],
-        protocol_snref: Optional[str],
-        prot_stack_snref: Optional[str],
-    ) -> None:
-        self.value = value
-        self.id_ref = id_ref
-        self.is_functional = is_functional
-        self.description = description
-        self.protocol_snref = protocol_snref
-        self.prot_stack_snref = prot_stack_snref
-
-        self._comparam: BaseComparam
+    value: Union[str, ComplexValue]
+    description: Optional[str]
+    protocol_snref: Optional[str]
+    prot_stack_snref: Optional[str]
+    id_ref: OdxLinkRef
+    is_functional: bool
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment],
