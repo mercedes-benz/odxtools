@@ -1,24 +1,24 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
+
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError
 from .parameter import Parameter
 
 
+@dataclass
 class MatchingRequestParameter(Parameter):
+    request_byte_position: int
+    byte_length: int
 
-    def __init__(self, *, request_byte_position: int, byte_length: int, **kwargs):
-        super().__init__(parameter_type="MATCHING-REQUEST-PARAM", **kwargs)
-        self.request_byte_position = request_byte_position
-        self._byte_length = byte_length
+    @property
+    def parameter_type(self) -> str:
+        return "MATCHING-REQUEST-PARAM"
 
     @property
     def bit_length(self):
-        return 8 * self._byte_length
-
-    @property
-    def byte_length(self):
-        return self._byte_length
+        return 8 * self.byte_length
 
     def is_required(self):
         return True
@@ -68,5 +68,5 @@ class MatchingRequestParameter(Parameter):
     def __str__(self):
         return (
             super().__str__() +
-            f"\n Request byte position = {self.request_byte_position}, byte length = {self._byte_length}"
+            f"\n Request byte position = {self.request_byte_position}, byte length = {self.byte_length}"
         )

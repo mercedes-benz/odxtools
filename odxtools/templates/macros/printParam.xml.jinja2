@@ -37,8 +37,8 @@
 {%- endif %}
 {%- if param.coded_value is defined %}
  <CODED-VALUE>{{param.coded_value}}</CODED-VALUE>
-{%- elif param.physical_constant_value is defined %}
- <PHYS-CONSTANT-VALUE>{{param.physical_constant_value}}</PHYS-CONSTANT-VALUE>
+{%- elif param.physical_constant_value_raw is defined %}
+ <PHYS-CONSTANT-VALUE>{{param.physical_constant_value_raw}}</PHYS-CONSTANT-VALUE>
 {%- elif param.coded_values is defined %}
  <CODED-VALUES>
  {%- for coded_value in param.coded_values %}

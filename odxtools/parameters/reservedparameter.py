@@ -1,26 +1,34 @@
 # SPDX-License-Identifier: MIT
 import warnings
+from dataclasses import dataclass
 
 from ..decodestate import DecodeState
 from ..exceptions import DecodeError
 from .parameter import Parameter
 
 
+@dataclass
 class ReservedParameter(Parameter):
-
-    def __init__(self, *, bit_length, **kwargs):
-        super().__init__(parameter_type="RESERVED", **kwargs)
-        self._bit_length = bit_length
+    bit_length_raw: int
 
     @property
-    def bit_length(self):
-        return self._bit_length
+    def parameter_type(self) -> str:
+        return "RESERVED"
 
     def is_required(self):
         return False
 
     def is_optional(self):
         return False
+
+    @property
+    def bit_length(self) -> int:
+        # this is a bit hacky: the parent class already specifies
+        # bit_length as a function property, and we need to change
+        # this to return the value from the XML here. Since function
+        # attributes cannot be overridden by non-function ones, we
+        # need to take the "bit_length_raw" detour...
+        return self.bit_length_raw
 
     def get_coded_value(self):
         return 0
@@ -34,12 +42,13 @@ class ReservedParameter(Parameter):
             self.byte_position
             if self.byte_position is not None else decode_state.next_byte_position)
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        byte_length = (self.bit_length + bit_position_int + 7) // 8
+        byte_length = (self.bit_length_raw + bit_position_int + 7) // 8
         val_as_bytes = decode_state.coded_message[byte_position:byte_position + byte_length]
         next_byte_position = byte_position + byte_length
 
         # Check that reserved bits are 0
-        expected = sum(2**i for i in range(bit_position_int, bit_position_int + self.bit_length))
+        expected = sum(
+            2**i for i in range(bit_position_int, bit_position_int + self.bit_length_raw))
         actual = int.from_bytes(val_as_bytes, "big")
 
         # Bit-wise compare if reserved bits are 0.

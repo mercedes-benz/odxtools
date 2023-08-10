@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from copy import copy
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List
 
 from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, EncodeError, odxassert
+from ..exceptions import DecodeError, EncodeError
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType, DataType
 from .parameter import Parameter
@@ -15,6 +16,7 @@ if TYPE_CHECKING:
     from ..diaglayer import DiagLayer
 
 
+@dataclass
 class NrcConstParameter(Parameter):
     """A param of type NRC-CONST defines a set of values to be matched.
 
@@ -25,14 +27,12 @@ class NrcConstParameter(Parameter):
     See ASAM MCD-2 D (ODX), p. 77-79.
     """
 
-    def __init__(self, *, diag_coded_type: DiagCodedType, coded_values: List[AtomicOdxType],
-                 **kwargs):
-        super().__init__(parameter_type="NRC-CONST", **kwargs)
+    diag_coded_type: DiagCodedType
+    coded_values: List[AtomicOdxType]
 
-        self.diag_coded_type = diag_coded_type
-        # TODO: Does it have to be an integer or is that just common practice?
-        odxassert(all(isinstance(coded_value, int) for coded_value in coded_values))
-        self.coded_values = coded_values
+    @property
+    def parameter_type(self) -> str:
+        return "NRC-CONST"
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()

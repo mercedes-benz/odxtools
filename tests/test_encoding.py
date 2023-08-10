@@ -162,6 +162,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
 
         param1._resolve_odxlinks(odxlinks)
+        param1._resolve_snrefs(None)
 
         # Missing mandatory parameter.
         with self.assertRaises(TypeError):

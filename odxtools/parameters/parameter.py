@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 import abc
 import warnings
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from ..decodestate import DecodeState
@@ -13,28 +14,16 @@ if TYPE_CHECKING:
     from ..diaglayer import DiagLayer
 
 
+@dataclass
 class Parameter(abc.ABC):
 
-    def __init__(
-        self,
-        *,
-        short_name: str,
-        parameter_type: str,
-        long_name: Optional[str],
-        byte_position: Optional[int],
-        bit_position: Optional[int],
-        semantic: Optional[str],
-        description: Optional[str],
-        sdgs: List[SpecialDataGroup],
-    ) -> None:
-        self.short_name: str = short_name
-        self.long_name: Optional[str] = long_name
-        self.byte_position: Optional[int] = byte_position
-        self.bit_position: Optional[int] = bit_position
-        self.parameter_type: str = parameter_type
-        self.semantic: Optional[str] = semantic
-        self.description: Optional[str] = description
-        self.sdgs = sdgs
+    short_name: str
+    long_name: Optional[str]
+    byte_position: Optional[int]
+    bit_position: Optional[int]
+    semantic: Optional[str]
+    description: Optional[str]
+    sdgs: List[SpecialDataGroup]
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
@@ -51,6 +40,11 @@ class Parameter(abc.ABC):
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)
+
+    @property
+    @abc.abstractmethod
+    def parameter_type(self) -> str:
+        pass
 
     @property
     def bit_length(self) -> Optional[int]:

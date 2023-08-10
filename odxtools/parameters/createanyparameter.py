@@ -26,7 +26,7 @@ from .valueparameter import ValueParameter
 def create_any_parameter_from_et(et_element: ElementTree.Element,
                                  doc_frags: List[OdxDocFragment]) \
                                  -> Parameter:
-    short_name = et_element.findtext("SHORT-NAME")
+    short_name = odxrequire(et_element.findtext("SHORT-NAME"))
     long_name = et_element.findtext("LONG-NAME")
     description = create_description_from_et(et_element.find("DESC"))
     semantic = et_element.get("SEMANTIC")
@@ -81,7 +81,7 @@ def create_any_parameter_from_et(et_element: ElementTree.Element,
             bit_position=bit_position,
             dop_ref=dop_ref,
             dop_snref=dop_snref,
-            physical_constant_value=physical_constant_value,
+            physical_constant_value_raw=physical_constant_value,
             description=description,
             sdgs=sdgs,
         )
@@ -128,7 +128,7 @@ def create_any_parameter_from_et(et_element: ElementTree.Element,
         bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))
 
         return ReservedParameter(
-            bit_length=bit_length,
+            bit_length_raw=bit_length,
             short_name=short_name,
             long_name=long_name,
             semantic=semantic,
@@ -155,7 +155,7 @@ def create_any_parameter_from_et(et_element: ElementTree.Element,
         )
 
     elif parameter_type == "SYSTEM":
-        sysparam = et_element.get("SYSPARAM")
+        sysparam = odxrequire(et_element.get("SYSPARAM"))
 
         return SystemParameter(
             short_name=short_name,
@@ -171,7 +171,7 @@ def create_any_parameter_from_et(et_element: ElementTree.Element,
         )
 
     elif parameter_type == "LENGTH-KEY":
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
 
         return LengthKeyParameter(
             short_name=short_name,
@@ -219,7 +219,7 @@ def create_any_parameter_from_et(et_element: ElementTree.Element,
 
     elif parameter_type == "TABLE-KEY":
 
-        parameter_id = OdxLinkId.from_et(et_element, doc_frags)
+        parameter_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
         table_ref = OdxLinkRef.from_et(et_element.find("TABLE-REF"), doc_frags)
         if (table_snref_elem := et_element.find("TABLE-SNREF")) is not None:
             table_snref = odxrequire(table_snref_elem.get("SHORT-NAME"))

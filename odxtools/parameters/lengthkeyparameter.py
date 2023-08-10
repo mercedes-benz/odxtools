@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Tuple
 
 from ..decodestate import DecodeState
@@ -11,6 +12,7 @@ if TYPE_CHECKING:
     from diaglayer import DiagLayer
 
 
+@dataclass
 class LengthKeyParameter(ParameterWithDOP):
     """Length Keys specify the bit (!) length of another parameter.
 
@@ -21,9 +23,11 @@ class LengthKeyParameter(ParameterWithDOP):
     and its DOP must be a simple DOP with PHYSICAL-TYPE/BASE-DATA-TYPE=DataType.A_UINT32.
     """
 
-    def __init__(self, *, odx_id, **kwargs):
-        super().__init__(parameter_type="LENGTH-KEY", **kwargs)
-        self.odx_id = odx_id
+    odx_id: OdxLinkId
+
+    @property
+    def parameter_type(self) -> str:
+        return "LENGTH-KEY"
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()

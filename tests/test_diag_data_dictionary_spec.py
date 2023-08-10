@@ -180,7 +180,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     description=None,
                     semantic="DATA",
                     byte_position=1,
-                    physical_constant_value=1,
+                    physical_constant_value_raw="1",
                     dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),
                     dop_snref=None,
                     bit_position=None,

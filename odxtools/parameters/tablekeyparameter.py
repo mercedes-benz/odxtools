@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, EncodeError, odxrequire
-from ..odxlink import OdxLinkDatabase, OdxLinkId
+from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parameter import Parameter
 
 if TYPE_CHECKING:
@@ -13,19 +14,23 @@ if TYPE_CHECKING:
     from ..tablerow import TableRow
 
 
+@dataclass
 class TableKeyParameter(Parameter):
 
-    def __init__(self, *, odx_id, table_ref, table_snref, table_row_snref, table_row_ref, **kwargs):
-        super().__init__(parameter_type="TABLE-KEY", **kwargs)
-        self.odx_id = odx_id
-        self.table_ref = table_ref
-        self.table_row_ref = table_row_ref
-        self.table_snref = table_snref
-        self.table_row_snref = table_row_snref
+    odx_id: OdxLinkId
+    table_ref: Optional[OdxLinkRef]
+    table_snref: Optional[str]
+    table_row_snref: Optional[str]
+    table_row_ref: Optional[OdxLinkRef]
 
+    def __post_init__(self) -> None:
         if self.table_ref is None and self.table_snref is None and \
            self.table_row_ref is None and self.table_row_snref is None:
-            raise ValueError("Either a table or a table row must be defined.")
+            odxraise("Either a table or a table row must be defined.")
+
+    @property
+    def parameter_type(self) -> str:
+        return "TABLE-KEY"
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()

@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from copy import copy
-from typing import TYPE_CHECKING, Any, Dict, Tuple
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError, OdxWarning, odxraise
-from ..odxlink import OdxLinkDatabase, OdxLinkId
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parameter import Parameter
 from .tablekeyparameter import TableKeyParameter
 
@@ -14,15 +15,19 @@ if TYPE_CHECKING:
     from ..diaglayer import DiagLayer
 
 
+@dataclass
 class TableStructParameter(Parameter):
 
-    def __init__(self, *, table_key_ref, table_key_snref, **kwargs):
-        super().__init__(parameter_type="TABLE-STRUCT", **kwargs)
+    table_key_ref: Optional[OdxLinkRef]
+    table_key_snref: Optional[str]
 
-        self.table_key_ref = table_key_ref
-        self.table_key_snref = table_key_snref
+    def __post_init__(self) -> None:
         if self.table_key_ref is None and self.table_key_snref is None:
             odxraise("Either table_key_ref or table_key_snref must be defined.")
+
+    @property
+    def parameter_type(self) -> str:
+        return "TABLE-STRUCT"
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return super()._build_odxlinks()

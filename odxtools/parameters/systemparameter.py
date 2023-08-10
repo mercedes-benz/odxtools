@@ -1,12 +1,16 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
+
 from .parameterwithdop import ParameterWithDOP
 
 
+@dataclass
 class SystemParameter(ParameterWithDOP):
+    sysparam: str
 
-    def __init__(self, *, sysparam, **kwargs):
-        super().__init__(parameter_type="SYSTEM", **kwargs)
-        self.sysparam = sysparam
+    @property
+    def parameter_type(self) -> str:
+        return "SYSTEM"
 
     def is_required(self):
         raise NotImplementedError("SystemParameter.is_required is not implemented yet.")

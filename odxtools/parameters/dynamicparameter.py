@@ -1,11 +1,15 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
+
 from .parameter import Parameter
 
 
+@dataclass
 class DynamicParameter(Parameter):
 
-    def __init__(self, **kwargs):
-        super().__init__(parameter_type="DYNAMIC", **kwargs)
+    @property
+    def parameter_type(self) -> str:
+        return "DYNAMIC"
 
     def is_required(self):
         raise NotImplementedError("DynamicParameter.is_required is not implemented yet.")

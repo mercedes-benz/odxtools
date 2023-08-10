@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from copy import copy
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict
 
 from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, odxraise
+from ..exceptions import DecodeError
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType, DataType
 from .parameter import Parameter
@@ -15,15 +16,15 @@ if TYPE_CHECKING:
     from ..diaglayer import DiagLayer
 
 
+@dataclass
 class CodedConstParameter(Parameter):
 
-    def __init__(self, *, diag_coded_type: DiagCodedType, coded_value: AtomicOdxType, **kwargs):
-        super().__init__(parameter_type="CODED-CONST", **kwargs)
+    diag_coded_type: DiagCodedType
+    coded_value: AtomicOdxType
 
-        self.diag_coded_type = diag_coded_type
-        if not isinstance(coded_value, (int, bytes, bytearray)):
-            odxraise()
-        self.coded_value = coded_value
+    @property
+    def parameter_type(self) -> str:
+        return "CODED-CONST"
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()

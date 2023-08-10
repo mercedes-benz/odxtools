@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 from copy import copy
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 from ..dataobjectproperty import DataObjectProperty
@@ -17,22 +18,13 @@ if TYPE_CHECKING:
     from ..diaglayer import DiagLayer
 
 
+@dataclass
 class ParameterWithDOP(Parameter):
+    dop_ref: Optional[OdxLinkRef]
+    dop_snref: Optional[str]
 
-    def __init__(
-        self,
-        *,
-        parameter_type: str,
-        dop_ref: Optional[OdxLinkRef],
-        dop_snref: Optional[str],
-        **kwargs,
-    ) -> None:
-        super().__init__(parameter_type=parameter_type, **kwargs)
-        self.dop_ref = dop_ref
-        self.dop_snref = dop_snref
-
-        self._dop: Optional[DopBase] = None
-        if dop_snref is None and dop_ref is None:
+    def __post_init__(self) -> None:
+        if self.dop_snref is None and self.dop_ref is None:
             logger.warn(f"Param {self.short_name} without DOP-(SN)REF should not exist!")
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

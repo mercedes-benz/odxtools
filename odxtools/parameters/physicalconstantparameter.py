@@ -1,24 +1,47 @@
 # SPDX-License-Identifier: MIT
 import warnings
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Dict
 
+from ..dataobjectproperty import DataObjectProperty
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, odxrequire
+from ..exceptions import DecodeError, odxraise, odxrequire
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
 from .parameterwithdop import ParameterWithDOP
 
+if TYPE_CHECKING:
+    from ..diaglayer import DiagLayer
 
+
+@dataclass
 class PhysicalConstantParameter(ParameterWithDOP):
 
-    def __init__(self, *, physical_constant_value: ParameterValue, **kwargs) -> None:
-        super().__init__(parameter_type="PHYS-CONST", **kwargs)
-
-        self._physical_constant_value = physical_constant_value
+    physical_constant_value_raw: str
 
     @property
-    def physical_constant_value(self):
-        # Cast to physical type
-        return self.dop.physical_type.base_data_type.from_string(self._physical_constant_value)
+    def parameter_type(self) -> str:
+        return "PHYS-CONST"
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return super()._build_odxlinks()
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        super()._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        super()._resolve_snrefs(diag_layer)
+
+        dop = odxrequire(self.dop)
+        if not isinstance(dop, DataObjectProperty):
+            odxraise("The type of PHYS-CONST parameters must be a simple DOP")
+        base_data_type = dop.physical_type.base_data_type
+        self._physical_constant_value = base_data_type.from_string(self.physical_constant_value_raw)
+
+    @property
+    def physical_constant_value(self) -> ParameterValue:
+        return self._physical_constant_value
 
     def is_required(self):
         return False
@@ -34,8 +57,8 @@ class PhysicalConstantParameter(ParameterWithDOP):
         if (self.short_name in encode_state.parameter_values and
                 encode_state.parameter_values[self.short_name] != self.physical_constant_value):
             raise TypeError(
-                f"The parameter '{self.short_name}' is constant {self.physical_constant_value}"
-                " and thus can not be changed.")
+                f"The parameter '{self.short_name}' is constant {self.physical_constant_value!r}"
+                f" and thus can not be changed.")
 
         bit_position_int = self.bit_position if self.bit_position is not None else 0
         return dop.convert_physical_to_bytes(
@@ -57,7 +80,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
         return phys_val, next_byte_position
 
     def __repr__(self) -> str:
-        repr_str = f"PhysicalConstantParameter(short_name='{self.short_name}', physical_constant_value={self.physical_constant_value}"
+        repr_str = f"PhysicalConstantParameter(short_name='{self.short_name}', physical_constant_value={self.physical_constant_value!r}"
         if self.long_name is not None:
             repr_str += f", long_name='{self.long_name}'"
         if self.byte_position is not None:
