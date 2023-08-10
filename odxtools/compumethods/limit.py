@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from enum import Enum
-from typing import NamedTuple, Optional, Union, cast
+from typing import NamedTuple, Optional, Union
 from xml.etree import ElementTree
 
 from ..exceptions import odxassert, odxraise, odxrequire

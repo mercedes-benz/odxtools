@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional
 
 from .decodestate import DecodeState
 from .diagcodedtype import DiagCodedType
@@ -18,7 +18,7 @@ class ParamLengthInfoType(DiagCodedType):
     def __init__(
         self,
         *,
-        base_data_type: Union[str, DataType],
+        base_data_type: DataType,
         length_key_ref: OdxLinkRef,
         base_type_encoding: Optional[str],
         is_highlow_byte_order_raw: Optional[bool],

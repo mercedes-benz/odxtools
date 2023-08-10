@@ -289,7 +289,7 @@ somersault_additional_audiences = {
 somersault_diagcodedtypes = {
     "flag":
         StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             bit_length=1,
             bit_mask=None,
             base_type_encoding=None,
@@ -298,7 +298,7 @@ somersault_diagcodedtypes = {
         ),
     "uint8":
         StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             bit_length=8,
             bit_mask=None,
             is_condensed_raw=None,
@@ -307,7 +307,7 @@ somersault_diagcodedtypes = {
         ),
     "uint16":
         StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             bit_length=16,
             bit_mask=None,
             base_type_encoding=None,
@@ -316,7 +316,7 @@ somersault_diagcodedtypes = {
         ),
     "float32":
         StandardLengthType(
-            base_data_type="A_FLOAT32",
+            base_data_type=DataType.A_FLOAT32,
             bit_length=32,
             bit_mask=None,
             is_condensed_raw=None,
@@ -418,12 +418,12 @@ somersault_unit_groups = {
 # computation methods
 somersault_compumethods: Dict[str, CompuMethod] = {
     "uint_passthrough":
-        IdenticalCompuMethod(internal_type="A_UINT32", physical_type="A_UINT32"),
+        IdenticalCompuMethod(internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
     "float_passthrough":
-        IdenticalCompuMethod(internal_type="A_FLOAT32", physical_type="A_FLOAT32"),
+        IdenticalCompuMethod(internal_type=DataType.A_FLOAT32, physical_type=DataType.A_FLOAT32),
     "boolean":
         TexttableCompuMethod(
-            internal_type="A_UINT32",
+            internal_type=DataType.A_UINT32,
             internal_to_phys=[
                 CompuScale(compu_const="false", lower_limit=Limit(0), upper_limit=Limit(0)),
                 CompuScale(compu_const="true", lower_limit=Limit(1), upper_limit=Limit(1)),
@@ -1590,12 +1590,12 @@ somersault_services = {
             audience=None,
             pre_condition_state_refs=[],
             state_transition_refs=[],
-            request=OdxLinkRef.from_id(somersault_requests["start_session"].odx_id),
+            request_ref=OdxLinkRef.from_id(somersault_requests["start_session"].odx_id),
             semantic="SESSION",
-            positive_responses=[
+            pos_response_refs=[
                 OdxLinkRef.from_id(somersault_positive_responses["session"].odx_id),
             ],
-            negative_responses=[
+            neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id),
             ],
             functional_class_refs=[
@@ -1614,11 +1614,11 @@ somersault_services = {
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="SESSION",
-            request=OdxLinkRef.from_id(somersault_requests["stop_session"].odx_id),
-            positive_responses=[
+            request_ref=OdxLinkRef.from_id(somersault_requests["stop_session"].odx_id),
+            pos_response_refs=[
                 OdxLinkRef.from_id(somersault_positive_responses["session"].odx_id),
             ],
-            negative_responses=[
+            neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id),
             ],
             functional_class_refs=[
@@ -1649,11 +1649,11 @@ somersault_services = {
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="TESTERPRESENT",
-            request=OdxLinkRef.from_id(somersault_requests["tester_present"].odx_id),
-            positive_responses=[
+            request_ref=OdxLinkRef.from_id(somersault_requests["tester_present"].odx_id),
+            pos_response_refs=[
                 OdxLinkRef.from_id(somersault_positive_responses["tester_ok"].odx_id),
             ],
-            negative_responses=[
+            neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["tester_nok"].odx_id),
             ],
             sdgs=[],
@@ -1670,11 +1670,11 @@ somersault_services = {
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="FUNCTION",
-            request=OdxLinkRef.from_id(somersault_requests["set_operation_params"].odx_id),
-            positive_responses=[
+            request_ref=OdxLinkRef.from_id(somersault_requests["set_operation_params"].odx_id),
+            pos_response_refs=[
                 OdxLinkRef.from_id(somersault_positive_responses["set_operation_params"].odx_id),
             ],
-            negative_responses=[
+            neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id),
             ],
             sdgs=[],
@@ -1700,14 +1700,14 @@ somersault_services = {
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="FUNCTION",
-            request=OdxLinkRef.from_id(somersault_requests["forward_flips"].odx_id),
-            positive_responses=[
+            request_ref=OdxLinkRef.from_id(somersault_requests["forward_flips"].odx_id),
+            pos_response_refs=[
                 OdxLinkRef.from_id(
                     somersault_positive_responses["forward_flips_grudgingly_done"].odx_id),
                 # TODO: implement handling of multiple responses
                 # OdxLinkRef.from_id(somersault_positive_responses["forward_flips_happily_done"].odx_id),
             ],
-            negative_responses=[
+            neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["flips_not_done"].odx_id),
                 # TODO (?): implement handling of multiple possible responses
                 # OdxLinkRef.from_id(somersault_negative_responses["stumbled"].odx_id),
@@ -1740,12 +1740,12 @@ somersault_services = {
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="FUNCTION",
-            request=OdxLinkRef.from_id(somersault_requests["backward_flips"].odx_id),
-            positive_responses=[
+            request_ref=OdxLinkRef.from_id(somersault_requests["backward_flips"].odx_id),
+            pos_response_refs=[
                 OdxLinkRef.from_id(
                     somersault_positive_responses["backward_flips_grudgingly_done"].odx_id),
             ],
-            negative_responses=[
+            neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["flips_not_done"].odx_id),
             ],
             functional_class_refs=[
@@ -1775,11 +1775,11 @@ somersault_services = {
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="CURRENTDATA",
-            request=OdxLinkRef.from_id(somersault_requests["report_status"].odx_id),
-            positive_responses=[
+            request_ref=OdxLinkRef.from_id(somersault_requests["report_status"].odx_id),
+            pos_response_refs=[
                 OdxLinkRef.from_id(somersault_positive_responses["status_report"].odx_id),
             ],
-            negative_responses=[
+            neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id),
             ],
             sdgs=[],
@@ -2192,12 +2192,12 @@ somersault_assiduous_services = {
             functional_class_refs=[],
             pre_condition_state_refs=[],
             state_transition_refs=[],
-            request=OdxLinkRef.from_id(somersault_assiduous_requests["headstand"].odx_id),
-            positive_responses=[
+            request_ref=OdxLinkRef.from_id(somersault_assiduous_requests["headstand"].odx_id),
+            pos_response_refs=[
                 OdxLinkRef.from_id(
                     somersault_assiduous_positive_responses["headstand_done"].odx_id),
             ],
-            negative_responses=[
+            neg_response_refs=[
                 OdxLinkRef.from_id(somersault_assiduous_negative_responses["fell_over"].odx_id),
             ],
             audience=Audience(

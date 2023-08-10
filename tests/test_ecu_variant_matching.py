@@ -13,7 +13,7 @@ from odxtools.ecuvariantpattern import EcuVariantPattern
 from odxtools.exceptions import OdxError
 from odxtools.matchingparameter import MatchingParameter
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.request import Request
 from odxtools.response import Response
 from odxtools.utils import short_name_as_id
@@ -72,9 +72,9 @@ def ident_service(monkeypatch, dummy_response: Response) -> DiagService:
         functional_class_refs=[],
         pre_condition_state_refs=[],
         state_transition_refs=[],
-        request=dummy_req,
-        positive_responses=[dummy_response],
-        negative_responses=[],
+        request_ref=OdxLinkRef.from_id(dummy_req.odx_id),
+        pos_response_refs=[OdxLinkRef.from_id(dummy_response.odx_id)],
+        neg_response_refs=[],
         sdgs=[],
     )
 
@@ -110,9 +110,9 @@ def supplier_service(monkeypatch, dummy_response: Response) -> DiagService:
         functional_class_refs=[],
         pre_condition_state_refs=[],
         state_transition_refs=[],
-        request=dummy_req,
-        positive_responses=[dummy_response],
-        negative_responses=[],
+        request_ref=OdxLinkRef.from_id(dummy_req.odx_id),
+        pos_response_refs=[OdxLinkRef.from_id(dummy_response.odx_id)],
+        neg_response_refs=[],
         sdgs=[],
     )
 

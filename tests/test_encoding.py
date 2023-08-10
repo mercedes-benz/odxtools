@@ -5,6 +5,7 @@ from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.exceptions import EncodeError
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from odxtools.odxtypes import DataType
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
 from odxtools.parameters.valueparameter import ValueParameter
@@ -20,7 +21,7 @@ class TestEncodeRequest(unittest.TestCase):
 
     def test_encode_coded_const_infer_order(self):
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -63,7 +64,7 @@ class TestEncodeRequest(unittest.TestCase):
 
     def test_encode_coded_const_reorder(self):
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -107,7 +108,7 @@ class TestEncodeRequest(unittest.TestCase):
     def test_encode_linear(self):
         odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -119,8 +120,8 @@ class TestEncodeRequest(unittest.TestCase):
             offset=8,
             factor=2,
             denominator=1,
-            internal_type="A_UINT32",
-            physical_type="A_UINT32",
+            internal_type=DataType.A_UINT32,
+            physical_type=DataType.A_UINT32,
             internal_lower_limit=None,
             internal_upper_limit=None,
         )
@@ -131,7 +132,7 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             is_visible_raw=None,
             diag_coded_type=diag_coded_type,
-            physical_type=PhysicalType("A_UINT32", display_radix=None, precision=None),
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=compu_method,
             unit_ref=None,
             sdgs=[],
@@ -173,7 +174,7 @@ class TestEncodeRequest(unittest.TestCase):
 
     def test_encode_nrc_const(self):
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -219,7 +220,7 @@ class TestEncodeRequest(unittest.TestCase):
 
     def test_encode_overlapping(self):
         uint24 = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=24,
             bit_mask=None,
@@ -227,7 +228,7 @@ class TestEncodeRequest(unittest.TestCase):
             is_condensed_raw=None,
         )
         uint8 = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -284,8 +285,8 @@ class TestEncodeRequest(unittest.TestCase):
         self.skipTest("Not fixed yet")
         # see https://github.com/mercedes-benz/odxtools/issues/70
         # make sure overlapping params don't cause this function to go crazy
-        uint2 = StandardLengthType(base_data_type="A_UINT32", bit_length=2)
-        uint1 = StandardLengthType(base_data_type="A_UINT32", bit_length=1)
+        uint2 = StandardLengthType(base_data_type=DataType.A_UINT32, bit_length=2)
+        uint1 = StandardLengthType(base_data_type=DataType.A_UINT32, bit_length=1)
         params = [
             CodedConstParameter(
                 short_name="p1", diag_coded_type=uint2, bit_position=0, coded_value=0),

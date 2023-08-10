@@ -4,7 +4,7 @@ from typing import Any, Optional
 from .decodestate import DecodeState
 from .diagcodedtype import DiagCodedType
 from .encodestate import EncodeState
-from .exceptions import odxassert
+from .exceptions import odxassert, odxraise
 from .odxtypes import DataType
 
 
@@ -13,7 +13,7 @@ class LeadingLengthInfoType(DiagCodedType):
     def __init__(
         self,
         *,
-        base_data_type: str,
+        base_data_type: DataType,
         bit_length: int,
         base_type_encoding: Optional[str],
         is_highlow_byte_order_raw: Optional[bool],
@@ -70,6 +70,9 @@ class LeadingLengthInfoType(DiagCodedType):
             base_data_type=DataType.A_UINT32,  # length is an integer
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
+
+        if not isinstance(byte_length, int):
+            odxraise()
 
         # Extract actual value
         # TODO: The returned value is None if the byte_length is 0. Maybe change it

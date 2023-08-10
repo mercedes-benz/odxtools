@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 import abc
-from typing import TYPE_CHECKING, Any, Optional, Union
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Optional, Tuple, Union
 
 import bitstruct
 
@@ -8,7 +9,7 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise
 from .odxlink import OdxLinkDatabase
-from .odxtypes import DataType
+from .odxtypes import AtomicOdxType, DataType
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -25,20 +26,13 @@ ODX_TYPE_TO_FORMAT_LETTER = {
 }
 
 
+@dataclass
 class DiagCodedType(abc.ABC):
 
-    def __init__(
-        self,
-        *,
-        base_data_type: Union[str, DataType],
-        dct_type: str,
-        base_type_encoding: Optional[str],
-        is_highlow_byte_order_raw: Optional[bool],
-    ):
-        self.base_data_type = DataType(base_data_type)
-        self.dct_type = dct_type
-        self.base_type_encoding = base_type_encoding
-        self.is_highlow_byte_order_raw = is_highlow_byte_order_raw
+    base_data_type: DataType
+    dct_type: str
+    base_type_encoding: Optional[str]
+    is_highlow_byte_order_raw: Optional[bool]
 
     def _build_odxlinks(self):
         return {}
@@ -64,7 +58,7 @@ class DiagCodedType(abc.ABC):
         base_data_type: DataType,
         is_highlow_byte_order: bool,
         bit_mask: Optional[int] = None,
-    ):
+    ) -> Tuple[AtomicOdxType, int]:
         """Extract the internal value.
 
         Helper method for `DiagCodedType.convert_bytes_to_internal`.
@@ -108,25 +102,34 @@ class DiagCodedType(abc.ABC):
 
     def _to_bytes(
         self,
-        internal_value,
-        bit_position,
-        bit_length,
-        base_data_type,
-        is_highlow_byte_order,
+        internal_value: AtomicOdxType,
+        bit_position: int,
+        bit_length: int,
+        base_data_type: DataType,
+        is_highlow_byte_order: bool,
         bit_mask=None,
-    ):
+    ) -> bytes:
         """Convert the internal_value to bytes."""
         # Check that bytes and strings actually fit into the bit length
-        if base_data_type in [DataType.A_BYTEFIELD] and 8 * len(internal_value) > bit_length:
-            raise EncodeError(f"The bytefield {internal_value.hex()} is too large."
-                              f" The maximum byte length is {bit_length//8}.")
-        if (base_data_type in [DataType.A_ASCIISTRING, DataType.A_UTF8STRING] and
-                8 * len(internal_value) > bit_length):
-            raise EncodeError(f"The string {repr(internal_value)} is too large."
-                              f" The maximum number of characters is {bit_length//8}.")
-        if base_data_type in [DataType.A_UNICODE2STRING] and 16 * len(internal_value) > bit_length:
-            raise EncodeError(f"The string {repr(internal_value)} is too large."
-                              f" The maximum number of characters is {bit_length//16}.")
+        if base_data_type in [DataType.A_BYTEFIELD]:
+            if not isinstance(internal_value, bytes):
+                odxraise()
+            if 8 * len(internal_value) > bit_length:
+                raise EncodeError(f"The bytefield {internal_value.hex()} is too large "
+                                  f"({len(internal_value)} bytes)."
+                                  f" The maximum length is {bit_length//8}.")
+        if base_data_type in [DataType.A_ASCIISTRING, DataType.A_UTF8STRING]:
+            if not isinstance(internal_value, str):
+                odxraise()
+            if 8 * len(internal_value) > bit_length:
+                raise EncodeError(f"The string {repr(internal_value)} is too large."
+                                  f" The maximum number of characters is {bit_length//8}.")
+        if base_data_type in [DataType.A_UNICODE2STRING]:
+            if not isinstance(internal_value, str):
+                odxraise()
+            if 16 * len(internal_value) > bit_length:
+                raise EncodeError(f"The string {repr(internal_value)} is too large."
+                                  f" The maximum number of characters is {bit_length//16}.")
 
         # If the bit length is zero, return empty bytes
         if bit_length == 0:
@@ -147,6 +150,8 @@ class DiagCodedType(abc.ABC):
 
         # Convert string to bytes with utf-16 encoding
         if base_data_type == DataType.A_UNICODE2STRING:
+            if not isinstance(internal_value, str):
+                odxraise()
             if is_highlow_byte_order:
                 internal_value = internal_value.encode("utf-16-be")
             else:
@@ -192,7 +197,7 @@ class DiagCodedType(abc.ABC):
         return byte_length
 
     @abc.abstractmethod
-    def convert_internal_to_bytes(self, internal_value: Any, encode_state: EncodeState,
+    def convert_internal_to_bytes(self, internal_value: AtomicOdxType, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
         """Encode the internal value.
 
@@ -209,7 +214,9 @@ class DiagCodedType(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0) -> Any:
+    def convert_bytes_to_internal(self,
+                                  decode_state: DecodeState,
+                                  bit_position: int = 0) -> Tuple[AtomicOdxType, int]:
         """Decode the parameter value from the coded message.
 
         Parameters

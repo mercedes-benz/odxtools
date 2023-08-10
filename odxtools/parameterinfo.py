@@ -8,6 +8,7 @@ from .compumethods.linearcompumethod import LinearCompuMethod
 from .compumethods.texttablecompumethod import TexttableCompuMethod
 from .dataobjectproperty import DataObjectProperty
 from .endofpdufield import EndOfPduField
+from .odxtypes import DataType
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.matchingrequestparameter import MatchingRequestParameter
 from .parameters.parameter import Parameter
@@ -60,16 +61,16 @@ def parameter_info(param_list: Iterable[Union[Parameter, EndOfPduField]]) -> str
                 result += f"  '{scale.compu_const}'\n"
 
         elif isinstance(cm, IdenticalCompuMethod):
-            bdt = dop.physical_type.base_data_type.name
-            if bdt in ("A_UTF8STRING", "A_UNICODE2STRING", "A_ASCIISTRING"):
+            bdt = dop.physical_type.base_data_type
+            if bdt in (DataType.A_UTF8STRING, DataType.A_UNICODE2STRING, DataType.A_ASCIISTRING):
                 result += f": str"
-            elif bdt in ("A_BYTEFIELD"):
+            elif bdt in (DataType.A_BYTEFIELD,):
                 result += f": bytes"
-            elif bdt.startswith("A_FLOAT"):
+            elif bdt.name.startswith("A_FLOAT"):
                 result += f": float"
-            elif bdt.startswith("A_UINT"):
+            elif bdt.name.startswith("A_UINT"):
                 result += f": uint"
-            elif bdt.startswith("A_INT"):
+            elif bdt.name.startswith("A_INT"):
                 result += f": int"
             else:
                 result += f": <unknown type>"

@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: MIT
-from typing import List
+from typing import List, cast
 from xml.etree import ElementTree
 
 from .diagcodedtype import DiagCodedType
-from .exceptions import odxassert, odxrequire
+from .exceptions import odxraise, odxrequire
 from .globals import xsi
 from .leadinglengthinfotype import LeadingLengthInfoType
 from .minmaxlengthtype import MinMaxLengthType
 from .odxlink import OdxDocFragment, OdxLinkRef
-from .odxtypes import odxstr_to_bool
+from .odxtypes import DataType, odxstr_to_bool
 from .paramlengthinfotype import ParamLengthInfoType
 from .standardlengthtype import StandardLengthType
 
@@ -17,17 +17,12 @@ def create_any_diag_coded_type_from_et(et_element: ElementTree.Element,
                                        doc_frags: List[OdxDocFragment]) -> DiagCodedType:
     base_type_encoding = et_element.get("BASE-TYPE-ENCODING")
 
-    base_data_type = odxrequire(et_element.get("BASE-DATA-TYPE"))
-    odxassert(base_data_type in [
-        "A_INT32",
-        "A_UINT32",
-        "A_FLOAT32",
-        "A_FLOAT64",
-        "A_ASCIISTRING",
-        "A_UTF8STRING",
-        "A_UNICODE2STRING",
-        "A_BYTEFIELD",
-    ])
+    base_data_type_str = odxrequire(et_element.get("BASE-DATA-TYPE"))
+    try:
+        base_data_type = DataType(base_data_type_str)
+    except ValueError:
+        base_data_type = cast(DataType, None)
+        odxraise(f"Unknown base data type {base_data_type_str}")
 
     is_highlow_byte_order_raw = odxstr_to_bool(et_element.get("IS-HIGHLOW-BYTE-ORDER"))
 

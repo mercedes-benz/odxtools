@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MIT
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union, cast
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
 from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .audience import Audience
 from .createsdgs import create_sdgs_from_et
 from .exceptions import DecodeError, odxassert, odxrequire
-from .functionalclass import FunctionalClass
 from .message import Message
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -14,8 +14,6 @@ from .parameters.parameter import Parameter
 from .request import Request
 from .response import Response
 from .specialdatagroup import SpecialDataGroup
-from .state import State
-from .statetransition import StateTransition
 from .utils import create_description_from_et, short_name_as_id
 
 if TYPE_CHECKING:
@@ -23,97 +21,25 @@ if TYPE_CHECKING:
     from .endofpdufield import EndOfPduField
 
 
+@dataclass
 class DiagService:
+    """Representation of a diagnostic service description.
+    """
 
-    def __init__(
-        self,
-        *,
-        odx_id: OdxLinkId,
-        short_name: str,
-        request: Union[OdxLinkRef, Request],
-        positive_responses: Union[Iterable[OdxLinkRef], Iterable[Response]],
-        negative_responses: Union[Iterable[OdxLinkRef], Iterable[Response]],
-        long_name: Optional[str],
-        admin_data: Optional[AdminData],
-        description: Optional[str],
-        semantic: Optional[str],
-        audience: Optional[Audience],
-        functional_class_refs: Iterable[OdxLinkRef],
-        pre_condition_state_refs: Iterable[OdxLinkRef],
-        state_transition_refs: Iterable[OdxLinkRef],
-        sdgs: List[SpecialDataGroup],
-    ):
-        """Constructs the service.
-
-        Parameters:
-        ----------
-        odx_id: OdxLinkId
-        short_name: str
-            the short name of this DIAG-SERVICE
-        request: OdxLinkRef | Request
-            Reference of a request or a request object
-        positive_responses: List[OdxLinkRef] | List[Response]
-        negative_responses: List[OdxLinkRef] | List[Response]
-        """
-        self.odx_id: OdxLinkId = odx_id
-        self.short_name: str = short_name
-        self.long_name: Optional[str] = long_name
-        self.description: Optional[str] = description
-        self.semantic: Optional[str] = semantic
-        self.admin_data: Optional[AdminData] = admin_data
-        self.audience: Optional[Audience] = audience
-        self.functional_class_refs: List[OdxLinkRef] = list(functional_class_refs)
-        self._functional_classes: Union[List[FunctionalClass], NamedItemList[FunctionalClass]] = []
-        self.pre_condition_state_refs: List[OdxLinkRef] = list(pre_condition_state_refs)
-        self._pre_condition_states: Union[List[State], NamedItemList[State]] = []
-        self.state_transition_refs: List[OdxLinkRef] = list(state_transition_refs)
-        self._state_transitions: Union[List[StateTransition], NamedItemList[StateTransition]] = []
-
-        self._request: Optional[Request]
-        self.request_ref: OdxLinkRef
-        self._positive_responses: Optional[NamedItemList[Response]]
-        self.pos_res_refs: List[OdxLinkRef]
-        self._negative_responses: Optional[NamedItemList[Response]]
-        self.neg_res_refs: List[OdxLinkRef]
-
-        if isinstance(request, OdxLinkRef):
-            self._request = None
-            self.request_ref = request
-        elif isinstance(request, Request):
-            self._request = request
-            self.request_ref = OdxLinkRef.from_id(request.odx_id)
-        else:
-            raise ValueError("request must be a reference to a request or a Request object")
-
-        if all(isinstance(x, Response) for x in positive_responses):
-            self._positive_responses = NamedItemList[Response](short_name_as_id, [
-                cast(Response, x) for x in positive_responses
-            ])
-            self.pos_res_refs = [
-                OdxLinkRef.from_id(cast(Response, pr).odx_id) for pr in positive_responses
-            ]
-        elif all(isinstance(x, OdxLinkRef) for x in positive_responses):
-            self._positive_responses = None
-            self.pos_res_refs = [cast(OdxLinkRef, x) for x in positive_responses]
-        else:
-            raise TypeError(
-                "positive_responses must be of type Union[List[OdxLinkRef], List[Response], None]")
-
-        if all(isinstance(x, Response) for x in negative_responses):
-            self._negative_responses = NamedItemList[Response](short_name_as_id, [
-                cast(Response, x) for x in negative_responses
-            ])
-            self.neg_res_refs = [
-                OdxLinkRef.from_id(cast(Response, nr).odx_id) for nr in negative_responses
-            ]  # type: ignore
-        elif all(isinstance(x, OdxLinkRef) for x in negative_responses):
-            self._negative_responses = None
-            self.neg_res_refs = [cast(OdxLinkRef, x) for x in negative_responses]
-        else:
-            raise TypeError(
-                "negative_responses must be of type Union[List[str], List[Response], None]")
-
-        self.sdgs = sdgs
+    odx_id: OdxLinkId
+    short_name: str
+    request_ref: OdxLinkRef
+    pos_response_refs: List[OdxLinkRef]
+    neg_response_refs: List[OdxLinkRef]
+    long_name: Optional[str]
+    admin_data: Optional[AdminData]
+    description: Optional[str]
+    semantic: Optional[str]
+    audience: Optional[Audience]
+    functional_class_refs: Iterable[OdxLinkRef]
+    pre_condition_state_refs: Iterable[OdxLinkRef]
+    state_transition_refs: Iterable[OdxLinkRef]
+    sdgs: List[SpecialDataGroup]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagService":
@@ -125,15 +51,15 @@ class DiagService:
         description = create_description_from_et(et_element.find("DESC"))
         request_ref = odxrequire(OdxLinkRef.from_et(et_element.find("REQUEST-REF"), doc_frags))
 
-        pos_res_refs = []
-        for el in et_element.iterfind("POS-RESPONSE-REFS/POS-RESPONSE-REF"):
-            ref = odxrequire(OdxLinkRef.from_et(el, doc_frags))
-            pos_res_refs.append(ref)
+        pos_response_refs = [
+            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            for el in et_element.iterfind("POS-RESPONSE-REFS/POS-RESPONSE-REF")
+        ]
 
-        neg_res_refs = []
-        for el in et_element.iterfind("NEG-RESPONSE-REFS/NEG-RESPONSE-REF"):
-            ref = odxrequire(OdxLinkRef.from_et(el, doc_frags))
-            neg_res_refs.append(ref)
+        neg_response_refs = [
+            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            for el in et_element.iterfind("NEG-RESPONSE-REFS/NEG-RESPONSE-REF")
+        ]
 
         functional_class_refs = []
         for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF"):
@@ -162,9 +88,9 @@ class DiagService:
         return DiagService(
             odx_id=odx_id,
             short_name=short_name,
-            request=request_ref,
-            positive_responses=pos_res_refs,
-            negative_responses=neg_res_refs,
+            request_ref=request_ref,
+            pos_response_refs=pos_response_refs,
+            neg_response_refs=neg_response_refs,
             long_name=long_name,
             description=description,
             admin_data=admin_data,
@@ -226,12 +152,15 @@ class DiagService:
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._request = odxlinks.resolve(self.request_ref)
-        self._positive_responses = NamedItemList(short_name_as_id, [
-            odxlinks.resolve(pr_id) for pr_id in self.pos_res_refs
+
+        self._positive_responses = NamedItemList[Response](short_name_as_id, [
+            odxlinks.resolve(x, Response) for x in self.pos_response_refs
         ])
-        self._negative_responses = NamedItemList(short_name_as_id, [
-            odxlinks.resolve(nr_id) for nr_id in self.neg_res_refs
+
+        self._negative_responses = NamedItemList[Response](short_name_as_id, [
+            odxlinks.resolve(x, Response) for x in self.neg_response_refs
         ])
+
         self._functional_classes = NamedItemList(short_name_as_id, [
             odxlinks.resolve(fc_id) for fc_id in self.functional_class_refs
         ])

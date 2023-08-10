@@ -95,7 +95,8 @@ class NrcConstParameter(Parameter):
         if coded_value not in self.coded_values:
             warnings.warn(
                 f"Coded constant parameter does not match! "
-                f"The parameter {self.short_name} expected a coded value in {self.coded_values} but got {coded_value} "
+                f"The parameter {self.short_name} expected a coded "
+                f"value in {str(self.coded_values)} but got {str(coded_value)} "
                 f"at byte position {decode_state.next_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
                 DecodeError,

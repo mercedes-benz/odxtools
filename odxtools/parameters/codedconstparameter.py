@@ -79,7 +79,8 @@ class CodedConstParameter(Parameter):
         if self.coded_value != coded_val:
             warnings.warn(
                 f"Coded constant parameter does not match! "
-                f"The parameter {self.short_name} expected coded value {self._coded_value_str} but got {coded_val} "
+                f"The parameter {self.short_name} expected coded "
+                f"value {str(self._coded_value_str)} but got {str(coded_val)} "
                 f"at byte position {decode_state.next_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
                 DecodeError,

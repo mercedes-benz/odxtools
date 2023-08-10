@@ -10,6 +10,7 @@ from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from odxtools.odxtypes import DataType
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaldimension import PhysicalDimension
@@ -99,7 +100,7 @@ class TestUnitSpec(unittest.TestCase):
             offset_si_to_unit=0,
         )
         dct = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -113,8 +114,9 @@ class TestUnitSpec(unittest.TestCase):
             description=None,
             is_visible_raw=None,
             diag_coded_type=dct,
-            physical_type=PhysicalType("A_UINT32", display_radix=None, precision=None),
-            compu_method=IdenticalCompuMethod(internal_type="A_UINT32", physical_type="A_UINT32"),
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            compu_method=IdenticalCompuMethod(
+                internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
             unit_ref=OdxLinkRef.from_id(unit.odx_id),
             sdgs=[],
         )

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from typing import Optional, Union
+from typing import Optional
 
 from .decodestate import DecodeState
 from .diagcodedtype import DiagCodedType
@@ -13,7 +13,7 @@ class MinMaxLengthType(DiagCodedType):
     def __init__(
         self,
         *,
-        base_data_type: Union[str, DataType],
+        base_data_type: DataType,
         min_length: int,
         termination: str,
         max_length: Optional[int],

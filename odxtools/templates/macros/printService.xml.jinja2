@@ -52,16 +52,16 @@
  </STATE-TRANSITION-REFS>
  {%- endif%}
  <REQUEST-REF ID-REF="{{service.request_ref.ref_id}}"/>
-{%- if service.pos_res_refs %}
+{%- if service.pos_response_refs %}
  <POS-RESPONSE-REFS>
-{%- for ref in service.pos_res_refs %}
+{%- for ref in service.pos_response_refs %}
   <POS-RESPONSE-REF ID-REF="{{ref.ref_id}}" />
 {%- endfor %}
  </POS-RESPONSE-REFS>
 {%- endif%}
-{%- if service.neg_res_refs %}
+{%- if service.neg_response_refs %}
  <NEG-RESPONSE-REFS>
-{%- for ref in service.neg_res_refs %}
+{%- for ref in service.neg_response_refs %}
   <NEG-RESPONSE-REF ID-REF="{{ref.ref_id}}" />
 {%- endfor %}
  </NEG-RESPONSE-REFS>

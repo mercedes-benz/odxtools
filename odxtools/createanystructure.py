@@ -4,11 +4,12 @@ from xml.etree import ElementTree
 
 from .createsdgs import create_sdgs_from_et
 from .globals import logger
+from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkId
 from .odxtypes import odxstr_to_bool
 from .parameters.createanyparameter import create_any_parameter_from_et
 from .structure import Structure
-from .utils import create_description_from_et
+from .utils import create_description_from_et, short_name_as_id
 
 if TYPE_CHECKING:
     from .request import Request
@@ -38,7 +39,7 @@ def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: Lis
             long_name=long_name,
             description=description,
             is_visible_raw=None,
-            parameters=parameters,
+            parameters=NamedItemList(short_name_as_id, parameters),
             byte_size=None,
             sdgs=sdgs,
         )
@@ -50,7 +51,7 @@ def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: Lis
             long_name=long_name,
             description=description,
             is_visible_raw=None,
-            parameters=parameters,
+            parameters=NamedItemList(short_name_as_id, parameters),
             byte_size=None,
             sdgs=sdgs,
         )
@@ -64,7 +65,7 @@ def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: Lis
             long_name=long_name,
             description=description,
             is_visible_raw=is_visible_raw,
-            parameters=parameters,
+            parameters=NamedItemList(short_name_as_id, parameters),
             byte_size=byte_size,
             sdgs=sdgs,
         )

@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
 import math
 import warnings
-from typing import TYPE_CHECKING, Iterable, List, Optional, Tuple, Union
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
@@ -18,26 +19,16 @@ from .parameters.parameter import Parameter
 from .parameters.parameterwithdop import ParameterWithDOP
 from .parameters.tablekeyparameter import TableKeyParameter
 from .parameters.valueparameter import ValueParameter
-from .utils import short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
     from .endofpdufield import EndOfPduField
 
 
+@dataclass
 class BasicStructure(DopBase):
-
-    def __init__(
-        self,
-        *,
-        parameters: Iterable[Union[Parameter, "EndOfPduField"]],
-        byte_size: Optional[int],
-        **kwargs,
-    ):
-        super().__init__(**kwargs)
-        self.parameters: NamedItemList[Union[Parameter, "EndOfPduField"]] = NamedItemList(
-            short_name_as_id, parameters)
-        self.byte_size = byte_size
+    parameters: NamedItemList[Union[Parameter, "EndOfPduField"]]
+    byte_size: Optional[int]
 
     @property
     def bit_length(self) -> Optional[int]:
