@@ -97,8 +97,8 @@ class TestIdentifyingService(unittest.TestCase):
             pre_condition_state_refs=[],
             state_transition_refs=[],
             request=req,
-            positive_responses=[],
-            negative_responses=[],
+            pos_response_refs=[],
+            neg_response_refs=[],
             sdgs=[],
         )
 
@@ -161,8 +161,8 @@ class TestIdentifyingService(unittest.TestCase):
             pre_condition_state_refs=[],
             state_transition_refs=[],
             request=req2,
-            positive_responses=[resp2],
-            negative_responses=[],
+            pos_response_refs=[OdxLinkRef.from_id(resp2.odx_id)],
+            neg_response_refs=[],
             sdgs=[],
         )
 
@@ -267,8 +267,8 @@ class TestDecoding(unittest.TestCase):
             pre_condition_state_refs=[],
             state_transition_refs=[],
             request=OdxLinkRef.from_id(req.odx_id),
-            positive_responses=[],
-            negative_responses=[],
+            pos_response_refs=[],
+            neg_response_refs=[],
             sdgs=[],
         )
         diag_layer_raw = DiagLayerRaw(
@@ -398,8 +398,8 @@ class TestDecoding(unittest.TestCase):
             pre_condition_state_refs=[],
             state_transition_refs=[],
             request=OdxLinkRef.from_id(req.odx_id),
-            positive_responses=[],
-            negative_responses=[],
+            pos_response_refs=[],
+            neg_response_refs=[],
             sdgs=[],
         )
         diag_layer_raw = DiagLayerRaw(
@@ -570,8 +570,8 @@ class TestDecoding(unittest.TestCase):
             pre_condition_state_refs=[],
             state_transition_refs=[],
             request=OdxLinkRef.from_id(req.odx_id),
-            positive_responses=[],
-            negative_responses=[],
+            pos_response_refs=[],
+            neg_response_refs=[],
             sdgs=[],
         )
         diag_layer_raw = DiagLayerRaw(
@@ -759,8 +759,8 @@ class TestDecoding(unittest.TestCase):
             pre_condition_state_refs=[],
             state_transition_refs=[],
             request=OdxLinkRef.from_id(req.odx_id),
-            positive_responses=[],
-            negative_responses=[],
+            pos_response_refs=[],
+            neg_response_refs=[],
             sdgs=[],
         )
         diag_layer_raw = DiagLayerRaw(
@@ -904,8 +904,8 @@ class TestDecoding(unittest.TestCase):
             pre_condition_state_refs=[],
             state_transition_refs=[],
             request=OdxLinkRef.from_id(req.odx_id),
-            positive_responses=[],
-            negative_responses=[],
+            pos_response_refs=[],
+            neg_response_refs=[],
             sdgs=[],
         )
         diag_layer_raw = DiagLayerRaw(
@@ -1086,8 +1086,8 @@ class TestDecoding(unittest.TestCase):
             pre_condition_state_refs=[],
             state_transition_refs=[],
             request=OdxLinkRef.from_id(req.odx_id),
-            positive_responses=[OdxLinkRef.from_id(pos_response.odx_id)],
-            negative_responses=[OdxLinkRef.from_id(neg_response.odx_id)],
+            pos_response_refs=[OdxLinkRef.from_id(pos_response.odx_id)],
+            neg_response_refs=[OdxLinkRef.from_id(neg_response.odx_id)],
             sdgs=[],
         )
         diag_layer_raw = DiagLayerRaw(
