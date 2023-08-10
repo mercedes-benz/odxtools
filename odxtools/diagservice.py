@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
 from xml.etree import ElementTree
 
@@ -6,7 +7,6 @@ from .admindata import AdminData
 from .audience import Audience
 from .createsdgs import create_sdgs_from_et
 from .exceptions import DecodeError, odxassert, odxrequire
-from .functionalclass import FunctionalClass
 from .message import Message
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -14,8 +14,6 @@ from .parameters.parameter import Parameter
 from .request import Request
 from .response import Response
 from .specialdatagroup import SpecialDataGroup
-from .state import State
-from .statetransition import StateTransition
 from .utils import create_description_from_et, short_name_as_id
 
 if TYPE_CHECKING:
@@ -23,59 +21,25 @@ if TYPE_CHECKING:
     from .endofpdufield import EndOfPduField
 
 
+@dataclass
 class DiagService:
+    """Representation of a diagnostic service description.
+    """
 
-    def __init__(
-        self,
-        *,
-        odx_id: OdxLinkId,
-        short_name: str,
-        request: Union[OdxLinkRef, Request],
-        pos_response_refs: List[OdxLinkRef],
-        neg_response_refs: List[OdxLinkRef],
-        long_name: Optional[str],
-        admin_data: Optional[AdminData],
-        description: Optional[str],
-        semantic: Optional[str],
-        audience: Optional[Audience],
-        functional_class_refs: Iterable[OdxLinkRef],
-        pre_condition_state_refs: Iterable[OdxLinkRef],
-        state_transition_refs: Iterable[OdxLinkRef],
-        sdgs: List[SpecialDataGroup],
-    ):
-        """Constructs a diagnostic service description object.
-        """
-        self.odx_id: OdxLinkId = odx_id
-        self.short_name: str = short_name
-        self.long_name: Optional[str] = long_name
-        self.description: Optional[str] = description
-        self.semantic: Optional[str] = semantic
-        self.admin_data: Optional[AdminData] = admin_data
-        self.audience: Optional[Audience] = audience
-        self.functional_class_refs: List[OdxLinkRef] = list(functional_class_refs)
-        self._functional_classes: Union[List[FunctionalClass], NamedItemList[FunctionalClass]] = []
-        self.pre_condition_state_refs: List[OdxLinkRef] = list(pre_condition_state_refs)
-        self._pre_condition_states: Union[List[State], NamedItemList[State]] = []
-        self.state_transition_refs: List[OdxLinkRef] = list(state_transition_refs)
-        self._state_transitions: Union[List[StateTransition], NamedItemList[StateTransition]] = []
-        self.pos_response_refs = pos_response_refs
-        self.neg_response_refs = neg_response_refs
-
-        self._request: Optional[Request]
-        self.request_ref: OdxLinkRef
-        self._positive_responses: NamedItemList[Response]
-        self._negative_responses: NamedItemList[Response]
-
-        if isinstance(request, OdxLinkRef):
-            self._request = None
-            self.request_ref = request
-        elif isinstance(request, Request):
-            self._request = request
-            self.request_ref = OdxLinkRef.from_id(request.odx_id)
-        else:
-            raise ValueError("request must be a reference to a request or a Request object")
-
-        self.sdgs = sdgs
+    odx_id: OdxLinkId
+    short_name: str
+    request_ref: OdxLinkRef
+    pos_response_refs: List[OdxLinkRef]
+    neg_response_refs: List[OdxLinkRef]
+    long_name: Optional[str]
+    admin_data: Optional[AdminData]
+    description: Optional[str]
+    semantic: Optional[str]
+    audience: Optional[Audience]
+    functional_class_refs: Iterable[OdxLinkRef]
+    pre_condition_state_refs: Iterable[OdxLinkRef]
+    state_transition_refs: Iterable[OdxLinkRef]
+    sdgs: List[SpecialDataGroup]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagService":
@@ -124,7 +88,7 @@ class DiagService:
         return DiagService(
             odx_id=odx_id,
             short_name=short_name,
-            request=request_ref,
+            request_ref=request_ref,
             pos_response_refs=pos_response_refs,
             neg_response_refs=neg_response_refs,
             long_name=long_name,

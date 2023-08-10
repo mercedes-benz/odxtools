@@ -1590,7 +1590,7 @@ somersault_services = {
             audience=None,
             pre_condition_state_refs=[],
             state_transition_refs=[],
-            request=OdxLinkRef.from_id(somersault_requests["start_session"].odx_id),
+            request_ref=OdxLinkRef.from_id(somersault_requests["start_session"].odx_id),
             semantic="SESSION",
             pos_response_refs=[
                 OdxLinkRef.from_id(somersault_positive_responses["session"].odx_id),
@@ -1614,7 +1614,7 @@ somersault_services = {
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="SESSION",
-            request=OdxLinkRef.from_id(somersault_requests["stop_session"].odx_id),
+            request_ref=OdxLinkRef.from_id(somersault_requests["stop_session"].odx_id),
             pos_response_refs=[
                 OdxLinkRef.from_id(somersault_positive_responses["session"].odx_id),
             ],
@@ -1649,7 +1649,7 @@ somersault_services = {
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="TESTERPRESENT",
-            request=OdxLinkRef.from_id(somersault_requests["tester_present"].odx_id),
+            request_ref=OdxLinkRef.from_id(somersault_requests["tester_present"].odx_id),
             pos_response_refs=[
                 OdxLinkRef.from_id(somersault_positive_responses["tester_ok"].odx_id),
             ],
@@ -1670,7 +1670,7 @@ somersault_services = {
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="FUNCTION",
-            request=OdxLinkRef.from_id(somersault_requests["set_operation_params"].odx_id),
+            request_ref=OdxLinkRef.from_id(somersault_requests["set_operation_params"].odx_id),
             pos_response_refs=[
                 OdxLinkRef.from_id(somersault_positive_responses["set_operation_params"].odx_id),
             ],
@@ -1700,7 +1700,7 @@ somersault_services = {
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="FUNCTION",
-            request=OdxLinkRef.from_id(somersault_requests["forward_flips"].odx_id),
+            request_ref=OdxLinkRef.from_id(somersault_requests["forward_flips"].odx_id),
             pos_response_refs=[
                 OdxLinkRef.from_id(
                     somersault_positive_responses["forward_flips_grudgingly_done"].odx_id),
@@ -1740,7 +1740,7 @@ somersault_services = {
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="FUNCTION",
-            request=OdxLinkRef.from_id(somersault_requests["backward_flips"].odx_id),
+            request_ref=OdxLinkRef.from_id(somersault_requests["backward_flips"].odx_id),
             pos_response_refs=[
                 OdxLinkRef.from_id(
                     somersault_positive_responses["backward_flips_grudgingly_done"].odx_id),
@@ -1775,7 +1775,7 @@ somersault_services = {
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="CURRENTDATA",
-            request=OdxLinkRef.from_id(somersault_requests["report_status"].odx_id),
+            request_ref=OdxLinkRef.from_id(somersault_requests["report_status"].odx_id),
             pos_response_refs=[
                 OdxLinkRef.from_id(somersault_positive_responses["status_report"].odx_id),
             ],
@@ -2192,7 +2192,7 @@ somersault_assiduous_services = {
             functional_class_refs=[],
             pre_condition_state_refs=[],
             state_transition_refs=[],
-            request=OdxLinkRef.from_id(somersault_assiduous_requests["headstand"].odx_id),
+            request_ref=OdxLinkRef.from_id(somersault_assiduous_requests["headstand"].odx_id),
             pos_response_refs=[
                 OdxLinkRef.from_id(
                     somersault_assiduous_positive_responses["headstand_done"].odx_id),
