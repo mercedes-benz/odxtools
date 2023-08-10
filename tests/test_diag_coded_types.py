@@ -18,6 +18,7 @@ from odxtools.leadinglengthinfotype import LeadingLengthInfoType
 from odxtools.minmaxlengthtype import MinMaxLengthType
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from odxtools.odxtypes import DataType
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.lengthkeyparameter import LengthKeyParameter
 from odxtools.parameters.valueparameter import ValueParameter
@@ -34,7 +35,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
     def test_decode_leading_length_info_type_bytefield(self):
         dct = LeadingLengthInfoType(
-            base_data_type="A_BYTEFIELD",
+            base_data_type=DataType.A_BYTEFIELD,
             bit_length=6,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
@@ -44,7 +45,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         self.assertEqual(internal, bytes([0x34, 0x56]))
 
         dct = LeadingLengthInfoType(
-            base_data_type="A_BYTEFIELD",
+            base_data_type=DataType.A_BYTEFIELD,
             bit_length=5,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
@@ -57,7 +58,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
     def test_decode_leading_length_info_type_zero_length(self):
         dct = LeadingLengthInfoType(
-            base_data_type="A_BYTEFIELD",
+            base_data_type=DataType.A_BYTEFIELD,
             bit_length=8,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
@@ -69,7 +70,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
     def test_encode_leading_length_info_type_bytefield(self):
         dct = LeadingLengthInfoType(
-            base_data_type="A_UTF8STRING",
+            base_data_type=DataType.A_UTF8STRING,
             bit_length=6,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
@@ -79,7 +80,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         self.assertEqual(byte_val, bytes([0x4, 0x34, 0x56]))
 
         dct = LeadingLengthInfoType(
-            base_data_type="A_BYTEFIELD",
+            base_data_type=DataType.A_BYTEFIELD,
             bit_length=5,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
@@ -90,7 +91,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
     def test_decode_leading_length_info_type_bytefield2(self):
         dct = LeadingLengthInfoType(
-            base_data_type="A_BYTEFIELD",
+            base_data_type=DataType.A_BYTEFIELD,
             bit_length=8,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
@@ -104,7 +105,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
     def test_decode_leading_length_info_type_unicode2string(self):
         dct = LeadingLengthInfoType(
-            base_data_type="A_UNICODE2STRING",
+            base_data_type=DataType.A_UNICODE2STRING,
             bit_length=8,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
@@ -115,7 +116,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         self.assertEqual(next_byte, 6)
 
         dct = LeadingLengthInfoType(
-            base_data_type="A_UNICODE2STRING",
+            base_data_type=DataType.A_UNICODE2STRING,
             bit_length=8,
             base_type_encoding=None,
             is_highlow_byte_order_raw=False,
@@ -127,7 +128,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
     def test_encode_leading_length_info_type_unicode2string(self):
         dct = LeadingLengthInfoType(
-            base_data_type="A_UNICODE2STRING",
+            base_data_type=DataType.A_UNICODE2STRING,
             bit_length=8,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
@@ -137,7 +138,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         self.assertEqual(byte_val, bytes([0x4, 0x00, 0x61, 0x00, 0x39]))
 
         dct = LeadingLengthInfoType(
-            base_data_type="A_UNICODE2STRING",
+            base_data_type=DataType.A_UNICODE2STRING,
             bit_length=8,
             base_type_encoding=None,
             is_highlow_byte_order_raw=False,
@@ -150,7 +151,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         diagcodedtypes = {
             "uint8":
                 StandardLengthType(
-                    base_data_type="A_UINT32",
+                    base_data_type=DataType.A_UINT32,
                     base_type_encoding=None,
                     bit_length=8,
                     bit_mask=None,
@@ -159,7 +160,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                 ),
             "certificateClient":
                 LeadingLengthInfoType(
-                    base_data_type="A_BYTEFIELD",
+                    base_data_type=DataType.A_BYTEFIELD,
                     bit_length=8,
                     base_type_encoding=None,
                     is_highlow_byte_order_raw=None,
@@ -169,9 +170,11 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         # computation methods
         compumethods = {
             "uint_passthrough":
-                IdenticalCompuMethod(internal_type="A_UINT32", physical_type="A_UINT32"),
+                IdenticalCompuMethod(
+                    internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
             "bytes_passthrough":
-                IdenticalCompuMethod(internal_type="A_BYTEFIELD", physical_type="A_BYTEFIELD"),
+                IdenticalCompuMethod(
+                    internal_type=DataType.A_BYTEFIELD, physical_type=DataType.A_BYTEFIELD),
         }
 
         # data object properties
@@ -184,7 +187,8 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     description=None,
                     is_visible_raw=None,
                     diag_coded_type=diagcodedtypes["certificateClient"],
-                    physical_type=PhysicalType("A_BYTEFIELD", display_radix=None, precision=None),
+                    physical_type=PhysicalType(
+                        DataType.A_BYTEFIELD, display_radix=None, precision=None),
                     compu_method=compumethods["bytes_passthrough"],
                     unit_ref=None,
                     sdgs=[],
@@ -296,7 +300,7 @@ class TestStandardLengthType(unittest.TestCase):
 
     def test_decode_standard_length_type_uint(self):
         dct = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=5,
             bit_mask=None,
@@ -310,7 +314,7 @@ class TestStandardLengthType(unittest.TestCase):
 
     def test_decode_standard_length_type_uint_byteorder(self):
         dct = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=16,
             bit_mask=None,
@@ -324,7 +328,7 @@ class TestStandardLengthType(unittest.TestCase):
 
     def test_decode_standard_length_type_bytes(self):
         dct = StandardLengthType(
-            base_data_type="A_BYTEFIELD",
+            base_data_type=DataType.A_BYTEFIELD,
             base_type_encoding=None,
             bit_length=16,
             bit_mask=None,
@@ -355,7 +359,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             bit_position=None,
         )
         dct = ParamLengthInfoType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             length_key_ref=length_key_ref,
             is_highlow_byte_order_raw=None,
@@ -387,7 +391,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             bit_position=None,
         )
         dct = ParamLengthInfoType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             length_key_ref=OdxLinkRef.from_id(length_key_id),
             is_highlow_byte_order_raw=None,
@@ -404,7 +408,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         diagcodedtypes = {
             "uint8":
                 StandardLengthType(
-                    base_data_type="A_UINT32",
+                    base_data_type=DataType.A_UINT32,
                     base_type_encoding=None,
                     bit_length=8,
                     bit_mask=None,
@@ -413,7 +417,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                 ),
             "length_key_id_to_lengthOfCertificateClient":
                 ParamLengthInfoType(
-                    base_data_type="A_UINT32",
+                    base_data_type=DataType.A_UINT32,
                     base_type_encoding=None,
                     length_key_ref=OdxLinkRef("param.dummy_length_key", doc_frags),
                     is_highlow_byte_order_raw=None,
@@ -423,14 +427,15 @@ class TestParamLengthInfoType(unittest.TestCase):
         # computation methods
         compumethods = {
             "uint_passthrough":
-                IdenticalCompuMethod(internal_type="A_UINT32", physical_type="A_UINT32"),
+                IdenticalCompuMethod(
+                    internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
             "multiply_with_8":
                 LinearCompuMethod(
                     offset=0,
                     factor=8,
                     denominator=1,
-                    internal_type="A_UINT32",
-                    physical_type="A_UINT32",
+                    internal_type=DataType.A_UINT32,
+                    physical_type=DataType.A_UINT32,
                     internal_lower_limit=None,
                     internal_upper_limit=None,
                 ),
@@ -446,7 +451,8 @@ class TestParamLengthInfoType(unittest.TestCase):
                     description=None,
                     is_visible_raw=None,
                     diag_coded_type=diagcodedtypes["uint8"],
-                    physical_type=PhysicalType("A_UINT32", display_radix=None, precision=None),
+                    physical_type=PhysicalType(
+                        DataType.A_UINT32, display_radix=None, precision=None),
                     compu_method=compumethods["multiply_with_8"],
                     unit_ref=None,
                     sdgs=[],
@@ -459,7 +465,8 @@ class TestParamLengthInfoType(unittest.TestCase):
                     description=None,
                     is_visible_raw=None,
                     diag_coded_type=diagcodedtypes["length_key_id_to_lengthOfCertificateClient"],
-                    physical_type=PhysicalType("A_UINT32", display_radix=None, precision=None),
+                    physical_type=PhysicalType(
+                        DataType.A_UINT32, display_radix=None, precision=None),
                     compu_method=compumethods["uint_passthrough"],
                     unit_ref=None,
                     sdgs=[],
@@ -587,7 +594,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
     def test_decode_min_max_length_type_bytes(self):
         dct = MinMaxLengthType(
-            base_data_type="A_BYTEFIELD",
+            base_data_type=DataType.A_BYTEFIELD,
             base_type_encoding=None,
             min_length=1,
             max_length=4,
@@ -602,7 +609,7 @@ class TestMinMaxLengthType(unittest.TestCase):
     def test_decode_min_max_length_type_too_short_pdu(self):
         """If the PDU ends before min length is reached, an error must be raised."""
         dct = MinMaxLengthType(
-            base_data_type="A_BYTEFIELD",
+            base_data_type=DataType.A_BYTEFIELD,
             base_type_encoding=None,
             min_length=2,
             max_length=4,
@@ -616,7 +623,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         """If the PDU ends before max length is reached, the extracted value ends at the end of the PDU."""
         for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
             dct = MinMaxLengthType(
-                base_data_type="A_BYTEFIELD",
+                base_data_type=DataType.A_BYTEFIELD,
                 base_type_encoding=None,
                 min_length=2,
                 max_length=5,
@@ -632,7 +639,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         """If the max length is smaller than the end of PDU, the extracted value ends after max length."""
         for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
             dct = MinMaxLengthType(
-                base_data_type="A_BYTEFIELD",
+                base_data_type=DataType.A_BYTEFIELD,
                 base_type_encoding=None,
                 min_length=2,
                 max_length=3,
@@ -646,7 +653,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
     def test_encode_min_max_length_type_hex_ff(self):
         dct = MinMaxLengthType(
-            base_data_type="A_BYTEFIELD",
+            base_data_type=DataType.A_BYTEFIELD,
             base_type_encoding=None,
             min_length=1,
             max_length=4,
@@ -659,7 +666,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
     def test_encode_min_max_length_type_zero(self):
         dct = MinMaxLengthType(
-            base_data_type="A_UTF8STRING",
+            base_data_type=DataType.A_UTF8STRING,
             base_type_encoding=None,
             min_length=2,
             max_length=4,
@@ -674,7 +681,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         """If the parameter is at the end of the PDU, no termination char is added."""
         for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
             dct = MinMaxLengthType(
-                base_data_type="A_BYTEFIELD",
+                base_data_type=DataType.A_BYTEFIELD,
                 base_type_encoding=None,
                 min_length=2,
                 max_length=5,
@@ -687,7 +694,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             self.assertEqual(byte_val, bytes([0x34, 0x56, 0x78, 0x9A]))
 
         dct = MinMaxLengthType(
-            base_data_type="A_BYTEFIELD",
+            base_data_type=DataType.A_BYTEFIELD,
             base_type_encoding=None,
             min_length=2,
             max_length=5,
@@ -700,7 +707,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         """If the internal value is larger than max length, an EncodeError must be raised."""
         for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
             dct = MinMaxLengthType(
-                base_data_type="A_BYTEFIELD",
+                base_data_type=DataType.A_BYTEFIELD,
                 base_type_encoding=None,
                 min_length=2,
                 max_length=3,
@@ -724,7 +731,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         diagcodedtypes = {
             "uint8":
                 StandardLengthType(
-                    base_data_type="A_UINT32",
+                    base_data_type=DataType.A_UINT32,
                     base_type_encoding=None,
                     bit_length=8,
                     bit_mask=None,
@@ -733,7 +740,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 ),
             "certificateClient":
                 MinMaxLengthType(
-                    base_data_type="A_BYTEFIELD",
+                    base_data_type=DataType.A_BYTEFIELD,
                     base_type_encoding=None,
                     min_length=2,
                     max_length=10,
@@ -745,9 +752,11 @@ class TestMinMaxLengthType(unittest.TestCase):
         # computation methods
         compumethods = {
             "uint_passthrough":
-                IdenticalCompuMethod(internal_type="A_UINT32", physical_type="A_UINT32"),
+                IdenticalCompuMethod(
+                    internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
             "bytes_passthrough":
-                IdenticalCompuMethod(internal_type="A_BYTEFIELD", physical_type="A_BYTEFIELD"),
+                IdenticalCompuMethod(
+                    internal_type=DataType.A_BYTEFIELD, physical_type=DataType.A_BYTEFIELD),
         }
 
         # data object properties
@@ -760,7 +769,8 @@ class TestMinMaxLengthType(unittest.TestCase):
                     description=None,
                     is_visible_raw=None,
                     diag_coded_type=diagcodedtypes["certificateClient"],
-                    physical_type=PhysicalType("A_BYTEFIELD", display_radix=None, precision=None),
+                    physical_type=PhysicalType(
+                        DataType.A_BYTEFIELD, display_radix=None, precision=None),
                     compu_method=compumethods["bytes_passthrough"],
                     unit_ref=None,
                     sdgs=[],
@@ -880,7 +890,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
     def test_read_odx(self):
         expected = MinMaxLengthType(
-            base_data_type="A_ASCIISTRING",
+            base_data_type=DataType.A_ASCIISTRING,
             base_type_encoding="ISO-8859-1",
             min_length=8,
             max_length=16,

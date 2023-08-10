@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from typing import Optional, Union
+from typing import Optional
 
 from .decodestate import DecodeState
 from .diagcodedtype import DiagCodedType
@@ -12,7 +12,7 @@ class StandardLengthType(DiagCodedType):
     def __init__(
         self,
         *,
-        base_data_type: Union[str, DataType],
+        base_data_type: DataType,
         bit_length: int,
         bit_mask: Optional[int],
         is_condensed_raw: Optional[bool],

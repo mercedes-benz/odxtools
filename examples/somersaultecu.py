@@ -289,7 +289,7 @@ somersault_additional_audiences = {
 somersault_diagcodedtypes = {
     "flag":
         StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             bit_length=1,
             bit_mask=None,
             base_type_encoding=None,
@@ -298,7 +298,7 @@ somersault_diagcodedtypes = {
         ),
     "uint8":
         StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             bit_length=8,
             bit_mask=None,
             is_condensed_raw=None,
@@ -307,7 +307,7 @@ somersault_diagcodedtypes = {
         ),
     "uint16":
         StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             bit_length=16,
             bit_mask=None,
             base_type_encoding=None,
@@ -316,7 +316,7 @@ somersault_diagcodedtypes = {
         ),
     "float32":
         StandardLengthType(
-            base_data_type="A_FLOAT32",
+            base_data_type=DataType.A_FLOAT32,
             bit_length=32,
             bit_mask=None,
             is_condensed_raw=None,
@@ -418,12 +418,12 @@ somersault_unit_groups = {
 # computation methods
 somersault_compumethods: Dict[str, CompuMethod] = {
     "uint_passthrough":
-        IdenticalCompuMethod(internal_type="A_UINT32", physical_type="A_UINT32"),
+        IdenticalCompuMethod(internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
     "float_passthrough":
-        IdenticalCompuMethod(internal_type="A_FLOAT32", physical_type="A_FLOAT32"),
+        IdenticalCompuMethod(internal_type=DataType.A_FLOAT32, physical_type=DataType.A_FLOAT32),
     "boolean":
         TexttableCompuMethod(
-            internal_type="A_UINT32",
+            internal_type=DataType.A_UINT32,
             internal_to_phys=[
                 CompuScale(compu_const="false", lower_limit=Limit(0), upper_limit=Limit(0)),
                 CompuScale(compu_const="true", lower_limit=Limit(1), upper_limit=Limit(1)),

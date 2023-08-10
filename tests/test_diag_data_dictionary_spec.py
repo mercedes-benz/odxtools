@@ -15,6 +15,7 @@ from odxtools.multiplexerdefaultcase import MultiplexerDefaultCase
 from odxtools.multiplexerswitchkey import MultiplexerSwitchKey
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from odxtools.odxtypes import DataType
 from odxtools.parameters.physicalconstantparameter import PhysicalConstantParameter
 from odxtools.parameters.tablekeyparameter import TableKeyParameter
 from odxtools.parameters.valueparameter import ValueParameter
@@ -32,7 +33,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
 
     def test_initialization(self):
         uint_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -40,7 +41,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             is_condensed_raw=None,
         )
         ident_compu_method = IdenticalCompuMethod(
-            internal_type="A_UINT32", physical_type="A_UINT32")
+            internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32)
 
         dtc_dop = DtcDop(
             odx_id=OdxLinkId("DOP.dtc_dop", doc_frags),
@@ -49,7 +50,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             description=None,
             is_visible_raw=None,
             diag_coded_type=uint_type,
-            physical_type=PhysicalType("A_UINT32", display_radix=None, precision=None),
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             linked_dtc_dop_refs=[],
             compu_method=ident_compu_method,
             unit_ref=None,
@@ -75,7 +76,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             description=None,
             is_visible_raw=None,
             diag_coded_type=uint_type,
-            physical_type=PhysicalType("A_UINT32", display_radix=None, precision=None),
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=ident_compu_method,
             unit_ref=None,
             sdgs=[],
@@ -88,7 +89,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             description=None,
             is_visible_raw=None,
             diag_coded_type=uint_type,
-            physical_type=PhysicalType("A_UINT32", display_radix=None, precision=None),
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=ident_compu_method,
             unit_ref=None,
             sdgs=[],

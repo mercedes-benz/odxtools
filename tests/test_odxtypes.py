@@ -7,7 +7,7 @@ from odxtools.odxtypes import DataType
 class TestDataType(unittest.TestCase):
 
     def test_from_string(self):
-        self.assertTrue(DataType.A_UINT32 == DataType("A_UINT32"))
+        self.assertTrue(DataType.A_UINT32 == DataType(DataType.A_UINT32))
 
     def test_make_from(self):
         self.assertTrue(DataType.A_UINT32.make_from("12") == 12)

@@ -18,7 +18,7 @@ class LengthKeyParameter(ParameterWithDOP):
 
     LengthKeyParameters are decoded the same as ValueParameters.
     The main difference to ValueParameters is that a LengthKeyParameter has an `.odx_id` attribute
-    and its DOP must be a simple DOP with PHYSICAL-TYPE/BASE-DATA-TYPE="A_UINT32".
+    and its DOP must be a simple DOP with PHYSICAL-TYPE/BASE-DATA-TYPE=DataType.A_UINT32.
     """
 
     def __init__(self, *, odx_id, **kwargs):

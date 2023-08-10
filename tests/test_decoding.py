@@ -36,7 +36,7 @@ class TestIdentifyingService(unittest.TestCase):
 
     def test_prefix_tree_construction(self):
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -44,7 +44,7 @@ class TestIdentifyingService(unittest.TestCase):
             is_highlow_byte_order_raw=None,
         )
         diag_coded_type_2 = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=16,
             bit_mask=None,
@@ -215,7 +215,7 @@ class TestDecoding(unittest.TestCase):
 
     def test_decode_request_coded_const(self):
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -322,7 +322,7 @@ class TestDecoding(unittest.TestCase):
         Test if the decoding works if the byte position of the second parameter
         must be inferred from the order in the surrounding structure."""
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -460,7 +460,7 @@ class TestDecoding(unittest.TestCase):
     def test_decode_request_structure(self):
         """Test the decoding for a structure."""
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -468,7 +468,7 @@ class TestDecoding(unittest.TestCase):
             is_highlow_byte_order_raw=None,
         )
         diag_coded_type_4 = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=4,
             bit_mask=None,
@@ -476,7 +476,8 @@ class TestDecoding(unittest.TestCase):
             is_highlow_byte_order_raw=None,
         )
 
-        compu_method = IdenticalCompuMethod(internal_type="A_INT32", physical_type="A_INT32")
+        compu_method = IdenticalCompuMethod(
+            internal_type=DataType.A_INT32, physical_type=DataType.A_INT32)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.odx_id", doc_frags),
             short_name="dop_sn",
@@ -635,7 +636,7 @@ class TestDecoding(unittest.TestCase):
     def test_decode_request_end_of_pdu_field(self):
         """Test the decoding for a structure."""
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -643,7 +644,7 @@ class TestDecoding(unittest.TestCase):
             is_highlow_byte_order_raw=None,
         )
         diag_coded_type_4 = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=4,
             bit_mask=None,
@@ -651,7 +652,8 @@ class TestDecoding(unittest.TestCase):
             is_highlow_byte_order_raw=None,
         )
 
-        compu_method = IdenticalCompuMethod(internal_type="A_INT32", physical_type="A_INT32")
+        compu_method = IdenticalCompuMethod(
+            internal_type=DataType.A_INT32, physical_type=DataType.A_INT32)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),
             short_name="dop_sn",
@@ -833,13 +835,13 @@ class TestDecoding(unittest.TestCase):
             offset=1,
             factor=5,
             denominator=1,
-            internal_type="A_INT32",
-            physical_type="A_INT32",
+            internal_type=DataType.A_INT32,
+            physical_type=DataType.A_INT32,
             internal_lower_limit=None,
             internal_upper_limit=None,
         )
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -966,7 +968,7 @@ class TestDecoding(unittest.TestCase):
 
     def test_decode_response(self):
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
@@ -1139,14 +1141,15 @@ class TestDecoding(unittest.TestCase):
     def test_decode_dtc(self):
         odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
             is_condensed_raw=None,
             is_highlow_byte_order_raw=None,
         )
-        compu_method = IdenticalCompuMethod(internal_type="A_INT32", physical_type="A_INT32")
+        compu_method = IdenticalCompuMethod(
+            internal_type=DataType.A_INT32, physical_type=DataType.A_INT32)
 
         dtc1 = DiagnosticTroubleCode(
             odx_id=OdxLinkId("dtcID1", doc_frags),
@@ -1274,7 +1277,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
             description=None,
             semantic=None,
             diag_coded_type=StandardLengthType(
-                base_data_type="A_UINT32",
+                base_data_type=DataType.A_UINT32,
                 bit_length=8,
                 bit_mask=None,
                 base_type_encoding=None,
@@ -1374,7 +1377,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
     def test_physical_constant_parameter(self):
         odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(
-            base_data_type="A_UINT32",
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
