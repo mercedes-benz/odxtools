@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
 from xml.etree import ElementTree
 
@@ -23,24 +24,14 @@ if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
+@dataclass
 class DataObjectProperty(DopBase):
     """This class represents a DATA-OBJECT-PROP."""
 
-    def __init__(
-        self,
-        *,
-        diag_coded_type: DiagCodedType,
-        physical_type: PhysicalType,
-        compu_method: CompuMethod,
-        unit_ref: Optional[OdxLinkRef],
-        **kwargs,
-    ):
-        super().__init__(**kwargs)
-
-        self.diag_coded_type = diag_coded_type
-        self.physical_type = physical_type
-        self.compu_method = compu_method
-        self.unit_ref = unit_ref
+    diag_coded_type: DiagCodedType
+    physical_type: PhysicalType
+    compu_method: CompuMethod
+    unit_ref: Optional[OdxLinkRef]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
