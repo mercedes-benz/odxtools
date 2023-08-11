@@ -1293,6 +1293,9 @@ class TestDecodingAndEncoding(unittest.TestCase):
         self.parameter_termination_end_of_pdu._resolve_odxlinks(odxlinks)
         self.parameter_sid._resolve_odxlinks(odxlinks)
 
+        self.parameter_termination_end_of_pdu._resolve_snrefs(None)  # type: ignore[arg-type]
+        self.parameter_sid._resolve_snrefs(None)  # type: ignore[arg-type]
+
     def test_min_max_length_type_end_of_pdu(self):
         req_param1 = self.parameter_sid
         req_param2 = self.parameter_termination_end_of_pdu
@@ -1359,6 +1362,8 @@ class TestDecodingAndEncoding(unittest.TestCase):
 
         req_param1._resolve_odxlinks(odxlinks)
         req_param2._resolve_odxlinks(odxlinks)
+        req_param1._resolve_snrefs(None)
+        req_param2._resolve_snrefs(None)
 
         expected_coded_message = bytes([0x12, 0x34])
         expected_param_dict = {
@@ -1422,7 +1427,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
             long_name=None,
             description=None,
             semantic=None,
-            physical_constant_value=offset,
+            physical_constant_value_raw=f"{offset}",
             dop_ref=OdxLinkRef.from_id(dop.odx_id),
             dop_snref=None,
             byte_position=None,
@@ -1442,6 +1447,9 @@ class TestDecodingAndEncoding(unittest.TestCase):
 
         req_param1._resolve_odxlinks(odxlinks)
         req_param2._resolve_odxlinks(odxlinks)
+
+        req_param1._resolve_snrefs(odxlinks)
+        req_param2._resolve_snrefs(odxlinks)
 
         expected_coded_message = bytes([0x12, 0x0])
         expected_param_dict = {"SID": 0x12, "physical_constant_parameter": offset}

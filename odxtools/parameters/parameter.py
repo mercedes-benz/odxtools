@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
 import abc
 import warnings
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -12,29 +13,32 @@ from ..specialdatagroup import SpecialDataGroup
 if TYPE_CHECKING:
     from ..diaglayer import DiagLayer
 
+ParameterType = Literal[
+    "CODED-CONST",
+    "DYNAMIC",
+    "LENGTH-KEY",
+    "MATCHING-REQUEST-PARAM",
+    "NRC-CONST",
+    "PHYS-CONST",
+    "RESERVED",
+    "SYSTEM",
+    "TABLE-ENTRY",
+    "TABLE-KEY",
+    "TABLE-STRUCT",
+    "VALUE",
+]
 
+
+@dataclass
 class Parameter(abc.ABC):
 
-    def __init__(
-        self,
-        *,
-        short_name: str,
-        parameter_type: str,
-        long_name: Optional[str],
-        byte_position: Optional[int],
-        bit_position: Optional[int],
-        semantic: Optional[str],
-        description: Optional[str],
-        sdgs: List[SpecialDataGroup],
-    ) -> None:
-        self.short_name: str = short_name
-        self.long_name: Optional[str] = long_name
-        self.byte_position: Optional[int] = byte_position
-        self.bit_position: Optional[int] = bit_position
-        self.parameter_type: str = parameter_type
-        self.semantic: Optional[str] = semantic
-        self.description: Optional[str] = description
-        self.sdgs = sdgs
+    short_name: str
+    long_name: Optional[str]
+    byte_position: Optional[int]
+    bit_position: Optional[int]
+    semantic: Optional[str]
+    description: Optional[str]
+    sdgs: List[SpecialDataGroup]
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
@@ -51,6 +55,11 @@ class Parameter(abc.ABC):
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)
+
+    @property
+    @abc.abstractmethod
+    def parameter_type(self) -> ParameterType:
+        pass
 
     @property
     def bit_length(self) -> Optional[int]:
@@ -172,32 +181,3 @@ class Parameter(abc.ABC):
         if self.bit_position is not None:
             d["bit_position"] = self.bit_position
         return d
-
-    def __repr__(self):
-        repr_str = (
-            f"Parameter(parameter_type='{self.parameter_type}', short_name='{self.short_name}'")
-        if self.long_name is not None:
-            repr_str += f", long_name='{self.long_name}'"
-        if self.byte_position is not None:
-            repr_str += f", byte_position='{self.byte_position}'"
-        if self.bit_position is not None:
-            repr_str += f", bit_position='{self.bit_position}'"
-        if self.semantic is not None:
-            repr_str += f", semantic='{self.semantic}'"
-        if self.description is not None:
-            repr_str += f", description='{' '.join(self.description.split())}'"
-        return repr_str + ")"
-
-    def __str__(self):
-        # create list of all parameters. 'short_name' ought to be
-        # first, so it needs special treatment...
-        param_descs = [f"short_name='{self.short_name}'"]
-        for (key, val) in self._as_dict().items():
-            if key == "short_name":
-                continue
-            elif isinstance(val, str):
-                param_descs.append(f"{key}='{val}'")
-            else:
-                param_descs.append(f"{key}={val}")
-
-        return f"Parameter({', '.join(param_descs)})"

@@ -1,17 +1,18 @@
 # SPDX-License-Identifier: MIT
-from ..exceptions import odxassert
+from dataclasses import dataclass
+
 from ..odxlink import OdxLinkRef
-from .parameter import Parameter
+from .parameter import Parameter, ParameterType
 
 
+@dataclass
 class TableEntryParameter(Parameter):
+    target: str
+    table_row_ref: OdxLinkRef
 
-    def __init__(self, *, target: str, table_row_ref: OdxLinkRef, **kwargs):
-        super().__init__(parameter_type="TABLE-ENTRY", **kwargs)
-
-        odxassert(target in ["KEY", "STRUCT"])
-        self.target = target
-        self.table_row_ref = table_row_ref
+    @property
+    def parameter_type(self) -> ParameterType:
+        return "TABLE-ENTRY"
 
     def is_required(self):
         raise NotImplementedError("TableKeyParameter.is_required is not implemented yet.")

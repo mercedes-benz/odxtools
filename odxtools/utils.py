@@ -24,7 +24,10 @@ def create_description_from_et(et_element: Optional[ElementTree.Element],) -> Op
     for e in et_element:
         raw_string += ElementTree.tostring(e, encoding="unicode")
 
-    return raw_string.strip()
+    # remove white spaces at the beginning and at the end of lines
+    stripped_lines = [x.strip() for x in raw_string.split("\n")]
+
+    return "\n".join(stripped_lines).strip()
 
 
 def short_name_as_id(obj: Any) -> str:

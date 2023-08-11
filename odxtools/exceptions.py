@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
-import warnings
 from typing import TYPE_CHECKING, NoReturn, Optional, Type, TypeVar
+
+from .globals import logger
 
 
 class OdxError(Exception):
@@ -18,10 +19,6 @@ class DecodeError(Warning, OdxError):
 class OdxWarning(Warning):
     """Any warning that happens during interacting with diagnostic objects."""
 
-
-# Mark DecodeError and EncodeErrpr warnings as errors by default
-warnings.simplefilter("error", DecodeError)
-warnings.simplefilter("error", EncodeError)
 
 #: Specify whether violations of the ODX specification or failed
 #: assumptions in the ODX library code should cause the routine in
@@ -42,6 +39,8 @@ def odxraise(message: Optional[str] = None, error_type: Type[Exception] = OdxErr
             raise error_type()
         else:
             raise error_type(message)
+    elif message is not None:
+        logger.warn(message)
 
 
 def odxassert(condition: bool,
