@@ -96,27 +96,6 @@ class CodedConstParameter(Parameter):
         d["coded_value"] = hex(self.coded_value)
         return d
 
-    def __repr__(self):
-        repr_str = f"CodedConstParameter(short_name='{self.short_name}', coded_value={self._coded_value_str}"
-        if self.long_name is not None:
-            repr_str += f", long_name='{self.long_name}'"
-        if self.byte_position is not None:
-            repr_str += f", byte_position={self.byte_position}"
-        if self.bit_position is not None:
-            repr_str += f", bit_position={self.bit_position}"
-        if self.semantic is not None:
-            repr_str += f", semantic='{self.semantic}'"
-        repr_str += f", diag_coded_type={repr(self.diag_coded_type)}"
-        if self.description is not None:
-            repr_str += f", description='{' '.join(self.description.split())}'"
-        return repr_str + ")"
-
-    def __str__(self):
-        lines = [
-            super().__str__(),
-        ]
-        return "\n".join(lines)
-
     @property
     def _coded_value_str(self):
         if isinstance(self.coded_value, int):

@@ -111,28 +111,6 @@ class NrcConstParameter(Parameter):
         d["coded_values"] = self.coded_values
         return d
 
-    def __repr__(self):
-        repr_str = (
-            f"CodedConstParameter(short_name='{self.short_name}', coded_values={self.coded_values}")
-        if self.long_name is not None:
-            repr_str += f", long_name='{self.long_name}'"
-        if self.byte_position is not None:
-            repr_str += f", byte_position='{self.byte_position}'"
-        if self.bit_position is not None:
-            repr_str += f", bit_position='{self.bit_position}'"
-        if self.semantic is not None:
-            repr_str += f", semantic='{self.semantic}'"
-        repr_str += f", diag_coded_type={repr(self.diag_coded_type)}"
-        if self.description is not None:
-            repr_str += f", description='{' '.join(self.description.split())}'"
-        return repr_str + ")"
-
-    def __str__(self):
-        lines = [
-            super().__str__(),
-        ]
-        return "\n".join(lines)
-
     def get_description_of_valid_values(self) -> str:
         """return a human-understandable description of valid physical values"""
         return f"One of the constant internal values: {self.coded_values}"

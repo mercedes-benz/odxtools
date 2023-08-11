@@ -255,14 +255,14 @@ class TestSingleEcuJob(unittest.TestCase):
                     <OUTPUT-PARAM ID="{output_params[0].odx_id.local_id}" SEMANTIC="{output_params[0].semantic}">
                         <SHORT-NAME>{output_params[0].short_name}</SHORT-NAME>
                         <LONG-NAME>{output_params[0].long_name}</LONG-NAME>
-                        <DESC>\n{output_params[0].description}\n</DESC>
+                        <DESC>{output_params[0].description}</DESC>
                         <DOP-BASE-REF ID-REF="{output_params[0].dop_base_ref.ref_id}"/>
                     </OUTPUT-PARAM>
                 </OUTPUT-PARAMS>
                 <NEG-OUTPUT-PARAMS>
                     <NEG-OUTPUT-PARAM>
                         <SHORT-NAME>{neg_output_params[0].short_name}</SHORT-NAME>
-                        <DESC>\n{neg_output_params[0].description}\n</DESC>
+                        <DESC>{neg_output_params[0].description}</DESC>
                         <DOP-BASE-REF ID-REF="{neg_output_params[0].dop_base_ref.ref_id}"/>
                     </NEG-OUTPUT-PARAM>
                 </NEG-OUTPUT-PARAMS>

@@ -27,21 +27,3 @@ class SystemParameter(ParameterWithDOP):
 
     def decode_from_pdu(self, coded_message, default_byte_position=None):
         raise NotImplementedError("Decoding a SystemParameter is not implemented yet.")
-
-    def __repr__(self):
-        repr_str = f"SystemParameter(short_name='{self.short_name}', sysparam='{self.sysparam}'"
-        if self.long_name is not None:
-            repr_str += f", long_name='{self.long_name}'"
-        if self.byte_position is not None:
-            repr_str += f", byte_position={self.byte_position}"
-        if self.bit_position is not None:
-            repr_str += f", bit_position={self.bit_position}"
-        if self.semantic is not None:
-            repr_str += f", semantic='{self.semantic}'"
-        if self.dop_ref is not None:
-            repr_str += f", dop_ref='{self.dop_ref}'"
-        if self.dop_snref is not None:
-            repr_str += f", dop_snref='{self.dop_snref}'"
-        if self.description is not None:
-            repr_str += f", description='{' '.join(self.description.split())}'"
-        return repr_str + ")"

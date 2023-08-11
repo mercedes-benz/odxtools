@@ -102,7 +102,3 @@ class ParameterWithDOP(Parameter):
             d["dop_snref"] = self.dop_snref
 
         return d
-
-    def __str__(self):
-        lines = [super().__str__(), " " + str(self.dop).replace("\n", "\n ")]
-        return "\n".join(lines)

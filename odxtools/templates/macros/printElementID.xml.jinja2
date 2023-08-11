@@ -9,8 +9,6 @@
 <LONG-NAME>{{ element.long_name|e }}</LONG-NAME>
 {%- endif %}
 {%- if element.description is string and element.description.strip() %}
-<DESC>
-{{ element.description }}
-</DESC>
+<DESC>{{ element.description }}</DESC>
 {%- endif %}
 {%- endmacro -%}
