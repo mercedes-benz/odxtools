@@ -10,7 +10,7 @@ from ..encodestate import EncodeState
 from ..exceptions import DecodeError
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType, DataType
-from .parameter import Parameter
+from .parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
     from ..diaglayer import DiagLayer
@@ -23,7 +23,7 @@ class CodedConstParameter(Parameter):
     coded_value: AtomicOdxType
 
     @property
-    def parameter_type(self) -> str:
+    def parameter_type(self) -> ParameterType:
         return "CODED-CONST"
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

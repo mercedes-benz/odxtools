@@ -8,7 +8,7 @@ from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError, OdxWarning, odxraise
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .parameter import Parameter
+from .parameter import Parameter, ParameterType
 from .tablekeyparameter import TableKeyParameter
 
 if TYPE_CHECKING:
@@ -26,7 +26,7 @@ class TableStructParameter(Parameter):
             odxraise("Either table_key_ref or table_key_snref must be defined.")
 
     @property
-    def parameter_type(self) -> str:
+    def parameter_type(self) -> ParameterType:
         return "TABLE-STRUCT"
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

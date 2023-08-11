@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 
-from .parameter import Parameter
+from .parameter import Parameter, ParameterType
 
 
 @dataclass
 class DynamicParameter(Parameter):
 
     @property
-    def parameter_type(self) -> str:
+    def parameter_type(self) -> ParameterType:
         return "DYNAMIC"
 
     def is_required(self):

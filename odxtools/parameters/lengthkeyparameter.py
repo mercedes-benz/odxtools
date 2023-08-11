@@ -6,6 +6,7 @@ from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import odxrequire
 from ..odxlink import OdxLinkDatabase, OdxLinkId
+from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
 if TYPE_CHECKING:
@@ -26,7 +27,7 @@ class LengthKeyParameter(ParameterWithDOP):
     odx_id: OdxLinkId
 
     @property
-    def parameter_type(self) -> str:
+    def parameter_type(self) -> ParameterType:
         return "LENGTH-KEY"
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

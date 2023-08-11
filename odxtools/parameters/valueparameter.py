@@ -7,6 +7,7 @@ from ..encodestate import EncodeState
 from ..exceptions import odxraise, odxrequire
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType
+from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
 if TYPE_CHECKING:
@@ -18,7 +19,7 @@ class ValueParameter(ParameterWithDOP):
     physical_default_value_raw: Optional[str]
 
     @property
-    def parameter_type(self) -> str:
+    def parameter_type(self) -> ParameterType:
         return "VALUE"
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

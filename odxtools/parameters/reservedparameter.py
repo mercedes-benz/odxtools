@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 from ..decodestate import DecodeState
 from ..exceptions import DecodeError
-from .parameter import Parameter
+from .parameter import Parameter, ParameterType
 
 
 @dataclass
@@ -12,7 +12,7 @@ class ReservedParameter(Parameter):
     bit_length_raw: int
 
     @property
-    def parameter_type(self) -> str:
+    def parameter_type(self) -> ParameterType:
         return "RESERVED"
 
     def is_required(self):

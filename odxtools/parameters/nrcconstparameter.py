@@ -10,7 +10,7 @@ from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType, DataType
-from .parameter import Parameter
+from .parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
     from ..diaglayer import DiagLayer
@@ -31,7 +31,7 @@ class NrcConstParameter(Parameter):
     coded_values: List[AtomicOdxType]
 
     @property
-    def parameter_type(self) -> str:
+    def parameter_type(self) -> ParameterType:
         return "NRC-CONST"
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

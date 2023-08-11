@@ -9,6 +9,7 @@ from ..encodestate import EncodeState
 from ..exceptions import DecodeError, odxraise, odxrequire
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
+from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
 if TYPE_CHECKING:
@@ -21,7 +22,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
     physical_constant_value_raw: str
 
     @property
-    def parameter_type(self) -> str:
+    def parameter_type(self) -> ParameterType:
         return "PHYS-CONST"
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

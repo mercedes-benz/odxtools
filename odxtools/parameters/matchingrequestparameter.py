@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError
-from .parameter import Parameter
+from .parameter import Parameter, ParameterType
 
 
 @dataclass
@@ -13,7 +13,7 @@ class MatchingRequestParameter(Parameter):
     byte_length: int
 
     @property
-    def parameter_type(self) -> str:
+    def parameter_type(self) -> ParameterType:
         return "MATCHING-REQUEST-PARAM"
 
     @property

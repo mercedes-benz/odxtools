@@ -2,7 +2,7 @@
 import abc
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -12,6 +12,21 @@ from ..specialdatagroup import SpecialDataGroup
 
 if TYPE_CHECKING:
     from ..diaglayer import DiagLayer
+
+ParameterType = Literal[
+    "CODED-CONST",
+    "DYNAMIC",
+    "LENGTH-KEY",
+    "MATCHING-REQUEST-PARAM",
+    "NRC-CONST",
+    "PHYS-CONST",
+    "RESERVED",
+    "SYSTEM",
+    "TABLE-ENTRY",
+    "TABLE-KEY",
+    "TABLE-STRUCT",
+    "VALUE",
+]
 
 
 @dataclass
@@ -43,7 +58,7 @@ class Parameter(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def parameter_type(self) -> str:
+    def parameter_type(self) -> ParameterType:
         pass
 
     @property

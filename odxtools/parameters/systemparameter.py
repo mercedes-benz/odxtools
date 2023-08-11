@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 
+from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
 
@@ -9,7 +10,7 @@ class SystemParameter(ParameterWithDOP):
     sysparam: str
 
     @property
-    def parameter_type(self) -> str:
+    def parameter_type(self) -> ParameterType:
         return "SYSTEM"
 
     def is_required(self):
