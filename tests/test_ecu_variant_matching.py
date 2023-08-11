@@ -56,7 +56,7 @@ def ident_service(monkeypatch, dummy_response: Response) -> DiagService:
         description=None,
         sdgs=[],
         is_visible_raw=None,
-        parameters=[],
+        parameters=NamedItemList(short_name_as_id),
         byte_size=None,
     )
     odxlinks.update({dummy_req.odx_id: dummy_req})
@@ -94,7 +94,7 @@ def supplier_service(monkeypatch, dummy_response: Response) -> DiagService:
         description=None,
         sdgs=[],
         is_visible_raw=None,
-        parameters=[],
+        parameters=NamedItemList(short_name_as_id),
         byte_size=None,
     )
     odxlinks.update({dummy_req.odx_id: dummy_req})

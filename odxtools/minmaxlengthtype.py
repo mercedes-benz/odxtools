@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
-from typing import Optional
 from dataclasses import dataclass
+from typing import Optional
 
 from .decodestate import DecodeState
 from .diagcodedtype import DiagCodedType

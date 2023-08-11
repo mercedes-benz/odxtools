@@ -2064,7 +2064,7 @@ somersault_assiduous_requests = {
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[
+            parameters=NamedItemList(short_name_as_id, [
                 CodedConstParameter(
                     short_name="sid",
                     long_name=None,
@@ -2088,7 +2088,7 @@ somersault_assiduous_requests = {
                     bit_position=None,
                     sdgs=[],
                 ),
-            ],
+            ]),
             byte_size=None,
         ),
 }

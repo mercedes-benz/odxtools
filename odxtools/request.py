@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
+
 from .basicstructure import BasicStructure
 
 
+@dataclass
 class Request(BasicStructure):
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
 
     def __repr__(self) -> str:
         return f"Request('{self.short_name}')"
