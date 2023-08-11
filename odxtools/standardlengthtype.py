@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import Optional
 
 from .decodestate import DecodeState
@@ -7,26 +8,12 @@ from .encodestate import EncodeState
 from .odxtypes import DataType
 
 
+@dataclass
 class StandardLengthType(DiagCodedType):
 
-    def __init__(
-        self,
-        *,
-        base_data_type: DataType,
-        bit_length: int,
-        bit_mask: Optional[int],
-        is_condensed_raw: Optional[bool],
-        base_type_encoding: Optional[str],
-        is_highlow_byte_order_raw: Optional[bool],
-    ):
-        super().__init__(
-            base_data_type=base_data_type,
-            base_type_encoding=base_type_encoding,
-            is_highlow_byte_order_raw=is_highlow_byte_order_raw,
-        )
-        self.bit_length = bit_length
-        self.bit_mask = bit_mask
-        self.is_condensed_raw = is_condensed_raw
+    bit_length: int
+    bit_mask: Optional[int]
+    is_condensed_raw: Optional[bool]
 
     @property
     def dct_type(self) -> str:
