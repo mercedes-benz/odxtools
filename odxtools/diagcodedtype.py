@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import abc
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Literal, Optional, Tuple, Union
 
 import bitstruct
 
@@ -25,6 +25,13 @@ ODX_TYPE_TO_FORMAT_LETTER = {
     DataType.A_UTF8STRING: "t",
 }
 
+DctType = Literal[
+    "LEADING-LENGTH-INFO-TYPE",
+    "MIN-MAX-LENGTH-TYPE",
+    "PARAM-LENGTH-INFO-TYPE",
+    "STANDARD-LENGTH-TYPE",
+]
+
 
 @dataclass
 class DiagCodedType(abc.ABC):
@@ -46,7 +53,7 @@ class DiagCodedType(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def dct_type(self) -> str:
+    def dct_type(self) -> DctType:
         pass
 
     @property

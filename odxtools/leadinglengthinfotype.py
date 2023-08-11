@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 from .decodestate import DecodeState
-from .diagcodedtype import DiagCodedType
+from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import odxassert, odxraise
 from .odxtypes import DataType
@@ -27,7 +27,7 @@ class LeadingLengthInfoType(DiagCodedType):
         )
 
     @property
-    def dct_type(self) -> str:
+    def dct_type(self) -> DctType:
         return "LEADING-LENGTH-INFO-TYPE"
 
     def convert_internal_to_bytes(self, internal_value: Any, encode_state: EncodeState,

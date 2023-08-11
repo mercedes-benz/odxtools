@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from .decodestate import DecodeState
-from .diagcodedtype import DiagCodedType
+from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .odxtypes import DataType
 
@@ -16,7 +16,7 @@ class StandardLengthType(DiagCodedType):
     is_condensed_raw: Optional[bool]
 
     @property
-    def dct_type(self) -> str:
+    def dct_type(self) -> DctType:
         return "STANDARD-LENGTH-TYPE"
 
     def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState,

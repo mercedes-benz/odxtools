@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from .decodestate import DecodeState
-from .diagcodedtype import DiagCodedType
+from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import odxraise
 from .odxlink import OdxLinkDatabase, OdxLinkRef
@@ -20,7 +20,7 @@ class ParamLengthInfoType(DiagCodedType):
     length_key_ref: OdxLinkRef
 
     @property
-    def dct_type(self) -> str:
+    def dct_type(self) -> DctType:
         return "PARAM-LENGTH-INFO-TYPE"
 
     def _build_odxlinks(self):

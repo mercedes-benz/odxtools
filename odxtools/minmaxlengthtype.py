@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from .decodestate import DecodeState
-from .diagcodedtype import DiagCodedType
+from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert
 from .odxtypes import DataType
@@ -31,7 +31,7 @@ class MinMaxLengthType(DiagCodedType):
         ], f"A min-max length type cannot have the termination {self.termination}")
 
     @property
-    def dct_type(self) -> str:
+    def dct_type(self) -> DctType:
         return "MIN-MAX-LENGTH-TYPE"
 
     def __termination_character(self):
