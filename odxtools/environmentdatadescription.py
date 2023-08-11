@@ -99,14 +99,6 @@ class EnvironmentDataDescription(DopBase):
             for ed in self.env_datas:
                 ed._resolve_snrefs(diag_layer)
 
-    def __repr__(self) -> str:
-        return (f"EnvironmentDataDescription('{self.short_name}', " + ", ".join([
-            f"odx_id='{self.odx_id}'",
-            f"param_snref='{self.param_snref}'",
-            f"param_snpathref='{self.param_snpathref}'",
-            f"env_data_refs='{self.env_data_refs}'",
-        ]) + ")")
-
     def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
         """Convert the physical value into bytes.

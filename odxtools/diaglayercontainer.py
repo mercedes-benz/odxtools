@@ -153,9 +153,3 @@ class DiagLayerContainer:
 
     def __getitem__(self, key: Union[int, str]) -> DiagLayer:
         return self.diag_layers[key]
-
-    def __repr__(self) -> str:
-        return f"DiagLayerContainer('{self.short_name}')"
-
-    def __str__(self) -> str:
-        return f"DiagLayerContainer('{self.short_name}')"

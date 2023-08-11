@@ -26,3 +26,9 @@ class CompuMethod:
 
     def get_valid_physical_values(self):
         return None
+
+    def __str__(self) -> str:
+        return f"CompuMethod(category={self.category}"
+
+    def __repr__(self) -> str:
+        return str(self)

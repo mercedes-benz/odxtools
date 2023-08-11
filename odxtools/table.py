@@ -112,7 +112,3 @@ class Table:
         for table_row_wrapper in self.table_rows_raw:
             if isinstance(table_row_wrapper, TableRow):
                 table_row_wrapper._resolve_snrefs(diag_layer)
-
-    def __repr__(self) -> str:
-        return (f"Table('{self.short_name}', " + ", ".join(
-            [f"table_rows='{self.table_rows}'", f"key_dop_ref='{self.key_dop_ref}'"]) + ")")

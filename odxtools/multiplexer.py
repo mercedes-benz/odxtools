@@ -184,12 +184,3 @@ class Multiplexer(DopBase):
 
         for case in self.cases:
             case._resolve_snrefs(diag_layer)
-
-    def __repr__(self) -> str:
-        return (f"Multiplexer('{self.short_name}', " + ", ".join([
-            f"odx_id='{self.odx_id}'",
-            f"byte_position='{self.byte_position}'",
-            f"switch_key='{self.switch_key}'",
-            f"default_case='{self.default_case}'",
-            f"cases='{self.cases}'",
-        ]) + ")")

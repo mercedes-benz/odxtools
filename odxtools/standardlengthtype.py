@@ -40,18 +40,3 @@ class StandardLengthType(DiagCodedType):
             self.is_highlow_byte_order,
             bit_mask=self.bit_mask,
         )
-
-    def __repr__(self) -> str:
-        repr_str = f"StandardLengthType(base_data_type='{self.base_data_type}', bit_length={self.bit_length}"
-        if self.bit_mask is not None:
-            repr_str += f", bit_mask={self.bit_mask}"
-        if self.is_condensed_raw:
-            repr_str += f", is_condensed_raw={self.is_condensed_raw}"
-        if self.base_type_encoding is not None:
-            repr_str += f", base_type_encoding={self.base_type_encoding}"
-        if not self.is_highlow_byte_order:
-            repr_str += f", is_highlow_byte_order={self.is_highlow_byte_order}"
-        return repr_str + ")"
-
-    def __str__(self) -> str:
-        return self.__repr__()

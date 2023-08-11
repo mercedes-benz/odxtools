@@ -70,15 +70,6 @@ class CommunicationParameterRef:
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
 
-    def __repr__(self) -> str:
-        val = self.value
-        if isinstance(val, str):
-            val = f"'{val}'"
-        return f"CommunicationParameter('{self.short_name}', value={val})"
-
-    def __str__(self) -> str:
-        return self.__repr__()
-
     @property
     def comparam(self) -> BaseComparam:
         return self._comparam

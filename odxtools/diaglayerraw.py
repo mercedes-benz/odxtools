@@ -284,6 +284,3 @@ class DiagLayerRaw:
                 continue
 
             obj._resolve_snrefs(diag_layer)
-
-    def __str__(self) -> str:
-        return f"DiagLayerRaw('{self.short_name}', type='{self.variant_type.value}')"

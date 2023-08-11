@@ -248,12 +248,6 @@ class DiagService:
         """Encode a request."""
         return self.encode_request(**params)
 
-    def __str__(self):
-        return f"DiagService(odx_id={self.odx_id}, semantic={self.semantic})"
-
-    def __repr__(self):
-        return self.__str__()
-
     def __hash__(self) -> int:
         return hash(self.odx_id)
 

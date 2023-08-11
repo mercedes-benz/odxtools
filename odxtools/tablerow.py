@@ -150,10 +150,3 @@ class TableRow:
     def dop(self) -> Optional[DataObjectProperty]:
         """The data object property object resolved by dop_ref."""
         return self._dop
-
-    def __repr__(self) -> str:
-        return (f"TableRow('{self.short_name}', " + ", ".join([
-            f"key='{str(self.key)}'",
-            f"structure_ref='{self.structure_ref}'",
-            f"dop_ref='{self.dop_ref}'",
-        ]) + ")")

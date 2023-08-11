@@ -21,9 +21,3 @@ class Response(BasicStructure):
                     params[param.short_name] = val
 
         return super().encode(coded_request=coded_request, **params)
-
-    def __repr__(self) -> str:
-        return f"Response('{self.short_name}')"
-
-    def __str__(self) -> str:
-        return f"Response('{self.short_name}')"

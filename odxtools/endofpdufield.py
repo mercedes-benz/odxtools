@@ -157,11 +157,3 @@ class EndOfPduField(DopBase):
         if self.env_data_desc_snref is not None:
             env_data_descs = diag_layer.diag_data_dictionary_spec.env_data_descs
             self._env_data_desc = env_data_descs[self.env_data_desc_snref]
-
-    def __repr__(self) -> str:
-        return f"EndOfPduField(short_name='{self.short_name}', ref='{self.structure.odx_id}')"
-
-    def __str__(self):
-        return "\n".join(
-            [f"EndOfPduField(short_name='{self.short_name}', ref='{self.structure.odx_id}')"] +
-            [" " + str(self.structure).replace("\n", "\n ")])
