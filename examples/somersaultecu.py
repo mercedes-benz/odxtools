@@ -2281,11 +2281,12 @@ somersault_dlc = DiagLayerContainer(
             somersault_company_datas["acme"],
         ],
     ),
-    base_variants=[somersault_diaglayer],
-    ecu_variants=[somersault_lazy_diaglayer, somersault_assiduous_diaglayer],
-    ecu_shared_datas=[],
-    protocols=[],
-    functional_groups=[],
+    base_variants=NamedItemList(short_name_as_id, [somersault_diaglayer]),
+    ecu_variants=NamedItemList(short_name_as_id,
+                               [somersault_lazy_diaglayer, somersault_assiduous_diaglayer]),
+    ecu_shared_datas=NamedItemList(short_name_as_id),
+    protocols=NamedItemList(short_name_as_id),
+    functional_groups=NamedItemList(short_name_as_id),
     sdgs=[],
 )
 
