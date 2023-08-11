@@ -32,7 +32,7 @@ def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
         description=None,
         sdgs=[],
         is_visible_raw=None,
-        parameters=[],
+        parameters=NamedItemList(short_name_as_id),
         response_type="POS-RESPONSE",
         byte_size=None,
     )

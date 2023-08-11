@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, List, Union
 from xml.etree import ElementTree
 
 from .createsdgs import create_sdgs_from_et
+from .exceptions import odxrequire
 from .globals import logger
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkId
@@ -21,8 +22,8 @@ def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: Lis
     from .request import Request
     from .response import Response
 
-    odx_id = OdxLinkId.from_et(et_element, doc_frags)
-    short_name = et_element.findtext("SHORT-NAME")
+    odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+    short_name = odxrequire(et_element.findtext("SHORT-NAME"))
     long_name = et_element.findtext("LONG-NAME")
     description = create_description_from_et(et_element.find("DESC"))
     parameters = [
