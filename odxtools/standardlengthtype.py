@@ -21,13 +21,16 @@ class StandardLengthType(DiagCodedType):
     ):
         super().__init__(
             base_data_type=base_data_type,
-            dct_type="STANDARD-LENGTH-TYPE",
             base_type_encoding=base_type_encoding,
             is_highlow_byte_order_raw=is_highlow_byte_order_raw,
         )
         self.bit_length = bit_length
         self.bit_mask = bit_mask
         self.is_condensed_raw = is_condensed_raw
+
+    @property
+    def dct_type(self) -> str:
+        return "STANDARD-LENGTH-TYPE"
 
     def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState,
                                   bit_position: int) -> bytes:

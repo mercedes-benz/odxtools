@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from .decodestate import DecodeState
@@ -13,23 +14,14 @@ if TYPE_CHECKING:
     from .parameters.lengthkeyparameter import LengthKeyParameter
 
 
+@dataclass
 class ParamLengthInfoType(DiagCodedType):
 
-    def __init__(
-        self,
-        *,
-        base_data_type: DataType,
-        length_key_ref: OdxLinkRef,
-        base_type_encoding: Optional[str],
-        is_highlow_byte_order_raw: Optional[bool],
-    ):
-        super().__init__(
-            base_data_type=base_data_type,
-            dct_type="PARAM-LENGTH-INFO-TYPE",
-            base_type_encoding=base_type_encoding,
-            is_highlow_byte_order_raw=is_highlow_byte_order_raw,
-        )
-        self.length_key_ref = length_key_ref
+    length_key_ref: OdxLinkRef
+
+    @property
+    def dct_type(self) -> str:
+        return "PARAM-LENGTH-INFO-TYPE"
 
     def _build_odxlinks(self):
         return super()._build_odxlinks()

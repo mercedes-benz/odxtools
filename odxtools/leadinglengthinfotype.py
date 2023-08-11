@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import Any, Optional
 
 from .decodestate import DecodeState
@@ -8,23 +9,11 @@ from .exceptions import odxassert, odxraise
 from .odxtypes import DataType
 
 
+@dataclass
 class LeadingLengthInfoType(DiagCodedType):
+    bit_length: int
 
-    def __init__(
-        self,
-        *,
-        base_data_type: DataType,
-        bit_length: int,
-        base_type_encoding: Optional[str],
-        is_highlow_byte_order_raw: Optional[bool],
-    ):
-        super().__init__(
-            base_data_type=base_data_type,
-            dct_type="LEADING-LENGTH-INFO-TYPE",
-            base_type_encoding=base_type_encoding,
-            is_highlow_byte_order_raw=is_highlow_byte_order_raw,
-        )
-        self.bit_length = bit_length
+    def __post_init__(self):
         odxassert(self.bit_length > 0,
                   "A Leading length info type with bit length == 0 does not make sense.")
         odxassert(
@@ -33,7 +22,13 @@ class LeadingLengthInfoType(DiagCodedType):
                 DataType.A_ASCIISTRING,
                 DataType.A_UNICODE2STRING,
                 DataType.A_UTF8STRING,
-            ], f"A leading length info type cannot have the base data type {self.base_data_type}.")
+            ],
+            f"A leading length info type cannot have the base data type {self.base_data_type.name}."
+        )
+
+    @property
+    def dct_type(self) -> str:
+        return "LEADING-LENGTH-INFO-TYPE"
 
     def convert_internal_to_bytes(self, internal_value: Any, encode_state: EncodeState,
                                   bit_position: int) -> bytes:

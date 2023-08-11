@@ -30,7 +30,6 @@ ODX_TYPE_TO_FORMAT_LETTER = {
 class DiagCodedType(abc.ABC):
 
     base_data_type: DataType
-    dct_type: str
     base_type_encoding: Optional[str]
     is_highlow_byte_order_raw: Optional[bool]
 
@@ -43,6 +42,11 @@ class DiagCodedType(abc.ABC):
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         """Recursively resolve any short-name references"""
+        pass
+
+    @property
+    @abc.abstractmethod
+    def dct_type(self) -> str:
         pass
 
     @property

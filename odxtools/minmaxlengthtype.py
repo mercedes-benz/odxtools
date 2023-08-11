@@ -22,7 +22,6 @@ class MinMaxLengthType(DiagCodedType):
     ):
         super().__init__(
             base_data_type=base_data_type,
-            dct_type="MIN-MAX-LENGTH-TYPE",
             base_type_encoding=base_type_encoding,
             is_highlow_byte_order_raw=is_highlow_byte_order_raw,
         )
@@ -43,6 +42,10 @@ class MinMaxLengthType(DiagCodedType):
             "HEX-FF",
             "END-OF-PDU",
         ], f"A min-max length type cannot have the termination {self.termination}")
+
+    @property
+    def dct_type(self) -> str:
+        return "MIN-MAX-LENGTH-TYPE"
 
     def __termination_character(self):
         """Returns the termination character or None if it isn't defined."""
