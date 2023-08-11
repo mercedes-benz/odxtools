@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 from copy import copy
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, List, Optional
 from xml.etree import ElementTree
 
@@ -8,7 +9,7 @@ from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
 from .dopbase import DopBase
 from .encodestate import EncodeState
-from .exceptions import odxassert
+from .exceptions import odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValueDict, odxstr_to_bool
 from .utils import create_description_from_et
@@ -17,46 +18,34 @@ if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
+@dataclass
 class EndOfPduField(DopBase):
     """End of PDU fields are structures that are repeated until the end of the PDU"""
 
-    def __init__(
-        self,
-        *,
-        structure_ref: Optional[OdxLinkRef],
-        structure_snref: Optional[str],
-        env_data_desc_ref: Optional[OdxLinkRef],
-        env_data_desc_snref: Optional[str],
-        min_number_of_items: Optional[int],
-        max_number_of_items: Optional[int],
-        **kwargs,
-    ):
-        super().__init__(**kwargs)
+    structure_ref: Optional[OdxLinkRef]
+    structure_snref: Optional[str]
+    env_data_desc_ref: Optional[OdxLinkRef]
+    env_data_desc_snref: Optional[str]
+    min_number_of_items: Optional[int]
+    max_number_of_items: Optional[int]
 
-        num_struct_refs = 0 if structure_ref is None else 1
-        num_struct_refs += 0 if structure_snref is None else 1
+    def __post_init__(self) -> None:
+        num_struct_refs = 0 if self.structure_ref is None else 1
+        num_struct_refs += 0 if self.structure_snref is None else 1
 
-        num_edd_refs = 0 if env_data_desc_ref is None else 1
-        num_edd_refs += 0 if env_data_desc_snref is None else 1
+        num_edd_refs = 0 if self.env_data_desc_ref is None else 1
+        num_edd_refs += 0 if self.env_data_desc_snref is None else 1
+
         odxassert(
             num_struct_refs + num_edd_refs == 1,
             "END-OF-PDU-FIELDs need to specify exactly one reference to a "
-            "structure of an environment data description")
-
-        self.structure_snref = structure_snref
-        self.structure_ref = structure_ref
-        self.env_data_desc_snref = env_data_desc_snref
-        self.env_data_desc_ref = env_data_desc_ref
-
-        self.min_number_of_items = min_number_of_items
-        self.max_number_of_items = max_number_of_items
+            "structure or an environment data description")
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "EndOfPduField":
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        odxassert(odx_id is not None)
-        short_name = et_element.findtext("SHORT-NAME")
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
