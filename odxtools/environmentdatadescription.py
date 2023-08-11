@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
@@ -16,36 +17,28 @@ if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
+@dataclass
 class EnvironmentDataDescription(DopBase):
     """This class represents Environment Data Description, which is a complex DOP
     that is used to define the interpretation of environment data."""
 
-    def __init__(
-        self,
-        *,
-        # in ODX 2.0.0, ENV-DATAS seems to be a mandatory
-        # sub-element of ENV-DATA-DESC, on ODX 2.2 it is not
-        # present
-        env_datas: List[EnvironmentData],
-        env_data_refs: List[OdxLinkRef],
-        param_snref: Optional[str],
-        param_snpathref: Optional[str],
-        **kwargs,
-    ):
-        super().__init__(**kwargs)
+    # in ODX 2.0.0, ENV-DATAS seems to be a mandatory
+    # sub-element of ENV-DATA-DESC, on ODX 2.2 it is not
+    # present
+    env_datas: List[EnvironmentData]
+    env_data_refs: List[OdxLinkRef]
+    param_snref: Optional[str]
+    param_snpathref: Optional[str]
 
+    def __post_init__(self) -> None:
         self.bit_length = None
-        self.env_datas = env_datas
-        self.env_data_refs = env_data_refs
-        self.param_snref = param_snref
-        self.param_snpathref = param_snpathref
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "EnvironmentDataDescription":
         """Reads Environment Data Description from Diag Layer."""
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-        short_name = et_element.findtext("SHORT-NAME")
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         long_name = et_element.findtext("LONG-NAME")
         description = create_description_from_et(et_element.find("DESC"))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
