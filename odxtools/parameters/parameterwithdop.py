@@ -9,7 +9,6 @@ from ..dopbase import DopBase
 from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
 from ..exceptions import odxassert, odxrequire
-from ..globals import logger
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..physicaltype import PhysicalType
 from .parameter import Parameter
@@ -24,8 +23,8 @@ class ParameterWithDOP(Parameter):
     dop_snref: Optional[str]
 
     def __post_init__(self) -> None:
-        if self.dop_snref is None and self.dop_ref is None:
-            logger.warn(f"Param {self.short_name} without DOP-(SN)REF should not exist!")
+        odxassert(self.dop_snref is not None or self.dop_ref is not None,
+                  f"Param {self.short_name} without a DOP-(SN)REF should not exist!")
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
