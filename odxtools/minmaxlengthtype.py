@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 from typing import Optional
+from dataclasses import dataclass
 
 from .decodestate import DecodeState
 from .diagcodedtype import DiagCodedType
@@ -8,28 +9,14 @@ from .exceptions import DecodeError, EncodeError, odxassert
 from .odxtypes import DataType
 
 
+@dataclass
 class MinMaxLengthType(DiagCodedType):
+    min_length: int
+    max_length: Optional[int]
+    termination: str
 
-    def __init__(
-        self,
-        *,
-        base_data_type: DataType,
-        min_length: int,
-        termination: str,
-        max_length: Optional[int],
-        base_type_encoding: Optional[str],
-        is_highlow_byte_order_raw: Optional[bool],
-    ):
-        super().__init__(
-            base_data_type=base_data_type,
-            base_type_encoding=base_type_encoding,
-            is_highlow_byte_order_raw=is_highlow_byte_order_raw,
-        )
-        odxassert(max_length is None or min_length <= max_length)
-        self.min_length = min_length
-        self.max_length = max_length
-        self.termination = termination
-
+    def __post_init__(self):
+        odxassert(self.max_length is None or self.min_length <= self.max_length)
         odxassert(
             self.base_data_type in [
                 DataType.A_BYTEFIELD,
