@@ -1,11 +1,63 @@
 [build-system]
 
 requires = [
-    "setuptools>=42",
+    "setuptools",
+    "setuptools-scm",
     "wheel"
 ]
-
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "odxtools"
+description = "Utilities to work with the ODX standard for automotive diagnostics"
+license = {text = "MIT"}
+authors = [
+    {name = "Katrin Bauer", email = "katrin.bauer@mbition.io"},
+    {name = "Andreas Lauser", email = "andreas.lauser@mbition.io"},
+    {name = "Ayoub Kaanich", email = "kayoub5@live.com"},
+]
+maintainers = [
+    {name = "Andreas Lauser", email = "andreas.lauser@mbition.io"},
+    {name = "Ayoub Kaanich", email = "kayoub5@live.com"},
+]
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ['can', 'can bus', 'DoIP', 'odx', 'pdx', 'obd', 'uds', 'automotive', 'diagnostics']
+classifiers = [
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.8',
+    'Development Status :: 5 - Production/Stable',
+    'Environment :: Console',
+    'Intended Audience :: Developers',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: POSIX',
+]
+dependencies = [
+    "bitstruct >= 6.0.0",
+    "argparse_addons",
+    "PyInquirer",
+    "jinja2",
+    "python-can",
+    "can-isotp",
+    "markdownify",
+    "deprecation",
+]
+dynamic = ["version"]
+
+[project.urls]
+"Homepage" = "https://github.com/mercedes-benz/odxtools"
+"Bug Tracker" = "https://github.com/mercedes-benz/odxtools/issues"
+"Repository" = "https://github.com/mercedes-benz/odxtools"
+
+[project.scripts]
+odxtools = "odxtools.__init__:_main"
+
+[tool.setuptools]
+
+packages = [ "odxtools" ]
+
+[tool.setuptools.dynamic]
+version = {attr = "odxtools.version.__version__"}
 
 [tool.yapf]
 based_on_style = "yapf"

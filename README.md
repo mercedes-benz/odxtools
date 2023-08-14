@@ -84,7 +84,7 @@ rather aspirational.
 The easiest way of installing `odxtools` on your system is via `pip`:
 
 ```bash
-pip3 install odxtools
+python3 -m pip install odxtools
 ```
 
 If you want to develop `odxtools` itself, you need to install it from
@@ -99,15 +99,16 @@ After this, make sure that all python dependencies are installed:
 
 ```bash
 cd $BASE_DIR/odxtools
-pip3 install -r requirements.txt
+python3 -m pip install -e .
 ```
 
-Next, build the project and install it on the system:
+Next, you can optionally build a package and install it on the system:
 
 ```bash
 cd $BASE_DIR/odxtools
-python3 ./setup.py build
-sudo python3 ./setup.py install # <- optional
+python3 -m pip install --upgrade build
+python3 -m build
+sudo python3 -m pip install dist/odxtools-*.whl
 ```
 
 Finally, update the `PYTHONPATH` environment variable and the newly
@@ -238,16 +239,16 @@ distribtions for Windows do not enable tab-completion by default in
 their REPL.  For more convenience in such a scenario, we recommend
 using
 [ptpython](https://github.com/prompt-toolkit/ptpython/). `ptpython`
-can be installed like any other python package, i.e., via `pip3
-install ptpython`. Then, the REPL ought to be started using
+can be installed like any other python package, i.e., via `python3 -m
+pip install ptpython`. Then, the REPL ought to be started using
 
 ```cmd
 c:\odxtest>python3 "C:\Python39\Lib\site-packages\ptpython\entry_points\run_ptpython.py"
 ```
 
-Alternatively, `pyreadline` can be used after installing it via `pip3
-install wheel pyreadline`.  With this, *basic* tab-completion for
-python under Windows in [Interactive
+Alternatively, `pyreadline` can be used after installing it via
+`python3 -m pip install pyreadline`.  With this, *basic*
+tab-completion for python under Windows in [Interactive
 Mode](https://docs.python.org/3/tutorial/interpreter.html#interactive-mode)
 should work.
 

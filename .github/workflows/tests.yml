@@ -51,8 +51,9 @@ jobs:
 
       - name: Install odxtools development and testing dependencies
         run: |
-          pip install -r requirements.txt
-          pip install -r test-requirements.txt
+          pip install --upgrade pip
+          pip install -e .
+          pip install mypy types-Deprecated coveralls pytest
 
       - name: Static type checking with mypy
         run: |
@@ -86,8 +87,9 @@ jobs:
       # dependency are likely cached on ubuntu-latest
       - name: Install odxtools development and testing dependencies
         run: |
-          pip install -r requirements.txt
-          pip install -r test-requirements.txt
+          pip install --upgrade pip
+          pip install -e .
+          pip install mypy types-Deprecated coveralls pytest
 
       - name: Create somersault.pdx
         run: |
