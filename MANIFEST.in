@@ -1,5 +1,5 @@
 recursive-include doc *
-recursive-include odxtools
+recursive-include odxtools *.py
 recursive-include odxtools/templates *.jinja2
 recursive-include tests
 recursive-include examples *
