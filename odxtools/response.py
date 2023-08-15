@@ -1,15 +1,13 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import Optional
 
 from .basicstructure import BasicStructure
 
 
+@dataclass
 class Response(BasicStructure):
-
-    def __init__(self, *, response_type: str, **kwargs):  # "POS-RESPONSE" or "NEG-RESPONSE"
-        super().__init__(**kwargs)
-
-        self.response_type = response_type
+    response_type: str  # "POS-RESPONSE" or "NEG-RESPONSE"
 
     def encode(self, coded_request: Optional[bytes] = None, **params) -> bytes:
         if coded_request is not None:
@@ -23,9 +21,3 @@ class Response(BasicStructure):
                     params[param.short_name] = val
 
         return super().encode(coded_request=coded_request, **params)
-
-    def __repr__(self) -> str:
-        return f"Response('{self.short_name}')"
-
-    def __str__(self) -> str:
-        return f"Response('{self.short_name}')"

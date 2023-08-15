@@ -1,36 +1,22 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import Optional
 
 from .decodestate import DecodeState
-from .diagcodedtype import DiagCodedType
+from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert
 from .odxtypes import DataType
 
 
+@dataclass
 class MinMaxLengthType(DiagCodedType):
+    min_length: int
+    max_length: Optional[int]
+    termination: str
 
-    def __init__(
-        self,
-        *,
-        base_data_type: DataType,
-        min_length: int,
-        termination: str,
-        max_length: Optional[int],
-        base_type_encoding: Optional[str],
-        is_highlow_byte_order_raw: Optional[bool],
-    ):
-        super().__init__(
-            base_data_type=base_data_type,
-            dct_type="MIN-MAX-LENGTH-TYPE",
-            base_type_encoding=base_type_encoding,
-            is_highlow_byte_order_raw=is_highlow_byte_order_raw,
-        )
-        odxassert(max_length is None or min_length <= max_length)
-        self.min_length = min_length
-        self.max_length = max_length
-        self.termination = termination
-
+    def __post_init__(self):
+        odxassert(self.max_length is None or self.min_length <= self.max_length)
         odxassert(
             self.base_data_type in [
                 DataType.A_BYTEFIELD,
@@ -43,6 +29,10 @@ class MinMaxLengthType(DiagCodedType):
             "HEX-FF",
             "END-OF-PDU",
         ], f"A min-max length type cannot have the termination {self.termination}")
+
+    @property
+    def dct_type(self) -> DctType:
+        return "MIN-MAX-LENGTH-TYPE"
 
     def __termination_character(self):
         """Returns the termination character or None if it isn't defined."""
@@ -154,20 +144,3 @@ class MinMaxLengthType(DiagCodedType):
                 is_highlow_byte_order=self.is_highlow_byte_order,
             )
             return value, byte
-
-    def __repr__(self) -> str:
-        repr_str = (
-            f"MinMaxLengthType(base_data_type='{self.base_data_type}', min_length={self.min_length}"
-        )
-        if self.max_length is not None:
-            repr_str += f", base_type_encoding={self.max_length}"
-        if self.termination is not None:
-            repr_str += f", termination={self.termination}"
-        if self.base_type_encoding is not None:
-            repr_str += f", base_type_encoding={self.base_type_encoding}"
-        if not self.is_highlow_byte_order:
-            repr_str += f", is_highlow_byte_order={self.is_highlow_byte_order}"
-        return repr_str + ")"
-
-    def __str__(self) -> str:
-        return self.__repr__()

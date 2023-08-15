@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional
 
 from .decodestate import DecodeState
-from .diagcodedtype import DiagCodedType
+from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import odxraise
 from .odxlink import OdxLinkDatabase, OdxLinkRef
@@ -13,23 +14,14 @@ if TYPE_CHECKING:
     from .parameters.lengthkeyparameter import LengthKeyParameter
 
 
+@dataclass
 class ParamLengthInfoType(DiagCodedType):
 
-    def __init__(
-        self,
-        *,
-        base_data_type: DataType,
-        length_key_ref: OdxLinkRef,
-        base_type_encoding: Optional[str],
-        is_highlow_byte_order_raw: Optional[bool],
-    ):
-        super().__init__(
-            base_data_type=base_data_type,
-            dct_type="PARAM-LENGTH-INFO-TYPE",
-            base_type_encoding=base_type_encoding,
-            is_highlow_byte_order_raw=is_highlow_byte_order_raw,
-        )
-        self.length_key_ref = length_key_ref
+    length_key_ref: OdxLinkRef
+
+    @property
+    def dct_type(self) -> DctType:
+        return "PARAM-LENGTH-INFO-TYPE"
 
     def _build_odxlinks(self):
         return super()._build_odxlinks()
@@ -105,14 +97,3 @@ class ParamLengthInfoType(DiagCodedType):
             self.base_data_type,
             self.is_highlow_byte_order,
         )
-
-    def __repr__(self) -> str:
-        repr_str = f"ParamLengthInfoType(base_data_type='{self.base_data_type}', length_key={self.length_key.short_name}"
-        if self.base_type_encoding is not None:
-            repr_str += f", base_type_encoding={self.base_type_encoding}"
-        if not self.is_highlow_byte_order:
-            repr_str += f", is_highlow_byte_order={self.is_highlow_byte_order}"
-        return repr_str + ")"
-
-    def __str__(self) -> str:
-        return self.__repr__()

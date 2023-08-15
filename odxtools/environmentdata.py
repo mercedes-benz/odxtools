@@ -54,7 +54,3 @@ class EnvironmentData(BasicStructure):
             byte_size=byte_size,
             dtc_values=dtc_values,
         )
-
-    def __repr__(self) -> str:
-        return (f"EnvironmentData('{self.short_name}', " +
-                ", ".join([f"odx_id='{self.odx_id}'", f"parameters='{self.parameters}'"]) + ")")

@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import List
 from xml.etree import ElementTree
 
@@ -7,6 +8,7 @@ from .odxlink import OdxDocFragment
 from .utils import is_short_name, is_short_name_path
 
 
+@dataclass
 class MatchingParameter:
     """According to ISO 22901, a MatchingParameter contains a string value identifying
     the active ECU variant. Moreover, it references a DIAG-COMM via snref and one of its
@@ -16,15 +18,14 @@ class MatchingParameter:
     not transferred over the network.
     """
 
-    def __init__(self, *, expected_value: str, diag_comm_snref: str, out_param_if: str):
-        # datatype according to ISO 22901-1 Figure 141
-        self.expected_value: str = expected_value
+    # datatype according to ISO 22901-1 Figure 141
+    expected_value: str
+    diag_comm_snref: str
+    out_param_if: str
 
-        odxassert(is_short_name(diag_comm_snref))
-        self.diag_comm_snref: str = diag_comm_snref
-
-        odxassert(is_short_name_path(out_param_if))
-        self.out_param_if: str = out_param_if
+    def __post_init__(self):
+        odxassert(is_short_name(self.diag_comm_snref))
+        odxassert(is_short_name_path(self.out_param_if))
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,

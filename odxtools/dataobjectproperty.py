@@ -190,19 +190,3 @@ class DataObjectProperty(DopBase):
 
     def get_valid_physical_values(self):
         return self.compu_method.get_valid_physical_values()
-
-    def __repr__(self) -> str:
-        return (f"DataObjectProperty('{self.short_name}', " + ", ".join([
-            f"category='{self.compu_method.category}'",
-            f"internal_type='{self.diag_coded_type}'",
-            f"physical_type={self.physical_type}",
-            f"unit_ref='{self.unit_ref}'",
-        ]) + ")")
-
-    def __str__(self) -> str:
-        return (f"DataObjectProperty('{self.short_name}', " + ", ".join([
-            f"category='{self.compu_method.category}'",
-            f"diag_coded_type='{self.diag_coded_type}'",
-            f"physical_type={self.physical_type}",
-            f"unit_ref='{self.unit_ref}'",
-        ]) + ")")

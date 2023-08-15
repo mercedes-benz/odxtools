@@ -2064,7 +2064,7 @@ somersault_assiduous_requests = {
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[
+            parameters=NamedItemList(short_name_as_id, [
                 CodedConstParameter(
                     short_name="sid",
                     long_name=None,
@@ -2088,7 +2088,7 @@ somersault_assiduous_requests = {
                     bit_position=None,
                     sdgs=[],
                 ),
-            ],
+            ]),
             byte_size=None,
         ),
 }
@@ -2281,11 +2281,12 @@ somersault_dlc = DiagLayerContainer(
             somersault_company_datas["acme"],
         ],
     ),
-    base_variants=[somersault_diaglayer],
-    ecu_variants=[somersault_lazy_diaglayer, somersault_assiduous_diaglayer],
-    ecu_shared_datas=[],
-    protocols=[],
-    functional_groups=[],
+    base_variants=NamedItemList(short_name_as_id, [somersault_diaglayer]),
+    ecu_variants=NamedItemList(short_name_as_id,
+                               [somersault_lazy_diaglayer, somersault_assiduous_diaglayer]),
+    ecu_shared_datas=NamedItemList(short_name_as_id),
+    protocols=NamedItemList(short_name_as_id),
+    functional_groups=NamedItemList(short_name_as_id),
     sdgs=[],
 )
 

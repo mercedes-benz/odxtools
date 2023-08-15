@@ -51,10 +51,3 @@ class MultiplexerSwitchKey:
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
-
-    def __repr__(self) -> str:
-        return (f"MultiplexerSwitchKey(" + ", ".join([
-            f"byte_position={self.byte_position}",
-            f"bit_position={self.bit_position}",
-            f"dop_ref={self.dop_ref}",
-        ]) + ")")

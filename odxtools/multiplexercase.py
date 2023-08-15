@@ -50,10 +50,3 @@ class MultiplexerCase:
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
-
-    def __repr__(self) -> str:
-        return (f"MultiplexerCase('{self.short_name}', " + ", ".join([
-            f"lower_limit='{self.lower_limit}'",
-            f"upper_limit='{self.upper_limit}'",
-            f"structure_ref='{self.structure_ref}'",
-        ]) + ")")
