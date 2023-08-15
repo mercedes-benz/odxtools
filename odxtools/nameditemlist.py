@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MIT
-import warnings
+import abc
 from keyword import iskeyword
 from typing import (Callable, Generic, Iterable, List, Optional, Protocol, Tuple, TypeVar, Union,
                     cast, overload, runtime_checkable)
 
-from .exceptions import odxraise
+from .exceptions import odxassert, odxraise
 
 
 @runtime_checkable
@@ -15,40 +15,11 @@ class OdxNamed(Protocol):
         pass
 
 
-T = TypeVar("T", bound=OdxNamed)
+T = TypeVar("T")
+TNamed = TypeVar("TNamed", bound=OdxNamed)
 
 
-def short_name_as_key(obj: OdxNamed) -> str:
-    """Retrieve an object's `short_name` attribute into a valid python identifier.
-
-    Although short names are almost identical to python identifiers,
-    their first character is allowed to be a number. This method
-    prepends an underscore to such such shortnames.
-    """
-    if not isinstance(obj, OdxNamed):
-        odxraise()
-    sn = obj.short_name
-    if not isinstance(sn, str):
-        odxraise()
-
-    if not sn.isidentifier():
-        warnings.warn(("For NamedItemList objects to work properly, all "
-                       "item names must be valid python identifiers."
-                       f"Encountered name '{sn}' which is not an "
-                       "identifier!"))
-
-    if sn[0].isdigit():
-        return f"_{sn}"
-
-    # make sure that the name of the item in question is not a
-    # python keyword (this would lead to syntax errors)
-    if iskeyword(sn):
-        return f"{sn}_"
-
-    return sn
-
-
-class NamedItemList(Generic[T]):
+class ItemList(Generic[T]):
     """A list that provides direct access to its items as named attributes.
 
     This is a hybrid between a list and a user-defined object: One can
@@ -70,6 +41,10 @@ class NamedItemList(Generic[T]):
             for item in input_list:
                 self.append(item)
 
+    @abc.abstractmethod
+    def _get_item_key(self, item: T) -> str:
+        pass
+
     def append(self, item: T) -> None:
         """
         Append a new item to the list and make it accessible as a
@@ -77,7 +52,7 @@ class NamedItemList(Generic[T]):
 
         \return The name under which item is accessible
         """
-        item_name = short_name_as_key(item)
+        item_name = self._get_item_key(item)
 
         # eliminate conflicts between the item name and existing
         # attributes of the NamedItemList object
@@ -186,3 +161,40 @@ class NamedItemList(Generic[T]):
 
     def __repr__(self) -> str:
         return self.__str__()
+
+
+def short_name_as_key(obj: OdxNamed) -> str:
+    """Retrieve an object's `short_name` attribute into a valid python identifier.
+
+    Although short names are almost identical to python identifiers,
+    their first character is allowed to be a number. This method
+    prepends an underscore to such such shortnames.
+    """
+    if not isinstance(obj, OdxNamed):
+        odxraise()
+    sn = obj.short_name
+    if not isinstance(sn, str):
+        odxraise()
+
+    odxassert(
+        sn.isidentifier(),
+        message=("For NamedItemList objects to work properly, "
+                 "all item names must be valid python identifiers."
+                 f"Encountered name '{sn}' which is not an identifier!"),
+    )
+
+    if sn[0].isdigit():
+        return f"_{sn}"
+
+    # make sure that the name of the item in question is not a
+    # python keyword (this would lead to syntax errors)
+    if iskeyword(sn):
+        return f"{sn}_"
+
+    return sn
+
+
+class NamedItemList(Generic[TNamed], ItemList[TNamed]):
+
+    def _get_item_key(self, obj: OdxNamed) -> str:
+        return short_name_as_key(obj)
