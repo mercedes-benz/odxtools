@@ -9,7 +9,10 @@ from .exceptions import odxraise
 
 @runtime_checkable
 class OdxNamed(Protocol):
-    short_name: str
+
+    @property
+    def short_name(self) -> str:
+        pass
 
 
 T = TypeVar("T", bound=OdxNamed)
