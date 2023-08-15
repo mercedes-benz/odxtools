@@ -1,7 +1,0 @@
-recursive-include doc *
-recursive-include odxtools *.py
-recursive-include odxtools/templates *.jinja2
-recursive-include tests
-recursive-include examples *
-include *.md
-include LICENSE
