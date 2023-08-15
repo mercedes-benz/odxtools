@@ -30,8 +30,8 @@ class Database:
 
         if pdx_zip is None and odx_d_file_name is None:
             # create an empty database object
-            self._diag_layer_containers = NamedItemList()
-            self._comparam_subsets = NamedItemList()
+            self._diag_layer_containers = NamedItemList[DiagLayerContainer]()
+            self._comparam_subsets = NamedItemList[ComparamSubset]()
             return
 
         if pdx_zip is not None and odx_d_file_name is not None:

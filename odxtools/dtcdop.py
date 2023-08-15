@@ -53,7 +53,7 @@ class DtcDop(DataObjectProperty):
         dtc = DiagnosticTroubleCode(
             trouble_code=trouble_code,
             odx_id=None,
-            short_name=None,
+            short_name=f'DTC_{trouble_code:06x}',
             text=None,
             display_trouble_code=None,
             level=None,
@@ -91,7 +91,7 @@ class DtcDop(DataObjectProperty):
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase):
         super()._resolve_odxlinks(odxlinks)
 
-        self._dtcs: NamedItemList[DiagnosticTroubleCode] = NamedItemList()
+        self._dtcs = NamedItemList[DiagnosticTroubleCode]()
         for dtc_proxy in self.dtcs_raw:
             if isinstance(dtc_proxy, DiagnosticTroubleCode):
                 self._dtcs.append(dtc_proxy)
