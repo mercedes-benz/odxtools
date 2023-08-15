@@ -25,11 +25,14 @@ keywords = ['can', 'can bus', 'DoIP', 'odx', 'pdx', 'obd', 'uds', 'automotive', 
 classifiers = [
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
     'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
     'Intended Audience :: Developers',
     'License :: OSI Approved :: MIT License',
-    'Operating System :: POSIX',
+    'Operating System :: OS Independent',
 ]
 dependencies = [
     "bitstruct >= 8.17",
