@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import unittest
+from dataclasses import dataclass
 
 import odxtools
 from odxtools.exceptions import OdxError
@@ -89,48 +90,54 @@ class TestComposeUDS(unittest.TestCase):
 class TestNamedItemList(unittest.TestCase):
 
     def test_NamedItemList(self):
-        foo = NamedItemList(lambda x: x[0], [("hello", 0), ("world", 1)])
-        self.assertEqual(foo.hello, ("hello", 0))
-        self.assertEqual(foo[0], ("hello", 0))
-        self.assertEqual(foo[1], ("world", 1))
-        self.assertEqual(foo[:1], [("hello", 0)])
-        self.assertEqual(foo[-1:], [("world", 1)])
+
+        @dataclass
+        class X:
+            short_name: str
+            value: int
+
+        foo = NamedItemList([X("hello", 0), X("world", 1)])
+        self.assertEqual(foo.hello, X("hello", 0))
+        self.assertEqual(foo[0], X("hello", 0))
+        self.assertEqual(foo[1], X("world", 1))
+        self.assertEqual(foo[:1], [X("hello", 0)])
+        self.assertEqual(foo[-1:], [X("world", 1)])
         with self.assertRaises(KeyError):
             foo[2]
-        self.assertEqual(foo["hello"], ("hello", 0))
-        self.assertEqual(foo["world"], ("world", 1))
-        self.assertEqual(foo.hello, ("hello", 0))
-        self.assertEqual(foo.world, ("world", 1))
+        self.assertEqual(foo["hello"], X("hello", 0))
+        self.assertEqual(foo["world"], X("world", 1))
+        self.assertEqual(foo.hello, X("hello", 0))
+        self.assertEqual(foo.world, X("world", 1))
 
-        foo.append(("hello", 2))
-        self.assertEqual(foo[2], ("hello", 2))
-        self.assertEqual(foo["hello"], ("hello", 0))
-        self.assertEqual(foo["hello_2"], ("hello", 2))
-        self.assertEqual(foo.hello, ("hello", 0))
-        self.assertEqual(foo.hello_2, ("hello", 2))
+        foo.append(X("hello", 2))
+        self.assertEqual(foo[2], X("hello", 2))
+        self.assertEqual(foo["hello"], X("hello", 0))
+        self.assertEqual(foo["hello_2"], X("hello", 2))
+        self.assertEqual(foo.hello, X("hello", 0))
+        self.assertEqual(foo.hello_2, X("hello", 2))
 
         # try to append an item that cannot be mapped to a name
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(OdxError):
             foo.append((0, 3))
 
         # add a keyword identifier
-        foo.append(("as", 3))
-        self.assertEqual(foo[3], ("as", 3))
-        self.assertEqual(foo["as_"], ("as", 3))
-        self.assertEqual(foo.as_, ("as", 3))
+        foo.append(X("as", 3))
+        self.assertEqual(foo[3], X("as", 3))
+        self.assertEqual(foo["as_"], X("as", 3))
+        self.assertEqual(foo.as_, X("as", 3))
 
         # add an object which's name conflicts with a method of the class
-        foo.append(("sort", 4))
-        self.assertEqual(foo[4], ("sort", 4))
-        self.assertEqual(foo["sort_2"], ("sort", 4))
-        self.assertEqual(foo.sort_2, ("sort", 4))
+        foo.append(X("sort", 4))
+        self.assertEqual(foo[4], X("sort", 4))
+        self.assertEqual(foo["sort_2"], X("sort", 4))
+        self.assertEqual(foo.sort_2, X("sort", 4))
 
         # test the get() function
-        self.assertEqual(foo.get(0), ("hello", 0))
+        self.assertEqual(foo.get(0), X("hello", 0))
         self.assertEqual(foo.get(1234), None)
         self.assertEqual(foo.get(1234, 5678), 5678)
 
-        self.assertEqual(foo.get("hello"), ("hello", 0))
+        self.assertEqual(foo.get("hello"), X("hello", 0))
         self.assertEqual(foo.get("dunno"), None)
         self.assertEqual(foo.get("dunno", "woho!"), "woho!")
 

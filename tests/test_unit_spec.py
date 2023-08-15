@@ -19,7 +19,6 @@ from odxtools.request import Request
 from odxtools.standardlengthtype import StandardLengthType
 from odxtools.unit import Unit
 from odxtools.unitspec import UnitSpec
-from odxtools.utils import short_name_as_id
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
@@ -127,7 +126,7 @@ class TestUnitSpec(unittest.TestCase):
             long_name=None,
             description=None,
             admin_data=None,
-            company_datas=NamedItemList(short_name_as_id),
+            company_datas=NamedItemList(),
             parent_refs=[],
             communication_parameters=[],
             ecu_variant_patterns=[],
@@ -168,9 +167,9 @@ class TestUnitSpec(unittest.TestCase):
                     byte_size=None,
                 )
             ],
-            positive_responses=NamedItemList(short_name_as_id),
-            negative_responses=NamedItemList(short_name_as_id),
-            global_negative_responses=NamedItemList(short_name_as_id),
+            positive_responses=NamedItemList(),
+            negative_responses=NamedItemList(),
+            global_negative_responses=NamedItemList(),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
                 data_object_props=[dop],
                 unit_spec=UnitSpec(
@@ -179,18 +178,18 @@ class TestUnitSpec(unittest.TestCase):
                     unit_groups=None,
                     sdgs=[],
                 ),
-                dtc_dops=NamedItemList(short_name_as_id),
-                structures=NamedItemList(short_name_as_id),
-                end_of_pdu_fields=NamedItemList(short_name_as_id),
-                tables=NamedItemList(short_name_as_id),
-                env_data_descs=NamedItemList(short_name_as_id),
-                env_datas=NamedItemList(short_name_as_id),
-                muxs=NamedItemList(short_name_as_id),
+                dtc_dops=NamedItemList(),
+                structures=NamedItemList(),
+                end_of_pdu_fields=NamedItemList(),
+                tables=NamedItemList(),
+                env_data_descs=NamedItemList(),
+                env_datas=NamedItemList(),
+                muxs=NamedItemList(),
                 sdgs=[],
             ),
-            additional_audiences=NamedItemList(short_name_as_id),
-            functional_classes=NamedItemList(short_name_as_id),
-            state_charts=NamedItemList(short_name_as_id),
+            additional_audiences=NamedItemList(),
+            functional_classes=NamedItemList(),
+            state_charts=NamedItemList(),
             import_refs=[],
             sdgs=[],
         )

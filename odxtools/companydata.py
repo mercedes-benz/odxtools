@@ -8,7 +8,7 @@ from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .teammember import TeamMember
-from .utils import create_description_from_et, short_name_as_id
+from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -50,7 +50,7 @@ class CompanyData:
             long_name=long_name,
             description=description,
             roles=roles,
-            team_members=NamedItemList(short_name_as_id, team_members),
+            team_members=NamedItemList(team_members),
             company_specific_info=company_specific_info,
         )
 

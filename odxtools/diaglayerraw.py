@@ -25,7 +25,7 @@ from .response import Response
 from .singleecujob import SingleEcuJob
 from .specialdatagroup import SpecialDataGroup
 from .statechart import StateChart
-from .utils import create_description_from_et, short_name_as_id
+from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -190,17 +190,17 @@ class DiagLayerRaw:
             long_name=long_name,
             description=description,
             admin_data=admin_data,
-            company_datas=NamedItemList(short_name_as_id, company_datas),
-            functional_classes=NamedItemList(short_name_as_id, functional_classes),
+            company_datas=NamedItemList(company_datas),
+            functional_classes=NamedItemList(functional_classes),
             diag_data_dictionary_spec=diag_data_dictionary_spec,
             diag_comms=diag_comms,
-            requests=NamedItemList(short_name_as_id, requests),
-            positive_responses=NamedItemList(short_name_as_id, positive_responses),
-            negative_responses=NamedItemList(short_name_as_id, negative_responses),
-            global_negative_responses=NamedItemList(short_name_as_id, global_negative_responses),
+            requests=NamedItemList(requests),
+            positive_responses=NamedItemList(positive_responses),
+            negative_responses=NamedItemList(negative_responses),
+            global_negative_responses=NamedItemList(global_negative_responses),
             import_refs=import_refs,
-            state_charts=NamedItemList(short_name_as_id, state_charts),
-            additional_audiences=NamedItemList(short_name_as_id, additional_audiences),
+            state_charts=NamedItemList(state_charts),
+            additional_audiences=NamedItemList(additional_audiences),
             sdgs=sdgs,
             parent_refs=parent_refs,
             communication_parameters=communication_parameters,

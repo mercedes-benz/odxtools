@@ -1,10 +1,48 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from keyword import iskeyword
-from typing import (Callable, Generic, Iterable, List, Optional, Tuple, TypeVar, Union, cast,
-                    overload)
+from typing import (Callable, Generic, Iterable, List, Optional, Protocol, Tuple, TypeVar, Union,
+                    cast, overload, runtime_checkable)
 
-T = TypeVar("T")
+from .exceptions import odxraise
+
+
+@runtime_checkable
+class OdxNamed(Protocol):
+    short_name: str
+
+
+T = TypeVar("T", bound=OdxNamed)
+
+
+def short_name_as_key(obj: OdxNamed) -> str:
+    """Retrieve an object's `short_name` attribute into a valid python identifier.
+
+    Although short names are almost identical to python identifiers,
+    their first character is allowed to be a number. This method
+    prepends an underscore to such such shortnames.
+    """
+    if not isinstance(obj, OdxNamed):
+        odxraise()
+    sn = obj.short_name
+    if not isinstance(sn, str):
+        odxraise()
+
+    if not sn.isidentifier():
+        warnings.warn(("For NamedItemList objects to work properly, all "
+                       "item names must be valid python identifiers."
+                       f"Encountered name '{sn}' which is not an "
+                       "identifier!"))
+
+    if sn[0].isdigit():
+        return f"_{sn}"
+
+    # make sure that the name of the item in question is not a
+    # python keyword (this would lead to syntax errors)
+    if iskeyword(sn):
+        return f"{sn}_"
+
+    return sn
 
 
 class NamedItemList(Generic[T]):
@@ -21,10 +59,7 @@ class NamedItemList(Generic[T]):
     returned by the item-to-name function are valid identifiers in python.
     """
 
-    def __init__(self,
-                 item_to_name_fn: Callable[[T], str],
-                 input_list: Optional[Iterable[T]] = None) -> None:
-        self._item_to_name_fn = item_to_name_fn
+    def __init__(self, input_list: Optional[Iterable[T]] = None) -> None:
         self._names: List[str] = []
         self._values: List[T] = []
 
@@ -39,18 +74,7 @@ class NamedItemList(Generic[T]):
 
         \return The name under which item is accessible
         """
-        item_name = self._item_to_name_fn(item)
-
-        if not item_name.isidentifier():
-            warnings.warn(f"For NamedItemList objects to work properly, all "
-                          f"item names must be valid python identifiers."
-                          f"Encountered name '{item_name}' which is not an "
-                          f"identifier!")
-
-        # make sure that the name of the item in question is not a
-        # python keyword (this would lead to syntax errors)
-        if iskeyword(item_name):
-            item_name = f"{item_name}_"
+        item_name = short_name_as_key(item)
 
         # eliminate conflicts between the item name and existing
         # attributes of the NamedItemList object
@@ -148,9 +172,10 @@ class NamedItemList(Generic[T]):
         if not isinstance(other, NamedItemList):
             return False
         else:
-            return self._names == other._names and self._values == other._values and self._item_to_name_fn == other._item_to_name_fn
+            return self._names == other._names and self._values == other._values
 
-    def __iter__(self):  # -> Iterator[T]: # <- this leads to *many* type checking errors
+    # -> Iterator[T]: # <- this leads to *many* type checking errors
+    def __iter__(self):
         return iter(self._values)
 
     def __str__(self) -> str:

@@ -37,7 +37,6 @@ from .statechart import StateChart
 from .table import Table
 from .unitgroup import UnitGroup
 from .unitspec import UnitSpec
-from .utils import short_name_as_id
 
 T = TypeVar("T")
 
@@ -99,25 +98,25 @@ class DiagLayer:
 
         # diagnostic communication objects with the ODXLINKs resolved
         diag_comms = self._compute_available_diag_comms(odxlinks)
-        self._diag_comms = NamedItemList(short_name_as_id, diag_comms)
+        self._diag_comms = NamedItemList(diag_comms)
 
         # filter the diag comms for services and single-ECU jobs
         services = [dc for dc in diag_comms if isinstance(dc, DiagService)]
         single_ecu_jobs = [dc for dc in diag_comms if isinstance(dc, SingleEcuJob)]
-        self._services = NamedItemList(short_name_as_id, services)
-        self._single_ecu_jobs = NamedItemList(short_name_as_id, single_ecu_jobs)
+        self._services = NamedItemList(services)
+        self._single_ecu_jobs = NamedItemList(single_ecu_jobs)
 
         global_negative_responses = self._compute_available_global_neg_responses(odxlinks)
-        self._global_negative_responses = NamedItemList(short_name_as_id, global_negative_responses)
+        self._global_negative_responses = NamedItemList(global_negative_responses)
 
         functional_classes = self._compute_available_functional_classes()
-        self._functional_classes = NamedItemList(short_name_as_id, functional_classes)
+        self._functional_classes = NamedItemList(functional_classes)
 
         additional_audiences = self._compute_available_additional_audiences()
-        self._additional_audiences = NamedItemList(short_name_as_id, additional_audiences)
+        self._additional_audiences = NamedItemList(additional_audiences)
 
         state_charts = self._compute_available_state_charts()
-        self._state_charts = NamedItemList(short_name_as_id, state_charts)
+        self._state_charts = NamedItemList(state_charts)
 
         ############
         # create a new unit_spec object. This is necessary because
@@ -141,21 +140,21 @@ class DiagLayer:
         elif local_unit_spec is None:
             # no locally defined unit spec but inherited unit groups
             unit_spec = UnitSpec(
-                unit_groups=NamedItemList(short_name_as_id, unit_groups),
-                units=NamedItemList(short_name_as_id, []),
-                physical_dimensions=NamedItemList(short_name_as_id, []),
+                unit_groups=NamedItemList(unit_groups),
+                units=NamedItemList([]),
+                physical_dimensions=NamedItemList([]),
                 sdgs=[])
         else:
             # locally defined unit spec and inherited unit groups
             unit_spec = UnitSpec(
-                unit_groups=NamedItemList(short_name_as_id, unit_groups),
+                unit_groups=NamedItemList(unit_groups),
                 units=local_unit_spec.units,
                 physical_dimensions=local_unit_spec.physical_dimensions,
                 sdgs=[])
         ############
 
-        dops = NamedItemList(short_name_as_id, self._compute_available_data_object_props())
-        tables = NamedItemList(short_name_as_id, self._compute_available_tables())
+        dops = NamedItemList(self._compute_available_data_object_props())
+        tables = NamedItemList(self._compute_available_tables())
         dtc_dops: NamedItemList[DtcDop]
         structures: NamedItemList[BasicStructure]
         end_of_pdu_fields: NamedItemList[EndOfPduField]
@@ -172,12 +171,12 @@ class DiagLayer:
             muxs = self.diag_layer_raw.diag_data_dictionary_spec.muxs
             ddds_sdgs = self.diag_layer_raw.diag_data_dictionary_spec.sdgs
         else:
-            dtc_dops = NamedItemList(short_name_as_id)
-            structures = NamedItemList(short_name_as_id)
-            end_of_pdu_fields = NamedItemList(short_name_as_id)
-            env_data_descs = NamedItemList(short_name_as_id)
-            env_datas = NamedItemList(short_name_as_id)
-            muxs = NamedItemList(short_name_as_id)
+            dtc_dops = NamedItemList()
+            structures = NamedItemList()
+            end_of_pdu_fields = NamedItemList()
+            env_data_descs = NamedItemList()
+            env_datas = NamedItemList()
+            muxs = NamedItemList()
             ddds_sdgs = []
 
         # create a DiagDataDictionarySpec which includes all the
@@ -593,7 +592,7 @@ class DiagLayer:
         if self.diag_layer_raw.variant_type == DiagLayerType.PROTOCOL:
             result_dict[self.diag_layer_raw.short_name] = self
 
-        return NamedItemList(short_name_as_id, result_dict.values())
+        return NamedItemList(result_dict.values())
 
     def get_communication_parameter(
         self,

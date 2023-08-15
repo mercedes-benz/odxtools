@@ -15,7 +15,7 @@ from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .specialdatagroup import SpecialDataGroup
 from .unitspec import UnitSpec
-from .utils import create_description_from_et, short_name_as_id
+from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -77,9 +77,9 @@ class ComparamSubset:
             description=description,
             admin_data=admin_data,
             company_datas=company_datas,
-            data_object_props=NamedItemList(short_name_as_id, data_object_props),
-            comparams=NamedItemList(short_name_as_id, comparams),
-            complex_comparams=NamedItemList(short_name_as_id, complex_comparams),
+            data_object_props=NamedItemList(data_object_props),
+            comparams=NamedItemList(comparams),
+            complex_comparams=NamedItemList(complex_comparams),
             unit_spec=unit_spec,
             sdgs=sdgs,
         )
