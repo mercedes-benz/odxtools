@@ -1,22 +1,20 @@
 # SPDX-License-Identifier: MIT
-from typing import Iterable
+from dataclasses import dataclass
+from typing import List
 
 from ..exceptions import odxassert
 from ..globals import logger
-from .compumethod import CompuMethod
+from .compumethod import CompuMethod, CompuMethodCategory
 from .linearcompumethod import LinearCompuMethod
 
 
+@dataclass
 class ScaleLinearCompuMethod(CompuMethod):
+    linear_methods: List[LinearCompuMethod]
 
-    def __init__(self, *, linear_methods: Iterable[LinearCompuMethod]):
-        super().__init__(
-            internal_type=list(linear_methods)[0].internal_type,
-            physical_type=list(linear_methods)[0].physical_type,
-            category="SCALE-LINEAR",
-        )
-        self.linear_methods = list(linear_methods)
-        logger.debug("Created scale linear compu method!")
+    @property
+    def category(self) -> CompuMethodCategory:
+        return "SCALE-LINEAR"
 
     def convert_physical_to_internal(self, physical_value):
         odxassert(

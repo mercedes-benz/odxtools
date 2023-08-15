@@ -424,9 +424,24 @@ somersault_compumethods: Dict[str, CompuMethod] = {
     "boolean":
         TexttableCompuMethod(
             internal_type=DataType.A_UINT32,
+            physical_type=DataType.A_UNICODE2STRING,
             internal_to_phys=[
-                CompuScale(compu_const="false", lower_limit=Limit(0), upper_limit=Limit(0)),
-                CompuScale(compu_const="true", lower_limit=Limit(1), upper_limit=Limit(1)),
+                CompuScale(
+                    compu_const="false",
+                    lower_limit=Limit(0),
+                    upper_limit=Limit(0),
+                    short_label=None,
+                    description=None,
+                    compu_inverse_value=None,
+                    compu_rational_coeffs=None),
+                CompuScale(
+                    compu_const="true",
+                    lower_limit=Limit(1),
+                    upper_limit=Limit(1),
+                    short_label=None,
+                    description=None,
+                    compu_inverse_value=None,
+                    compu_rational_coeffs=None),
             ],
         ),
 }

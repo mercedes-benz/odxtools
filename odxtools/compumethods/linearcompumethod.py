@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import Optional, Union
 
 from ..exceptions import odxassert
 from ..odxtypes import DataType
-from .compumethod import CompuMethod
+from .compumethod import CompuMethod, CompuMethodCategory
 from .limit import IntervalType, Limit
 
 
+@dataclass
 class LinearCompuMethod(CompuMethod):
     """Represents the decoding function d(y) = (offset + factor * y) / denominator
     where d(y) is the physical value and y is the internal value.
@@ -55,37 +57,20 @@ class LinearCompuMethod(CompuMethod):
     For example, limits given by the bit length are not considered in the compu method.)
     """
 
-    def __init__(
-        self,
-        *,
-        offset: float,
-        factor: float,
-        denominator: float,
-        internal_type: Union[DataType, str],
-        physical_type: Union[DataType, str],
-        internal_lower_limit: Optional[Limit],
-        internal_upper_limit: Optional[Limit],
-    ):
-        super().__init__(
-            internal_type=internal_type, physical_type=physical_type, category="LINEAR")
-        self.offset = offset
-        self.factor = factor
-        self.denominator = denominator
+    offset: float
+    factor: float
+    denominator: float
+    internal_lower_limit: Limit
+    internal_upper_limit: Limit
 
-        self.internal_lower_limit = internal_lower_limit
-        if (internal_lower_limit is None or
-                internal_lower_limit.interval_type == IntervalType.INFINITE):
-            self.internal_lower_limit = Limit(float("-inf"), IntervalType.INFINITE)
-
-        self.internal_upper_limit = internal_upper_limit
-        if (internal_upper_limit is None or
-                internal_upper_limit.interval_type == IntervalType.INFINITE):
-            self.internal_upper_limit = Limit(float("inf"), IntervalType.INFINITE)
-
-        odxassert(self.internal_lower_limit is not None and self.internal_upper_limit is not None)
-        odxassert(denominator > 0 and isinstance(denominator, (int, float)))
+    def __post_init__(self) -> None:
+        odxassert(self.denominator > 0)
 
         self.__compute_physical_limits()
+
+    @property
+    def category(self) -> CompuMethodCategory:
+        return "LINEAR"
 
     @property
     def physical_lower_limit(self):

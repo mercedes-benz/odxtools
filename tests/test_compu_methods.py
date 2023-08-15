@@ -46,8 +46,8 @@ class TestLinearCompuMethod(unittest.TestCase):
             denominator=3600,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32,
-            internal_lower_limit=None,
-            internal_upper_limit=None,
+            internal_lower_limit=Limit(0, IntervalType.INFINITE),
+            internal_upper_limit=Limit(0, IntervalType.INFINITE),
         )
 
         self.linear_compumethod_odx = f"""
@@ -107,8 +107,8 @@ class TestLinearCompuMethod(unittest.TestCase):
             denominator=3600,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32,
-            internal_lower_limit=None,
-            internal_upper_limit=None,
+            internal_lower_limit=Limit(0, IntervalType.INFINITE),
+            internal_upper_limit=Limit(0, IntervalType.INFINITE),
         )
         self.assertEqual(compu_method.convert_physical_to_internal(2), 7200)
 
@@ -121,8 +121,8 @@ class TestLinearCompuMethod(unittest.TestCase):
             denominator=1,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32,
-            internal_lower_limit=None,
-            internal_upper_limit=None,
+            internal_lower_limit=Limit(0, IntervalType.INFINITE),
+            internal_upper_limit=Limit(0, IntervalType.INFINITE),
         )
 
         self.assertEqual(compu_method.convert_internal_to_physical(4), 13)
@@ -140,8 +140,8 @@ class TestLinearCompuMethod(unittest.TestCase):
             denominator=1,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_FLOAT32,
-            internal_lower_limit=None,
-            internal_upper_limit=None,
+            internal_lower_limit=Limit(0, IntervalType.INFINITE),
+            internal_upper_limit=Limit(0, IntervalType.INFINITE),
         )
         self.assertTrue(compu_method.is_valid_internal_value(123))
         self.assertFalse(compu_method.is_valid_internal_value("123"))
@@ -158,8 +158,8 @@ class TestLinearCompuMethod(unittest.TestCase):
             denominator=1,
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_INT32,
-            internal_lower_limit=None,
-            internal_upper_limit=None,
+            internal_lower_limit=Limit(0, IntervalType.INFINITE),
+            internal_upper_limit=Limit(0, IntervalType.INFINITE),
         )
         self.assertTrue(compu_method.is_valid_internal_value(1.2345))
         self.assertTrue(compu_method.is_valid_internal_value(123))
@@ -176,8 +176,8 @@ class TestLinearCompuMethod(unittest.TestCase):
             denominator=1,
             internal_type=DataType.A_ASCIISTRING,
             physical_type=DataType.A_UNICODE2STRING,
-            internal_lower_limit=None,
-            internal_upper_limit=None,
+            internal_lower_limit=Limit(0, IntervalType.INFINITE),
+            internal_upper_limit=Limit(0, IntervalType.INFINITE),
         )
         self.assertTrue(compu_method.is_valid_internal_value("123"))
         self.assertFalse(compu_method.is_valid_internal_value(123))
