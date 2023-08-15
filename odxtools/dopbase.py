@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from .decodestate import DecodeState
+from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .odxlink import OdxLinkDatabase, OdxLinkId
 from .specialdatagroup import SpecialDataGroup
@@ -12,16 +13,12 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class DopBase:
+class DopBase(IdentifiableElement):
     """Base class for all DOPs.
 
     Any class that a parameter can reference via a DOP-REF should inherit from this class.
     """
 
-    odx_id: OdxLinkId
-    short_name: str
-    long_name: Optional[str]
-    description: Optional[str]
     is_visible_raw: Optional[bool]
     sdgs: List[SpecialDataGroup]
 

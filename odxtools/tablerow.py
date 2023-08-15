@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
+from odxtools.element import IdentifiableElement
+
 from .basicstructure import BasicStructure
 from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
@@ -10,7 +12,6 @@ from .exceptions import odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType
 from .specialdatagroup import SpecialDataGroup
-from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -18,19 +19,14 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class TableRow:
+class TableRow(IdentifiableElement):
     """This class represents a TABLE-ROW."""
-
-    odx_id: OdxLinkId
-    short_name: str
-    long_name: Optional[str]
     table_ref: OdxLinkRef
     key_raw: str
     structure_ref: Optional[OdxLinkRef]
     structure_snref: Optional[str]
     dop_ref: Optional[OdxLinkRef]
     dop_snref: Optional[str]
-    description: Optional[str]
     semantic: Optional[str]
     sdgs: List[SpecialDataGroup]
 
@@ -53,11 +49,8 @@ class TableRow:
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
                 table_ref: OdxLinkRef) -> "TableRow":
         """Reads a TABLE-ROW."""
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-        short_name: str = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
+        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
         semantic = et_element.get("SEMANTIC")
-        description = create_description_from_et(et_element.find("DESC"))
         key_raw = odxrequire(et_element.findtext("KEY"))
         structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
         structure_snref: Optional[str] = None
@@ -70,19 +63,15 @@ class TableRow:
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return TableRow(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
             table_ref=table_ref,
             semantic=semantic,
-            description=description,
             key_raw=key_raw,
             structure_ref=structure_ref,
             structure_snref=structure_snref,
             dop_ref=dop_ref,
             dop_snref=dop_snref,
             sdgs=sdgs,
-        )
+            **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {self.odx_id: self}

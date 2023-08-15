@@ -11,6 +11,7 @@ from .decodestate import DecodeState
 from .diagcodedtype import DiagCodedType
 from .diagnostictroublecode import DiagnosticTroubleCode
 from .dopbase import DopBase
+from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -18,7 +19,6 @@ from .odxtypes import odxstr_to_bool
 from .physicaltype import PhysicalType
 from .standardlengthtype import StandardLengthType
 from .unit import Unit
-from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -37,10 +37,7 @@ class DataObjectProperty(DopBase):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DataObjectProperty":
         """Reads a DATA-OBJECT-PROP or a DTC-DOP."""
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
+        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
 
@@ -59,17 +56,13 @@ class DataObjectProperty(DopBase):
 
         if et_element.tag == "DATA-OBJECT-PROP":
             dop = DataObjectProperty(
-                odx_id=odx_id,
-                short_name=short_name,
-                long_name=long_name,
-                description=description,
                 is_visible_raw=is_visible_raw,
                 diag_coded_type=diag_coded_type,
                 physical_type=physical_type,
                 compu_method=compu_method,
                 unit_ref=unit_ref,
                 sdgs=sdgs,
-            )
+                **kwargs)
         else:
             dtclist: List[Union[DiagnosticTroubleCode, OdxLinkRef]] = list()
             if (dtcs_elem := et_element.find("DTCS")) is not None:
@@ -90,10 +83,6 @@ class DataObjectProperty(DopBase):
             from .dtcdop import DtcDop
 
             dop = DtcDop(
-                odx_id=odx_id,
-                short_name=short_name,
-                long_name=long_name,
-                description=description,
                 diag_coded_type=diag_coded_type,
                 physical_type=physical_type,
                 compu_method=compu_method,
@@ -102,7 +91,7 @@ class DataObjectProperty(DopBase):
                 linked_dtc_dop_refs=linked_dtc_dop_refs,
                 is_visible_raw=is_visible_raw,
                 sdgs=sdgs,
-            )
+                **kwargs)
         return dop
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

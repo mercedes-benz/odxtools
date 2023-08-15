@@ -3,27 +3,23 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
+from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .state import State
 from .statetransition import StateTransition
-from .utils import create_description_from_et, short_name_as_id
+from .utils import short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
 @dataclass
-class StateChart:
+class StateChart(IdentifiableElement):
     """
     Corresponds to STATE-CHART.
     """
-
-    odx_id: OdxLinkId
-    short_name: str
-    long_name: Optional[str]
-    description: Optional[str]
     semantic: str
     state_transitions: List[StateTransition]
     start_state_snref: str
@@ -35,10 +31,7 @@ class StateChart:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "StateChart":
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
+        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
         semantic: str = odxrequire(et_element.findtext("SEMANTIC"))
 
         state_transitions = [
@@ -54,14 +47,11 @@ class StateChart:
         ]
 
         return StateChart(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
             semantic=semantic,
             state_transitions=state_transitions,
             start_state_snref=start_state_snref,
-            states=NamedItemList(short_name_as_id, states))
+            states=NamedItemList(short_name_as_id, states),
+            **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {self.odx_id: self}

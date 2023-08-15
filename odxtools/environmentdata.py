@@ -5,11 +5,11 @@ from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
 from .createsdgs import create_sdgs_from_et
+from .element import IdentifiableElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkId
+from .odxlink import OdxDocFragment
 from .odxtypes import odxstr_to_bool
 from .parameters.createanyparameter import create_any_parameter_from_et
-from .utils import create_description_from_et
 
 
 @dataclass
@@ -26,10 +26,7 @@ class EnvironmentData(BasicStructure):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "EnvironmentData":
         """Reads Environment Data from Diag Layer."""
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-        short_name = et_element.findtext("SHORT-NAME")
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
+        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         parameters = [
@@ -44,13 +41,9 @@ class EnvironmentData(BasicStructure):
         ]
 
         return EnvironmentData(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
             sdgs=sdgs,
             is_visible_raw=is_visible_raw,
             parameters=parameters,
             byte_size=byte_size,
             dtc_values=dtc_values,
-        )
+            **kwargs)

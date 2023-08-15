@@ -6,26 +6,22 @@ from xml.etree import ElementTree
 from .admindata import AdminData
 from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
+from .element import IdentifiableElement
 from .exceptions import odxassert, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdatagroup import SpecialDataGroup
 from .tablerow import TableRow
-from .utils import create_description_from_et, short_name_as_id
+from .utils import short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
 @dataclass
-class Table:
+class Table(IdentifiableElement):
     """This class represents a TABLE."""
-
-    odx_id: OdxLinkId
     semantic: Optional[str]
-    short_name: str
-    long_name: Optional[str]
-    description: Optional[str]
     key_label: Optional[str]
     struct_label: Optional[str]
     admin_data: Optional[AdminData]
@@ -37,11 +33,9 @@ class Table:
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Table":
         """Reads a TABLE."""
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-        short_name: str = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
+        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
+        odx_id = kwargs["odx_id"]
         semantic = et_element.get("SEMANTIC")
-        description = create_description_from_et(et_element.find("DESC"))
         key_label = et_element.findtext("KEY-LABEL")
         struct_label = et_element.findtext("STRUCT-LABEL")
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
@@ -58,18 +52,14 @@ class Table:
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return Table(
-            odx_id=odx_id,
             semantic=semantic,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
             key_label=key_label,
             struct_label=struct_label,
             admin_data=admin_data,
             key_dop_ref=key_dop_ref,
             table_rows_raw=table_rows_raw,
             sdgs=sdgs,
-        )
+            **kwargs)
 
     @property
     def key_dop(self) -> Optional[DataObjectProperty]:

@@ -1154,6 +1154,8 @@ class TestDecoding(unittest.TestCase):
         dtc1 = DiagnosticTroubleCode(
             odx_id=OdxLinkId("dtcID1", doc_frags),
             short_name="P34_sn",
+            long_name=None,
+            description=None,
             trouble_code=0x34,
             text="Error encountered",
             display_trouble_code="P34",
@@ -1165,6 +1167,8 @@ class TestDecoding(unittest.TestCase):
         dtc2 = DiagnosticTroubleCode(
             odx_id=OdxLinkId("dtcID2", doc_frags),
             short_name="P56_sn",
+            long_name=None,
+            description=None,
             trouble_code=0x56,
             text="Crashed into wall",
             display_trouble_code="P56",

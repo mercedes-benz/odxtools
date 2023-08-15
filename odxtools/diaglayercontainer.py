@@ -9,19 +9,16 @@ from .companydata import CompanyData
 from .createcompanydatas import create_company_datas_from_et
 from .createsdgs import create_sdgs_from_et
 from .diaglayer import DiagLayer
+from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .specialdatagroup import SpecialDataGroup
-from .utils import create_description_from_et, short_name_as_id
+from .utils import short_name_as_id
 
 
 @dataclass
-class DiagLayerContainer:
-    odx_id: OdxLinkId
-    short_name: str
-    long_name: Optional[str]
-    description: Optional[str]
+class DiagLayerContainer(IdentifiableElement):
     admin_data: Optional[AdminData]
     company_datas: NamedItemList[CompanyData]
     ecu_shared_datas: NamedItemList[DiagLayer]
@@ -45,15 +42,13 @@ class DiagLayerContainer:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element) -> "DiagLayerContainer":
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
 
+        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         # create the current ODX "document fragment" (description of the
         # current document for references and IDs)
         doc_frags = [OdxDocFragment(short_name, "CONTAINER")]
+        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
 
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-        description = create_description_from_et(et_element.find("DESC"))
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
         ecu_shared_datas = NamedItemList(short_name_as_id, [
@@ -79,10 +74,6 @@ class DiagLayerContainer:
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return DiagLayerContainer(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
             admin_data=admin_data,
             company_datas=company_datas,
             ecu_shared_datas=ecu_shared_datas,
@@ -91,7 +82,7 @@ class DiagLayerContainer:
             base_variants=base_variants,
             ecu_variants=ecu_variants,
             sdgs=sdgs,
-        )
+            **kwargs)
 
     def _build_odxlinks(self):
         result = {self.odx_id: self}

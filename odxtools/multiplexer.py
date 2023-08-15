@@ -7,6 +7,7 @@ from xml.etree import ElementTree
 from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
 from .dopbase import DopBase
+from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxrequire
 from .multiplexercase import MultiplexerCase
@@ -14,7 +15,6 @@ from .multiplexerdefaultcase import MultiplexerDefaultCase
 from .multiplexerswitchkey import MultiplexerSwitchKey
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
-from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -33,10 +33,7 @@ class Multiplexer(DopBase):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Multiplexer":
         """Reads a Multiplexer from Diag Layer."""
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
+        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
@@ -52,17 +49,13 @@ class Multiplexer(DopBase):
             cases = [MultiplexerCase.from_et(el, doc_frags) for el in cases_elem.iterfind("CASE")]
 
         return Multiplexer(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
             sdgs=sdgs,
             is_visible_raw=is_visible_raw,
             byte_position=byte_position,
             switch_key=switch_key,
             default_case=default_case,
             cases=cases,
-        )
+            **kwargs)
 
     @property
     def bit_length(self):

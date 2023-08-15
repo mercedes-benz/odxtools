@@ -4,6 +4,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
+from .element import IdentifiableElement
 from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .utils import create_description_from_et
@@ -27,11 +28,7 @@ class Usage(Enum):
 
 
 @dataclass
-class BaseComparam:
-    odx_id: OdxLinkId
-    short_name: str
-    long_name: Optional[str]
-    description: Optional[str]
+class BaseComparam(IdentifiableElement):
     param_class: str
     cptype: StandardizationLevel
     cpusage: Usage

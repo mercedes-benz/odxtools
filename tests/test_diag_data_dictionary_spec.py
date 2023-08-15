@@ -58,6 +58,8 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                 DiagnosticTroubleCode(
                     odx_id=OdxLinkId("DOP.dtc_dop.DTC.X10", doc_frags),
                     short_name="X10",
+                    long_name=None,
+                    description=None,
                     trouble_code=0x10,
                     text="Something exploded.",
                     display_trouble_code="X10",
@@ -234,12 +236,14 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             default_case=MultiplexerDefaultCase(
                 short_name="default_case",
                 long_name="Default Case",
+                description=None,
                 structure_ref="structure_ref",
             ),
             cases=[
                 MultiplexerCase(
                     short_name="forward_flip",
                     long_name="Forward Flip",
+                    description=None,
                     lower_limit="1",
                     upper_limit="3",
                     structure_ref="structure_ref",
@@ -247,6 +251,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                 MultiplexerCase(
                     short_name="backward_flip",
                     long_name="Backward Flip",
+                    description=None,
                     lower_limit="1",
                     upper_limit="3",
                     structure_ref="structure_ref",
