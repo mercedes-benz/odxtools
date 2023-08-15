@@ -1,6 +1,7 @@
 [build-system]
 requires = [
     "setuptools >= 59",
+    "setuptools_scm[toml]>=6.2",
     "wheel >= 0.41"
 ]
 build-backend = "setuptools.build_meta"
@@ -70,8 +71,8 @@ odxtools = "odxtools.__init__:_main"
 [tool.setuptools]
 packages = [ "odxtools" ]
 
-[tool.setuptools.dynamic]
-version = {attr = "odxtools.version.__version__"}
+[tool.setuptools_scm]
+write_to = "odxtools/version.py"
 
 [tool.yapf]
 based_on_style = "yapf"
