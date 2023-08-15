@@ -1,9 +1,7 @@
 [build-system]
-
 requires = [
-    "setuptools",
-    "setuptools-scm",
-    "wheel"
+    "setuptools >= 59",
+    "wheel >= 0.41"
 ]
 build-backend = "setuptools.build_meta"
 
@@ -33,16 +31,33 @@ classifiers = [
     'Operating System :: POSIX',
 ]
 dependencies = [
-    "bitstruct >= 6.0.0",
-    "argparse_addons",
-    "PyInquirer",
-    "jinja2",
-    "python-can",
-    "can-isotp",
-    "markdownify",
-    "deprecation",
+    "bitstruct >= 8.17",
+    "argparse_addons >= 0.12",
+    "jinja2 >= 3.1",
+    "python-can >= 4.2",
+    "markdownify >= 0.11",
+    "deprecation >= 2.1",
 ]
 dynamic = ["version"]
+
+[project.optional-dependencies]
+test = [
+     "mypy >= 1.5",
+     "pytest >= 7.4",
+     "coverage >= 7.3",
+]
+
+examples = [
+     "can-isotp >= 1.9",
+]
+
+browse-tool = [
+     "PyInquirer >= 1.0",
+]
+
+all = [
+     "odxtools[test,examples,browse-tool]"
+]
 
 [project.urls]
 "Homepage" = "https://github.com/mercedes-benz/odxtools"
@@ -53,7 +68,6 @@ dynamic = ["version"]
 odxtools = "odxtools.__init__:_main"
 
 [tool.setuptools]
-
 packages = [ "odxtools" ]
 
 [tool.setuptools.dynamic]

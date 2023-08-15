@@ -52,8 +52,8 @@ jobs:
       - name: Install odxtools development and testing dependencies
         run: |
           pip install --upgrade pip
-          pip install -e .
-          pip install mypy types-Deprecated coveralls pytest
+          pip install .
+          pip install .[test]
 
       - name: Static type checking with mypy
         run: |
@@ -88,8 +88,8 @@ jobs:
       - name: Install odxtools development and testing dependencies
         run: |
           pip install --upgrade pip
-          pip install -e .
-          pip install mypy types-Deprecated coveralls pytest
+          pip install .
+          pip install .[test]
 
       - name: Create somersault.pdx
         run: |
