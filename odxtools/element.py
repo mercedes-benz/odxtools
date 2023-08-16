@@ -47,7 +47,10 @@ class IdentifiableElement(NamedElement):
         doc_frags: List[OdxDocFragment],
     ) -> IdentifiableElementKwargs:
 
-        kwargs = cast(IdentifiableElementKwargs, NamedElement.get_kwargs(et_element, doc_frags))
-        kwargs['odx_id'] = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        base_kwargs = NamedElement.get_kwargs(et_element, doc_frags)
+        kwargs = IdentifiableElementKwargs(
+            **base_kwargs,
+            odx_id=odxrequire(OdxLinkId.from_et(et_element, doc_frags)),
+        )
 
         return kwargs
