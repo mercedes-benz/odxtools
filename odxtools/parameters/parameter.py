@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple
 
 from ..decodestate import DecodeState
-from ..element import BaseElement, IdentifiableElement
+from ..element import NamedElement, IdentifiableElement
 from ..encodestate import EncodeState
 from ..exceptions import OdxWarning
 from ..odxlink import OdxLinkDatabase, OdxLinkId
@@ -31,7 +31,7 @@ ParameterType = Literal[
 
 
 @dataclass
-class Parameter(BaseElement, abc.ABC):
+class Parameter(NamedElement, abc.ABC):
     byte_position: Optional[int]
     bit_position: Optional[int]
     semantic: Optional[str]

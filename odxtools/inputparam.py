@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .dopbase import DopBase
-from .element import BaseElement
+from .element import NamedElement
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class InputParam(BaseElement):
+class InputParam(NamedElement):
     dop_base_ref: OdxLinkRef
     oid: Optional[str]
     semantic: Optional[str]
@@ -21,7 +21,7 @@ class InputParam(BaseElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "InputParam":
-        kwargs = BaseElement.get_kwargs(et_element, doc_frags)
+        kwargs = NamedElement.get_kwargs(et_element, doc_frags)
         dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
         physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
 

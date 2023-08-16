@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 
 from ..createanydiagcodedtype import create_any_diag_coded_type_from_et
 from ..createsdgs import create_sdgs_from_et
-from ..element import BaseElement
+from ..element import NamedElement
 from ..exceptions import odxrequire
 from ..globals import xsi
 from ..odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
@@ -26,7 +26,7 @@ from .valueparameter import ValueParameter
 def create_any_parameter_from_et(et_element: ElementTree.Element,
                                  doc_frags: List[OdxDocFragment]) \
                                  -> Parameter:
-    kwargs = BaseElement.get_kwargs(et_element, doc_frags)
+    kwargs = NamedElement.get_kwargs(et_element, doc_frags)
     semantic = et_element.get("SEMANTIC")
     byte_position_str = et_element.findtext("BYTE-POSITION")
     byte_position = int(byte_position_str) if byte_position_str is not None else None

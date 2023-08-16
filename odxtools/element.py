@@ -15,7 +15,7 @@ class BaseElementKwargs(TypedDict):
 
 
 @dataclass
-class BaseElement:
+class NamedElement:
     short_name: str
     long_name: Optional[str]
     description: Optional[str]
@@ -38,7 +38,7 @@ class IdentifiableElementKwargs(BaseElementKwargs):
 
 
 @dataclass
-class IdentifiableElement(BaseElement):
+class IdentifiableElement(NamedElement):
     odx_id: OdxLinkId
 
     @staticmethod
@@ -47,7 +47,7 @@ class IdentifiableElement(BaseElement):
         doc_frags: List[OdxDocFragment],
     ) -> IdentifiableElementKwargs:
 
-        kwargs = cast(IdentifiableElementKwargs, BaseElement.get_kwargs(et_element, doc_frags))
+        kwargs = cast(IdentifiableElementKwargs, NamedElement.get_kwargs(et_element, doc_frags))
         kwargs['odx_id'] = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
 
         return kwargs

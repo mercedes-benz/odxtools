@@ -4,7 +4,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
-from .element import BaseElement
+from .element import NamedElement
 from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -20,7 +20,7 @@ class UnitGroupCategory(Enum):
 
 
 @dataclass
-class UnitGroup(BaseElement):
+class UnitGroup(NamedElement):
     """A group of units.
 
     There are two categories of groups: COUNTRY and EQUIV-UNITS.
@@ -35,7 +35,7 @@ class UnitGroup(BaseElement):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "UnitGroup":
         oid = et_element.get("OID")
-        kwargs = BaseElement.get_kwargs(et_element, doc_frags)
+        kwargs = NamedElement.get_kwargs(et_element, doc_frags)
         category_str = odxrequire(et_element.findtext("CATEGORY"))
         try:
             category = UnitGroupCategory(category_str)

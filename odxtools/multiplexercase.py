@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
-from .element import BaseElement
+from .element import NamedElement
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class MultiplexerCase(BaseElement):
+class MultiplexerCase(NamedElement):
     """This class represents a Case which represents multiple options in a Multiplexer."""
 
     structure_ref: OdxLinkRef
@@ -27,7 +27,7 @@ class MultiplexerCase(BaseElement):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "MultiplexerCase":
         """Reads a Case for a Multiplexer."""
-        kwargs = BaseElement.get_kwargs(et_element, doc_frags)
+        kwargs = NamedElement.get_kwargs(et_element, doc_frags)
         structure_ref = odxrequire(OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags))
         lower_limit = odxrequire(et_element.findtext("LOWER-LIMIT"))
         upper_limit = odxrequire(et_element.findtext("UPPER-LIMIT"))

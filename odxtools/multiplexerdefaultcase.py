@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
-from .element import BaseElement
+from .element import NamedElement
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class MultiplexerDefaultCase(BaseElement):
+class MultiplexerDefaultCase(NamedElement):
     """This class represents a Default Case, which is selected when there are no cases defined in the Multiplexer."""
     structure_ref: Optional[OdxLinkRef]
 
@@ -24,7 +24,7 @@ class MultiplexerDefaultCase(BaseElement):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "MultiplexerDefaultCase":
         """Reads a Default Case for a Multiplexer."""
-        kwargs = BaseElement.get_kwargs(et_element, doc_frags)
+        kwargs = NamedElement.get_kwargs(et_element, doc_frags)
 
         structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
 

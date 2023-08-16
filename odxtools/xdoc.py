@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
-from .element import BaseElement
+from .element import NamedElement
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 
 if TYPE_CHECKING:
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class XDoc(BaseElement):
+class XDoc(NamedElement):
     number: Optional[str]
     state: Optional[str]
     date: Optional[str]
@@ -21,7 +21,7 @@ class XDoc(BaseElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "XDoc":
-        kwargs = BaseElement.get_kwargs(et_element, doc_frags)
+        kwargs = NamedElement.get_kwargs(et_element, doc_frags)
         number = et_element.findtext("NUMBER")
         state = et_element.findtext("STATE")
         date = et_element.findtext("DATE")

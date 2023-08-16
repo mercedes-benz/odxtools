@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .dopbase import DopBase
-from .element import BaseElement
+from .element import NamedElement
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class NegOutputParam(BaseElement):
+class NegOutputParam(NamedElement):
     dop_base_ref: OdxLinkRef
 
     def __post_init__(self) -> None:
@@ -23,7 +23,7 @@ class NegOutputParam(BaseElement):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "NegOutputParam":
 
-        kwargs = BaseElement.get_kwargs(et_element, doc_frags)
+        kwargs = NamedElement.get_kwargs(et_element, doc_frags)
         dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
 
         return NegOutputParam(dop_base_ref=dop_base_ref, **kwargs)
