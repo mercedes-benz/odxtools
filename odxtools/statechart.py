@@ -8,7 +8,7 @@ from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .state import State
 from .statetransition import StateTransition
-from .utils import create_description_from_et, short_name_as_id
+from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -61,7 +61,7 @@ class StateChart:
             semantic=semantic,
             state_transitions=state_transitions,
             start_state_snref=start_state_snref,
-            states=NamedItemList(short_name_as_id, states))
+            states=NamedItemList(states))
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {self.odx_id: self}

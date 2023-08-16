@@ -29,7 +29,6 @@ from odxtools.physicaltype import PhysicalType
 from odxtools.progcode import ProgCode, ProgCodeSyntax
 from odxtools.singleecujob import SingleEcuJob
 from odxtools.standardlengthtype import StandardLengthType
-from odxtools.utils import short_name_as_id
 from odxtools.write_pdx_file import jinja2_odxraise_helper, make_bool_xml_attrib, make_xml_attrib
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
@@ -343,9 +342,9 @@ class TestSingleEcuJob(unittest.TestCase):
             sdgs=[],
         )
         self.assertEqual(sej.functional_class_refs, [])
-        self.assertEqual(sej.input_params, NamedItemList(short_name_as_id))
-        self.assertEqual(sej.output_params, NamedItemList(short_name_as_id))
-        self.assertEqual(sej.neg_output_params, NamedItemList(short_name_as_id))
+        self.assertEqual(sej.input_params, NamedItemList())
+        self.assertEqual(sej.output_params, NamedItemList())
+        self.assertEqual(sej.neg_output_params, NamedItemList())
         self.assertEqual(sej.prog_codes[0].library_refs, [])
 
     def test_resolve_odxlinks(self):
@@ -356,17 +355,17 @@ class TestSingleEcuJob(unittest.TestCase):
             long_name=None,
             description=None,
             admin_data=None,
-            company_datas=NamedItemList(short_name_as_id),
-            functional_classes=NamedItemList(short_name_as_id, [self.context.extensiveTask]),
+            company_datas=NamedItemList(),
+            functional_classes=NamedItemList([self.context.extensiveTask]),
             diag_data_dictionary_spec=None,
             diag_comms=[self.singleecujob_object],
-            requests=NamedItemList(short_name_as_id),
-            positive_responses=NamedItemList(short_name_as_id),
-            negative_responses=NamedItemList(short_name_as_id),
-            global_negative_responses=NamedItemList(short_name_as_id),
-            additional_audiences=NamedItemList(short_name_as_id, [self.context.specialAudience]),
+            requests=NamedItemList(),
+            positive_responses=NamedItemList(),
+            negative_responses=NamedItemList(),
+            global_negative_responses=NamedItemList(),
+            additional_audiences=NamedItemList([self.context.specialAudience]),
             import_refs=[],
-            state_charts=NamedItemList(short_name_as_id),
+            state_charts=NamedItemList(),
             sdgs=[],
             parent_refs=[],
             communication_parameters=[],

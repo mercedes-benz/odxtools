@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 class DiagnosticTroubleCode:
     trouble_code: int
     odx_id: Optional[OdxLinkId]
-    short_name: Optional[str]
+    short_name: str
     text: Optional[str]
     display_trouble_code: Optional[str]
     level: Union[int, None]
@@ -46,7 +46,7 @@ class DiagnosticTroubleCode:
 
         return DiagnosticTroubleCode(
             odx_id=OdxLinkId.from_et(et_element, doc_frags),
-            short_name=et_element.findtext("SHORT-NAME"),
+            short_name=odxrequire(et_element.findtext("SHORT-NAME")),
             trouble_code=int(odxrequire(et_element.findtext("TROUBLE-CODE"))),
             text=et_element.findtext("TEXT"),
             display_trouble_code=display_trouble_code,

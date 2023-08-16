@@ -11,7 +11,7 @@ from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdatagroup import SpecialDataGroup
 from .tablerow import TableRow
-from .utils import create_description_from_et, short_name_as_id
+from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -106,7 +106,7 @@ class Table:
 
             table_rows.append(table_row)
 
-        self._table_rows = NamedItemList(short_name_as_id, table_rows)
+        self._table_rows = NamedItemList(table_rows)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         for table_row_wrapper in self.table_rows_raw:

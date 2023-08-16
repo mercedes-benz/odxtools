@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 import re
-from typing import Any, Optional
+from typing import Any, Optional, Protocol, runtime_checkable
 from xml.etree import ElementTree
 
 from .exceptions import odxraise
@@ -28,24 +28,6 @@ def create_description_from_et(et_element: Optional[ElementTree.Element],) -> Op
     stripped_lines = [x.strip() for x in raw_string.split("\n")]
 
     return "\n".join(stripped_lines).strip()
-
-
-def short_name_as_id(obj: Any) -> str:
-    """Retrieve an object's `short_name` attribute into a valid python identifier.
-
-    Although short names are almost identical to python identifiers,
-    their first character is allowed to be a number. This method
-    prepends an underscore to such such shortnames.
-    """
-
-    sn = obj.short_name
-    if not isinstance(sn, str):
-        odxraise()
-
-    if sn[0].isdigit():
-        return f"_{sn}"
-
-    return sn
 
 
 # ISO 22901 section 7.1.1

@@ -20,7 +20,7 @@ from .odxtypes import odxstr_to_bool
 from .outputparam import OutputParam
 from .progcode import ProgCode
 from .specialdatagroup import SpecialDataGroup
-from .utils import create_description_from_et, short_name_as_id
+from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -92,11 +92,11 @@ class SingleEcuJob:
 
         # Replace None attributes by empty lists
         if not self.input_params:
-            self.input_params = NamedItemList(short_name_as_id)
+            self.input_params = NamedItemList()
         if not self.output_params:
-            self.output_params = NamedItemList(short_name_as_id)
+            self.output_params = NamedItemList()
         if not self.neg_output_params:
-            self.neg_output_params = NamedItemList(short_name_as_id)
+            self.neg_output_params = NamedItemList()
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SingleEcuJob":
@@ -200,7 +200,7 @@ class SingleEcuJob:
             code._resolve_odxlinks(odxlinks)
 
         # Resolve references to functional classes
-        self._functional_classes = NamedItemList[FunctionalClass](short_name_as_id, [])
+        self._functional_classes = NamedItemList[FunctionalClass]([])
         for fc_ref in self.functional_class_refs:
             fc = odxlinks.resolve(fc_ref)
             if isinstance(fc, FunctionalClass):

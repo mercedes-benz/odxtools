@@ -10,7 +10,6 @@ from .physicaldimension import PhysicalDimension
 from .specialdatagroup import SpecialDataGroup
 from .unit import Unit
 from .unitgroup import UnitGroup
-from .utils import short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -35,9 +34,9 @@ class UnitSpec:
     sdgs: List[SpecialDataGroup]
 
     def __post_init__(self):
-        self.unit_groups = NamedItemList(short_name_as_id, self.unit_groups)
-        self.units = NamedItemList(short_name_as_id, self.units)
-        self.physical_dimensions = NamedItemList(short_name_as_id, self.physical_dimensions)
+        self.unit_groups = NamedItemList(self.unit_groups)
+        self.units = NamedItemList(self.units)
+        self.physical_dimensions = NamedItemList(self.physical_dimensions)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]):

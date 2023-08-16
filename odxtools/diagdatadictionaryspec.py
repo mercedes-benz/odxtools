@@ -20,7 +20,6 @@ from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .specialdatagroup import SpecialDataGroup
 from .table import Table
 from .unitspec import UnitSpec
-from .utils import short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -41,15 +40,13 @@ class DiagDataDictionarySpec:
 
     def __post_init__(self):
         self._all_data_object_properties = NamedItemList(
-            short_name_as_id,
             chain(
                 self.data_object_props,
                 self.structures,
                 self.end_of_pdu_fields,
                 self.dtc_dops,
                 self.tables,
-            ),
-        )
+            ),)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -123,15 +120,15 @@ class DiagDataDictionarySpec:
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return DiagDataDictionarySpec(
-            data_object_props=NamedItemList(short_name_as_id, data_object_props),
-            structures=NamedItemList(short_name_as_id, structures),
-            end_of_pdu_fields=NamedItemList(short_name_as_id, end_of_pdu_fields),
-            dtc_dops=NamedItemList(short_name_as_id, dtc_dops),
+            data_object_props=NamedItemList(data_object_props),
+            structures=NamedItemList(structures),
+            end_of_pdu_fields=NamedItemList(end_of_pdu_fields),
+            dtc_dops=NamedItemList(dtc_dops),
             unit_spec=unit_spec,
-            tables=NamedItemList(short_name_as_id, tables),
-            env_data_descs=NamedItemList(short_name_as_id, env_data_descs),
-            env_datas=NamedItemList(short_name_as_id, env_datas),
-            muxs=NamedItemList(short_name_as_id, muxs),
+            tables=NamedItemList(tables),
+            env_data_descs=NamedItemList(env_data_descs),
+            env_datas=NamedItemList(env_datas),
+            muxs=NamedItemList(muxs),
             sdgs=sdgs,
         )
 

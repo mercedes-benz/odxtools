@@ -14,7 +14,7 @@ from .parameters.parameter import Parameter
 from .request import Request
 from .response import Response
 from .specialdatagroup import SpecialDataGroup
-from .utils import create_description_from_et, short_name_as_id
+from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -153,23 +153,18 @@ class DiagService:
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._request = odxlinks.resolve(self.request_ref)
 
-        self._positive_responses = NamedItemList[Response](short_name_as_id, [
-            odxlinks.resolve(x, Response) for x in self.pos_response_refs
-        ])
+        self._positive_responses = NamedItemList[Response](
+            [odxlinks.resolve(x, Response) for x in self.pos_response_refs])
 
-        self._negative_responses = NamedItemList[Response](short_name_as_id, [
-            odxlinks.resolve(x, Response) for x in self.neg_response_refs
-        ])
+        self._negative_responses = NamedItemList[Response](
+            [odxlinks.resolve(x, Response) for x in self.neg_response_refs])
 
-        self._functional_classes = NamedItemList(short_name_as_id, [
-            odxlinks.resolve(fc_id) for fc_id in self.functional_class_refs
-        ])
-        self._pre_condition_states = NamedItemList(short_name_as_id, [
-            odxlinks.resolve(st_id) for st_id in self.pre_condition_state_refs
-        ])
-        self._state_transitions = NamedItemList(short_name_as_id, [
-            odxlinks.resolve(stt_id) for stt_id in self.state_transition_refs
-        ])
+        self._functional_classes = NamedItemList(
+            [odxlinks.resolve(fc_id) for fc_id in self.functional_class_refs])
+        self._pre_condition_states = NamedItemList(
+            [odxlinks.resolve(st_id) for st_id in self.pre_condition_state_refs])
+        self._state_transitions = NamedItemList(
+            [odxlinks.resolve(stt_id) for stt_id in self.state_transition_refs])
 
         if self.admin_data:
             self.admin_data._resolve_odxlinks(odxlinks)

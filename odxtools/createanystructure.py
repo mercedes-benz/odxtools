@@ -10,7 +10,7 @@ from .odxlink import OdxDocFragment, OdxLinkId
 from .odxtypes import odxstr_to_bool
 from .parameters.createanyparameter import create_any_parameter_from_et
 from .structure import Structure
-from .utils import create_description_from_et, short_name_as_id
+from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .request import Request
@@ -40,7 +40,7 @@ def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: Lis
             long_name=long_name,
             description=description,
             is_visible_raw=None,
-            parameters=NamedItemList(short_name_as_id, parameters),
+            parameters=NamedItemList(parameters),
             byte_size=None,
             sdgs=sdgs,
         )
@@ -52,7 +52,7 @@ def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: Lis
             long_name=long_name,
             description=description,
             is_visible_raw=None,
-            parameters=NamedItemList(short_name_as_id, parameters),
+            parameters=NamedItemList(parameters),
             byte_size=None,
             sdgs=sdgs,
         )
@@ -66,7 +66,7 @@ def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: Lis
             long_name=long_name,
             description=description,
             is_visible_raw=is_visible_raw,
-            parameters=NamedItemList(short_name_as_id, parameters),
+            parameters=NamedItemList(parameters),
             byte_size=byte_size,
             sdgs=sdgs,
         )
