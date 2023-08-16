@@ -9,7 +9,6 @@ from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .state import State
 from .statetransition import StateTransition
-from .utils import short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -50,7 +49,7 @@ class StateChart(IdentifiableElement):
             semantic=semantic,
             state_transitions=state_transitions,
             start_state_snref=start_state_snref,
-            states=NamedItemList(short_name_as_id, states),
+            states=NamedItemList(states),
             **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

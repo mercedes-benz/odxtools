@@ -23,7 +23,6 @@ from odxtools.physicaltype import PhysicalType
 from odxtools.standardlengthtype import StandardLengthType
 from odxtools.table import Table
 from odxtools.tablerow import TableRow
-from odxtools.utils import short_name_as_id
 
 # the document fragment which is used throughout the test
 doc_frags = [OdxDocFragment("UnitTest", "unit_test_doc")]
@@ -261,13 +260,13 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
 
         ddds = DiagDataDictionarySpec(
             dtc_dops=[dtc_dop],
-            data_object_props=NamedItemList(short_name_as_id, [dop_1, dop_2]),
-            tables=NamedItemList(short_name_as_id, [table]),
-            env_data_descs=NamedItemList(short_name_as_id, [env_data_desc]),
-            env_datas=NamedItemList(short_name_as_id, [env_data]),
-            muxs=NamedItemList(short_name_as_id, [mux]),
-            structures=NamedItemList(short_name_as_id),
-            end_of_pdu_fields=NamedItemList(short_name_as_id),
+            data_object_props=NamedItemList([dop_1, dop_2]),
+            tables=NamedItemList([table]),
+            env_data_descs=NamedItemList([env_data_desc]),
+            env_datas=NamedItemList([env_data]),
+            muxs=NamedItemList([mux]),
+            structures=NamedItemList(),
+            end_of_pdu_fields=NamedItemList(),
             unit_spec=None,
             sdgs=[],
         )

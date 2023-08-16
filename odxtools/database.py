@@ -9,9 +9,8 @@ from .comparamsubset import ComparamSubset
 from .diaglayer import DiagLayer
 from .diaglayercontainer import DiagLayerContainer
 from .globals import logger
-from .nameditemlist import NamedItemList
+from .nameditemlist import NamedItemList, short_name_as_key
 from .odxlink import OdxLinkDatabase
-from .utils import short_name_as_id
 
 
 def version(v: str):
@@ -31,8 +30,8 @@ class Database:
 
         if pdx_zip is None and odx_d_file_name is None:
             # create an empty database object
-            self._diag_layer_containers = NamedItemList(short_name_as_id)
-            self._comparam_subsets = NamedItemList(short_name_as_id)
+            self._diag_layer_containers = NamedItemList[DiagLayerContainer]()
+            self._comparam_subsets = NamedItemList[ComparamSubset]()
             return
 
         if pdx_zip is not None and odx_d_file_name is not None:
@@ -75,23 +74,22 @@ class Database:
                 if subset is not None:
                     comparam_subsets.append(ComparamSubset.from_et(subset))
 
-        self._diag_layer_containers = NamedItemList(short_name_as_id, dlcs)
-        self._diag_layer_containers.sort(key=short_name_as_id)
-        self._comparam_subsets = NamedItemList(short_name_as_id, comparam_subsets)
-        self._comparam_subsets.sort(key=short_name_as_id)
+        self._diag_layer_containers = NamedItemList(dlcs)
+        self._diag_layer_containers.sort(key=short_name_as_key)
+        self._comparam_subsets = NamedItemList(comparam_subsets)
+        self._comparam_subsets.sort(key=short_name_as_key)
 
         self.refresh()
 
     def refresh(self) -> None:
         # Create wrapper objects
         self._diag_layers = NamedItemList(
-            short_name_as_id, chain(*[dlc.diag_layers for dlc in self.diag_layer_containers]))
+            chain(*[dlc.diag_layers for dlc in self.diag_layer_containers]))
 
         self._protocols = NamedItemList(
-            short_name_as_id, chain(*[dlc.protocols for dlc in self.diag_layer_containers]))
+            chain(*[dlc.protocols for dlc in self.diag_layer_containers]))
 
-        self._ecus = NamedItemList(short_name_as_id,
-                                   chain(*[dlc.ecu_variants for dlc in self.diag_layer_containers]))
+        self._ecus = NamedItemList(chain(*[dlc.ecu_variants for dlc in self.diag_layer_containers]))
 
         # Build odxlinks
         self._odxlinks = OdxLinkDatabase()

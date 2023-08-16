@@ -9,7 +9,6 @@ from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .unit import Unit
-from .utils import short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -31,7 +30,7 @@ class UnitGroup(BaseElement):
     oid: Optional[str]
 
     def __post_init__(self):
-        self._units = NamedItemList[Unit](short_name_as_id)
+        self._units = NamedItemList[Unit]()
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "UnitGroup":
@@ -55,8 +54,7 @@ class UnitGroup(BaseElement):
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._units = NamedItemList[Unit](short_name_as_id,
-                                          [odxlinks.resolve(ref) for ref in self.unit_refs])
+        self._units = NamedItemList[Unit]([odxlinks.resolve(ref) for ref in self.unit_refs])
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass

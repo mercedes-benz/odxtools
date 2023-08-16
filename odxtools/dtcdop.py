@@ -7,7 +7,6 @@ from .diagnostictroublecode import DiagnosticTroubleCode
 from .exceptions import EncodeError, odxassert
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .utils import short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -94,7 +93,7 @@ class DtcDop(DataObjectProperty):
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase):
         super()._resolve_odxlinks(odxlinks)
 
-        self._dtcs: NamedItemList[DiagnosticTroubleCode] = NamedItemList(short_name_as_id)
+        self._dtcs = NamedItemList[DiagnosticTroubleCode]()
         for dtc_proxy in self.dtcs_raw:
             if isinstance(dtc_proxy, DiagnosticTroubleCode):
                 self._dtcs.append(dtc_proxy)
@@ -103,7 +102,7 @@ class DtcDop(DataObjectProperty):
                 self._dtcs.append(dtc)
 
         linked_dtc_dops = [odxlinks.resolve(x, DtcDop) for x in self.linked_dtc_dop_refs]
-        self._linked_dtc_dops = NamedItemList(short_name_as_id, linked_dtc_dops)
+        self._linked_dtc_dops = NamedItemList(linked_dtc_dops)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer"):
         super()._resolve_snrefs(diag_layer)

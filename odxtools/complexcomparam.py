@@ -7,7 +7,6 @@ from .basecomparam import BaseComparam
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
-from .utils import short_name_as_id
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -59,7 +58,7 @@ class ComplexComparam(BaseComparam):
         # performance implications
         from .createanycomparam import create_any_comparam_from_et
 
-        self.comparams = NamedItemList(short_name_as_id)
+        self.comparams = NamedItemList()
         for cp_el in et_element:
             if cp_el.tag in ("COMPARAM", "COMPLEX-COMPARAM"):
                 self.comparams.append(create_any_comparam_from_et(cp_el, doc_frags))

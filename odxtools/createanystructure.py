@@ -11,7 +11,6 @@ from .odxlink import OdxDocFragment, OdxLinkId
 from .odxtypes import odxstr_to_bool
 from .parameters.createanyparameter import create_any_parameter_from_et
 from .structure import Structure
-from .utils import short_name_as_id
 
 if TYPE_CHECKING:
     from .request import Request
@@ -34,7 +33,7 @@ def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: Lis
     if et_element.tag == "REQUEST":
         res = Request(
             is_visible_raw=None,
-            parameters=NamedItemList(short_name_as_id, parameters),
+            parameters=NamedItemList(parameters),
             byte_size=None,
             sdgs=sdgs,
             **kwargs)
@@ -42,7 +41,7 @@ def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: Lis
         res = Response(
             response_type=et_element.tag,
             is_visible_raw=None,
-            parameters=NamedItemList(short_name_as_id, parameters),
+            parameters=NamedItemList(parameters),
             byte_size=None,
             sdgs=sdgs,
             **kwargs)
@@ -52,7 +51,7 @@ def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: Lis
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         res = Structure(
             is_visible_raw=is_visible_raw,
-            parameters=NamedItemList(short_name_as_id, parameters),
+            parameters=NamedItemList(parameters),
             byte_size=byte_size,
             sdgs=sdgs,
             **kwargs)

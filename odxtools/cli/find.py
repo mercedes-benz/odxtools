@@ -3,7 +3,7 @@ import argparse
 from typing import Dict, List
 
 from ..database import Database
-from ..service import DiagService
+from ..diagservice import DiagService
 from ..singleecujob import SingleEcuJob
 from . import _parser_utils
 from ._print_utils import print_diagnostic_service

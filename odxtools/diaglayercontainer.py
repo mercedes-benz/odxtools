@@ -14,7 +14,6 @@ from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .specialdatagroup import SpecialDataGroup
-from .utils import short_name_as_id
 
 
 @dataclass
@@ -29,16 +28,13 @@ class DiagLayerContainer(IdentifiableElement):
     sdgs: List[SpecialDataGroup]
 
     def __post_init__(self) -> None:
-        self._diag_layers = NamedItemList[DiagLayer](
-            short_name_as_id,
-            chain(
-                self.ecu_shared_datas,
-                self.protocols,
-                self.functional_groups,
-                self.base_variants,
-                self.ecu_variants,
-            ),
-        )
+        self._diag_layers = NamedItemList[DiagLayer](chain(
+            self.ecu_shared_datas,
+            self.protocols,
+            self.functional_groups,
+            self.base_variants,
+            self.ecu_variants,
+        ),)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element) -> "DiagLayerContainer":
@@ -51,23 +47,23 @@ class DiagLayerContainer(IdentifiableElement):
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
-        ecu_shared_datas = NamedItemList(short_name_as_id, [
+        ecu_shared_datas = NamedItemList([
             DiagLayer.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")
         ])
-        protocols = NamedItemList(short_name_as_id, [
+        protocols = NamedItemList([
             DiagLayer.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("PROTOCOLS/PROTOCOL")
         ])
-        functional_groups = NamedItemList(short_name_as_id, [
+        functional_groups = NamedItemList([
             DiagLayer.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("FUNCTIONAL-GROUPS/FUNCTIONAL-GROUP")
         ])
-        base_variants = NamedItemList(short_name_as_id, [
+        base_variants = NamedItemList([
             DiagLayer.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("BASE-VARIANTS/BASE-VARIANT")
         ])
-        ecu_variants = NamedItemList(short_name_as_id, [
+        ecu_variants = NamedItemList([
             DiagLayer.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")
         ])
