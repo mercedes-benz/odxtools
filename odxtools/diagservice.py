@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
 from xml.etree import ElementTree
 
@@ -40,7 +40,7 @@ class DiagService(IdentifiableElement):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagService":
 
-        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
+        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
         request_ref = odxrequire(OdxLinkRef.from_et(et_element.find("REQUEST-REF"), doc_frags))
 
         pos_response_refs = [

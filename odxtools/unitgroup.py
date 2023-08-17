@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
@@ -35,7 +35,7 @@ class UnitGroup(NamedElement):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "UnitGroup":
         oid = et_element.get("OID")
-        kwargs = NamedElement.get_kwargs(et_element, doc_frags)
+        kwargs = asdict(NamedElement._from_et(et_element, doc_frags))
         category_str = odxrequire(et_element.findtext("CATEGORY"))
         try:
             category = UnitGroupCategory(category_str)

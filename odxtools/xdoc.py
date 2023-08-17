@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
@@ -21,7 +21,7 @@ class XDoc(NamedElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "XDoc":
-        kwargs = NamedElement.get_kwargs(et_element, doc_frags)
+        kwargs = asdict(NamedElement._from_et(et_element, doc_frags))
         number = et_element.findtext("NUMBER")
         state = et_element.findtext("STATE")
         date = et_element.findtext("DATE")

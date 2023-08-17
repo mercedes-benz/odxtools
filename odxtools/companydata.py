@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
@@ -23,7 +23,7 @@ class CompanyData(IdentifiableElement):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "CompanyData":
 
-        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
+        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
         roles = []
         if (roles_elem := et_element.find("ROLES")) is not None:
             roles = [odxrequire(role.text) for role in roles_elem.iterfind("ROLE")]

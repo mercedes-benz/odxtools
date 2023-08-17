@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
@@ -30,7 +30,7 @@ class DiagnosticTroubleCode(IdentifiableElement):
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DiagnosticTroubleCode":
-        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
+        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
         if et_element.find("DISPLAY-TROUBLE-CODE") is not None:
             display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
         else:

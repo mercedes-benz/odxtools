@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import asdict
 from typing import TYPE_CHECKING, List, Union
 from xml.etree import ElementTree
 
 from .createsdgs import create_sdgs_from_et
 from .element import IdentifiableElement
-from .exceptions import odxrequire
 from .globals import logger
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkId
+from .odxlink import OdxDocFragment
 from .odxtypes import odxstr_to_bool
 from .parameters.createanyparameter import create_any_parameter_from_et
 from .structure import Structure
@@ -22,7 +22,7 @@ def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: Lis
     from .request import Request
     from .response import Response
 
-    kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
+    kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
     parameters = [
         create_any_parameter_from_et(et_parameter, doc_frags)
         for et_parameter in et_element.iterfind("PARAMS/PARAM")

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
@@ -24,7 +24,7 @@ class MultiplexerDefaultCase(NamedElement):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "MultiplexerDefaultCase":
         """Reads a Default Case for a Multiplexer."""
-        kwargs = NamedElement.get_kwargs(et_element, doc_frags)
+        kwargs = asdict(NamedElement._from_et(et_element, doc_frags))
 
         structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
 

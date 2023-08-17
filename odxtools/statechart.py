@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from dataclasses import asdict, dataclass
+from typing import TYPE_CHECKING, Any, Dict, List
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
@@ -30,7 +30,7 @@ class StateChart(IdentifiableElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "StateChart":
-        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
+        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
         semantic: str = odxrequire(et_element.findtext("SEMANTIC"))
 
         state_transitions = [

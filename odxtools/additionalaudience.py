@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Dict, List
 from xml.etree import ElementTree
 
@@ -20,7 +20,7 @@ class AdditionalAudience(IdentifiableElement):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "AdditionalAudience":
 
-        return AdditionalAudience(**IdentifiableElement.get_kwargs(et_element, doc_frags))
+        return AdditionalAudience(**asdict(IdentifiableElement._from_et(et_element, doc_frags)))
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {self.odx_id: self}

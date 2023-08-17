@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
@@ -54,7 +54,7 @@ class PhysicalDimension(IdentifiableElement):
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "PhysicalDimension":
-        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
+        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
         oid = et_element.get("OID")
 
         def read_optional_int(element, name):

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from collections import OrderedDict
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
@@ -33,7 +33,7 @@ class Multiplexer(DopBase):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Multiplexer":
         """Reads a Multiplexer from Diag Layer."""
-        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
+        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         byte_position = int(et_element.findtext("BYTE-POSITION", "0"))

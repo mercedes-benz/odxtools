@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
 from xml.etree import ElementTree
 
@@ -37,7 +37,7 @@ class DataObjectProperty(DopBase):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DataObjectProperty":
         """Reads a DATA-OBJECT-PROP or a DTC-DOP."""
-        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
+        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
 

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
@@ -40,7 +40,7 @@ class ComparamSubset(IdentifiableElement):
 
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         doc_frags = [OdxDocFragment(short_name, str(et_element.tag))]
-        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
+        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)

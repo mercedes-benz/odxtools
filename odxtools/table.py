@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
@@ -32,7 +32,7 @@ class Table(IdentifiableElement):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Table":
         """Reads a TABLE."""
-        kwargs = IdentifiableElement.get_kwargs(et_element, doc_frags)
+        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
         odx_id = kwargs["odx_id"]
         semantic = et_element.get("SEMANTIC")
         key_label = et_element.findtext("KEY-LABEL")
