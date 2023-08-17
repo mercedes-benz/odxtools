@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from copy import copy
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from itertools import chain
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
@@ -26,6 +26,7 @@ from .response import Response
 from .singleecujob import SingleEcuJob
 from .specialdatagroup import SpecialDataGroup
 from .statechart import StateChart
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -78,7 +79,7 @@ class DiagLayerRaw(IdentifiableElement):
         # extend the applicable ODX "document fragments" for the diag layer objects
         doc_frags = copy(doc_frags)
         doc_frags.append(OdxDocFragment(short_name, "LAYER"))
-        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = None
         if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:

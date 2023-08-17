@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple
 
 from ..decodestate import DecodeState
-from ..element import IdentifiableElement, NamedElement
+from ..element import NamedElement
 from ..encodestate import EncodeState
 from ..exceptions import OdxWarning
 from ..odxlink import OdxLinkDatabase, OdxLinkId

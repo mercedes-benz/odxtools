@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from enum import Enum
 from itertools import chain
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
@@ -21,6 +21,7 @@ from .odxtypes import odxstr_to_bool
 from .outputparam import OutputParam
 from .progcode import ProgCode
 from .specialdatagroup import SpecialDataGroup
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -98,7 +99,7 @@ class SingleEcuJob(IdentifiableElement):
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SingleEcuJob":
 
         logger.info(f"Parsing service based on ET DiagService element: {et_element}")
-        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         semantic = et_element.get("SEMANTIC")
 

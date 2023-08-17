@@ -5,7 +5,6 @@ from typing import Optional
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
-from .odxtypes import DataType
 
 
 @dataclass

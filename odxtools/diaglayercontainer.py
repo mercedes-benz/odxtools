@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from itertools import chain
 from typing import List, Optional, Union
 from xml.etree import ElementTree
@@ -14,6 +14,7 @@ from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase
 from .specialdatagroup import SpecialDataGroup
+from .utils import dataclass_fields_asdict
 
 
 @dataclass
@@ -37,13 +38,14 @@ class DiagLayerContainer(IdentifiableElement):
         ),)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element) -> "DiagLayerContainer":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "DiagLayerContainer":
 
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         # create the current ODX "document fragment" (description of the
         # current document for references and IDs)
         doc_frags = [OdxDocFragment(short_name, "CONTAINER")]
-        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
