@@ -1,9 +1,7 @@
 # SPDX-License-Identifier: MIT
 import re
-from typing import Any, Optional, Protocol, runtime_checkable
+from typing import Any, Dict, Optional
 from xml.etree import ElementTree
-
-from .exceptions import odxraise
 
 
 def create_description_from_et(et_element: Optional[ElementTree.Element],) -> Optional[str]:
@@ -28,6 +26,15 @@ def create_description_from_et(et_element: Optional[ElementTree.Element],) -> Op
     stripped_lines = [x.strip() for x in raw_string.split("\n")]
 
     return "\n".join(stripped_lines).strip()
+
+
+def dataclass_fields_asdict(obj: Any) -> Dict[str, Any]:
+    """Extract all attributes from a dataclass object that are fields.
+
+    This makes hierarchies of dataclasses possible while initializing
+    the base class using common code.
+    """
+    return {x.name: getattr(obj, x.name) for x in obj.__dataclass_fields__.values()}
 
 
 # ISO 22901 section 7.1.1

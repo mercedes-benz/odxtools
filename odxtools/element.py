@@ -1,4 +1,4 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import List, Optional
 from xml.etree import ElementTree
 
@@ -6,6 +6,7 @@ from odxtools.exceptions import odxrequire
 from odxtools.utils import create_description_from_et
 
 from .odxlink import OdxDocFragment, OdxLinkId
+from .utils import dataclass_fields_asdict
 
 
 @dataclass
@@ -15,7 +16,7 @@ class NamedElement:
     description: Optional[str]
 
     @staticmethod
-    def _from_et(
+    def from_et(
         et_element: ElementTree.Element,
         doc_frags: List[OdxDocFragment],
     ) -> "NamedElement":
@@ -32,12 +33,12 @@ class IdentifiableElement(NamedElement):
     odx_id: OdxLinkId
 
     @staticmethod
-    def _from_et(
+    def from_et(
         et_element: ElementTree.Element,
         doc_frags: List[OdxDocFragment],
     ) -> "IdentifiableElement":
 
-        kwargs = asdict(NamedElement._from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
         return IdentifiableElement(
             **kwargs,
             odx_id=odxrequire(OdxLinkId.from_et(et_element, doc_frags)),

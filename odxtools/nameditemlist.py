@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
 import abc
 from keyword import iskeyword
-from typing import (Callable, Generic, Iterable, List, Optional, Protocol, Tuple, TypeVar, Union,
-                    cast, overload, runtime_checkable)
+from typing import (Callable, Collection, Generic, Iterable, List, Optional, Protocol, Tuple,
+                    TypeVar, Union, cast, overload, runtime_checkable)
 
 from .exceptions import odxassert, odxraise
 
@@ -87,10 +87,10 @@ class ItemList(Generic[T]):
         self._names = [x[0] for x in tmp]
         self._values = [x[1] for x in tmp]
 
-    def keys(self) -> Iterable[str]:
+    def keys(self) -> Collection[str]:
         return self._names
 
-    def values(self) -> Iterable[T]:
+    def values(self) -> Collection[T]:
         return self._values
 
     def items(self) -> List[Tuple[str, T]]:

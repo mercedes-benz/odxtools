@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import asdict
 from typing import TYPE_CHECKING, List, Union
 from xml.etree import ElementTree
 
@@ -11,6 +10,7 @@ from .odxlink import OdxDocFragment
 from .odxtypes import odxstr_to_bool
 from .parameters.createanyparameter import create_any_parameter_from_et
 from .structure import Structure
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .request import Request
@@ -22,7 +22,7 @@ def create_any_structure_from_et(et_element: ElementTree.Element, doc_frags: Lis
     from .request import Request
     from .response import Response
 
-    kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
+    kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
     parameters = [
         create_any_parameter_from_et(et_parameter, doc_frags)
         for et_parameter in et_element.iterfind("PARAMS/PARAM")

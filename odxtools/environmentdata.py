@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import List
 from xml.etree import ElementTree
 
@@ -10,6 +10,7 @@ from .exceptions import odxrequire
 from .odxlink import OdxDocFragment
 from .odxtypes import odxstr_to_bool
 from .parameters.createanyparameter import create_any_parameter_from_et
+from .utils import dataclass_fields_asdict
 
 
 @dataclass
@@ -26,7 +27,7 @@ class EnvironmentData(BasicStructure):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "EnvironmentData":
         """Reads Environment Data from Diag Layer."""
-        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         parameters = [

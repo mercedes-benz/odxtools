@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
@@ -16,6 +16,7 @@ from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .specialdatagroup import SpecialDataGroup
 from .unitspec import UnitSpec
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -34,13 +35,14 @@ class ComparamSubset(IdentifiableElement):
     sdgs: List[SpecialDataGroup]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element) -> "ComparamSubset":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "ComparamSubset":
 
         category = et_element.get("CATEGORY")
 
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         doc_frags = [OdxDocFragment(short_name, str(et_element.tag))]
-        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)

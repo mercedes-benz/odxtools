@@ -89,7 +89,7 @@ class TestComposeUDS(unittest.TestCase):
 
 class TestNamedItemList(unittest.TestCase):
 
-    def test_NamedItemList(self):
+    def test_NamedItemList(self) -> None:
 
         @dataclass
         class X:
@@ -97,7 +97,7 @@ class TestNamedItemList(unittest.TestCase):
             value: int
 
         foo = NamedItemList([X("hello", 0), X("world", 1)])
-        self.assertEqual(foo.hello, X("hello", 0))
+        self.assertEqual(foo.hello, X("hello", 0))  # type: ignore[attr-defined]
         self.assertEqual(foo[0], X("hello", 0))
         self.assertEqual(foo[1], X("world", 1))
         self.assertEqual(foo[:1], [X("hello", 0)])
@@ -106,40 +106,40 @@ class TestNamedItemList(unittest.TestCase):
             foo[2]
         self.assertEqual(foo["hello"], X("hello", 0))
         self.assertEqual(foo["world"], X("world", 1))
-        self.assertEqual(foo.hello, X("hello", 0))
-        self.assertEqual(foo.world, X("world", 1))
+        self.assertEqual(foo.hello, X("hello", 0))  # type: ignore[attr-defined]
+        self.assertEqual(foo.world, X("world", 1))  # type: ignore[attr-defined]
 
         foo.append(X("hello", 2))
         self.assertEqual(foo[2], X("hello", 2))
         self.assertEqual(foo["hello"], X("hello", 0))
         self.assertEqual(foo["hello_2"], X("hello", 2))
-        self.assertEqual(foo.hello, X("hello", 0))
-        self.assertEqual(foo.hello_2, X("hello", 2))
+        self.assertEqual(foo.hello, X("hello", 0))  # type: ignore[attr-defined]
+        self.assertEqual(foo.hello_2, X("hello", 2))  # type: ignore[attr-defined]
 
         # try to append an item that cannot be mapped to a name
         with self.assertRaises(OdxError):
-            foo.append((0, 3))
+            foo.append((0, 3))  # type: ignore[arg-type]
 
         # add a keyword identifier
         foo.append(X("as", 3))
         self.assertEqual(foo[3], X("as", 3))
         self.assertEqual(foo["as_"], X("as", 3))
-        self.assertEqual(foo.as_, X("as", 3))
+        self.assertEqual(foo.as_, X("as", 3))  # type: ignore[attr-defined]
 
         # add an object which's name conflicts with a method of the class
         foo.append(X("sort", 4))
         self.assertEqual(foo[4], X("sort", 4))
         self.assertEqual(foo["sort_2"], X("sort", 4))
-        self.assertEqual(foo.sort_2, X("sort", 4))
+        self.assertEqual(foo.sort_2, X("sort", 4))  # type: ignore[attr-defined]
 
         # test the get() function
         self.assertEqual(foo.get(0), X("hello", 0))
         self.assertEqual(foo.get(1234), None)
-        self.assertEqual(foo.get(1234, 5678), 5678)
+        self.assertEqual(foo.get(1234, X("foo", 5678)), X("foo", 5678))
 
         self.assertEqual(foo.get("hello"), X("hello", 0))
         self.assertEqual(foo.get("dunno"), None)
-        self.assertEqual(foo.get("dunno", "woho!"), "woho!")
+        self.assertEqual(foo.get("dunno", X("woho!", 0)), X("woho!", 0))
 
         # ensure that we can iterate over NamedItemList objects
         for i, x in enumerate(foo):

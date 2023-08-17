@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
@@ -7,11 +7,12 @@ from .admindata import AdminData
 from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
 from .element import IdentifiableElement
-from .exceptions import odxassert, odxrequire
+from .exceptions import odxassert
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdatagroup import SpecialDataGroup
 from .tablerow import TableRow
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -32,7 +33,7 @@ class Table(IdentifiableElement):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Table":
         """Reads a TABLE."""
-        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         odx_id = kwargs["odx_id"]
         semantic = et_element.get("SEMANTIC")
         key_label = et_element.findtext("KEY-LABEL")

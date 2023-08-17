@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import asdict
 from typing import List
 from xml.etree import ElementTree
 
@@ -9,6 +8,7 @@ from ..element import NamedElement
 from ..exceptions import odxrequire
 from ..globals import xsi
 from ..odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
+from ..utils import dataclass_fields_asdict
 from .codedconstparameter import CodedConstParameter
 from .dynamicparameter import DynamicParameter
 from .lengthkeyparameter import LengthKeyParameter
@@ -27,7 +27,7 @@ from .valueparameter import ValueParameter
 def create_any_parameter_from_et(et_element: ElementTree.Element,
                                  doc_frags: List[OdxDocFragment]) \
                                  -> Parameter:
-    kwargs = asdict(NamedElement._from_et(et_element, doc_frags))
+    kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
     semantic = et_element.get("SEMANTIC")
     byte_position_str = et_element.findtext("BYTE-POSITION")
     byte_position = int(byte_position_str) if byte_position_str is not None else None

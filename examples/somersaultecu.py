@@ -2250,7 +2250,7 @@ for odx_cs_filename in (
     odx_cs_root = ElementTree.parse(odx_cs_dir / odx_cs_filename).getroot()
     subset = odx_cs_root.find("COMPARAM-SUBSET")
     if subset is not None:
-        comparam_subsets.append(ComparamSubset.from_et(subset))
+        comparam_subsets.append(ComparamSubset.from_et(subset, []))
 
 # create a database object
 database = Database()

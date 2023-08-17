@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from copy import copy
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, List, Optional
 from xml.etree import ElementTree
 
@@ -11,8 +11,9 @@ from .dopbase import DopBase
 from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .exceptions import odxassert
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from .odxtypes import ParameterValueDict, odxstr_to_bool
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -44,7 +45,7 @@ class EndOfPduField(DopBase):
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "EndOfPduField":
-        kwargs = asdict(IdentifiableElement._from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
