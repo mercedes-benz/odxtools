@@ -284,28 +284,50 @@ class TestEncodeRequest(unittest.TestCase):
         self.assertEqual(req.bit_length, 24)
 
     def test_issue_70(self):
-        self.skipTest("Not fixed yet")
         # see https://github.com/mercedes-benz/odxtools/issues/70
         # make sure overlapping params don't cause this function to go crazy
-        uint2 = StandardLengthType(base_data_type=DataType.A_UINT32, bit_length=2)
-        uint1 = StandardLengthType(base_data_type=DataType.A_UINT32, bit_length=1)
+        unit_kwargs = dict(
+            base_data_type=DataType.A_UINT32,
+            base_type_encoding=None,
+            is_highlow_byte_order_raw=None,
+            bit_mask=None,
+            is_condensed_raw=None,
+        )
+        uint2 = StandardLengthType(bit_length=2, **unit_kwargs)
+        uint1 = StandardLengthType(bit_length=1, **unit_kwargs)
+        param_kwargs = dict(
+            long_name=None,
+            description=None,
+            byte_position=None,
+            semantic=None,
+            sdgs=[],
+            coded_value=0,
+        )
         params = [
             CodedConstParameter(
-                short_name="p1", diag_coded_type=uint2, bit_position=0, coded_value=0),
+                short_name="p1", diag_coded_type=uint2, bit_position=0, **param_kwargs),
             CodedConstParameter(
-                short_name="p2", diag_coded_type=uint2, bit_position=2, coded_value=0),
+                short_name="p2", diag_coded_type=uint2, bit_position=2, **param_kwargs),
             CodedConstParameter(
-                short_name="p3", diag_coded_type=uint2, bit_position=3, coded_value=0),
+                short_name="p3", diag_coded_type=uint2, bit_position=3, **param_kwargs),
             CodedConstParameter(
-                short_name="p4", diag_coded_type=uint1, bit_position=5, coded_value=0),
+                short_name="p4", diag_coded_type=uint1, bit_position=5, **param_kwargs),
             CodedConstParameter(
-                short_name="p5", diag_coded_type=uint1, bit_position=6, coded_value=0),
+                short_name="p5", diag_coded_type=uint1, bit_position=6, **param_kwargs),
             CodedConstParameter(
-                short_name="p6", diag_coded_type=uint1, bit_position=7, coded_value=0),
+                short_name="p6", diag_coded_type=uint1, bit_position=7, **param_kwargs),
         ]
         req = Request(
-            odx_id=OdxLinkRef("request_id", doc_frags), short_name="request_sn", parameters=params)
-        self.assertTrue(req._BasicStructure__message_format_lines())
+            odx_id=OdxLinkRef("request_id", doc_frags),
+            short_name="request_sn",
+            parameters=params,
+            long_name=None,
+            description=None,
+            is_visible_raw=None,
+            sdgs=[],
+            byte_size=None,
+        )
+        self.assertFalse(req._BasicStructure__message_format_lines())
 
 
 if __name__ == "__main__":

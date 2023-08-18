@@ -349,6 +349,11 @@ class BasicStructure(DopBase):
             for bit_idx in range(8):
                 odxassert(8 * byte_idx + bit_idx <= stop_bit)
 
+                if param_idx == len(params):
+                    # the last param ends mid byte, there are still padding bits left
+                    error = True
+                    break
+
                 if 8 * byte_idx + bit_idx == stop_bit:
                     # END-OF-PDU fields do not exhibit a fixed bit
                     # length, so they need special treatment here
