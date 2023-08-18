@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from enum import Enum
 from typing import NamedTuple, Optional, Union
 from xml.etree import ElementTree
@@ -13,12 +14,17 @@ class IntervalType(Enum):
     INFINITE = "INFINITE"
 
 
-class Limit(NamedTuple):
+@dataclass
+class Limit:
     value: Union[str, int, float, bytes]
     interval_type: IntervalType = IntervalType.CLOSED
 
+    def __post_init__(self) -> None:
+        if self.interval_type == IntervalType.INFINITE:
+            self.value = 0
+
     @staticmethod
-    def from_et(et_element: Optional[ElementTree.Element],
+    def from_et(et_element: Optional[ElementTree.Element], *,
                 internal_type: DataType) -> Optional["Limit"]:
 
         if et_element is None:

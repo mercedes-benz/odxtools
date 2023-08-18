@@ -4,6 +4,7 @@ from xml.etree import ElementTree
 
 import odxtools.uds as uds
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
+from odxtools.compumethods.limit import IntervalType, Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.createanydiagcodedtype import create_any_diag_coded_type_from_et
 from odxtools.dataobjectproperty import DataObjectProperty
@@ -435,8 +436,8 @@ class TestParamLengthInfoType(unittest.TestCase):
                     denominator=1,
                     internal_type=DataType.A_UINT32,
                     physical_type=DataType.A_UINT32,
-                    internal_lower_limit=None,
-                    internal_upper_limit=None,
+                    internal_lower_limit=Limit(0, IntervalType.INFINITE),
+                    internal_upper_limit=Limit(0, IntervalType.INFINITE),
                 ),
         }
 

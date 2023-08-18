@@ -11,7 +11,7 @@ import odxtools
 from odxtools.additionalaudience import AdditionalAudience
 from odxtools.audience import Audience
 from odxtools.compumethods.compuscale import CompuScale
-from odxtools.compumethods.limit import Limit
+from odxtools.compumethods.limit import IntervalType, Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.compumethods.texttablecompumethod import TexttableCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
@@ -84,9 +84,24 @@ class TestSingleEcuJob(unittest.TestCase):
                 physical_type=PhysicalType(
                     DataType.A_UNICODE2STRING, display_radix=None, precision=None),
                 compu_method=TexttableCompuMethod(
+                    physical_type=DataType.A_UNICODE2STRING,
                     internal_to_phys=[
-                        CompuScale("yes", lower_limit=Limit(0), compu_const="Yes!"),
-                        CompuScale("no", lower_limit=Limit(1), compu_const="No!"),
+                        CompuScale(
+                            "yes",
+                            lower_limit=Limit(0),
+                            compu_const="Yes!",
+                            description=None,
+                            compu_inverse_value=None,
+                            upper_limit=None,
+                            compu_rational_coeffs=None),
+                        CompuScale(
+                            "no",
+                            lower_limit=Limit(1),
+                            compu_const="No!",
+                            description=None,
+                            compu_inverse_value=None,
+                            upper_limit=None,
+                            compu_rational_coeffs=None),
                     ],
                     internal_type=DataType.A_UINT32,
                 ),
@@ -115,8 +130,8 @@ class TestSingleEcuJob(unittest.TestCase):
                     denominator=1,
                     internal_type=DataType.A_UINT32,
                     physical_type=DataType.A_UINT32,
-                    internal_lower_limit=None,
-                    internal_upper_limit=None,
+                    internal_lower_limit=Limit(0, IntervalType.INFINITE),
+                    internal_upper_limit=Limit(0, IntervalType.INFINITE),
                 ),
                 unit_ref=None,
                 sdgs=[],
@@ -143,8 +158,8 @@ class TestSingleEcuJob(unittest.TestCase):
                     denominator=1,
                     internal_type=DataType.A_UINT32,
                     physical_type=DataType.A_UINT32,
-                    internal_lower_limit=None,
-                    internal_upper_limit=None,
+                    internal_lower_limit=Limit(0, IntervalType.INFINITE),
+                    internal_upper_limit=Limit(0, IntervalType.INFINITE),
                 ),
                 unit_ref=None,
                 sdgs=[],

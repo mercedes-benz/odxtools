@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 import unittest
 
+from odxtools.compumethods.limit import IntervalType, Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.exceptions import EncodeError
@@ -122,8 +123,8 @@ class TestEncodeRequest(unittest.TestCase):
             denominator=1,
             internal_type=DataType.A_UINT32,
             physical_type=DataType.A_UINT32,
-            internal_lower_limit=None,
-            internal_upper_limit=None,
+            internal_lower_limit=Limit(0, IntervalType.INFINITE),
+            internal_upper_limit=Limit(0, IntervalType.INFINITE),
         )
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),

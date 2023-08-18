@@ -1,26 +1,29 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import List
 
 from ..exceptions import DecodeError, odxassert
 from ..odxtypes import DataType
-from .compumethod import CompuMethod
+from .compumethod import CompuMethod, CompuMethodCategory
 from .compuscale import CompuScale
 
 
+@dataclass
 class TexttableCompuMethod(CompuMethod):
 
-    def __init__(self, *, internal_to_phys: List[CompuScale], internal_type):
-        super().__init__(
-            internal_type=internal_type,
-            physical_type=DataType.A_UNICODE2STRING,
-            category="TEXTTABLE",
-        )
-        self.internal_to_phys = internal_to_phys
+    internal_to_phys: List[CompuScale]
 
+    def __post_init__(self) -> None:
+        odxassert(self.physical_type == DataType.A_UNICODE2STRING,
+                  "TEXTTABLE must have A_UNICODE2STRING as its physical datatype.")
         odxassert(
             all(scale.lower_limit is not None or scale.upper_limit is not None
                 for scale in self.internal_to_phys),
             "Text table compu method doesn't have expected format!")
+
+    @property
+    def category(self) -> CompuMethodCategory:
+        return "TEXTTABLE"
 
     def convert_physical_to_internal(self, physical_value):
         scale = next(

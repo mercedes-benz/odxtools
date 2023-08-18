@@ -1,13 +1,15 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import List, Tuple, Union
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
 from ..globals import logger
 from ..odxtypes import DataType
-from .compumethod import CompuMethod
+from .compumethod import CompuMethod, CompuMethodCategory
 from .limit import IntervalType, Limit
 
 
+@dataclass
 class TabIntpCompuMethod(CompuMethod):
     """
     A compu method of type Tab Interpolated is used for linear interpolation.
@@ -64,25 +66,18 @@ class TabIntpCompuMethod(CompuMethod):
 
     """
 
-    def __init__(
-        self,
-        *,
-        internal_type: Union[DataType, str],
-        physical_type: Union[DataType, str],
-        internal_points: List[Union[float, int]],
-        physical_points: List[Union[float, int]],
-    ):
-        super().__init__(
-            internal_type=internal_type, physical_type=physical_type, category="TAB-INTP")
+    internal_points: List[Union[float, int]]
+    physical_points: List[Union[float, int]]
 
-        self.internal_points = internal_points
-        self.physical_points = physical_points
+    def __post_init__(self) -> None:
+        self._physical_lower_limit = Limit(min(self.physical_points), IntervalType.CLOSED)
+        self._physical_upper_limit = Limit(max(self.physical_points), IntervalType.CLOSED)
 
-        self._physical_lower_limit = Limit(min(physical_points), IntervalType.CLOSED)
-        self._physical_upper_limit = Limit(max(physical_points), IntervalType.CLOSED)
-
-        logger.debug("Created compu method of type tab interpolated !")
         self._assert_validity()
+
+    @property
+    def category(self) -> CompuMethodCategory:
+        return "TAB-INTP"
 
     @property
     def physical_lower_limit(self) -> Limit:

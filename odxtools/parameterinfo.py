@@ -58,7 +58,7 @@ def parameter_info(param_list: Iterable[Union[Parameter, EndOfPduField]]) -> str
         if isinstance(cm, TexttableCompuMethod):
             result += f": enum; choices:\n"
             for scale in cm.internal_to_phys:
-                result += f"  '{scale.compu_const}'\n"
+                result += f"  '{str(scale.compu_const)}'\n"
 
         elif isinstance(cm, IdenticalCompuMethod):
             bdt = dop.physical_type.base_data_type

@@ -1,15 +1,17 @@
 # SPDX-License-Identifier: MIT
+from dataclasses import dataclass
 from typing import Union
 
 from ..odxtypes import DataType
-from .compumethod import CompuMethod
+from .compumethod import CompuMethod, CompuMethodCategory
 
 
+@dataclass
 class IdenticalCompuMethod(CompuMethod):
 
-    def __init__(self, *, internal_type: Union[DataType, str], physical_type: Union[DataType, str]):
-        super().__init__(
-            internal_type=internal_type, physical_type=physical_type, category="IDENTICAL")
+    @property
+    def category(self) -> CompuMethodCategory:
+        return "IDENTICAL"
 
     def convert_physical_to_internal(self, physical_value):
         return physical_value

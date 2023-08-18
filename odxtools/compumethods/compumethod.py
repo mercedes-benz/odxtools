@@ -1,16 +1,28 @@
 # SPDX-License-Identifier: MIT
-from typing import Union
+import abc
+from dataclasses import dataclass
+from typing import Literal, Union
 
 from ..odxtypes import DataType
 
+CompuMethodCategory = Literal[
+    "IDENTICAL",
+    "LINEAR",
+    "SCALE-LINEAR",
+    "TAB-INTP",
+    "TEXTTABLE",
+]
 
-class CompuMethod:
 
-    def __init__(self, *, internal_type: Union[DataType, str], physical_type: Union[DataType, str],
-                 category: str):
-        self.internal_type = DataType(internal_type)
-        self.physical_type = DataType(physical_type)
-        self.category = category
+@dataclass
+class CompuMethod(abc.ABC):
+    internal_type: DataType
+    physical_type: DataType
+
+    @property
+    @abc.abstractmethod
+    def category(self) -> CompuMethodCategory:
+        pass
 
     def convert_physical_to_internal(self, physical_value):
         raise NotImplementedError()
@@ -26,9 +38,3 @@ class CompuMethod:
 
     def get_valid_physical_values(self):
         return None
-
-    def __str__(self) -> str:
-        return f"CompuMethod(category={self.category}"
-
-    def __repr__(self) -> str:
-        return str(self)
