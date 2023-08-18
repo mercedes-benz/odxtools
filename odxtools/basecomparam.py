@@ -50,6 +50,7 @@ class BaseComparam(IdentifiableElement):
             self.cptype = cast(StandardizationLevel, None)
             odxraise(f"Encountered unknown CPTYPE '{cptype_str}'")
 
+        # Required in ODX 2.2, missing in ODX 2.0
         cpusage_str = et_element.attrib.get("CPUSAGE")
         if cpusage_str is not None:
             try:
