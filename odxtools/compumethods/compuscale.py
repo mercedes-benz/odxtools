@@ -53,9 +53,9 @@ class CompuScale:
 
         compu_inverse_value: Optional[AtomicOdxType] = None
         if (vt := et_element.find("COMPU-INVERSE-VALUE/VT")) is not None:
-            compu_inverse_value = physical_type.from_string(odxrequire(vt.text))
+            compu_inverse_value = internal_type.from_string(odxrequire(vt.text))
         elif (v := et_element.find("COMPU-INVERSE-VALUE/V")) is not None:
-            compu_inverse_value = physical_type.from_string(odxrequire(v.text))
+            compu_inverse_value = internal_type.from_string(odxrequire(v.text))
 
         compu_const: Optional[AtomicOdxType] = None
         if (vt_elem := et_element.find("COMPU-CONST/VT")) is not None:
