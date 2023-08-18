@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Literal, Optional, Tuple, Union
 
 import bitstruct
 
+from . import exceptions
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise
@@ -99,8 +100,23 @@ class DiagCodedType(abc.ABC):
 
         format_letter = ODX_TYPE_TO_FORMAT_LETTER[base_data_type]
         padding = 8 * byte_length - (bit_length + bit_position)
+        text_encoding = 'utf-8'
+        text_errors = 'strict'
+        if not exceptions.strict_mode:
+            text_errors = 'replace'
+        if base_data_type == DataType.A_ASCIISTRING:
+            # The spec says ASCII, meaning only byte values 0-127
+            # But in practice, vendors use iso-8859-1, aka latin-1
+            # reason being iso-8859-1 never fails
+            # since it has a valid character mapping for every possible byte sequence.
+            text_encoding = 'iso-8859-1'
         internal_value = bitstruct.unpack_from(
-            f"{format_letter}{bit_length}", extracted_bytes, offset=padding)[0]
+            f"{format_letter}{bit_length}",
+            extracted_bytes,
+            offset=padding,
+            text_encoding=text_encoding,
+            text_errors=text_errors,
+        )[0]
 
         if base_data_type == DataType.A_UNICODE2STRING:
             # Convert bytes to string with utf-16 decoding
