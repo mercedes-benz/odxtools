@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 # from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Union, cast
 
 from .dataobjectproperty import DataObjectProperty
@@ -12,19 +13,12 @@ if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
+@dataclass
 class DtcDop(DataObjectProperty):
     """A DOP describing a diagnostic trouble code"""
 
-    def __init__(
-        self,
-        *,
-        dtcs_raw: List[Union[DiagnosticTroubleCode, OdxLinkRef]],
-        linked_dtc_dop_refs: List[OdxLinkRef],
-        **kwargs,
-    ):
-        super().__init__(**kwargs)
-        self.dtcs_raw = dtcs_raw
-        self.linked_dtc_dop_refs = linked_dtc_dop_refs
+    dtcs_raw: List[Union[DiagnosticTroubleCode, OdxLinkRef]]
+    linked_dtc_dop_refs: List[OdxLinkRef]
 
     @property
     def dtcs(self) -> NamedItemList[DiagnosticTroubleCode]:
