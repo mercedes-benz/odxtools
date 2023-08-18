@@ -15,6 +15,7 @@ from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayertype import DiagLayerType
 from .diagservice import DiagService
 from .ecuvariantpattern import EcuVariantPattern
+from .element import IdentifiableElement
 from .exceptions import odxassert, odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
@@ -25,14 +26,14 @@ from .response import Response
 from .singleecujob import SingleEcuJob
 from .specialdatagroup import SpecialDataGroup
 from .statechart import StateChart
-from .utils import create_description_from_et
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
 @dataclass
-class DiagLayerRaw:
+class DiagLayerRaw(IdentifiableElement):
     """This class internalizes all data represented by the DIAG-LAYER
     XML tag and its derivatives.
 
@@ -40,10 +41,6 @@ class DiagLayerRaw:
     """
 
     variant_type: DiagLayerType
-    odx_id: OdxLinkId
-    short_name: str
-    long_name: Optional[str]
-    description: Optional[str]
     admin_data: Optional[AdminData]
     company_datas: NamedItemList[CompanyData]
     functional_classes: NamedItemList[FunctionalClass]
@@ -78,13 +75,11 @@ class DiagLayerRaw:
         variant_type = DiagLayerType(et_element.tag)
 
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
 
         # extend the applicable ODX "document fragments" for the diag layer objects
         doc_frags = copy(doc_frags)
         doc_frags.append(OdxDocFragment(short_name, "LAYER"))
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = None
         if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:
@@ -185,10 +180,6 @@ class DiagLayerRaw:
         # Create DiagLayer
         return DiagLayerRaw(
             variant_type=variant_type,
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
             admin_data=admin_data,
             company_datas=NamedItemList(company_datas),
             functional_classes=NamedItemList(functional_classes),
@@ -205,7 +196,7 @@ class DiagLayerRaw:
             parent_refs=parent_refs,
             communication_parameters=communication_parameters,
             ecu_variant_patterns=ecu_variant_patterns,
-        )
+            **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""

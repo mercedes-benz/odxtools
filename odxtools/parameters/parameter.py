@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple
 
 from ..decodestate import DecodeState
+from ..element import NamedElement
 from ..encodestate import EncodeState
 from ..exceptions import OdxWarning
 from ..odxlink import OdxLinkDatabase, OdxLinkId
@@ -30,14 +31,10 @@ ParameterType = Literal[
 
 
 @dataclass
-class Parameter(abc.ABC):
-
-    short_name: str
-    long_name: Optional[str]
+class Parameter(NamedElement, abc.ABC):
     byte_position: Optional[int]
     bit_position: Optional[int]
     semantic: Optional[str]
-    description: Optional[str]
     sdgs: List[SpecialDataGroup]
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

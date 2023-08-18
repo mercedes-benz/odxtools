@@ -6,6 +6,7 @@ from xml.etree import ElementTree
 from .admindata import AdminData
 from .audience import Audience
 from .createsdgs import create_sdgs_from_et
+from .element import IdentifiableElement
 from .exceptions import DecodeError, odxassert, odxrequire
 from .message import Message
 from .nameditemlist import NamedItemList
@@ -14,7 +15,7 @@ from .parameters.parameter import Parameter
 from .request import Request
 from .response import Response
 from .specialdatagroup import SpecialDataGroup
-from .utils import create_description_from_et
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -22,18 +23,14 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class DiagService:
+class DiagService(IdentifiableElement):
     """Representation of a diagnostic service description.
     """
 
-    odx_id: OdxLinkId
-    short_name: str
     request_ref: OdxLinkRef
     pos_response_refs: List[OdxLinkRef]
     neg_response_refs: List[OdxLinkRef]
-    long_name: Optional[str]
     admin_data: Optional[AdminData]
-    description: Optional[str]
     semantic: Optional[str]
     audience: Optional[Audience]
     functional_class_refs: Iterable[OdxLinkRef]
@@ -44,11 +41,7 @@ class DiagService:
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagService":
 
-        # logger.info(f"Parsing service based on ET DiagService element: {et_element}")
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         request_ref = odxrequire(OdxLinkRef.from_et(et_element.find("REQUEST-REF"), doc_frags))
 
         pos_response_refs = [
@@ -86,13 +79,9 @@ class DiagService:
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return DiagService(
-            odx_id=odx_id,
-            short_name=short_name,
             request_ref=request_ref,
             pos_response_refs=pos_response_refs,
             neg_response_refs=neg_response_refs,
-            long_name=long_name,
-            description=description,
             admin_data=admin_data,
             semantic=semantic,
             audience=audience,
@@ -100,7 +89,7 @@ class DiagService:
             pre_condition_state_refs=pre_condition_state_refs,
             state_transition_refs=state_transition_refs,
             sdgs=sdgs,
-        )
+            **kwargs)
 
     @property
     def request(self) -> Optional[Request]:

@@ -8,11 +8,12 @@ from .basicstructure import BasicStructure
 from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
 from .dopbase import DopBase
+from .element import IdentifiableElement
 from .encodestate import EncodeState
-from .exceptions import odxassert, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .exceptions import odxassert
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from .odxtypes import ParameterValueDict, odxstr_to_bool
-from .utils import create_description_from_et
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -44,10 +45,7 @@ class EndOfPduField(DopBase):
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "EndOfPduField":
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
@@ -71,10 +69,6 @@ class EndOfPduField(DopBase):
 
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         eopf = EndOfPduField(
-            odx_id=odx_id,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
             sdgs=sdgs,
             structure_ref=structure_ref,
             structure_snref=structure_snref,
@@ -83,7 +77,7 @@ class EndOfPduField(DopBase):
             min_number_of_items=min_number_of_items,
             max_number_of_items=max_number_of_items,
             is_visible_raw=is_visible_raw,
-        )
+            **kwargs)
 
         return eopf
 

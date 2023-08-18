@@ -4,29 +4,25 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .dopbase import DopBase
+from .element import NamedElement
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .utils import create_description_from_et
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
 @dataclass
-class InputParam:
-    short_name: str
+class InputParam(NamedElement):
     dop_base_ref: OdxLinkRef
-    long_name: Optional[str]
-    description: Optional[str]
     oid: Optional[str]
     semantic: Optional[str]
     physical_default_value: Optional[str]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "InputParam":
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
         dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
         physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
 
@@ -34,14 +30,11 @@ class InputParam:
         oid = et_element.get("OID")
 
         return InputParam(
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
             dop_base_ref=dop_base_ref,
             physical_default_value=physical_default_value,
             semantic=semantic,
             oid=oid,
-        )
+            **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}

@@ -4,19 +4,17 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
-from .exceptions import odxrequire
+from .element import NamedElement
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
 @dataclass
-class MultiplexerDefaultCase:
+class MultiplexerDefaultCase(NamedElement):
     """This class represents a Default Case, which is selected when there are no cases defined in the Multiplexer."""
-
-    short_name: str
-    long_name: Optional[str]
     structure_ref: Optional[OdxLinkRef]
 
     def __post_init__(self) -> None:
@@ -26,16 +24,11 @@ class MultiplexerDefaultCase:
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "MultiplexerDefaultCase":
         """Reads a Default Case for a Multiplexer."""
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
 
         structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
 
-        return MultiplexerDefaultCase(
-            short_name=short_name,
-            long_name=long_name,
-            structure_ref=structure_ref,
-        )
+        return MultiplexerDefaultCase(structure_ref=structure_ref, **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}

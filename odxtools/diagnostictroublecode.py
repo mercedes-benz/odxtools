@@ -4,20 +4,20 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
 from .createsdgs import create_sdgs_from_et
+from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
 from .specialdatagroup import SpecialDataGroup
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
 @dataclass
-class DiagnosticTroubleCode:
+class DiagnosticTroubleCode(IdentifiableElement):
     trouble_code: int
-    odx_id: Optional[OdxLinkId]
-    short_name: str
     text: Optional[str]
     display_trouble_code: Optional[str]
     level: Union[int, None]
@@ -31,6 +31,7 @@ class DiagnosticTroubleCode:
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DiagnosticTroubleCode":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         if et_element.find("DISPLAY-TROUBLE-CODE") is not None:
             display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
         else:
@@ -45,15 +46,13 @@ class DiagnosticTroubleCode:
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return DiagnosticTroubleCode(
-            odx_id=OdxLinkId.from_et(et_element, doc_frags),
-            short_name=odxrequire(et_element.findtext("SHORT-NAME")),
             trouble_code=int(odxrequire(et_element.findtext("TROUBLE-CODE"))),
             text=et_element.findtext("TEXT"),
             display_trouble_code=display_trouble_code,
             level=level,
             is_temporary_raw=is_temporary_raw,
             sdgs=sdgs,
-        )
+            **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result: Dict[OdxLinkId, Any] = {}

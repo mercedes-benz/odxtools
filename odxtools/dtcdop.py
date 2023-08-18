@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 # from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Union, cast
 
 from .dataobjectproperty import DataObjectProperty
 from .diagnostictroublecode import DiagnosticTroubleCode
@@ -52,8 +52,10 @@ class DtcDop(DataObjectProperty):
         # box...
         dtc = DiagnosticTroubleCode(
             trouble_code=trouble_code,
-            odx_id=None,
+            odx_id=cast(OdxLinkId, None),
             short_name=f'DTC_{trouble_code:06x}',
+            long_name=None,
+            description=None,
             text=None,
             display_trouble_code=None,
             level=None,

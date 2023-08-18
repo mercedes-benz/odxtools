@@ -60,7 +60,7 @@ class Database:
             model_version = version(root.attrib.get("MODEL-VERSION", "2.0"))
             dlc = root.find("DIAG-LAYER-CONTAINER")
             if dlc is not None:
-                dlcs.append(DiagLayerContainer.from_et(dlc))
+                dlcs.append(DiagLayerContainer.from_et(dlc, []))
             # In ODX 2.0 there was only COMPARAM-SPEC
             # In ODX 2.2 content of COMPARAM-SPEC was renamed to COMPARAM-SUBSET
             # and COMPARAM-SPEC becomes a container for PROT-STACKS
@@ -68,11 +68,11 @@ class Database:
             if model_version >= version("2.2"):
                 subset = root.find("COMPARAM-SUBSET")
                 if subset is not None:
-                    comparam_subsets.append(ComparamSubset.from_et(subset))
+                    comparam_subsets.append(ComparamSubset.from_et(subset, []))
             else:
                 subset = root.find("COMPARAM-SPEC")
                 if subset is not None:
-                    comparam_subsets.append(ComparamSubset.from_et(subset))
+                    comparam_subsets.append(ComparamSubset.from_et(subset, []))
 
         self._diag_layer_containers = NamedItemList(dlcs)
         self._diag_layer_containers.sort(key=short_name_as_key)

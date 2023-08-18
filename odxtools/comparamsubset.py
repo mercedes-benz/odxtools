@@ -10,43 +10,39 @@ from .complexcomparam import ComplexComparam
 from .createcompanydatas import create_company_datas_from_et
 from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
+from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .specialdatagroup import SpecialDataGroup
 from .unitspec import UnitSpec
-from .utils import create_description_from_et
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
 @dataclass
-class ComparamSubset:
-    odx_id: Optional[OdxLinkId]
-    short_name: str
+class ComparamSubset(IdentifiableElement):
     # mandatory in ODX 2.2, but non existent in ODX 2.0
     category: Optional[str]
     data_object_props: NamedItemList[DataObjectProperty]
     comparams: NamedItemList[Comparam]
     complex_comparams: NamedItemList[ComplexComparam]
     unit_spec: Optional[UnitSpec]
-    long_name: Optional[str]
-    description: Optional[str]
     admin_data: Optional[AdminData]
     company_datas: NamedItemList[CompanyData]
     sdgs: List[SpecialDataGroup]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element) -> "ComparamSubset":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "ComparamSubset":
 
         category = et_element.get("CATEGORY")
 
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         doc_frags = [OdxDocFragment(short_name, str(et_element.tag))]
-        odx_id = OdxLinkId.from_et(et_element, doc_frags)
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
@@ -70,11 +66,7 @@ class ComparamSubset:
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return ComparamSubset(
-            odx_id=odx_id,
             category=category,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
             admin_data=admin_data,
             company_datas=company_datas,
             data_object_props=NamedItemList(data_object_props),
@@ -82,7 +74,7 @@ class ComparamSubset:
             complex_comparams=NamedItemList(complex_comparams),
             unit_spec=unit_spec,
             sdgs=sdgs,
-        )
+            **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks: Dict[OdxLinkId, Any] = {}

@@ -1200,12 +1200,14 @@ somersault_muxs = {
             default_case=MultiplexerDefaultCase(
                 short_name="default_case",
                 long_name="Default Case",
+                description=None,
                 structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
             ),
             cases=[
                 MultiplexerCase(
                     short_name="forward_flip",
                     long_name="Forward Flip",
+                    description=None,
                     lower_limit="1",
                     upper_limit="3",
                     structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
@@ -1213,6 +1215,7 @@ somersault_muxs = {
                 MultiplexerCase(
                     short_name="backward_flip",
                     long_name="Backward Flip",
+                    description=None,
                     lower_limit="1",
                     upper_limit="3",
                     structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
@@ -2262,7 +2265,7 @@ for odx_cs_filename in (
     odx_cs_root = ElementTree.parse(odx_cs_dir / odx_cs_filename).getroot()
     subset = odx_cs_root.find("COMPARAM-SUBSET")
     if subset is not None:
-        comparam_subsets.append(ComparamSubset.from_et(subset))
+        comparam_subsets.append(ComparamSubset.from_et(subset, []))
 
 # create a database object
 database = Database()

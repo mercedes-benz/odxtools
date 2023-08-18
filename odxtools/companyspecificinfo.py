@@ -21,7 +21,8 @@ class CompanySpecificInfo:
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "CompanySpecificInfo":
         related_docs = [
-            RelatedDoc.from_et(rd) for rd in et_element.iterfind("RELATED-DOCS/RELATED-DOC")
+            RelatedDoc.from_et(rd, doc_frags)
+            for rd in et_element.iterfind("RELATED-DOCS/RELATED-DOC")
         ]
 
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)

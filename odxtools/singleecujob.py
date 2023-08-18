@@ -8,6 +8,7 @@ from xml.etree import ElementTree
 from .admindata import AdminData
 from .audience import Audience
 from .createsdgs import create_sdgs_from_et
+from .element import IdentifiableElement
 from .exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .globals import logger
@@ -20,7 +21,7 @@ from .odxtypes import odxstr_to_bool
 from .outputparam import OutputParam
 from .progcode import ProgCode
 from .specialdatagroup import SpecialDataGroup
-from .utils import create_description_from_et
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -36,7 +37,7 @@ class DiagClassType(Enum):
 
 
 @dataclass
-class SingleEcuJob:
+class SingleEcuJob(IdentifiableElement):
     """A single ECU job is a diagnostic communication primitive.
 
     A single ECU job is more complex than a diagnostic service and is not provided natively by the ECU.
@@ -50,13 +51,9 @@ class SingleEcuJob:
           PROTOCOL-SNREFS, RELATED-DIAG-COMM-REFS, PRE-CONDITION-STATE-REFS, STATE-TRANSITION-REFS
     """
 
-    odx_id: OdxLinkId
-    short_name: str
     prog_codes: List[ProgCode]
     # optional xsd:elements inherited from DIAG-COMM (and thus shared with DIAG-SERVICE)
     oid: Optional[str]
-    long_name: Optional[str]
-    description: Optional[str]
     admin_data: Optional[AdminData]
     functional_class_refs: List[OdxLinkRef]
     audience: Optional[Audience]
@@ -102,10 +99,7 @@ class SingleEcuJob:
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SingleEcuJob":
 
         logger.info(f"Parsing service based on ET DiagService element: {et_element}")
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         semantic = et_element.get("SEMANTIC")
 
@@ -153,11 +147,7 @@ class SingleEcuJob:
                 odxraise(f"Encountered unknown diagnostic class type '{diag_class_str}'")
 
         return SingleEcuJob(
-            odx_id=odx_id,
             oid=None,
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
             admin_data=admin_data,
             prog_codes=prog_codes,
             semantic=semantic,
@@ -171,7 +161,7 @@ class SingleEcuJob:
             is_executable_raw=is_executable_raw,
             is_final_raw=is_final_raw,
             sdgs=sdgs,
-        )
+            **kwargs)
 
     @property
     def functional_classes(self) -> Optional[NamedItemList[FunctionalClass]]:

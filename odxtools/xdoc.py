@@ -1,21 +1,18 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
-from .exceptions import odxrequire
-from .odxlink import OdxLinkDatabase, OdxLinkId
-from .utils import create_description_from_et
+from .element import NamedElement
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
 @dataclass
-class XDoc:
-    short_name: str
-    long_name: Optional[str]
-    description: Optional[str]
+class XDoc(NamedElement):
     number: Optional[str]
     state: Optional[str]
     date: Optional[str]
@@ -24,10 +21,8 @@ class XDoc:
     position: Optional[str]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element) -> "XDoc":
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        long_name = et_element.findtext("LONG-NAME")
-        description = create_description_from_et(et_element.find("DESC"))
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "XDoc":
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
         number = et_element.findtext("NUMBER")
         state = et_element.findtext("STATE")
         date = et_element.findtext("DATE")
@@ -36,16 +31,13 @@ class XDoc:
         position = et_element.findtext("POSITION")
 
         return XDoc(
-            short_name=short_name,
-            long_name=long_name,
-            description=description,
             number=number,
             state=state,
             date=date,
             publisher=publisher,
             url=url,
             position=position,
-        )
+            **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}

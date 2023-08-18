@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
-from .odxlink import OdxLinkDatabase, OdxLinkId
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .utils import create_description_from_et
 from .xdoc import XDoc
 
@@ -17,12 +17,12 @@ class RelatedDoc:
     xdoc: Optional[XDoc]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element) -> "RelatedDoc":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "RelatedDoc":
         description = create_description_from_et(et_element.find("DESC"))
 
         xdoc: Optional[XDoc] = None
         if (xdoc_elem := et_element.find("XDOC")) is not None:
-            xdoc = XDoc.from_et(xdoc_elem)
+            xdoc = XDoc.from_et(xdoc_elem, doc_frags)
 
         return RelatedDoc(
             description=description,
