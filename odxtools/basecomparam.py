@@ -31,7 +31,8 @@ class Usage(Enum):
 class BaseComparam(IdentifiableElement):
     param_class: str
     cptype: StandardizationLevel
-    cpusage: Usage
+    # Required in ODX 2.2, missing in ODX 2.0
+    cpusage: Optional[Usage]
     display_level: Optional[int]
 
     def __init_from_et__(self, et_element: ElementTree.Element,
@@ -49,12 +50,14 @@ class BaseComparam(IdentifiableElement):
             self.cptype = cast(StandardizationLevel, None)
             odxraise(f"Encountered unknown CPTYPE '{cptype_str}'")
 
-        cpusage_str = odxrequire(et_element.attrib.get("CPUSAGE"))
-        try:
-            self.cpusage = Usage(cpusage_str)
-        except ValueError:
-            self.cpusage = cast(Usage, None)
-            odxraise(f"Encountered unknown CPUSAGE '{cpusage_str}'")
+        # Required in ODX 2.2, missing in ODX 2.0
+        cpusage_str = et_element.attrib.get("CPUSAGE")
+        if cpusage_str is not None:
+            try:
+                self.cpusage = Usage(cpusage_str)
+            except ValueError:
+                self.cpusage = None
+                odxraise(f"Encountered unknown CPUSAGE '{cpusage_str}'")
 
         dl = et_element.attrib.get("DISPLAY_LEVEL")
         self.display_level = None if dl is None else int(dl)
