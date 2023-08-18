@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import warnings
+from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union, cast
@@ -43,6 +44,7 @@ T = TypeVar("T")
 PrefixTree = Dict[int, Union[List[DiagService], "PrefixTree"]]
 
 
+@dataclass
 class DiagLayer:
     """This class represents a "logical view" upon a diagnostic layer
     according to the ODX standard.
@@ -51,8 +53,7 @@ class DiagLayer:
     encoding/decoding of data, etc.
     """
 
-    def __init__(self, *, diag_layer_raw: DiagLayerRaw) -> None:
-        self.diag_layer_raw = diag_layer_raw
+    diag_layer_raw: DiagLayerRaw
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayer":
@@ -994,6 +995,3 @@ class DiagLayer:
     #####
     # </PDU decoding>
     #####
-
-    def __str__(self) -> str:
-        return f"DiagLayer('{self.short_name}', type='{self.variant_type.value}')"
