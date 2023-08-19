@@ -65,7 +65,15 @@ def create_any_diag_coded_type_from_et(et_element: ElementTree.Element,
         bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))
         bit_mask = None
         if (bit_mask_str := et_element.findtext("BIT-MASK")) is not None:
-            bit_mask = int(bit_mask_str, base=16)
+            # The XSD uses the type xsd:hexBinary
+            # The type xsd:hexBinary allow for leading/trailing whitespace
+            # The type xsd:hexBinary allow an empty string as value
+            # The type xsd:hexBinary only allows an even number of hex digits
+            # The ODX examples show an odd number of hex digits
+            # This causes a validation paradox, so we try to be flexible
+            bit_mask_str = bit_mask_str.strip()
+            if len(bit_mask_str):
+                bit_mask = int(bit_mask_str, 16)
         is_condensed_raw = odxstr_to_bool(et_element.get("CONDENSED"))
         return StandardLengthType(
             base_data_type=base_data_type,
