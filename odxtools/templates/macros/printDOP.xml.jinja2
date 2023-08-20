@@ -84,6 +84,16 @@
    </COMPU-SCALE>
   {%- endfor %}
   </COMPU-SCALES>
+  {%- if cm.compu_default_value is not none %}
+  <COMPU-DEFAULT-VALUE> 
+    <VT>{{cm.compu_default_value.compu_const}}</VT>
+    {%- if cm.compu_default_value.compu_inverse_value is not none %}
+    <COMPU-INVERSE-VALUE>
+     <V>{{cm.compu_default_value.compu_inverse_value}}</V>
+    </COMPU-INVERSE-VALUE>
+    {%- endif %}
+  </COMPU-DEFAULT-VALUE>
+  {%- endif %}
  </COMPU-INTERNAL-TO-PHYS>
  {%- elif cm.category == "LINEAR" %}
  <COMPU-INTERNAL-TO-PHYS>

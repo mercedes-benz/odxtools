@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
 from enum import Enum
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Type, Union, overload
+from xml.etree import ElementTree
 
-from .exceptions import odxassert, odxraise
+from .exceptions import odxassert, odxraise, odxrequire
 
 if TYPE_CHECKING:
     from odxtools.parameters.parameter import Parameter
@@ -128,6 +129,16 @@ class DataType(Enum):
 
     def from_string(self, value: str) -> AtomicOdxType:
         return _PARSE_ODX_TYPE[self.value](value)
+
+    def from_et_value_union(self,
+                            et_element: Optional[ElementTree.Element]) -> Optional[AtomicOdxType]:
+        if et_element is None:
+            return None
+        if (vt_elem := et_element.find("VT")) is not None:
+            return self.from_string(odxrequire(vt_elem.text))
+        elif (v_elem := et_element.find("V")) is not None:
+            return self.from_string(odxrequire(v_elem.text))
+        odxraise('Either V or VT needs to be specified')
 
     def make_from(self, value: Any) -> AtomicOdxType:
         if isinstance(value, str):

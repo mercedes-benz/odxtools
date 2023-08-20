@@ -85,6 +85,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     DataType.A_UNICODE2STRING, display_radix=None, precision=None),
                 compu_method=TexttableCompuMethod(
                     physical_type=DataType.A_UNICODE2STRING,
+                    compu_default_value=None,
                     internal_to_phys=[
                         CompuScale(
                             "yes",

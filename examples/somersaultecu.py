@@ -418,6 +418,14 @@ somersault_compumethods: Dict[str, CompuMethod] = {
         TexttableCompuMethod(
             internal_type=DataType.A_UINT32,
             physical_type=DataType.A_UNICODE2STRING,
+            compu_default_value=CompuScale(
+                compu_const="undefined",
+                lower_limit=None,
+                upper_limit=None,
+                short_label=None,
+                description=None,
+                compu_inverse_value=None,
+                compu_rational_coeffs=None),
             internal_to_phys=[
                 CompuScale(
                     compu_const="false",
