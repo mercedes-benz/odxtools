@@ -76,7 +76,7 @@ class TableKeyParameter(Parameter):
             return self._table
         if self._table_row is not None:
             return self._table_row.table
-        return cast(None, Table)
+        odxraise(f'Could not resolve the table of {self.short_name}')
 
     @property
     def table_row(self) -> Optional["TableRow"]:
