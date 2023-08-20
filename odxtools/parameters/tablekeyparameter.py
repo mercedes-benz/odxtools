@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, cast
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -24,6 +24,8 @@ class TableKeyParameter(Parameter):
     table_row_ref: Optional[OdxLinkRef]
 
     def __post_init__(self) -> None:
+        self._table: Optional[Table] = None
+        self._table_row: Optional[TableRow] = None
         if self.table_ref is None and self.table_snref is None and \
            self.table_row_ref is None and self.table_row_snref is None:
             odxraise("Either a table or a table row must be defined.")
@@ -48,7 +50,6 @@ class TableKeyParameter(Parameter):
             else:
                 self._table = odxlinks.resolve(self.table_ref)
 
-        self._table_row: Optional[TableRow] = None
         if self.table_row_ref:
             if TYPE_CHECKING:
                 self._table_row = odxlinks.resolve(self.table_row_ref, TableRow)
@@ -71,7 +72,11 @@ class TableKeyParameter(Parameter):
 
     @property
     def table(self) -> "Table":
-        return self._table
+        if self._table is not None:
+            return self._table
+        if self._table_row is not None:
+            return self._table_row.table
+        return cast(None, Table)
 
     @property
     def table_row(self) -> Optional["TableRow"]:
@@ -81,7 +86,7 @@ class TableKeyParameter(Parameter):
         return self._table_row is None
 
     def is_optional(self):
-        return not self.is_required
+        return not self.is_required()
 
     def get_coded_value(self, physical_value=None) -> Any:
         key_dop = self.table.key_dop
