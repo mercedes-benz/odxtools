@@ -51,9 +51,8 @@ class CompuScale:
         lower_limit = Limit.from_et(et_element.find("LOWER-LIMIT"), internal_type=internal_type)
         upper_limit = Limit.from_et(et_element.find("UPPER-LIMIT"), internal_type=internal_type)
 
-        compu_inverse_value = internal_type.from_et_value_union(
-            et_element.find("COMPU-INVERSE-VALUE"))
-        compu_const = physical_type.from_et_value_union(et_element.find("COMPU-CONST"))
+        compu_inverse_value = internal_type.create_from_et(et_element.find("COMPU-INVERSE-VALUE"))
+        compu_const = physical_type.create_from_et(et_element.find("COMPU-CONST"))
 
         compu_rational_coeffs: Optional[CompuRationalCoeffs] = None
         if (crc_elem := et_element.find("COMPU-RATIONAL-COEFFS")) is not None:
