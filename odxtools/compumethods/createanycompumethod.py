@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 import warnings
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from ..exceptions import OdxWarning, odxassert, odxraise, odxrequire
@@ -90,6 +90,18 @@ def _parse_compu_scale_to_linear_compu_method(
     return LinearCompuMethod(**kwargs)
 
 
+def create_compu_default_value(et_element: Optional[ElementTree.Element],
+                               doc_frags: List[OdxDocFragment], internal_type: DataType,
+                               physical_type: DataType) -> Optional[CompuScale]:
+    if et_element is None:
+        return None
+    compu_const = physical_type.create_from_et(et_element)
+    scale = CompuScale.from_et(
+        et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
+    scale.compu_const = compu_const
+    return scale
+
+
 def create_any_compu_method_from_et(et_element: ElementTree.Element,
                                     doc_frags: List[OdxDocFragment], internal_type: DataType,
                                     physical_type: DataType) -> CompuMethod:
@@ -108,7 +120,10 @@ def create_any_compu_method_from_et(et_element: ElementTree.Element,
     if et_element.find("COMPU-PHYS-TO-INTERNAL") is not None:  # TODO: Is this never used?
         raise NotImplementedError(f"Found COMPU-PHYS-TO-INTERNAL for category {compu_category}")
 
-    kwargs: Dict[str, Any] = {"internal_type": internal_type}
+    kwargs: Dict[str, Any] = {
+        "physical_type": physical_type,
+        "internal_type": internal_type,
+    }
 
     if compu_category == "IDENTICAL":
         odxassert(
@@ -129,30 +144,29 @@ def create_any_compu_method_from_et(et_element: ElementTree.Element,
                 CompuScale.from_et(
                     scale_elem, doc_frags, internal_type=internal_type,
                     physical_type=physical_type))
+        compu_default_value = create_compu_default_value(
+            et_element.find("COMPU-DEFAULT-VALUE"), doc_frags, **kwargs)
 
-        kwargs["physical_type"] = DataType.A_UNICODE2STRING
-        kwargs["internal_to_phys"] = internal_to_phys
-        return TexttableCompuMethod(**kwargs)
+        return TexttableCompuMethod(
+            internal_to_phys=internal_to_phys,
+            compu_default_value=compu_default_value,
+            **kwargs,
+        )
 
     elif compu_category == "LINEAR":
         # Compu method can be described by the function f(x) = (offset + factor * x) / denominator
 
         scale_elem = odxrequire(et_element.find("COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE"))
-        kwargs["internal_type"] = internal_type
-        kwargs["physical_type"] = physical_type
         return _parse_compu_scale_to_linear_compu_method(scale_element=scale_elem, **kwargs)
 
     elif compu_category == "SCALE-LINEAR":
 
         scale_elems = et_element.iterfind("COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE")
-        kwargs["internal_type"] = internal_type
-        kwargs["physical_type"] = physical_type
         linear_methods = [
             _parse_compu_scale_to_linear_compu_method(scale_element=scale_elem, **kwargs)
             for scale_elem in scale_elems
         ]
-        return ScaleLinearCompuMethod(
-            internal_type=internal_type, physical_type=physical_type, linear_methods=linear_methods)
+        return ScaleLinearCompuMethod(linear_methods=linear_methods, **kwargs)
 
     elif compu_category == "TAB-INTP":
         internal_points = []
@@ -160,8 +174,8 @@ def create_any_compu_method_from_et(et_element: ElementTree.Element,
         for scale_elem in et_element.iterfind("COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE"):
             internal_point = internal_type.from_string(
                 odxrequire(scale_elem.findtext("LOWER-LIMIT")))
-            physical_point = physical_type.from_string(
-                odxrequire(scale_elem.findtext("COMPU-CONST/V")))
+            physical_point = physical_type.create_from_et(
+                odxrequire(scale_elem.find("COMPU-CONST")))
 
             if not isinstance(internal_point, (float, int)):
                 odxraise()
@@ -172,11 +186,7 @@ def create_any_compu_method_from_et(et_element: ElementTree.Element,
             physical_points.append(physical_point)
 
         return TabIntpCompuMethod(
-            internal_type=internal_type,
-            physical_type=physical_type,
-            internal_points=internal_points,
-            physical_points=physical_points,
-        )
+            internal_points=internal_points, physical_points=physical_points, **kwargs)
 
     # TODO: Implement other categories (never instantiate CompuMethod)
     logger.warning(f"Warning: Computation category {compu_category} is not implemented!")
