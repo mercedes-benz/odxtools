@@ -24,8 +24,8 @@ class TableKeyParameter(Parameter):
     table_row_ref: Optional[OdxLinkRef]
 
     def __post_init__(self) -> None:
-        self._table: Optional[Table] = None
-        self._table_row: Optional[TableRow] = None
+        self._table: "Table"
+        self._table_row: Optional["TableRow"] = None
         if self.table_ref is None and self.table_snref is None and \
            self.table_row_ref is None and self.table_row_snref is None:
             odxraise("Either a table or a table row must be defined.")
