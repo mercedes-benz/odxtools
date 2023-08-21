@@ -25,7 +25,7 @@ class CompuScale:
         description="<p>fancy description</p>", # optional: provide a description
         lower_limit=Limit(0), # required: lower limit
         upper_limit=Limit(3), # required: upper limit
-        compu_inverse_value=2, # required iff lower_limit != upper_limit
+        compu_inverse_value=2, # required if lower_limit != upper_limit
         compu_const="true", # required: physical value to be shown to the user
     )
     ```

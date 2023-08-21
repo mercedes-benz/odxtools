@@ -69,7 +69,6 @@ class DiagCodedType(abc.ABC):
         bit_length: int,
         base_data_type: DataType,
         is_highlow_byte_order: bool,
-        bit_mask: Optional[int] = None,
     ) -> Tuple[AtomicOdxType, int]:
         """Extract the internal value.
 
@@ -84,10 +83,6 @@ class DiagCodedType(abc.ABC):
             raise DecodeError(f"Expected a longer message.")
         next_byte_position = byte_position + byte_length
         extracted_bytes = coded_message[byte_position:next_byte_position]
-
-        # TODO: Apply bit mask, etc.
-        if bit_mask is not None:
-            raise NotImplementedError(f"Don't know how to handle bit_mask={bit_mask}.")
 
         # Apply byteorder
         if not is_highlow_byte_order and base_data_type not in [
@@ -134,7 +129,6 @@ class DiagCodedType(abc.ABC):
         bit_length: int,
         base_data_type: DataType,
         is_highlow_byte_order: bool,
-        bit_mask=None,
     ) -> bytes:
         """Convert the internal_value to bytes."""
         # Check that bytes and strings actually fit into the bit length
@@ -193,10 +187,6 @@ class DiagCodedType(abc.ABC):
                 DataType.A_UTF8STRING,
         ]:
             code = code[::-1]
-
-        # TODO: Apply bit mask.
-        if bit_mask is not None:
-            raise NotImplementedError(f"Don't know how to handle bit_mask={bit_mask}.")
 
         return code
 
