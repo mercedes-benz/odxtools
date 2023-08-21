@@ -95,7 +95,7 @@ def create_compu_default_value(et_element: Optional[ElementTree.Element],
                                physical_type: DataType) -> Optional[CompuScale]:
     if et_element is None:
         return None
-    compu_const = physical_type.from_et_value_union(et_element)
+    compu_const = physical_type.create_from_et(et_element)
     scale = CompuScale.from_et(
         et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
     scale.compu_const = compu_const
@@ -174,7 +174,7 @@ def create_any_compu_method_from_et(et_element: ElementTree.Element,
         for scale_elem in et_element.iterfind("COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE"):
             internal_point = internal_type.from_string(
                 odxrequire(scale_elem.findtext("LOWER-LIMIT")))
-            physical_point = physical_type.from_et_value_union(
+            physical_point = physical_type.create_from_et(
                 odxrequire(scale_elem.find("COMPU-CONST")))
 
             if not isinstance(internal_point, (float, int)):

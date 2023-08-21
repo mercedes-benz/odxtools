@@ -131,15 +131,14 @@ class DataType(Enum):
         return _PARSE_ODX_TYPE[self.value](value)
 
     @overload
-    def from_et_value_union(self, et_element: None) -> None:
+    def create_from_et(self, et_element: None) -> None:
         ...
 
     @overload
-    def from_et_value_union(self, et_element: ElementTree.Element) -> AtomicOdxType:
+    def create_from_et(self, et_element: ElementTree.Element) -> AtomicOdxType:
         ...
 
-    def from_et_value_union(self,
-                            et_element: Optional[ElementTree.Element]) -> Optional[AtomicOdxType]:
+    def create_from_et(self, et_element: Optional[ElementTree.Element]) -> Optional[AtomicOdxType]:
         """
             Parse a V/VT value union and return an AtomicOdxType from them that match current datatype
             this includes, but not limited to COMPU-CONST, COMPU-DEFAULT-VALUE, COMPU-INVERSE-VALUE
