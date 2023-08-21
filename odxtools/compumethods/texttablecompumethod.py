@@ -52,8 +52,10 @@ class TexttableCompuMethod(CompuMethod):
         if scale.lower_limit is not None and not scale.lower_limit.complies_to_lower(
                 internal_value):
             return False
-        if scale.upper_limit is not None and not scale.upper_limit.complies_to_upper(
-                internal_value):
+        # If no UPPER-LIMIT is defined
+        # the COMPU-SCALE will be applied only for the value defined in LOWER-LIMIT
+        upper_limit = scale.upper_limit or scale.lower_limit
+        if upper_limit is not None and not upper_limit.complies_to_upper(internal_value):
             return False
         # value complies to the defined limits
         return True

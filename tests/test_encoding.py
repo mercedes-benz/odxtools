@@ -1,14 +1,18 @@
 # SPDX-License-Identifier: MIT
 import unittest
+from typing import List
 
+from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.limit import IntervalType, Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.exceptions import EncodeError
+from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
+from odxtools.parameters.parameter import Parameter
 from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaltype import PhysicalType
 from odxtools.request import Request
@@ -283,6 +287,18 @@ class TestEncodeRequest(unittest.TestCase):
         self.assertEqual(req.encode(), bytearray([0x12, 0x34, 0x56]))
         self.assertEqual(req.bit_length, 24)
 
+    def _create_request(self, parameters: List[Parameter]) -> Request:
+        return Request(
+            odx_id=OdxLinkId("request_id", doc_frags),
+            short_name="request_sn",
+            parameters=NamedItemList(parameters),
+            long_name=None,
+            description=None,
+            is_visible_raw=None,
+            sdgs=[],
+            byte_size=None,
+        )
+
     def test_issue_70(self):
         # see https://github.com/mercedes-benz/odxtools/issues/70
         # make sure overlapping params don't cause this function to go crazy
@@ -317,17 +333,57 @@ class TestEncodeRequest(unittest.TestCase):
             CodedConstParameter(
                 short_name="p6", diag_coded_type=uint1, bit_position=7, **param_kwargs),
         ]
-        req = Request(
-            odx_id=OdxLinkRef("request_id", doc_frags),
-            short_name="request_sn",
-            parameters=params,
-            long_name=None,
+        req = self._create_request(params)
+        self.assertEqual(req._BasicStructure__message_format_lines(), [])
+
+    def test_bit_mask(self):
+        unit_kwargs = dict(
+            base_data_type=DataType.A_UINT32,
+            base_type_encoding=None,
+            is_highlow_byte_order_raw=None,
+            is_condensed_raw=None,
+            bit_length=16,
+        )
+        inner = StandardLengthType(bit_mask=0x0ff0, **unit_kwargs)
+        outer = StandardLengthType(bit_mask=0xf00f, **unit_kwargs)
+        dop_id = OdxLinkId('dop', [])
+        dop_kwargs = dict(
+            compu_method=IdenticalCompuMethod(DataType.A_UINT32, DataType.A_UINT32),
             description=None,
             is_visible_raw=None,
+            long_name=None,
+            odx_id=dop_id,
+            physical_type=PhysicalType(DataType.A_UINT32, None, None),
             sdgs=[],
-            byte_size=None,
+            short_name='dop',
+            unit_ref=None,
         )
-        self.assertFalse(req._BasicStructure__message_format_lines())
+        param_kwargs = dict(
+            long_name=None,
+            description=None,
+            byte_position=0,
+            bit_position=None,
+            dop_ref=OdxLinkRef.from_id(dop_id),
+            dop_snref=None,
+            semantic=None,
+            sdgs=[],
+            physical_default_value_raw=None,
+        )
+
+        # Inner
+        inner_param = ValueParameter(short_name="inner", **param_kwargs)
+        inner_param._dop = DataObjectProperty(diag_coded_type=inner, **dop_kwargs)
+        inner_param._resolve_snrefs(None)
+
+        # Outer
+        outer_param = ValueParameter(short_name="outer", **param_kwargs)
+        outer_param._dop = DataObjectProperty(diag_coded_type=outer, **dop_kwargs)
+        outer_param._resolve_snrefs(None)
+
+        req = self._create_request([inner_param, outer_param])
+
+        assert req.encode(None, inner=0x1111, outer=0x2222).hex() == "2112"
+        assert req.decode(bytes.fromhex('1234')) == dict(inner=0x0230, outer=0x1004)
 
 
 if __name__ == "__main__":
