@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -44,6 +44,7 @@ class TableKeyParameter(Parameter):
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         super()._resolve_odxlinks(odxlinks)
 
+        # Either table_ref or table_row_ref will be defined
         if self.table_ref:
             if TYPE_CHECKING:
                 self._table = odxlinks.resolve(self.table_ref, Table)
@@ -55,6 +56,7 @@ class TableKeyParameter(Parameter):
                 self._table_row = odxlinks.resolve(self.table_row_ref, TableRow)
             else:
                 self._table_row = odxlinks.resolve(self.table_row_ref)
+            self._table = self._table_row.table
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
