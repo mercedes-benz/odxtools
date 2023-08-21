@@ -36,7 +36,7 @@ class StandardLengthType(DiagCodedType):
         if isinstance(internal_value, int):
             return internal_value & self.bit_mask
         if isinstance(internal_value, bytes):
-            int_value: int = int.from_bytes(internal_value, 'big')
+            int_value = int.from_bytes(internal_value, 'big')
             int_value = int_value & self.bit_mask
             return int_value.to_bytes(len(internal_value), 'big')
 
