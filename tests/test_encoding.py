@@ -334,7 +334,7 @@ class TestEncodeRequest(unittest.TestCase):
                 short_name="p6", diag_coded_type=uint1, bit_position=7, **param_kwargs),
         ]
         req = self._create_request(params)
-        self.assertFalse(req._BasicStructure__message_format_lines())
+        self.assertEqual(req._BasicStructure__message_format_lines(), [])
 
     def test_bit_mask(self):
         unit_kwargs = dict(
