@@ -66,10 +66,9 @@ def create_any_diag_coded_type_from_et(et_element: ElementTree.Element,
         bit_mask = None
         if (bit_mask_str := et_element.findtext("BIT-MASK")) is not None:
             # The XSD uses the type xsd:hexBinary
-            # The type xsd:hexBinary allow for leading/trailing whitespace
-            # The type xsd:hexBinary allow an empty string as value
-            # The type xsd:hexBinary only allows an even number of hex digits
-            # The ODX examples show an odd number of hex digits
+            # xsd:hexBinary allows for leading/trailing whitespace, empty strings, and it only allows an even
+            # number of hex digits, while some of the examples shown in the  ODX specification exhibit an
+            # odd number of hex digits.
             # This causes a validation paradox, so we try to be flexible
             bit_mask_str = bit_mask_str.strip()
             if len(bit_mask_str):
