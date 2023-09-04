@@ -90,6 +90,7 @@ class DtcDop(DataObjectProperty):
         self._dtcs = NamedItemList[DiagnosticTroubleCode]()
         for dtc_proxy in self.dtcs_raw:
             if isinstance(dtc_proxy, DiagnosticTroubleCode):
+                dtc_proxy._resolve_odxlinks(odxlinks)
                 self._dtcs.append(dtc_proxy)
             elif isinstance(dtc_proxy, OdxLinkRef):
                 dtc = odxlinks.resolve(dtc_proxy, DiagnosticTroubleCode)
