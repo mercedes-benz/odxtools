@@ -25,6 +25,7 @@ class ParameterWithDOP(Parameter):
     def __post_init__(self) -> None:
         odxassert(self.dop_snref is not None or self.dop_ref is not None,
                   f"Param {self.short_name} without a DOP-(SN)REF should not exist!")
+        self._dop: Optional[DopBase] = None
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
