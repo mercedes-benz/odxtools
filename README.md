@@ -271,7 +271,7 @@ using `odxtools --help`:
 
 ```bash
 $ odxtools --help
-usage: odxtools [-h] [-c] {list,browse,snoop,find,encode-message,decode-message} ...
+usage: odxtools [-h] [--version] {list,browse,snoop,find} ...
 
 Utilities to interact with automotive diagnostic descriptions based on the ODX standard.
 
@@ -282,20 +282,16 @@ Examples:
    odxtools browse ./path/to/database.pdx
 
 positional arguments:
-  {list,browse,snoop,find,encode-message,decode-message}
+  {list,browse,snoop,find}
                         Select a sub command
     list                Print a summary of automotive diagnostic files.
     browse              Interactively browse the content of automotive diagnostic files.
     snoop               Live decoding of a diagnostic session.
     find                Find & display services by hex-data, or name, can also decodes requests.
-    encode-message      Encode a message. Interactively asks for parameter values.
-                        This is a short cut through the browse command to directly encode a message.
-    decode-message      Decode a message. Interactively asks for parameter values.
-                        This is a short cut through the browse command to directly encode a message.
 
 optional arguments:
   -h, --help            show this help message and exit
-  -c, --conformant      The input file fully confirms to the standard, i.e., disable work-arounds for bugs of the CANdela tool
+  --version             Print the odxtools version
 ```
 
 All subcommands accept the `--help` parameter:
@@ -350,7 +346,7 @@ the `--all` parameter prints all data of the file that is recognized
 by `odxtools`. Example:
 
 ```bash
-$ odxtools --conformant list $BASE_DIR/odxtools/examples/somersault.pdx --variants somersault_lazy --services do_forward_flips --params
+$ odxtools list $BASE_DIR/odxtools/examples/somersault.pdx --variants somersault_lazy --services do_forward_flips --params
 ECU-VARIANT 'somersault_lazy' (Receive ID: 0x7b, Send ID: 0x1c8)
  num services: 5, num DOPs: 6, num communication parameters: 11.
 The services of the ECU-VARIANT 'somersault_lazy' are:
@@ -410,7 +406,7 @@ navigate through the database of a `.pdx` file. For example, using the
 spamming the terminal:
 
 ```bash
-$ odxtools --conformant browse $BASE_DIR/odxtools/examples/somersault.pdx
+$ odxtools browse $BASE_DIR/odxtools/examples/somersault.pdx
 ? Select a Variant.  somersault_lazy
 ECU-VARIANT 'somersault_lazy' (Receive ID: 0x7b, Send ID: 0x1c8)
 ? The variant somersault_lazy offers the following services. Select one!  do_forward_flips
@@ -434,15 +430,39 @@ ECU-VARIANT 'somersault_lazy' (Receive ID: 0x7b, Send ID: 0x1c8)
 ### The `snoop` subcommand
 
 The `snoop` subcommand can be used to decode a trace of a or a
-currently running diagnostic session:
+currently running diagnostic session.
 
+```bash
+$ odxtools snoop -h
+usage: odxtools snoop [-h] [--active] [--channel CHANNEL] [--rx RX] [--tx TX] [--variant VARIANT]
+                      [--protocol PROTOCOL]
+                      PDX_FILE
+
+Live decoding of a diagnostic session.
+
+positional arguments:
+  PDX_FILE              path to the .pdx file
+
+options:
+  -h, --help            show this help message and exit
+  --active, -a          Active mode, sends flow control messages to receive ISO-TP telegrams successfully
+  --channel CHANNEL, -c CHANNEL
+                        CAN interface name to be used (required in active mode)
+  --rx RX, -r RX        CAN ID in which the ECU listens for diagnostic messages
+  --tx TX, -t TX        CAN ID in which the ECU sends replys to diagnostic messages  (required in active mode)
+  --variant VARIANT, -v VARIANT
+                        Name of the ECU variant which the decode process ought to be based on
+  --protocol PROTOCOL, -p PROTOCOL
+                        Name of the protocol used for decoding
+```
+Example:
 ```bash
 # create a socketcan `vcan0` interface
 sudo ip link add dev vcan0 type vcan
 sudo ip link set vcan0 up
 
 # start the snooping on vcan0
-odxtools --conformant snoop -c vcan0 --variant "somersault_lazy" $BASE_DIR/odxtools/examples/somersault.pdx
+odxtools snoop -c vcan0 --variant "somersault_lazy" $BASE_DIR/odxtools/examples/somersault.pdx
 
 # on a different terminal, run the diagnostic session
 $BASE_DIR/odxtools/examples/somersaultlazy.py -c vcan0
@@ -451,7 +471,7 @@ $BASE_DIR/odxtools/examples/somersaultlazy.py -c vcan0
 The snoop command will then output the following:
 
 ```bash
-$ odxtools --conformant snoop -c vcan0 --variant "somersault_lazy" $BASE_DIR/odxtools/examples/somersault.pdx
+$ odxtools snoop -c vcan0 --variant "somersault_lazy" $BASE_DIR/odxtools/examples/somersault.pdx
 Decoding messages on channel vcan0
 Tester: do_forward_flips(forward_soberness_check=18, num_flips=1)
  -> 7fba7f (bytearray(b'\x7f\xba\x7f'), 3 bytes)
@@ -474,6 +494,43 @@ information by either a hex request, or partial name via cli.
 
 In addition, it can also decode a hex request and display its parameters 
 mapped to a service. 
+
+```bash
+$ odxtools find -h
+usage: odxtools find [-h] [-v VARIANT [VARIANT ...]] [-d [DATA ...]] [-D [DECODE ...]] [-s [SERVICES ...]] [-nd]
+                     [-ro]
+                     PDX_FILE
+
+Find & print services by hex-data, or name, can also decodes requests
+
+Examples:
+  For displaying the service associated with the request 10 01:
+    odxtools find ./path/to/database.pdx -d 10 01
+  For displaying the service associated with the request 10 01, and decoding it:
+    odxtools find ./path/to/database.pdx -D 10 01
+  For displaying the services associated with the partial name 'Reset' without details:
+    odxtools find ./path/to/database.pdx -s "Reset" --no-details
+  For more information use:
+    odxtools find -h
+
+positional arguments:
+  PDX_FILE              path to the .pdx file
+
+options:
+  -h, --help            show this help message and exit
+  -v VARIANT [VARIANT ...], --variants VARIANT [VARIANT ...]
+                        Specifies which ecu variants should be included.
+  -d [DATA ...], --data [DATA ...]
+                        Print a list of diagnostic services associated with the hex request.
+  -D [DECODE ...], --decode [DECODE ...]
+                        Print a list of diagnostic services associated with the hex request and decode the request.
+  -s [SERVICES ...], --service-names [SERVICES ...]
+                        Print a list of diagnostic services partially matching given service names
+  -nd, --no-details     Don't show all service details
+  -ro, --relaxed-output
+                        Relax output formatting rules (allow unknown bitlengths for ascii representation)
+```
+Example: Find diagnostic services associated with the hex request `10 00`
 
 ```bash
 $ odxtools find $BASE_DIR/odxtools/examples/somersault.pdx -D 10 00

@@ -4,6 +4,7 @@ import logging
 import sys
 from typing import Dict, List, Union
 
+import PyInquirer.prompt as PI_promt
 import PyInquirer
 
 from ..database import Database
@@ -79,7 +80,7 @@ def prompt_single_parameter_value(parameter):
             "message": f"Value for parameter '{parameter.short_name}'",
             "choices": parameter.get_valid_physical_values(),
         }]
-    answer = PyInquirer.prompt(param_prompt)
+    answer = PI_promt.prompt(param_prompt)
     if answer.get(parameter.short_name) == "" and parameter.is_optional():
         return None
     elif parameter.physical_type.base_data_type is not None:
@@ -118,7 +119,7 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
                 "message": f"Do you want to encode a message? [y/n]",
                 "choices": ["yes", "no"],
             }]
-            answer = PyInquirer.prompt(encode_message_prompt)
+            answer = PI_promt.prompt(encode_message_prompt)
             if answer.get("yes_no_prompt") == "no":
                 return
 
@@ -133,7 +134,7 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
                 "filter":
                     lambda input: _convert_string_to_bytes(input),
             }]
-            answer = PyInquirer.prompt(answered_request_prompt)
+            answer = PI_promt.prompt(answered_request_prompt)
             answered_request = answer.get("request")
             print(f"Input interpretation as list: {list(answered_request)}")
 
@@ -245,7 +246,7 @@ def browse(odxdb: Database):
             "message": "Select a Variant.",
             "choices": list(dl_names) + ["[exit]"],
         }]
-        answer = PyInquirer.prompt(selection)
+        answer = PI_promt.prompt(selection)
         if answer.get("variant") == "[exit]":
             return
 
@@ -281,7 +282,7 @@ def browse(odxdb: Database):
                     f"The variant {variant.short_name} offers the following services. Select one!",
                 "choices": [s.short_name for s in services] + ["[back]"],
             }]
-            answer = PyInquirer.prompt(selection)
+            answer = PI_promt.prompt(selection)
             if answer.get("service") == "[back]":
                 break
 
@@ -315,7 +316,7 @@ def browse(odxdb: Database):
                     "short": f"Negative response: {nr.short_name}",
                 } for nr in service.negative_responses] + ["[back]"],  # type: ignore
             }]
-            answer = PyInquirer.prompt(selection)
+            answer = PI_promt.prompt(selection)
             if answer.get("message_type") == "[back]":
                 continue
 
