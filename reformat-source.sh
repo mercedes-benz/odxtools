@@ -7,8 +7,7 @@
 #
 # pip3 install yapf isort toml
 #
-if ! test -f odxtools/version.py || \
-   ! test -d tests || \
+if ! test -d tests || \
    ! test -d examples; then
 
     echo "You need to run this script in the topmost directory" >&2

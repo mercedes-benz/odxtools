@@ -4,8 +4,8 @@ import logging
 import sys
 from typing import Dict, List, Union
 
-import PyInquirer.prompt as PI_promt
 import PyInquirer
+import PyInquirer.prompt as PI_promt
 
 from ..database import Database
 from ..diaglayer import DiagLayer
