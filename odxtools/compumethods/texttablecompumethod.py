@@ -36,7 +36,7 @@ class TexttableCompuMethod(CompuMethod):
         return scales
 
     def convert_physical_to_internal(self, physical_value):
-        scale: CompuScale = next(
+        scale = next(
             filter(lambda scale: scale.compu_const == physical_value, self._get_scales()), None)
         if scale is not None:
             res = (
