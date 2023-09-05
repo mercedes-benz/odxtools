@@ -11,17 +11,11 @@ if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
-class ProgCodeSyntax(Enum):
-    JAVA = "JAVA"
-    CLASS = "CLASS"
-    JAR = "JAR"
-
-
 @dataclass
 class ProgCode:
     """A reference to code that is executed by a single ECU job"""
     code_file: str
-    syntax: ProgCodeSyntax
+    syntax: str
     revision: str
     encryption: Optional[str]
     entrypoint: Optional[str]
@@ -32,14 +26,7 @@ class ProgCode:
         code_file = odxrequire(et_element.findtext("CODE-FILE"))
 
         encryption = et_element.findtext("ENCRYPTION")
-
-        syntax_str = odxrequire(et_element.findtext("SYNTAX"))
-        try:
-            syntax = ProgCodeSyntax(syntax_str)
-        except ValueError:
-            syntax = cast(ProgCodeSyntax, None)
-            odxraise(f"Encountered unknown program code syntax '{syntax_str}'")
-
+        syntax = odxrequire(et_element.findtext("SYNTAX"))
         revision = odxrequire(et_element.findtext("REVISION"))
         entrypoint = et_element.findtext("ENTRYPOINT")
 

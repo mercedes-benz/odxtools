@@ -51,7 +51,7 @@ from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.parentref import ParentRef
 from odxtools.physicaldimension import PhysicalDimension
 from odxtools.physicaltype import PhysicalType
-from odxtools.progcode import ProgCode, ProgCodeSyntax
+from odxtools.progcode import ProgCode
 from odxtools.relateddoc import RelatedDoc
 from odxtools.request import Request
 from odxtools.response import Response
@@ -1787,7 +1787,7 @@ somersault_single_ecu_jobs = {
                 ProgCode(
                     code_file="jobs.jar",
                     encryption=None,
-                    syntax=ProgCodeSyntax.JAR,
+                    syntax="JAR",
                     entrypoint="com.supervisor.jobs.CompulsoryProgram",
                     revision="1.23.4",
                     library_refs=[],
