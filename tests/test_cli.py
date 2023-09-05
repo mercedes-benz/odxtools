@@ -1,11 +1,18 @@
 # SPDX-License-Identifier: MIT
 
+import sys
 import unittest
 from argparse import Namespace
 
-import odxtools.cli.browse as browse
 import odxtools.cli.find as find
 import odxtools.cli.list as list_tool
+
+import_failed = False
+
+try:
+    import odxtools.cli.browse as browse
+except:
+    import_failed = True
 
 
 class UtilFunctions():
@@ -68,6 +75,7 @@ class TestCommandLineTools(unittest.TestCase):
         UtilFunctions.run_find_tool(decode=["3E 00"])
         UtilFunctions.run_find_tool(decode=["3E 00"], relaxed_output=True)
 
+    @unittest.skipIf(import_failed, "import of PyInquirer failed")
     def test_browse_tool(self):
         browse_args = Namespace(pdx_file="./examples/somersault.pdx")
         browse.run(browse_args)

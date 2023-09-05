@@ -45,6 +45,10 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+browse-tool = [
+     "PyInquirer >= 1.0",
+]
+
 test = [
      "mypy >= 1.5",
      "pytest >= 7.4",
@@ -55,12 +59,8 @@ examples = [
      "can-isotp >= 1.9",
 ]
 
-browse-tool = [
-     "PyInquirer >= 1.0",
-]
-
 all = [
-     "odxtools[test,examples,browse-tool]"
+     "odxtools[browse-tool,test,examples]"
 ]
 
 [project.urls]
