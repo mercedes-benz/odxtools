@@ -4,7 +4,7 @@ from keyword import iskeyword
 from typing import (Callable, Collection, Generic, Iterable, List, Optional, Protocol, Tuple,
                     TypeVar, Union, cast, overload, runtime_checkable)
 
-from .exceptions import odxassert, odxraise
+from .exceptions import odxraise
 
 
 @runtime_checkable
