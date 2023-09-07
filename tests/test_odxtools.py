@@ -123,8 +123,8 @@ class TestNamedItemList(unittest.TestCase):
         # add a keyword identifier
         foo.append(X("as", 3))
         self.assertEqual(foo[3], X("as", 3))
-        self.assertEqual(foo["as_"], X("as", 3))
-        self.assertEqual(foo.as_, X("as", 3))  # type: ignore[attr-defined]
+        self.assertEqual(foo["_as"], X("as", 3))
+        self.assertEqual(foo._as, X("as", 3))  # type: ignore[attr-defined]
 
         # add an object which's name conflicts with a method of the class
         foo.append(X("sort", 4))
@@ -147,7 +147,7 @@ class TestNamedItemList(unittest.TestCase):
         self.assertEqual(i, len(foo) - 1)
 
         # make sure that the keys(), values() and items() exist
-        self.assertEqual(set(foo.keys()), {"hello", "world", "hello_2", "as_", "sort_2"})
+        self.assertEqual(set(foo.keys()), {"hello", "world", "hello_2", "_as", "sort_2"})
         self.assertEqual(len(foo.items()), len(foo))
         self.assertEqual(len(foo.values()), len(foo))
 

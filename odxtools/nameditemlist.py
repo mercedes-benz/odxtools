@@ -4,7 +4,7 @@ from keyword import iskeyword
 from typing import (Callable, Collection, Generic, Iterable, List, Optional, Protocol, Tuple,
                     TypeVar, Union, cast, overload, runtime_checkable)
 
-from .exceptions import odxassert, odxraise
+from .exceptions import odxraise
 
 
 @runtime_checkable
@@ -168,7 +168,7 @@ def short_name_as_key(obj: OdxNamed) -> str:
 
     Although short names are almost identical to python identifiers,
     their first character is allowed to be a number. This method
-    prepends an underscore to such such shortnames.
+    prepends an underscore to such shortnames.
     """
     if not isinstance(obj, OdxNamed):
         odxraise()
@@ -176,20 +176,11 @@ def short_name_as_key(obj: OdxNamed) -> str:
     if not isinstance(sn, str):
         odxraise()
 
-    odxassert(
-        sn.isidentifier(),
-        message=("For NamedItemList objects to work properly, "
-                 "all item names must be valid python identifiers."
-                 f"Encountered name '{sn}' which is not an identifier!"),
-    )
-
-    if sn[0].isdigit():
+    # make sure that the name of the item in question:
+    # * is not a python keyword (this would lead to syntax errors)
+    # * does not starts with a digit
+    if sn[0].isdigit() or iskeyword(sn):
         return f"_{sn}"
-
-    # make sure that the name of the item in question is not a
-    # python keyword (this would lead to syntax errors)
-    if iskeyword(sn):
-        return f"{sn}_"
 
     return sn
 
