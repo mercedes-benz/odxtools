@@ -43,10 +43,15 @@ class LengthKeyParameter(ParameterWithDOP):
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 
-    def is_required(self):
+    @property
+    def is_required(self) -> bool:
         return False
 
-    def is_optional(self):
+    @property
+    def is_settable(self) -> bool:
+        # length keys can be explicitly set, but they do not need to
+        # be because they can be implicitly determined by the length
+        # of the corresponding field
         return True
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:

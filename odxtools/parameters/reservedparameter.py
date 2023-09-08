@@ -15,10 +15,12 @@ class ReservedParameter(Parameter):
     def parameter_type(self) -> ParameterType:
         return "RESERVED"
 
-    def is_required(self):
+    @property
+    def is_required(self) -> bool:
         return False
 
-    def is_optional(self):
+    @property
+    def is_settable(self) -> bool:
         return False
 
     @property

@@ -47,10 +47,12 @@ class CodedConstParameter(Parameter):
     def internal_data_type(self) -> DataType:
         return self.diag_coded_type.base_data_type
 
-    def is_required(self):
+    @property
+    def is_required(self) -> bool:
         return False
 
-    def is_optional(self):
+    @property
+    def is_settable(self) -> bool:
         return False
 
     def get_coded_value(self):

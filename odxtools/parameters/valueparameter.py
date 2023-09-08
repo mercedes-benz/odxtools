@@ -47,11 +47,13 @@ class ValueParameter(ParameterWithDOP):
     def physical_default_value(self) -> Optional[AtomicOdxType]:
         return self._physical_default_value
 
+    @property
     def is_required(self) -> bool:
-        return self.physical_default_value is None
+        return self._physical_default_value is None
 
-    def is_optional(self) -> bool:
-        return not self.is_required()
+    @property
+    def is_settable(self) -> bool:
+        return True
 
     def get_coded_value(self, physical_value: Optional[AtomicOdxType] = None):
         if physical_value is not None:

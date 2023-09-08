@@ -13,11 +13,13 @@ class SystemParameter(ParameterWithDOP):
     def parameter_type(self) -> ParameterType:
         return "SYSTEM"
 
-    def is_required(self):
+    @property
+    def is_required(self) -> bool:
         raise NotImplementedError("SystemParameter.is_required is not implemented yet.")
 
-    def is_optional(self):
-        raise NotImplementedError("SystemParameter.is_optional is not implemented yet.")
+    @property
+    def is_settable(self) -> bool:
+        raise NotImplementedError("SystemParameter.is_settable is not implemented yet.")
 
     def get_coded_value(self):
         raise NotImplementedError("Encoding a SystemParameter is not implemented yet.")

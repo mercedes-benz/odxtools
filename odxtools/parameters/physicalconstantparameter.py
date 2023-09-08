@@ -44,10 +44,12 @@ class PhysicalConstantParameter(ParameterWithDOP):
     def physical_constant_value(self) -> ParameterValue:
         return self._physical_constant_value
 
-    def is_required(self):
+    @property
+    def is_required(self) -> bool:
         return False
 
-    def is_optional(self):
+    @property
+    def is_settable(self) -> bool:
         return False
 
     def get_coded_value(self):

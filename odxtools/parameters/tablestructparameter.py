@@ -50,11 +50,13 @@ class TableStructParameter(Parameter):
     def table_key(self) -> TableKeyParameter:
         return self._table_key
 
+    @property
     def is_required(self):
         return True
 
-    def is_optional(self):
-        return False
+    @property
+    def is_settable(self):
+        return True
 
     def get_coded_value(self, physical_value=None):
         raise EncodeError("TableStructParameters cannot be converted to "

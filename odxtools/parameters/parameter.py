@@ -62,13 +62,28 @@ class Parameter(NamedElement, abc.ABC):
     def bit_length(self) -> Optional[int]:
         return None
 
-    @abc.abstractmethod
-    def is_required(self):
-        pass
+    @property
+    def is_required(self) -> bool:
+        """True if the parameter must be explicitly specified when
+        encoding a message.
 
-    @abc.abstractmethod
-    def is_optional(self):
-        pass
+        Required parameters are always settable, and parameters which
+        have a default value are settable but not required to be
+        specified.
+
+        """
+        raise NotImplemented
+
+    @property
+    def is_settable(self) -> bool:
+        """True if the parameter can be specified when encoding a
+        message.
+
+        Required parameters are always settable, and parameters which
+        have a default value are settable but not required to be
+        specified.
+        """
+        raise NotImplemented
 
     @abc.abstractmethod
     def get_coded_value(self):

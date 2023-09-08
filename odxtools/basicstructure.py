@@ -77,7 +77,7 @@ class BasicStructure(DopBase):
     def required_parameters(self) -> List[Parameter]:
         """Return the list of parameters which are required for
         encoding the structure."""
-        return [p for p in self.parameters if p.is_required()]
+        return [p for p in self.parameters if p.is_required]
 
     @property
     def free_parameters(self) -> List[Union[Parameter, "EndOfPduField"]]:  # type: ignore
@@ -96,7 +96,7 @@ class BasicStructure(DopBase):
             if isinstance(param, EndOfPduField):
                 result.append(param)
                 continue
-            elif not param.is_required():
+            elif not param.is_required:
                 continue
             # The user cannot specify MatchingRequestParameters freely!
             elif isinstance(param, MatchingRequestParameter):

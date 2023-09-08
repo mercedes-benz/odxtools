@@ -39,7 +39,7 @@ def _convert_string_to_bytes(string_value):
 
 
 def _validate_string_value(input, parameter):
-    if parameter.is_optional() and input == "":
+    if parameter.is_optional and input == "":
         return True
     elif isinstance(parameter, ParameterWithDOP):
         try:
@@ -63,7 +63,7 @@ def prompt_single_parameter_value(parameter):
                 parameter.short_name,
             "message":
                 f"Value for parameter '{parameter.short_name}' (Type: {parameter.physical_type.base_data_type})"
-                + (f"[optional]" if parameter.is_optional() else ""),
+                + (f"[optional]" if parameter.is_optional else ""),
             # TODO: improve validation
             "validate":
                 lambda x: _validate_string_value(x, parameter),
@@ -81,7 +81,7 @@ def prompt_single_parameter_value(parameter):
             "choices": parameter.get_valid_physical_values(),
         }]
     answer = PI_promt.prompt(param_prompt)
-    if answer.get(parameter.short_name) == "" and parameter.is_optional():
+    if answer.get(parameter.short_name) == "" and parameter.is_optional:
         return None
     elif parameter.physical_type.base_data_type is not None:
         return _convert_string_to_odx_type(
@@ -98,15 +98,13 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
         raise SystemError("This command can only be used in an interactive shell!")
     param_dict = sub_service.parameter_dict()
 
-    # list(filter(lambda p: p.is_required()
-    #                          or p.is_optional(), sub_service.parameters))
     exists_definable_param = False
     for k, param_or_dict in param_dict.items():
         if isinstance(param_or_dict, dict):
             for k, param in param_or_dict.items():
-                if param.is_required() or param.is_optional():
+                if param.is_settable:
                     exists_definable_param = True
-        elif param_or_dict.is_required() or param_or_dict.is_optional():
+        elif param_or_dict.is_settable:
             exists_definable_param = True
 
     param_values = {}
@@ -147,13 +145,12 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
                 )
                 structure_param_values = {}
                 for param_sn, param in param_or_structure.items():
-                    if param.is_required() or param.is_optional():
+                    if param.is_settable:
                         val = prompt_single_parameter_value(param)
                         if val is not None:
                             structure_param_values[param_sn] = val
                 param_values[key] = structure_param_values
-            elif (param_or_structure.is_required() or param_or_structure.is_optional()
-                 ) and param_or_structure.parameter_type != "MATCHING-REQUEST-PARAM":
+            elif param_or_structure.is_settable:
                 # param_or_structure is a parameter
                 val = prompt_single_parameter_value(param_or_structure)
                 if val is not None:
@@ -184,12 +181,13 @@ def encode_message_from_string_values(
                 structured_value = parameter_values.get(parameter_sn)
                 if not isinstance(simple_param, Parameter):
                     continue
-                if simple_param.is_required() and (not isinstance(structured_value, dict) or
-                                                   structured_value.get(simple_param_sn) is None):
+                if simple_param.is_required and (not isinstance(structured_value, dict) or
+                                                 structured_value.get(simple_param_sn) is None):
                     missing_parameter_names.append(f"{parameter_sn} :: {simple_param_sn}")
         else:
-            if parameter.is_required() and parameter_values.get(parameter_sn) is None:
+            if parameter.is_required and parameter_values.get(parameter_sn) is None:
                 missing_parameter_names.append(parameter_sn)
+
     if len(missing_parameter_names) > 0:
         print("The following parameters are required but missing!")
         print(" - " + "\n - ".join(missing_parameter_names))

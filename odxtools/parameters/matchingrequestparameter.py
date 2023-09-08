@@ -20,10 +20,12 @@ class MatchingRequestParameter(Parameter):
     def bit_length(self):
         return 8 * self.byte_length
 
-    def is_required(self):
-        return True
+    @property
+    def is_required(self) -> bool:
+        return False
 
-    def is_optional(self):
+    @property
+    def is_settable(self) -> bool:
         return False
 
     def get_coded_value(self, request_value=None):
