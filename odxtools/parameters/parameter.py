@@ -72,7 +72,7 @@ class Parameter(NamedElement, abc.ABC):
         specified.
 
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     @property
     def is_settable(self) -> bool:
@@ -83,7 +83,7 @@ class Parameter(NamedElement, abc.ABC):
         have a default value are settable but not required to be
         specified.
         """
-        raise NotImplemented
+        raise NotImplementedError
 
     @abc.abstractmethod
     def get_coded_value(self):
