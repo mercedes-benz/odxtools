@@ -144,7 +144,7 @@ class TestDatabase(unittest.TestCase):
 
         pr = service.positive_responses.grudging_forward
         self.assertEqual([x.short_name for x in pr.parameters], ["sid", "num_flips_done"])
-        self.assertEqual([x.short_name for x in pr.required_parameters], ["num_flips_done"])
+        self.assertEqual([x.short_name for x in pr.required_parameters], [])
         self.assertEqual(pr.bit_length, 16)
 
         nr = service.negative_responses.flips_not_done

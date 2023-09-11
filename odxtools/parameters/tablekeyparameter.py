@@ -84,11 +84,15 @@ class TableKeyParameter(Parameter):
     def table_row(self) -> Optional["TableRow"]:
         return self._table_row
 
-    def is_required(self):
-        return self._table_row is None
+    @property
+    def is_required(self) -> bool:
+        # TABLE-KEY parameters can be implicitly determined from the
+        # corresponding TABLE-STRUCT
+        return False
 
-    def is_optional(self):
-        return not self.is_required()
+    @property
+    def is_settable(self) -> bool:
+        return True
 
     def get_coded_value(self, physical_value=None) -> Any:
         key_dop = self.table.key_dop

@@ -11,11 +11,13 @@ class DynamicParameter(Parameter):
     def parameter_type(self) -> ParameterType:
         return "DYNAMIC"
 
-    def is_required(self):
-        raise NotImplementedError("DynamicParameter.is_required is not implemented yet.")
+    @property
+    def is_required(self) -> bool:
+        raise NotImplementedError(".is_required for a DynamicParameter")
 
-    def is_optional(self):
-        raise NotImplementedError("DynamicParameter.is_optional is not implemented yet.")
+    @property
+    def is_settable(self) -> bool:
+        raise NotImplementedError(".is_settable for a DynamicParameter")
 
     def get_coded_value(self):
         raise NotImplementedError("Encoding a DynamicParameter is not implemented yet.")

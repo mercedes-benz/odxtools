@@ -14,11 +14,13 @@ class TableEntryParameter(Parameter):
     def parameter_type(self) -> ParameterType:
         return "TABLE-ENTRY"
 
-    def is_required(self):
+    @property
+    def is_required(self) -> bool:
         raise NotImplementedError("TableKeyParameter.is_required is not implemented yet.")
 
-    def is_optional(self):
-        raise NotImplementedError("TableKeyParameter.is_optional is not implemented yet.")
+    @property
+    def is_settable(self) -> bool:
+        raise NotImplementedError("TableKeyParameter.is_settable is not implemented yet.")
 
     def get_coded_value(self):
         raise NotImplementedError("Encoding a TableKeyParameter is not implemented yet.")
