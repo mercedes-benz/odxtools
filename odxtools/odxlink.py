@@ -12,10 +12,14 @@ class OdxDocFragment:
     doc_name: str
     doc_type: Optional[str]
 
-    def __eq__(self, other) -> bool:
+    def __eq__(self, other: Any) -> bool:
         if other is None:
-            # if the other document fragment is not specified, we treat it as a wildcard...
+            # if the other document fragment is not specified, we
+            # treat it as a wildcard...
             return True
+
+        if not isinstance(other, OdxDocFragment):
+            return False
 
         # the ODX spec says that the doctype can be ignored...
         return self.doc_name == other.doc_name
@@ -59,7 +63,7 @@ class OdxLinkId:
         # i.e. the same OdxId object can be put into all of them.
         return self.local_id == other.local_id
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"OdxLinkId('{self.local_id}')"
 
     @staticmethod
@@ -139,7 +143,7 @@ class OdxLinkRef:
         """Construct an OdxLinkRef for a given OdxLinkId."""
         return OdxLinkRef(odxid.local_id, odxid.doc_fragments)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"OdxLinkRef('{self.ref_id}')"
 
     def __contains__(self, odx_id: OdxLinkId) -> bool:
