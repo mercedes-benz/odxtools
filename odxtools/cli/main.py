@@ -16,7 +16,7 @@ for tool_name in ["list", "browse", "snoop", "find"]:
         tool_modules.append(DummyTool(tool_name, e))
 
 
-def start_cli():
+def start_cli() -> None:
     argparser = argparse.ArgumentParser(
         description="\n".join([
             "Utilities to interact with automotive diagnostic descriptions based on the ODX standard.",
