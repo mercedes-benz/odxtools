@@ -7,7 +7,7 @@
 #
 # pip3 install yapf isort toml
 #
-if ! test -f odxtools/version.py || \
+if ! test -f odxtools/database.py || \
    ! test -d tests || \
    ! test -d examples; then
 
