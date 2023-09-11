@@ -11,7 +11,7 @@ import_failed = False
 
 try:
     import odxtools.cli.browse as browse
-except:
+except ImportError:
     import_failed = True
 
 
