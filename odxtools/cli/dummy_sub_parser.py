@@ -19,7 +19,7 @@ class DummyTool:
         self._odxtools_tool_name_ = tool_name
         self._error = error
 
-    def add_subparser(self, subparser_list: argparse._SubParsersAction) -> None:
+    def add_subparser(self, subparser_list: "argparse._SubParsersAction") -> None:
         subparser_list.add_parser(
             self._odxtools_tool_name_,
             description=f"Tool '{self._odxtools_tool_name_}' is unavailable: {self._error}",
