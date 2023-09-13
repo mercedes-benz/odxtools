@@ -25,7 +25,7 @@ tx_id = int(sys.argv[3], 0)
 payload = sys.argv[4].encode()
 
 
-def isotp_error_handler(error):
+def isotp_error_handler(error: str) -> None:
     print(f"An isotp error occoured: {error}")
 
 

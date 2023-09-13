@@ -14,11 +14,11 @@ class DummyTool:
     should bail out.
     """
 
-    def __init__(self, tool_name, error):
+    def __init__(self, tool_name: str, error: Exception):
         self._odxtools_tool_name_ = tool_name
         self._error = error
 
-    def add_subparser(self, subparser_list):
+    def add_subparser(self, subparser_list: "argparse._SubParsersAction") -> None:
         subparser_list.add_parser(
             self._odxtools_tool_name_,
             description=f"Tool '{self._odxtools_tool_name_}' is unavailable: {self._error}",
@@ -26,7 +26,7 @@ class DummyTool:
             formatter_class=argparse.RawTextHelpFormatter,
         )
 
-    def run(self, args: argparse.Namespace):
+    def run(self, args: argparse.Namespace) -> None:
         print(
             f"Error: Tool '{self._odxtools_tool_name_}' is unavailable: {self._error}",
             file=sys.stderr,

@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Union
 
-from ..odxtypes import DataType
 from .compumethod import CompuMethod, CompuMethodCategory
 
 

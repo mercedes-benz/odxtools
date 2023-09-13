@@ -23,7 +23,7 @@ class MatchingParameter:
     diag_comm_snref: str
     out_param_if: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         odxassert(is_short_name(self.diag_comm_snref))
         odxassert(is_short_name_path(self.out_param_if))
 

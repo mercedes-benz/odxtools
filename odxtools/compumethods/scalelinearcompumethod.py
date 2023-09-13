@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import List
 
 from ..exceptions import odxassert
-from ..globals import logger
 from .compumethod import CompuMethod, CompuMethodCategory
 from .linearcompumethod import LinearCompuMethod
 

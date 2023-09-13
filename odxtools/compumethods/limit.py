@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import NamedTuple, Optional, Union
+from typing import Optional, Union
 from xml.etree import ElementTree
 
 from ..exceptions import odxassert, odxraise, odxrequire

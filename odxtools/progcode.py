@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
-from .exceptions import odxraise, odxrequire
+from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 
 if TYPE_CHECKING:

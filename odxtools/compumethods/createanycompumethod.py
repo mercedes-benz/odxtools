@@ -7,7 +7,6 @@ from ..exceptions import OdxWarning, odxassert, odxraise, odxrequire
 from ..globals import logger
 from ..odxlink import OdxDocFragment
 from ..odxtypes import DataType
-from ..utils import create_description_from_et
 from .compumethod import CompuMethod
 from .compuscale import CompuScale
 from .identicalcompumethod import IdenticalCompuMethod

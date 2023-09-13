@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Optional, Union
+from typing import Union
 
 from ..exceptions import odxassert
 from ..odxtypes import DataType
