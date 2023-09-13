@@ -237,6 +237,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                 long_name="Default Case",
                 description=None,
                 structure_ref="structure_ref",
+                structure_snref=None,
             ),
             cases=[
                 MultiplexerCase(
@@ -246,6 +247,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     lower_limit="1",
                     upper_limit="3",
                     structure_ref="structure_ref",
+                    structure_snref=None,
                 ),
                 MultiplexerCase(
                     short_name="backward_flip",
@@ -254,6 +256,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     lower_limit="1",
                     upper_limit="3",
                     structure_ref="structure_ref",
+                    structure_snref=None,
                 ),
             ],
         )

@@ -1210,6 +1210,7 @@ somersault_muxs = {
                 long_name="Default Case",
                 description=None,
                 structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                structure_snref=None,
             ),
             cases=[
                 MultiplexerCase(
@@ -1219,6 +1220,7 @@ somersault_muxs = {
                     lower_limit="1",
                     upper_limit="3",
                     structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                    structure_snref=None,
                 ),
                 MultiplexerCase(
                     short_name="backward_flip",
@@ -1227,6 +1229,7 @@ somersault_muxs = {
                     lower_limit="1",
                     upper_limit="3",
                     structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
+                    structure_snref=None,
                 ),
             ],
         )
