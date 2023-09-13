@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 
-import sys
 import unittest
 from argparse import Namespace
 

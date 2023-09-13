@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, NamedTuple, Optional, Union
+from typing import List, Optional
 from xml.etree import ElementTree
 
-from ..exceptions import odxrequire
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import create_description_from_et

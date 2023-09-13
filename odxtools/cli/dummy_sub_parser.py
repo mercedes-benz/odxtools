@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 import argparse
 import sys
-from typing import List
 
 
 class DummyTool:

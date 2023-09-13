@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import List, Tuple, Union
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
-from ..globals import logger
 from ..odxtypes import DataType
 from .compumethod import CompuMethod, CompuMethodCategory
 from .limit import IntervalType, Limit
