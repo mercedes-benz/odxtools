@@ -22,6 +22,9 @@
     {%- if mux.default_case.structure_ref is not none %}
     <STRUCTURE-REF ID-REF="{{mux.default_case.structure_ref.ref_id}}"/>
     {%- endif %}
+    {%- if mux.default_case.structure_snref is not none %}
+    <STRUCTURE-SNREF SHORT_NAME="{{mux.default_case.structure_snref}}"/>
+    {%- endif %}
   </DEFAULT-CASE>
   {%- endif %}
   {%- if mux.cases %}
@@ -30,7 +33,12 @@
     <CASE>
       <SHORT-NAME>{{case.short_name}}</SHORT-NAME>
       <LONG-NAME>{{case.long_name}}</LONG-NAME>
+      {%- if case.structure_ref is not none %}
       <STRUCTURE-REF ID-REF="{{case.structure_ref.ref_id}}"/>
+      {%- endif %}
+      {%- if case.structure_snref is not none %}
+      <STRUCTURE-SNREF SHORT_NAME="{{case.structure_snref}}"/>
+      {%- endif %}
       <LOWER-LIMIT>{{case.lower_limit}}</LOWER-LIMIT>
       <UPPER-LIMIT>{{case.upper_limit}}</UPPER-LIMIT>
     </CASE>
