@@ -37,7 +37,6 @@ from odxtools.modification import Modification
 from odxtools.multiplexer import Multiplexer
 from odxtools.multiplexercase import MultiplexerCase
 from odxtools.multiplexerdefaultcase import MultiplexerDefaultCase
-from odxtools.multiplexerswitchkey import MultiplexerSwitchKey
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
@@ -51,6 +50,7 @@ from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.parentref import ParentRef
 from odxtools.physicaldimension import PhysicalDimension
 from odxtools.physicaltype import PhysicalType
+from odxtools.positioneddataobjectproperty import PositionedDataObjectProperty
 from odxtools.progcode import ProgCode
 from odxtools.relateddoc import RelatedDoc
 from odxtools.request import Request
@@ -1200,7 +1200,7 @@ somersault_muxs = {
             is_visible_raw=None,
             sdgs=[],
             byte_position=0,
-            switch_key=MultiplexerSwitchKey(
+            switch_key=PositionedDataObjectProperty(
                 byte_position=0,
                 bit_position=0,
                 dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
@@ -1961,6 +1961,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
     dtc_dops=NamedItemList(),
     structures=NamedItemList(),
     end_of_pdu_fields=NamedItemList(),
+    dynamic_length_fields=NamedItemList(),
     sdgs=[],
 )
 
@@ -2206,6 +2207,7 @@ somersault_assiduous_diaglayer_raw = DiagLayerRaw(
         data_object_props=NamedItemList(),
         structures=NamedItemList(),
         end_of_pdu_fields=NamedItemList(),
+        dynamic_length_fields=NamedItemList(),
         tables=NamedItemList(),
         env_data_descs=NamedItemList(),
         env_datas=NamedItemList(),

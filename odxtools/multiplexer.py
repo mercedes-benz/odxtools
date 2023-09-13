@@ -12,9 +12,9 @@ from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxrequire
 from .multiplexercase import MultiplexerCase
 from .multiplexerdefaultcase import MultiplexerDefaultCase
-from .multiplexerswitchkey import MultiplexerSwitchKey
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
+from .positioneddataobjectproperty import PositionedDataObjectProperty
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ class Multiplexer(DopBase):
     of a switch-key (similar to switch-case statements in programming languages like C or Java)."""
 
     byte_position: int
-    switch_key: MultiplexerSwitchKey
+    switch_key: PositionedDataObjectProperty
     default_case: Optional[MultiplexerDefaultCase]
     cases: List[MultiplexerCase]
 
@@ -38,7 +38,7 @@ class Multiplexer(DopBase):
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
-        switch_key = MultiplexerSwitchKey.from_et(
+        switch_key = PositionedDataObjectProperty.from_et(
             odxrequire(et_element.find("SWITCH-KEY")), doc_frags)
 
         default_case = None
@@ -63,7 +63,7 @@ class Multiplexer(DopBase):
         return None
 
     def _get_case_limits(self, case: MultiplexerCase):
-        key_type = self.switch_key._dop.physical_type.base_data_type
+        key_type = self.switch_key.dop.physical_type.base_data_type
         lower_limit = key_type.make_from(case.lower_limit)
         upper_limit = key_type.make_from(case.upper_limit)
         return lower_limit, upper_limit
@@ -80,7 +80,6 @@ class Multiplexer(DopBase):
             with only one key equal to the desired case""")
 
         case_name, case_value = next(iter(physical_value.items()))
-        key_pos = self.switch_key.byte_position
         case_pos = self.byte_position
 
         for case in self.cases or []:
@@ -92,14 +91,11 @@ class Multiplexer(DopBase):
                     case_bytes = bytes()
 
                 key_value, _ = self._get_case_limits(case)
-                sk_bit_position = self.switch_key.bit_position
-                sk_bit_position = sk_bit_position if sk_bit_position is not None else 0
-                key_bytes = self.switch_key._dop.convert_physical_to_bytes(
-                    key_value, encode_state, sk_bit_position)
+                key_bytes = self.switch_key.convert_physical_to_bytes(key_value, encode_state)
 
-                mux_len = max(len(key_bytes) + key_pos, len(case_bytes) + case_pos)
+                mux_len = max(len(key_bytes), len(case_bytes) + case_pos)
                 mux_bytes = bytearray(mux_len)
-                mux_bytes[key_pos:key_pos + len(key_bytes)] = key_bytes
+                mux_bytes[:len(key_bytes)] = key_bytes
                 mux_bytes[case_pos:case_pos + len(case_bytes)] = case_bytes
 
                 return bytes(mux_bytes)
@@ -111,17 +107,9 @@ class Multiplexer(DopBase):
         if bit_position != 0:
             raise DecodeError("Multiplexer must be aligned, i.e. bit_position=0, but "
                               f"{self.short_name} was passed the bit position {bit_position}")
-        byte_code = decode_state.coded_message[decode_state.next_byte_position:]
-        key_decode_state = DecodeState(
-            coded_message=byte_code[self.switch_key.byte_position:],
-            parameter_values=dict(),
-            next_byte_position=0,
-        )
-        bit_position_int = (
-            self.switch_key.bit_position if self.switch_key.bit_position is not None else 0)
-        key_value, key_next_byte = self.switch_key._dop.convert_bytes_to_physical(
-            key_decode_state, bit_position=bit_position_int)
+        key_value, key_next_byte = self.switch_key.convert_bytes_to_physical(decode_state)
 
+        byte_code = decode_state.coded_message[decode_state.next_byte_position:]
         case_decode_state = DecodeState(
             coded_message=byte_code[self.byte_position:],
             parameter_values=dict(),

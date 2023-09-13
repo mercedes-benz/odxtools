@@ -46,7 +46,12 @@ class ParameterWithDOP(Parameter):
         if self.dop_snref:
             spec = diag_layer.diag_data_dictionary_spec
             self._dop = (
-                spec.data_object_props.get(self.dop_snref) or spec.structures.get(self.dop_snref))
+                spec.end_of_pdu_fields.get(self.dop_snref) or
+                spec.dynamic_length_fields.get(self.dop_snref) or
+                spec.data_object_props.get(self.dop_snref) or spec.structures.get(self.dop_snref) or
+                spec.muxs.get(self.dop_snref) or spec.dtc_dops.get(self.dop_snref) or
+                spec.muxs.get(self.dop_snref) or spec.env_data_descs.get(self.dop_snref) or
+                spec.env_datas.get(self.dop_snref))
 
     @property
     def dop(self) -> Optional[DopBase]:

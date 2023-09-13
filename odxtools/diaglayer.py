@@ -19,6 +19,7 @@ from .diaglayerraw import DiagLayerRaw
 from .diaglayertype import DiagLayerType
 from .diagservice import DiagService
 from .dtcdop import DtcDop
+from .dynamiclengthfield import DynamicLengthField
 from .ecuvariantpattern import EcuVariantPattern
 from .endofpdufield import EndOfPduField
 from .environmentdata import EnvironmentData
@@ -154,47 +155,55 @@ class DiagLayer:
                 sdgs=[])
         ############
 
-        dops = NamedItemList(self._compute_available_data_object_props())
-        tables = NamedItemList(self._compute_available_tables())
-        dtc_dops: NamedItemList[DtcDop]
-        structures: NamedItemList[BasicStructure]
-        end_of_pdu_fields: NamedItemList[EndOfPduField]
-        env_data_descs: NamedItemList[EnvironmentDataDescription]
-        env_datas: NamedItemList[EnvironmentData]
-        muxs: NamedItemList[Multiplexer]
+        dops = NamedItemList(
+            self._compute_available_items(lambda spec: spec.data_object_props,
+                                          lambda ref: ref.not_inherited_dops))
+        structures = NamedItemList(
+            self._compute_available_items(lambda spec: spec.structures,
+                                          lambda ref: ref.not_inherited_dops))
+        dtc_dops = NamedItemList(
+            self._compute_available_items(lambda spec: spec.dtc_dops,
+                                          lambda ref: ref.not_inherited_dops))
+        end_of_pdu_fields = NamedItemList(
+            self._compute_available_items(lambda spec: spec.end_of_pdu_fields,
+                                          lambda ref: ref.not_inherited_dops))
+        dynamic_length_fields = NamedItemList(
+            self._compute_available_items(lambda spec: spec.dynamic_length_fields,
+                                          lambda ref: ref.not_inherited_dops))
+        env_data_descs = NamedItemList(
+            self._compute_available_items(lambda spec: spec.env_data_descs,
+                                          lambda ref: ref.not_inherited_dops))
+        env_datas = NamedItemList(
+            self._compute_available_items(lambda spec: spec.env_datas,
+                                          lambda ref: ref.not_inherited_dops))
+        muxs = NamedItemList(
+            self._compute_available_items(lambda spec: spec.muxs,
+                                          lambda ref: ref.not_inherited_dops))
+        tables = NamedItemList(
+            self._compute_available_items(lambda spec: spec.tables,
+                                          lambda ref: ref.not_inherited_tables))
         ddds_sdgs: List[SpecialDataGroup]
         if self.diag_layer_raw.diag_data_dictionary_spec:
-            dtc_dops = self.diag_layer_raw.diag_data_dictionary_spec.dtc_dops
-            structures = self.diag_layer_raw.diag_data_dictionary_spec.structures
-            end_of_pdu_fields = self.diag_layer_raw.diag_data_dictionary_spec.end_of_pdu_fields
-            env_data_descs = self.diag_layer_raw.diag_data_dictionary_spec.env_data_descs
-            env_datas = self.diag_layer_raw.diag_data_dictionary_spec.env_datas
-            muxs = self.diag_layer_raw.diag_data_dictionary_spec.muxs
             ddds_sdgs = self.diag_layer_raw.diag_data_dictionary_spec.sdgs
         else:
-            dtc_dops = NamedItemList()
-            structures = NamedItemList()
-            end_of_pdu_fields = NamedItemList()
-            env_data_descs = NamedItemList()
-            env_datas = NamedItemList()
-            muxs = NamedItemList()
             ddds_sdgs = []
 
         # create a DiagDataDictionarySpec which includes all the
         # inherited objects. To me, this seems rather inelegant, but
         # hey, it's described like this in the standard.
-        self._diag_data_dictionary_spec = \
-            DiagDataDictionarySpec(
-                data_object_props=dops,
-                dtc_dops=dtc_dops,
-                structures=structures,
-                end_of_pdu_fields=end_of_pdu_fields,
-                tables=tables,
-                env_data_descs=env_data_descs,
-                env_datas=env_datas,
-                muxs=muxs,
-                unit_spec=unit_spec,
-                sdgs=ddds_sdgs)
+        self._diag_data_dictionary_spec = DiagDataDictionarySpec(
+            data_object_props=dops,
+            dtc_dops=dtc_dops,
+            structures=structures,
+            end_of_pdu_fields=end_of_pdu_fields,
+            dynamic_length_fields=dynamic_length_fields,
+            tables=tables,
+            env_data_descs=env_data_descs,
+            env_datas=env_datas,
+            muxs=muxs,
+            unit_spec=unit_spec,
+            sdgs=ddds_sdgs,
+        )
 
         #####
         # compute the communication parameters applicable to the
@@ -457,29 +466,18 @@ class DiagLayer:
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
-    def _compute_available_data_object_props(self) -> Iterable[DataObjectProperty]:
+    def _compute_available_items(
+        self,
+        include: Callable[[DiagDataDictionarySpec], Iterable[T]],
+        exclude: Callable[["ParentRef"], List[str]],
+    ) -> Iterable[T]:
 
-        def get_local_objects_fn(dl):
+        def get_local_objects_fn(dl: "DiagLayer"):
             if dl.diag_layer_raw.diag_data_dictionary_spec is None:
                 return []
-            return dl.diag_layer_raw.diag_data_dictionary_spec.data_object_props
+            return include(dl.diag_layer_raw.diag_data_dictionary_spec)
 
-        def not_inherited_fn(parent_ref):
-            return parent_ref.not_inherited_dops
-
-        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
-
-    def _compute_available_tables(self) -> Iterable[Table]:
-
-        def get_local_objects_fn(dl):
-            if dl.diag_layer_raw.diag_data_dictionary_spec is None:
-                return []
-            return dl.diag_layer_raw.diag_data_dictionary_spec.tables
-
-        def not_inherited_fn(parent_ref):
-            return parent_ref.not_inherited_tables
-
-        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        return self._compute_available_objects(get_local_objects_fn, exclude)
 
     def _compute_available_functional_classes(self) -> Iterable[FunctionalClass]:
 
