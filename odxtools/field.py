@@ -2,11 +2,12 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, List, Optional
 from xml.etree import ElementTree
 
+from .environmentdatadescription import EnvironmentDataDescription
 from .basicstructure import BasicStructure
 from .createsdgs import create_sdgs_from_et
 from .dopbase import DopBase
 from .element import IdentifiableElement
-from .exceptions import odxassert
+from .exceptions import odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from .odxtypes import odxstr_to_bool
 from .utils import dataclass_fields_asdict
@@ -23,6 +24,8 @@ class Field(DopBase):
     env_data_desc_snref: Optional[str]
 
     def __post_init__(self) -> None:
+        self._structure: Optional[BasicStructure] = None
+        self._env_data_desc: Optional[EnvironmentDataDescription] = None
         num_struct_refs = 0 if self.structure_ref is None else 1
         num_struct_refs += 0 if self.structure_snref is None else 1
 
@@ -60,9 +63,9 @@ class Field(DopBase):
             **kwargs)
 
     @property
-    def structure(self) -> "BasicStructure":
+    def structure(self) -> BasicStructure:
         """may be a Structure or a env-data-desc"""
-        return self._structure
+        return odxrequire(self._structure, "EnvironmentDataDescription is not supported")
 
     @property
     def bit_length(self):
@@ -74,17 +77,17 @@ class Field(DopBase):
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         """Recursively resolve any odxlinks references"""
         if self.structure_ref is not None:
-            self._structure = odxlinks.resolve(self.structure_ref)
+            self._structure = odxlinks.resolve(self.structure_ref, BasicStructure)
 
         if self.env_data_desc_ref is not None:
-            self._env_data_desc = odxlinks.resolve(self.env_data_desc_ref)
+            self._env_data_desc = odxlinks.resolve(self.env_data_desc_ref, EnvironmentDataDescription)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         """Recursively resolve any short-name references"""
         if self.structure_snref is not None:
             structures = diag_layer.diag_data_dictionary_spec.structures
-            self._structure = structures[self.structure_snref]
+            self._structure = odxrequire(structures.get(self.structure_snref))
 
         if self.env_data_desc_snref is not None:
             env_data_descs = diag_layer.diag_data_dictionary_spec.env_data_descs
-            self._env_data_desc = env_data_descs[self.env_data_desc_snref]
+            self._env_data_desc = odxrequire(env_data_descs.get(self.env_data_desc_snref))
