@@ -12,9 +12,9 @@ from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxrequire
 from .multiplexercase import MultiplexerCase
 from .multiplexerdefaultcase import MultiplexerDefaultCase
+from .multiplexerswitchkey import MultiplexerSwitchKey
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
-from .positioneddataobjectproperty import PositionedDataObjectProperty
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ class Multiplexer(DopBase):
     of a switch-key (similar to switch-case statements in programming languages like C or Java)."""
 
     byte_position: int
-    switch_key: PositionedDataObjectProperty
+    switch_key: MultiplexerSwitchKey
     default_case: Optional[MultiplexerDefaultCase]
     cases: List[MultiplexerCase]
 
@@ -38,7 +38,7 @@ class Multiplexer(DopBase):
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
-        switch_key = PositionedDataObjectProperty.from_et(
+        switch_key = MultiplexerSwitchKey.from_et(
             odxrequire(et_element.find("SWITCH-KEY")), doc_frags)
 
         default_case = None

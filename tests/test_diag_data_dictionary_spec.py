@@ -12,6 +12,7 @@ from odxtools.environmentdatadescription import EnvironmentDataDescription
 from odxtools.multiplexer import Multiplexer
 from odxtools.multiplexercase import MultiplexerCase
 from odxtools.multiplexerdefaultcase import MultiplexerDefaultCase
+from odxtools.multiplexerswitchkey import MultiplexerSwitchKey
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
@@ -19,7 +20,6 @@ from odxtools.parameters.physicalconstantparameter import PhysicalConstantParame
 from odxtools.parameters.tablekeyparameter import TableKeyParameter
 from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaltype import PhysicalType
-from odxtools.positioneddataobjectproperty import PositionedDataObjectProperty
 from odxtools.standardlengthtype import StandardLengthType
 from odxtools.table import Table
 from odxtools.tablerow import TableRow
@@ -227,7 +227,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             sdgs=[],
             is_visible_raw=None,
             byte_position=0,
-            switch_key=PositionedDataObjectProperty(
+            switch_key=MultiplexerSwitchKey(
                 byte_position=0,
                 bit_position=0,
                 dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),

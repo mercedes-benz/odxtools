@@ -10,7 +10,7 @@ from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
 if TYPE_CHECKING:
-    from diaglayer import DiagLayer
+    from ..diaglayer import DiagLayer
 
 
 @dataclass

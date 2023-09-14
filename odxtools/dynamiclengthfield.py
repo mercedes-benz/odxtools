@@ -4,12 +4,12 @@ from typing import TYPE_CHECKING, Any, Dict, List
 from xml.etree import ElementTree
 
 from .decodestate import DecodeState
+from .determinenumberofitems import DetermineNumberOfItems
 from .encodestate import EncodeState
 from .exceptions import odxrequire
 from .field import Field
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValueDict
-from .positioneddataobjectproperty import PositionedDataObjectProperty
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -20,14 +20,14 @@ if TYPE_CHECKING:
 class DynamicLengthField(Field):
     """Array of structure with length field"""
     offset: int
-    determine_number_of_items: PositionedDataObjectProperty
+    determine_number_of_items: DetermineNumberOfItems
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DynamicLengthField":
         kwargs = dataclass_fields_asdict(Field.from_et(et_element, doc_frags))
         offset = int(odxrequire(et_element.findtext('OFFSET')))
-        determine_number_of_items = PositionedDataObjectProperty.from_et(
+        determine_number_of_items = DetermineNumberOfItems.from_et(
             odxrequire(et_element.find('DETERMINE-NUMBER-OF-ITEMS')),
             doc_frags,
         )

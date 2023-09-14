@@ -1,16 +1,15 @@
 # SPDX-License-Identifier: MIT
 from copy import copy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Optional
+from typing import List, Optional
 from xml.etree import ElementTree
-
-from odxtools.odxlink import OdxDocFragment
 
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import odxassert
 from .field import Field
-from .odxtypes import ParameterValueDict, odxstr_to_bool
+from .odxlink import OdxDocFragment
+from .odxtypes import ParameterValueDict
 from .utils import dataclass_fields_asdict
 
 

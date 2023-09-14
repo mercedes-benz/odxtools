@@ -6,7 +6,7 @@ from xml.etree import ElementTree
 from .exceptions import odxassert, odxraise, odxrequire
 
 if TYPE_CHECKING:
-    from odxtools.parameters.parameter import Parameter
+    from .parameters.parameter import Parameter
 
 
 def bytefield_to_bytearray(bytefield: str) -> bytearray:
