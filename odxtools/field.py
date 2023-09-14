@@ -39,7 +39,7 @@ class Field(DopBase):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Field":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, doc_frags))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
