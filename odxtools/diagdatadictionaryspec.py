@@ -9,6 +9,7 @@ from .createanystructure import create_any_structure_from_et
 from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
 from .dtcdop import DtcDop
+from .dynamiclengthfield import DynamicLengthField
 from .endofpdufield import EndOfPduField
 from .environmentdata import EnvironmentData
 from .environmentdatadescription import EnvironmentDataDescription
@@ -31,6 +32,7 @@ class DiagDataDictionarySpec:
     data_object_props: NamedItemList[DataObjectProperty]
     structures: NamedItemList[BasicStructure]
     end_of_pdu_fields: NamedItemList[EndOfPduField]
+    dynamic_length_fields: NamedItemList[DynamicLengthField]
     tables: NamedItemList[Table]
     env_data_descs: NamedItemList[EnvironmentDataDescription]
     env_datas: NamedItemList[EnvironmentData]
@@ -44,6 +46,7 @@ class DiagDataDictionarySpec:
                 self.data_object_props,
                 self.structures,
                 self.end_of_pdu_fields,
+                self.dynamic_length_fields,
                 self.dtc_dops,
                 self.tables,
             ),)
@@ -65,6 +68,11 @@ class DiagDataDictionarySpec:
         end_of_pdu_fields = [
             EndOfPduField.from_et(eofp_element, doc_frags)
             for eofp_element in et_element.iterfind("END-OF-PDU-FIELDS/END-OF-PDU-FIELD")
+        ]
+
+        dynamic_length_fields = [
+            DynamicLengthField.from_et(dl_element, doc_frags)
+            for dl_element in et_element.iterfind("DYNAMIC-LENGTH-FIELDS/DYNAMIC-LENGTH-FIELD")
         ]
 
         dtc_dops = []
@@ -123,6 +131,7 @@ class DiagDataDictionarySpec:
             data_object_props=NamedItemList(data_object_props),
             structures=NamedItemList(structures),
             end_of_pdu_fields=NamedItemList(end_of_pdu_fields),
+            dynamic_length_fields=NamedItemList(dynamic_length_fields),
             dtc_dops=NamedItemList(dtc_dops),
             unit_spec=unit_spec,
             tables=NamedItemList(tables),
@@ -145,6 +154,7 @@ class DiagDataDictionarySpec:
                 self.sdgs,
                 self.structures,
                 self.end_of_pdu_fields,
+                self.dynamic_length_fields,
                 self.tables,
         ):
             odxlinks.update(obj._build_odxlinks())
@@ -157,8 +167,8 @@ class DiagDataDictionarySpec:
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
 
         for obj in chain(self.data_object_props, self.dtc_dops, self.end_of_pdu_fields,
-                         self.env_data_descs, self.env_datas, self.muxs, self.sdgs, self.structures,
-                         self.tables):
+                         self.dynamic_length_fields, self.env_data_descs, self.env_datas, self.muxs,
+                         self.sdgs, self.structures, self.tables):
             obj._resolve_odxlinks(odxlinks)
 
         if self.unit_spec is not None:
@@ -166,8 +176,8 @@ class DiagDataDictionarySpec:
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         for obj in chain(self.data_object_props, self.dtc_dops, self.end_of_pdu_fields,
-                         self.env_data_descs, self.env_datas, self.muxs, self.sdgs, self.structures,
-                         self.tables):
+                         self.dynamic_length_fields, self.env_data_descs, self.env_datas, self.muxs,
+                         self.sdgs, self.structures, self.tables):
             obj._resolve_snrefs(diag_layer)
 
         if self.unit_spec is not None:

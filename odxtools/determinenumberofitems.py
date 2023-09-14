@@ -8,11 +8,11 @@ from .utils import dataclass_fields_asdict
 
 
 @dataclass
-class MultiplexerSwitchKey(PositionedDataObjectProperty):
+class DetermineNumberOfItems(PositionedDataObjectProperty):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "MultiplexerSwitchKey":
+                doc_frags: List[OdxDocFragment]) -> "DetermineNumberOfItems":
         kwargs = dataclass_fields_asdict(
             PositionedDataObjectProperty.from_et(et_element, doc_frags))
-        return MultiplexerSwitchKey(**kwargs)
+        return DetermineNumberOfItems(**kwargs)

@@ -270,6 +270,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             muxs=NamedItemList([mux]),
             structures=NamedItemList(),
             end_of_pdu_fields=NamedItemList(),
+            dynamic_length_fields=NamedItemList(),
             unit_spec=None,
             sdgs=[],
         )

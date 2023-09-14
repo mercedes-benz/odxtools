@@ -3,11 +3,10 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
-from odxtools.element import IdentifiableElement
-
 from .basicstructure import BasicStructure
 from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
+from .element import IdentifiableElement
 from .exceptions import odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType

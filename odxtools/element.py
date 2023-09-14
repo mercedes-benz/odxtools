@@ -2,11 +2,9 @@ from dataclasses import dataclass
 from typing import List, Optional
 from xml.etree import ElementTree
 
-from odxtools.exceptions import odxrequire
-from odxtools.utils import create_description_from_et
-
+from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkId
-from .utils import dataclass_fields_asdict
+from .utils import create_description_from_et, dataclass_fields_asdict
 
 
 @dataclass
