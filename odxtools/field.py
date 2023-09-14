@@ -80,7 +80,8 @@ class Field(DopBase):
             self._structure = odxlinks.resolve(self.structure_ref, BasicStructure)
 
         if self.env_data_desc_ref is not None:
-            self._env_data_desc = odxlinks.resolve(self.env_data_desc_ref, EnvironmentDataDescription)
+            self._env_data_desc = odxlinks.resolve(self.env_data_desc_ref,
+                                                   EnvironmentDataDescription)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         """Recursively resolve any short-name references"""
