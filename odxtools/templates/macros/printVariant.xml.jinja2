@@ -8,6 +8,7 @@
 {%- import('macros/printFunctionalClass.xml.jinja2') as pfc %}
 {%- import('macros/printStructure.xml.jinja2') as pst %}
 {%- import('macros/printEndOfPdu.xml.jinja2') as peopdu %}
+{%- import('macros/printDynamicLengthField.xml.jinja2') as pdlf %}
 {%- import('macros/printMux.xml.jinja2') as pm %}
 {%- import('macros/printEnvData.xml.jinja2') as ped %}
 {%- import('macros/printEnvDataDesc.xml.jinja2') as pedd %}
@@ -71,6 +72,13 @@
      {{ pst.printStructure(st)|indent(3) }}
      {%- endfor %}
    </STRUCTURES>
+   {%- endif %}
+   {%- if ddds.dynamic_length_fields %}
+   <DYNAMIC-LENGTH-FIELDS>
+     {%- for dlf in ddds.dynamic_length_fields %}
+     {{ pdlf.printDynamicLengthField(dlf)|indent(3) }}
+     {%- endfor %}
+   </DYNAMIC-LENGTH-FIELDS>
    {%- endif %}
    {%- if ddds.end_of_pdu_fields %}
    <END-OF-PDU-FIELDS>
