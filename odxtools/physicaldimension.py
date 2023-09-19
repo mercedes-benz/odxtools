@@ -58,7 +58,7 @@ class PhysicalDimension(IdentifiableElement):
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         oid = et_element.get("OID")
 
-        def read_optional_int(element, name):
+        def read_optional_int(element: ElementTree.Element, name: str) -> int:
             if val_str := element.findtext(name):
                 return int(val_str)
             else:
