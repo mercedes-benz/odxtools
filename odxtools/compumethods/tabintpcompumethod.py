@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import List, Tuple, Union
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
-from ..odxtypes import DataType
+from ..odxtypes import AtomicOdxType, DataType
 from .compumethod import CompuMethod, CompuMethodCategory
 from .limit import IntervalType, Limit
 
@@ -115,7 +115,11 @@ class TabIntpCompuMethod(CompuMethod):
 
         return None
 
-    def convert_physical_to_internal(self, physical_value: Union[int, float]) -> Union[int, float]:
+    def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> AtomicOdxType:
+        if not isinstance(physical_value, (int, float)):
+            raise EncodeError("The type of values of tab-intp compumethods must "
+                              "either int or float")
+
         reference_points = list(zip(self.physical_points, self.internal_points))
         result = self._piecewise_linear_interpolate(physical_value, reference_points)
 
@@ -127,7 +131,11 @@ class TabIntpCompuMethod(CompuMethod):
             odxraise()
         return res
 
-    def convert_internal_to_physical(self, internal_value: Union[int, float]) -> Union[int, float]:
+    def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> AtomicOdxType:
+        if not isinstance(internal_value, (int, float)):
+            raise EncodeError("The internal type of values of tab-intp compumethods must "
+                              "either int or float")
+
         reference_points = list(zip(self.internal_points, self.physical_points))
         result = self._piecewise_linear_interpolate(internal_value, reference_points)
 
@@ -139,10 +147,16 @@ class TabIntpCompuMethod(CompuMethod):
             odxraise()
         return res
 
-    def is_valid_physical_value(self, physical_value: Union[int, float]) -> bool:
+    def is_valid_physical_value(self, physical_value: AtomicOdxType) -> bool:
+        if not isinstance(physical_value, (int, float)):
+            return False
+
         return min(self.physical_points) <= physical_value and physical_value <= max(
             self.physical_points)
 
-    def is_valid_internal_value(self, internal_value: Union[int, float]) -> bool:
+    def is_valid_internal_value(self, internal_value: AtomicOdxType) -> bool:
+        if not isinstance(internal_value, (int, float)):
+            return False
+
         return min(self.internal_points) <= internal_value and internal_value <= max(
             self.internal_points)
