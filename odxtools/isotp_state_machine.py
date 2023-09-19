@@ -5,7 +5,7 @@ import asyncio
 import re
 import sys
 from enum import IntEnum
-from typing import Iterable, List, Optional, Tuple, Union
+from typing import AsyncGenerator, Iterable, List, Optional, TextIO, Tuple, Union
 
 import bitstruct
 import can
@@ -103,7 +103,8 @@ class IsoTpStateMachine:
         else:
             self.on_frame_type_error(telegram_idx, frame_type)
 
-    async def read_telegrams(self, bus):
+    async def read_telegrams(self, bus: Union[can.Bus,
+                                              TextIO]) -> AsyncGenerator[Tuple[int, bytes], None]:
         """This is equivalent to the :py:meth:`file.readlines()` method, but
         it yields ISO-TP telegrams instead of lines.
 
@@ -112,12 +113,12 @@ class IsoTpStateMachine:
         :param bus: Input file or socket of can bus to read the can frames
         """
 
-        if hasattr(bus, "set_filters"):
+        if isinstance(bus, can.Bus):
             # this is a bit of a hack: passing any object which
             # exhibits a set_filters() method is assumed to be a can
             # bus object.
 
-            # creat an "on receive" event for the can bus
+            # create an "on receive" event for the can bus
             rx_event = asyncio.Event()
             loop = asyncio.get_running_loop()
             loop.add_reader(bus, rx_event.set)
@@ -126,11 +127,13 @@ class IsoTpStateMachine:
                 await rx_event.wait()
 
                 msg = bus.recv()
+                if msg is None:
+                    continue
                 for tmp in self.decode_rx_frame(msg.arbitration_id, msg.data):
                     yield tmp
         else:
+            assert isinstance(bus, TextIO)
             # input is a file
-
             while bus:
                 cur_line = bus.readline()
                 if cur_line == "":
@@ -165,14 +168,14 @@ class IsoTpStateMachine:
                         f"Warning: unrecognized frame format: '{cur_line.strip()}'",
                         file=sys.stderr)
 
-    def can_rx_id(self, telegram_idx):
+    def can_rx_id(self, telegram_idx: int) -> int:
         """Given a Telegram index, returns the CAN ID for receiving data.
 
         :raises IndexError: The telegram index is invalid.
         """
         return self._can_rx_ids[telegram_idx]
 
-    def telegram_data(self, telegram_idx):
+    def telegram_data(self, telegram_idx: int) -> Optional[bytes]:
         """Given a Telegram index, returns the data received for this telegram
         so far.
 
@@ -183,31 +186,32 @@ class IsoTpStateMachine:
     ##############
     # Callbacks
     ##############
-    def on_single_frame(self, telegram_idx, frame_payload):
-        """Method called when an ISO-TP message of type "single frame" has been received"""
+    def on_single_frame(self, telegram_idx: int, frame_payload: bytes) -> None:
+        """Callback method for when an ISO-TP message of type "single frame" has been received"""
         pass
 
-    def on_first_frame(self, telegram_idx, frame_payload):
-        """Method called when an ISO-TP message of type "first frame" has been received"""
+    def on_first_frame(self, telegram_idx: int, frame_payload: bytes) -> None:
+        """Callback method for when an ISO-TP message of type "first frame" has been received"""
         pass
 
-    def on_consecutive_frame(self, telegram_idx, segment_idx, frame_payload):
-        """Method called when an ISO-TP message of type "consecutive frame" has been received"""
+    def on_consecutive_frame(self, telegram_idx: int, segment_idx: int,
+                             frame_payload: bytes) -> None:
+        """Callback method for when an ISO-TP message of type "consecutive frame" has been received"""
         pass
 
-    def on_flow_control_frame(self, telegram_idx, flow_control_flag):
+    def on_flow_control_frame(self, telegram_idx: int, flow_control_flag: int) -> None:
         """Method called when an ISO-TP message of type "flow control frame" has been received"""
         pass
 
-    def on_sequence_error(self, telegram_idx, expected_idx, rx_idx):
+    def on_sequence_error(self, telegram_idx: int, expected_idx: int, rx_idx: int) -> None:
         """Method called when a frame with an unexpected sequence index has been received"""
         pass
 
-    def on_frame_type_error(self, telegram_idx, frame_type):
+    def on_frame_type_error(self, telegram_idx: int, frame_type: int) -> None:
         """Method called when a frame exhibiting an unknown frame type has been received"""
         pass
 
-    def on_telegram_complete(self, telegram_idx, telegram_payload):
+    def on_telegram_complete(self, telegram_idx: int, telegram_payload: bytes) -> None:
         """Method called when an ISO-TP telegram has been fully received"""
         pass
 
@@ -218,7 +222,12 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
     receive ISO-TP messages actively instead of just snooping in on
     other people's conversations."""
 
-    def __init__(self, can_bus, can_rx_ids, can_tx_ids, padding_size=0, padding_value=0xAA):
+    def __init__(self,
+                 can_bus: can.Bus,
+                 can_rx_ids: List[int],
+                 can_tx_ids: List[int],
+                 padding_size: int = 0,
+                 padding_value: int = 0xAA):
         self._can_bus = can_bus
 
         if isinstance(can_tx_ids, int):
@@ -230,14 +239,13 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
 
         super().__init__(can_rx_ids)
 
-        assert isinstance(self._can_tx_ids, list)
         assert len(self._can_rx_ids) == len(self._can_tx_ids)
         assert set(self._can_rx_ids).isdisjoint(set(self._can_tx_ids))  # correct?
 
-        self._block_size = [None] * len(self._can_rx_ids)
-        self._frames_received = [None] * len(self._can_rx_ids)
+        self._block_size: List[Optional[int]] = [None] * len(self._can_rx_ids)
+        self._frames_received: List[Optional[int]] = [None] * len(self._can_rx_ids)
 
-    def can_tx_id(self, telegram_idx):
+    def can_tx_id(self, telegram_idx: int) -> int:
         """Given a Telegram index, returns the CAN ID for sending data.
 
         :raises TypeError: No transmission IDs specified (e.g.,
@@ -246,7 +254,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         """
         return self._can_tx_ids[telegram_idx]
 
-    def on_single_frame(self, telegram_idx, frame_payload):
+    def on_single_frame(self, telegram_idx: int, frame_payload: bytes) -> None:
         # send ACK
         #rx_id = self.can_rx_id(telegram_idx)
         tx_id = self.can_tx_id(telegram_idx)
@@ -265,7 +273,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
 
         super().on_first_frame(telegram_idx, frame_payload)
 
-    def on_first_frame(self, telegram_idx, frame_payload):
+    def on_first_frame(self, telegram_idx: int, frame_payload: bytes) -> None:
         # send ACK
         #rx_id = self.can_rx_id(telegram_idx)
         tx_id = self.can_tx_id(telegram_idx)
@@ -287,12 +295,18 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
 
         super().on_first_frame(telegram_idx, frame_payload)
 
-    def on_consecutive_frame(self, telegram_idx, segment_idx, frame_payload):
-        self._frames_received[telegram_idx] += 1
+    def on_consecutive_frame(self, telegram_idx: int, segment_idx: int,
+                             frame_payload: bytes) -> None:
+        num_received = self._frames_received[telegram_idx]
+        if num_received is None:
+            # consequtive frame received before a first frame.
+            # TODO (?): throw an exception
+            return
+        self._frames_received[telegram_idx] = num_received + 1
 
         # send new ACK if necessary
         block_size = self._block_size[telegram_idx]
-        if self._frames_received[telegram_idx] >= block_size:
+        if block_size is not None and num_received >= block_size:
             #rx_id = self.can_rx_id(telegram_idx)
             tx_id = self.can_tx_id(telegram_idx)
             min_separation_time = 0  # ms
@@ -309,7 +323,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
 
         super().on_consecutive_frame(telegram_idx, segment_idx, frame_payload)
 
-    def _send_can_message(self, can_tx_id, payload):
+    def _send_can_message(self, can_tx_id: int, payload: bytes) -> None:
         if len(payload) < self._padding_size:
             payload = bytes(payload) + bytes([self._padding_value] *
                                              (self._padding_size - len(payload)))
