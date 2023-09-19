@@ -24,8 +24,8 @@ class Modification:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}
 
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase):
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         pass
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer"):
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
