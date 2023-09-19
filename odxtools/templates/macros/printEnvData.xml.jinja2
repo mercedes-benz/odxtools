@@ -3,12 +3,12 @@
  # SPDX-License-Identifier: MIT
 -#}
 
+{%- import('macros/printElementID.xml.jinja2') as peid %}
 {%- import('macros/printParam.xml.jinja2') as pparam %}
 
 {%- macro printEnvData(env_data) %}
 <ENV-DATA ID="{{env_data.odx_id.local_id}}">
-    <SHORT-NAME>{{env_data.short_name}}</SHORT-NAME>
-    <LONG-NAME>{{env_data.long_name}}</LONG-NAME>
+    {{ peid.printElementID(env_data)|indent(1) }}
     <PARAMS>
       {%- for param in env_data.parameters %}
       {{pparam.printParam(param) | indent(6, first=True) }}

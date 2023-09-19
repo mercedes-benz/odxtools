@@ -3,12 +3,12 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- macro printElementID(element) -%}
-<SHORT-NAME>{{ element.short_name }}</SHORT-NAME>
-{%- if element.long_name is string and element.long_name.strip() %}
-<LONG-NAME>{{ element.long_name|e }}</LONG-NAME>
+{%- macro printElementID(obj) -%}
+<SHORT-NAME>{{ obj.short_name }}</SHORT-NAME>
+{%- if obj.long_name %}
+<LONG-NAME>{{ obj.long_name|e }}</LONG-NAME>
 {%- endif %}
-{%- if element.description is string and element.description.strip() %}
-<DESC>{{ element.description }}</DESC>
+{%- if obj.description %}
+<DESC>{{ obj.description }}</DESC>
 {%- endif %}
 {%- endmacro -%}

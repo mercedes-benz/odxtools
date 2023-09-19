@@ -3,6 +3,7 @@
  # SPDX-License-Identifier: MIT
 -#}
 
+{%- import('macros/printElementID.xml.jinja2') as peid %}
 {%- import('macros/printDOP.xml.jinja2') as pdop %}
 {%- import('macros/printTable.xml.jinja2') as pt %}
 {%- import('macros/printFunctionalClass.xml.jinja2') as pfc %}
@@ -26,15 +27,7 @@
 {%- macro printVariant(dl) -%}
 {%- set dlr = dl.diag_layer_raw %}
 <{{dlr.variant_type.value}} ID="{{dlr.odx_id.local_id}}">
- <SHORT-NAME>{{dlr.short_name}}</SHORT-NAME>
-{%- if dlr.long_name %}
- <LONG-NAME>{{dlr.long_name|e}}</LONG-NAME>
-{%- endif %}
-{%- if dlr.description is string and dlr.description.strip() %}
- <DESC>
-{{dlr.description}}
- </DESC>
-{%- endif %}
+ {{ peid.printElementID(dlr)|indent(1) }}
 {%- if dlr.functional_classes %}
  <FUNCT-CLASSS>
 {%- for fc in dlr.functional_classes %}

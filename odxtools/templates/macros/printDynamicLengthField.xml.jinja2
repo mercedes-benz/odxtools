@@ -3,10 +3,11 @@
  # SPDX-License-Identifier: MIT
 -#}
 
+{%- import('macros/printElementID.xml.jinja2') as peid %}
+
 {%- macro printDynamicLengthField(dlf) -%}
 <DYNAMIC-LENGTH-FIELD ID="{{dlf.odx_id.local_id}}">
- <SHORT-NAME>{{dlf.short_name}}</SHORT-NAME>
- <LONG-NAME>{{dlf.long_name|e}}</LONG-NAME>
+ {{ peid.printElementID(dlf)|indent(1) }}
  <BASIC-STRUCTURE-REF ID-REF="{{dlf.structure_ref.ref_id}}" />
  <OFFSET>{{dlf.offset}}</OFFSET>
  <DETERMINE-NUMBER-OF-ITEMS>

@@ -3,6 +3,8 @@
  # SPDX-License-Identifier: MIT
 -#}
 
+{%- import('macros/printElementID.xml.jinja2') as peid %}
+
 {%- macro printComplexValue(cv) %}
 <COMPLEX-VALUE>
   {%- for val in cv %}
@@ -41,15 +43,7 @@
           CPTYPE="{{cp.cptype.value}}"
          {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}
           CPUSAGE="{{cp.cpusage.value}}">
- <SHORT-NAME>{{cp.short_name}}</SHORT-NAME>
- {%- if cp.long_name and cp.long_name.strip() %}
- <LONG-NAME>{{cp.long_name|e}}</LONG-NAME>
- {%- endif %}
- {%- if cp.description and cp.description.strip() %}
- <DESC>
- {{cp.description}}
- </DESC>
- {%- endif %}
+ {{ peid.printElementID(cp)|indent(1) }}
  <PHYSICAL-DEFAULT-VALUE>{{cp.physical_default_value}}</PHYSICAL-DEFAULT-VALUE>
  <DATA-OBJECT-PROP-REF ID-REF="{{cp.dop_ref.ref_id}}" />
 </COMPARAM>
@@ -63,15 +57,7 @@
                   CPUSAGE="{{cp.cpusage.value}}"
                  {{make_bool_xml_attrib("ALLOW-MULTIPLE-VALUES", cp.allow_multiple_values_raw)}}
                   {#- #}>
- <SHORT-NAME>{{cp.short_name}}</SHORT-NAME>
- {%- if cp.long_name and cp.long_name.strip() %}
- <LONG-NAME>{{cp.long_name|e}}</LONG-NAME>
- {%- endif %}
- {%- if cp.description and cp.description.strip() %}
- <DESC>
- {{cp.description}}
- </DESC>
- {%- endif %}
+ {{ peid.printElementID(cp)|indent(1) }}
  {%- for sub_cp in cp.comparams %}
  {{- printGenericComparam(sub_cp) | indent(1, first=True) }}
  {%- endfor %}

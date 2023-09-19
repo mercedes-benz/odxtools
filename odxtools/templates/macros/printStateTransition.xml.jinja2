@@ -3,17 +3,11 @@
  # SPDX-License-Identifier: MIT
 -#}
 
+{%- import('macros/printElementID.xml.jinja2') as peid %}
+
 {%- macro printStateTransition(state_transition) -%}
 <STATE-TRANSITION ID="{{state_transition.odx_id.local_id}}">
- <SHORT-NAME>{{state_transition.short_name}}</SHORT-NAME>
- {%- if state_transition.long_name %}
- <LONG-NAME>{{state_transition.long_name}}</LONG-NAME>
- {%- endif %}
- {%- if state_transition.description is string and state_transition.description.strip() %}
- <DESC>
-{{state_transition.description}}
- </DESC>
- {%- endif %}
+ {{ peid.printElementID(state_transition)|indent(1) }}
  <SOURCE-SNREF SHORT-NAME="{{state_transition.source_snref}}" />
  <TARGET-SNREF SHORT-NAME="{{state_transition.target_snref}}" />
 </STATE-TRANSITION>

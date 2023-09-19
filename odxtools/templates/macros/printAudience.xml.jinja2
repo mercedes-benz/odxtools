@@ -3,17 +3,11 @@
  # SPDX-License-Identifier: MIT
 -#}
 
+{%- import('macros/printElementID.xml.jinja2') as peid %}
+
 {%- macro printAdditionalAudience(audience) -%}
 <ADDITIONAL-AUDIENCE ID="{{audience.odx_id.local_id}}">
- <SHORT-NAME>{{audience.short_name}}</SHORT-NAME>
-{%- if audience.long_name %}
- <LONG-NAME>{{audience.long_name}}</LONG-NAME>
-{%- endif %}
-{%- if audience.description is string and audience.description.strip() %}
- <DESC>
-{{audience.description}}
- </DESC>
-{%- endif %}
+ {{ peid.printElementID(audience)|indent(1) }}
 </ADDITIONAL-AUDIENCE>
 {%- endmacro -%}
 
