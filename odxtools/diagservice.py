@@ -96,7 +96,7 @@ class DiagService(IdentifiableElement):
         return self._request
 
     @property
-    def free_parameters(self) -> List[Union[Parameter, "EndOfPduField"]]:  # type: ignore
+    def free_parameters(self) -> List[Parameter]:
         """Return the list of parameters which can be freely specified by
         the user when encoding the service's request.
         """

@@ -22,12 +22,11 @@ from .parameters.valueparameter import ValueParameter
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
-    from .endofpdufield import EndOfPduField
 
 
 @dataclass
 class BasicStructure(DopBase):
-    parameters: NamedItemList[Union[Parameter, "EndOfPduField"]]
+    parameters: NamedItemList[Parameter]
     byte_size: Optional[int]
 
     @property
@@ -80,7 +79,7 @@ class BasicStructure(DopBase):
         return [p for p in self.parameters if p.is_required]
 
     @property
-    def free_parameters(self) -> List[Union[Parameter, "EndOfPduField"]]:  # type: ignore
+    def free_parameters(self) -> List[Parameter]:
         """Return the list of parameters which can be freely specified by
         the user when encoding the structure.
 
@@ -89,17 +88,9 @@ class BasicStructure(DopBase):
         the corresponding request (in the case of responses).
 
         """
-        from .endofpdufield import EndOfPduField
-
-        result: List[Union[Parameter, EndOfPduField]] = []
+        result: List[Parameter] = []
         for param in self.parameters:
-            if isinstance(param, EndOfPduField):
-                result.append(param)
-                continue
-            elif not param.is_required:
-                continue
-            # The user cannot specify MatchingRequestParameters freely!
-            elif isinstance(param, MatchingRequestParameter):
+            if not param.is_settable:
                 continue
             result.append(param)
 
@@ -296,11 +287,7 @@ class BasicStructure(DopBase):
         # sort parameters
         sorted_params: list = list(self.parameters)  # copy list
 
-        def param_sort_key(param: Union[Parameter, "EndOfPduField"]) -> Tuple[int, int]:
-            if not isinstance(param, Parameter):
-                # -> EndOfPduField should come last!
-                return (1000 * 1000, 0)
-
+        def param_sort_key(param: Parameter) -> Tuple[int, int]:
             byte_position_int = param.byte_position if param.byte_position is not None else 0
             bit_position_int = param.bit_position if param.bit_position is not None else 0
             return (byte_position_int, 8 - bit_position_int)
