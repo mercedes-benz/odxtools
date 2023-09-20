@@ -8,7 +8,7 @@ from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
 from .dopbase import DopBase
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert
+from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert, odxraise
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase
 from .odxtypes import ParameterDict, ParameterValueDict
@@ -50,7 +50,8 @@ class BasicStructure(DopBase):
                     byte_position_int = (
                         param.byte_position if param.byte_position is not None else 0)
                     offset = byte_position_int * 8 + bit_position_int
-                offset += param.bit_length
+                bit_length = 0 if param.bit_length is None else param.bit_length
+                offset += bit_length
 
                 length = max(length, offset)
 
