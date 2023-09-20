@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
 import abc
 from keyword import iskeyword
-from typing import (Callable, Collection, Generic, Iterable, List, Optional, Protocol, Tuple,
-                    TypeVar, Union, cast, overload, runtime_checkable)
+from typing import (Callable, Collection, Generic, Iterable, Iterator, List, Optional, Protocol,
+                    Tuple, TypeVar, Union, cast, overload, runtime_checkable)
 
 from .exceptions import odxraise
 
@@ -152,8 +152,7 @@ class ItemList(Generic[T]):
         else:
             return self._names == other._names and self._values == other._values
 
-    # -> Iterator[T]: # <- this leads to *many* type checking errors
-    def __iter__(self):
+    def __iter__(self) -> Iterator[T]:
         return iter(self._values)
 
     def __str__(self) -> str:
