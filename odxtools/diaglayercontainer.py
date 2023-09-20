@@ -87,54 +87,54 @@ class DiagLayerContainer(IdentifiableElement):
 
         if self.admin_data is not None:
             result.update(self.admin_data._build_odxlinks())
-
-        if self.company_datas is not None:
-            for cd in self.company_datas:
-                result.update(cd._build_odxlinks())
-
-        for dl in chain(
-                self.ecu_shared_datas,
-                self.protocols,
-                self.functional_groups,
-                self.base_variants,
-                self.ecu_variants,
-        ):
-            result.update(dl._build_odxlinks())
-
+        for cd in self.company_datas:
+            result.update(cd._build_odxlinks())
         for sdg in self.sdgs:
             result.update(sdg._build_odxlinks())
+
+        for ecu_shared_data in self.ecu_shared_datas:
+            result.update(ecu_shared_data._build_odxlinks())
+        for protocol in self.protocols:
+            result.update(protocol._build_odxlinks())
+        for functional_group in self.functional_groups:
+            result.update(functional_group._build_odxlinks())
+        for base_variant in self.base_variants:
+            result.update(base_variant._build_odxlinks())
+        for ecu_variant in self.ecu_variants:
+            result.update(ecu_variant._build_odxlinks())
 
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         if self.admin_data is not None:
             self.admin_data._resolve_odxlinks(odxlinks)
-
-        if self.company_datas is not None:
-            for cd in self.company_datas:
-                cd._resolve_odxlinks(odxlinks)
-
-        for dl in chain(
-                self.ecu_shared_datas,
-                self.protocols,
-                self.functional_groups,
-                self.base_variants,
-                self.ecu_variants,
-        ):
-            dl._resolve_odxlinks(odxlinks)
-
+        for cd in self.company_datas:
+            cd._resolve_odxlinks(odxlinks)
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
+        for ecu_shared_data in self.ecu_shared_datas:
+            ecu_shared_data._resolve_odxlinks(odxlinks)
+        for protocol in self.protocols:
+            protocol._resolve_odxlinks(odxlinks)
+        for functional_group in self.functional_groups:
+            functional_group._resolve_odxlinks(odxlinks)
+        for base_variant in self.base_variants:
+            base_variant._resolve_odxlinks(odxlinks)
+        for ecu_variant in self.ecu_variants:
+            ecu_variant._resolve_odxlinks(odxlinks)
+
     def _finalize_init(self, odxlinks: OdxLinkDatabase) -> None:
-        for dl in chain(
-                self.ecu_shared_datas,
-                self.protocols,
-                self.functional_groups,
-                self.base_variants,
-                self.ecu_variants,
-        ):
-            dl._finalize_init(odxlinks)
+        for ecu_shared_data in self.ecu_shared_datas:
+            ecu_shared_data._finalize_init(odxlinks)
+        for protocol in self.protocols:
+            protocol._finalize_init(odxlinks)
+        for functional_group in self.functional_groups:
+            functional_group._finalize_init(odxlinks)
+        for base_variant in self.base_variants:
+            base_variant._finalize_init(odxlinks)
+        for ecu_variant in self.ecu_variants:
+            ecu_variant._finalize_init(odxlinks)
 
     @property
     def diag_layers(self):

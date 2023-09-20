@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 from copy import copy
 from dataclasses import dataclass
-from itertools import chain
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
@@ -202,76 +201,106 @@ class DiagLayerRaw(IdentifiableElement):
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
         odxlinks = {self.odx_id: self}
 
-        for obj in chain(
-            [self.admin_data],
-                self.company_datas,
-                self.functional_classes,
-            [self.diag_data_dictionary_spec],
-                self.diag_comms,
-                self.requests,
-                self.positive_responses,
-                self.negative_responses,
-                self.global_negative_responses,
-                self.state_charts,
-                self.additional_audiences,
-                self.sdgs,
-                self.parent_refs,
-                self.communication_parameters,
-        ):
-            # the diag_comms may contain references.
-            if obj is None or isinstance(obj, OdxLinkRef):
-                continue
+        if self.admin_data is not None:
+            odxlinks.update(self.admin_data._build_odxlinks())
+        if self.diag_data_dictionary_spec is not None:
+            odxlinks.update(self.diag_data_dictionary_spec._build_odxlinks())
 
-            odxlinks.update(obj._build_odxlinks())
+        for company_data in self.company_datas:
+            odxlinks.update(company_data._build_odxlinks())
+        for functional_class in self.functional_classes:
+            odxlinks.update(functional_class._build_odxlinks())
+        for diag_comm in self.diag_comms:
+            if isinstance(diag_comm, OdxLinkRef):
+                continue
+            odxlinks.update(diag_comm._build_odxlinks())
+        for request in self.requests:
+            odxlinks.update(request._build_odxlinks())
+        for positive_response in self.positive_responses:
+            odxlinks.update(positive_response._build_odxlinks())
+        for negative_response in self.negative_responses:
+            odxlinks.update(negative_response._build_odxlinks())
+        for global_negative_response in self.global_negative_responses:
+            odxlinks.update(global_negative_response._build_odxlinks())
+        for state_chart in self.state_charts:
+            odxlinks.update(state_chart._build_odxlinks())
+        for additional_audience in self.additional_audiences:
+            odxlinks.update(additional_audience._build_odxlinks())
+        for sdg in self.sdgs:
+            odxlinks.update(sdg._build_odxlinks())
+        for parent_ref in self.parent_refs:
+            odxlinks.update(parent_ref._build_odxlinks())
+        for communication_parameter in self.communication_parameters:
+            odxlinks.update(communication_parameter._build_odxlinks())
 
         return odxlinks
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         """Recursively resolve all references."""
 
-        # do reference resolution for the objects that do not use
-        # short name references
-        for obj in chain(
-            [self.admin_data],
-                self.company_datas,
-                self.functional_classes,
-            [self.diag_data_dictionary_spec],
-                self.diag_comms,
-                self.requests,
-                self.positive_responses,
-                self.negative_responses,
-                self.global_negative_responses,
-                self.state_charts,
-                self.additional_audiences,
-                self.sdgs,
-                self.parent_refs,
-                self.communication_parameters,
-        ):
-            if obj is None or isinstance(obj, OdxLinkRef):
-                continue
+        # do ODXLINK reference resolution
+        if self.admin_data is not None:
+            self.admin_data._resolve_odxlinks(odxlinks)
+        if self.diag_data_dictionary_spec is not None:
+            self.diag_data_dictionary_spec._resolve_odxlinks(odxlinks)
 
-            obj._resolve_odxlinks(odxlinks)
+        for company_data in self.company_datas:
+            company_data._resolve_odxlinks(odxlinks)
+        for functional_class in self.functional_classes:
+            functional_class._resolve_odxlinks(odxlinks)
+        for diag_comm in self.diag_comms:
+            if isinstance(diag_comm, OdxLinkRef):
+                continue
+            diag_comm._resolve_odxlinks(odxlinks)
+        for request in self.requests:
+            request._resolve_odxlinks(odxlinks)
+        for positive_response in self.positive_responses:
+            positive_response._resolve_odxlinks(odxlinks)
+        for negative_response in self.negative_responses:
+            negative_response._resolve_odxlinks(odxlinks)
+        for global_negative_response in self.global_negative_responses:
+            global_negative_response._resolve_odxlinks(odxlinks)
+        for state_chart in self.state_charts:
+            state_chart._resolve_odxlinks(odxlinks)
+        for additional_audience in self.additional_audiences:
+            additional_audience._resolve_odxlinks(odxlinks)
+        for sdg in self.sdgs:
+            sdg._resolve_odxlinks(odxlinks)
+        for parent_ref in self.parent_refs:
+            parent_ref._resolve_odxlinks(odxlinks)
+        for communication_parameter in self.communication_parameters:
+            communication_parameter._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        # do reference resolution for the objects that may use short name
-        # references
-        for obj in chain(
-            [self.admin_data],
-                self.company_datas,
-                self.functional_classes,
-            [self.diag_data_dictionary_spec],
-                self.diag_comms,
-                self.requests,
-                self.positive_responses,
-                self.negative_responses,
-                self.global_negative_responses,
-                self.state_charts,
-                self.additional_audiences,
-                self.sdgs,
-                self.parent_refs,
-                self.communication_parameters,
-        ):
-            if obj is None or isinstance(obj, OdxLinkRef):
-                continue
+        # do short-name reference resolution
+        if self.admin_data is not None:
+            self.admin_data._resolve_snrefs(diag_layer)
+        if self.diag_data_dictionary_spec is not None:
+            self.diag_data_dictionary_spec._resolve_snrefs(diag_layer)
 
-            obj._resolve_snrefs(diag_layer)
+        for company_data in self.company_datas:
+            company_data._resolve_snrefs(diag_layer)
+        for functional_classe in self.functional_classes:
+            functional_classe._resolve_snrefs(diag_layer)
+        for diag_comm in self.diag_comms:
+            if isinstance(diag_comm, OdxLinkRef):
+                continue
+            diag_comm._resolve_snrefs(diag_layer)
+        for request in self.requests:
+            request._resolve_snrefs(diag_layer)
+        for positive_response in self.positive_responses:
+            positive_response._resolve_snrefs(diag_layer)
+        for negative_response in self.negative_responses:
+            negative_response._resolve_snrefs(diag_layer)
+        for global_negative_response in self.global_negative_responses:
+            global_negative_response._resolve_snrefs(diag_layer)
+        for state_chart in self.state_charts:
+            state_chart._resolve_snrefs(diag_layer)
+        for additional_audience in self.additional_audiences:
+            additional_audience._resolve_snrefs(diag_layer)
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(diag_layer)
+        for parent_ref in self.parent_refs:
+            parent_ref._resolve_snrefs(diag_layer)
+        for communication_parameter in self.communication_parameters:
+            communication_parameter._resolve_snrefs(diag_layer)

@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from itertools import chain
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
 from xml.etree import ElementTree
 

@@ -145,19 +145,26 @@ class DiagDataDictionarySpec:
         # note that DataDictionarySpec objects do not exhibit an ODXLINK id.
         odxlinks = {}
 
-        for obj in chain(
-                self.data_object_props,
-                self.dtc_dops,
-                self.env_data_descs,
-                self.env_datas,
-                self.muxs,
-                self.sdgs,
-                self.structures,
-                self.end_of_pdu_fields,
-                self.dynamic_length_fields,
-                self.tables,
-        ):
-            odxlinks.update(obj._build_odxlinks())
+        for data_object_prop in self.data_object_props:
+            odxlinks.update(data_object_prop._build_odxlinks())
+        for dtc_dop in self.dtc_dops:
+            odxlinks.update(dtc_dop._build_odxlinks())
+        for env_data_desc in self.env_data_descs:
+            odxlinks.update(env_data_desc._build_odxlinks())
+        for env_data in self.env_datas:
+            odxlinks.update(env_data._build_odxlinks())
+        for mux in self.muxs:
+            odxlinks.update(mux._build_odxlinks())
+        for sdg in self.sdgs:
+            odxlinks.update(sdg._build_odxlinks())
+        for structure in self.structures:
+            odxlinks.update(structure._build_odxlinks())
+        for dynamic_length_field in self.dynamic_length_fields:
+            odxlinks.update(dynamic_length_field._build_odxlinks())
+        for end_of_pdu_field in self.end_of_pdu_fields:
+            odxlinks.update(end_of_pdu_field._build_odxlinks())
+        for table in self.tables:
+            odxlinks.update(table._build_odxlinks())
 
         if self.unit_spec is not None:
             odxlinks.update(self.unit_spec._build_odxlinks())
@@ -165,20 +172,51 @@ class DiagDataDictionarySpec:
         return odxlinks
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-
-        for obj in chain(self.data_object_props, self.dtc_dops, self.end_of_pdu_fields,
-                         self.dynamic_length_fields, self.env_data_descs, self.env_datas, self.muxs,
-                         self.sdgs, self.structures, self.tables):
-            obj._resolve_odxlinks(odxlinks)
+        for data_object_prop in self.data_object_props:
+            data_object_prop._resolve_odxlinks(odxlinks)
+        for dtc_dop in self.dtc_dops:
+            dtc_dop._resolve_odxlinks(odxlinks)
+        for dynamic_length_field in self.dynamic_length_fields:
+            dynamic_length_field._resolve_odxlinks(odxlinks)
+        for end_of_pdu_field in self.end_of_pdu_fields:
+            end_of_pdu_field._resolve_odxlinks(odxlinks)
+        for env_data_desc in self.env_data_descs:
+            env_data_desc._resolve_odxlinks(odxlinks)
+        for env_data in self.env_datas:
+            env_data._resolve_odxlinks(odxlinks)
+        for mux in self.muxs:
+            mux._resolve_odxlinks(odxlinks)
+        for sdg in self.sdgs:
+            sdg._resolve_odxlinks(odxlinks)
+        for structure in self.structures:
+            structure._resolve_odxlinks(odxlinks)
+        for table in self.tables:
+            table._resolve_odxlinks(odxlinks)
 
         if self.unit_spec is not None:
             self.unit_spec._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        for obj in chain(self.data_object_props, self.dtc_dops, self.end_of_pdu_fields,
-                         self.dynamic_length_fields, self.env_data_descs, self.env_datas, self.muxs,
-                         self.sdgs, self.structures, self.tables):
-            obj._resolve_snrefs(diag_layer)
+        for data_object_prop in self.data_object_props:
+            data_object_prop._resolve_snrefs(diag_layer)
+        for dtc_dop in self.dtc_dops:
+            dtc_dop._resolve_snrefs(diag_layer)
+        for dynamic_length_field in self.dynamic_length_fields:
+            dynamic_length_field._resolve_snrefs(diag_layer)
+        for end_of_pdu_field in self.end_of_pdu_fields:
+            end_of_pdu_field._resolve_snrefs(diag_layer)
+        for env_data_desc in self.env_data_descs:
+            env_data_desc._resolve_snrefs(diag_layer)
+        for env_data in self.env_datas:
+            env_data._resolve_snrefs(diag_layer)
+        for mux in self.muxs:
+            mux._resolve_snrefs(diag_layer)
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(diag_layer)
+        for structure in self.structures:
+            structure._resolve_snrefs(diag_layer)
+        for table in self.tables:
+            table._resolve_snrefs(diag_layer)
 
         if self.unit_spec is not None:
             self.unit_spec._resolve_snrefs(diag_layer)
