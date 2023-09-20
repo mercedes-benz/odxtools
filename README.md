@@ -1,9 +1,11 @@
 <!-- SPDX-License-Identifier: MIT -->
-# odxtools
+# ODXTOOLS
 
-`odxtools` is a set of utilities for working with diagnostic
-descriptions of automotive electronic control units using the data
-model and the associated technologies of the ODX standard.
+'odxtools' is a collection of tools that facilitate the manipulation of diagnostic descriptions of electronic control units in the automotive industry. These tools employ the data model and associated technologies of the ODX standard.
+
+
+
+
 
 [ODX](https://de.wikipedia.org/wiki/ODX) stands for "Open Diagnostic
 data eXchange" and is primarily an XML based file format to describe
