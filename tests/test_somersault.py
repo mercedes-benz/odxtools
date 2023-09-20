@@ -167,7 +167,8 @@ class TestDecode(unittest.TestCase):
         m = messages[0]
         self.assertEqual(m.coded_message, bytes([0x03, 0x45]))
         self.assertEqual(m.service, odxdb.ecus.somersault_assiduous.services.headstand)
-        self.assertEqual(m.structure, odxdb.ecus.somersault_assiduous.services.headstand.request)
+        self.assertEqual(m.coding_object,
+                         odxdb.ecus.somersault_assiduous.services.headstand.request)
         self.assertEqual(m.param_dict, {"sid": 0x03, "duration": 0x45})
 
     def test_decode_global_negative_response(self):
@@ -271,7 +272,7 @@ class TestDecode(unittest.TestCase):
         m = messages[0]
         self.assertEqual(m.coded_message, bytes([0xBB, 0x21, 0x02]))
         self.assertEqual(m.service, odxdb.ecus.somersault_assiduous.services.do_backward_flips)
-        self.assertEqual(m.structure,
+        self.assertEqual(m.coding_object,
                          odxdb.ecus.somersault_assiduous.services.do_backward_flips.request)
         self.assertEqual(m.param_dict, {
             "sid": 0xBB,
@@ -322,7 +323,7 @@ class TestDecode(unittest.TestCase):
         )
         m = messages[0]
         self.assertEqual(m.coded_message, bytes([0xFA, 0x03]))
-        self.assertEqual(m.structure, pos_response)
+        self.assertEqual(m.coding_object, pos_response)
         self.assertEqual(m.param_dict, {"sid": 0xFA, "num_flips_done": bytearray([0x03])})
 
 

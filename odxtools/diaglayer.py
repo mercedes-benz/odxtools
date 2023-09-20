@@ -958,7 +958,7 @@ class DiagLayer:
                             Message(
                                 coded_message=message,
                                 service=service,
-                                structure=gnr,
+                                coding_object=gnr,
                                 param_dict=decoded_gnr))
                     except DecodeError:
                         pass

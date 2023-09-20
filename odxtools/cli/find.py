@@ -25,9 +25,9 @@ def get_display_value(v, _param):
 
 def print_decoded_message(service: DiagService, message: bytes):
     decoded = service.decode_message(message)
-    print(f"\nDecoded {decoded.structure}:")
+    print(f"\nDecoded {decoded.coding_object}:")
     for k, v in decoded.param_dict.items():
-        param = decoded.structure.parameter_dict()[k]
+        param = decoded.coding_object.parameter_dict()[k]
         print(f"\t{k}: {get_display_value(v, param)}")
     pass
 

@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from .odxtypes import ParameterValue, ParameterValueDict
 
 if TYPE_CHECKING:
     from .diagservice import DiagService
-    from .structure import Structure
+    from .request import Request
+    from .response import Response
 
 
 @dataclass
@@ -21,7 +22,7 @@ class Message:
 
     coded_message: bytes
     service: "DiagService"
-    structure: "Structure"
+    coding_object: Union["Request", "Response"]
     param_dict: ParameterValueDict
 
     def __getitem__(self, key: str) -> ParameterValue:

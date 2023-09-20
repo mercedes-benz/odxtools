@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
+from itertools import chain
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
 from xml.etree import ElementTree
 
@@ -112,11 +113,11 @@ class DiagService(IdentifiableElement):
         self.request.print_free_parameters_info()
 
     @property
-    def positive_responses(self) -> Optional[NamedItemList[Response]]:
+    def positive_responses(self) -> NamedItemList[Response]:
         return self._positive_responses
 
     @property
-    def negative_responses(self) -> Optional[NamedItemList[Response]]:
+    def negative_responses(self) -> NamedItemList[Response]:
         return self._negative_responses
 
     @property
@@ -174,29 +175,31 @@ class DiagService(IdentifiableElement):
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)
 
-    def decode_message(self, message: bytes) -> Message:
+    def decode_message(self, raw_message: bytes) -> Message:
+        request_prefix = bytes()
+        candidate_coding_objects: List[Union[Request, Response]] = [
+            *self.positive_responses, *self.negative_responses
+        ]
+        if self.request is not None:
+            request_prefix = self.request.coded_const_prefix()
+            candidate_coding_objects.append(self.request)
 
-        # Check if message is a request or positive or negative response
-        interpretable_message_types = []
+        coding_objects: List[Union[Request, Response]] = []
+        for candidate_coding_object in candidate_coding_objects:
+            prefix = candidate_coding_object.coded_const_prefix(request_prefix=request_prefix)
+            if len(raw_message) >= len(prefix) and prefix == raw_message[:len(prefix)]:
+                coding_objects.append(candidate_coding_object)
 
-        if (self.request is None or self.positive_responses is None or
-                self.negative_responses is None):
-            raise RuntimeError("References couldn't be resolved or have not been resolved yet."
-                               " Try calling `database.resolve_odxlinks()`.")
-
-        for message_type in [self.request, *self.positive_responses, *self.negative_responses]:
-            prefix = message_type.coded_const_prefix(
-                request_prefix=self.request.coded_const_prefix())
-            if all(b == message[i] for (i, b) in enumerate(prefix)):
-                interpretable_message_types.append(message_type)
-
-        if len(interpretable_message_types) != 1:
+        if len(coding_objects) != 1:
             raise DecodeError(
-                f"The service {self.short_name} cannot decode the message {message.hex()}")
-        message_type = interpretable_message_types[0]
-        param_dict = message_type.decode(message)
+                f"The service {self.short_name} cannot decode the message {raw_message.hex()}")
+        coding_object = coding_objects[0]
+        param_dict = coding_object.decode(raw_message)
         return Message(
-            coded_message=message, service=self, structure=message_type, param_dict=param_dict)
+            coded_message=raw_message,
+            service=self,
+            coding_object=coding_object,
+            param_dict=param_dict)
 
     def encode_request(self, **params):
         """
