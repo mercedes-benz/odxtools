@@ -1,0 +1,22 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementID.xml.jinja2') as peid %}
+
+{%- macro printDynamicLengthField(dlf) -%}
+<DYNAMIC-LENGTH-FIELD ID="{{dlf.odx_id.local_id}}">
+ {{ peid.printElementID(dlf)|indent(1) }}
+ <BASIC-STRUCTURE-REF ID-REF="{{dlf.structure_ref.ref_id}}" />
+ <OFFSET>{{dlf.offset}}</OFFSET>
+ <DETERMINE-NUMBER-OF-ITEMS>
+   {%- set dni = dlf.determine_number_of_items %}
+   <BYTE-POSITION>{{dni.byte_position}}</BYTE-POSITION>
+   {%- if dni.bit_position is not none %}
+   <BIT-POSITION>{{dni.bit_position}}</BIT-POSITION>
+   {%- endif %}
+   <DATA-OBJECT-PROP-REF ID-REF="{{dni.dop_ref.ref_id}}" />
+ </DETERMINE-NUMBER-OF-ITEMS>
+</DYNAMIC-LENGTH-FIELD>
+{%- endmacro -%}

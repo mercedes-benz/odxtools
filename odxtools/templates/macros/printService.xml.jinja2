@@ -3,6 +3,7 @@
  # SPDX-License-Identifier: MIT
 -#}
 
+{%- import('macros/printElementID.xml.jinja2') as peid %}
 {%- import('macros/printAdminData.xml.jinja2') as pad %}
 {%- import('macros/printAudience.xml.jinja2') as paud %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
@@ -14,15 +15,7 @@
 {%-  set semattrib = " SEMANTIC=\"UNKNOWN\"" -%}
 {%- endif -%}
 <DIAG-SERVICE ID="{{service.odx_id.local_id}}" {{semattrib}}>
- <SHORT-NAME>{{service.short_name}}</SHORT-NAME>
-{%- if service.long_name and service.long_name.strip() %}
- <LONG-NAME>{{service.long_name|e}}</LONG-NAME>
-{%- endif %}
-{%- if service.description and service.description.strip() %}
- <DESC>
- {{service.description}}
- </DESC>
-{%- endif %}
+ {{ peid.printElementID(service)|indent(1) }}
  {%- if service.admin_data %}
  {{- pad.printAdminData(service.admin_data)|indent(1, first=True) }}
  {%- endif %}

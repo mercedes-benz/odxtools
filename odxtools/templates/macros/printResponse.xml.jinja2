@@ -3,20 +3,13 @@
  # SPDX-License-Identifier: MIT
 -#}
 
+{%- import('macros/printElementID.xml.jinja2') as peid %}
 {%- import('macros/printParam.xml.jinja2') as pp %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printResponse(resp, tag_name="POS-RESPONSE") -%}
 <{{tag_name}} ID="{{resp.odx_id.local_id}}">
- <SHORT-NAME>{{resp.short_name}}</SHORT-NAME>
-{%- if resp.long_name %}
- <LONG-NAME>{{resp.long_name|e}}</LONG-NAME>
-{%- endif %}
-{%- if resp.description and resp.description.strip() %}
- <DESC>
- {{resp.description}}
- </DESC>
-{%- endif %}
+ {{ peid.printElementID(resp)|indent(1) }}
 {%- if resp.parameters %}
  <PARAMS>
 {%- for param in resp.parameters -%}

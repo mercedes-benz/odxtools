@@ -3,6 +3,7 @@
  # SPDX-License-Identifier: MIT
 -#}
 
+{%- import('macros/printElementID.xml.jinja2') as peid %}
 {%- import('macros/printDOP.xml.jinja2') as pdop %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
@@ -19,13 +20,7 @@
 {%- else %}
 <PARAM {{semattrib}} xsi:type="{{param.parameter_type}}">
 {%- endif%}
- <SHORT-NAME>{{param.short_name}}</SHORT-NAME>
-{%- if param.long_name %}
- <LONG-NAME>{{param.long_name|e}}</LONG-NAME>
-{%- endif %}
-{%- if param.description %}
- <DESC>{{param.description}}</DESC>
-{%- endif %}
+ {{ peid.printElementID(param)|indent(1) }}
  {{- psd.printSpecialDataGroups(param.sdgs)|indent(1, first=True) }}
 {%- if param.byte_position is not none %}
  <BYTE-POSITION>{{param.byte_position}}</BYTE-POSITION>

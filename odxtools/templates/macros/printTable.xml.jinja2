@@ -3,18 +3,13 @@
  # SPDX-License-Identifier: MIT
 -#}
 
+{%- import('macros/printElementID.xml.jinja2') as peid %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printTable(table) %}
 <TABLE ID="{{table.odx_id.local_id}}"
        {{-make_xml_attrib("SEMANTIC", table.semantic)}}>
- <SHORT-NAME>{{table.short_name}}</SHORT-NAME>
-{%- if table.long_name %}
-  <LONG-NAME>{{table.long_name|e}}</LONG-NAME>
-{%- endif %}
-{%- if table.description %}
-  <DESC>{{table.description}}</DESC>
-{%- endif %}
+ {{ peid.printElementID(table)|indent(1) }}
 {%- if table.key_dop_ref %}
  <KEY-DOP-REF ID-REF="{{ table.key_dop_ref.ref_id }}" />
 {%- endif %}
