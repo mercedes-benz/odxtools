@@ -6,7 +6,6 @@ from .environmentdatadescription import EnvironmentDataDescription
 from .basicstructure import BasicStructure
 from .createsdgs import create_sdgs_from_et
 from .dopbase import DopBase
-from .element import IdentifiableElement
 from .exceptions import odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from .odxtypes import odxstr_to_bool

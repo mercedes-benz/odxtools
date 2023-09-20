@@ -2,13 +2,13 @@
 import math
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Tuple
 
 from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
 from .dopbase import DopBase
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert, odxraise
+from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase
 from .odxtypes import ParameterDict, ParameterValueDict

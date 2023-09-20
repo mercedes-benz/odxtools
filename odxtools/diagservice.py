@@ -19,7 +19,6 @@ from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
-    from .endofpdufield import EndOfPduField
 
 
 @dataclass
