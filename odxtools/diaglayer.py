@@ -897,7 +897,9 @@ class DiagLayer:
             # global negative responses. (I.e., one for each
             # service. This can be avoided by specifying the
             # corresponding request for `decode_response()`.)
-            request_prefix = s.request.coded_const_prefix()
+            request_prefix = bytes()
+            if s.request is not None:
+                request_prefix = s.request.coded_const_prefix()
             prefixes = [request_prefix]
             prefixes += [
                 x.coded_const_prefix(request_prefix=request_prefix) for x in chain(
