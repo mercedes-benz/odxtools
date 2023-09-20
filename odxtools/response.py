@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from .basicstructure import BasicStructure
+from .parameters.matchingrequestparameter import MatchingRequestParameter
 
 
 @dataclass
@@ -11,9 +12,11 @@ class Response(BasicStructure):
 
     def encode(self, coded_request: Optional[bytes] = None, **params) -> bytes:
         if coded_request is not None:
-            # Extract MATCHING-REQUEST-PARAMs from the coded request
+            # Extract MATCHING-REQUEST-PARAMs from the coded
+            # request. TODO: this should be done by
+            # MatchingRequestParam itself!
             for param in self.parameters:
-                if param.parameter_type == "MATCHING-REQUEST-PARAM":
+                if isinstance(param, MatchingRequestParameter):
                     byte_pos = param.request_byte_position
                     byte_length = param.byte_length
 
