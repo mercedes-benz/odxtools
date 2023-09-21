@@ -50,8 +50,9 @@ class BasicStructure(DopBase):
                     byte_position_int = (
                         param.byte_position if param.byte_position is not None else 0)
                     offset = byte_position_int * 8 + bit_position_int
-                bit_length = 0 if param.bit_length is None else param.bit_length
-                offset += bit_length
+                if param.bit_length is None:
+                    return None
+                offset += param.bit_length
 
                 length = max(length, offset)
 
