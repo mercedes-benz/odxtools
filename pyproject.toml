@@ -81,7 +81,6 @@ write_to = "odxtools/version.py"
 
 exclude = [
 	'build',
-	'.*version\.py',
 ]
 
 ignore_missing_imports = true
