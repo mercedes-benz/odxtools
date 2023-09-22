@@ -142,9 +142,8 @@ class TestNamedItemList(unittest.TestCase):
         self.assertEqual(foo.get("dunno", X("woho!", 0)), X("woho!", 0))
 
         # ensure that we can iterate over NamedItemList objects
-        for i, x in enumerate(foo):
+        for x in foo:
             self.assertTrue(x in foo)
-        self.assertEqual(i, len(foo) - 1)
 
         # make sure that the keys(), values() and items() exist
         self.assertEqual(set(foo.keys()), {"hello", "world", "hello_2", "_as", "sort_2"})

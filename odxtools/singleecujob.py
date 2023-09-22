@@ -71,7 +71,7 @@ class SingleEcuJob(IdentifiableElement):
 
     @property
     def is_mandatory(self):
-        return self.is_mandatory_raw == True
+        return self.is_mandatory_raw is True
 
     @property
     def is_executable(self):
@@ -79,7 +79,7 @@ class SingleEcuJob(IdentifiableElement):
 
     @property
     def is_final(self):
-        return self.is_final_raw == True
+        return self.is_final_raw is True
 
     def __post_init__(self) -> None:
         if not self.functional_class_refs:

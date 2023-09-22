@@ -32,7 +32,7 @@ class ComplexComparam(BaseComparam):
 
     @property
     def allow_multiple_values(self) -> bool:
-        return self.allow_multiple_values_raw == True
+        return self.allow_multiple_values_raw is True
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,

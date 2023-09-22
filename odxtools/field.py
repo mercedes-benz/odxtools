@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, List, Optional
 from xml.etree import ElementTree
 
-from .environmentdatadescription import EnvironmentDataDescription
 from .basicstructure import BasicStructure
 from .createsdgs import create_sdgs_from_et
 from .dopbase import DopBase
+from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from .odxtypes import odxstr_to_bool

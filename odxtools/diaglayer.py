@@ -547,7 +547,7 @@ class DiagLayer:
         without a specified protocol are taken as fallbacks...
 
         """
-        com_params_dict: Dict[Tuple[str, Optional[str]], CommunicationParameterRef] = dict()
+        com_params_dict: Dict[Tuple[str, Optional[str]], CommunicationParameterRef] = {}
 
         # Look in parent refs for inherited communication
         # parameters. First fetch the communication parameters from
@@ -579,7 +579,7 @@ class DiagLayer:
         Note that protocols are *not* explicitly inherited objects,
         but the parent diagnostic layers of variant type "PROTOCOL".
         """
-        result_dict: Dict[str, DiagLayer] = dict()
+        result_dict: Dict[str, DiagLayer] = {}
 
         for parent_ref in self._get_parent_refs_sorted_by_priority():
             for prot in parent_ref.layer.protocols:
@@ -613,6 +613,7 @@ class DiagLayer:
                 f"Communication parameter `{cp_short_name}` specified more "
                 f"than once. Using first occurence.",
                 OdxWarning,
+                stacklevel=1,
             )
         elif len(cps) == 0:
             return None
@@ -897,7 +898,7 @@ class DiagLayer:
             # global negative responses. (I.e., one for each
             # service. This can be avoided by specifying the
             # corresponding request for `decode_response()`.)
-            request_prefix = bytes()
+            request_prefix = b''
             if s.request is not None:
                 request_prefix = s.request.coded_const_prefix()
             prefixes = [request_prefix]

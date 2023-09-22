@@ -26,7 +26,7 @@ class DiagnosticTroubleCode(IdentifiableElement):
 
     @property
     def is_temporary(self) -> bool:
-        return self.is_temporary_raw == True
+        return self.is_temporary_raw is True
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,

@@ -302,23 +302,23 @@ class TestEncodeRequest(unittest.TestCase):
     def test_issue_70(self):
         # see https://github.com/mercedes-benz/odxtools/issues/70
         # make sure overlapping params don't cause this function to go crazy
-        unit_kwargs = dict(
-            base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-            bit_mask=None,
-            is_condensed_raw=None,
-        )
+        unit_kwargs = {
+            "base_data_type": DataType.A_UINT32,
+            "base_type_encoding": None,
+            "is_highlow_byte_order_raw": None,
+            "bit_mask": None,
+            "is_condensed_raw": None,
+        }
         uint2 = StandardLengthType(bit_length=2, **unit_kwargs)
         uint1 = StandardLengthType(bit_length=1, **unit_kwargs)
-        param_kwargs = dict(
-            long_name=None,
-            description=None,
-            byte_position=None,
-            semantic=None,
-            sdgs=[],
-            coded_value=0,
-        )
+        param_kwargs = {
+            "long_name": None,
+            "description": None,
+            "byte_position": None,
+            "semantic": None,
+            "sdgs": [],
+            "coded_value": 0,
+        }
         params = [
             CodedConstParameter(
                 short_name="p1", diag_coded_type=uint2, bit_position=0, **param_kwargs),
@@ -337,38 +337,38 @@ class TestEncodeRequest(unittest.TestCase):
         self.assertEqual(req._BasicStructure__message_format_lines(), [])
 
     def test_bit_mask(self):
-        unit_kwargs = dict(
-            base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
-            bit_length=16,
-        )
+        unit_kwargs = {
+            "base_data_type": DataType.A_UINT32,
+            "base_type_encoding": None,
+            "is_highlow_byte_order_raw": None,
+            "is_condensed_raw": None,
+            "bit_length": 16,
+        }
         inner = StandardLengthType(bit_mask=0x0ff0, **unit_kwargs)
         outer = StandardLengthType(bit_mask=0xf00f, **unit_kwargs)
         dop_id = OdxLinkId('dop', [])
-        dop_kwargs = dict(
-            compu_method=IdenticalCompuMethod(DataType.A_UINT32, DataType.A_UINT32),
-            description=None,
-            is_visible_raw=None,
-            long_name=None,
-            odx_id=dop_id,
-            physical_type=PhysicalType(DataType.A_UINT32, None, None),
-            sdgs=[],
-            short_name='dop',
-            unit_ref=None,
-        )
-        param_kwargs = dict(
-            long_name=None,
-            description=None,
-            byte_position=0,
-            bit_position=None,
-            dop_ref=OdxLinkRef.from_id(dop_id),
-            dop_snref=None,
-            semantic=None,
-            sdgs=[],
-            physical_default_value_raw=None,
-        )
+        dop_kwargs = {
+            "compu_method": IdenticalCompuMethod(DataType.A_UINT32, DataType.A_UINT32),
+            "description": None,
+            "is_visible_raw": None,
+            "long_name": None,
+            "odx_id": dop_id,
+            "physical_type": PhysicalType(DataType.A_UINT32, None, None),
+            "sdgs": [],
+            "short_name": 'dop',
+            "unit_ref": None,
+        }
+        param_kwargs = {
+            "long_name": None,
+            "description": None,
+            "byte_position": 0,
+            "bit_position": None,
+            "dop_ref": OdxLinkRef.from_id(dop_id),
+            "dop_snref": None,
+            "semantic": None,
+            "sdgs": [],
+            "physical_default_value_raw": None,
+        }
 
         # Inner
         inner_param = ValueParameter(short_name="inner", **param_kwargs)
@@ -383,7 +383,7 @@ class TestEncodeRequest(unittest.TestCase):
         req = self._create_request([inner_param, outer_param])
 
         assert req.encode(None, inner=0x1111, outer=0x2222).hex() == "2112"
-        assert req.decode(bytes.fromhex('1234')) == dict(inner=0x0230, outer=0x1004)
+        assert req.decode(bytes.fromhex('1234')) == {"inner": 0x0230, "outer": 0x1004}
 
 
 if __name__ == "__main__":

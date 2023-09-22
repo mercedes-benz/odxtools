@@ -26,8 +26,8 @@ class IsoTp(IntEnum):
 
 class IsoTpStateMachine:
     can_normal_frame_re = re.compile(
-        "([a-zA-Z0-9_-]*) *([0-9A-Fa-f ]*) *\[[0-9]*\] *([ 0-9A-Fa-f]*)")
-    can_log_frame_re = re.compile("\([0-9.]*\) *([a-zA-Z0-9_-]*) ([0-9A-Fa-f]*)#([0-9A-Fa-f]*)")
+        "([a-zA-Z0-9_-]*) *([0-9A-Fa-f ]*) *\\[[0-9]*\\] *([ 0-9A-Fa-f]*)")
+    can_log_frame_re = re.compile("\\([0-9.]*\\) *([a-zA-Z0-9_-]*) ([0-9A-Fa-f]*)#([0-9A-Fa-f]*)")
 
     def __init__(self, can_rx_ids: Union[int, List[int]]):
         if isinstance(can_rx_ids, int):
@@ -141,8 +141,7 @@ class IsoTpStateMachine:
                     frame_id = int(m.group(2), 16)
 
                     frame_data_formatted = m.group(3).strip()
-                    frame_data = bytearray(
-                        map(lambda x: int(x, 16), frame_data_formatted.split(" ")))
+                    frame_data = bytearray([int(x, 16) for x in frame_data_formatted.split(" ")])
 
                     for tmp in self.decode_rx_frame(frame_id, frame_data):
                         yield tmp
@@ -156,7 +155,7 @@ class IsoTpStateMachine:
                         frame_data_formatted[i:i + 2]
                         for i in range(0, len(frame_data_formatted), 2)
                     ]
-                    frame_data = bytearray(map(lambda x: int(x, 16), frame_data_list))
+                    frame_data = bytearray([int(x, 16) for x in frame_data_list])
 
                     for tmp in self.decode_rx_frame(frame_id, frame_data):
                         yield tmp

@@ -42,7 +42,7 @@ __templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templat
 def write_pdx_file(
     output_file_name: str,
     database: Database,
-    auxiliary_content_specifiers: List[Tuple[str, bytes]] = [],
+    auxiliary_content_specifiers: Optional[List[Tuple[str, bytes]]] = None,
     templates_dir: str = __templates_dir,
 ) -> bool:
     """
@@ -50,13 +50,16 @@ def write_pdx_file(
     """
     global odxdatabase
 
+    if auxiliary_content_specifiers is None:
+        auxiliary_content_specifiers = []
+
     odxdatabase = database
 
-    file_index = list()
+    file_index = []
     with zipfile.ZipFile(output_file_name, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
 
         # write all files in the templates directory
-        for root, dir, files in os.walk(templates_dir):
+        for root, _, files in os.walk(templates_dir):
             for template_file_name in files:
                 # we are not interested in the autosave garbage of
                 # editors...
@@ -81,7 +84,7 @@ def write_pdx_file(
                 elif template_file_name.endswith(".odx-d"):
                     template_file_mime_type = "application/x-asam.odx.odx-d"
 
-                in_path = list([root])
+                in_path = [root]
                 in_path.append(template_file_name)
                 in_file_name = os.path.sep.join(in_path)
 

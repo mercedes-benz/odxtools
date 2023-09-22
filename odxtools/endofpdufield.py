@@ -57,7 +57,7 @@ class EndOfPduField(Field):
                 isinstance(physical_value, list),
                 "The value of an End-of-PDU-field must be a list or a dict.")
             # If the value is given as a list, each list element is a encoded seperately using the structure.
-            coded_rpc = bytes()
+            coded_rpc = b''
             for value in physical_value:
                 coded_rpc += self.structure.convert_physical_to_bytes(value, encode_state)
             return coded_rpc

@@ -156,7 +156,7 @@ class ItemList(Generic[T]):
         return iter(self._values)
 
     def __str__(self) -> str:
-        return f"[{', '.join([x for x in self._names])}]"
+        return f"[{', '.join(list(self._names))}]"
 
     def __repr__(self) -> str:
         return self.__str__()

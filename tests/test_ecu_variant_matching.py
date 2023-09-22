@@ -407,7 +407,7 @@ def test_request_loop_idempotency(ecu_variants: List[DiagLayer], use_cache: bool
     assert matcher.get_active_ecu_variant().short_name == "ecu_variant2"
 
     # second run with arbitrary input
-    for req in matcher.request_loop():
+    for _ in matcher.request_loop():
         matcher.evaluate(b"")
 
     # idempotency criterion

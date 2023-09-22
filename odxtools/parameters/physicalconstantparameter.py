@@ -79,5 +79,6 @@ class PhysicalConstantParameter(ParameterWithDOP):
                 f"at byte position {next_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
                 DecodeError,
+                stacklevel=1,
             )
         return phys_val, next_byte_position

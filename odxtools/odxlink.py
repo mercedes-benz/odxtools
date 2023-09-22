@@ -153,7 +153,7 @@ class OdxLinkRef:
 
         # we must reference at to at least of the ID's document
         # fragments
-        if not any([ref_doc in odx_id.doc_fragments for ref_doc in self.ref_docs]):
+        if not any(ref_doc in odx_id.doc_fragments for ref_doc in self.ref_docs):
             return False
 
         # the local ID of the reference and the object ID must match
@@ -199,6 +199,7 @@ class OdxLinkDatabase:
                     f"Warning: Unknown document fragment {ref_frag} "
                     f"when resolving reference {ref}",
                     OdxWarning,
+                    stacklevel=1,
                 )
                 continue
 
@@ -241,6 +242,7 @@ class OdxLinkDatabase:
                     f"Warning: Unknown document fragment {ref_frag} "
                     f"when resolving reference {ref}",
                     OdxWarning,
+                    stacklevel=1,
                 )
                 continue
 
@@ -265,6 +267,6 @@ class OdxLinkDatabase:
         for odx_id, obj in new_entries.items():
             for doc_frag in odx_id.doc_fragments:
                 if doc_frag not in self._db:
-                    self._db[doc_frag] = dict()
+                    self._db[doc_frag] = {}
 
                 self._db[doc_frag][odx_id] = obj

@@ -14,7 +14,7 @@ except ImportError:
     import_failed = True
 
 
-class UtilFunctions():
+class UtilFunctions:
 
     def run_list_tool(path_to_pdx_file="./examples/somersault.pdx",
                       ecu_variants="all",

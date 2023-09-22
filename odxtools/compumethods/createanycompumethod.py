@@ -57,8 +57,10 @@ def _parse_compu_scale_to_linear_compu_method(
     if (string := coeffs.findtext("COMPU-DENOMINATOR/V")) is not None:
         denominator = float(string)
         if denominator == 0:
-            warnings.warn("CompuMethod: A denominator of zero will lead to divisions by zero.",
-                          OdxWarning)
+            warnings.warn(
+                "CompuMethod: A denominator of zero will lead to divisions by zero.",
+                OdxWarning,
+                stacklevel=1)
     # Read lower limit
     internal_lower_limit = Limit.from_et(
         scale_element.find("LOWER-LIMIT"),

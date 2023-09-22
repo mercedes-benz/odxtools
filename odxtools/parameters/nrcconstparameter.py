@@ -102,6 +102,7 @@ class NrcConstParameter(Parameter):
                 f"at byte position {decode_state.next_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
                 DecodeError,
+                stacklevel=1,
             )
 
         return coded_value, next_byte_position

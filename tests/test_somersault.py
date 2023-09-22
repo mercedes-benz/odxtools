@@ -6,7 +6,7 @@ from odxtools.load_pdx_file import load_pdx_file
 try:
     from unittest.mock import patch  # type: ignore
 except ImportError:
-    from mock import patch  # type: ignore
+    from mock import patch  # type: ignore # noqa: UP026
 
 try:
     from StringIO import StringIO
@@ -233,7 +233,7 @@ class TestDecode(unittest.TestCase):
         self.assertEqual(decoded_resp_data["last_pos_response_key"], "forward_grudging")
         self.assertEqual(decoded_resp_data["last_pos_response"][0], "forward_grudging")
         self.assertEqual(
-            set(decoded_resp_data["last_pos_response"][1].keys()), set(["sid", "num_flips_done"]))
+            set(decoded_resp_data["last_pos_response"][1].keys()), {"sid", "num_flips_done"})
         # the num_flips_done parameter is a matching request parameter
         # for this response, so it produces a binary blob. possibly,
         # it should be changed to a ValueParameter...
@@ -257,7 +257,7 @@ class TestDecode(unittest.TestCase):
         self.assertEqual(decoded_resp_data["last_pos_response"][0], "backward_grudging")
         self.assertEqual(
             set(decoded_resp_data["last_pos_response"][1].keys()),
-            set(["sid", "num_flips_done", "grumpiness_level"]))
+            {"sid", "num_flips_done", "grumpiness_level"})
         self.assertTrue(isinstance(decoded_resp_data["last_pos_response"], tuple))
         self.assertEqual(len(decoded_resp_data["last_pos_response"]), 2)
         self.assertEqual(decoded_resp_data["last_pos_response"][0], "backward_grudging")
@@ -350,7 +350,7 @@ class TestNavigation(unittest.TestCase):
         # also, the lazy ECU does not do backward flips. (this is
         # reserved for swots...)
         with self.assertRaises(AttributeError):
-            odxdb.ecus.somersault_lazy.services.do_backward_flips
+            odxdb.ecus.somersault_lazy.services.do_backward_flips  # noqa: B018
 
 
 if __name__ == "__main__":

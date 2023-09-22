@@ -178,6 +178,7 @@ class Parameter(NamedElement, abc.ABC):
                 warnings.warn(
                     f"Parameter {self.short_name} overlaps with another parameter (bytes are already set)",
                     OdxWarning,
+                    stacklevel=1,
                 )
             result_blob[byte_idx_rpc] |= new_data[byte_idx_val]
 
