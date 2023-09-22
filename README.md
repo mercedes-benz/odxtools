@@ -39,6 +39,7 @@ send to/received from ECUs in an pythonic manner.
 - [Installation](#installation)
 - [Usage Examples](#usage-examples)
   - [Python snippets](#python-snippets)
+- [Using the non-strict mode](#using-the-non-strict-mode)
 - [Interactive Usage](#interactive-usage)
   - [Python REPL](#python-repl)
 - [Command line usage](#command-line-usage)
@@ -608,10 +609,6 @@ project, please read the [contributing guide](https://github.com/mercedes-benz/o
 
 Please read our [Code of Conduct](https://github.com/mercedes-benz/daimler-foss/blob/master/CODE_OF_CONDUCT.md)
 as it is our base for interaction.
-
-## License
-
-This project is licensed under the [MIT LICENSE](https://github.com/mercedes-benz/odxtools/blob/main/LICENSE).
 
 ## Provider Information
 
