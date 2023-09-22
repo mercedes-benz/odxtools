@@ -304,7 +304,7 @@ class TestDecoding(unittest.TestCase):
         expected_message = Message(
             coded_message=coded_message,
             service=service,
-            structure=req,
+            coding_object=req,
             param_dict={
                 "SID": 0x7D,
                 "coded_const_parameter_2": 0xAB
@@ -314,7 +314,7 @@ class TestDecoding(unittest.TestCase):
 
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
-        self.assertEqual(expected_message.structure, decoded_message.structure)
+        self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
         self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
     def test_decode_request_coded_const_undefined_byte_position(self):
@@ -443,7 +443,7 @@ class TestDecoding(unittest.TestCase):
         expected_message = Message(
             coded_message=coded_message,
             service=service,
-            structure=req,
+            coding_object=req,
             param_dict={
                 "SID": 0x12,
                 "coded_const_parameter_2": 0x56,
@@ -454,7 +454,7 @@ class TestDecoding(unittest.TestCase):
         decoded_message = diag_layer.decode(coded_message)[0]
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
-        self.assertEqual(expected_message.structure, decoded_message.structure)
+        self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
         self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
     def test_decode_request_structure(self):
@@ -619,7 +619,7 @@ class TestDecoding(unittest.TestCase):
         expected_message = Message(
             coded_message=coded_message,
             service=service,
-            structure=req,
+            coding_object=req,
             param_dict={
                 "SID": 0x12,
                 "structured_param": {
@@ -631,7 +631,7 @@ class TestDecoding(unittest.TestCase):
         decoded_message = diag_layer.decode(coded_message)[0]
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
-        self.assertEqual(expected_message.structure, decoded_message.structure)
+        self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
         self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
     def test_decode_request_end_of_pdu_field(self):
@@ -810,7 +810,7 @@ class TestDecoding(unittest.TestCase):
         expected_message = Message(
             coded_message=coded_message,
             service=service,
-            structure=req,
+            coding_object=req,
             param_dict={
                 "SID":
                     0x12,
@@ -829,7 +829,7 @@ class TestDecoding(unittest.TestCase):
         decoded_message = diag_layer.decode(coded_message)[0]
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
-        self.assertEqual(expected_message.structure, decoded_message.structure)
+        self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
         self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
     def test_decode_request_linear_compu_method(self):
@@ -957,7 +957,7 @@ class TestDecoding(unittest.TestCase):
         expected_message = Message(
             coded_message=coded_message,
             service=service,
-            structure=req,
+            coding_object=req,
             param_dict={
                 "SID": 0x7D,
                 "value_parameter_2": 91
@@ -966,7 +966,7 @@ class TestDecoding(unittest.TestCase):
         decoded_message = diag_layer.decode(coded_message)[0]
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
-        self.assertEqual(expected_message.structure, decoded_message.structure)
+        self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
         self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
     def test_decode_response(self):
@@ -1129,7 +1129,7 @@ class TestDecoding(unittest.TestCase):
             expected_message = Message(
                 coded_message=coded_message,
                 service=service,
-                structure=message,
+                coding_object=message,
                 param_dict={
                     "SID": sid,
                     "matching_req_param": bytes([0xAB])
@@ -1138,7 +1138,7 @@ class TestDecoding(unittest.TestCase):
             decoded_message = diag_layer.decode(coded_message)[0]
             self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
             self.assertEqual(expected_message.service, decoded_message.service)
-            self.assertEqual(expected_message.structure, decoded_message.structure)
+            self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
             self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
     def test_decode_dtc(self):

@@ -57,7 +57,11 @@ jobs:
 
       - name: Static type checking with mypy
         run: |
-          python -m mypy --ignore-missing-imports odxtools examples tests
+          # remove '# type:' comments in version.py which mypy-3.8
+          # stumbles over. for some reason, mypy cannot be
+          # instructed to ignore 'version.py'
+          sed -i "s/# type:.*//" odxtools/version.py
+          python -m mypy .
 
   test:
     strategy:

@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from itertools import chain
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
 from xml.etree import ElementTree
 
@@ -173,9 +172,16 @@ class SingleEcuJob(IdentifiableElement):
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
-        for obj in chain(self.prog_codes, self.input_params, self.output_params,
-                         self.neg_output_params, self.sdgs):
-            result.update(obj._build_odxlinks())
+        for prog_code in self.prog_codes:
+            result.update(prog_code._build_odxlinks())
+        for input_param in self.input_params:
+            result.update(input_param._build_odxlinks())
+        for output_param in self.output_params:
+            result.update(output_param._build_odxlinks())
+        for neg_output_param in self.neg_output_params:
+            result.update(neg_output_param._build_odxlinks())
+        for sdg in self.sdgs:
+            result.update(sdg._build_odxlinks())
 
         if self.admin_data:
             result.update(self.admin_data._build_odxlinks())
@@ -198,9 +204,16 @@ class SingleEcuJob(IdentifiableElement):
             else:
                 logger.warning(f"Functional class ID {fc_ref!r} resolved to {fc!r}.")
 
-        for obj in chain(self.prog_codes, self.input_params, self.output_params,
-                         self.neg_output_params, self.sdgs):
-            obj._resolve_odxlinks(odxlinks)
+        for prog_code in self.prog_codes:
+            prog_code._resolve_odxlinks(odxlinks)
+        for input_param in self.input_params:
+            input_param._resolve_odxlinks(odxlinks)
+        for output_param in self.output_params:
+            output_param._resolve_odxlinks(odxlinks)
+        for neg_output_param in self.neg_output_params:
+            neg_output_param._resolve_odxlinks(odxlinks)
+        for sdg in self.sdgs:
+            sdg._resolve_odxlinks(odxlinks)
 
         # Resolve references of admin data
         if self.admin_data:
@@ -211,9 +224,16 @@ class SingleEcuJob(IdentifiableElement):
             self.audience._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        for obj in chain(self.prog_codes, self.input_params, self.output_params,
-                         self.neg_output_params, self.sdgs):
-            obj._resolve_snrefs(diag_layer)
+        for prog_code in self.prog_codes:
+            prog_code._resolve_snrefs(diag_layer)
+        for input_param in self.input_params:
+            input_param._resolve_snrefs(diag_layer)
+        for output_param in self.output_params:
+            output_param._resolve_snrefs(diag_layer)
+        for neg_output_param in self.neg_output_params:
+            neg_output_param._resolve_snrefs(diag_layer)
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(diag_layer)
 
         # Resolve references of admin data
         if self.admin_data:

@@ -87,8 +87,8 @@ class ComparamSubset(IdentifiableElement):
         for comparam in self.comparams:
             odxlinks.update(comparam._build_odxlinks())
 
-        for comparam in self.complex_comparams:
-            odxlinks.update(comparam._build_odxlinks())
+        for ccomparam in self.complex_comparams:
+            odxlinks.update(ccomparam._build_odxlinks())
 
         if self.unit_spec:
             odxlinks.update(self.unit_spec._build_odxlinks())
@@ -112,8 +112,8 @@ class ComparamSubset(IdentifiableElement):
         for comparam in self.comparams:
             comparam._resolve_odxlinks(odxlinks)
 
-        for comparam in self.complex_comparams:
-            comparam._resolve_odxlinks(odxlinks)
+        for ccomparam in self.complex_comparams:
+            ccomparam._resolve_odxlinks(odxlinks)
 
         if self.unit_spec:
             self.unit_spec._resolve_odxlinks(odxlinks)
@@ -135,8 +135,8 @@ class ComparamSubset(IdentifiableElement):
         for comparam in self.comparams:
             comparam._resolve_snrefs(diag_layer)
 
-        for comparam in self.complex_comparams:
-            comparam._resolve_snrefs(diag_layer)
+        for ccomparam in self.complex_comparams:
+            ccomparam._resolve_snrefs(diag_layer)
 
         if self.unit_spec:
             self.unit_spec._resolve_snrefs(diag_layer)

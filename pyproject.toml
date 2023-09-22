@@ -77,6 +77,14 @@ packages = [ "odxtools" ]
 [tool.setuptools_scm]
 write_to = "odxtools/version.py"
 
+[tool.mypy]
+
+exclude = [
+	'build',
+]
+
+ignore_missing_imports = true
+
 [tool.yapf]
 based_on_style = "yapf"
 column_limit = 100
