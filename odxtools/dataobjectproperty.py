@@ -65,7 +65,7 @@ class DataObjectProperty(DopBase):
                 sdgs=sdgs,
                 **kwargs)
         else:
-            dtclist: List[Union[DiagnosticTroubleCode, OdxLinkRef]] = list()
+            dtclist: List[Union[DiagnosticTroubleCode, OdxLinkRef]] = []
             if (dtcs_elem := et_element.find("DTCS")) is not None:
                 for dtc_proxy_elem in dtcs_elem:
                     if dtc_proxy_elem.tag == "DTC":

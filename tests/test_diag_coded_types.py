@@ -65,7 +65,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         )
         state = DecodeState(bytes([0x0, 0x1]), [], 0)
         internal, next_byte = dct.convert_bytes_to_internal(state, 0)
-        self.assertEqual(internal, bytes())
+        self.assertEqual(internal, b'')
         self.assertEqual(next_byte, 1)
 
     def test_encode_leading_length_info_type_bytefield(self):
@@ -101,7 +101,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         # Right now `bytes([0x1, 0x0])` is the encoded value.
         # However, since bytes() is shorter and would be decoded
         # to the same value this may be changed...
-        self.assertIn(byte_val, [bytes(), bytes([0x1, 0x0])])
+        self.assertIn(byte_val, [b'', bytes([0x1, 0x0])])
 
     def test_decode_leading_length_info_type_unicode2string(self):
         dct = LeadingLengthInfoType(

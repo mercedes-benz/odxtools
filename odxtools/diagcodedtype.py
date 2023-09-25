@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import abc
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Literal, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Tuple, Union
 
 import bitstruct
 
@@ -9,7 +9,7 @@ from . import exceptions
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise
-from .odxlink import OdxLinkDatabase
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import AtomicOdxType, DataType
 
 if TYPE_CHECKING:
@@ -41,14 +41,14 @@ class DiagCodedType(abc.ABC):
     base_type_encoding: Optional[str]
     is_highlow_byte_order_raw: Optional[bool]
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:  # noqa: B027
         return {}
 
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:  # noqa: B027
         """Recursively resolve any odxlinks references"""
         pass
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:  # noqa: B027
         """Recursively resolve any short-name references"""
         pass
 
@@ -159,7 +159,7 @@ class DiagCodedType(abc.ABC):
             ] and base_data_type != 0):
                 raise EncodeError(
                     f"The number {repr(internal_value)} cannot be encoded into {bit_length} bits.")
-            return bytes()
+            return b''
 
         char = ODX_TYPE_TO_FORMAT_LETTER[base_data_type]
 

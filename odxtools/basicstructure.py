@@ -62,8 +62,8 @@ class BasicStructure(DopBase):
         # We were not able to calculate a static bit length
         return None
 
-    def coded_const_prefix(self, request_prefix: bytes = bytes()) -> bytes:
-        prefix = bytes()
+    def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:
+        prefix = b''
         encode_state = EncodeState(prefix, parameter_values={}, triggering_request=request_prefix)
         for p in self.parameters:
             if isinstance(p, CodedConstParameter) and p.bit_length % 8 == 0:
@@ -112,7 +112,7 @@ class BasicStructure(DopBase):
                                      is_end_of_pdu: bool = True) -> bytes:
 
         encode_state = EncodeState(
-            bytes(),
+            b'',
             dict(param_values),
             triggering_request=triggering_coded_request,
             is_end_of_pdu=False,
@@ -169,7 +169,9 @@ class BasicStructure(DopBase):
             # but it could be that bit_length was mis calculated and not the actual bytes are wrong
             # Could happen with overlapping parameters and parameters with gaps
             warnings.warn(
-                self._get_encode_error_str("may have been", coded_message, bit_length), OdxWarning)
+                self._get_encode_error_str("may have been", coded_message, bit_length),
+                OdxWarning,
+                stacklevel=1)
 
     def _get_encode_error_str(self, verb: str, coded_message: bytes, bit_length: int) -> str:
         return str(f"Structure {self.short_name} {verb} encoded incorrectly:" +
@@ -237,6 +239,7 @@ class BasicStructure(DopBase):
                 f"The message {message.hex()} is longer than could be parsed."
                 f" Expected {next_byte_position} but got {len(message)}.",
                 DecodeError,
+                stacklevel=1,
             )
         return param_values
 

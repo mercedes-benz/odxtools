@@ -78,7 +78,7 @@ class MinMaxLengthType(DiagCodedType):
         else:
             termination_char = self.__termination_character()
             if self.termination == "END-OF-PDU":
-                termination_char = bytes()
+                termination_char = b''
             odxassert(
                 termination_char is not None,
                 f"MinMaxLengthType with termination {self.termination}"

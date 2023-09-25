@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  lint:
+  lint-coding-style:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,16 +22,16 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Setup up Linter
+      - name: Setup up YaPF formatting linter
         run: |
           pip install toml yapf
 
-      - name: Lint code formatting
-        # make yapf fail if any file needs to be formatted
+      - name: Lint coding style (yapf)
+        # make yapf fail if any file needs to be re-formatted
         run: |
           yapf -r --diff examples/ odxtools/ tests/
 
-  static-type-checking:
+  linting:
     runs-on: ubuntu-latest
 
     strategy:
@@ -55,13 +55,17 @@ jobs:
           pip install .
           pip install .[test]
 
-      - name: Static type checking with mypy
+      - name: Static type checking (mypy)
         run: |
           # remove '# type:' comments in version.py which mypy-3.8
           # stumbles over. for some reason, mypy cannot be
           # instructed to ignore 'version.py'
           sed -i "s/# type:.*//" odxtools/version.py
           python -m mypy .
+
+      - name: Lint code quality (ruff)
+        run: |
+          ruff .
 
   test:
     strategy:

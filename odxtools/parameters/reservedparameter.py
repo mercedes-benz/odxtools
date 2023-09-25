@@ -37,7 +37,7 @@ class ReservedParameter(Parameter):
 
     def get_coded_value_as_bytes(self, encode_state):
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return int(0).to_bytes((self.bit_length + bit_position_int + 7) // 8, "big")
+        return (0).to_bytes((self.bit_length + bit_position_int + 7) // 8, "big")
 
     def decode_from_pdu(self, decode_state: DecodeState):
         byte_position = (
@@ -61,6 +61,7 @@ class ReservedParameter(Parameter):
                 f"at byte position {byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
                 DecodeError,
+                stacklevel=1,
             )
 
         return None, next_byte_position

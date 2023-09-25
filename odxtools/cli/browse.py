@@ -2,14 +2,15 @@
 import argparse
 import logging
 import sys
-from typing import Dict, List, Union
+from typing import List, Optional, Union
 
 import PyInquirer.prompt as PI_prompt
 
 from ..database import Database
 from ..diaglayer import DiagLayer
 from ..diagservice import DiagService
-from ..odxtypes import DataType
+from ..odxtypes import DataType, ParameterValueDict
+from ..parameters.matchingrequestparameter import MatchingRequestParameter
 from ..parameters.parameter import Parameter
 from ..parameters.parameterwithdop import ParameterWithDOP
 from ..request import Request
@@ -43,7 +44,7 @@ def _validate_string_value(input, parameter):
     elif isinstance(parameter, ParameterWithDOP):
         try:
             val = _convert_string_to_odx_type(input, parameter.physical_type.base_data_type)
-        except:
+        except:  # noqa: E722
             return False
         return parameter.dop.is_valid_physical_value(val)
     else:
@@ -98,9 +99,9 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
     param_dict = sub_service.parameter_dict()
 
     exists_definable_param = False
-    for k, param_or_dict in param_dict.items():
+    for param_or_dict in param_dict.values():
         if isinstance(param_or_dict, dict):
-            for k, param in param_or_dict.items():
+            for param in param_or_dict.values():
                 if param.is_settable:
                     exists_definable_param = True
         elif param_or_dict.is_settable:
@@ -166,26 +167,28 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
 
 def encode_message_from_string_values(
     sub_service: Union[Request, Response],
-    parameter_values: Dict[str, Union[str, Dict[str, str]]] = {},
+    parameter_values: Optional[ParameterValueDict] = None,
 ):
+    if parameter_values is None:
+        parameter_values = {}
     parameter_values = parameter_values.copy()
     param_dict = sub_service.parameter_dict()
 
     # Check if all needed parameters are given
     missing_parameter_names = []
-    for parameter_sn, parameter in param_dict.items():
-        if isinstance(parameter, dict):
-            # parameter_value refers to a structure (represented as dict of params)
-            for simple_param_sn, simple_param in parameter.items():
-                structured_value = parameter_values.get(parameter_sn)
+    for param_sn, param in param_dict.items():
+        if isinstance(param, dict):
+            # param_value refers to a structure (represented as dict of params)
+            for simple_param_sn, simple_param in param.items():
+                structured_value = parameter_values.get(param_sn)
                 if not isinstance(simple_param, Parameter):
                     continue
                 if simple_param.is_required and (not isinstance(structured_value, dict) or
                                                  structured_value.get(simple_param_sn) is None):
-                    missing_parameter_names.append(f"{parameter_sn} :: {simple_param_sn}")
+                    missing_parameter_names.append(f"{param_sn} :: {simple_param_sn}")
         else:
-            if parameter.is_required and parameter_values.get(parameter_sn) is None:
-                missing_parameter_names.append(parameter_sn)
+            if param.is_required and parameter_values.get(param_sn) is None:
+                missing_parameter_names.append(param_sn)
 
     if len(missing_parameter_names) > 0:
         print("The following parameters are required but missing!")
@@ -194,31 +197,36 @@ def encode_message_from_string_values(
 
     # Request values for parameters
     for parameter_sn, parameter_value in parameter_values.items():
+        parameter = param_dict.get(parameter_sn)
+        if parameter is None:
+            print(f"I don't know the parameter {parameter_sn}")
+            continue
+
         if isinstance(parameter_value, dict):
             # parameter_value refers to a structure (represented as dict of params)
             typed_dict = parameter_value.copy()
-            for simple_param_sn, simple_val in parameter_value.items():
-                try:
-                    parameter = param_dict[parameter_sn][simple_param_sn]  # type: ignore
-                except:
-                    print(f"I don't know the parameter {simple_param_sn}")
+            for simple_param_sn, simple_param_val in parameter_value.items():
+                simple_parameter = param_dict.get(simple_param_sn)
+                if simple_parameter is None:
+                    print(f"Unknown sub-parameter {simple_param_sn}")
+                    continue
+                if not isinstance(simple_param_val, str):
+                    print(f"The value specified for parameter {simple_param_sn} is not a string")
                     continue
 
                 typed_dict[simple_param_sn] = _convert_string_to_odx_type(
-                    simple_val,
-                    parameter.physical_type.base_data_type  # type: ignore[union-attr]
+                    simple_param_val,
+                    simple_parameter.physical_type.base_data_type  # type: ignore[union-attr]
                 )
                 parameter_values[parameter_sn] = typed_dict
         else:
-            try:
-                parameter = param_dict[parameter_sn]
-            except:
-                print(f"I don't know the parameter {parameter_sn}")
-                continue
-
             assert isinstance(parameter, Parameter)
 
-            if parameter.parameter_type != "MATCHING-REQUEST-PARAM":
+            if not isinstance(parameter_value, str):
+                print(f"Value for parameter {parameter_sn} is not a string")
+                continue
+
+            if not isinstance(parameter, MatchingRequestParameter):
                 parameter_values[parameter_sn] = _convert_string_to_odx_type(
                     parameter_value,
                     parameter.physical_type.base_data_type,  # type: ignore[attr-defined]

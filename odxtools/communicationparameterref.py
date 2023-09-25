@@ -111,6 +111,7 @@ class CommunicationParameterRef:
                 f"'{self.short_name}' are not specified "
                 f"correctly.",
                 OdxWarning,
+                stacklevel=1,
             )
             return None
 
@@ -122,6 +123,7 @@ class CommunicationParameterRef:
                 f"Communication parameter '{self.short_name}' "
                 f"does not specify a '{subparam_name}' sub-parameter.",
                 OdxWarning,
+                stacklevel=1,
             )
             return None
 

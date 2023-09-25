@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 def bytefield_to_bytearray(bytefield: str) -> bytearray:
     bytes_string = [bytefield[i:i + 2] for i in range(0, len(bytefield), 2)]
-    return bytearray(map(lambda x: int(x, 16), bytes_string))
+    return bytearray([int(x, 16) for x in bytes_string])
 
 
 AtomicOdxType = Union[str, int, float, bytes]

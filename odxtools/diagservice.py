@@ -174,7 +174,7 @@ class DiagService(IdentifiableElement):
             sdg._resolve_snrefs(diag_layer)
 
     def decode_message(self, raw_message: bytes) -> Message:
-        request_prefix = bytes()
+        request_prefix = b''
         candidate_coding_objects: List[Union[Request, Response]] = [
             *self.positive_responses, *self.negative_responses
         ]

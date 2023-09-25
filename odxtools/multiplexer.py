@@ -88,7 +88,7 @@ class Multiplexer(DopBase):
                     case_bytes = case._structure.convert_physical_to_bytes(
                         case_value, encode_state, 0)
                 else:
-                    case_bytes = bytes()
+                    case_bytes = b''
 
                 key_value, _ = self._get_case_limits(case)
                 key_bytes = self.switch_key.convert_physical_to_bytes(key_value, encode_state)
@@ -112,7 +112,7 @@ class Multiplexer(DopBase):
         byte_code = decode_state.coded_message[decode_state.next_byte_position:]
         case_decode_state = DecodeState(
             coded_message=byte_code[self.byte_position:],
-            parameter_values=dict(),
+            parameter_values={},
             next_byte_position=0,
         )
         case_found = False

@@ -44,7 +44,9 @@ class TableStructParameter(Parameter):
         if self.table_key_snref is not None:
             warnings.warn(
                 "Table keys cannot yet be defined using SNREFs"
-                " in TableStructParameters.", OdxWarning)
+                " in TableStructParameters.",
+                OdxWarning,
+                stacklevel=1)
 
     @property
     def table_key(self) -> TableKeyParameter:
