@@ -34,11 +34,11 @@ class MinMaxLengthType(DiagCodedType):
     def dct_type(self) -> DctType:
         return "MIN-MAX-LENGTH-TYPE"
 
-    def __termination_character(self):
+    def __termination_character(self) -> bytes:
         """Returns the termination character or None if it isn't defined."""
         # The termination character is actually not specified by ASAM
         # for A_BYTEFIELD but I assume it is only one byte.
-        termination_char = None
+        termination_char = b''
         if self.termination == "ZERO":
             if self.base_data_type not in [DataType.A_UNICODE2STRING]:
                 termination_char = bytes([0x0])
@@ -53,94 +53,125 @@ class MinMaxLengthType(DiagCodedType):
 
     def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
-        byte_length = self._minimal_byte_length_of(internal_value)
+        bit_length = 8 * self.max_length if self.max_length is not None else 8 * len(internal_value)
+        bit_length = min(8 * len(internal_value), bit_length)
+        value_bytes = bytearray(
+            self._to_bytes(
+                internal_value,
+                bit_position=0,
+                bit_length=bit_length,
+                base_data_type=self.base_data_type,
+                is_highlow_byte_order=self.is_highlow_byte_order,
+            ))
 
-        # The coded value must have at least length min_length
-        if byte_length < self.min_length:
-            raise EncodeError(f"The internal value {internal_value} is only {byte_length} bytes"
-                              f" long but the min length is {self.min_length}")
-        # The coded value must not have a length greater than max_length
-        if self.max_length and byte_length > self.max_length:
-            raise EncodeError(f"The internal value {internal_value} requires {byte_length}"
-                              f" bytes, but the max length is {self.max_length}")
+        # TODO: ensure that the termination delimiter is not
+        # encountered within the encoded value.
 
-        value_byte = self._to_bytes(
-            internal_value,
-            bit_position=0,
-            bit_length=8 * byte_length,
-            base_data_type=self.base_data_type,
-            is_highlow_byte_order=self.is_highlow_byte_order,
-        )
-
-        if encode_state.is_end_of_pdu or byte_length == self.max_length:
-            # All termination types may be ended by the PDU
-            return value_byte
+        if encode_state.is_end_of_pdu or len(value_bytes) == self.max_length:
+            # All termination types may be ended by the end of the PDU
+            # or once reaching the maximum length. In this case, we
+            # must not add the termination character
+            pass
         else:
             termination_char = self.__termination_character()
-            if self.termination == "END-OF-PDU":
-                termination_char = b''
-            odxassert(
-                termination_char is not None,
-                f"MinMaxLengthType with termination {self.termination}"
-                f"(min: {self.min_length}, max: {self.max_length}) failed encoding {internal_value}"
-            )
-            return value_byte + termination_char
+            if termination_char is not None:
+                # ensure that we don't try to encode an odd-length
+                # value whn using a two-character terminator
+                odxassert(len(value_bytes) % len(termination_char) == 0)
+
+                value_bytes.extend(termination_char)
+
+        if len(value_bytes) < self.min_length:
+            raise EncodeError(f"Encoded value for MinMaxLengthType "
+                              f"must be at least {self.min_length} bytes long. "
+                              f"(Is: {len(value_bytes)} bytes.)")
+        elif self.max_length is not None and len(value_bytes) > self.max_length:
+            raise EncodeError(f"Encoded value for MinMaxLengthType "
+                              f"must not be longer than {self.max_length} bytes. "
+                              f"(Is: {len(value_bytes)} bytes.)")
+
+        return value_bytes
 
     def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
         if decode_state.cursor_position + self.min_length > len(decode_state.coded_message):
-            raise DecodeError("The PDU ended before min length was reached.")
+            raise DecodeError("The PDU ended before minimum length was reached.")
 
         coded_message = decode_state.coded_message
-        cursor_position = decode_state.cursor_position
-        termination_char = self.__termination_character()
+        cursor_pos = decode_state.cursor_position
+        terminator_char = self.__termination_character()
 
         # If no termination char is found, this is the next byte after the parameter.
-        max_termination_byte = len(coded_message)
+        max_terminator_pos = len(coded_message)
         if self.max_length is not None:
-            max_termination_byte = min(max_termination_byte, cursor_position + self.max_length)
+            max_terminator_pos = min(max_terminator_pos, cursor_pos + self.max_length)
 
         if self.termination != "END-OF-PDU":
-            # The parameter either ends after max length, at the end of the PDU
-            # or if a termination character is found.
-            char_length = len(termination_char)  # either 1 or 2
+            # The parameter either ends after the maximum length, at
+            # the end of the PDU or if a termination character is
+            # found.
 
-            termination_byte = cursor_position + self.min_length
-            found_char = False
-            # Search the termination character
-            while termination_byte < max_termination_byte and not found_char:
-                found_char = (
-                    coded_message[termination_byte:termination_byte +
-                                  char_length] == termination_char)
-                if not found_char:
-                    termination_byte += char_length
+            terminator_pos = cursor_pos + self.min_length
+            while True:
+                # Search the termination character
+                terminator_pos = coded_message.find(terminator_char, terminator_pos,
+                                                    max_terminator_pos)
+                if terminator_pos < 0:
+                    # termination character was not found, i.e., we
+                    # are terminated by either the end of the PDU or
+                    # our maximum size. (whatever is the smaller
+                    # value.)
+                    terminator_pos = len(coded_message)
+                    if self.max_length is not None:
+                        terminator_pos = min(cursor_pos + self.max_length, terminator_pos)
 
-            byte_length = termination_byte - cursor_position
+                    byte_length = terminator_pos - cursor_pos
+                    break
+                elif (terminator_pos - cursor_pos) % len(terminator_char) == 0:
+                    # we found the termination character at a position
+                    # and it is correctly aligned (two-byte
+                    # termination "characters" must be word aligned
+                    # relative to the beginning of the parameter)!
+                    byte_length = terminator_pos - cursor_pos
+                    break
+                else:
+                    # we found the termination character, but its
+                    # alignment was incorrect. Try again one byte
+                    # further...
+                    terminator_pos += 1
+
+            if byte_length < self.min_length:
+                raise DecodeError(f"MinMaxLengthType must be more than {self.min_length} "
+                                  f"bytes long. (Is: {byte_length} bytes)")
+            if self.max_length is not None and byte_length > self.max_length:
+                raise DecodeError(f"MinMaxLengthType must be at most {self.max_length} "
+                                  f"bytes long. (Is: {byte_length} bytes)")
 
             # Extract the value
-            value, byte = self._extract_internal(
+            value, byte_pos = self._extract_internal(
                 decode_state.coded_message,
-                byte_position=cursor_position,
+                byte_position=cursor_pos,
                 bit_position=bit_position,
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
                 is_highlow_byte_order=self.is_highlow_byte_order,
             )
-            odxassert(byte == termination_byte)
 
-            # next byte starts after the termination character
-            cursor_position = byte + char_length if found_char else byte
-            return value, cursor_position
+            if byte_pos != len(coded_message) and byte_pos - cursor_pos != self.max_length:
+                byte_pos += len(terminator_char)
+
+            # next byte starts after the actual data and the termination character
+            return value, byte_pos
         else:
             # If termination == "END-OF-PDU", the parameter ends after max_length
             # or at the end of the PDU.
-            byte_length = max_termination_byte - cursor_position
+            byte_length = max_terminator_pos - cursor_pos
 
-            value, byte = self._extract_internal(
+            value, byte_pos = self._extract_internal(
                 decode_state.coded_message,
-                byte_position=cursor_position,
+                byte_position=cursor_pos,
                 bit_position=bit_position,
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
                 is_highlow_byte_order=self.is_highlow_byte_order,
             )
-            return value, byte
+            return value, byte_pos
