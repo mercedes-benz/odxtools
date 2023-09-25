@@ -81,8 +81,8 @@ class DiagCodedType(abc.ABC):
         byte_length = (bit_length + bit_position + 7) // 8
         if byte_position + byte_length > len(coded_message):
             raise DecodeError(f"Expected a longer message.")
-        next_byte_position = byte_position + byte_length
-        extracted_bytes = coded_message[byte_position:next_byte_position]
+        cursor_position = byte_position + byte_length
+        extracted_bytes = coded_message[byte_position:cursor_position]
 
         # Apply byteorder
         if not is_highlow_byte_order and base_data_type not in [
@@ -120,7 +120,7 @@ class DiagCodedType(abc.ABC):
             else:
                 internal_value = internal_value.decode("utf-16-le")
 
-        return internal_value, next_byte_position
+        return internal_value, cursor_position
 
     def _to_bytes(
         self,

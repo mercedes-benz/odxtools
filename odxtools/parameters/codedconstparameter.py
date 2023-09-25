@@ -69,13 +69,13 @@ class CodedConstParameter(Parameter):
 
     def decode_from_pdu(self, decode_state: DecodeState):
         decode_state = copy(decode_state)
-        if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
+        if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
             # Update byte position
-            decode_state.next_byte_position = self.byte_position
+            decode_state.cursor_position = self.byte_position
 
         # Extract coded values
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        coded_val, next_byte_position = self.diag_coded_type.convert_bytes_to_internal(
+        coded_val, cursor_position = self.diag_coded_type.convert_bytes_to_internal(
             decode_state, bit_position=bit_position_int)
 
         # Check if the coded value in the message is correct.
@@ -84,13 +84,13 @@ class CodedConstParameter(Parameter):
                 f"Coded constant parameter does not match! "
                 f"The parameter {self.short_name} expected coded "
                 f"value {str(self._coded_value_str)} but got {str(coded_val)} "
-                f"at byte position {decode_state.next_byte_position} "
+                f"at byte position {decode_state.cursor_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
                 DecodeError,
                 stacklevel=1,
             )
 
-        return coded_val, next_byte_position
+        return coded_val, cursor_position
 
     def _as_dict(self):
         d = super()._as_dict()

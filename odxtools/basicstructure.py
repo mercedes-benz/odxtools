@@ -199,21 +199,21 @@ class BasicStructure(DopBase):
         if bit_position != 0:
             raise DecodeError("Structures must be aligned, i.e. bit_position=0, but "
                               f"{self.short_name} was passed the bit position {bit_position}")
-        byte_code = decode_state.coded_message[decode_state.next_byte_position:]
+        byte_code = decode_state.coded_message[decode_state.cursor_position:]
         inner_decode_state = DecodeState(
-            coded_message=byte_code, parameter_values={}, next_byte_position=0)
+            coded_message=byte_code, parameter_values={}, cursor_position=0)
 
         for parameter in self.parameters:
-            value, next_byte_position = parameter.decode_from_pdu(inner_decode_state)
+            value, cursor_position = parameter.decode_from_pdu(inner_decode_state)
 
             inner_decode_state.parameter_values[parameter.short_name] = value
             inner_decode_state = DecodeState(
                 coded_message=byte_code,
                 parameter_values=inner_decode_state.parameter_values,
-                next_byte_position=max(inner_decode_state.next_byte_position, next_byte_position),
+                cursor_position=max(inner_decode_state.cursor_position, cursor_position),
             )
 
-        return inner_decode_state.parameter_values, decode_state.next_byte_position + inner_decode_state.next_byte_position
+        return inner_decode_state.parameter_values, decode_state.cursor_position + inner_decode_state.cursor_position
 
     def encode(self, coded_request: Optional[bytes] = None, **params) -> bytes:
         """
@@ -232,12 +232,12 @@ class BasicStructure(DopBase):
 
     def decode(self, message: bytes) -> ParameterValueDict:
         # dummy decode state to be passed to convert_bytes_to_physical
-        decode_state = DecodeState(parameter_values={}, coded_message=message, next_byte_position=0)
-        param_values, next_byte_position = self.convert_bytes_to_physical(decode_state)
-        if len(message) != next_byte_position:
+        decode_state = DecodeState(parameter_values={}, coded_message=message, cursor_position=0)
+        param_values, cursor_position = self.convert_bytes_to_physical(decode_state)
+        if len(message) != cursor_position:
             warnings.warn(
                 f"The message {message.hex()} is longer than could be parsed."
-                f" Expected {next_byte_position} but got {len(message)}.",
+                f" Expected {cursor_position} but got {len(message)}.",
                 DecodeError,
                 stacklevel=1,
             )

@@ -143,20 +143,20 @@ class TableKeyParameter(Parameter):
         return super().encode_into_pdu(encode_state)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
-        if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
-            next_byte_position = self.byte_position
+        if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
+            cursor_position = self.byte_position
 
         # update the decode_state's table key
         if self.table_row is not None:
             # the table row to be used is statically specified -> no
             # need to decode anything!
             phys_val = self.table_row.short_name
-            next_byte_position = decode_state.next_byte_position
+            cursor_position = decode_state.cursor_position
         else:
             # Use DOP to decode
             key_dop = odxrequire(self.table.key_dop)
             bit_position_int = self.bit_position if self.bit_position is not None else 0
-            key_dop_val, next_byte_position = key_dop.convert_bytes_to_physical(
+            key_dop_val, cursor_position = key_dop.convert_bytes_to_physical(
                 decode_state, bit_position=bit_position_int)
 
             table_row_candidates = [x for x in self.table.table_rows if x.key == key_dop_val]
@@ -167,4 +167,4 @@ class TableKeyParameter(Parameter):
                     f"Multiple rows exhibiting key '{str(key_dop_val)}' found in table")
             phys_val = table_row_candidates[0].short_name
 
-        return phys_val, next_byte_position
+        return phys_val, cursor_position

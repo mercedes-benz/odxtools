@@ -69,16 +69,16 @@ class PhysicalConstantParameter(ParameterWithDOP):
 
     def decode_from_pdu(self, decode_state: DecodeState):
         # Decode value
-        phys_val, next_byte_position = super().decode_from_pdu(decode_state)
+        phys_val, cursor_position = super().decode_from_pdu(decode_state)
 
         # Check if decoded value matches expected value
         if phys_val != self.physical_constant_value:
             warnings.warn(
                 f"Physical constant parameter does not match! "
                 f"The parameter {self.short_name} expected physical value {self.physical_constant_value!r} but got {phys_val!r} "
-                f"at byte position {next_byte_position} "
+                f"at byte position {cursor_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
                 DecodeError,
                 stacklevel=1,
             )
-        return phys_val, next_byte_position
+        return phys_val, cursor_position

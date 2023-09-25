@@ -109,11 +109,11 @@ class Multiplexer(DopBase):
                               f"{self.short_name} was passed the bit position {bit_position}")
         key_value, key_next_byte = self.switch_key.convert_bytes_to_physical(decode_state)
 
-        byte_code = decode_state.coded_message[decode_state.next_byte_position:]
+        byte_code = decode_state.coded_message[decode_state.cursor_position:]
         case_decode_state = DecodeState(
             coded_message=byte_code[self.byte_position:],
             parameter_values={},
-            next_byte_position=0,
+            cursor_position=0,
         )
         case_found = False
         case_next_byte = 0
@@ -138,7 +138,7 @@ class Multiplexer(DopBase):
                 f"Failed to find a matching case in {self.short_name} for value {key_value}")
 
         mux_value = OrderedDict({case.short_name: case_value})
-        mux_next_byte = decode_state.next_byte_position + max(
+        mux_next_byte = decode_state.cursor_position + max(
             key_next_byte + self.switch_key.byte_position, case_next_byte + self.byte_position)
         return mux_value, mux_next_byte
 

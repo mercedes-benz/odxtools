@@ -64,11 +64,11 @@ class PositionedDataObjectProperty:
 
     def convert_bytes_to_physical(self, decode_state: DecodeState) -> Tuple[Any, int]:
 
-        byte_code = decode_state.coded_message[decode_state.next_byte_position:]
+        byte_code = decode_state.coded_message[decode_state.cursor_position:]
         state = DecodeState(
             coded_message=byte_code[self.byte_position:],
             parameter_values={},
-            next_byte_position=0,
+            cursor_position=0,
         )
         bit_position_int = (self.bit_position if self.bit_position is not None else 0)
         return self.dop.convert_bytes_to_physical(state, bit_position=bit_position_int)

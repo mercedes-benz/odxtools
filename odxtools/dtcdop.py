@@ -29,7 +29,7 @@ class DtcDop(DataObjectProperty):
         return self._linked_dtc_dops
 
     def convert_bytes_to_physical(self, decode_state, bit_position: int = 0):
-        trouble_code, next_byte = super().convert_bytes_to_physical(
+        trouble_code, cursor_position = super().convert_bytes_to_physical(
             decode_state, bit_position=bit_position)
 
         dtcs = [x for x in self.dtcs if x.trouble_code == trouble_code]
@@ -38,7 +38,7 @@ class DtcDop(DataObjectProperty):
 
         if len(dtcs) == 1:
             # we found exactly one described DTC
-            return dtcs[0], next_byte
+            return dtcs[0], cursor_position
 
         # the DTC was not specified. This probably means that the
         # diagnostic description file is incomplete. We do not bail
@@ -57,7 +57,7 @@ class DtcDop(DataObjectProperty):
             sdgs=[],
         )
 
-        return dtc, next_byte
+        return dtc, cursor_position
 
     def convert_physical_to_bytes(self, physical_value, encode_state, bit_position):
         if isinstance(physical_value, DiagnosticTroubleCode):
