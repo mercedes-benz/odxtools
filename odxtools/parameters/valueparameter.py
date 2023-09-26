@@ -55,15 +55,6 @@ class ValueParameter(ParameterWithDOP):
     def is_settable(self) -> bool:
         return True
 
-    def get_coded_value(self, physical_value: Optional[AtomicOdxType] = None):
-        if physical_value is not None:
-            dop = odxrequire(self.dop)
-            if not isinstance(dop, DataObjectProperty):
-                odxraise()
-            return dop.convert_physical_to_internal(physical_value)
-        else:
-            return self.physical_default_value
-
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         physical_value = encode_state.parameter_values.get(self.short_name,
                                                            self.physical_default_value)

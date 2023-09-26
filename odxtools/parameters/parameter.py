@@ -86,10 +86,6 @@ class Parameter(NamedElement, abc.ABC):
         raise NotImplementedError
 
     @abc.abstractmethod
-    def get_coded_value(self):
-        pass
-
-    @abc.abstractmethod
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         """Get the coded value of the parameter given the encode state.
         Note that this method is called by `encode_into_pdu`.

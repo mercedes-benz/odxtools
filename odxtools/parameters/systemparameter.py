@@ -21,9 +21,6 @@ class SystemParameter(ParameterWithDOP):
     def is_settable(self) -> bool:
         raise NotImplementedError("SystemParameter.is_settable is not implemented yet.")
 
-    def get_coded_value(self):
-        raise NotImplementedError("Encoding a SystemParameter is not implemented yet.")
-
     def get_coded_value_as_bytes(self):
         raise NotImplementedError("Encoding a SystemParameter is not implemented yet.")
 

@@ -32,9 +32,6 @@ class ReservedParameter(Parameter):
         # need to take the "bit_length_raw" detour...
         return self.bit_length_raw
 
-    def get_coded_value(self):
-        return 0
-
     def get_coded_value_as_bytes(self, encode_state):
         bit_position_int = self.bit_position if self.bit_position is not None else 0
         return (0).to_bytes((self.bit_length + bit_position_int + 7) // 8, "big")
