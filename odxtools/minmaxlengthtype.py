@@ -34,9 +34,9 @@ class MinMaxLengthType(DiagCodedType):
     def dct_type(self) -> DctType:
         return "MIN-MAX-LENGTH-TYPE"
 
-    def __termination_character(self) -> bytes:
-        """Returns the termination character or None if it isn't defined."""
-        # The termination character is actually not specified by ASAM
+    def __termination_sequence(self) -> bytes:
+        """Returns the termination byte sequence if it isn't defined."""
+        # The termination sequence is actually not specified by ASAM
         # for A_BYTEFIELD but I assume it is only one byte.
         termination_char = b''
         if self.termination == "ZERO":
@@ -70,16 +70,16 @@ class MinMaxLengthType(DiagCodedType):
         if encode_state.is_end_of_pdu or len(value_bytes) == self.max_length:
             # All termination types may be ended by the end of the PDU
             # or once reaching the maximum length. In this case, we
-            # must not add the termination character
+            # must not add the termination sequence
             pass
         else:
-            termination_char = self.__termination_character()
-            if termination_char is not None:
-                # ensure that we don't try to encode an odd-length
-                # value whn using a two-character terminator
-                odxassert(len(value_bytes) % len(termination_char) == 0)
+            termination_char = self.__termination_sequence()
 
-                value_bytes.extend(termination_char)
+            # ensure that we don't try to encode an odd-length
+            # value when using a two-byte terminator
+            odxassert(len(value_bytes) % len(termination_char) == 0)
+
+            value_bytes.extend(termination_char)
 
         if len(value_bytes) < self.min_length:
             raise EncodeError(f"Encoded value for MinMaxLengthType "
@@ -98,7 +98,7 @@ class MinMaxLengthType(DiagCodedType):
 
         coded_message = decode_state.coded_message
         cursor_pos = decode_state.cursor_position
-        terminator_char = self.__termination_character()
+        terminator_char = self.__termination_sequence()
 
         # If no termination char is found, this is the next byte after the parameter.
         max_terminator_pos = len(coded_message)
@@ -107,16 +107,16 @@ class MinMaxLengthType(DiagCodedType):
 
         if self.termination != "END-OF-PDU":
             # The parameter either ends after the maximum length, at
-            # the end of the PDU or if a termination character is
+            # the end of the PDU or if a termination sequence is
             # found.
 
             terminator_pos = cursor_pos + self.min_length
             while True:
-                # Search the termination character
+                # Search the termination sequence
                 terminator_pos = coded_message.find(terminator_char, terminator_pos,
                                                     max_terminator_pos)
                 if terminator_pos < 0:
-                    # termination character was not found, i.e., we
+                    # termination sequence was not found, i.e., we
                     # are terminated by either the end of the PDU or
                     # our maximum size. (whatever is the smaller
                     # value.)
@@ -127,14 +127,14 @@ class MinMaxLengthType(DiagCodedType):
                     byte_length = terminator_pos - cursor_pos
                     break
                 elif (terminator_pos - cursor_pos) % len(terminator_char) == 0:
-                    # we found the termination character at a position
+                    # we found the termination sequence at a position
                     # and it is correctly aligned (two-byte
-                    # termination "characters" must be word aligned
+                    # termination sequences must be word aligned
                     # relative to the beginning of the parameter)!
                     byte_length = terminator_pos - cursor_pos
                     break
                 else:
-                    # we found the termination character, but its
+                    # we found the termination sequence, but its
                     # alignment was incorrect. Try again one byte
                     # further...
                     terminator_pos += 1
@@ -159,7 +159,7 @@ class MinMaxLengthType(DiagCodedType):
             if byte_pos != len(coded_message) and byte_pos - cursor_pos != self.max_length:
                 byte_pos += len(terminator_char)
 
-            # next byte starts after the actual data and the termination character
+            # next byte starts after the actual data and the termination sequence
             return value, byte_pos
         else:
             # If termination == "END-OF-PDU", the parameter ends after max_length
