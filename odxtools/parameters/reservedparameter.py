@@ -41,12 +41,11 @@ class ReservedParameter(Parameter):
 
     def decode_from_pdu(self, decode_state: DecodeState):
         byte_position = (
-            self.byte_position
-            if self.byte_position is not None else decode_state.next_byte_position)
+            self.byte_position if self.byte_position is not None else decode_state.cursor_position)
         bit_position_int = self.bit_position if self.bit_position is not None else 0
         byte_length = (self.bit_length_raw + bit_position_int + 7) // 8
         val_as_bytes = decode_state.coded_message[byte_position:byte_position + byte_length]
-        next_byte_position = byte_position + byte_length
+        cursor_position = byte_position + byte_length
 
         # Check that reserved bits are 0
         expected = sum(
@@ -64,4 +63,4 @@ class ReservedParameter(Parameter):
                 stacklevel=1,
             )
 
-        return None, next_byte_position
+        return None, cursor_position

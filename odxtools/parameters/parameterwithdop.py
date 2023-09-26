@@ -86,15 +86,15 @@ class ParameterWithDOP(Parameter):
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
         dop = odxrequire(self.dop, "Reference to DOP is not resolved")
         decode_state = copy(decode_state)
-        if self.byte_position is not None and self.byte_position != decode_state.next_byte_position:
-            decode_state.next_byte_position = self.byte_position
+        if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
+            decode_state.cursor_position = self.byte_position
 
         # Use DOP to decode
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        phys_val, next_byte_position = dop.convert_bytes_to_physical(
+        phys_val, cursor_position = dop.convert_bytes_to_physical(
             decode_state, bit_position=bit_position_int)
 
-        return phys_val, next_byte_position
+        return phys_val, cursor_position
 
     def _as_dict(self):
         d = super()._as_dict()

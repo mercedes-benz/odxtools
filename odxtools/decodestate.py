@@ -15,4 +15,4 @@ class DecodeState:
     parameter_values: ParameterValueDict
 
     #: Position of the next parameter if its position is not specified in ODX
-    next_byte_position: int
+    cursor_position: int

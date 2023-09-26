@@ -59,7 +59,7 @@ class LeadingLengthInfoType(DiagCodedType):
         # Extract length of the parameter value
         byte_length, byte_position = self._extract_internal(
             coded_message=coded_message,
-            byte_position=decode_state.next_byte_position,
+            byte_position=decode_state.cursor_position,
             bit_position=bit_position,
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,  # length is an integer
@@ -72,7 +72,7 @@ class LeadingLengthInfoType(DiagCodedType):
         # Extract actual value
         # TODO: The returned value is None if the byte_length is 0. Maybe change it
         #       to some default value like an empty bytearray() or 0?
-        value, next_byte_position = self._extract_internal(
+        value, cursor_position = self._extract_internal(
             coded_message=coded_message,
             byte_position=byte_position,
             bit_position=0,
@@ -81,4 +81,4 @@ class LeadingLengthInfoType(DiagCodedType):
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-        return value, next_byte_position
+        return value, cursor_position

@@ -54,13 +54,13 @@ class StandardLengthType(DiagCodedType):
         )
 
     def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
-        internal_value, next_byte_position = self._extract_internal(
+        internal_value, cursor_position = self._extract_internal(
             decode_state.coded_message,
-            decode_state.next_byte_position,
+            decode_state.cursor_position,
             bit_position,
             self.bit_length,
             self.base_data_type,
             self.is_highlow_byte_order,
         )
         internal_value = self.__apply_mask(internal_value)
-        return internal_value, next_byte_position
+        return internal_value, cursor_position

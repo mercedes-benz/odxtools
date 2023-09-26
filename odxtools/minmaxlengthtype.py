@@ -87,24 +87,24 @@ class MinMaxLengthType(DiagCodedType):
             return value_byte + termination_char
 
     def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
-        if decode_state.next_byte_position + self.min_length > len(decode_state.coded_message):
+        if decode_state.cursor_position + self.min_length > len(decode_state.coded_message):
             raise DecodeError("The PDU ended before min length was reached.")
 
         coded_message = decode_state.coded_message
-        byte_position = decode_state.next_byte_position
+        cursor_position = decode_state.cursor_position
         termination_char = self.__termination_character()
 
         # If no termination char is found, this is the next byte after the parameter.
         max_termination_byte = len(coded_message)
         if self.max_length is not None:
-            max_termination_byte = min(max_termination_byte, byte_position + self.max_length)
+            max_termination_byte = min(max_termination_byte, cursor_position + self.max_length)
 
         if self.termination != "END-OF-PDU":
             # The parameter either ends after max length, at the end of the PDU
             # or if a termination character is found.
             char_length = len(termination_char)  # either 1 or 2
 
-            termination_byte = byte_position + self.min_length
+            termination_byte = cursor_position + self.min_length
             found_char = False
             # Search the termination character
             while termination_byte < max_termination_byte and not found_char:
@@ -114,12 +114,12 @@ class MinMaxLengthType(DiagCodedType):
                 if not found_char:
                     termination_byte += char_length
 
-            byte_length = termination_byte - byte_position
+            byte_length = termination_byte - cursor_position
 
             # Extract the value
             value, byte = self._extract_internal(
                 decode_state.coded_message,
-                byte_position=byte_position,
+                byte_position=cursor_position,
                 bit_position=bit_position,
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
@@ -128,16 +128,16 @@ class MinMaxLengthType(DiagCodedType):
             odxassert(byte == termination_byte)
 
             # next byte starts after the termination character
-            next_byte_position = byte + char_length if found_char else byte
-            return value, next_byte_position
+            cursor_position = byte + char_length if found_char else byte
+            return value, cursor_position
         else:
             # If termination == "END-OF-PDU", the parameter ends after max_length
             # or at the end of the PDU.
-            byte_length = max_termination_byte - byte_position
+            byte_length = max_termination_byte - cursor_position
 
             value, byte = self._extract_internal(
                 decode_state.coded_message,
-                byte_position=byte_position,
+                byte_position=cursor_position,
                 bit_position=bit_position,
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,

@@ -64,19 +64,19 @@ class EndOfPduField(Field):
 
     def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
         decode_state = copy(decode_state)
-        next_byte_position = decode_state.next_byte_position
+        cursor_position = decode_state.cursor_position
         byte_code = decode_state.coded_message
 
         value = []
-        while len(byte_code) > next_byte_position:
+        while len(byte_code) > cursor_position:
             # ATTENTION: the ODX specification is very misleading
             # here: it says that the item is repeated until the end of
             # the PDU, but it means that DOP of the items that are
             # repeated are identical, not their values
-            new_value, next_byte_position = self.structure.convert_bytes_to_physical(
+            new_value, cursor_position = self.structure.convert_bytes_to_physical(
                 decode_state, bit_position=bit_position)
             # Update next byte_position
-            decode_state.next_byte_position = next_byte_position
+            decode_state.cursor_position = cursor_position
             value.append(new_value)
 
-        return value, next_byte_position
+        return value, cursor_position

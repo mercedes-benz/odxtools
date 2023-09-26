@@ -91,7 +91,7 @@ class ParamLengthInfoType(DiagCodedType):
         # Extract the internal value and return.
         return self._extract_internal(
             decode_state.coded_message,
-            decode_state.next_byte_position,
+            decode_state.cursor_position,
             bit_position,
             bit_length,
             self.base_data_type,
