@@ -38,18 +38,18 @@ class MinMaxLengthType(DiagCodedType):
         """Returns the termination byte sequence if it isn't defined."""
         # The termination sequence is actually not specified by ASAM
         # for A_BYTEFIELD but I assume it is only one byte.
-        termination_char = b''
+        termination_sequence = b''
         if self.termination == "ZERO":
             if self.base_data_type not in [DataType.A_UNICODE2STRING]:
-                termination_char = bytes([0x0])
+                termination_sequence = bytes([0x0])
             else:
-                termination_char = bytes([0x0, 0x0])
+                termination_sequence = bytes([0x0, 0x0])
         elif self.termination == "HEX-FF":
             if self.base_data_type not in [DataType.A_UNICODE2STRING]:
-                termination_char = bytes([0xFF])
+                termination_sequence = bytes([0xFF])
             else:
-                termination_char = bytes([0xFF, 0xFF])
-        return termination_char
+                termination_sequence = bytes([0xFF, 0xFF])
+        return termination_sequence
 
     def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
@@ -73,13 +73,13 @@ class MinMaxLengthType(DiagCodedType):
             # must not add the termination sequence
             pass
         else:
-            termination_char = self.__termination_sequence()
+            termination_sequence = self.__termination_sequence()
 
             # ensure that we don't try to encode an odd-length
             # value when using a two-byte terminator
-            odxassert(len(value_bytes) % len(termination_char) == 0)
+            odxassert(len(value_bytes) % len(termination_sequence) == 0)
 
-            value_bytes.extend(termination_char)
+            value_bytes.extend(termination_sequence)
 
         if len(value_bytes) < self.min_length:
             raise EncodeError(f"Encoded value for MinMaxLengthType "
@@ -98,9 +98,8 @@ class MinMaxLengthType(DiagCodedType):
 
         coded_message = decode_state.coded_message
         cursor_pos = decode_state.cursor_position
-        terminator_char = self.__termination_sequence()
+        termination_seq = self.__termination_sequence()
 
-        # If no termination char is found, this is the next byte after the parameter.
         max_terminator_pos = len(coded_message)
         if self.max_length is not None:
             max_terminator_pos = min(max_terminator_pos, cursor_pos + self.max_length)
@@ -113,7 +112,7 @@ class MinMaxLengthType(DiagCodedType):
             terminator_pos = cursor_pos + self.min_length
             while True:
                 # Search the termination sequence
-                terminator_pos = coded_message.find(terminator_char, terminator_pos,
+                terminator_pos = coded_message.find(termination_seq, terminator_pos,
                                                     max_terminator_pos)
                 if terminator_pos < 0:
                     # termination sequence was not found, i.e., we
@@ -126,7 +125,7 @@ class MinMaxLengthType(DiagCodedType):
 
                     byte_length = terminator_pos - cursor_pos
                     break
-                elif (terminator_pos - cursor_pos) % len(terminator_char) == 0:
+                elif (terminator_pos - cursor_pos) % len(termination_seq) == 0:
                     # we found the termination sequence at a position
                     # and it is correctly aligned (two-byte
                     # termination sequences must be word aligned
@@ -139,13 +138,6 @@ class MinMaxLengthType(DiagCodedType):
                     # further...
                     terminator_pos += 1
 
-            if byte_length < self.min_length:
-                raise DecodeError(f"MinMaxLengthType must be more than {self.min_length} "
-                                  f"bytes long. (Is: {byte_length} bytes)")
-            if self.max_length is not None and byte_length > self.max_length:
-                raise DecodeError(f"MinMaxLengthType must be at most {self.max_length} "
-                                  f"bytes long. (Is: {byte_length} bytes)")
-
             # Extract the value
             value, byte_pos = self._extract_internal(
                 decode_state.coded_message,
@@ -157,7 +149,7 @@ class MinMaxLengthType(DiagCodedType):
             )
 
             if byte_pos != len(coded_message) and byte_pos - cursor_pos != self.max_length:
-                byte_pos += len(terminator_char)
+                byte_pos += len(termination_seq)
 
             # next byte starts after the actual data and the termination sequence
             return value, byte_pos
