@@ -19,12 +19,12 @@ from .texttablecompumethod import TexttableCompuMethod
 
 def _parse_compu_scale_to_linear_compu_method(
     *,
-    scale_element,
+    scale_element: ElementTree.Element,
     internal_type: DataType,
     physical_type: DataType,
-    is_scale_linear=False,
-    **kwargs,
-):
+    is_scale_linear: bool = False,
+    **kwargs: Any,
+) -> LinearCompuMethod:
     odxassert(physical_type in [
         DataType.A_FLOAT32,
         DataType.A_FLOAT64,
@@ -47,12 +47,12 @@ def _parse_compu_scale_to_linear_compu_method(
     kwargs["internal_type"] = internal_type
     kwargs["physical_type"] = physical_type
 
-    coeffs = scale_element.find("COMPU-RATIONAL-COEFFS")
+    coeffs = odxrequire(scale_element.find("COMPU-RATIONAL-COEFFS"))
     nums = coeffs.iterfind("COMPU-NUMERATOR/V")
 
-    offset = computation_python_type(next(nums).text)
+    offset = computation_python_type(odxrequire(next(nums).text))
     factor_el = next(nums, None)
-    factor = computation_python_type(factor_el.text if factor_el is not None else "0")
+    factor = computation_python_type(odxrequire(factor_el.text) if factor_el is not None else "0")
     denominator = 1.0
     if (string := coeffs.findtext("COMPU-DENOMINATOR/V")) is not None:
         denominator = float(string)

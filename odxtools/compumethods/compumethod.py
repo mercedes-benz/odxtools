@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import abc
 from dataclasses import dataclass
-from typing import List, Literal, Optional
+from typing import Literal
 
 from ..odxtypes import AtomicOdxType, DataType
 
@@ -35,6 +35,3 @@ class CompuMethod(abc.ABC):
 
     def is_valid_internal_value(self, internal_value: AtomicOdxType) -> bool:
         raise NotImplementedError()
-
-    def get_valid_physical_values(self) -> Optional[List[DataType]]:
-        return None
