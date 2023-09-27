@@ -67,6 +67,7 @@ class MinMaxLengthType(DiagCodedType):
         # TODO: ensure that the termination delimiter is not
         # encountered within the encoded value.
 
+        odxassert(self.termination != "END-OF-PDU" or encode_state.is_end_of_pdu)
         if encode_state.is_end_of_pdu or len(value_bytes) == self.max_length:
             # All termination types may be ended by the end of the PDU
             # or once reaching the maximum length. In this case, we
@@ -119,11 +120,7 @@ class MinMaxLengthType(DiagCodedType):
                     # are terminated by either the end of the PDU or
                     # our maximum size. (whatever is the smaller
                     # value.)
-                    terminator_pos = len(coded_message)
-                    if self.max_length is not None:
-                        terminator_pos = min(cursor_pos + self.max_length, terminator_pos)
-
-                    byte_length = terminator_pos - cursor_pos
+                    byte_length = max_terminator_pos - cursor_pos
                     break
                 elif (terminator_pos - cursor_pos) % len(termination_seq) == 0:
                     # we found the termination sequence at a position
