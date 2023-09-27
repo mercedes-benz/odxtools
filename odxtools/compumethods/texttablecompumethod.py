@@ -36,18 +36,14 @@ class TexttableCompuMethod(CompuMethod):
         return scales
 
     def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> AtomicOdxType:
-        scales = [x for x in self._get_scales() if x.compu_const == physical_value]
-        if scales:
-            inverse_value: Optional[AtomicOdxType] = scales[0].compu_inverse_value
-            if inverse_value is not None:
-                res = inverse_value
-            elif scales[0].lower_limit is not None:
-                res = scales[0].lower_limit.value
-            else:
-                res = None
-
-            odxassert(self.internal_type.isinstance(res))
-            return res  # type: ignore[return-value]
+        matching_scales = [x for x in self._get_scales() if x.compu_const == physical_value]
+        for scale in matching_scales:
+            if scale.compu_inverse_value is not None:
+                return scale.compu_inverse_value
+            elif scale.lower_limit is not None:
+                return scale.lower_limit.value
+            elif scale.upper_limit is not None:
+                return scale.upper_limit.value
 
         raise EncodeError(f"Texttable compu method could not encode '{physical_value!r}'.")
 

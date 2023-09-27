@@ -114,10 +114,6 @@ class IsoTpStateMachine:
         """
 
         if isinstance(bus, can.Bus):
-            # this is a bit of a hack: passing any object which
-            # exhibits a set_filters() method is assumed to be a can
-            # bus object.
-
             # create an "on receive" event for the can bus
             rx_event = asyncio.Event()
             loop = asyncio.get_running_loop()
