@@ -6,7 +6,7 @@
 {%- import('macros/printElementID.xml.jinja2') as peid %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
-{%- macro printCompanyData(company_data) -%}
+{%- macro printCompanyData(company_data) %}
 <COMPANY-DATA ID="{{company_data.odx_id.local_id}}">
  {{ peid.printElementID(company_data)|indent(1) }}
  {%- if company_data.roles is not none %}

@@ -1,0 +1,22 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printProtStack(ps) %}
+<PROT-STACK ID="{{ps.odx_id.local_id}}">
+ {{ peid.printElementID(ps) | indent(1) }}
+ <PDU-PROTOCOL-TYPE>{{ ps.pdu_protocol_type }}</PDU-PROTOCOL-TYPE>
+ <PHYSICAL-LINK-TYPE>{{ ps.physical_link_type }}</PHYSICAL-LINK-TYPE>
+ {%- if ps.comparam_subset_refs %}
+ <COMPARAM-SUBSET-REFS>
+  {%- for csr in ps.comparam_subset_refs %}
+  <COMPARAM-SUBSET-REF ID-REF="{{csr.ref_id}}" DOCREF="{{csr.ref_id}}" DOCTYPE="COMPARAM-SUBSET"/>
+  {%- endfor %}
+ </COMPARAM-SUBSET-REFS>
+ {%- endif %}
+</PROT-STACK>
+{%- endmacro %}

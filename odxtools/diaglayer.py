@@ -290,6 +290,14 @@ class DiagLayer:
     def ecu_variant_patterns(self) -> List[EcuVariantPattern]:
         return self.diag_layer_raw.ecu_variant_patterns
 
+    @property
+    def comparam_spec(self) -> OdxLinkRef:
+        return self.diag_layer_raw.comparam_spec
+
+    @property
+    def prot_stack_snref(self) -> str:
+        return self.diag_layer_raw.prot_stack_snref
+
     #####
     # </properties forwarded to the "raw" diag layer>
     #####

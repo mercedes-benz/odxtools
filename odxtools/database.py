@@ -6,6 +6,7 @@ from xml.etree import ElementTree
 from zipfile import ZipFile
 
 from .comparamsubset import ComparamSubset
+from .comparamspec import ComparamSpec
 from .diaglayer import DiagLayer
 from .diaglayercontainer import DiagLayerContainer
 from .globals import logger
@@ -32,6 +33,7 @@ class Database:
             # create an empty database object
             self._diag_layer_containers = NamedItemList[DiagLayerContainer]()
             self._comparam_subsets = NamedItemList[ComparamSubset]()
+            self._comparam_specs = NamedItemList[ComparamSpec]()
             return
 
         if pdx_zip is not None and odx_d_file_name is not None:
@@ -55,6 +57,7 @@ class Database:
 
         dlcs: List[DiagLayerContainer] = []
         comparam_subsets: List[ComparamSubset] = []
+        comparam_specs: List[ComparamSpec] = []
         for root in documents:
             # ODX spec version
             model_version = version(root.attrib.get("MODEL-VERSION", "2.0"))
@@ -70,14 +73,16 @@ class Database:
                 if subset is not None:
                     comparam_subsets.append(ComparamSubset.from_et(subset, []))
             else:
-                subset = root.find("COMPARAM-SPEC")
-                if subset is not None:
-                    comparam_subsets.append(ComparamSubset.from_et(subset, []))
+                spec = root.find("COMPARAM-SPEC")
+                if spec is not None:
+                    comparam_specs.append(ComparamSpec.from_et(subset, []))
 
         self._diag_layer_containers = NamedItemList(dlcs)
         self._diag_layer_containers.sort(key=short_name_as_key)
         self._comparam_subsets = NamedItemList(comparam_subsets)
         self._comparam_subsets.sort(key=short_name_as_key)
+        self._comparam_specs = NamedItemList(comparam_specs)
+        self._comparam_specs.sort(key=short_name_as_key)
 
         self.refresh()
 
@@ -145,3 +150,7 @@ class Database:
     @property
     def comparam_subsets(self) -> NamedItemList[ComparamSubset]:
         return self._comparam_subsets
+    
+    @property
+    def comparam_specs(self):
+        return self._comparam_specs

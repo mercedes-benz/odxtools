@@ -182,7 +182,10 @@
  </COMPARAM-REFS>
 {%- endif %}
 {%- if dlr.variant_type.value == "PROTOCOL" %}
-	<COMPARAM-SPEC-REF ID-REF="ISO_15765_3_on_ISO_15765_2" DOCREF="UDSOnCAN_CPS" DOCTYPE="COMPARAM-SPEC" />
+	<COMPARAM-SPEC-REF ID-REF="{{dlr.comparam_spec_ref.ref_id}}" DOCREF="{{dlr.comparam_spec_ref.ref_docs[0].doc_name}}" DOCTYPE="COMPARAM-SPEC"/>
+  {%- if dlr.prot_stack_snref is not none %}
+  <PROT-STACK-SNREF SHORT-NAME="{{dlr.prot_stack_snref}}"/>
+  {%- endif %}
 {%- endif %}
 {%- if dlr.parent_refs %}
  <PARENT-REFS>
