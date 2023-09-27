@@ -1,4 +1,8 @@
 <!-- SPDX-License-Identifier: MIT -->
+[![PyPi - Version](https://img.shields.io/pypi/v/odxtools)](https://pypi.org/project/odxtools)
+[![PyPI - License](https://img.shields.io/pypi/l/odxtools)](LICENSE)
+[![CI Status](https://github.com/mercedes-benz/odxtools/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/mercedes-benz/odxtools/actions?query=branch%3Amain)
+
 # odxtools
 
 `odxtools` is a set of utilities for working with diagnostic
