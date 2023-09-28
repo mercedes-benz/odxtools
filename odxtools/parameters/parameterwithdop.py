@@ -95,16 +95,3 @@ class ParameterWithDOP(Parameter):
             decode_state, bit_position=bit_position_int)
 
         return phys_val, cursor_position
-
-    def _as_dict(self):
-        d = super()._as_dict()
-        if self.dop is not None:
-            if self.bit_length is not None:
-                d["bit_length"] = self.bit_length
-            d["dop_ref"] = OdxLinkRef.from_id(self.dop.odx_id)
-        elif self.dop_ref is not None:
-            d["dop_ref"] = self.dop_ref
-        elif self.dop_snref is not None:
-            d["dop_snref"] = self.dop_snref
-
-        return d

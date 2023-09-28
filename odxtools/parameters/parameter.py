@@ -180,18 +180,3 @@ class Parameter(NamedElement, abc.ABC):
             result_blob[byte_idx_rpc] |= new_data[byte_idx_val]
 
         return result_blob
-
-    def _as_dict(self) -> Dict[str, Any]:
-        """
-        Mostly for pretty printing purposes (specifically not for reconstructing the object)
-        """
-        d: Dict[str, Any] = {
-            "short_name": self.short_name,
-            "type": self.parameter_type,
-            "semantic": self.semantic
-        }
-        if self.byte_position is not None:
-            d["byte_position"] = self.byte_position
-        if self.bit_position is not None:
-            d["bit_position"] = self.bit_position
-        return d

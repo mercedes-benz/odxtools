@@ -104,13 +104,6 @@ class NrcConstParameter(Parameter):
 
         return coded_value, cursor_position
 
-    def _as_dict(self):
-        d = super()._as_dict()
-        if self.bit_length is not None:
-            d["bit_length"] = self.bit_length
-        d["coded_values"] = self.coded_values
-        return d
-
     def get_description_of_valid_values(self) -> str:
         """return a human-understandable description of valid physical values"""
         return f"One of the constant internal values: {self.coded_values}"

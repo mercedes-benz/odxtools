@@ -89,13 +89,6 @@ class CodedConstParameter(Parameter):
 
         return coded_val, cursor_position
 
-    def _as_dict(self):
-        d = super()._as_dict()
-        if self.bit_length is not None:
-            d["bit_length"] = self.bit_length
-        d["coded_value"] = hex(self.coded_value)
-        return d
-
     @property
     def _coded_value_str(self):
         if isinstance(self.coded_value, int):
