@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
+from typing import Any, Tuple
 
 from ..decodestate import DecodeState
+from ..encodestate import EncodeState
 from ..exceptions import DecodeError
 from .parameter import Parameter, ParameterType
 
@@ -32,11 +34,11 @@ class ReservedParameter(Parameter):
         # need to take the "bit_length_raw" detour...
         return self.bit_length_raw
 
-    def get_coded_value_as_bytes(self, encode_state):
+    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         bit_position_int = self.bit_position if self.bit_position is not None else 0
         return (0).to_bytes((self.bit_length + bit_position_int + 7) // 8, "big")
 
-    def decode_from_pdu(self, decode_state: DecodeState):
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
         byte_position = (
             self.byte_position if self.byte_position is not None else decode_state.cursor_position)
         bit_position_int = self.bit_position if self.bit_position is not None else 0
