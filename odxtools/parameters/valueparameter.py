@@ -31,17 +31,14 @@ class ValueParameter(ParameterWithDOP):
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 
-        self._physical_default_value: Optional[AtomicOdxType]
-        pdvr = self.physical_default_value_raw
-        if pdvr is None:
-            self._physical_default_value = None
-            return
-
-        dop = odxrequire(self.dop)
-        if not isinstance(dop, DataObjectProperty):
-            odxraise("The type of PHYS-CONST parameters must be a simple DOP")
-        base_data_type = dop.physical_type.base_data_type
-        self._physical_default_value = base_data_type.from_string(pdvr)
+        self._physical_default_value: Optional[AtomicOdxType] = None
+        if self.physical_default_value_raw is not None:
+            dop = odxrequire(self.dop)
+            if not isinstance(dop, DataObjectProperty):
+                odxraise("Value parameters can only define a physical default "
+                         "value if they use a simple DOP")
+            base_data_type = dop.physical_type.base_data_type
+            self._physical_default_value = base_data_type.from_string(self.physical_default_value_raw)
 
     @property
     def physical_default_value(self) -> Optional[AtomicOdxType]:
