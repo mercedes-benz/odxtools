@@ -53,11 +53,11 @@ class TableStructParameter(Parameter):
         return self._table_key
 
     @property
-    def is_required(self):
+    def is_required(self) -> bool:
         return True
 
     @property
-    def is_settable(self):
+    def is_settable(self) -> bool:
         return True
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
