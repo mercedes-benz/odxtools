@@ -30,7 +30,7 @@ class UnitGroup(NamedElement):
     unit_refs: List[OdxLinkRef]
     oid: Optional[str]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._units = NamedItemList[Unit]()
 
     @staticmethod
