@@ -38,7 +38,8 @@ class ValueParameter(ParameterWithDOP):
                 odxraise("Value parameters can only define a physical default "
                          "value if they use a simple DOP")
             base_data_type = dop.physical_type.base_data_type
-            self._physical_default_value = base_data_type.from_string(self.physical_default_value_raw)
+            self._physical_default_value = base_data_type.from_string(
+                self.physical_default_value_raw)
 
     @property
     def physical_default_value(self) -> Optional[AtomicOdxType]:
@@ -65,7 +66,3 @@ class ValueParameter(ParameterWithDOP):
         bit_position_int = self.bit_position if self.bit_position is not None else 0
         return dop.convert_physical_to_bytes(
             physical_value, encode_state=encode_state, bit_position=bit_position_int)
-
-    def get_valid_physical_values(self):
-        if isinstance(self.dop, DataObjectProperty):
-            return self.dop.get_valid_physical_values()

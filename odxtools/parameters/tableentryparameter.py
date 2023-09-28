@@ -2,9 +2,9 @@
 from dataclasses import dataclass
 from typing import Any, Tuple
 
-from ..odxlink import OdxLinkRef
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
+from ..odxlink import OdxLinkRef
 from .parameter import Parameter, ParameterType
 
 

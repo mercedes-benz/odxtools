@@ -2,10 +2,9 @@
 from dataclasses import dataclass
 from typing import Tuple
 
-from ..encodestate import EncodeState
 from ..decodestate import DecodeState
+from ..encodestate import EncodeState
 from ..odxtypes import ParameterValue
-
 from .parameter import Parameter, ParameterType
 
 

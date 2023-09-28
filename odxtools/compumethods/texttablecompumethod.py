@@ -28,7 +28,7 @@ class TexttableCompuMethod(CompuMethod):
     def category(self) -> CompuMethodCategory:
         return "TEXTTABLE"
 
-    def _get_scales(self) -> List[CompuScale]:
+    def get_scales(self) -> List[CompuScale]:
         scales = list(self.internal_to_phys)
         if self.compu_default_value:
             # Default is last, since it's a fallback
@@ -36,7 +36,7 @@ class TexttableCompuMethod(CompuMethod):
         return scales
 
     def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> AtomicOdxType:
-        matching_scales = [x for x in self._get_scales() if x.compu_const == physical_value]
+        matching_scales = [x for x in self.get_scales() if x.compu_const == physical_value]
         for scale in matching_scales:
             if scale.compu_inverse_value is not None:
                 return scale.compu_inverse_value
@@ -65,7 +65,7 @@ class TexttableCompuMethod(CompuMethod):
         scale = next(
             filter(
                 lambda scale: self.__is_internal_in_scale(internal_value, scale),
-                self._get_scales(),
+                self.get_scales(),
             ), None)
         if scale is None or scale.compu_const is None:
             raise DecodeError(
@@ -73,11 +73,8 @@ class TexttableCompuMethod(CompuMethod):
         return scale.compu_const
 
     def is_valid_physical_value(self, physical_value: AtomicOdxType) -> bool:
-        return physical_value in self.get_valid_physical_values()
+        return any(x.compu_const == physical_value for x in self.get_scales())
 
     def is_valid_internal_value(self, internal_value: AtomicOdxType) -> bool:
         return any(
-            self.__is_internal_in_scale(internal_value, scale) for scale in self._get_scales())
-
-    def get_valid_physical_values(self) -> List[Optional[AtomicOdxType]]:
-        return [x.compu_const for x in self._get_scales()]
+            self.__is_internal_in_scale(internal_value, scale) for scale in self.get_scales())
