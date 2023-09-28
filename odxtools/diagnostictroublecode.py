@@ -69,6 +69,6 @@ class DiagnosticTroubleCode(IdentifiableElement):
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer"):
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)
