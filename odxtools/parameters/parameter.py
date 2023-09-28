@@ -9,6 +9,7 @@ from ..element import NamedElement
 from ..encodestate import EncodeState
 from ..exceptions import OdxWarning
 from ..odxlink import OdxLinkDatabase, OdxLinkId
+from ..odxtypes import ParameterValue
 from ..specialdatagroup import SpecialDataGroup
 
 if TYPE_CHECKING:
@@ -93,7 +94,7 @@ class Parameter(NamedElement, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         """Decode the parameter value from the coded message.
 
         If the parameter does have a byte position property, the coded bytes the parameter covers are extracted
@@ -180,11 +181,15 @@ class Parameter(NamedElement, abc.ABC):
 
         return result_blob
 
-    def _as_dict(self):
+    def _as_dict(self) -> Dict[str, Any]:
         """
         Mostly for pretty printing purposes (specifically not for reconstructing the object)
         """
-        d = {"short_name": self.short_name, "type": self.parameter_type, "semantic": self.semantic}
+        d: Dict[str, Any] = {
+            "short_name": self.short_name,
+            "type": self.parameter_type,
+            "semantic": self.semantic
+        }
         if self.byte_position is not None:
             d["byte_position"] = self.byte_position
         if self.bit_position is not None:

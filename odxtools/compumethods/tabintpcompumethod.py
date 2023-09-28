@@ -121,10 +121,15 @@ class TabIntpCompuMethod(CompuMethod):
                               "either int or float")
 
         reference_points = list(zip(self.physical_points, self.internal_points))
-        result = self._piecewise_linear_interpolate(physical_value, reference_points)
+        odxassert(
+            isinstance(physical_value, (int, float)),
+            "Only integers and floats can be piecewise linearly interpolated")
+        result = self._piecewise_linear_interpolate(
+            physical_value,  # type: ignore[arg-type]
+            reference_points)
 
         if result is None:
-            raise EncodeError(f"Internal value {physical_value} must be inside the range"
+            raise EncodeError(f"Internal value {physical_value!r} must be inside the range"
                               f" [{min(self.physical_points)}, {max(self.physical_points)}]")
         res = self.internal_type.make_from(result)
         if not isinstance(res, (int, float)):
@@ -137,10 +142,12 @@ class TabIntpCompuMethod(CompuMethod):
                               "either int or float")
 
         reference_points = list(zip(self.internal_points, self.physical_points))
-        result = self._piecewise_linear_interpolate(internal_value, reference_points)
+        result = self._piecewise_linear_interpolate(
+            internal_value,  # type: ignore[arg-type]
+            reference_points)
 
         if result is None:
-            raise DecodeError(f"Internal value {internal_value} must be inside the range"
+            raise DecodeError(f"Internal value {internal_value!r} must be inside the range"
                               f" [{min(self.internal_points)}, {max(self.internal_points)}]")
         res = self.physical_type.make_from(result)
         if not isinstance(res, (int, float)):
