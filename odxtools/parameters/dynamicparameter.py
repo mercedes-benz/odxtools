@@ -19,9 +19,6 @@ class DynamicParameter(Parameter):
     def is_settable(self) -> bool:
         raise NotImplementedError(".is_settable for a DynamicParameter")
 
-    def get_coded_value(self):
-        raise NotImplementedError("Encoding a DynamicParameter is not implemented yet.")
-
     def get_coded_value_as_bytes(self):
         raise NotImplementedError("Encoding a DynamicParameter is not implemented yet.")
 

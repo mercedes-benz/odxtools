@@ -73,9 +73,6 @@ class ParameterWithDOP(Parameter):
         else:
             return None
 
-    def get_coded_value(self, physical_value=None):
-        return self.dop.convert_physical_to_internal(physical_value)
-
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
         dop = odxrequire(self.dop, "Reference to DOP is not resolved")
         physical_value = encode_state.parameter_values[self.short_name]

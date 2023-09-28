@@ -60,7 +60,7 @@ class Unit(IdentifiableElement):
     offset_si_to_unit: Optional[float]
     physical_dimension_ref: Optional[OdxLinkRef]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._physical_dimension = None
 
     @staticmethod
@@ -69,9 +69,9 @@ class Unit(IdentifiableElement):
         oid = et_element.get("OID")
         display_name = odxrequire(et_element.findtext("DISPLAY-NAME"))
 
-        def read_optional_float(element, name):
-            if element.findtext(name):
-                return float(element.findtext(name))
+        def read_optional_float(element: ElementTree.Element, name: str) -> Optional[float]:
+            if (elem_str := element.findtext(name)) is not None:
+                return float(elem_str)
             else:
                 return None
 
@@ -89,7 +89,7 @@ class Unit(IdentifiableElement):
             **kwargs)
 
     @property
-    def physical_dimension(self) -> PhysicalDimension:
+    def physical_dimension(self) -> Optional[PhysicalDimension]:
         return self._physical_dimension
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

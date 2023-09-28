@@ -145,10 +145,7 @@ class DataObjectProperty(DopBase):
         """
         if not self.is_valid_physical_value(physical_value):
             raise EncodeError(f"The value {repr(physical_value)} of type {type(physical_value)}"
-                              f" is not a valid." +
-                              (f" Valid values are {self.compu_method.get_valid_physical_values()}"
-                               if self.compu_method.get_valid_physical_values(
-                               ) else f" Expected type {self.physical_type.base_data_type.value}."))
+                              f" is not a valid.")
 
         internal_val = self.convert_physical_to_internal(physical_value)
         return self.diag_coded_type.convert_internal_to_bytes(

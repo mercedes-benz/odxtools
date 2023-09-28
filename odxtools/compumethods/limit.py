@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional
 from xml.etree import ElementTree
 
 from ..exceptions import odxassert, odxraise, odxrequire
-from ..odxtypes import DataType
+from ..odxtypes import AtomicOdxType, DataType
 
 
 class IntervalType(Enum):
@@ -16,7 +16,7 @@ class IntervalType(Enum):
 
 @dataclass
 class Limit:
-    value: Union[str, int, float, bytes]
+    value: AtomicOdxType
     interval_type: IntervalType = IntervalType.CLOSED
 
     def __post_init__(self) -> None:
@@ -53,7 +53,7 @@ class Limit:
         else:
             return Limit(internal_type.from_string(odxrequire(et_element.text)), interval_type)
 
-    def complies_to_upper(self, value):
+    def complies_to_upper(self, value: AtomicOdxType) -> bool:
         """Checks if the value is in the range w.r.t. the upper limit.
 
         * If the interval type is closed, return `value <= limit.value`.
@@ -61,13 +61,13 @@ class Limit:
         * If the interval type is infinite, return `True`.
         """
         if self.interval_type == IntervalType.CLOSED:
-            return value <= self.value
+            return value <= self.value  # type: ignore[operator]
         elif self.interval_type == IntervalType.OPEN:
-            return value < self.value
+            return value < self.value  # type: ignore[operator]
         elif self.interval_type == IntervalType.INFINITE:
             return True
 
-    def complies_to_lower(self, value):
+    def complies_to_lower(self, value: AtomicOdxType) -> bool:
         """Checks if the value is in the range w.r.t. the lower limit.
 
         * If the interval type is closed, return `limit.value <= value`.
@@ -75,8 +75,8 @@ class Limit:
         * If the interval type is infinite, return `True`.
         """
         if self.interval_type == IntervalType.CLOSED:
-            return self.value <= value
+            return self.value <= value  # type: ignore[operator]
         elif self.interval_type == IntervalType.OPEN:
-            return self.value < value
+            return self.value < value  # type: ignore[operator]
         elif self.interval_type == IntervalType.INFINITE:
             return True

@@ -63,9 +63,6 @@ class NrcConstParameter(Parameter):
     def is_settable(self) -> bool:
         return False
 
-    def get_coded_value(self):
-        return self.coded_value
-
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
         if self.short_name in encode_state.parameter_values:
             if encode_state.parameter_values[self.short_name] not in self.coded_values:

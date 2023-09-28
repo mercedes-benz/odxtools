@@ -52,9 +52,6 @@ class PhysicalConstantParameter(ParameterWithDOP):
     def is_settable(self) -> bool:
         return False
 
-    def get_coded_value(self):
-        return self.dop.convert_physical_to_internal(self.physical_constant_value)
-
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
         dop = odxrequire(self.dop, "Reference to DOP is not resolved")
         if (self.short_name in encode_state.parameter_values and

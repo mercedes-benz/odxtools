@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 
 from ..exceptions import DecodeError, EncodeError, odxassert
-from ..odxtypes import DataType
+from ..odxtypes import AtomicOdxType, DataType
 from .compumethod import CompuMethod, CompuMethodCategory
 from .compuscale import CompuScale
 
@@ -28,25 +28,26 @@ class TexttableCompuMethod(CompuMethod):
     def category(self) -> CompuMethodCategory:
         return "TEXTTABLE"
 
-    def _get_scales(self):
+    def _get_scales(self) -> List[CompuScale]:
         scales = list(self.internal_to_phys)
         if self.compu_default_value:
             # Default is last, since it's a fallback
             scales.append(self.compu_default_value)
         return scales
 
-    def convert_physical_to_internal(self, physical_value):
-        scale: CompuScale = next(
-            filter(lambda scale: scale.compu_const == physical_value, self._get_scales()), None)
-        if scale is not None:
-            res = (
-                scale.compu_inverse_value
-                if scale.compu_inverse_value is not None else scale.lower_limit.value)
-            odxassert(self.internal_type.isinstance(res))
-            return res
-        raise EncodeError(f"Texttable compu method could not encode '{physical_value}'.")
+    def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> AtomicOdxType:
+        matching_scales = [x for x in self._get_scales() if x.compu_const == physical_value]
+        for scale in matching_scales:
+            if scale.compu_inverse_value is not None:
+                return scale.compu_inverse_value
+            elif scale.lower_limit is not None:
+                return scale.lower_limit.value
+            elif scale.upper_limit is not None:
+                return scale.upper_limit.value
 
-    def __is_internal_in_scale(self, internal_value, scale: CompuScale):
+        raise EncodeError(f"Texttable compu method could not encode '{physical_value!r}'.")
+
+    def __is_internal_in_scale(self, internal_value: AtomicOdxType, scale: CompuScale) -> bool:
         if scale == self.compu_default_value:
             return True
         if scale.lower_limit is not None and not scale.lower_limit.complies_to_lower(
@@ -60,23 +61,23 @@ class TexttableCompuMethod(CompuMethod):
         # value complies to the defined limits
         return True
 
-    def convert_internal_to_physical(self, internal_value):
+    def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> AtomicOdxType:
         scale = next(
             filter(
                 lambda scale: self.__is_internal_in_scale(internal_value, scale),
                 self._get_scales(),
             ), None)
-        if scale is None:
+        if scale is None or scale.compu_const is None:
             raise DecodeError(
-                f"Texttable compu method could not decode {internal_value} to string.")
+                f"Texttable compu method could not decode {internal_value!r} to string.")
         return scale.compu_const
 
-    def is_valid_physical_value(self, physical_value):
+    def is_valid_physical_value(self, physical_value: AtomicOdxType) -> bool:
         return physical_value in self.get_valid_physical_values()
 
-    def is_valid_internal_value(self, internal_value):
+    def is_valid_internal_value(self, internal_value: AtomicOdxType) -> bool:
         return any(
             self.__is_internal_in_scale(internal_value, scale) for scale in self._get_scales())
 
-    def get_valid_physical_values(self):
+    def get_valid_physical_values(self) -> List[Optional[AtomicOdxType]]:
         return [x.compu_const for x in self._get_scales()]

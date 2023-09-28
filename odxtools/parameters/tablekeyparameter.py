@@ -94,14 +94,6 @@ class TableKeyParameter(Parameter):
     def is_settable(self) -> bool:
         return True
 
-    def get_coded_value(self, physical_value=None) -> Any:
-        key_dop = self.table.key_dop
-        if key_dop is None:
-            raise EncodeError(f"Table '{self.table.short_name}' does not define "
-                              f"a KEY-DOP, but is used in TABLE-KEY parameter "
-                              f"'{self.short_name}'")
-        return key_dop.convert_physical_to_internal(physical_value)
-
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         tr_short_name = encode_state.parameter_values.get(self.short_name)
 

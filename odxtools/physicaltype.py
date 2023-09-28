@@ -51,13 +51,13 @@ class PhysicalType:
     The precision is only applicable if the base data type is A_FLOAT32 or A_FLOAT64.
     """
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.base_data_type = DataType(self.base_data_type)
         if self.display_radix is not None:
             self.display_radix = Radix(self.display_radix)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]):
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "PhysicalType":
         base_data_type_str = et_element.get("BASE-DATA-TYPE")
         if base_data_type_str not in DataType.__members__:
             odxraise(f"Encountered unknown base data type '{base_data_type_str}'")

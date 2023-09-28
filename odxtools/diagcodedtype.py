@@ -15,6 +15,7 @@ from .odxtypes import AtomicOdxType, DataType
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
+# format specifiers for the data type using the bitstruct module
 ODX_TYPE_TO_FORMAT_LETTER = {
     DataType.A_INT32: "s",
     DataType.A_UINT32: "u",
@@ -26,6 +27,7 @@ ODX_TYPE_TO_FORMAT_LETTER = {
     DataType.A_UTF8STRING: "t",
 }
 
+# Allowed diag-coded types
 DctType = Literal[
     "LEADING-LENGTH-INFO-TYPE",
     "MIN-MAX-LENGTH-TYPE",

@@ -86,8 +86,8 @@ def parameter_info(param_list: Iterable[Union[Parameter, EndOfPduField]]) -> str
             ul = cm.physical_upper_limit
             result += (f" range: "
                        f"{'[' if ll.interval_type == IntervalType.CLOSED else '('}"
-                       f"{ll.value}, "
-                       f"{ul.value}"
+                       f"{ll.value!r}, "
+                       f"{ul.value!r}"
                        f"{']' if ul.interval_type == IntervalType.CLOSED else ')'}\n")
 
             unit = dop.unit

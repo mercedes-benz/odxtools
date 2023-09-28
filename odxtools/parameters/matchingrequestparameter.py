@@ -28,9 +28,6 @@ class MatchingRequestParameter(Parameter):
     def is_settable(self) -> bool:
         return False
 
-    def get_coded_value(self, request_value=None):
-        return request_value
-
     def get_coded_value_as_bytes(self, encode_state: EncodeState):
         if not encode_state.triggering_request:
             raise EncodeError(f"Parameter '{self.short_name}' is of matching request type,"

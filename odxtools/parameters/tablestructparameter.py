@@ -60,10 +60,6 @@ class TableStructParameter(Parameter):
     def is_settable(self):
         return True
 
-    def get_coded_value(self, physical_value=None):
-        raise EncodeError("TableStructParameters cannot be converted to "
-                          "internal values without a table row.")
-
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         physical_value = encode_state.parameter_values.get(self.short_name)
 
