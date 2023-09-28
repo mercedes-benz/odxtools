@@ -8,7 +8,7 @@ from ..decodestate import DecodeState
 from ..dopbase import DopBase
 from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
-from ..exceptions import odxassert, odxrequire
+from ..exceptions import odxassert, odxraise, odxrequire
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..physicaltype import PhysicalType
 from .parameter import Parameter
@@ -54,15 +54,19 @@ class ParameterWithDOP(Parameter):
                 spec.env_datas.get(self.dop_snref))
 
     @property
-    def dop(self) -> Optional[DopBase]:
+    def dop(self) -> DopBase:
         """may be a DataObjectProperty, a Structure or None"""
+
+        if self._dop is None:
+            odxraise("Specifying a data object property is mandatory but it could "
+                     "not be resolved")
 
         return self._dop
 
     @property
     def bit_length(self):
-        if self.dop is not None:
-            return self.dop.bit_length
+        if self._dop is not None:
+            return self._dop.bit_length
         else:
             return None
 
@@ -81,14 +85,13 @@ class ParameterWithDOP(Parameter):
             physical_value, encode_state, bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
-        dop = odxrequire(self.dop, "Reference to DOP is not resolved")
         decode_state = copy(decode_state)
         if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
             decode_state.cursor_position = self.byte_position
 
         # Use DOP to decode
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        phys_val, cursor_position = dop.convert_bytes_to_physical(
+        phys_val, cursor_position = self.dop.convert_bytes_to_physical(
             decode_state, bit_position=bit_position_int)
 
         return phys_val, cursor_position

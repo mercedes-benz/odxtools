@@ -957,6 +957,11 @@ class DiagLayer:
                 for gnr in self.global_negative_responses:
                     try:
                         decoded_gnr = gnr.decode(message)
+                        if not isinstance(decoded_gnr, dict):
+                            raise DecodeError(f"Expected the decoded value of a global "
+                                              f"negative response to be a dictionary, "
+                                              f"got {type(decoded_gnr)} for {self.short_name}")
+
                         decoded_messages.append(
                             Message(
                                 coded_message=message,

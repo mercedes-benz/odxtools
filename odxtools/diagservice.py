@@ -193,6 +193,10 @@ class DiagService(IdentifiableElement):
                 f"The service {self.short_name} cannot decode the message {raw_message.hex()}")
         coding_object = coding_objects[0]
         param_dict = coding_object.decode(raw_message)
+        if not isinstance(param_dict, dict):
+            # if this happens, this is probably due to a bug in
+            # coding_object.decode()
+            raise RuntimeError(f"Expected a set of decoded parameters, got {type(param_dict)}")
         return Message(
             coded_message=raw_message,
             service=self,
