@@ -8,8 +8,9 @@ from ..decodestate import DecodeState
 from ..dopbase import DopBase
 from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
-from ..exceptions import odxassert, odxraise, odxrequire
+from ..exceptions import odxassert, odxrequire
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxtypes import ParameterValue
 from ..physicaltype import PhysicalType
 from .parameter import Parameter
 
@@ -57,11 +58,9 @@ class ParameterWithDOP(Parameter):
     def dop(self) -> DopBase:
         """may be a DataObjectProperty, a Structure or None"""
 
-        if self._dop is None:
-            odxraise("Specifying a data object property is mandatory but it could "
-                     "not be resolved")
-
-        return self._dop
+        return odxrequire(
+            self._dop, "Specifying a data object property is mandatory but it "
+            "could not be resolved")
 
     @property
     def bit_length(self):
@@ -84,7 +83,7 @@ class ParameterWithDOP(Parameter):
         return dop.convert_physical_to_bytes(
             physical_value, encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         decode_state = copy(decode_state)
         if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
             decode_state.cursor_position = self.byte_position

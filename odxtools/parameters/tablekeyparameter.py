@@ -6,6 +6,7 @@ from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxtypes import ParameterValue
 from .parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
@@ -134,7 +135,7 @@ class TableKeyParameter(Parameter):
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         return super().encode_into_pdu(encode_state)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
             cursor_position = self.byte_position
 

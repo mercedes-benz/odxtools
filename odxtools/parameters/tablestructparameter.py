@@ -2,12 +2,13 @@
 import warnings
 from copy import copy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, cast
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError, OdxWarning, odxraise
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxtypes import ParameterValue
 from .parameter import Parameter, ParameterType
 from .tablekeyparameter import TableKeyParameter
 
@@ -129,7 +130,7 @@ class TableStructParameter(Parameter):
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         return super().encode_into_pdu(encode_state)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
             next_pos = self.byte_position if self.byte_position is not None else 0
             decode_state = copy(decode_state)
@@ -158,4 +159,4 @@ class TableStructParameter(Parameter):
         else:
             # the table row associated with the key neither defines a
             # DOP not a structure -> ignore it
-            return (table_row.short_name, None), decode_state.cursor_position
+            return (table_row.short_name, cast(int, None)), decode_state.cursor_position

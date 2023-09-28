@@ -107,18 +107,18 @@ class BasicStructure(DopBase):
         print(parameter_info(self.free_parameters), end="")
 
     def convert_physical_to_internal(self,
-                                     param_values: ParameterValue,
+                                     param_value: ParameterValue,
                                      triggering_coded_request: Optional[bytes],
                                      is_end_of_pdu: bool = True) -> bytes:
 
-        if not isinstance(param_values, dict):
+        if not isinstance(param_value, dict):
             raise EncodeError(
                 f"Expected a dictionary for the values of structure {self.short_name}, "
-                f"got {type(param_values)}")
+                f"got {type(param_value)}")
 
         encode_state = EncodeState(
             b'',
-            dict(param_values),
+            dict(param_value),
             triggering_request=triggering_coded_request,
             is_end_of_pdu=False,
         )
