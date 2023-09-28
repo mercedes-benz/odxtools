@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
+from typing import Any, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -17,7 +18,7 @@ class MatchingRequestParameter(Parameter):
         return "MATCHING-REQUEST-PARAM"
 
     @property
-    def bit_length(self):
+    def bit_length(self) -> int:
         return 8 * self.byte_length
 
     @property
@@ -28,7 +29,7 @@ class MatchingRequestParameter(Parameter):
     def is_settable(self) -> bool:
         return False
 
-    def get_coded_value_as_bytes(self, encode_state: EncodeState):
+    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         if not encode_state.triggering_request:
             raise EncodeError(f"Parameter '{self.short_name}' is of matching request type,"
                               " but no original request has been specified.")
@@ -36,7 +37,7 @@ class MatchingRequestParameter(Parameter):
                                                .request_byte_position:self.request_byte_position +
                                                self.byte_length]
 
-    def decode_from_pdu(self, decode_state: DecodeState):
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
         byte_position = (
             self.byte_position if self.byte_position is not None else decode_state.cursor_position)
         bit_position = self.bit_position if self.bit_position is not None else 0
