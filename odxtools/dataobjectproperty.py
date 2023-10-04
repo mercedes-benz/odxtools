@@ -174,6 +174,3 @@ class DataObjectProperty(DopBase):
 
     def is_valid_physical_value(self, physical_value):
         return self.compu_method.is_valid_physical_value(physical_value)
-
-    def get_valid_physical_values(self):
-        return self.compu_method.get_valid_physical_values()

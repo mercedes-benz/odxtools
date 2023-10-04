@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from .decodestate import DecodeState
 from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .odxlink import OdxLinkDatabase, OdxLinkId
+from .odxtypes import ParameterValue
 from .specialdatagroup import SpecialDataGroup
 
 if TYPE_CHECKING:
@@ -52,11 +53,13 @@ class DopBase(IdentifiableElement):
     def is_visible(self) -> bool:
         return self.is_visible_raw in (None, True)
 
-    def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState,
+    def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
         """Convert the physical value into bytes."""
         raise NotImplementedError
 
-    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
+    def convert_bytes_to_physical(self,
+                                  decode_state: DecodeState,
+                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
         """Extract the bytes from the PDU and convert them to the physical value."""
         raise NotImplementedError

@@ -1,7 +1,11 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
+from typing import Tuple
 
+from ..decodestate import DecodeState
+from ..encodestate import EncodeState
 from ..odxlink import OdxLinkRef
+from ..odxtypes import ParameterValue
 from .parameter import Parameter, ParameterType
 
 
@@ -22,8 +26,8 @@ class TableEntryParameter(Parameter):
     def is_settable(self) -> bool:
         raise NotImplementedError("TableKeyParameter.is_settable is not implemented yet.")
 
-    def get_coded_value_as_bytes(self):
+    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         raise NotImplementedError("Encoding a TableKeyParameter is not implemented yet.")
 
-    def decode_from_pdu(self, coded_message, default_byte_position=None):
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         raise NotImplementedError("Decoding a TableKeyParameter is not implemented yet.")

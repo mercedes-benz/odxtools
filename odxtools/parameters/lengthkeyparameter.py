@@ -6,6 +6,7 @@ from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import odxrequire
 from ..odxlink import OdxLinkDatabase, OdxLinkId
+from ..odxtypes import ParameterValue
 from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
@@ -65,5 +66,5 @@ class LengthKeyParameter(ParameterWithDOP):
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         return super().encode_into_pdu(encode_state)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         return super().decode_from_pdu(decode_state)

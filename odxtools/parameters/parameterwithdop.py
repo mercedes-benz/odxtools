@@ -10,6 +10,7 @@ from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
 from ..exceptions import odxassert, odxrequire
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxtypes import ParameterValue
 from ..physicaltype import PhysicalType
 from .parameter import Parameter
 
@@ -54,15 +55,17 @@ class ParameterWithDOP(Parameter):
                 spec.env_datas.get(self.dop_snref))
 
     @property
-    def dop(self) -> Optional[DopBase]:
+    def dop(self) -> DopBase:
         """may be a DataObjectProperty, a Structure or None"""
 
-        return self._dop
+        return odxrequire(
+            self._dop, "Specifying a data object property is mandatory but it "
+            "could not be resolved")
 
     @property
     def bit_length(self):
-        if self.dop is not None:
-            return self.dop.bit_length
+        if self._dop is not None:
+            return self._dop.bit_length
         else:
             return None
 
@@ -80,28 +83,14 @@ class ParameterWithDOP(Parameter):
         return dop.convert_physical_to_bytes(
             physical_value, encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
-        dop = odxrequire(self.dop, "Reference to DOP is not resolved")
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         decode_state = copy(decode_state)
         if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
             decode_state.cursor_position = self.byte_position
 
         # Use DOP to decode
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        phys_val, cursor_position = dop.convert_bytes_to_physical(
+        phys_val, cursor_position = self.dop.convert_bytes_to_physical(
             decode_state, bit_position=bit_position_int)
 
         return phys_val, cursor_position
-
-    def _as_dict(self):
-        d = super()._as_dict()
-        if self.dop is not None:
-            if self.bit_length is not None:
-                d["bit_length"] = self.bit_length
-            d["dop_ref"] = OdxLinkRef.from_id(self.dop.odx_id)
-        elif self.dop_ref is not None:
-            d["dop_ref"] = self.dop_ref
-        elif self.dop_snref is not None:
-            d["dop_snref"] = self.dop_snref
-
-        return d

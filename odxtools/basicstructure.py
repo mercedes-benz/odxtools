@@ -11,7 +11,7 @@ from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase
-from .odxtypes import ParameterDict, ParameterValueDict
+from .odxtypes import ParameterDict, ParameterValue
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.lengthkeyparameter import LengthKeyParameter
 from .parameters.matchingrequestparameter import MatchingRequestParameter
@@ -107,13 +107,18 @@ class BasicStructure(DopBase):
         print(parameter_info(self.free_parameters), end="")
 
     def convert_physical_to_internal(self,
-                                     param_values: ParameterValueDict,
+                                     param_value: ParameterValue,
                                      triggering_coded_request: Optional[bytes],
                                      is_end_of_pdu: bool = True) -> bytes:
 
+        if not isinstance(param_value, dict):
+            raise EncodeError(
+                f"Expected a dictionary for the values of structure {self.short_name}, "
+                f"got {type(param_value)}")
+
         encode_state = EncodeState(
             b'',
-            dict(param_values),
+            dict(param_value),
             triggering_request=triggering_coded_request,
             is_end_of_pdu=False,
         )
@@ -181,9 +186,13 @@ class BasicStructure(DopBase):
                    "\n".join(self.__message_format_lines()))
 
     def convert_physical_to_bytes(self,
-                                  param_values: ParameterValueDict,
+                                  param_values: ParameterValue,
                                   encode_state: EncodeState,
                                   bit_position: int = 0) -> bytes:
+        if not isinstance(param_values, dict):
+            raise EncodeError(
+                f"Expected a dictionary for the values of structure {self.short_name}, "
+                f"got {type(param_values)}")
         if bit_position != 0:
             raise EncodeError("Structures must be aligned, i.e. bit_position=0, but "
                               f"{self.short_name} was passed the bit position {bit_position}")
@@ -195,7 +204,7 @@ class BasicStructure(DopBase):
 
     def convert_bytes_to_physical(self,
                                   decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[ParameterValueDict, int]:
+                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
         if bit_position != 0:
             raise DecodeError("Structures must be aligned, i.e. bit_position=0, but "
                               f"{self.short_name} was passed the bit position {bit_position}")
@@ -230,7 +239,7 @@ class BasicStructure(DopBase):
             triggering_coded_request=coded_request,
             is_end_of_pdu=True)
 
-    def decode(self, message: bytes) -> ParameterValueDict:
+    def decode(self, message: bytes) -> ParameterValue:
         # dummy decode state to be passed to convert_bytes_to_physical
         decode_state = DecodeState(parameter_values={}, coded_message=message, cursor_position=0)
         param_values, cursor_position = self.convert_bytes_to_physical(decode_state)
@@ -302,8 +311,8 @@ class BasicStructure(DopBase):
         # replace structure parameters by their sub parameters
         params: List[Parameter] = []
         for p in sorted_params:
-            if isinstance(p, ValueParameter) and isinstance(p.dop, BasicStructure):
-                params += p.dop.parameters
+            if isinstance(p, ValueParameter) and isinstance(p._dop, BasicStructure):
+                params += p._dop.parameters
             else:
                 params.append(p)
 
@@ -350,8 +359,8 @@ class BasicStructure(DopBase):
                     # END-OF-PDU fields do not exhibit a fixed bit
                     # length, so they need special treatment here
                     dct = None
-                    if hasattr(params[param_idx], "dop"):
-                        dop = params[param_idx].dop  # type: ignore
+                    if hasattr(params[param_idx], "_dop"):
+                        dop = params[param_idx]._dop  # type: ignore[attr-defined]
                         if hasattr(dop, "diag_coded_type"):
                             dct = dop.diag_coded_type
 

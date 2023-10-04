@@ -33,13 +33,13 @@ class UnitSpec:
     physical_dimensions: Union[NamedItemList[PhysicalDimension], List[PhysicalDimension]]
     sdgs: List[SpecialDataGroup]
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.unit_groups = NamedItemList(self.unit_groups)
         self.units = NamedItemList(self.units)
         self.physical_dimensions = NamedItemList(self.physical_dimensions)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]):
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "UnitSpec":
 
         unit_groups = [
             UnitGroup.from_et(el, doc_frags) for el in et_element.iterfind("UNIT-GROUPS/UNIT-GROUP")

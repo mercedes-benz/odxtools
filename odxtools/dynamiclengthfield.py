@@ -9,7 +9,7 @@ from .encodestate import EncodeState
 from .exceptions import odxrequire
 from .field import Field
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
-from .odxtypes import ParameterValueDict
+from .odxtypes import ParameterValue
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -49,7 +49,7 @@ class DynamicLengthField(Field):
 
     def convert_physical_to_bytes(
         self,
-        physical_value: List[ParameterValueDict],
+        physical_value: ParameterValue,
         encode_state: EncodeState,
         bit_position: int = 0,
     ) -> bytes:

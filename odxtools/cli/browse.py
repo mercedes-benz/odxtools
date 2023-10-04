@@ -53,33 +53,32 @@ def _validate_string_value(input, parameter):
 
 
 def prompt_single_parameter_value(parameter):
-    if (not isinstance(parameter, ParameterWithDOP) or
-            parameter.get_valid_physical_values() is None or
-            parameter.get_valid_physical_values() is []):
-        param_prompt = [{
-            "type":
-                "input",
-            "name":
-                parameter.short_name,
-            "message":
-                f"Value for parameter '{parameter.short_name}' (Type: {parameter.physical_type.base_data_type})"
-                + (f"[optional]" if parameter.is_optional else ""),
-            # TODO: improve validation
-            "validate":
-                lambda x: _validate_string_value(x, parameter),
-            # TODO: do type conversion?
-            "filter":
-                lambda x: x
-            # x if x == "" or p.physical_type.base_data_type is None
-            # else _convert_string_to_odx_type(x, p.physical_type.base_data_type, param=p) # This does not work because the next parameter to be promted is used (for some reason?)
-        }]
-    else:
-        param_prompt = [{
-            "type": "list",
-            "name": parameter.short_name,
-            "message": f"Value for parameter '{parameter.short_name}'",
-            "choices": parameter.get_valid_physical_values(),
-        }]
+    # TODO: add valid choices for the parameter
+    #        "choices": parameter.get_valid_physical_values(),
+    param_prompt = [{
+        "type":
+            "input",
+        "name":
+            parameter.short_name,
+        "message":
+            f"Value for parameter '{parameter.short_name}' (Type: {parameter.physical_type.base_data_type})"
+            + (f"[optional]" if parameter.is_optional else ""),
+        # TODO: improve validation
+        "validate":
+            lambda x: _validate_string_value(x, parameter),
+        # TODO: do type conversion?
+        "filter":
+            lambda x: x
+        # x if x == "" or p.physical_type.base_data_type is None
+        # else _convert_string_to_odx_type(x, p.physical_type.base_data_type, param=p) # This does not work because the next parameter to be promted is used (for some reason?)
+    }]
+
+    if hasattr(parameter, "dop") and hasattr(parameter.dop, "compu_method") \
+       and hasattr(parameter.dop.compu_method, "get_scales"):
+        scales = parameter.dop.compu_method.get_scales()
+        choices = [scale.compu_const for scale in scales if scale is not None]
+        param_prompt["choices"] = choices
+
     answer = PI_prompt.prompt(param_prompt)
     if answer.get(parameter.short_name) == "" and parameter.is_optional:
         return None
