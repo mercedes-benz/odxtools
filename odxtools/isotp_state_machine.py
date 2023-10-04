@@ -5,6 +5,7 @@ import asyncio
 import re
 import sys
 from enum import IntEnum
+from io import TextIOWrapper
 from typing import AsyncGenerator, Iterable, List, Optional, TextIO, Tuple, Union
 
 import bitstruct
@@ -26,8 +27,10 @@ class IsoTp(IntEnum):
 
 class IsoTpStateMachine:
     can_normal_frame_re = re.compile(
-        "([a-zA-Z0-9_-]*) *([0-9A-Fa-f ]*) *\\[[0-9]*\\] *([ 0-9A-Fa-f]*)")
-    can_log_frame_re = re.compile("\\([0-9.]*\\) *([a-zA-Z0-9_-]*) ([0-9A-Fa-f]*)#([0-9A-Fa-f]*)")
+        "([a-zA-Z0-9_-]*) *([0-9A-Fa-f ]*) *\\[[0-9]+\\] *([ 0-9A-Fa-f]+)")
+    can_log_frame_re = re.compile("\\([0-9.]*\\) *([a-zA-Z0-9_-]*) ([0-9A-Fa-f]+)#([0-9A-Fa-f]+)")
+    can_fd_log_frame_re = re.compile(
+        "\\([0-9.]*\\) *([a-zA-Z0-9_-]*) ([0-9A-Fa-f]+)##[0-9A-Fa-f]([0-9A-Fa-f]+)")
 
     def __init__(self, can_rx_ids: Union[int, List[int]]):
         if isinstance(can_rx_ids, int):
@@ -128,7 +131,7 @@ class IsoTpStateMachine:
                 for tmp in self.decode_rx_frame(msg.arbitration_id, msg.data):
                     yield tmp
         else:
-            assert isinstance(bus, TextIO)
+            assert isinstance(bus, (TextIO, TextIOWrapper))
             # input is a file
             while bus:
                 cur_line = bus.readline()
@@ -145,7 +148,9 @@ class IsoTpStateMachine:
                     for tmp in self.decode_rx_frame(frame_id, frame_data):
                         yield tmp
 
-                elif m := self.can_log_frame_re.match(cur_line.strip()):
+                elif (m := self.can_log_frame_re.match(
+                        cur_line.strip())) or (m := self.can_fd_log_frame_re.match(
+                            cur_line.strip())):
                     #frame_interface = m.group(2)
                     frame_id = int(m.group(2), 16)
 
