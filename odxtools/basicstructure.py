@@ -15,8 +15,10 @@ from .odxtypes import ParameterDict, ParameterValue
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.lengthkeyparameter import LengthKeyParameter
 from .parameters.matchingrequestparameter import MatchingRequestParameter
+from .parameters.nrcconstparameter import NrcConstParameter
 from .parameters.parameter import Parameter
 from .parameters.parameterwithdop import ParameterWithDOP
+from .parameters.physicalconstantparameter import PhysicalConstantParameter
 from .parameters.tablekeyparameter import TableKeyParameter
 from .parameters.valueparameter import ValueParameter
 
@@ -66,10 +68,8 @@ class BasicStructure(DopBase):
         prefix = b''
         encode_state = EncodeState(prefix, parameter_values={}, triggering_request=request_prefix)
         for p in self.parameters:
-            if isinstance(
-                    p, CodedConstParameter) and p.bit_length is not None and p.bit_length % 8 == 0:
-                encode_state.coded_message = p.encode_into_pdu(encode_state)
-            elif isinstance(p, MatchingRequestParameter):
+            if isinstance(p, (CodedConstParameter, NrcConstParameter, MatchingRequestParameter,
+                              PhysicalConstantParameter)):
                 encode_state.coded_message = p.encode_into_pdu(encode_state)
             else:
                 break
