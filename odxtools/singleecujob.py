@@ -16,7 +16,7 @@ from .message import Message
 from .nameditemlist import NamedItemList
 from .negoutputparam import NegOutputParam
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import odxstr_to_bool, ParameterValue
+from .odxtypes import ParameterValue, odxstr_to_bool
 from .outputparam import OutputParam
 from .progcode import ProgCode
 from .specialdatagroup import SpecialDataGroup
