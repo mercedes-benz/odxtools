@@ -54,7 +54,7 @@ class CompanyDocInfo:
 
         return result
 
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase):
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._company_data = odxlinks.resolve(self.company_data_ref, CompanyData)
 
         self._team_member: Optional[TeamMember] = None
@@ -64,6 +64,6 @@ class CompanyDocInfo:
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer"):
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)
