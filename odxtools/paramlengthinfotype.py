@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict, Tuple
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import odxraise
-from .odxlink import OdxLinkDatabase, OdxLinkRef
-from .odxtypes import DataType
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxtypes import AtomicOdxType, DataType
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -23,7 +23,7 @@ class ParamLengthInfoType(DiagCodedType):
     def dct_type(self) -> DctType:
         return "PARAM-LENGTH-INFO-TYPE"
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -40,7 +40,7 @@ class ParamLengthInfoType(DiagCodedType):
     def length_key(self) -> "LengthKeyParameter":
         return self._length_key
 
-    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState,
+    def convert_internal_to_bytes(self, internal_value: AtomicOdxType, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
         bit_length = encode_state.parameter_values.get(self.length_key.short_name, None)
 
@@ -50,9 +50,9 @@ class ParamLengthInfoType(DiagCodedType):
                     DataType.A_ASCIISTRING,
                     DataType.A_UTF8STRING,
             ]:
-                bit_length = 8 * len(internal_value)
+                bit_length = 8 * len(internal_value)  # type: ignore[arg-type]
             if self.base_data_type in [DataType.A_UNICODE2STRING]:
-                bit_length = 16 * len(internal_value)
+                bit_length = 16 * len(internal_value)  # type: ignore[arg-type]
 
             if self.base_data_type in [DataType.A_INT32, DataType.A_UINT32]:
                 bit_length = int(internal_value).bit_length()
@@ -74,7 +74,9 @@ class ParamLengthInfoType(DiagCodedType):
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
+    def convert_bytes_to_internal(self,
+                                  decode_state: DecodeState,
+                                  bit_position: int = 0) -> Tuple[AtomicOdxType, int]:
         # Find length key with matching ID.
         bit_length = None
         for parameter_name, value in decode_state.parameter_values.items():
