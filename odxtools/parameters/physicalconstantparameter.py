@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, Tuple
 
 from ..dataobjectproperty import DataObjectProperty
 from ..decodestate import DecodeState
@@ -52,7 +52,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
     def is_settable(self) -> bool:
         return False
 
-    def get_coded_value_as_bytes(self, encode_state: EncodeState):
+    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         dop = odxrequire(self.dop, "Reference to DOP is not resolved")
         if (self.short_name in encode_state.parameter_values and
                 encode_state.parameter_values[self.short_name] != self.physical_constant_value):
@@ -64,7 +64,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
         return dop.convert_physical_to_bytes(
             self.physical_constant_value, encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState):
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         # Decode value
         phys_val, cursor_position = super().decode_from_pdu(decode_state)
 
