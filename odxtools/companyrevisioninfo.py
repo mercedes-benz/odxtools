@@ -36,7 +36,7 @@ class CompanyRevisionInfo:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}
 
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase):
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._company_data = odxlinks.resolve(self.company_data_ref, CompanyData)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
