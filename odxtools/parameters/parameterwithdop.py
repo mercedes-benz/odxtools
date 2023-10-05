@@ -63,9 +63,9 @@ class ParameterWithDOP(Parameter):
             "could not be resolved")
 
     @property
-    def bit_length(self):
+    def bit_length(self) -> Optional[int]:
         if self._dop is not None:
-            return self._dop.bit_length
+            return getattr(self._dop, "bit_length", None)
         else:
             return None
 
@@ -76,7 +76,7 @@ class ParameterWithDOP(Parameter):
         else:
             return None
 
-    def get_coded_value_as_bytes(self, encode_state: EncodeState):
+    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         dop = odxrequire(self.dop, "Reference to DOP is not resolved")
         physical_value = encode_state.parameter_values[self.short_name]
         bit_position_int = self.bit_position if self.bit_position is not None else 0
