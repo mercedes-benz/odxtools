@@ -70,15 +70,15 @@ class SingleEcuJob(IdentifiableElement):
     sdgs: List[SpecialDataGroup]
 
     @property
-    def is_mandatory(self):
+    def is_mandatory(self) -> bool:
         return self.is_mandatory_raw is True
 
     @property
-    def is_executable(self):
+    def is_executable(self) -> bool:
         return self.is_executable_raw in (None, True)
 
     @property
-    def is_final(self):
+    def is_final(self) -> bool:
         return self.is_final_raw is True
 
     def __post_init__(self) -> None:
@@ -251,7 +251,7 @@ class SingleEcuJob(IdentifiableElement):
             f"Single ECU jobs are completely executed on the tester and thus cannot be decoded."
             f" You tried to decode a response for the job {self.odx_id}.")
 
-    def encode_request(self, **params):
+    def encode_request(self, **params: Any) -> bytes:
         """This function's signature matches `DiagService.encode_request`
         and only raises an informative error.
         """
@@ -259,7 +259,10 @@ class SingleEcuJob(IdentifiableElement):
             f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
             f" You tried to encode a request for the job {self.odx_id}.")
 
-    def encode_positive_response(self, coded_request, response_index=0, **params):
+    def encode_positive_response(self,
+                                 coded_request: bytes,
+                                 response_index: int = 0,
+                                 **params: Any) -> bytes:
         """This function's signature matches `DiagService.encode_positive_response`
         and only raises an informative error.
         """
@@ -267,7 +270,10 @@ class SingleEcuJob(IdentifiableElement):
             f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
             f" You tried to encode a response for the job {self.odx_id}.")
 
-    def encode_negative_response(self, coded_request, response_index=0, **params):
+    def encode_negative_response(self,
+                                 coded_request: bytes,
+                                 response_index: int = 0,
+                                 **params: Any) -> bytes:
         """This function's signature matches `DiagService.encode_negative_response`
         and only raises an informative error.
         """
@@ -275,7 +281,7 @@ class SingleEcuJob(IdentifiableElement):
             f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
             f" You tried to encode the job {self.odx_id}.")
 
-    def __call__(self, **params) -> bytes:
+    def __call__(self, **params: Any) -> bytes:
         raise EncodeError(
             f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
             f" You tried to call the job {self.odx_id}.")
