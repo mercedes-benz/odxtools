@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Optional
+from typing import TYPE_CHECKING, Optional, Tuple, Union, cast
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, odxassert
-from .odxtypes import DataType
+from .exceptions import DecodeError, EncodeError, odxassert, odxraise
+from .odxtypes import AtomicOdxType, DataType
 
 
 @dataclass
@@ -15,7 +15,7 @@ class MinMaxLengthType(DiagCodedType):
     max_length: Optional[int]
     termination: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         odxassert(self.max_length is None or self.min_length <= self.max_length)
         odxassert(
             self.base_data_type in [
@@ -51,15 +51,28 @@ class MinMaxLengthType(DiagCodedType):
                 termination_sequence = bytes([0xFF, 0xFF])
         return termination_sequence
 
-    def convert_internal_to_bytes(self, internal_value, encode_state: EncodeState,
+    def convert_internal_to_bytes(self, internal_value: AtomicOdxType, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
-        bit_length = 8 * self.max_length if self.max_length is not None else 8 * len(internal_value)
-        bit_length = min(8 * len(internal_value), bit_length)
+        if not isinstance(internal_value, (bytes, str)):
+            odxraise("MinMaxLengthType is currently only implemented for strings and byte arrays",
+                     EncodeError)
+
+        # explictly tell mypy that the internal value is a bytes
+        # object or a string. (for whatever reason, the condition
+        # above does not suffice...)
+        if TYPE_CHECKING:
+            internal_value = cast(Union[bytes, str], internal_value)
+
+        if self.max_length is not None:
+            data_length = min(len(internal_value), self.max_length)
+        else:
+            data_length = len(internal_value)
+
         value_bytes = bytearray(
             self._to_bytes(
                 internal_value,
                 bit_position=0,
-                bit_length=bit_length,
+                bit_length=8 * data_length,
                 base_data_type=self.base_data_type,
                 is_highlow_byte_order=self.is_highlow_byte_order,
             ))
@@ -93,7 +106,9 @@ class MinMaxLengthType(DiagCodedType):
 
         return value_bytes
 
-    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
+    def convert_bytes_to_internal(self,
+                                  decode_state: DecodeState,
+                                  bit_position: int = 0) -> Tuple[AtomicOdxType, int]:
         if decode_state.cursor_position + self.min_length > len(decode_state.coded_message):
             raise DecodeError("The PDU ended before minimum length was reached.")
 
