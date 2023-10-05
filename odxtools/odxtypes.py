@@ -6,6 +6,7 @@ from xml.etree import ElementTree
 from .exceptions import odxassert, odxraise, odxrequire
 
 if TYPE_CHECKING:
+    from odxtools.diagnostictroublecode import DiagnosticTroubleCode
     from odxtools.parameters.parameter import Parameter
 
 
@@ -27,7 +28,7 @@ ParameterDict = Dict[str, Union["Parameter", "ParameterDict"]]
 # multiple items, so this can be a list of objects.
 TableStructParameterValue = Tuple[str, "ParameterValue"]
 ParameterValue = Union[AtomicOdxType, "ParameterValueDict", TableStructParameterValue,
-                       List["ParameterValue"]]
+                       List["ParameterValue"], "DiagnosticTroubleCode"]
 ParameterValueDict = Dict[str, ParameterValue]
 
 

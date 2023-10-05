@@ -91,7 +91,8 @@ class Multiplexer(DopBase):
                     case_bytes = b''
 
                 key_value, _ = self._get_case_limits(case)
-                key_bytes = self.switch_key.convert_physical_to_bytes(key_value, encode_state)
+                key_bytes = self.switch_key.convert_physical_to_bytes(
+                    key_value, encode_state, bit_position=0)
 
                 mux_len = max(len(key_bytes), len(case_bytes) + case_pos)
                 mux_bytes = bytearray(mux_len)
@@ -135,7 +136,7 @@ class Multiplexer(DopBase):
 
         if not case_found:
             raise DecodeError(
-                f"Failed to find a matching case in {self.short_name} for value {key_value}")
+                f"Failed to find a matching case in {self.short_name} for value {key_value!r}")
 
         mux_value = OrderedDict({case.short_name: case_value})
         mux_next_byte = decode_state.cursor_position + max(
