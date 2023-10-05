@@ -66,7 +66,8 @@ class BasicStructure(DopBase):
         prefix = b''
         encode_state = EncodeState(prefix, parameter_values={}, triggering_request=request_prefix)
         for p in self.parameters:
-            if isinstance(p, CodedConstParameter) and p.bit_length % 8 == 0:
+            if isinstance(
+                    p, CodedConstParameter) and p.bit_length is not None and p.bit_length % 8 == 0:
                 encode_state.coded_message = p.encode_into_pdu(encode_state)
             elif isinstance(p, MatchingRequestParameter):
                 encode_state.coded_message = p.encode_into_pdu(encode_state)
