@@ -109,7 +109,7 @@ class TableKeyParameter(Parameter):
                                   f"a KEY-DOP, but is used in TABLE-KEY parameter "
                                   f"'{self.short_name}'")
 
-            byte_len = (key_dop.bit_length + 7) // 8
+            byte_len = (odxrequire(key_dop.bit_length) + 7) // 8
             if self.bit_position is not None and self.bit_position > 0:
                 byte_len += 1
 

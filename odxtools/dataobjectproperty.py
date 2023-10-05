@@ -120,7 +120,7 @@ class DataObjectProperty(DopBase):
         return self._unit
 
     @property
-    def bit_length(self):
+    def bit_length(self) -> Optional[int]:
         # TODO: The DiagCodedTypes except StandardLengthType don't have a bit length.
         #       Should we remove this bit_length property from DOP or return None?
         if isinstance(self.diag_coded_type, StandardLengthType):
