@@ -2,7 +2,7 @@
 import warnings
 from copy import copy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
@@ -48,8 +48,8 @@ class NrcConstParameter(Parameter):
         super()._resolve_snrefs(diag_layer)
 
     @property
-    def bit_length(self):
-        return self.diag_coded_type.bit_length
+    def bit_length(self) -> Optional[int]:
+        return getattr(self.diag_coded_type, "bit_length", None)
 
     @property
     def internal_data_type(self) -> DataType:
@@ -63,7 +63,7 @@ class NrcConstParameter(Parameter):
     def is_settable(self) -> bool:
         return False
 
-    def get_coded_value_as_bytes(self, encode_state: EncodeState):
+    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         if self.short_name in encode_state.parameter_values:
             if encode_state.parameter_values[self.short_name] not in self.coded_values:
                 raise EncodeError(f"The parameter '{self.short_name}' must have"
@@ -79,7 +79,7 @@ class NrcConstParameter(Parameter):
         return self.diag_coded_type.convert_internal_to_bytes(
             coded_value, encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState):
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[AtomicOdxType, int]:
         decode_state = copy(decode_state)
         if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
             # Update byte position
