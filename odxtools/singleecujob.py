@@ -16,7 +16,7 @@ from .message import Message
 from .nameditemlist import NamedItemList
 from .negoutputparam import NegOutputParam
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import odxstr_to_bool
+from .odxtypes import odxstr_to_bool, ParameterValue
 from .outputparam import OutputParam
 from .progcode import ProgCode
 from .specialdatagroup import SpecialDataGroup
@@ -251,7 +251,7 @@ class SingleEcuJob(IdentifiableElement):
             f"Single ECU jobs are completely executed on the tester and thus cannot be decoded."
             f" You tried to decode a response for the job {self.odx_id}.")
 
-    def encode_request(self, **params: Any) -> bytes:
+    def encode_request(self, **params: ParameterValue) -> bytes:
         """This function's signature matches `DiagService.encode_request`
         and only raises an informative error.
         """
@@ -262,7 +262,7 @@ class SingleEcuJob(IdentifiableElement):
     def encode_positive_response(self,
                                  coded_request: bytes,
                                  response_index: int = 0,
-                                 **params: Any) -> bytes:
+                                 **params: ParameterValue) -> bytes:
         """This function's signature matches `DiagService.encode_positive_response`
         and only raises an informative error.
         """
@@ -273,7 +273,7 @@ class SingleEcuJob(IdentifiableElement):
     def encode_negative_response(self,
                                  coded_request: bytes,
                                  response_index: int = 0,
-                                 **params: Any) -> bytes:
+                                 **params: ParameterValue) -> bytes:
         """This function's signature matches `DiagService.encode_negative_response`
         and only raises an informative error.
         """
@@ -281,7 +281,7 @@ class SingleEcuJob(IdentifiableElement):
             f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
             f" You tried to encode the job {self.odx_id}.")
 
-    def __call__(self, **params: Any) -> bytes:
+    def __call__(self, **params: ParameterValue) -> bytes:
         raise EncodeError(
             f"Single ECU jobs are completely executed on the tester and thus cannot be encoded."
             f" You tried to call the job {self.odx_id}.")

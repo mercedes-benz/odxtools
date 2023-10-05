@@ -225,7 +225,7 @@ class BasicStructure(DopBase):
 
         return inner_decode_state.parameter_values, decode_state.cursor_position + inner_decode_state.cursor_position
 
-    def encode(self, coded_request: Optional[bytes] = None, **params: Any) -> bytes:
+    def encode(self, coded_request: Optional[bytes] = None, **params: ParameterValue) -> bytes:
         """
         Composes an UDS message as bytes for this service.
         Parameters:

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, Tuple, Union, cast
+from typing import Optional, Tuple
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
@@ -56,12 +56,6 @@ class MinMaxLengthType(DiagCodedType):
         if not isinstance(internal_value, (bytes, str)):
             odxraise("MinMaxLengthType is currently only implemented for strings and byte arrays",
                      EncodeError)
-
-        # explictly tell mypy that the internal value is a bytes
-        # object or a string. (for whatever reason, the condition
-        # above does not suffice...)
-        if TYPE_CHECKING:
-            internal_value = cast(Union[bytes, str], internal_value)
 
         if self.max_length is not None:
             data_length = min(len(internal_value), self.max_length)
