@@ -1,19 +1,19 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Tuple
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import odxassert, odxraise
-from .odxtypes import DataType
+from .odxtypes import AtomicOdxType, DataType
 
 
 @dataclass
 class LeadingLengthInfoType(DiagCodedType):
     bit_length: int
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         odxassert(self.bit_length > 0,
                   "A Leading length info type with bit length == 0 does not make sense.")
         odxassert(
@@ -53,7 +53,9 @@ class LeadingLengthInfoType(DiagCodedType):
 
         return length_byte + value_byte
 
-    def convert_bytes_to_internal(self, decode_state: DecodeState, bit_position: int = 0):
+    def convert_bytes_to_internal(self,
+                                  decode_state: DecodeState,
+                                  bit_position: int = 0) -> Tuple[AtomicOdxType, int]:
         coded_message = decode_state.coded_message
 
         # Extract length of the parameter value
