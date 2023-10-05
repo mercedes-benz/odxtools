@@ -64,7 +64,7 @@ class DocRevision:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}
 
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase):
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._team_member: Optional[TeamMember] = None
         if self.team_member_ref is not None:
             self._team_member = odxlinks.resolve(self.team_member_ref, TeamMember)
