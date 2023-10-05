@@ -2,7 +2,7 @@
 import math
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
@@ -10,7 +10,7 @@ from .dopbase import DopBase
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert
 from .nameditemlist import NamedItemList
-from .odxlink import OdxLinkDatabase
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterDict, ParameterValue
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.lengthkeyparameter import LengthKeyParameter
@@ -225,7 +225,7 @@ class BasicStructure(DopBase):
 
         return inner_decode_state.parameter_values, decode_state.cursor_position + inner_decode_state.cursor_position
 
-    def encode(self, coded_request: Optional[bytes] = None, **params) -> bytes:
+    def encode(self, coded_request: Optional[bytes] = None, **params: Any) -> bytes:
         """
         Composes an UDS message as bytes for this service.
         Parameters:
@@ -276,7 +276,7 @@ class BasicStructure(DopBase):
         })
         return param_dict
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         for p in self.parameters:
@@ -436,7 +436,7 @@ class BasicStructure(DopBase):
         else:
             return []
 
-    def print_message_format(self, indent: int = 5, allow_unknown_lengths=False):
+    def print_message_format(self, indent: int = 5, allow_unknown_lengths: bool = False) -> None:
         """
         Print a description of the message format to `stdout`.
         """
