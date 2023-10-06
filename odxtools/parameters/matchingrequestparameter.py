@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import EncodeError, odxrequire
+from ..exceptions import EncodeError
 from ..odxtypes import ParameterValue
 from .parameter import Parameter, ParameterType
 
@@ -41,7 +41,7 @@ class MatchingRequestParameter(Parameter):
         byte_position = (
             self.byte_position if self.byte_position is not None else decode_state.cursor_position)
         bit_position = self.bit_position or 0
-        byte_length = (odxrequire(self.get_static_bit_length()) + bit_position + 7) // 8
+        byte_length = (8 * self.byte_length + bit_position + 7) // 8
         val_as_bytes = decode_state.coded_message[byte_position:byte_position + byte_length]
 
         return val_as_bytes, byte_position + byte_length
