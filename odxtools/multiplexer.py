@@ -91,8 +91,8 @@ class Multiplexer(DopBase):
                     case_bytes = b''
 
                 key_value, _ = self._get_case_limits(case)
-                key_bytes = self.switch_key.convert_physical_to_bytes(
-                    key_value, encode_state, bit_position=0)
+                key_bytes = self.switch_key.dop.convert_physical_to_bytes(
+                    key_value, encode_state, bit_position=self.switch_key.bit_position or 0)
 
                 mux_len = max(len(key_bytes), len(case_bytes) + case_pos)
                 mux_bytes = bytearray(mux_len)
@@ -106,9 +106,9 @@ class Multiplexer(DopBase):
     def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
 
         if bit_position != 0:
-            raise DecodeError("Multiplexer must be aligned, i.e. bit_position=0, but "
+            raise DecodeError("Multiplexers must be byte-aligned, i.e. bit_position=0, but "
                               f"{self.short_name} was passed the bit position {bit_position}")
-        key_value, key_next_byte = self.switch_key.convert_bytes_to_physical(decode_state)
+        key_value, key_next_byte = self.switch_key.dop.convert_bytes_to_physical(decode_state)
 
         byte_code = decode_state.coded_message[decode_state.cursor_position:]
         case_decode_state = DecodeState(
@@ -145,6 +145,10 @@ class Multiplexer(DopBase):
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
+
+        odxlinks.update(self.switch_key._build_odxlinks())
+        if self.default_case is not None:
+            odxlinks.update(self.default_case._build_odxlinks())
 
         return odxlinks
 
