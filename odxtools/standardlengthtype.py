@@ -43,6 +43,9 @@ class StandardLengthType(DiagCodedType):
         odxraise(f'Can not apply a bit_mask on a value of type {type(internal_value)}')
         return internal_value
 
+    def get_static_bit_length(self) -> Optional[int]:
+        return self.bit_length
+
     def convert_internal_to_bytes(self, internal_value: AtomicOdxType, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
         return self._to_bytes(

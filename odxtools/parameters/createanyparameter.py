@@ -115,7 +115,7 @@ def create_any_parameter_from_et(et_element: ElementTree.Element,
         bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))
 
         return ReservedParameter(
-            bit_length_raw=bit_length,
+            bit_length=bit_length,
             semantic=semantic,
             byte_position=byte_position,
             bit_position=bit_position,

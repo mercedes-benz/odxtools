@@ -62,10 +62,9 @@ class ParameterWithDOP(Parameter):
             self._dop, "Specifying a data object property is mandatory but it "
             "could not be resolved")
 
-    @property
-    def bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> Optional[int]:
         if self._dop is not None:
-            return getattr(self._dop, "bit_length", None)
+            return self._dop.get_static_bit_length()
         else:
             return None
 

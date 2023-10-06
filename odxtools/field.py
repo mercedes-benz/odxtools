@@ -66,9 +66,8 @@ class Field(DopBase):
         """may be a Structure or a env-data-desc"""
         return odxrequire(self._structure, "EnvironmentDataDescription is not supported")
 
-    @property
-    def bit_length(self):
-        return self.structure.bit_length
+    def get_static_bit_length(self) -> Optional[int]:
+        return None
 
     def convert_physical_to_internal(self, physical_value):
         return self.structure.convert_physical_to_internal(physical_value)

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Tuple, cast
+from typing import Optional, Tuple, cast
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -10,7 +10,7 @@ from .parameter import Parameter, ParameterType
 
 @dataclass
 class ReservedParameter(Parameter):
-    bit_length_raw: int
+    bit_length: int
 
     @property
     def parameter_type(self) -> ParameterType:
@@ -24,14 +24,8 @@ class ReservedParameter(Parameter):
     def is_settable(self) -> bool:
         return False
 
-    @property
-    def bit_length(self) -> int:
-        # this is a bit hacky: the parent class already specifies
-        # bit_length as a function property, and we need to change
-        # this to return the value from the XML here. Since function
-        # attributes cannot be overridden by non-function ones, we
-        # need to take the "bit_length_raw" detour...
-        return self.bit_length_raw
+    def get_static_bit_length(self) -> Optional[int]:
+        return self.bit_length
 
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         bit_position_int = self.bit_position if self.bit_position is not None else 0
@@ -41,7 +35,7 @@ class ReservedParameter(Parameter):
         byte_position = (
             self.byte_position if self.byte_position is not None else decode_state.cursor_position)
         abs_bit_position = byte_position * 8 + (self.bit_position or 0)
-        bit_length = self.bit_length_raw
+        bit_length = self.bit_length
 
         # the cursor points to the first byte which has not been fully
         # consumed

@@ -58,10 +58,6 @@ class Multiplexer(DopBase):
             cases=cases,
             **kwargs)
 
-    @property
-    def bit_length(self):
-        return None
-
     def _get_case_limits(self, case: MultiplexerCase):
         key_type = self.switch_key.dop.physical_type.base_data_type
         lower_limit = key_type.make_from(case.lower_limit)

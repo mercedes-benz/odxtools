@@ -59,8 +59,7 @@ class Parameter(NamedElement, abc.ABC):
     def parameter_type(self) -> ParameterType:
         pass
 
-    @property
-    def bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> Optional[int]:
         return None
 
     @property

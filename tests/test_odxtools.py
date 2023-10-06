@@ -54,7 +54,7 @@ class TestDataObjectProperty(unittest.TestCase):
     def test_bit_length(self):
         self.dop = odxdb.odxlinks.resolve(
             OdxLinkRef("somersault.DOP.num_flips", container_doc_frags))
-        self.assertEqual(self.dop.bit_length, 8)
+        self.assertEqual(self.dop.get_static_bit_length(), 8)
 
     def test_convert_physical_to_internal(self):
         self.dop = odxdb.odxlinks.resolve(OdxLinkRef("somersault.DOP.boolean", container_doc_frags))
