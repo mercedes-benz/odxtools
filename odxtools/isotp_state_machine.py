@@ -5,7 +5,7 @@ import asyncio
 import re
 import sys
 from enum import IntEnum
-from io import TextIOWrapper
+from io import TextIOWrapper, TextIOBase
 from typing import AsyncGenerator, Iterable, List, Optional, TextIO, Tuple, Union
 
 import bitstruct
@@ -131,7 +131,7 @@ class IsoTpStateMachine:
                 for tmp in self.decode_rx_frame(msg.arbitration_id, msg.data):
                     yield tmp
         else:
-            assert isinstance(bus, (TextIO, TextIOWrapper))
+            assert isinstance(bus, (TextIOBase, TextIOWrapper))
             # input is a file
             while bus:
                 cur_line = bus.readline()
