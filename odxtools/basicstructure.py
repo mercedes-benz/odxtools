@@ -2,7 +2,7 @@
 import math
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
 from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
@@ -10,13 +10,15 @@ from .dopbase import DopBase
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert
 from .nameditemlist import NamedItemList
-from .odxlink import OdxLinkDatabase
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterDict, ParameterValue
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.lengthkeyparameter import LengthKeyParameter
 from .parameters.matchingrequestparameter import MatchingRequestParameter
+from .parameters.nrcconstparameter import NrcConstParameter
 from .parameters.parameter import Parameter
 from .parameters.parameterwithdop import ParameterWithDOP
+from .parameters.physicalconstantparameter import PhysicalConstantParameter
 from .parameters.tablekeyparameter import TableKeyParameter
 from .parameters.valueparameter import ValueParameter
 
@@ -66,9 +68,8 @@ class BasicStructure(DopBase):
         prefix = b''
         encode_state = EncodeState(prefix, parameter_values={}, triggering_request=request_prefix)
         for p in self.parameters:
-            if isinstance(p, CodedConstParameter) and p.bit_length % 8 == 0:
-                encode_state.coded_message = p.encode_into_pdu(encode_state)
-            elif isinstance(p, MatchingRequestParameter):
+            if isinstance(p, (CodedConstParameter, NrcConstParameter, MatchingRequestParameter,
+                              PhysicalConstantParameter)):
                 encode_state.coded_message = p.encode_into_pdu(encode_state)
             else:
                 break
@@ -224,7 +225,7 @@ class BasicStructure(DopBase):
 
         return inner_decode_state.parameter_values, decode_state.cursor_position + inner_decode_state.cursor_position
 
-    def encode(self, coded_request: Optional[bytes] = None, **params) -> bytes:
+    def encode(self, coded_request: Optional[bytes] = None, **params: ParameterValue) -> bytes:
         """
         Composes an UDS message as bytes for this service.
         Parameters:
@@ -275,7 +276,7 @@ class BasicStructure(DopBase):
         })
         return param_dict
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         for p in self.parameters:
@@ -435,7 +436,7 @@ class BasicStructure(DopBase):
         else:
             return []
 
-    def print_message_format(self, indent: int = 5, allow_unknown_lengths=False):
+    def print_message_format(self, indent: int = 5, allow_unknown_lengths: bool = False) -> None:
         """
         Print a description of the message format to `stdout`.
         """

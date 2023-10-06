@@ -2,7 +2,7 @@
 import warnings
 from copy import copy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
 from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
@@ -40,8 +40,8 @@ class CodedConstParameter(Parameter):
         super()._resolve_snrefs(diag_layer)
 
     @property
-    def bit_length(self):
-        return self.diag_coded_type.bit_length
+    def bit_length(self) -> Optional[int]:
+        return getattr(self.diag_coded_type, "bit_length", None)
 
     @property
     def internal_data_type(self) -> DataType:
@@ -55,7 +55,7 @@ class CodedConstParameter(Parameter):
     def is_settable(self) -> bool:
         return False
 
-    def get_coded_value_as_bytes(self, encode_state: EncodeState):
+    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         if (self.short_name in encode_state.parameter_values and
                 encode_state.parameter_values[self.short_name] != self.coded_value):
             raise TypeError(f"The parameter '{self.short_name}' is constant {self._coded_value_str}"
@@ -64,7 +64,7 @@ class CodedConstParameter(Parameter):
         return self.diag_coded_type.convert_internal_to_bytes(
             self.coded_value, encode_state=encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState):
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[AtomicOdxType, int]:
         decode_state = copy(decode_state)
         if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
             # Update byte position
@@ -90,10 +90,10 @@ class CodedConstParameter(Parameter):
         return coded_val, cursor_position
 
     @property
-    def _coded_value_str(self):
-        if isinstance(self.coded_value, int):
-            return str(self.coded_value)
-        return self.coded_value.hex()
+    def _coded_value_str(self) -> str:
+        if isinstance(self.coded_value, bytes):
+            return self.coded_value.hex()
+        return str(self.coded_value)
 
     def get_description_of_valid_values(self) -> str:
         """return a human-understandable description of valid physical values"""

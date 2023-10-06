@@ -136,9 +136,10 @@ class CommunicationParameterRef:
         return result
 
     @property
-    def short_name(self):
+    def short_name(self) -> str:
         if self.comparam:
             return self.comparam.short_name
-        # ODXLINK IDs allow dots and hyphens, but python identifiers do not.
-        # This should not happen anyway in a correct PDX
+
+        # ODXLINK IDs allow dots and hyphens, but short names do not.
+        # (This should not happen anyway in a correct PDX...)
         return self.id_ref.ref_id.replace(".", "__").replace("-", "_")

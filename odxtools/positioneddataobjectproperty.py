@@ -8,6 +8,7 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxtypes import ParameterValue
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -25,7 +26,7 @@ class PositionedDataObjectProperty:
     bit_position: Optional[int]
     dop_ref: OdxLinkRef
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._dop: DataObjectProperty = None  # type: ignore
 
     @staticmethod
@@ -55,14 +56,17 @@ class PositionedDataObjectProperty:
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
 
-    def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState) -> bytes:
+    def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
+                                  bit_position: int) -> bytes:
 
         bit_position = self.bit_position if self.bit_position is not None else 0
         dop_bytes = self.dop.convert_physical_to_bytes(physical_value, encode_state, bit_position)
 
         return b'\0' * self.byte_position + dop_bytes
 
-    def convert_bytes_to_physical(self, decode_state: DecodeState) -> Tuple[Any, int]:
+    def convert_bytes_to_physical(self,
+                                  decode_state: DecodeState,
+                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
 
         byte_code = decode_state.coded_message[decode_state.cursor_position:]
         state = DecodeState(
