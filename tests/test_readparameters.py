@@ -36,4 +36,4 @@ class TestReadNrcParam(unittest.TestCase):
         self.assertEqual("Identifier for the negative response", param.long_name)
         self.assertEqual([16, 10], param.coded_values)
         self.assertEqual(DataType.A_UINT32, param.diag_coded_type.base_data_type)
-        self.assertEqual(8, param.diag_coded_type.bit_length)
+        self.assertEqual(8, param.diag_coded_type.get_static_bit_length())

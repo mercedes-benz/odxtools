@@ -47,9 +47,8 @@ class NrcConstParameter(Parameter):
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 
-    @property
-    def bit_length(self) -> Optional[int]:
-        return getattr(self.diag_coded_type, "bit_length", None)
+    def get_static_bit_length(self) -> Optional[int]:
+        return self.diag_coded_type.get_static_bit_length()
 
     @property
     def internal_data_type(self) -> DataType:

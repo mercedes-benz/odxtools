@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Optional, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -18,8 +18,7 @@ class MatchingRequestParameter(Parameter):
     def parameter_type(self) -> ParameterType:
         return "MATCHING-REQUEST-PARAM"
 
-    @property
-    def bit_length(self) -> int:
+    def get_static_bit_length(self) -> Optional[int]:
         return 8 * self.byte_length
 
     @property
@@ -41,8 +40,8 @@ class MatchingRequestParameter(Parameter):
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         byte_position = (
             self.byte_position if self.byte_position is not None else decode_state.cursor_position)
-        bit_position = self.bit_position if self.bit_position is not None else 0
-        byte_length = (self.bit_length + bit_position + 7) // 8
+        bit_position = self.bit_position or 0
+        byte_length = (8 * self.byte_length + bit_position + 7) // 8
         val_as_bytes = decode_state.coded_message[byte_position:byte_position + byte_length]
 
         return val_as_bytes, byte_position + byte_length

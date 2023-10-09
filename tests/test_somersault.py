@@ -137,7 +137,7 @@ class TestDatabase(unittest.TestCase):
             [x.short_name for x in service.request.required_parameters],
             ["forward_soberness_check", "num_flips"],
         )
-        self.assertEqual(service.request.bit_length, 24)
+        self.assertEqual(service.request.get_static_bit_length(), 24)
 
         self.assertEqual([x.short_name for x in service.positive_responses], ["grudging_forward"])
         self.assertEqual([x.short_name for x in service.negative_responses], ["flips_not_done"])
@@ -145,14 +145,14 @@ class TestDatabase(unittest.TestCase):
         pr = service.positive_responses.grudging_forward
         self.assertEqual([x.short_name for x in pr.parameters], ["sid", "num_flips_done"])
         self.assertEqual([x.short_name for x in pr.required_parameters], [])
-        self.assertEqual(pr.bit_length, 16)
+        self.assertEqual(pr.get_static_bit_length(), 16)
 
         nr = service.negative_responses.flips_not_done
         self.assertEqual(
             [x.short_name for x in nr.parameters],
             ["sid", "rq_sid", "reason", "flips_successfully_done"],
         )
-        self.assertEqual(nr.bit_length, 32)
+        self.assertEqual(nr.get_static_bit_length(), 32)
 
         nrc_const = nr.parameters.reason
         self.assertEqual(nrc_const.parameter_type, "NRC-CONST")

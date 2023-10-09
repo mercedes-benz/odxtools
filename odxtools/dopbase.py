@@ -49,6 +49,9 @@ class DopBase(IdentifiableElement):
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)
 
+    def get_static_bit_length(self) -> Optional[int]:
+        return None
+
     @property
     def is_visible(self) -> bool:
         return self.is_visible_raw in (None, True)

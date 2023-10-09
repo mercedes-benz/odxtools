@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-import math
 import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
@@ -31,38 +30,28 @@ class BasicStructure(DopBase):
     parameters: NamedItemList[Parameter]
     byte_size: Optional[int]
 
-    @property
-    def bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> Optional[int]:
         # Explicit size was specified
         if self.byte_size:
             return 8 * self.byte_size
 
-        if all(p.bit_length is not None for p in self.parameters):
-            offset = 0
-            length = 0
-            for param in self.parameters:
-                if isinstance(param, ValueParameter) and hasattr(param.dop, "min_number_of_items"):
-                    # The param repeats itself, making bit_length calculation invalid
-                    # Temporary workaround
-                    # Can not import EndOfPduField to check on its type due to circular dependency
-                    return None
+        cursor = 0
+        length = 0
+        for param in self.parameters:
+            param_bit_length = param.get_static_bit_length()
+            if param_bit_length is None:
+                # We were not able to calculate a static bit length
+                return None
+            elif param.byte_position is not None:
+                bit_pos = param.bit_position or 0
+                byte_pos = param.byte_position or 0
+                cursor = byte_pos * 8 + bit_pos
 
-                if param.byte_position is not None:
-                    bit_position_int = param.bit_position if param.bit_position is not None else 0
-                    byte_position_int = (
-                        param.byte_position if param.byte_position is not None else 0)
-                    offset = byte_position_int * 8 + bit_position_int
-                if param.bit_length is None:
-                    return None
-                offset += param.bit_length
+            cursor += param_bit_length
+            length = max(length, cursor)
 
-                length = max(length, offset)
-
-            # Round up to account for padding bits
-            return math.ceil(length / 8) * 8
-
-        # We were not able to calculate a static bit length
-        return None
+        # Round up to account for padding bits
+        return ((length + 7) // 8) * 8
 
     def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:
         prefix = b''
@@ -164,7 +153,7 @@ class BasicStructure(DopBase):
             # No need to check further
             return
 
-        bit_length = self.bit_length
+        bit_length = self.get_static_bit_length()
 
         if bit_length is None:
             # Nothing to check
@@ -365,9 +354,7 @@ class BasicStructure(DopBase):
                         if hasattr(dop, "diag_coded_type"):
                             dct = dop.diag_coded_type
 
-                    bit_length = None
-                    if hasattr(params[param_idx], "bit_length"):
-                        bit_length = params[param_idx].bit_length
+                    bit_length = params[param_idx].get_static_bit_length()
 
                     if dct is not None and dct.dct_type == "MIN-MAX-LENGTH-TYPE":
                         name = params[param_idx].short_name + " ("

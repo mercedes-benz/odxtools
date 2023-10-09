@@ -75,10 +75,10 @@ def parameter_info(param_list: Iterable[Union[Parameter, EndOfPduField]]) -> str
             else:
                 result += f": <unknown type>"
 
-            if dop.bit_length is not None:
-                result += f"{dop.bit_length}\n"
-            else:
-                result += "\n"
+            if (bl := dop.get_static_bit_length()) is not None:
+                result += f"{bl}"
+
+            result += "\n"
 
         elif isinstance(cm, LinearCompuMethod):
             result += f": float\n"

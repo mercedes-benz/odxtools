@@ -17,7 +17,6 @@ from .exceptions import DecodeError, EncodeError, odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
 from .physicaltype import PhysicalType
-from .standardlengthtype import StandardLengthType
 from .unit import Unit
 from .utils import dataclass_fields_asdict
 
@@ -119,14 +118,8 @@ class DataObjectProperty(DopBase):
     def unit(self) -> Optional[Unit]:
         return self._unit
 
-    @property
-    def bit_length(self) -> Optional[int]:
-        # TODO: The DiagCodedTypes except StandardLengthType don't have a bit length.
-        #       Should we remove this bit_length property from DOP or return None?
-        if isinstance(self.diag_coded_type, StandardLengthType):
-            return self.diag_coded_type.bit_length
-        else:
-            return None
+    def get_static_bit_length(self) -> Optional[int]:
+        return self.diag_coded_type.get_static_bit_length()
 
     def convert_physical_to_internal(self, physical_value: Any) -> Any:
         """

@@ -208,7 +208,8 @@ class DiagLayer:
         # scheme, cf the docstring of
         # _compute_available_commmunication_parameters().
         #####
-        self._communication_parameters = self._compute_available_commmunication_parameters()
+        self._communication_parameters = NamedItemList(
+            self._compute_available_commmunication_parameters())
 
         #####
         # resolve all SNREFs. TODO: We allow SNREFS to objects that
@@ -563,7 +564,7 @@ class DiagLayer:
         return list(com_params_dict.values())
 
     @property
-    def communication_parameters(self) -> List[CommunicationParameterRef]:
+    def communication_parameters(self) -> NamedItemList[CommunicationParameterRef]:
         """All communication parameters applicable to this DiagLayer
 
         Note that, although communication parameters use inheritance,

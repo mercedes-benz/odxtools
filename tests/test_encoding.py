@@ -285,7 +285,7 @@ class TestEncodeRequest(unittest.TestCase):
             byte_size=None,
         )
         self.assertEqual(req.encode(), bytearray([0x12, 0x34, 0x56]))
-        self.assertEqual(req.bit_length, 24)
+        self.assertEqual(req.get_static_bit_length(), 24)
 
     def _create_request(self, parameters: List[Parameter]) -> Request:
         return Request(

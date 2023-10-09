@@ -54,6 +54,9 @@ class DiagCodedType(abc.ABC):
         """Recursively resolve any short-name references"""
         pass
 
+    def get_static_bit_length(self) -> Optional[int]:
+        return None
+
     @property
     @abc.abstractmethod
     def dct_type(self) -> DctType:
