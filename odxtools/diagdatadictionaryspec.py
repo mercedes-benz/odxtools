@@ -40,17 +40,6 @@ class DiagDataDictionarySpec:
     unit_spec: Optional[UnitSpec]
     sdgs: List[SpecialDataGroup]
 
-    def __post_init__(self):
-        self._all_data_object_properties = NamedItemList(
-            chain(
-                self.data_object_props,
-                self.structures,
-                self.end_of_pdu_fields,
-                self.dynamic_length_fields,
-                self.dtc_dops,
-                self.tables,
-            ),)
-
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DiagDataDictionarySpec":
@@ -220,7 +209,3 @@ class DiagDataDictionarySpec:
 
         if self.unit_spec is not None:
             self.unit_spec._resolve_snrefs(diag_layer)
-
-    @property
-    def all_data_object_properties(self):
-        return self._all_data_object_properties
