@@ -71,7 +71,7 @@ from .write_pdx_file import write_pdx_file
 __author__ = "Katrin Bauer"
 
 
-def _main():
+def _main() -> None:
     # Command line tool
     from .cli import main as _main
 
