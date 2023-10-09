@@ -350,7 +350,7 @@ class DiagLayer:
     #####
     # <value inheritance mechanism helpers>
     #####
-    def _get_parent_refs_sorted_by_priority(self, reverse=False) -> Iterable[ParentRef]:
+    def _get_parent_refs_sorted_by_priority(self, reverse: bool = False) -> Iterable[ParentRef]:
         return sorted(
             self.diag_layer_raw.parent_refs,
             key=lambda pr: pr.layer.variant_type.inheritance_priority,
@@ -444,10 +444,10 @@ class DiagLayer:
     def _compute_available_diag_comms(self, odxlinks: OdxLinkDatabase
                                      ) -> Iterable[Union[DiagService, SingleEcuJob]]:
 
-        def get_local_objects_fn(dl):
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[Union[DiagService, SingleEcuJob]]:
             return dl._get_local_diag_comms(odxlinks)
 
-        def not_inherited_fn(parent_ref):
+        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
             return parent_ref.not_inherited_diag_comms
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
@@ -455,10 +455,10 @@ class DiagLayer:
     def _compute_available_global_neg_responses(self, odxlinks: OdxLinkDatabase) \
             -> Iterable[Response]:
 
-        def get_local_objects_fn(dl):
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[Response]:
             return dl.diag_layer_raw.global_negative_responses
 
-        def not_inherited_fn(parent_ref):
+        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
             return parent_ref.not_inherited_global_neg_responses
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
@@ -469,7 +469,7 @@ class DiagLayer:
         exclude: Callable[["ParentRef"], List[str]],
     ) -> NamedItemList[TNamed]:
 
-        def get_local_objects_fn(dl: "DiagLayer"):
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[TNamed]:
             if dl.diag_layer_raw.diag_data_dictionary_spec is None:
                 return []
             return include(dl.diag_layer_raw.diag_data_dictionary_spec)
@@ -479,40 +479,40 @@ class DiagLayer:
 
     def _compute_available_functional_classes(self) -> Iterable[FunctionalClass]:
 
-        def get_local_objects_fn(dl):
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[FunctionalClass]:
             return dl.diag_layer_raw.functional_classes
 
-        def not_inherited_fn(parent_ref):
+        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
     def _compute_available_additional_audiences(self) -> Iterable[AdditionalAudience]:
 
-        def get_local_objects_fn(dl):
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[AdditionalAudience]:
             return dl.diag_layer_raw.additional_audiences
 
-        def not_inherited_fn(parent_ref):
+        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
     def _compute_available_state_charts(self) -> Iterable[StateChart]:
 
-        def get_local_objects_fn(dl):
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[StateChart]:
             return dl.diag_layer_raw.state_charts
 
-        def not_inherited_fn(parent_ref):
+        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
     def _compute_available_unit_groups(self) -> Iterable[UnitGroup]:
 
-        def get_local_objects_fn(dl):
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[UnitGroup]:
             return dl._get_local_unit_groups()
 
-        def not_inherited_fn(parent_ref):
+        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
