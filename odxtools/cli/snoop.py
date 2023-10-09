@@ -10,6 +10,7 @@ import can
 import odxtools
 import odxtools.isotp_state_machine as ism
 import odxtools.uds as uds
+from odxtools.exceptions import DecodeError
 
 from . import _parser_utils
 
@@ -36,7 +37,7 @@ def handle_telegram(telegram_id, payload):
         if last_request is not None:
             try:
                 decoded_message = odx_diag_layer.decode_response(payload, last_request)[0]
-            except odxtools.DecodeError:
+            except DecodeError:
                 pass
 
         if decoded_message is not None:
@@ -52,7 +53,7 @@ def handle_telegram(telegram_id, payload):
         try:
             decoded_message = odx_diag_layer.decode(payload)[0]
             last_request = payload
-        except odxtools.DecodeError:
+        except DecodeError:
             last_request = None
 
     if decoded_message:
