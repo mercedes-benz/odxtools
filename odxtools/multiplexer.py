@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
-from collections import OrderedDict
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
 from xml.etree import ElementTree
 
 from .createsdgs import create_sdgs_from_et
@@ -14,7 +13,7 @@ from .multiplexercase import MultiplexerCase
 from .multiplexerdefaultcase import MultiplexerDefaultCase
 from .multiplexerswitchkey import MultiplexerSwitchKey
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
-from .odxtypes import odxstr_to_bool
+from .odxtypes import AtomicOdxType, ParameterValue, odxstr_to_bool
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -58,13 +57,13 @@ class Multiplexer(DopBase):
             cases=cases,
             **kwargs)
 
-    def _get_case_limits(self, case: MultiplexerCase):
+    def _get_case_limits(self, case: MultiplexerCase) -> Tuple[AtomicOdxType, AtomicOdxType]:
         key_type = self.switch_key.dop.physical_type.base_data_type
         lower_limit = key_type.make_from(case.lower_limit)
         upper_limit = key_type.make_from(case.upper_limit)
         return lower_limit, upper_limit
 
-    def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState,
+    def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
 
         if bit_position != 0:
@@ -99,7 +98,9 @@ class Multiplexer(DopBase):
 
         raise EncodeError(f"The case {case_name} is not found in Multiplexer {self.short_name}")
 
-    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
+    def convert_bytes_to_physical(self,
+                                  decode_state: DecodeState,
+                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
 
         if bit_position != 0:
             raise DecodeError("Multiplexers must be byte-aligned, i.e. bit_position=0, but "
@@ -134,7 +135,7 @@ class Multiplexer(DopBase):
             raise DecodeError(
                 f"Failed to find a matching case in {self.short_name} for value {key_value!r}")
 
-        mux_value = OrderedDict({case.short_name: case_value})
+        mux_value = {case.short_name: cast(ParameterValue, case_value)}
         mux_next_byte = decode_state.cursor_position + max(
             key_next_byte + self.switch_key.byte_position, case_next_byte + self.byte_position)
         return mux_value, mux_next_byte
@@ -158,7 +159,7 @@ class Multiplexer(DopBase):
         for case in self.cases:
             case._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer"):
+    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 
         self.switch_key._resolve_snrefs(diag_layer)
