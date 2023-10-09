@@ -8,13 +8,17 @@ from .audience import Audience
 from .createsdgs import create_sdgs_from_et
 from .element import IdentifiableElement
 from .exceptions import DecodeError, odxassert, odxrequire
+from .functionalclass import FunctionalClass
 from .message import Message
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxtypes import ParameterValue
 from .parameters.parameter import Parameter
 from .request import Request
 from .response import Response
 from .specialdatagroup import SpecialDataGroup
+from .state import State
+from .statetransition import StateTransition
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -119,15 +123,15 @@ class DiagService(IdentifiableElement):
         return self._negative_responses
 
     @property
-    def functional_classes(self):
+    def functional_classes(self) -> NamedItemList[FunctionalClass]:
         return self._functional_classes
 
     @property
-    def pre_condition_states(self):
+    def pre_condition_states(self) -> NamedItemList[State]:
         return self._pre_condition_states
 
     @property
-    def state_transitions(self):
+    def state_transitions(self) -> NamedItemList[StateTransition]:
         return self._state_transitions
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -148,11 +152,11 @@ class DiagService(IdentifiableElement):
             [odxlinks.resolve(x, Response) for x in self.neg_response_refs])
 
         self._functional_classes = NamedItemList(
-            [odxlinks.resolve(fc_id) for fc_id in self.functional_class_refs])
+            [odxlinks.resolve(fc_ref, FunctionalClass) for fc_ref in self.functional_class_refs])
         self._pre_condition_states = NamedItemList(
-            [odxlinks.resolve(st_id) for st_id in self.pre_condition_state_refs])
+            [odxlinks.resolve(st_ref, State) for st_ref in self.pre_condition_state_refs])
         self._state_transitions = NamedItemList(
-            [odxlinks.resolve(stt_id) for stt_id in self.state_transition_refs])
+            [odxlinks.resolve(stt_ref, StateTransition) for stt_ref in self.state_transition_refs])
 
         if self.admin_data:
             self.admin_data._resolve_odxlinks(odxlinks)
@@ -203,7 +207,7 @@ class DiagService(IdentifiableElement):
             coding_object=coding_object,
             param_dict=param_dict)
 
-    def encode_request(self, **params):
+    def encode_request(self, **params: ParameterValue) -> bytes:
         """
         Composes an UDS request as list of bytes for this service.
         Parameters:
@@ -214,6 +218,9 @@ class DiagService(IdentifiableElement):
         # make sure that all parameters which are required for
         # encoding are specified (parameters which have a default are
         # optional)
+        if self.request is None:
+            return b''
+
         missing_params = {x.short_name
                           for x in self.request.required_parameters}.difference(params.keys())
         odxassert(not missing_params, f"The parameters {missing_params} are required but missing!")
@@ -224,21 +231,27 @@ class DiagService(IdentifiableElement):
             set(params.keys()).issubset(rq_all_param_names),
             f"Unknown parameters specified for encoding: {params.keys()}, "
             f"known parameters are: {rq_all_param_names}")
-        return self.request.encode(**params)
+        return self.request.encode(coded_request=None, **params)
 
-    def encode_positive_response(self, coded_request, response_index=0, **params):
+    def encode_positive_response(self,
+                                 coded_request: bytes,
+                                 response_index: int = 0,
+                                 **params: ParameterValue) -> bytes:
         # TODO: Should the user decide the positive response or what are the differences?
         return self.positive_responses[response_index].encode(coded_request, **params)
 
-    def encode_negative_response(self, coded_request, response_index=0, **params):
+    def encode_negative_response(self,
+                                 coded_request: bytes,
+                                 response_index: int = 0,
+                                 **params: ParameterValue) -> bytes:
         return self.negative_responses[response_index].encode(coded_request, **params)
 
-    def __call__(self, **params) -> bytes:
+    def __call__(self, **params: ParameterValue) -> bytes:
         """Encode a request."""
         return self.encode_request(**params)
 
     def __hash__(self) -> int:
         return hash(self.odx_id)
 
-    def __eq__(self, o: object) -> bool:
+    def __eq__(self, o: Any) -> bool:
         return isinstance(o, DiagService) and self.odx_id == o.odx_id
