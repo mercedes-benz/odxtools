@@ -12,7 +12,7 @@ odxdb = load_pdx_file("./examples/somersault.pdx")
 
 # use the diag layer container's document fragments as the default for
 # resolving references
-container_doc_frags = odxdb.diag_layer_containers.somersault.odx_id.doc_fragments
+container_doc_frags = odxdb.diag_layer_containers["somersault"].odx_id.doc_fragments
 
 
 class TestStrictMode(unittest.TestCase):
