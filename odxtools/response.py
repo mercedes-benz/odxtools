@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from .basicstructure import BasicStructure
+from .odxtypes import ParameterValue
 from .parameters.matchingrequestparameter import MatchingRequestParameter
 
 
@@ -10,7 +11,7 @@ from .parameters.matchingrequestparameter import MatchingRequestParameter
 class Response(BasicStructure):
     response_type: str  # "POS-RESPONSE" or "NEG-RESPONSE"
 
-    def encode(self, coded_request: Optional[bytes] = None, **params) -> bytes:
+    def encode(self, coded_request: Optional[bytes] = None, **params: ParameterValue) -> bytes:
         if coded_request is not None:
             # Extract MATCHING-REQUEST-PARAMs from the coded
             # request. TODO: this should be done by
