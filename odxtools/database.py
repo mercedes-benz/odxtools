@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from itertools import chain
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
@@ -13,7 +13,7 @@ from .nameditemlist import NamedItemList, short_name_as_key
 from .odxlink import OdxLinkDatabase
 
 
-def version(v: str):
+def version(v: str) -> Tuple[int, ...]:
     return tuple(map(int, (v.split("."))))
 
 
@@ -135,13 +135,13 @@ class Database:
         return self._diag_layers
 
     @property
-    def diag_layer_containers(self):
+    def diag_layer_containers(self) -> NamedItemList[DiagLayerContainer]:
         return self._diag_layer_containers
 
     @diag_layer_containers.setter
-    def diag_layer_containers(self, value):
+    def diag_layer_containers(self, value: NamedItemList[DiagLayerContainer]) -> None:
         self._diag_layer_containers = value
 
     @property
-    def comparam_subsets(self):
+    def comparam_subsets(self) -> NamedItemList[ComparamSubset]:
         return self._comparam_subsets
