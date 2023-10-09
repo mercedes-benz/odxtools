@@ -15,7 +15,7 @@ from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import odxstr_to_bool
+from .odxtypes import AtomicOdxType, ParameterValue, odxstr_to_bool
 from .physicaltype import PhysicalType
 from .unit import Unit
 from .utils import dataclass_fields_asdict
@@ -99,7 +99,7 @@ class DataObjectProperty(DopBase):
         result.update(self.diag_coded_type._build_odxlinks())
         return result
 
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase):
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         """Resolves the reference to the unit"""
         super()._resolve_odxlinks(odxlinks)
 
@@ -165,5 +165,5 @@ class DataObjectProperty(DopBase):
                 f"DOP {self.short_name} could not convert the coded value "
                 f" {repr(internal)} to physical type {self.physical_type.base_data_type}.")
 
-    def is_valid_physical_value(self, physical_value):
-        return self.compu_method.is_valid_physical_value(physical_value)
+    def is_valid_physical_value(self, physical_value: ParameterValue) -> bool:
+        return self.compu_method.is_valid_physical_value(cast(AtomicOdxType, physical_value))
