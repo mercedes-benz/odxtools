@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from copy import copy
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from xml.etree import ElementTree
 
 from .decodestate import DecodeState
@@ -59,7 +59,9 @@ class EndOfPduField(Field):
             coded_message += self.structure.convert_physical_to_bytes(value, encode_state)
         return coded_message
 
-    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
+    def convert_bytes_to_physical(self,
+                                  decode_state: DecodeState,
+                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
         decode_state = copy(decode_state)
         cursor_position = decode_state.cursor_position
         byte_code = decode_state.coded_message
