@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 import argparse
-from typing import List, Union
+from typing import Callable, List, Optional, Union
 
 from ..database import Database
 from ..diaglayer import DiagLayer
@@ -15,18 +15,18 @@ _odxtools_tool_name_ = "list"
 
 def print_summary(
     odxdb: Database,
-    print_global_negative_responses=False,
-    print_services=False,
-    print_dops=False,
-    print_params=False,
-    print_com_params=False,
-    print_pre_condition_states=False,
-    print_state_transitions=False,
-    print_audiences=False,
-    allow_unknown_bit_lengths=False,
-    variants=None,
-    service_filter=lambda x: True,
-):
+    print_global_negative_responses: bool = False,
+    print_services: bool = False,
+    print_dops: bool = False,
+    print_params: bool = False,
+    print_com_params: bool = False,
+    print_pre_condition_states: bool = False,
+    print_state_transitions: bool = False,
+    print_audiences: bool = False,
+    allow_unknown_bit_lengths: bool = False,
+    variants: Optional[str] = None,
+    service_filter: Callable[[Union[DiagService, SingleEcuJob]], bool] = lambda x: True,
+) -> None:
 
     diag_layer_names = variants if variants else [dl.short_name for dl in odxdb.diag_layers]
 
@@ -97,7 +97,7 @@ def print_summary(
                 print(f"  {com_param.short_name}: {com_param.value}")
 
 
-def add_subparser(subparsers):
+def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
     parser = subparsers.add_parser(
         "list",
         description="\n".join([
@@ -179,16 +179,20 @@ def add_subparser(subparsers):
     )
 
 
-def run(args):
+def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
+
+    def service_filter(s: Union[DiagService, SingleEcuJob]) -> bool:
+        if args.services and len(args.services) > 0:
+            return s.short_name in args.services
+        return True
 
     variants = args.variants if args.variants else None
     print_summary(
         odxdb,
         print_global_negative_responses=args.all or args.global_negative_responses,
         print_services=args.all or args.params or args.services is not None,
-        service_filter=(lambda s: s.short_name in args.services
-                        if args.services and len(args.services) > 0 else lambda s: True),
+        service_filter=service_filter,
         print_dops=args.all or args.dops,
         variants=None if variants == "all" else variants,
         print_params=args.all or args.params,
