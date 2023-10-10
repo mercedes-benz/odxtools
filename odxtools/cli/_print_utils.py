@@ -6,7 +6,7 @@ import markdownify
 from ..diagservice import DiagService
 
 
-def format_desc(desc, ident=0):
+def format_desc(desc: str, ident: int = 0) -> str:
     # Collapse whitespaces
     desc = re.sub(r"\s+", " ", desc)
     # Covert XHTML to Markdown
@@ -21,12 +21,12 @@ def format_desc(desc, ident=0):
 
 def print_diagnostic_service(
     service: DiagService,
-    print_params=False,
-    print_pre_condition_states=False,
-    print_state_transitions=False,
-    print_audiences=False,
-    allow_unknown_bit_lengths=False,
-):
+    print_params: bool = False,
+    print_pre_condition_states: bool = False,
+    print_state_transitions: bool = False,
+    print_audiences: bool = False,
+    allow_unknown_bit_lengths: bool = False,
+) -> None:
     print(f" {service.short_name} <ID: {service.odx_id}>")
 
     if service.description:
