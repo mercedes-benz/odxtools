@@ -1247,7 +1247,7 @@ somersault_env_datas = {
             is_visible_raw=None,
             byte_size=None,
             dtc_values=[],
-            parameters=[
+            parameters=NamedItemList([
                 ValueParameter(
                     short_name="flip_speed",
                     long_name="Flip Speed",
@@ -1272,7 +1272,7 @@ somersault_env_datas = {
                     bit_position=None,
                     sdgs=[],
                 ),
-            ],
+            ]),
         )
 }
 

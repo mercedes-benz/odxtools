@@ -69,9 +69,6 @@ class Field(DopBase):
     def get_static_bit_length(self) -> Optional[int]:
         return None
 
-    def convert_physical_to_internal(self, physical_value):
-        return self.structure.convert_physical_to_internal(physical_value)
-
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         """Recursively resolve any odxlinks references"""
         if self.structure_ref is not None:

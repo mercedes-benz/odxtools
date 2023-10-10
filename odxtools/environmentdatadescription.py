@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree
 
 from .createsdgs import create_sdgs_from_et
@@ -11,7 +11,7 @@ from .encodestate import EncodeState
 from .environmentdata import EnvironmentData
 from .exceptions import DecodeError, EncodeError, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import odxstr_to_bool
+from .odxtypes import ParameterValue, odxstr_to_bool
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -93,7 +93,7 @@ class EnvironmentDataDescription(DopBase):
             for ed in self.env_datas:
                 ed._resolve_snrefs(diag_layer)
 
-    def convert_physical_to_bytes(self, physical_value, encode_state: EncodeState,
+    def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
         """Convert the physical value into bytes.
 
@@ -102,7 +102,9 @@ class EnvironmentDataDescription(DopBase):
         """
         raise EncodeError("EnvironmentDataDescription DOPs cannot be encoded or decoded")
 
-    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
+    def convert_bytes_to_physical(self,
+                                  decode_state: DecodeState,
+                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
         """Extract the bytes from the PDU and convert them to the physical value.
 
         Since environmental data is supposed to never appear on the

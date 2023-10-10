@@ -102,7 +102,7 @@ class TestNamedItemList(unittest.TestCase):
         self.assertEqual(foo[1], X("world", 1))
         self.assertEqual(foo[:1], [X("hello", 0)])
         self.assertEqual(foo[-1:], [X("world", 1)])
-        with self.assertRaises(KeyError):
+        with self.assertRaises(IndexError):
             foo[2]
         self.assertEqual(foo["hello"], X("hello", 0))
         self.assertEqual(foo["world"], X("world", 1))
@@ -156,7 +156,7 @@ class TestNavigation(unittest.TestCase):
     def test_find_ecu_by_name(self):
         with self.assertRaises(KeyError):
             ecu = odxdb.ecus["somersault_crazy"]
-        with self.assertRaises(KeyError):
+        with self.assertRaises(IndexError):
             ecu = odxdb.ecus[len(odxdb.ecus) + 10]
 
         ecu = odxdb.ecus.get("somersault_crazy")

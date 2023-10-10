@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from itertools import chain
-from typing import List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -12,7 +12,7 @@ from .diaglayer import DiagLayer
 from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
 
@@ -82,7 +82,7 @@ class DiagLayerContainer(IdentifiableElement):
             sdgs=sdgs,
             **kwargs)
 
-    def _build_odxlinks(self):
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         if self.admin_data is not None:
@@ -137,7 +137,7 @@ class DiagLayerContainer(IdentifiableElement):
             ecu_variant._finalize_init(odxlinks)
 
     @property
-    def diag_layers(self):
+    def diag_layers(self) -> NamedItemList[DiagLayer]:
         return self._diag_layers
 
     def __getitem__(self, key: Union[int, str]) -> DiagLayer:

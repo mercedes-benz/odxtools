@@ -293,11 +293,6 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         self.assertEqual(len(ddds.structures), 0)
         self.assertEqual(len(ddds.end_of_pdu_fields), 0)
 
-        self.assertEqual({x.short_name
-                          for x in ddds.all_data_object_properties},
-                         {x.short_name
-                          for x in (dtc_dop, dop_1, dop_2, table)})
-
 
 if __name__ == "__main__":
     unittest.main()

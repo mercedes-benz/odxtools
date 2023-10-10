@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Tuple
 from xml.etree import ElementTree
 
 from .decodestate import DecodeState
@@ -55,5 +55,7 @@ class DynamicLengthField(Field):
     ) -> bytes:
         raise NotImplementedError()
 
-    def convert_bytes_to_physical(self, decode_state: DecodeState, bit_position: int = 0):
+    def convert_bytes_to_physical(self,
+                                  decode_state: DecodeState,
+                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
         raise NotImplementedError()

@@ -7,6 +7,7 @@ from .basicstructure import BasicStructure
 from .createsdgs import create_sdgs_from_et
 from .element import IdentifiableElement
 from .exceptions import odxrequire
+from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment
 from .odxtypes import odxstr_to_bool
 from .parameters.createanyparameter import create_any_parameter_from_et
@@ -18,10 +19,6 @@ class EnvironmentData(BasicStructure):
     """This class represents Environment Data that describes the circumstances in which the error occurred."""
 
     dtc_values: List[int]
-
-    def __init__(self, *, dtc_values: List[int], **kwargs):
-        super().__init__(**kwargs)
-        self.dtc_values = dtc_values
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -44,7 +41,7 @@ class EnvironmentData(BasicStructure):
         return EnvironmentData(
             sdgs=sdgs,
             is_visible_raw=is_visible_raw,
-            parameters=parameters,
+            parameters=NamedItemList(parameters),
             byte_size=byte_size,
             dtc_values=dtc_values,
             **kwargs)
