@@ -7,30 +7,33 @@ import argparse
 import asyncio
 import logging
 import random
-from typing import List
+from typing import List, Optional, Union
 
 import isotp
 import somersaultecu
 
 import odxtools
 import odxtools.uds as uds
+from odxtools.message import Message
+from odxtools.odxtypes import ParameterValueDict
 
 tester_logger = logging.getLogger("somersault_lazy_tester")
 ecu_logger = logging.getLogger("somersault_lazy_ecu")
 
 is_sterile = False
-can_channel = None
+can_channel: Optional[str] = None
 somersault_lazy_diag_layer = somersaultecu.database.ecus.somersault_lazy  # type:ignore
 
 # the raw payload data of the telegrams received by the ECU and by the
 # tester when in sterile mode (unittest without a CAN channel)
 sterile_rx_ecu: List[bytes] = []
-sterile_rx_ecu_event = None
+sterile_rx_ecu_event: Optional[asyncio.Event] = None
 sterile_rx_tester: List[bytes] = []
-sterile_rx_tester_event = None
+sterile_rx_tester_event: Optional[asyncio.Event] = None
 
 
-def create_isotp_socket(channel, rxid, txid):
+def create_isotp_socket(channel: Optional[str], rxid: int,
+                        txid: int) -> Optional[isotp.tpsock.socket]:
     if is_sterile:
         return None
 
@@ -56,7 +59,7 @@ def create_isotp_socket(channel, rxid, txid):
     return result_socket
 
 
-async def ecu_send(isotp_socket, payload):
+async def ecu_send(isotp_socket: Optional[isotp.tpsock.socket], payload: bytes) -> None:
     """
     ECU sends a message, either in "sterile" or in "live" mode.
     """
@@ -65,6 +68,7 @@ async def ecu_send(isotp_socket, payload):
 
     if is_sterile:
         assert isotp_socket is None
+        assert sterile_rx_tester_event is not None
 
         sterile_rx_tester_event.clear()
         sterile_rx_tester.append(payload)
@@ -76,7 +80,7 @@ async def ecu_send(isotp_socket, payload):
         await loop.sock_sendall(isotp_socket, payload)
 
 
-async def ecu_recv(isotp_socket):
+async def ecu_recv(isotp_socket: Optional[isotp.tpsock.socket]) -> bytes:
     """
     ECU receives a message, either in "sterile" or in "live" mode.
     """
@@ -85,6 +89,7 @@ async def ecu_recv(isotp_socket):
 
     if is_sterile:
         assert isotp_socket is None
+        assert sterile_rx_ecu_event is not None
 
         if len(sterile_rx_ecu) > 0:
             return sterile_rx_ecu.pop(0)
@@ -101,7 +106,7 @@ async def ecu_recv(isotp_socket):
         return await loop.sock_recv(isotp_socket, 4095)
 
 
-async def tester_send(isotp_socket, payload):
+async def tester_send(isotp_socket: Optional[isotp.tpsock.socket], payload: bytes) -> None:
     """
     Tester sends a message, either in "sterile" or in "live" mode.
     """
@@ -110,6 +115,7 @@ async def tester_send(isotp_socket, payload):
 
     if is_sterile:
         assert isotp_socket is None
+        assert sterile_rx_ecu_event is not None
 
         sterile_rx_ecu.append(payload)
         sterile_rx_ecu_event.set()
@@ -120,7 +126,7 @@ async def tester_send(isotp_socket, payload):
         await loop.sock_sendall(isotp_socket, payload)
 
 
-async def tester_recv(isotp_socket):
+async def tester_recv(isotp_socket: Optional[isotp.tpsock.socket]) -> bytes:
     """
     Tester receives a message, either in "sterile" or in "live" mode.
     """
@@ -129,6 +135,7 @@ async def tester_recv(isotp_socket):
 
     if is_sterile:
         assert isotp_socket is None
+        assert sterile_rx_tester_event is not None
 
         if len(sterile_rx_tester) > 0:
             return sterile_rx_tester.pop(0)
@@ -147,7 +154,7 @@ async def tester_recv(isotp_socket):
 
 class SomersaultLazyEcu:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._diag_session_open = False
         self._data_receive_event = asyncio.Event()
         self.dizziness_level = 0
@@ -174,7 +181,7 @@ class SomersaultLazyEcu:
         cp = somersault_lazy_diag_layer.get_communication_parameter("CP_TesterPresentReqRsp")
         assert cp.value == "Response expected" or cp.value == "1"
 
-    async def _handle_requests_task(self):
+    async def _handle_requests_task(self) -> None:
         while True:
             data = await ecu_recv(self.isotp_socket)
 
@@ -198,7 +205,7 @@ class SomersaultLazyEcu:
                                    f"0x{data.hex()}: {e}")
                 return
 
-    async def _handle_request(self, message):
+    async def _handle_request(self, message: Message) -> None:
         service = message.service
 
         ecu_logger.info(f"received UDS message: {service.short_name}")
@@ -259,7 +266,7 @@ class SomersaultLazyEcu:
             await self._handle_forward_flip_request(message)
             return
 
-    async def _handle_forward_flip_request(self, message):
+    async def _handle_forward_flip_request(self, message: Message) -> None:
         service = message.service
         # TODO: the need for .param_dict is quite ugly IMO,
         # i.e. provide a __getitem__() method for the Message class() (?)
@@ -277,6 +284,7 @@ class SomersaultLazyEcu:
             return
 
         # we cannot do all flips because we are too dizzy
+        assert isinstance(num_flips, int)
         if self.dizziness_level + num_flips > self.max_dizziness_level:
 
             response = service.positive_responses.grudging_forward
@@ -308,7 +316,7 @@ class SomersaultLazyEcu:
         response_data = response.encode(coded_request=message.coded_message)
         await ecu_send(self.isotp_socket, response_data)
 
-    def close_diag_session(self):
+    def close_diag_session(self) -> None:
         if not self._diag_session_open:
             return
 
@@ -316,7 +324,7 @@ class SomersaultLazyEcu:
 
         # clean up data associated with the diagnostic session
 
-    async def run(self):
+    async def run(self) -> None:
         ecu_logger.info("running diagnostic server")
 
         cst = self._auto_close_session_task()
@@ -324,7 +332,7 @@ class SomersaultLazyEcu:
 
         await asyncio.gather(cst, hrt)
 
-    async def _auto_close_session_task(self):
+    async def _auto_close_session_task(self) -> None:
         # task to close the diagnostic session if the tester has not
         # been seen for longer than the timeout specified by the ECU.
         while True:
@@ -347,7 +355,9 @@ class SomersaultLazyEcu:
                 continue
 
 
-async def tester_await_response(isotp_socket, raw_message, timeout=0.5):
+async def tester_await_response(isotp_socket: Optional[isotp.tpsock.socket],
+                                raw_message: bytes,
+                                timeout: float = 0.5) -> Union[bytes, ParameterValueDict]:
     # await the answer from the server (be aware that the maximum
     # length of ISO-TP telegrams over the CAN bus is 4095 bytes)
     raw_response = await tester_recv(isotp_socket)
@@ -358,9 +368,9 @@ async def tester_await_response(isotp_socket, raw_message, timeout=0.5):
         replies = somersault_lazy_diag_layer.decode_response(raw_response, raw_message)
         assert len(replies) == 1  # replies must always be uniquely decodable
 
-        if replies[0].structure.response_type == "POS-RESPONSE":
+        if replies[0].coding_object.response_type == "POS-RESPONSE":
             rtype = "positive"
-        elif replies[0].structure.response_type == "NEG-RESPONSE":
+        elif replies[0].coding_object.response_type == "NEG-RESPONSE":
             rtype = "negative"
         else:
             rtype = "unknown"
@@ -390,7 +400,7 @@ async def tester_await_response(isotp_socket, raw_message, timeout=0.5):
         return raw_response
 
 
-async def tester_main():
+async def tester_main() -> None:
     tester_logger.info("running diagnostic tester")
 
     # note that ODX specifies the CAN IDs from the ECU's point of
@@ -446,7 +456,7 @@ async def tester_main():
     tester_logger.debug(f"Finished")
 
 
-async def main(args):
+async def main(args: argparse.Namespace) -> None:
     global is_sterile
     global sterile_rx_ecu_event
     global sterile_rx_tester_event
@@ -471,11 +481,15 @@ async def main(args):
         server_task = asyncio.create_task(somersault_ecu.run())
 
     if args.mode == "server":
+        assert server_task is not None
         await server_task
     elif args.mode == "tester":
+        assert tester_task is not None
         await tester_task
     else:
         assert args.mode == "unittest"
+        assert server_task is not None
+        assert tester_task is not None
 
         # run both tasks in parallel. Since the server task does not
         # complete, we need to wait until the first task is completed
