@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MIT
 import unittest
-from typing import List
+from typing import Any, Dict, List, cast
 
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.limit import IntervalType, Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
+from odxtools.diaglayer import DiagLayer
 from odxtools.exceptions import EncodeError
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -24,7 +25,7 @@ doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
 class TestEncodeRequest(unittest.TestCase):
 
-    def test_encode_coded_const_infer_order(self):
+    def test_encode_coded_const_infer_order(self) -> None:
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
@@ -62,12 +63,12 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[param1, param2],
+            parameters=NamedItemList([param1, param2]),
             byte_size=None,
         )
         self.assertEqual(req.encode(), bytearray([0x7D, 0xAB]))
 
-    def test_encode_coded_const_reorder(self):
+    def test_encode_coded_const_reorder(self) -> None:
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
@@ -105,12 +106,12 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[param1, param2],
+            parameters=NamedItemList([param1, param2]),
             byte_size=None,
         )
         self.assertEqual(req.encode(), bytearray([0x12, 0x34]))
 
-    def test_encode_linear(self):
+    def test_encode_linear(self) -> None:
         odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
@@ -162,12 +163,12 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[param1],
+            parameters=NamedItemList([param1]),
             byte_size=None,
         )
 
         param1._resolve_odxlinks(odxlinks)
-        param1._resolve_snrefs(None)
+        param1._resolve_snrefs(cast(DiagLayer, None))
 
         # Missing mandatory parameter.
         with self.assertRaises(TypeError):
@@ -178,7 +179,7 @@ class TestEncodeRequest(unittest.TestCase):
             bytearray([0x3])  # encode(14) = (14-8)/2 = 3
         )
 
-    def test_encode_nrc_const(self):
+    def test_encode_nrc_const(self) -> None:
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
@@ -217,14 +218,14 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
             is_visible_raw=None,
             response_type="POS-RESPONSE",
-            parameters=[param1, param2],
+            parameters=NamedItemList([param1, param2]),
             byte_size=None,
         )
         self.assertEqual(resp.encode(), bytearray([0x12, 0x34]))
         self.assertEqual(resp.encode(param2=0xAB), bytearray([0x12, 0xAB]))
         self.assertRaises(EncodeError, resp.encode, param2=0xEF)
 
-    def test_encode_overlapping(self):
+    def test_encode_overlapping(self) -> None:
         uint24 = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
@@ -281,7 +282,7 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[param1, param2, param3],
+            parameters=NamedItemList([param1, param2, param3]),
             byte_size=None,
         )
         self.assertEqual(req.encode(), bytearray([0x12, 0x34, 0x56]))
@@ -299,7 +300,7 @@ class TestEncodeRequest(unittest.TestCase):
             byte_size=None,
         )
 
-    def test_issue_70(self):
+    def test_issue_70(self) -> None:
         # see https://github.com/mercedes-benz/odxtools/issues/70
         # make sure overlapping params don't cause this function to go crazy
         unit_kwargs = {
@@ -309,9 +310,9 @@ class TestEncodeRequest(unittest.TestCase):
             "bit_mask": None,
             "is_condensed_raw": None,
         }
-        uint2 = StandardLengthType(bit_length=2, **unit_kwargs)
-        uint1 = StandardLengthType(bit_length=1, **unit_kwargs)
-        param_kwargs = {
+        uint2 = StandardLengthType(bit_length=2, **unit_kwargs)  # type: ignore[arg-type]
+        uint1 = StandardLengthType(bit_length=1, **unit_kwargs)  # type: ignore[arg-type]
+        param_kwargs: Dict[str, Any] = {
             "long_name": None,
             "description": None,
             "byte_position": None,
@@ -319,7 +320,7 @@ class TestEncodeRequest(unittest.TestCase):
             "sdgs": [],
             "coded_value": 0,
         }
-        params = [
+        params: List[Parameter] = [
             CodedConstParameter(
                 short_name="p1", diag_coded_type=uint2, bit_position=0, **param_kwargs),
             CodedConstParameter(
@@ -334,20 +335,20 @@ class TestEncodeRequest(unittest.TestCase):
                 short_name="p6", diag_coded_type=uint1, bit_position=7, **param_kwargs),
         ]
         req = self._create_request(params)
-        self.assertEqual(req._BasicStructure__message_format_lines(), [])
+        self.assertEqual(req._message_format_lines(), [])
 
-    def test_bit_mask(self):
-        unit_kwargs = {
+    def test_bit_mask(self) -> None:
+        unit_kwargs: Dict[str, Any] = {
             "base_data_type": DataType.A_UINT32,
             "base_type_encoding": None,
             "is_highlow_byte_order_raw": None,
             "is_condensed_raw": None,
             "bit_length": 16,
         }
-        inner = StandardLengthType(bit_mask=0x0ff0, **unit_kwargs)
-        outer = StandardLengthType(bit_mask=0xf00f, **unit_kwargs)
+        inner = StandardLengthType(bit_mask=0x0ff0, **unit_kwargs)  # type: ignore[arg-type]
+        outer = StandardLengthType(bit_mask=0xf00f, **unit_kwargs)  # type: ignore[arg-type]
         dop_id = OdxLinkId('dop', [])
-        dop_kwargs = {
+        dop_kwargs: Dict[str, Any] = {
             "compu_method": IdenticalCompuMethod(DataType.A_UINT32, DataType.A_UINT32),
             "description": None,
             "is_visible_raw": None,
@@ -358,7 +359,7 @@ class TestEncodeRequest(unittest.TestCase):
             "short_name": 'dop',
             "unit_ref": None,
         }
-        param_kwargs = {
+        param_kwargs: Dict[str, Any] = {
             "long_name": None,
             "description": None,
             "byte_position": 0,
@@ -373,12 +374,12 @@ class TestEncodeRequest(unittest.TestCase):
         # Inner
         inner_param = ValueParameter(short_name="inner", **param_kwargs)
         inner_param._dop = DataObjectProperty(diag_coded_type=inner, **dop_kwargs)
-        inner_param._resolve_snrefs(None)
+        inner_param._resolve_snrefs(cast(DiagLayer, None))
 
         # Outer
         outer_param = ValueParameter(short_name="outer", **param_kwargs)
         outer_param._dop = DataObjectProperty(diag_coded_type=outer, **dop_kwargs)
-        outer_param._resolve_snrefs(None)
+        outer_param._resolve_snrefs(cast(DiagLayer, None))
 
         req = self._create_request([inner_param, outer_param])
 

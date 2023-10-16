@@ -149,7 +149,7 @@ class BasicStructure(DopBase):
             # We definitely broke something if we didn't respect the explicit byte_size
             odxassert(
                 len(coded_message) == self.byte_size,
-                self._get_encode_error_str("was", coded_message, self.byte_size * 8))
+                "Verification of coded message {coded_message.hex()} failed: Incorrect size.")
             # No need to check further
             return
 
@@ -164,16 +164,9 @@ class BasicStructure(DopBase):
             # but it could be that bit_length was mis calculated and not the actual bytes are wrong
             # Could happen with overlapping parameters and parameters with gaps
             warnings.warn(
-                self._get_encode_error_str("may have been", coded_message, bit_length),
+                "Verification of coded message {coded_message.hex()} possibly failed: Size may be incorrect.",
                 OdxWarning,
                 stacklevel=1)
-
-    def _get_encode_error_str(self, verb: str, coded_message: bytes, bit_length: int) -> str:
-        return str(f"Structure {self.short_name} {verb} encoded incorrectly:" +
-                   f" actual length is {len(coded_message)}," +
-                   f" computed byte length is {bit_length // 8}," +
-                   f" computed_rpc is {coded_message.hex()}\n" +
-                   "\n".join(self.__message_format_lines()))
 
     def convert_physical_to_bytes(self,
                                   param_values: ParameterValue,
@@ -287,7 +280,7 @@ class BasicStructure(DopBase):
         for p in self.parameters:
             p._resolve_snrefs(diag_layer)
 
-    def __message_format_lines(self, allow_unknown_lengths: bool = False) -> List[str]:
+    def _message_format_lines(self, allow_unknown_lengths: bool = False) -> List[str]:
         # sort parameters
         sorted_params: list = list(self.parameters)  # copy list
 
@@ -428,7 +421,7 @@ class BasicStructure(DopBase):
         Print a description of the message format to `stdout`.
         """
 
-        message_as_lines = self.__message_format_lines(allow_unknown_lengths=allow_unknown_lengths)
+        message_as_lines = self._message_format_lines(allow_unknown_lengths=allow_unknown_lengths)
         if message_as_lines is not None:
             print(f"{indent * ' '}" + f"\n{indent * ' '}".join(message_as_lines))
         else:
