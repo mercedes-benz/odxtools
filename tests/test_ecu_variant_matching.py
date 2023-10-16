@@ -37,7 +37,7 @@ def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
     )
     odxlinks.update({resp.odx_id: resp})
 
-    def decode(message: bytes):
+    def decode(message: bytes) -> None:
         msg_str = message.decode(encoding="utf-8")
         msg_dict = json.loads(msg_str)
         return msg_dict
@@ -47,7 +47,7 @@ def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
 
 
 @pytest.fixture()
-def ident_service(monkeypatch, dummy_response: Response) -> DiagService:
+def ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> DiagService:
     dummy_req = Request(
         odx_id=OdxLinkId(local_id="dummy_req", doc_fragments=doc_frags),
         short_name="dummy_req",
@@ -77,7 +77,7 @@ def ident_service(monkeypatch, dummy_response: Response) -> DiagService:
         sdgs=[],
     )
 
-    def encode_request():
+    def encode_request() -> bytes:
         return b"\x22\x10\x00"
 
     monkeypatch.setattr(diagService, "encode_request", encode_request)
@@ -85,7 +85,7 @@ def ident_service(monkeypatch, dummy_response: Response) -> DiagService:
 
 
 @pytest.fixture
-def supplier_service(monkeypatch, dummy_response: Response) -> DiagService:
+def supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> DiagService:
     dummy_req = Request(
         odx_id=OdxLinkId(local_id="dummy_req", doc_fragments=doc_frags),
         short_name="dummy_req",
@@ -115,7 +115,7 @@ def supplier_service(monkeypatch, dummy_response: Response) -> DiagService:
         sdgs=[],
     )
 
-    def encode_request():
+    def encode_request() -> bytes:
         return b"\x22\x20\x00"
 
     monkeypatch.setattr(diagService, "encode_request", encode_request)
@@ -326,7 +326,7 @@ def test_ecu_variant_matching(
     use_cache: bool,
     req_resp_mapping: Dict[bytes, bytes],
     expected_variant: str,
-):
+) -> None:
     matcher = EcuVariantMatcher(
         ecu_variant_candidates=ecu_variants,
         use_cache=use_cache,
@@ -339,7 +339,7 @@ def test_ecu_variant_matching(
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-def test_no_match(ecu_variants: List[DiagLayer], use_cache: bool):
+def test_no_match(ecu_variants: List[DiagLayer], use_cache: bool) -> None:
     # stores the responses for each request for the ecu-under-test
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 1000}),
@@ -362,7 +362,7 @@ def test_no_match(ecu_variants: List[DiagLayer], use_cache: bool):
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if pending matchers reject the has_match() or active variant query
-def test_no_request_loop(ecu_variants: List[DiagLayer], use_cache: bool):
+def test_no_request_loop(ecu_variants: List[DiagLayer], use_cache: bool) -> None:
     matcher = EcuVariantMatcher(
         ecu_variant_candidates=ecu_variants,
         use_cache=use_cache,
@@ -375,7 +375,7 @@ def test_no_request_loop(ecu_variants: List[DiagLayer], use_cache: bool):
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if runs of the request loop without calling `evaluate(...)` are rejected
-def test_request_loop_misuse(ecu_variants: List[DiagLayer], use_cache: bool):
+def test_request_loop_misuse(ecu_variants: List[DiagLayer], use_cache: bool) -> None:
     matcher = EcuVariantMatcher(
         ecu_variant_candidates=ecu_variants,
         use_cache=use_cache,
@@ -387,7 +387,7 @@ def test_request_loop_misuse(ecu_variants: List[DiagLayer], use_cache: bool):
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if request loop is idempotent, i.e., the matching is the same regardless of how often the request loop is run
-def test_request_loop_idempotency(ecu_variants: List[DiagLayer], use_cache: bool):
+def test_request_loop_idempotency(ecu_variants: List[DiagLayer], use_cache: bool) -> None:
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 2000}),
         b"\x22\x20\00": as_bytes({"name": {
@@ -416,7 +416,7 @@ def test_request_loop_idempotency(ecu_variants: List[DiagLayer], use_cache: bool
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-def test_unresolvable_snpathref(ecu_variants: List[DiagLayer], use_cache: bool):
+def test_unresolvable_snpathref(ecu_variants: List[DiagLayer], use_cache: bool) -> None:
     # stores the responses for each request for the ecu-under-test
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 1000}),
