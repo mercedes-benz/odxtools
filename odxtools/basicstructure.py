@@ -7,10 +7,10 @@ from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
 from .dopbase import DopBase
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert
+from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert, odxraise
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase, OdxLinkId
-from .odxtypes import ParameterDict, ParameterValue
+from .odxtypes import ParameterDict, ParameterValue, ParameterValueDict
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.lengthkeyparameter import LengthKeyParameter
 from .parameters.matchingrequestparameter import MatchingRequestParameter
@@ -222,10 +222,13 @@ class BasicStructure(DopBase):
             triggering_coded_request=coded_request,
             is_end_of_pdu=True)
 
-    def decode(self, message: bytes) -> ParameterValue:
+    def decode(self, message: bytes) -> ParameterValueDict:
         # dummy decode state to be passed to convert_bytes_to_physical
         decode_state = DecodeState(parameter_values={}, coded_message=message, cursor_position=0)
         param_values, cursor_position = self.convert_bytes_to_physical(decode_state)
+        if not isinstance(param_values, dict):
+            odxraise(f"Decoding a structure must result in a dictionary of parameter "
+                     f"values (is {type(param_values)})")
         if len(message) != cursor_position:
             warnings.warn(
                 f"The message {message.hex()} is longer than could be parsed."

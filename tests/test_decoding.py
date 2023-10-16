@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import unittest
+from typing import cast
 
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.limit import IntervalType, Limit
@@ -34,7 +35,7 @@ doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
 class TestIdentifyingService(unittest.TestCase):
 
-    def test_prefix_tree_construction(self):
+    def test_prefix_tree_construction(self) -> None:
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
@@ -80,7 +81,7 @@ class TestIdentifyingService(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[req_param1, req_param2],
+            parameters=NamedItemList([req_param1, req_param2]),
             byte_size=None,
         )
         odxlinks = OdxLinkDatabase()
@@ -121,7 +122,7 @@ class TestIdentifyingService(unittest.TestCase):
             sdgs=[],
             is_visible_raw=None,
             byte_size=None,
-            parameters=[req_param1, req2_param2],
+            parameters=NamedItemList([req_param1, req2_param2]),
         )
         odxlinks.update({req2.odx_id: req2})
 
@@ -144,7 +145,7 @@ class TestIdentifyingService(unittest.TestCase):
             sdgs=[],
             is_visible_raw=None,
             response_type="NEG-RESPONSE",
-            parameters=[req_param1, resp2_param2],
+            parameters=NamedItemList([req_param1, resp2_param2]),
             byte_size=None,
         )
         odxlinks.update({resp2.odx_id: resp2})
@@ -213,7 +214,7 @@ class TestIdentifyingService(unittest.TestCase):
 
 class TestDecoding(unittest.TestCase):
 
-    def test_decode_request_coded_const(self):
+    def test_decode_request_coded_const(self) -> None:
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
@@ -251,7 +252,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[req_param1, req_param2],
+            parameters=NamedItemList([req_param1, req_param2]),
             byte_size=None,
         )
 
@@ -317,7 +318,7 @@ class TestDecoding(unittest.TestCase):
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
         self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
-    def test_decode_request_coded_const_undefined_byte_position(self):
+    def test_decode_request_coded_const_undefined_byte_position(self) -> None:
         """Test decoding of parameter
         Test if the decoding works if the byte position of the second parameter
         must be inferred from the order in the surrounding structure."""
@@ -380,7 +381,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[req_param1, req_param2, req_param3, req_param4],
+            parameters=NamedItemList([req_param1, req_param2, req_param3, req_param4]),
             byte_size=None,
         )
 
@@ -457,7 +458,7 @@ class TestDecoding(unittest.TestCase):
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
         self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
-    def test_decode_request_structure(self):
+    def test_decode_request_structure(self) -> None:
         """Test the decoding for a structure."""
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
@@ -533,7 +534,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[struct_param1, struct_param2],
+            parameters=NamedItemList([struct_param1, struct_param2]),
             byte_size=None,
         )
         req_param2 = ValueParameter(
@@ -556,7 +557,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[req_param1, req_param2],
+            parameters=NamedItemList([req_param1, req_param2]),
             byte_size=None,
         )
         service = DiagService(
@@ -634,7 +635,7 @@ class TestDecoding(unittest.TestCase):
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
         self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
-    def test_decode_request_end_of_pdu_field(self):
+    def test_decode_request_end_of_pdu_field(self) -> None:
         """Test the decoding for a structure."""
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
@@ -710,7 +711,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[struct_param1, struct_param2],
+            parameters=NamedItemList([struct_param1, struct_param2]),
             byte_size=None,
         )
         eopf = EndOfPduField(
@@ -747,7 +748,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[req_param1, req_param2],
+            parameters=NamedItemList([req_param1, req_param2]),
             byte_size=None,
         )
         service = DiagService(
@@ -832,7 +833,7 @@ class TestDecoding(unittest.TestCase):
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
         self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
-    def test_decode_request_linear_compu_method(self):
+    def test_decode_request_linear_compu_method(self) -> None:
         compu_method = LinearCompuMethod(
             offset=1,
             factor=5,
@@ -892,7 +893,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[req_param1, req_param2],
+            parameters=NamedItemList([req_param1, req_param2]),
             byte_size=None,
         )
 
@@ -969,7 +970,7 @@ class TestDecoding(unittest.TestCase):
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
         self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
-    def test_decode_response(self):
+    def test_decode_response(self) -> None:
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
@@ -1007,7 +1008,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[req_param1, req_param2],
+            parameters=NamedItemList([req_param1, req_param2]),
             byte_size=None,
         )
 
@@ -1041,7 +1042,7 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
             is_visible_raw=None,
             response_type="POS-RESPONSE",
-            parameters=[resp_param1, resp_param2],
+            parameters=NamedItemList([resp_param1, resp_param2]),
             byte_size=None,
         )
 
@@ -1075,7 +1076,7 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
             is_visible_raw=None,
             response_type="NEG-RESPONSE",
-            parameters=[resp_param1, resp_param2],
+            parameters=NamedItemList([resp_param1, resp_param2]),
             byte_size=None,
         )
 
@@ -1141,7 +1142,7 @@ class TestDecoding(unittest.TestCase):
             self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
             self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
-    def test_decode_dtc(self):
+    def test_decode_dtc(self) -> None:
         odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
@@ -1224,7 +1225,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[resp_param1, resp_param2],
+            parameters=NamedItemList([resp_param1, resp_param2]),
             byte_size=None,
             response_type="POS-RESPONSE",
         )
@@ -1303,7 +1304,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
         self.parameter_termination_end_of_pdu._resolve_snrefs(None)  # type: ignore[arg-type]
         self.parameter_sid._resolve_snrefs(None)  # type: ignore[arg-type]
 
-    def test_min_max_length_type_end_of_pdu(self):
+    def test_min_max_length_type_end_of_pdu(self) -> None:
         req_param1 = self.parameter_sid
         req_param2 = self.parameter_termination_end_of_pdu
         request = Request(
@@ -1313,7 +1314,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[req_param1, req_param2],
+            parameters=NamedItemList([req_param1, req_param2]),
             byte_size=None,
         )
         expected_coded_message = bytes([0x12, 0x34])
@@ -1322,10 +1323,10 @@ class TestDecodingAndEncoding(unittest.TestCase):
         actual_param_dict = request.decode(expected_coded_message)
         self.assertEqual(dict(actual_param_dict), expected_param_dict)
 
-        actual_coded_message = request.encode(**expected_param_dict)
+        actual_coded_message = request.encode(**expected_param_dict)  # type: ignore[arg-type]
         self.assertEqual(actual_coded_message, expected_coded_message)
 
-    def test_min_max_length_type_end_of_pdu_in_structure(self):
+    def test_min_max_length_type_end_of_pdu_in_structure(self) -> None:
         odxlinks = OdxLinkDatabase()
 
         struct_param = self.parameter_termination_end_of_pdu
@@ -1337,7 +1338,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[struct_param],
+            parameters=NamedItemList([struct_param]),
             byte_size=None,
         )
         odxlinks.update(structure._build_odxlinks())
@@ -1363,14 +1364,14 @@ class TestDecodingAndEncoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[req_param1, req_param2],
+            parameters=NamedItemList([req_param1, req_param2]),
             byte_size=None,
         )
 
         req_param1._resolve_odxlinks(odxlinks)
         req_param2._resolve_odxlinks(odxlinks)
-        req_param1._resolve_snrefs(None)
-        req_param2._resolve_snrefs(None)
+        req_param1._resolve_snrefs(cast(DiagLayer, None))
+        req_param2._resolve_snrefs(cast(DiagLayer, None))
 
         expected_coded_message = bytes([0x12, 0x34])
         expected_param_dict = {
@@ -1383,10 +1384,10 @@ class TestDecodingAndEncoding(unittest.TestCase):
         actual_param_dict = request.decode(expected_coded_message)
         self.assertEqual(dict(actual_param_dict), expected_param_dict)
 
-        actual_coded_message = request.encode(**expected_param_dict)
+        actual_coded_message = request.encode(**expected_param_dict)  # type: ignore[arg-type]
         self.assertEqual(actual_coded_message, expected_coded_message)
 
-    def test_physical_constant_parameter(self):
+    def test_physical_constant_parameter(self) -> None:
         odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
@@ -1448,15 +1449,15 @@ class TestDecodingAndEncoding(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[req_param1, req_param2],
+            parameters=NamedItemList([req_param1, req_param2]),
             byte_size=None,
         )
 
         req_param1._resolve_odxlinks(odxlinks)
         req_param2._resolve_odxlinks(odxlinks)
 
-        req_param1._resolve_snrefs(odxlinks)
-        req_param2._resolve_snrefs(odxlinks)
+        req_param1._resolve_snrefs(cast(DiagLayer, None))
+        req_param2._resolve_snrefs(cast(DiagLayer, None))
 
         expected_coded_message = bytes([0x12, 0x0])
         expected_param_dict = {"SID": 0x12, "physical_constant_parameter": offset}
@@ -1464,7 +1465,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
         actual_param_dict = request.decode(expected_coded_message)
         self.assertEqual(dict(actual_param_dict), expected_param_dict)
 
-        actual_coded_message = request.encode(**expected_param_dict)
+        actual_coded_message = request.encode(**expected_param_dict)  # type: ignore[arg-type]
         self.assertEqual(actual_coded_message, expected_coded_message)
 
         self.assertRaises(DecodeError, request.decode, bytes([0x12, 0x34]))
