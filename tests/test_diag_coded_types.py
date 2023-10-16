@@ -14,7 +14,7 @@ from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.encodestate import EncodeState
-from odxtools.exceptions import DecodeError, EncodeError
+from odxtools.exceptions import DecodeError, EncodeError, odxrequire
 from odxtools.leadinglengthinfotype import LeadingLengthInfoType
 from odxtools.minmaxlengthtype import MinMaxLengthType
 from odxtools.nameditemlist import NamedItemList
@@ -33,14 +33,14 @@ doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
 class TestLeadingLengthInfoType(unittest.TestCase):
 
-    def test_decode_leading_length_info_type_bytefield(self):
+    def test_decode_leading_length_info_type_bytefield(self) -> None:
         dct = LeadingLengthInfoType(
             base_data_type=DataType.A_BYTEFIELD,
             bit_length=6,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x2, 0x34, 0x56]), [], 0)
+        state = DecodeState(bytes([0x2, 0x34, 0x56]), {}, 0)
         internal, cursor_position = dct.convert_bytes_to_internal(state, 0)
         self.assertEqual(internal, bytes([0x34, 0x56]))
 
@@ -50,25 +50,25 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x1, 0xC2, 0x3, 0x4]), [], 1)
+        state = DecodeState(bytes([0x1, 0xC2, 0x3, 0x4]), {}, 1)
         # 0xC2 = 11000010, with bit_position=1 and bit_lenth=5, the extracted bits are 00001,
         # i.e. the leading length is 1, i.e. only the byte 0x3 should be extracted.
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=1)
         self.assertEqual(internal, bytes([0x3]))
 
-    def test_decode_leading_length_info_type_zero_length(self):
+    def test_decode_leading_length_info_type_zero_length(self) -> None:
         dct = LeadingLengthInfoType(
             base_data_type=DataType.A_BYTEFIELD,
             bit_length=8,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x0, 0x1]), [], 0)
+        state = DecodeState(bytes([0x0, 0x1]), {}, 0)
         internal, cursor_position = dct.convert_bytes_to_internal(state, 0)
         self.assertEqual(internal, b'')
         self.assertEqual(cursor_position, 1)
 
-    def test_encode_leading_length_info_type_bytefield(self):
+    def test_encode_leading_length_info_type_bytefield(self) -> None:
         dct = LeadingLengthInfoType(
             base_data_type=DataType.A_UTF8STRING,
             bit_length=6,
@@ -89,7 +89,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         internal = dct.convert_internal_to_bytes(bytes([0x3]), state, bit_position=1)
         self.assertEqual(internal, bytes([0x2, 0x3]))
 
-    def test_decode_leading_length_info_type_bytefield2(self):
+    def test_decode_leading_length_info_type_bytefield2(self) -> None:
         dct = LeadingLengthInfoType(
             base_data_type=DataType.A_BYTEFIELD,
             bit_length=8,
@@ -103,14 +103,14 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         # to the same value this may be changed...
         self.assertIn(byte_val, [b'', bytes([0x1, 0x0])])
 
-    def test_decode_leading_length_info_type_unicode2string(self):
+    def test_decode_leading_length_info_type_unicode2string(self) -> None:
         dct = LeadingLengthInfoType(
             base_data_type=DataType.A_UNICODE2STRING,
             bit_length=8,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x12, 0x4, 0x00, 0x61, 0x00, 0x39]), [], 1)
+        state = DecodeState(bytes([0x12, 0x4, 0x00, 0x61, 0x00, 0x39]), {}, 1)
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
         self.assertEqual(internal, "a9")
         self.assertEqual(cursor_position, 6)
@@ -121,12 +121,12 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=False,
         )
-        state = DecodeState(bytes([0x12, 0x4, 0x61, 0x00, 0x39, 0x00]), [], 1)
+        state = DecodeState(bytes([0x12, 0x4, 0x61, 0x00, 0x39, 0x00]), {}, 1)
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
         self.assertEqual(internal, "a9")
         self.assertEqual(cursor_position, 6)
 
-    def test_encode_leading_length_info_type_unicode2string(self):
+    def test_encode_leading_length_info_type_unicode2string(self) -> None:
         dct = LeadingLengthInfoType(
             base_data_type=DataType.A_UNICODE2STRING,
             bit_length=8,
@@ -146,7 +146,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         byte_val = dct.convert_internal_to_bytes("a9", state, bit_position=0)
         self.assertEqual(byte_val, bytes([0x4, 0x61, 0x00, 0x39, 0x00]))
 
-    def test_end_to_end(self):
+    def test_end_to_end(self) -> None:
         # diag coded types
         diagcodedtypes = {
             "uint8":
@@ -203,7 +203,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[
+            parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="SID",
                     long_name=None,
@@ -212,7 +212,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     diag_coded_type=diagcodedtypes["uint8"],
                     byte_position=0,
                     bit_position=None,
-                    coded_value=uds.SID.Authentication.value,
+                    coded_value=uds.UDSSID.Authentication.value,
                     sdgs=[],
                 ),
                 ValueParameter(
@@ -228,7 +228,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     physical_default_value_raw=None,
                     sdgs=[],
                 ),
-            ],
+            ]),
             byte_size=None,
         )
 
@@ -243,7 +243,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             company_datas=NamedItemList(),
             functional_classes=NamedItemList(),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
-                data_object_props=dops.values(),
+                data_object_props=NamedItemList(dops.values()),
                 dtc_dops=NamedItemList(),
                 structures=NamedItemList(),
                 end_of_pdu_fields=NamedItemList(),
@@ -299,7 +299,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
 class TestStandardLengthType(unittest.TestCase):
 
-    def test_decode_standard_length_type_uint(self):
+    def test_decode_standard_length_type_uint(self) -> None:
         dct = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
@@ -308,12 +308,12 @@ class TestStandardLengthType(unittest.TestCase):
             is_condensed_raw=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x1, 0x72, 0x3]), [], 1)
+        state = DecodeState(bytes([0x1, 0x72, 0x3]), {}, 1)
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=1)
         self.assertEqual(internal, 25)
         self.assertEqual(cursor_position, 2)
 
-    def test_decode_standard_length_type_uint_byteorder(self):
+    def test_decode_standard_length_type_uint_byteorder(self) -> None:
         dct = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
@@ -322,12 +322,12 @@ class TestStandardLengthType(unittest.TestCase):
             is_highlow_byte_order_raw=False,
             is_condensed_raw=None,
         )
-        state = DecodeState(bytes([0x1, 0x2, 0x3]), [], 1)
+        state = DecodeState(bytes([0x1, 0x2, 0x3]), {}, 1)
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
         self.assertEqual(internal, 0x0302)
         self.assertEqual(cursor_position, 3)
 
-    def test_decode_standard_length_type_bytes(self):
+    def test_decode_standard_length_type_bytes(self) -> None:
         dct = StandardLengthType(
             base_data_type=DataType.A_BYTEFIELD,
             base_type_encoding=None,
@@ -336,7 +336,7 @@ class TestStandardLengthType(unittest.TestCase):
             is_condensed_raw=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78]), [], 1)
+        state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78]), {}, 1)
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
         self.assertEqual(internal, bytes([0x34, 0x56]))
         self.assertEqual(cursor_position, 3)
@@ -344,7 +344,7 @@ class TestStandardLengthType(unittest.TestCase):
 
 class TestParamLengthInfoType(unittest.TestCase):
 
-    def test_decode_param_info_length_type_uint(self):
+    def test_decode_param_info_length_type_uint(self) -> None:
         length_key_id = OdxLinkId("param.length_key", doc_frags)
         length_key_ref = OdxLinkRef.from_id(length_key_id)
         length_key = LengthKeyParameter(
@@ -377,7 +377,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         self.assertEqual(internal, 0x1234)
         self.assertEqual(cursor_position, 3)
 
-    def test_encode_param_info_length_type_uint(self):
+    def test_encode_param_info_length_type_uint(self) -> None:
         length_key_id = OdxLinkId("param.length_key", doc_frags)
         length_key = LengthKeyParameter(
             odx_id=length_key_id,
@@ -404,7 +404,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         byte_val = dct.convert_internal_to_bytes(0x12345, state, bit_position=0)
         self.assertEqual(byte_val.hex(), "0000012345")
 
-    def test_end_to_end(self):
+    def test_end_to_end(self) -> None:
         # diag coded types
         diagcodedtypes = {
             "uint8":
@@ -482,7 +482,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[
+            parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="SID",
                     long_name=None,
@@ -490,7 +490,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     semantic="SERVICE-ID",
                     diag_coded_type=diagcodedtypes["uint8"],
                     byte_position=0,
-                    coded_value=uds.SID.Authentication.value,
+                    coded_value=uds.UDSSID.Authentication.value,
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -521,7 +521,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     physical_default_value_raw=None,
                     sdgs=[],
                 ),
-            ],
+            ]),
             byte_size=None,
         )
 
@@ -536,7 +536,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             company_datas=NamedItemList(),
             functional_classes=NamedItemList(),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
-                data_object_props=dops.values(),
+                data_object_props=NamedItemList(dops.values()),
                 dtc_dops=NamedItemList(),
                 structures=NamedItemList(),
                 end_of_pdu_fields=NamedItemList(),
@@ -594,7 +594,7 @@ class TestParamLengthInfoType(unittest.TestCase):
 
 class TestMinMaxLengthType(unittest.TestCase):
 
-    def test_decode_min_max_length_type_bytes(self):
+    def test_decode_min_max_length_type_bytes(self) -> None:
         dct = MinMaxLengthType(
             base_data_type=DataType.A_BYTEFIELD,
             base_type_encoding=None,
@@ -603,12 +603,12 @@ class TestMinMaxLengthType(unittest.TestCase):
             termination="HEX-FF",
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x12, 0xFF, 0x34, 0x56, 0xFF]), [], 1)
+        state = DecodeState(bytes([0x12, 0xFF, 0x34, 0x56, 0xFF]), {}, 1)
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
         self.assertEqual(internal, bytes([0xFF, 0x34, 0x56]))
         self.assertEqual(cursor_position, 5)
 
-    def test_decode_min_max_length_type_too_short_pdu(self):
+    def test_decode_min_max_length_type_too_short_pdu(self) -> None:
         """If the PDU ends before min length is reached, an error must be raised."""
         dct = MinMaxLengthType(
             base_data_type=DataType.A_BYTEFIELD,
@@ -618,10 +618,10 @@ class TestMinMaxLengthType(unittest.TestCase):
             termination="HEX-FF",
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x12, 0xFF]), [], 1)
+        state = DecodeState(bytes([0x12, 0xFF]), {}, 1)
         self.assertRaises(DecodeError, dct.convert_bytes_to_internal, state)
 
-    def test_decode_min_max_length_type_end_of_pdu(self):
+    def test_decode_min_max_length_type_end_of_pdu(self) -> None:
         """If the PDU ends before max length is reached, the extracted value ends at the end of the PDU."""
         for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
             dct = MinMaxLengthType(
@@ -632,12 +632,12 @@ class TestMinMaxLengthType(unittest.TestCase):
                 termination=termination,
                 is_highlow_byte_order_raw=None,
             )
-            state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78, 0x9A]), [], 1)
+            state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78, 0x9A]), {}, 1)
             internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
             self.assertEqual(internal, bytes([0x34, 0x56, 0x78, 0x9A]))
             self.assertEqual(cursor_position, 5)
 
-    def test_decode_min_max_length_type_max_length(self):
+    def test_decode_min_max_length_type_max_length(self) -> None:
         """If the max length is smaller than the end of PDU, the extracted value ends after max length."""
         for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
             dct = MinMaxLengthType(
@@ -648,12 +648,12 @@ class TestMinMaxLengthType(unittest.TestCase):
                 termination=termination,
                 is_highlow_byte_order_raw=None,
             )
-            state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78, 0x9A]), [], 1)
+            state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78, 0x9A]), {}, 1)
             internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
             self.assertEqual(internal, bytes([0x34, 0x56, 0x78]))
             self.assertEqual(cursor_position, 4)
 
-    def test_encode_min_max_length_type_hex_ff(self):
+    def test_encode_min_max_length_type_hex_ff(self) -> None:
         dct = MinMaxLengthType(
             base_data_type=DataType.A_BYTEFIELD,
             base_type_encoding=None,
@@ -666,7 +666,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         byte_val = dct.convert_internal_to_bytes(bytes([0x34, 0x56]), state, bit_position=0)
         self.assertEqual(byte_val, bytes([0x34, 0x56, 0xFF]))
 
-    def test_encode_min_max_length_type_zero(self):
+    def test_encode_min_max_length_type_zero(self) -> None:
         dct = MinMaxLengthType(
             base_data_type=DataType.A_UTF8STRING,
             base_type_encoding=None,
@@ -679,7 +679,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         byte_val = dct.convert_internal_to_bytes("Hi", state, bit_position=0)
         self.assertEqual(byte_val, bytes([0x48, 0x69, 0x0]))
 
-    def test_encode_min_max_length_type_end_of_pdu(self):
+    def test_encode_min_max_length_type_end_of_pdu(self) -> None:
         """If the parameter is at the end of the PDU, no termination char is added."""
         for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
             dct = MinMaxLengthType(
@@ -705,7 +705,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         )
         state = EncodeState(bytes([0x12]), parameter_values={}, is_end_of_pdu=False)
 
-    def test_encode_min_max_length_type_max_length(self):
+    def test_encode_min_max_length_type_max_length(self) -> None:
         """If the internal value is larger than max length, an EncodeError must be raised."""
         for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
             dct = MinMaxLengthType(
@@ -728,7 +728,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 bit_position=0,
             )
 
-    def test_end_to_end(self):
+    def test_end_to_end(self) -> None:
         # diag coded types
         diagcodedtypes = {
             "uint8":
@@ -787,7 +787,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[
+            parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="SID",
                     long_name=None,
@@ -795,7 +795,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     semantic="SERVICE-ID",
                     diag_coded_type=diagcodedtypes["uint8"],
                     byte_position=0,
-                    coded_value=uds.SID.Authentication.value,
+                    coded_value=uds.UDSSID.Authentication.value,
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -823,7 +823,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     bit_position=None,
                     sdgs=[],
                 ),
-            ],
+            ]),
             byte_size=None,
         )
 
@@ -838,7 +838,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             company_datas=NamedItemList(),
             functional_classes=NamedItemList(),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
-                data_object_props=dops.values(),
+                data_object_props=NamedItemList(dops.values()),
                 dtc_dops=NamedItemList(),
                 structures=NamedItemList(),
                 end_of_pdu_fields=NamedItemList(),
@@ -891,7 +891,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         self.assertEqual(
             request.encode(certificateClient=0x123456.to_bytes(3, "big")), coded_request)
 
-    def test_read_odx(self):
+    def test_read_odx(self) -> None:
         expected = MinMaxLengthType(
             base_data_type=DataType.A_ASCIISTRING,
             base_type_encoding="ISO-8859-1",
@@ -912,11 +912,13 @@ class TestMinMaxLengthType(unittest.TestCase):
         """
 
         odx_element = ElementTree.fromstring(diagcodedtype_odx)
-        diag_coded_type_element = odx_element.find("DIAG-CODED-TYPE")
+        diag_coded_type_element = odxrequire(odx_element.find("DIAG-CODED-TYPE"))
 
         actual = create_any_diag_coded_type_from_et(diag_coded_type_element, doc_frags)
 
         self.assertIsInstance(actual, MinMaxLengthType)
+        assert isinstance(actual, MinMaxLengthType)
+        assert isinstance(expected, MinMaxLengthType)
         self.assertEqual(actual.base_data_type, expected.base_data_type)
         self.assertEqual(actual.base_type_encoding, expected.base_type_encoding)
         self.assertEqual(actual.min_length, expected.min_length)
