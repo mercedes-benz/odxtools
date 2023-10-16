@@ -2,6 +2,7 @@
 
 import unittest
 from argparse import Namespace
+from typing import List, Optional
 
 import odxtools.cli.find as find
 import odxtools.cli.list as list_tool
@@ -16,13 +17,14 @@ except ImportError:
 
 class UtilFunctions:
 
-    def run_list_tool(path_to_pdx_file="./examples/somersault.pdx",
-                      ecu_variants="all",
-                      print_neg_responses=False,
-                      ecu_services=None,
-                      print_params=False,
-                      print_dops=False,
-                      print_all=False):
+    @staticmethod
+    def run_list_tool(path_to_pdx_file: str = "./examples/somersault.pdx",
+                      ecu_variants: Optional[List[str]] = None,
+                      print_neg_responses: bool = False,
+                      ecu_services: Optional[List[str]] = None,
+                      print_params: bool = False,
+                      print_dops: bool = False,
+                      print_all: bool = False) -> None:
         list_args = Namespace(
             pdx_file=path_to_pdx_file,
             variants=ecu_variants,
@@ -34,13 +36,14 @@ class UtilFunctions:
 
         list_tool.run(list_args)
 
-    def run_find_tool(path_to_pdx_file="./examples/somersault.pdx",
-                      ecu_variants="all",
-                      data=None,
-                      decode=None,
-                      ecu_services=None,
-                      no_details=True,
-                      relaxed_output=False):
+    @staticmethod
+    def run_find_tool(path_to_pdx_file: str = "./examples/somersault.pdx",
+                      ecu_variants: Optional[List[str]] = None,
+                      data: Optional[List[str]] = None,
+                      decode: Optional[bool] = None,
+                      ecu_services: Optional[List[str]] = None,
+                      no_details: bool = True,
+                      relaxed_output: bool = False) -> None:
         find_args = Namespace(
             pdx_file=path_to_pdx_file,
             variants=ecu_variants,
@@ -55,7 +58,7 @@ class UtilFunctions:
 
 class TestCommandLineTools(unittest.TestCase):
 
-    def test_list_tool(self):
+    def test_list_tool(self) -> None:
 
         UtilFunctions.run_list_tool()
         UtilFunctions.run_list_tool(ecu_variants=["somersault"])
@@ -63,19 +66,19 @@ class TestCommandLineTools(unittest.TestCase):
         UtilFunctions.run_list_tool(print_params=True)
         UtilFunctions.run_list_tool(print_dops=True)
         UtilFunctions.run_list_tool(print_all=True)
-        UtilFunctions.run_list_tool(ecu_services="session_start")
+        UtilFunctions.run_list_tool(ecu_services=["session_start"])
 
-    def test_find_tool(self):
+    def test_find_tool(self) -> None:
 
         UtilFunctions.run_find_tool(ecu_services=["session_start"])
         UtilFunctions.run_find_tool(ecu_services=["session_start"], no_details=False)
         UtilFunctions.run_find_tool(data=["3E 00"])
         UtilFunctions.run_find_tool(data=["3E 00"], ecu_variants=["somersault_lazy"])
-        UtilFunctions.run_find_tool(decode=["3E 00"])
-        UtilFunctions.run_find_tool(decode=["3E 00"], relaxed_output=True)
+        UtilFunctions.run_find_tool(decode=True)
+        UtilFunctions.run_find_tool(decode=True, relaxed_output=True)
 
     @unittest.skipIf(import_failed, "import of PyInquirer failed")
-    def test_browse_tool(self):
+    def test_browse_tool(self) -> None:
         browse_args = Namespace(pdx_file="./examples/somersault.pdx")
         browse.run(browse_args)
 
