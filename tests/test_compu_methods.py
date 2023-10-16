@@ -23,7 +23,7 @@ class TestLinearCompuMethod(unittest.TestCase):
     def setUp(self) -> None:
         """Prepares the jinja environment and the sample linear compumethod"""
 
-        def _get_jinja_environment():
+        def _get_jinja_environment() -> jinja2.environment.Environment:
             __module_filename = inspect.getsourcefile(odxtools)
             assert isinstance(__module_filename, str)
             templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templates"])
@@ -71,7 +71,7 @@ class TestLinearCompuMethod(unittest.TestCase):
         </COMPU-METHOD>
         """
 
-    def test_read_odx(self):
+    def test_read_odx(self) -> None:
         """Test parsing of linear compumethod"""
         expected = self.linear_compumethod
 
@@ -79,28 +79,29 @@ class TestLinearCompuMethod(unittest.TestCase):
         actual = create_any_compu_method_from_et(et_element, doc_frags, expected.internal_type,
                                                  expected.physical_type)
         self.assertIsInstance(actual, LinearCompuMethod)
+        assert isinstance(actual, LinearCompuMethod)
         self.assertEqual(expected.physical_type, actual.physical_type)
         self.assertEqual(expected.internal_type, actual.internal_type)
         self.assertEqual(expected.offset, actual.offset)
         self.assertEqual(expected.factor, actual.factor)
         self.assertEqual(expected.denominator, actual.denominator)
 
-    def test_write_odx(self):
+    def test_write_odx(self) -> None:
         self.maxDiff = None
         dlc_tpl = self.jinja_env.get_template("macros/printDOP.xml.jinja2")
         module = dlc_tpl.make_module()
 
-        out = module.printCompuMethod(self.linear_compumethod)
+        out = module.printCompuMethod(self.linear_compumethod)  # type: ignore[attr-defined]
 
         expected_odx = self.linear_compumethod_odx
 
         # We ignore spaces
-        def remove_spaces(string):
+        def remove_spaces(string: str) -> str:
             return "".join(string.split())
 
         self.assertEqual(remove_spaces(out), remove_spaces(expected_odx))
 
-    def test_linear_compu_method_type_denom_not_one(self):
+    def test_linear_compu_method_type_denom_not_one(self) -> None:
         compu_method = LinearCompuMethod(
             offset=0,
             factor=1,
@@ -114,7 +115,7 @@ class TestLinearCompuMethod(unittest.TestCase):
 
         self.assertEqual(compu_method.convert_internal_to_physical(7200), 2)
 
-    def test_linear_compu_method_type_int_int(self):
+    def test_linear_compu_method_type_int_int(self) -> None:
         compu_method = LinearCompuMethod(
             offset=1,
             factor=3,
@@ -133,7 +134,7 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertEqual(compu_method.convert_physical_to_internal(1), 0)
         self.assertEqual(compu_method.convert_physical_to_internal(-5), -2)
 
-    def test_linear_compu_method_type_int_float(self):
+    def test_linear_compu_method_type_int_float(self) -> None:
         compu_method = LinearCompuMethod(
             offset=1,
             factor=3,
@@ -151,7 +152,7 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertTrue(compu_method.is_valid_physical_value(123))
         self.assertFalse(compu_method.is_valid_physical_value("123"))
 
-    def test_linear_compu_method_type_float_int(self):
+    def test_linear_compu_method_type_float_int(self) -> None:
         compu_method = LinearCompuMethod(
             offset=1,
             factor=3,
@@ -169,7 +170,7 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertFalse(compu_method.is_valid_physical_value("123"))
         self.assertFalse(compu_method.is_valid_physical_value(1.2345))
 
-    def test_linear_compu_method_type_string(self):
+    def test_linear_compu_method_type_string(self) -> None:
         compu_method = LinearCompuMethod(
             offset=1,
             factor=3,
@@ -183,7 +184,7 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertFalse(compu_method.is_valid_internal_value(123))
         self.assertFalse(compu_method.is_valid_internal_value(1.2345))
 
-    def test_linear_compu_method_limits(self):
+    def test_linear_compu_method_limits(self) -> None:
         compu_method = LinearCompuMethod(
             offset=1,
             factor=5,
@@ -211,7 +212,7 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertEqual(compu_method.convert_internal_to_physical(4), 21)
         self.assertEqual(compu_method.convert_physical_to_internal(21), 4)
 
-    def test_linear_compu_method_physical_limits(self):
+    def test_linear_compu_method_physical_limits(self) -> None:
         # Define decoding function: f: (2, 15] -> [-74, -14], f(x) = -5*x + 1
         compu_method = LinearCompuMethod(
             offset=1,
@@ -244,7 +245,7 @@ class TestTabIntpCompuMethod(unittest.TestCase):
     def setUp(self) -> None:
         """Prepares the jinja environment and the sample tab-intp compumethod"""
 
-        def _get_jinja_environment():
+        def _get_jinja_environment() -> jinja2.environment.Environment:
             __module_filename = inspect.getsourcefile(odxtools)
             assert isinstance(__module_filename, str)
             templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templates"])
@@ -296,7 +297,7 @@ class TestTabIntpCompuMethod(unittest.TestCase):
         </COMPU-METHOD>
         """
 
-    def test_tabintp_convert_type_int_float(self):
+    def test_tabintp_convert_type_int_float(self) -> None:
         method = self.compumethod
 
         for internal, physical in [
@@ -319,28 +320,30 @@ class TestTabIntpCompuMethod(unittest.TestCase):
         self.assertRaises(EncodeError, method.convert_physical_to_internal, -2)
         self.assertRaises(EncodeError, method.convert_physical_to_internal, 2.1)
 
-    def test_read_odx(self):
+    def test_read_odx(self) -> None:
         expected = self.compumethod
 
         et_element = ElementTree.fromstring(self.compumethod_odx)
         actual = create_any_compu_method_from_et(et_element, doc_frags, expected.internal_type,
                                                  expected.physical_type)
         self.assertIsInstance(actual, TabIntpCompuMethod)
+        assert isinstance(expected, TabIntpCompuMethod)
+        assert isinstance(actual, TabIntpCompuMethod)
         self.assertEqual(expected.physical_type, actual.physical_type)
         self.assertEqual(expected.internal_type, actual.internal_type)
         self.assertEqual(expected.internal_points, actual.internal_points)
         self.assertEqual(expected.physical_points, actual.physical_points)
 
-    def test_write_odx(self):
+    def test_write_odx(self) -> None:
         dlc_tpl = self.jinja_env.get_template("macros/printDOP.xml.jinja2")
         module = dlc_tpl.make_module()
 
-        out = module.printCompuMethod(self.compumethod)
+        out = module.printCompuMethod(self.compumethod)  # type: ignore[attr-defined]
 
         expected_odx = self.compumethod_odx
 
         # We ignore spaces
-        def remove_spaces(string):
+        def remove_spaces(string: str) -> str:
             return "".join(string.split())
 
         self.assertEqual(remove_spaces(out), remove_spaces(expected_odx))
