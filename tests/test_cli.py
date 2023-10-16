@@ -37,17 +37,17 @@ class UtilFunctions:
         list_tool.run(list_args)
 
     @staticmethod
-    def run_find_tool(path_to_pdx_file: str = "./examples/somersault.pdx",
+    def run_find_tool(data: str,
+                      path_to_pdx_file: str = "./examples/somersault.pdx",
                       ecu_variants: Optional[List[str]] = None,
-                      data: Optional[List[str]] = None,
-                      decode: Optional[bool] = None,
+                      decode: bool = False,
                       ecu_services: Optional[List[str]] = None,
                       no_details: bool = True,
                       relaxed_output: bool = False) -> None:
         find_args = Namespace(
             pdx_file=path_to_pdx_file,
             variants=ecu_variants,
-            data=data,
+            data=[data],
             decode=decode,
             service_names=ecu_services,
             no_details=no_details,
@@ -70,12 +70,12 @@ class TestCommandLineTools(unittest.TestCase):
 
     def test_find_tool(self) -> None:
 
-        UtilFunctions.run_find_tool(ecu_services=["session_start"])
-        UtilFunctions.run_find_tool(ecu_services=["session_start"], no_details=False)
-        UtilFunctions.run_find_tool(data=["3E 00"])
-        UtilFunctions.run_find_tool(data=["3E 00"], ecu_variants=["somersault_lazy"])
-        UtilFunctions.run_find_tool(decode=True)
-        UtilFunctions.run_find_tool(decode=True, relaxed_output=True)
+        UtilFunctions.run_find_tool(data="3E00", ecu_services=["session_start"])
+        UtilFunctions.run_find_tool(data="3e00", ecu_services=["session_start"], no_details=False)
+        UtilFunctions.run_find_tool(data="3E 00")
+        UtilFunctions.run_find_tool(data="3E 00", ecu_variants=["somersault_lazy"])
+        UtilFunctions.run_find_tool(data="3E 00", decode=True)
+        UtilFunctions.run_find_tool(data="3E 00", decode=True, relaxed_output=True)
 
     @unittest.skipIf(import_failed, "import of PyInquirer failed")
     def test_browse_tool(self) -> None:
