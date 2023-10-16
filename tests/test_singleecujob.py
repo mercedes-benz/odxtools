@@ -18,6 +18,7 @@ from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
+from odxtools.exceptions import odxrequire
 from odxtools.functionalclass import FunctionalClass
 from odxtools.inputparam import InputParam
 from odxtools.nameditemlist import NamedItemList
@@ -284,7 +285,7 @@ class TestSingleEcuJob(unittest.TestCase):
             </SINGLE-ECU-JOB>
         """
 
-    def test_read_odx(self):
+    def test_read_odx(self) -> None:
         expected = self.singleecujob_object
         sample_single_ecu_job_odx = self.singleecujob_odx
         et_element = ElementTree.fromstring(sample_single_ecu_job_odx)
@@ -326,7 +327,7 @@ class TestSingleEcuJob(unittest.TestCase):
         sej = SingleEcuJob.from_et(ElementTree.fromstring(rawodx), doc_frags)
         self.assertEqual(self.singleecujob_object, sej)
 
-    def test_default_lists(self):
+    def test_default_lists(self) -> None:
         """Test that empty lists are assigned to list-attributes if no explicit value is passed."""
         sej = SingleEcuJob(
             odx_id=OdxLinkId("ID.SomeID", doc_frags),
@@ -363,7 +364,7 @@ class TestSingleEcuJob(unittest.TestCase):
         self.assertEqual(sej.neg_output_params, NamedItemList())
         self.assertEqual(sej.prog_codes[0].library_refs, [])
 
-    def test_resolve_odxlinks(self):
+    def test_resolve_odxlinks(self) -> None:
         diag_layer_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("ID.bv", doc_frags),
@@ -407,7 +408,7 @@ class TestSingleEcuJob(unittest.TestCase):
         self.assertEqual(self.context.extensiveTask,
                          self.singleecujob_object.functional_classes.extensiveTask)
         self.assertEqual(self.context.specialAudience,
-                         self.singleecujob_object.audience.enabled_audiences[0])
+                         odxrequire(self.singleecujob_object.audience).enabled_audiences[0])
 
         self.assertEqual(self.context.inputDOP, self.singleecujob_object.input_params[0].dop)
         self.assertEqual(self.context.outputDOP, self.singleecujob_object.output_params[0].dop)

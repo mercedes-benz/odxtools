@@ -84,7 +84,7 @@ class SingleEcuJob(IdentifiableElement):
     def __post_init__(self) -> None:
         if not self.functional_class_refs:
             self.functional_class_refs = []
-        self._functional_classes: Optional[NamedItemList[FunctionalClass]] = None
+        self._functional_classes: NamedItemList[FunctionalClass]
 
         # Replace None attributes by empty lists
         if not self.input_params:
@@ -163,7 +163,7 @@ class SingleEcuJob(IdentifiableElement):
             **kwargs)
 
     @property
-    def functional_classes(self) -> Optional[NamedItemList[FunctionalClass]]:
+    def functional_classes(self) -> NamedItemList[FunctionalClass]:
         """The functional classes referenced by this job.
         This is None iff the references were not resolved.
         """
