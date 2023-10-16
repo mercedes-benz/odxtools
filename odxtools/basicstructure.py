@@ -7,10 +7,10 @@ from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
 from .dopbase import DopBase
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert
+from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert, odxraise
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase, OdxLinkId
-from .odxtypes import ParameterDict, ParameterValue
+from .odxtypes import ParameterDict, ParameterValue, ParameterValueDict
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.lengthkeyparameter import LengthKeyParameter
 from .parameters.matchingrequestparameter import MatchingRequestParameter
@@ -149,7 +149,7 @@ class BasicStructure(DopBase):
             # We definitely broke something if we didn't respect the explicit byte_size
             odxassert(
                 len(coded_message) == self.byte_size,
-                self._get_encode_error_str("was", coded_message, self.byte_size * 8))
+                "Verification of coded message {coded_message.hex()} failed: Incorrect size.")
             # No need to check further
             return
 
@@ -164,16 +164,9 @@ class BasicStructure(DopBase):
             # but it could be that bit_length was mis calculated and not the actual bytes are wrong
             # Could happen with overlapping parameters and parameters with gaps
             warnings.warn(
-                self._get_encode_error_str("may have been", coded_message, bit_length),
+                "Verification of coded message {coded_message.hex()} possibly failed: Size may be incorrect.",
                 OdxWarning,
                 stacklevel=1)
-
-    def _get_encode_error_str(self, verb: str, coded_message: bytes, bit_length: int) -> str:
-        return str(f"Structure {self.short_name} {verb} encoded incorrectly:" +
-                   f" actual length is {len(coded_message)}," +
-                   f" computed byte length is {bit_length // 8}," +
-                   f" computed_rpc is {coded_message.hex()}\n" +
-                   "\n".join(self.__message_format_lines()))
 
     def convert_physical_to_bytes(self,
                                   param_values: ParameterValue,
@@ -229,10 +222,13 @@ class BasicStructure(DopBase):
             triggering_coded_request=coded_request,
             is_end_of_pdu=True)
 
-    def decode(self, message: bytes) -> ParameterValue:
+    def decode(self, message: bytes) -> ParameterValueDict:
         # dummy decode state to be passed to convert_bytes_to_physical
         decode_state = DecodeState(parameter_values={}, coded_message=message, cursor_position=0)
         param_values, cursor_position = self.convert_bytes_to_physical(decode_state)
+        if not isinstance(param_values, dict):
+            odxraise(f"Decoding a structure must result in a dictionary of parameter "
+                     f"values (is {type(param_values)})")
         if len(message) != cursor_position:
             warnings.warn(
                 f"The message {message.hex()} is longer than could be parsed."
@@ -287,7 +283,7 @@ class BasicStructure(DopBase):
         for p in self.parameters:
             p._resolve_snrefs(diag_layer)
 
-    def __message_format_lines(self, allow_unknown_lengths: bool = False) -> List[str]:
+    def _message_format_lines(self, allow_unknown_lengths: bool = False) -> List[str]:
         # sort parameters
         sorted_params: list = list(self.parameters)  # copy list
 
@@ -428,7 +424,7 @@ class BasicStructure(DopBase):
         Print a description of the message format to `stdout`.
         """
 
-        message_as_lines = self.__message_format_lines(allow_unknown_lengths=allow_unknown_lengths)
+        message_as_lines = self._message_format_lines(allow_unknown_lengths=allow_unknown_lengths)
         if message_as_lines is not None:
             print(f"{indent * ' '}" + f"\n{indent * ' '}".join(message_as_lines))
         else:

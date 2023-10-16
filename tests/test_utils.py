@@ -14,7 +14,7 @@ from odxtools.utils import is_short_name, is_short_name_path
         ("ab++cd", False),
     ],
 )
-def test_is_short_name(val: str, expected: bool):
+def test_is_short_name(val: str, expected: bool) -> None:
     assert is_short_name(val) == expected
 
 
@@ -28,5 +28,5 @@ def test_is_short_name(val: str, expected: bool):
         ("abc.defg.", False),
     ],
 )
-def test_is_short_name_path(val: str, expected: bool):
+def test_is_short_name_path(val: str, expected: bool) -> None:
     assert is_short_name_path(val) == expected

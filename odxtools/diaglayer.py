@@ -983,7 +983,7 @@ class DiagLayer:
 
         return self._decode(message, candidate_services)
 
-    def decode_response(self, response: bytes, request: Union[bytes, Message]) -> Iterable[Message]:
+    def decode_response(self, response: bytes, request: Union[bytes, Message]) -> List[Message]:
         if isinstance(request, Message):
             candidate_services = [request.service]
         else:

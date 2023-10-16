@@ -30,7 +30,7 @@ doc_frags = [OdxDocFragment("UnitTest", "unit_test_doc")]
 
 class TestDiagDataDictionarySpec(unittest.TestCase):
 
-    def test_initialization(self):
+    def test_initialization(self) -> None:
         uint_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
@@ -162,7 +162,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             description=None,
             sdgs=[],
             is_visible_raw=None,
-            parameters=[
+            parameters=NamedItemList([
                 ValueParameter(
                     short_name="flip_speed",
                     long_name="Flip Speed",
@@ -201,7 +201,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     table_snref="flip_quality",  # cf. somersaultecu
                     table_row_snref="good",
                 ),
-            ],
+            ]),
             byte_size=None,
             dtc_values=[],
         )
@@ -236,7 +236,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                 short_name="default_case",
                 long_name="Default Case",
                 description=None,
-                structure_ref="structure_ref",
+                structure_ref=OdxLinkRef("structure_ref", doc_frags),
                 structure_snref=None,
             ),
             cases=[
@@ -246,7 +246,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     description=None,
                     lower_limit="1",
                     upper_limit="3",
-                    structure_ref="structure_ref",
+                    structure_ref=OdxLinkRef("structure_ref", doc_frags),
                     structure_snref=None,
                 ),
                 MultiplexerCase(
@@ -255,14 +255,14 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     description=None,
                     lower_limit="1",
                     upper_limit="3",
-                    structure_ref="structure_ref",
+                    structure_ref=OdxLinkRef("structure_ref", doc_frags),
                     structure_snref=None,
                 ),
             ],
         )
 
         ddds = DiagDataDictionarySpec(
-            dtc_dops=[dtc_dop],
+            dtc_dops=NamedItemList([dtc_dop]),
             data_object_props=NamedItemList([dop_1, dop_2]),
             tables=NamedItemList([table]),
             env_data_descs=NamedItemList([env_data_desc]),

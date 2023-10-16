@@ -49,7 +49,7 @@ class UDSSID(IntEnum):
 
 
 # add the OBD SIDs to the ones from UDS
-SID = IntEnum("UdsSID", ((i.name, i.value) for i in chain(obd.SID, UDSSID)))  # type: ignore
+SID = IntEnum("UdsSID", ((i.name, i.value) for i in chain(obd.SID, UDSSID)))  # type: ignore[misc]
 
 
 class NegativeResponseCodes(IntEnum):

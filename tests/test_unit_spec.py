@@ -8,6 +8,7 @@ from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
+from odxtools.exceptions import odxrequire
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
@@ -25,7 +26,7 @@ doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
 class TestUnitSpec(unittest.TestCase):
 
-    def test_read_odx(self):
+    def test_read_odx(self) -> None:
         expected = UnitSpec(
             physical_dimensions=[
                 PhysicalDimension(
@@ -56,7 +57,7 @@ class TestUnitSpec(unittest.TestCase):
                     offset_si_to_unit=0,
                 )
             ],
-            unit_groups=None,
+            unit_groups=NamedItemList(),
             sdgs=[],
         )
         # Define an example ECU job as odx
@@ -68,7 +69,7 @@ class TestUnitSpec(unittest.TestCase):
                         <DISPLAY-NAME>{expected.units[0].display_name}</DISPLAY-NAME>
                         <FACTOR-SI-TO-UNIT>{expected.units[0].factor_si_to_unit}</FACTOR-SI-TO-UNIT>
                         <OFFSET-SI-TO-UNIT>{expected.units[0].offset_si_to_unit}</OFFSET-SI-TO-UNIT>
-                        <PHYSICAL-DIMENSION-REF ID-REF="{expected.units[0].physical_dimension_ref.ref_id}" />
+                        <PHYSICAL-DIMENSION-REF ID-REF="{odxrequire(expected.units[0].physical_dimension_ref).ref_id}" />
                     </UNIT>
                 </UNITS>
                 <PHYSICAL-DIMENSIONS>
@@ -86,7 +87,7 @@ class TestUnitSpec(unittest.TestCase):
         self.assertEqual(expected.unit_groups, spec.unit_groups)
         self.assertEqual(expected, spec)
 
-    def test_resolve_odxlinks(self):
+    def test_resolve_odxlinks(self) -> None:
         unit = Unit(
             odx_id=OdxLinkId("unit_time_id", doc_frags),
             oid=None,
@@ -131,7 +132,7 @@ class TestUnitSpec(unittest.TestCase):
             communication_parameters=[],
             ecu_variant_patterns=[],
             diag_comms=[],
-            requests=[
+            requests=NamedItemList([
                 Request(
                     odx_id=OdxLinkId("rq_id", doc_frags),
                     short_name="rq_sn",
@@ -139,7 +140,7 @@ class TestUnitSpec(unittest.TestCase):
                     description=None,
                     sdgs=[],
                     is_visible_raw=None,
-                    parameters=[
+                    parameters=NamedItemList([
                         CodedConstParameter(
                             short_name="sid",
                             long_name=None,
@@ -163,19 +164,19 @@ class TestUnitSpec(unittest.TestCase):
                             bit_position=None,
                             sdgs=[],
                         ),
-                    ],
+                    ]),
                     byte_size=None,
                 )
-            ],
+            ]),
             positive_responses=NamedItemList(),
             negative_responses=NamedItemList(),
             global_negative_responses=NamedItemList(),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
-                data_object_props=[dop],
+                data_object_props=NamedItemList([dop]),
                 unit_spec=UnitSpec(
                     units=[unit],
-                    physical_dimensions=None,
-                    unit_groups=None,
+                    physical_dimensions=NamedItemList(),
+                    unit_groups=NamedItemList(),
                     sdgs=[],
                 ),
                 dtc_dops=NamedItemList(),
@@ -200,7 +201,11 @@ class TestUnitSpec(unittest.TestCase):
         dl._resolve_odxlinks(odxlinks)
         dl._finalize_init(odxlinks)
 
-        self.assertEqual(dl.requests[0].parameters[1].dop.unit, unit)
+        param = dl.requests[0].parameters[1]
+        assert isinstance(param, ValueParameter)
+        _dop = param.dop
+        assert isinstance(_dop, DataObjectProperty)
+        self.assertEqual(_dop.unit, unit)
 
 
 if __name__ == "__main__":

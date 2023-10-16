@@ -8,34 +8,24 @@ from ..exceptions import odxraise
 from ..odxtypes import ParameterValue
 from ..singleecujob import SingleEcuJob
 from . import _parser_utils
-from ._print_utils import print_diagnostic_service
 
 # name of the tool
 _odxtools_tool_name_ = "find"
 
 
 def get_display_value(v: ParameterValue) -> str:
-    import binascii
-
     if isinstance(v, bytes):
-        return binascii.hexlify(v, " ", 1).decode("utf-8")
+        return v.hex(" ")
     elif isinstance(v, int):
-        return f"{v} ({hex(v)})"
+        return f"{v} (0x{v:x})"
     else:
         return str(v)
-
-
-def print_decoded_message(service: DiagService, message: bytes) -> None:
-    decoded = service.decode_message(message)
-    print(f"\nDecoded {decoded.coding_object}:")
-    for k, v in decoded.param_dict.items():
-        print(f"\t{k}: {get_display_value(v)}")
 
 
 def print_summary(
     odxdb: Database,
     ecu_variants: Optional[List[str]] = None,
-    data: Optional[bytes] = None,
+    data: bytes = b'',
     service_names: Optional[List[str]] = None,
     decode: bool = False,
     print_params: bool = False,
@@ -63,30 +53,28 @@ def print_summary(
                         ecu_names.append(ecu_name)
                         services[service] = ecu_names
 
+    print(f"Binary data: {data.hex(' ')}")
     for service, ecu_names in services.items():
-        display_names = ", ".join(ecu_names)
-        filler = str.ljust("", len(display_names), "=")
-        print(f"\n{filler}")
-        print(f"{', '.join(ecu_names)}")
-        print(f"{filler}\n\n")
         if isinstance(service, DiagService):
-            print_diagnostic_service(
-                service,
-                print_params=print_params,
-                allow_unknown_bit_lengths=allow_unknown_bit_lengths,
-                print_pre_condition_states=True,
-                print_state_transitions=True,
-                print_audiences=True,
+            print(
+                f"Decoded by service '{service.short_name}' (decoding ECUs: {', '.join(ecu_names)})"
             )
         elif isinstance(service, SingleEcuJob):
-            print(f"SingleEcuJob: {service.odx_id}")
+            print(
+                f"Decoded by single ecu job '{service.short_name}' (decoding ECUs: {', '.join(ecu_names)})"
+            )
         else:
-            print(f"Unknown service: {service}")
+            print(f"Decoded by unknown diagnostic communication: '{service.short_name}' "
+                  f"(decoding ECUs: {', '.join(ecu_names)})")
 
         if decode:
             if data is None:
-                odxraise("data required for decoding")
-            print_decoded_message(service, data)
+                odxraise("Data is required for decoding")
+
+            decoded = service.decode_message(data)
+            print(f"Decoded data:")
+            for param_name, param_value in decoded.param_dict.items():
+                print(f"  {param_name}={get_display_value(param_value)}")
 
 
 def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
@@ -113,7 +101,7 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
     parser.add_argument(
         "-v",
         "--variants",
-        nargs="+",
+        nargs=1,
         metavar="VARIANT",
         required=False,
         help="Specifies which ecu variants should be included.",
@@ -123,21 +111,20 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
     parser.add_argument(
         "-d",
         "--data",
-        nargs="*",
+        nargs=1,
         default=None,
         metavar="DATA",
-        required=False,
+        required=True,
         help="Print a list of diagnostic services associated with the hex request.",
     )
 
     parser.add_argument(
         "-D",
         "--decode",
-        nargs="*",
-        default=None,
-        metavar="DECODE",
+        default=False,
+        action="store_true",
         required=False,
-        help="Print a list of diagnostic services associated with the hex request and decode the request.",
+        help="Decode the specified hex request.",
     )
 
     parser.add_argument(
@@ -167,21 +154,15 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
     )
 
 
-def hex_to_binary(data: str) -> bytes:
-    import binascii
-
-    return binascii.unhexlify("".join(data).replace(" ", ""))
+def hex_to_binary(data_str: str) -> bytes:
+    return bytes.fromhex(data_str)
 
 
 def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
-
-    variants = args.variants if args.variants else None
-
-    data = (
-        hex_to_binary(args.data)
-        if args.data else hex_to_binary(args.decode) if args.decode else None)
-    decode = True if args.decode else False
+    variants = args.variants
+    data = bytes.fromhex(args.data[0])
+    decode = args.decode
 
     print_summary(
         odxdb,

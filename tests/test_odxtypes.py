@@ -6,10 +6,10 @@ from odxtools.odxtypes import DataType
 
 class TestDataType(unittest.TestCase):
 
-    def test_from_string(self):
+    def test_from_string(self) -> None:
         self.assertTrue(DataType.A_UINT32 == DataType(DataType.A_UINT32))
 
-    def test_make_from(self):
+    def test_make_from(self) -> None:
         self.assertTrue(DataType.A_UINT32.make_from("12") == 12)
         self.assertTrue(DataType.A_FLOAT64.make_from("3.14") == 3.14)
         self.assertTrue(DataType.A_INT32.make_from(3.14) == 3)
@@ -19,7 +19,7 @@ class TestDataType(unittest.TestCase):
         self.assertTrue(DataType.A_UINT32.from_string("12") == 12)
         self.assertTrue(DataType.A_BYTEFIELD.from_string("12") == b"\x12")
 
-    def test_python_types(self):
+    def test_python_types(self) -> None:
         self.assertTrue(DataType.A_UINT32.as_python_type() == int)
         self.assertTrue(DataType.A_INT32.as_python_type() == int)
         self.assertTrue(DataType.A_FLOAT32.as_python_type() == float)
@@ -29,7 +29,7 @@ class TestDataType(unittest.TestCase):
         self.assertTrue(DataType.A_UTF8STRING.as_python_type() == str)
         self.assertTrue(DataType.A_ASCIISTRING.as_python_type() == str)
 
-    def test_isinstance(self):
+    def test_isinstance(self) -> None:
         self.assertTrue(DataType.A_ASCIISTRING.isinstance("123"))
         self.assertTrue(DataType.A_BYTEFIELD.isinstance(bytes([0x12, 0x34])))
         self.assertTrue(DataType.A_UINT32.isinstance(123))
