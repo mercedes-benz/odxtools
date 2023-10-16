@@ -12,7 +12,7 @@ doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
 class TestReadNrcParam(unittest.TestCase):
 
-    def test_create_nrcconst_from_et(self):
+    def test_create_nrcconst_from_et(self) -> None:
         ODX = """
         <PARAM SEMANTIC="SUBFUNCTION-ID" xsi:type="NRC-CONST" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <SHORT-NAME>NR_identifier</SHORT-NAME>
@@ -31,6 +31,7 @@ class TestReadNrcParam(unittest.TestCase):
         param = create_any_parameter_from_et(root, doc_frags=doc_frags)
 
         self.assertIsInstance(param, NrcConstParameter)
+        assert isinstance(param, NrcConstParameter)
         self.assertEqual("SUBFUNCTION-ID", param.semantic)
         self.assertEqual("NR_identifier", param.short_name)
         self.assertEqual("Identifier for the negative response", param.long_name)
