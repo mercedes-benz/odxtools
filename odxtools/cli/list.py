@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
 import argparse
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional
 
 from ..database import Database
+from ..diagcomm import DiagComm
 from ..diaglayer import DiagLayer
 from ..diagservice import DiagService
 from ..singleecujob import SingleEcuJob
@@ -25,7 +26,7 @@ def print_summary(
     print_audiences: bool = False,
     allow_unknown_bit_lengths: bool = False,
     variants: Optional[str] = None,
-    service_filter: Callable[[Union[DiagService, SingleEcuJob]], bool] = lambda x: True,
+    service_filter: Callable[[DiagComm], bool] = lambda x: True,
 ) -> None:
 
     diag_layer_names = variants if variants else [dl.short_name for dl in odxdb.diag_layers]
@@ -37,8 +38,7 @@ def print_summary(
             continue
 
         assert isinstance(dl, DiagLayer)
-        all_services: List[Union[DiagService, SingleEcuJob]] = sorted(
-            dl.services, key=lambda x: x.short_name)
+        all_services: List[DiagComm] = sorted(dl.services, key=lambda x: x.short_name)
 
         data_object_properties = dl.diag_data_dictionary_spec.data_object_props
         com_params = dl.communication_parameters
@@ -182,7 +182,7 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
 def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
 
-    def service_filter(s: Union[DiagService, SingleEcuJob]) -> bool:
+    def service_filter(s: DiagComm) -> bool:
         if args.services and len(args.services) > 0:
             return s.short_name in args.services
         return True

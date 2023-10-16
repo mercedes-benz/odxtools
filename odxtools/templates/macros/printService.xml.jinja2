@@ -3,48 +3,21 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementID.xml.jinja2') as peid %}
-{%- import('macros/printAdminData.xml.jinja2') as pad %}
-{%- import('macros/printAudience.xml.jinja2') as paud %}
-{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printDiagComm.xml.jinja2') as pdc %}
 
 {%- macro printService(service) -%}
-{%- if service.semantic is not none %}
-{%-  set semattrib = " SEMANTIC=\""+service.semantic+"\"" -%}
-{%- else %}
-{%-  set semattrib = " SEMANTIC=\"UNKNOWN\"" -%}
-{%- endif -%}
-<DIAG-SERVICE ID="{{service.odx_id.local_id}}" {{semattrib}}>
- {{ peid.printElementID(service)|indent(1) }}
- {%- if service.admin_data %}
- {{- pad.printAdminData(service.admin_data)|indent(1, first=True) }}
- {%- endif %}
- {{- psd.printSpecialDataGroups(service.sdgs)|indent(1, first=True) }}
-{%- if service.functional_class_refs %}
- <FUNCT-CLASS-REFS>
-{%- for ref in service.functional_class_refs %}
-  <FUNCT-CLASS-REF ID-REF="{{ref.ref_id}}" />
+{{pdc.printDiagCommOpenTag(service, "DIAG-SERVICE") }}
+{{pdc.printDiagCommElems(service) | indent(1, first=True) }}
+{%- if service.comparam_refs %}
+ <COMPARAM-REFS>
+{%- for ref in service.comparam_refs %}
+  <COMPARAM-REF ID-REF="{{ref.ref_id}}" />
 {%- endfor %}
- </FUNCT-CLASS-REFS>
+ </COMPARAM-REFS>
 {%- endif%}
-{%- if service.audience %}
- {{ paud.printAudience(service.audience)|indent(1) }}
-{%- endif%}
- {%- if service.pre_condition_state_refs %}
- <PRE-CONDITION-STATE-REFS>
-   {%- for ps_ref in service.pre_condition_state_refs %}
-   <PRE-CONDITION-STATE-REF ID-REF="{{ps_ref.ref_id}}" />
-   {%- endfor %}
- </PRE-CONDITION-STATE-REFS>
- {%- endif%}
- {%- if service.state_transition_refs %}
- <STATE-TRANSITION-REFS>
-   {%- for st_ref in service.state_transition_refs %}
-   <STATE-TRANSITION-REF ID-REF="{{st_ref.ref_id}}" />
-   {%- endfor %}
- </STATE-TRANSITION-REFS>
- {%- endif%}
+{%- if service.request_ref %}
  <REQUEST-REF ID-REF="{{service.request_ref.ref_id}}"/>
+{%- endif %}
 {%- if service.pos_response_refs %}
  <POS-RESPONSE-REFS>
 {%- for ref in service.pos_response_refs %}

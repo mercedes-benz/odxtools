@@ -28,7 +28,8 @@ def print_summary(odxdb: Database,
                   allow_unknown_bit_lengths: bool = False,
                   print_params: bool = False) -> None:
     ecu_names = ecu_variants if ecu_variants else [ecu.short_name for ecu in odxdb.ecus]
-    services: Dict[DiagService, List[str]] = {}
+    service_db: Dict[str, DiagService] = {}
+    service_ecus: Dict[str, List[str]] = {}
     for ecu_name in ecu_names:
         ecu = odxdb.ecus[ecu_name]
         if not ecu:
@@ -39,11 +40,13 @@ def print_summary(odxdb: Database,
             for service_name_search in service_names:
                 for service in ecu.services:
                     if service_name_search.lower() in service.short_name.lower():
-                        ecu_names = services.get(service, [])
+                        ecu_names = service_ecus.get(service.short_name, [])
                         ecu_names.append(ecu_name)
-                        services[service] = ecu_names
+                        service_ecus[service.short_name] = ecu_names
+                        service_db[service.short_name] = service
 
-    for service, ecu_names in services.items():
+    for service_name, ecu_names in service_ecus.items():
+        service = service_db[service_name]
         display_names = ", ".join(ecu_names)
         filler = str.ljust("", len(display_names), "=")
         print(f"\n{filler}")

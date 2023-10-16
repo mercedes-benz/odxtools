@@ -12,6 +12,7 @@ from .additionalaudience import AdditionalAudience
 from .admindata import AdminData
 from .communicationparameterref import CommunicationParameterRef
 from .companydata import CompanyData
+from .diagcomm import DiagComm
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayerraw import DiagLayerRaw
 from .diaglayertype import DiagLayerType
@@ -298,7 +299,7 @@ class DiagLayer:
     # <stuff subject to value inheritance>
     #######
     @property
-    def diag_comms(self) -> NamedItemList[Union[DiagService, SingleEcuJob]]:
+    def diag_comms(self) -> NamedItemList[DiagComm]:
         """All diagnostic communication primitives applicable to this DiagLayer
 
         Diagnostic communication primitives are diagnostic services as
@@ -417,14 +418,13 @@ class DiagLayer:
 
         return result_dict.values()
 
-    def _get_local_diag_comms(self, odxlinks: OdxLinkDatabase
-                             ) -> Iterable[Union[DiagService, SingleEcuJob]]:
+    def _get_local_diag_comms(self, odxlinks: OdxLinkDatabase) -> Iterable[DiagComm]:
         """Return the list of locally defined diagnostic communications.
 
         This is not completely trivial as it requires to resolving the
         references specified in the <DIAG-COMMS> XML tag.
         """
-        result_dict: Dict[str, Union[DiagService, SingleEcuJob]] = {}
+        result_dict: Dict[str, DiagComm] = {}
 
         # TODO (?): add objects from the import-refs
 
@@ -434,7 +434,7 @@ class DiagLayer:
             else:
                 dc = dc_proxy
 
-            odxassert(isinstance(dc, (DiagService, SingleEcuJob)))
+            odxassert(isinstance(dc, DiagComm))
             odxassert(
                 dc.short_name not in result_dict,
                 f"Multiple definitions of DIAG-COMM '{dc.short_name}' in "
@@ -453,10 +453,9 @@ class DiagLayer:
 
         return unit_spec.unit_groups
 
-    def _compute_available_diag_comms(self, odxlinks: OdxLinkDatabase
-                                     ) -> Iterable[Union[DiagService, SingleEcuJob]]:
+    def _compute_available_diag_comms(self, odxlinks: OdxLinkDatabase) -> Iterable[DiagComm]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> Iterable[Union[DiagService, SingleEcuJob]]:
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[DiagComm]:
             return dl._get_local_diag_comms(odxlinks)
 
         def not_inherited_fn(parent_ref: ParentRef) -> List[str]:

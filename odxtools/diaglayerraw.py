@@ -10,6 +10,7 @@ from .communicationparameterref import CommunicationParameterRef
 from .companydata import CompanyData
 from .createanystructure import create_any_structure_from_et
 from .createsdgs import create_sdgs_from_et
+from .diagcomm import DiagComm
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayertype import DiagLayerType
 from .diagservice import DiagService
@@ -44,7 +45,7 @@ class DiagLayerRaw(IdentifiableElement):
     company_datas: NamedItemList[CompanyData]
     functional_classes: NamedItemList[FunctionalClass]
     diag_data_dictionary_spec: Optional[DiagDataDictionarySpec]
-    diag_comms: List[Union[OdxLinkRef, DiagService, SingleEcuJob]]
+    diag_comms: List[Union[OdxLinkRef, DiagComm]]
     requests: NamedItemList[Request]
     positive_responses: NamedItemList[Response]
     negative_responses: NamedItemList[Response]
@@ -98,10 +99,10 @@ class DiagLayerRaw(IdentifiableElement):
         if (ddds_elem := et_element.find("DIAG-DATA-DICTIONARY-SPEC")) is not None:
             diag_data_dictionary_spec = DiagDataDictionarySpec.from_et(ddds_elem, doc_frags)
 
-        diag_comms: List[Union[OdxLinkRef, DiagService, SingleEcuJob]] = []
+        diag_comms: List[Union[OdxLinkRef, DiagComm]] = []
         if (dc_elems := et_element.find("DIAG-COMMS")) is not None:
             for dc_proxy_elem in dc_elems:
-                dc: Union[OdxLinkRef, DiagService, SingleEcuJob]
+                dc: Union[OdxLinkRef, DiagComm]
                 if dc_proxy_elem.tag == "DIAG-COMM-REF":
                     dc = OdxLinkRef.from_et(dc_proxy_elem, doc_frags)
                 elif dc_proxy_elem.tag == "DIAG-SERVICE":
