@@ -4,13 +4,14 @@
 import argparse
 import asyncio
 import sys
+from typing import Any, Type
 
 import can
 
-import odxtools
 import odxtools.isotp_state_machine as ism
 import odxtools.uds as uds
 from odxtools.exceptions import DecodeError
+from odxtools.isotp_state_machine import IsoTpStateMachine
 
 from . import _parser_utils
 
@@ -24,7 +25,7 @@ ecu_rx_id = None
 ecu_tx_id = None
 
 
-def handle_telegram(telegram_id, payload):
+def handle_telegram(telegram_id: int, payload: bytes) -> None:
     global odx_diag_layer
     global last_request
 
@@ -61,21 +62,22 @@ def handle_telegram(telegram_id, payload):
     else:
         print(f"Tester: "
               f"{payload.hex()} "
-              f"({payload}, {len(payload)} bytes)")
+              f"({payload!r}, {len(payload)} bytes)")
 
 
-def init_verbose_state_machine(BaseClass, *args, **kwargs):
+def init_verbose_state_machine(BaseClass: Type[IsoTpStateMachine], *args: Any,
+                               **kwargs: Any) -> IsoTpStateMachine:
 
-    class InformativeIsoTpDecoder(BaseClass):
+    class InformativeIsoTpDecoder(BaseClass):  # type: ignore[valid-type, misc]
 
-        def on_sequence_error(self, telegram_idx, expected_idx, rx_idx):
+        def on_sequence_error(self, telegram_idx: int, expected_idx: int, rx_idx: int) -> None:
             rx_can_id = self.can_rx_id(telegram_idx)
             print(f"Sequence error for ID 0x{rx_can_id:x}: "
                   f"Received sequence number {rx_idx} but expected {expected_idx}")
 
-            super(BaseClass, self).on_sequence_error(telegram_idx, expected_idx, rx_idx)
+            super().on_sequence_error(telegram_idx, expected_idx, rx_idx)
 
-        def on_frame_type_error(self, telegram_idx, frame_type):
+        def on_frame_type_error(self, telegram_idx: int, frame_type: int) -> None:
             rx_can_id = self.can_rx_id(telegram_idx)
 
             print(f"Invalid ISO-TP frame for CAN ID 0x{rx_can_id:x}: {frame_type}")
@@ -83,7 +85,7 @@ def init_verbose_state_machine(BaseClass, *args, **kwargs):
     return InformativeIsoTpDecoder(*args, **kwargs)
 
 
-async def active_main(args):
+async def active_main(args: argparse.Namespace) -> None:
     global ecu_rx_id, ecu_tx_id
 
     can_bus = can.Bus(channel=args.channel, bustype="socketcan")
@@ -103,7 +105,7 @@ async def active_main(args):
         handle_telegram(telegram_id, payload)
 
 
-async def passive_main(args):
+async def passive_main(args: argparse.Namespace) -> None:
     global ecu_rx_id, ecu_tx_id
 
     ecu_rx_id = int(args.rx, 0)
@@ -125,7 +127,7 @@ async def passive_main(args):
             handle_telegram(telegram_id, payload)
 
 
-def add_cli_arguments(parser):
+def add_cli_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument(
         "--active",
         "-a",
@@ -173,7 +175,7 @@ def add_cli_arguments(parser):
     _parser_utils.add_pdx_argument(parser)
 
 
-def add_subparser(subparsers):
+def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
     parser = subparsers.add_parser(
         "snoop",
         description="Live decoding of a diagnostic session.",
@@ -183,7 +185,7 @@ def add_subparser(subparsers):
     add_cli_arguments(parser)
 
 
-def run(args, odx_database=None):
+def run(args: argparse.Namespace) -> None:
     global odx_diag_layer
     odx_database = _parser_utils.load_file(args)
 
@@ -239,6 +241,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()  # deals with the help message handling
 
-    odx_database = odxtools.load_pdx_file(args.pdx_file)
-
-    run(args, odx_database)
+    run(args)

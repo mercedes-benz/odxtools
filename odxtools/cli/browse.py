@@ -7,12 +7,15 @@ from typing import List, Optional, Union
 import PyInquirer.prompt as PI_prompt
 
 from ..database import Database
+from ..dataobjectproperty import DataObjectProperty
 from ..diaglayer import DiagLayer
 from ..diagservice import DiagService
-from ..odxtypes import DataType, ParameterValueDict
+from ..exceptions import odxraise, odxrequire
+from ..odxtypes import AtomicOdxType, DataType, ParameterValueDict
 from ..parameters.matchingrequestparameter import MatchingRequestParameter
 from ..parameters.parameter import Parameter
 from ..parameters.parameterwithdop import ParameterWithDOP
+from ..parameters.valueparameter import ValueParameter
 from ..request import Request
 from ..response import Response
 from . import _parser_utils
@@ -21,7 +24,7 @@ from . import _parser_utils
 _odxtools_tool_name_ = "browse"
 
 
-def _convert_string_to_odx_type(string_value: str, odx_type: DataType):
+def _convert_string_to_odx_type(string_value: str, odx_type: DataType) -> AtomicOdxType:
     """Similar to odx_type.from_string(string_value) but more relaxed to parse user input"""
     if odx_type == DataType.A_UINT32:
         return int(string_value, 0)
@@ -31,28 +34,38 @@ def _convert_string_to_odx_type(string_value: str, odx_type: DataType):
         return odx_type.from_string(string_value)
 
 
-def _convert_string_to_bytes(string_value):
+def _convert_string_to_bytes(string_value: str) -> bytes:
     if all(len(x) <= 2 for x in string_value.split(" ")):
         return bytes(int(x, 16) for x in string_value.split(" ") if len(x) > 0)
     else:
         return int(string_value, 16).to_bytes((int(string_value, 16).bit_length() + 7) // 8, "big")
 
 
-def _validate_string_value(input, parameter):
-    if parameter.is_optional and input == "":
+def _validate_string_value(input: str, parameter: Parameter) -> bool:
+    if not parameter.is_required and input == "":
         return True
     elif isinstance(parameter, ParameterWithDOP):
         try:
-            val = _convert_string_to_odx_type(input, parameter.physical_type.base_data_type)
+            phys_type = odxrequire(parameter.physical_type)
+            val = _convert_string_to_odx_type(input, phys_type.base_data_type)
         except:  # noqa: E722
             return False
-        return parameter.dop.is_valid_physical_value(val)
+        dop = parameter.dop
+        if isinstance(dop, DataObjectProperty):
+            return dop.is_valid_physical_value(val)
+        else:
+            raise NotImplementedError("Validation of complex DOPs")
     else:
         logging.info("This value is not validated precisely: Parameter {parameter}")
         return input != ""
 
 
-def prompt_single_parameter_value(parameter):
+def prompt_single_parameter_value(parameter: Parameter) -> Optional[AtomicOdxType]:
+    if not isinstance(parameter, ValueParameter):
+        odxraise("Only the value of ValueParameters can be queried")
+    if parameter.physical_type is None:
+        odxraise("Only ValueParameters which define a physical data type can be queried")
+
     # TODO: add valid choices for the parameter
     #        "choices": parameter.get_valid_physical_values(),
     param_prompt = [{
@@ -62,7 +75,7 @@ def prompt_single_parameter_value(parameter):
             parameter.short_name,
         "message":
             f"Value for parameter '{parameter.short_name}' (Type: {parameter.physical_type.base_data_type})"
-            + (f"[optional]" if parameter.is_optional else ""),
+            + (f"[optional]" if not parameter.is_required else ""),
         # TODO: improve validation
         "validate":
             lambda x: _validate_string_value(x, parameter),
@@ -77,10 +90,10 @@ def prompt_single_parameter_value(parameter):
        and hasattr(parameter.dop.compu_method, "get_scales"):
         scales = parameter.dop.compu_method.get_scales()
         choices = [scale.compu_const for scale in scales if scale is not None]
-        param_prompt["choices"] = choices
+        param_prompt[0]["choices"] = choices
 
     answer = PI_prompt.prompt(param_prompt)
-    if answer.get(parameter.short_name) == "" and parameter.is_optional:
+    if answer.get(parameter.short_name) == "" and not parameter.is_required:
         return None
     elif parameter.physical_type.base_data_type is not None:
         return _convert_string_to_odx_type(
@@ -92,7 +105,8 @@ def prompt_single_parameter_value(parameter):
         return answer.get(parameter.short_name)
 
 
-def encode_message_interactively(sub_service, ask_user_confirmation=False):
+def encode_message_interactively(sub_service: Union[Request, Response],
+                                 ask_user_confirmation: bool = False) -> None:
     if not sys.__stdin__.isatty() or not sys.__stdout__.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
     param_dict = sub_service.parameter_dict()
@@ -101,12 +115,12 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
     for param_or_dict in param_dict.values():
         if isinstance(param_or_dict, dict):
             for param in param_or_dict.values():
-                if param.is_settable:
+                if not isinstance(param_or_dict, dict) and param.is_settable:
                     exists_definable_param = True
         elif param_or_dict.is_settable:
             exists_definable_param = True
 
-    param_values = {}
+    param_values: ParameterValueDict = {}
     if exists_definable_param > 0:
         # Ask whether user wants to encode a message
         if ask_user_confirmation:
@@ -142,9 +156,9 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
                 print(
                     f"The next {len(param_or_structure)} parameters belong to the structure '{key}'"
                 )
-                structure_param_values = {}
+                structure_param_values: ParameterValueDict = {}
                 for param_sn, param in param_or_structure.items():
-                    if param.is_settable:
+                    if not isinstance(param, dict) and param.is_settable:
                         val = prompt_single_parameter_value(param)
                         if val is not None:
                             structure_param_values[param_sn] = val
@@ -157,7 +171,7 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
         if isinstance(sub_service, Response):
             payload = sub_service.encode(coded_request=answered_request, **param_values)
         else:
-            payload = sub_service.encode(**param_values)
+            payload = sub_service.encode(coded_request=b'', **param_values)
     else:
         # There are no optional parameters that need to be defined by the user -> Just print message
         payload = sub_service.encode()
@@ -167,7 +181,7 @@ def encode_message_interactively(sub_service, ask_user_confirmation=False):
 def encode_message_from_string_values(
     sub_service: Union[Request, Response],
     parameter_values: Optional[ParameterValueDict] = None,
-):
+) -> None:
     if parameter_values is None:
         parameter_values = {}
     parameter_values = parameter_values.copy()
@@ -238,7 +252,7 @@ def encode_message_from_string_values(
     print(f"Message payload: 0x{bytes(payload).hex()}")
 
 
-def browse(odxdb: Database):
+def browse(odxdb: Database) -> None:
     if not sys.__stdin__.isatty() or not sys.__stdout__.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
     dl_names = [dl.short_name for dl in odxdb.diag_layers]
@@ -330,7 +344,7 @@ def browse(odxdb: Database):
             encode_message_interactively(sub_service, ask_user_confirmation=True)
 
 
-def add_subparser(subparsers):
+def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
     # Browse interactively to avoid spamming the console.
     parser = subparsers.add_parser(
         "browse",
@@ -342,6 +356,6 @@ def add_subparser(subparsers):
     _parser_utils.add_pdx_argument(parser)
 
 
-def run(args):
+def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
     browse(odxdb)

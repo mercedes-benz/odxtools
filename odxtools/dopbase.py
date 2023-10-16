@@ -52,6 +52,11 @@ class DopBase(IdentifiableElement):
     def get_static_bit_length(self) -> Optional[int]:
         return None
 
+    def is_valid_physical_value(self, physical_value: ParameterValue) -> bool:
+        """Determine if a phyical value can be handled by the DOP
+        """
+        raise NotImplementedError
+
     @property
     def is_visible(self) -> bool:
         return self.is_visible_raw in (None, True)

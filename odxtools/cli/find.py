@@ -1,9 +1,11 @@
 # SPDX-License-Identifier: MIT
 import argparse
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from ..database import Database
 from ..diagservice import DiagService
+from ..exceptions import odxraise
+from ..odxtypes import ParameterValue
 from ..singleecujob import SingleEcuJob
 from . import _parser_utils
 from ._print_utils import print_diagnostic_service
@@ -12,7 +14,7 @@ from ._print_utils import print_diagnostic_service
 _odxtools_tool_name_ = "find"
 
 
-def get_display_value(v, _param):
+def get_display_value(v: ParameterValue) -> str:
     import binascii
 
     if isinstance(v, bytes):
@@ -20,27 +22,25 @@ def get_display_value(v, _param):
     elif isinstance(v, int):
         return f"{v} ({hex(v)})"
     else:
-        return v
+        return str(v)
 
 
-def print_decoded_message(service: DiagService, message: bytes):
+def print_decoded_message(service: DiagService, message: bytes) -> None:
     decoded = service.decode_message(message)
     print(f"\nDecoded {decoded.coding_object}:")
     for k, v in decoded.param_dict.items():
-        param = decoded.coding_object.parameter_dict()[k]
-        print(f"\t{k}: {get_display_value(v, param)}")
-    pass
+        print(f"\t{k}: {get_display_value(v)}")
 
 
 def print_summary(
     odxdb: Database,
-    ecu_variants=None,
-    data=None,
-    service_names=None,
-    decode=False,
-    print_params=False,
-    allow_unknown_bit_lengths=False,
-):
+    ecu_variants: Optional[List[str]] = None,
+    data: Optional[bytes] = None,
+    service_names: Optional[List[str]] = None,
+    decode: bool = False,
+    print_params: bool = False,
+    allow_unknown_bit_lengths: bool = False,
+) -> None:
     ecu_names = ecu_variants if ecu_variants else [ecu.short_name for ecu in odxdb.ecus]
     services: Dict[DiagService, List[str]] = {}
     for ecu_name in ecu_names:
@@ -84,10 +84,12 @@ def print_summary(
             print(f"Unknown service: {service}")
 
         if decode:
+            if data is None:
+                odxraise("data required for decoding")
             print_decoded_message(service, data)
 
 
-def add_subparser(subparsers):
+def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
     parser = subparsers.add_parser(
         "find",
         description="\n".join([
@@ -165,13 +167,13 @@ def add_subparser(subparsers):
     )
 
 
-def hex_to_binary(data):
+def hex_to_binary(data: str) -> bytes:
     import binascii
 
     return binascii.unhexlify("".join(data).replace(" ", ""))
 
 
-def run(args):
+def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
 
     variants = args.variants if args.variants else None
