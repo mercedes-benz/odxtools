@@ -17,7 +17,7 @@ container_doc_frags = odxdb.diag_layer_containers.somersault.odx_id.doc_fragment
 
 class TestStrictMode(unittest.TestCase):
 
-    def test_strict_mode(self):
+    def test_strict_mode(self) -> None:
         # by default, we must be in strict mode
         self.assertTrue(odxtools.exceptions.strict_mode)
 
@@ -51,12 +51,12 @@ class TestStrictMode(unittest.TestCase):
 
 class TestDataObjectProperty(unittest.TestCase):
 
-    def test_bit_length(self):
+    def test_bit_length(self) -> None:
         self.dop = odxdb.odxlinks.resolve(
             OdxLinkRef("somersault.DOP.num_flips", container_doc_frags))
         self.assertEqual(self.dop.get_static_bit_length(), 8)
 
-    def test_convert_physical_to_internal(self):
+    def test_convert_physical_to_internal(self) -> None:
         self.dop = odxdb.odxlinks.resolve(OdxLinkRef("somersault.DOP.boolean", container_doc_frags))
         self.assertEqual(self.dop.convert_physical_to_internal("false"), 0)
         self.assertEqual(self.dop.convert_physical_to_internal("true"), 1)
@@ -64,19 +64,19 @@ class TestDataObjectProperty(unittest.TestCase):
 
 class TestComposeUDS(unittest.TestCase):
 
-    def test_encode_with_coded_const(self):
+    def test_encode_with_coded_const(self) -> None:
         request = odxdb.odxlinks.resolve(
             OdxLinkRef("somersault.RQ.tester_present", container_doc_frags))
         self.assertEqual(bytes(request.encode()), 0x3E00.to_bytes(2, "big"))
 
-    def test_encode_with_texttable(self):
+    def test_encode_with_texttable(self) -> None:
         request = odxdb.odxlinks.resolve(
             OdxLinkRef("somersault.RQ.set_operation_params", container_doc_frags))
         self.assertEqual(
             bytes(request.encode(**{"use_fire_ring": "true"})), 0xBD01.to_bytes(2, "big"))
         self.assertEqual(bytes(request.encode(use_fire_ring="false")), 0xBD00.to_bytes(2, "big"))
 
-    def test_encode_response_with_matching_request_param_and_structure(self):
+    def test_encode_response_with_matching_request_param_and_structure(self) -> None:
         request = odxdb.odxlinks.resolve(
             OdxLinkRef("somersault.RQ.do_forward_flips", container_doc_frags))
         response = odxdb.odxlinks.resolve(
@@ -153,11 +153,11 @@ class TestNamedItemList(unittest.TestCase):
 
 class TestNavigation(unittest.TestCase):
 
-    def test_find_ecu_by_name(self):
+    def test_find_ecu_by_name(self) -> None:
         with self.assertRaises(KeyError):
-            ecu = odxdb.ecus["somersault_crazy"]
+            odxdb.ecus["somersault_crazy"]
         with self.assertRaises(IndexError):
-            ecu = odxdb.ecus[len(odxdb.ecus) + 10]
+            odxdb.ecus[len(odxdb.ecus) + 10]
 
         ecu = odxdb.ecus.get("somersault_crazy")
         self.assertEqual(ecu, None)
@@ -177,7 +177,7 @@ class TestNavigation(unittest.TestCase):
         ecu = odxdb.ecus[0]
         self.assertEqual(ecu.odx_id.local_id, "somersault_lazy")
 
-    def test_find_service_by_name(self):
+    def test_find_service_by_name(self) -> None:
         ecu = odxdb.ecus["somersault_lazy"]
 
         service_names = [s.short_name for s in ecu.services]
