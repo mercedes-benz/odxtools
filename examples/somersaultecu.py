@@ -1806,16 +1806,10 @@ somersault_single_ecu_jobs = {
         )
 }
 
-
 # communication parameters
-def extract_constant_bytes(params):
-    const_params = [x.coded_value for x in params if isinstance(x, CodedConstParameter)]
-    return bytes(const_params).hex()
-
-
-tester_present_value = extract_constant_bytes(somersault_requests["tester_present"].parameters)
-tester_pr_value = extract_constant_bytes(somersault_positive_responses["tester_ok"].parameters)
-tester_nr_value = extract_constant_bytes(somersault_negative_responses["tester_nok"].parameters)
+tester_present_value = somersault_requests["tester_present"].encode()
+tester_pr_value = somersault_positive_responses["tester_ok"].encode()
+tester_nr_value = somersault_negative_responses["tester_nok"].encode()
 somersault_communication_parameters = [
     ###
     # basic parameters
@@ -1874,7 +1868,7 @@ somersault_communication_parameters = [
     # expected "tester present" message
     CommunicationParameterRef(
         id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentMessage", cp_iso15765_3_doc_frags),
-        value=f"{tester_present_value}",
+        value=f"{tester_present_value.hex()}",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
         is_functional=False,
@@ -1892,7 +1886,7 @@ somersault_communication_parameters = [
     # positive response to "tester present"
     CommunicationParameterRef(
         id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentExpPosResp", cp_iso15765_3_doc_frags),
-        value=f"{tester_pr_value}",
+        value=f"{tester_pr_value.hex()}",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
         is_functional=False,
@@ -1901,7 +1895,7 @@ somersault_communication_parameters = [
     # negative response to "tester present"
     CommunicationParameterRef(
         id_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentExpNegResp", cp_iso15765_3_doc_frags),
-        value=f"{tester_nr_value}",
+        value=f"{tester_nr_value.hex()}",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
         is_functional=False,
