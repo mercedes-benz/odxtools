@@ -573,7 +573,7 @@ class DiagLayer:
         """
         return self._communication_parameters
 
-    @property
+    @cached_property
     def protocols(self) -> NamedItemList["DiagLayer"]:
         """Return the set of all protocols which are applicable to the diagnostic layer
 
