@@ -2,8 +2,8 @@
 import abc
 from collections import OrderedDict
 from keyword import iskeyword
-from typing import (Callable, Collection, Generic, Iterable, Iterator, List, Optional, Protocol,
-                    Tuple, TypeVar, Union, cast, overload, runtime_checkable)
+from typing import (Any, Callable, Collection, Dict, Generic, Iterable, Iterator, List, Optional,
+                    Protocol, Tuple, TypeVar, Union, cast, overload, runtime_checkable)
 
 from .exceptions import odxraise
 
@@ -101,6 +101,11 @@ class ItemAttributeList(Generic[T]):
 
     def __len__(self) -> int:
         return len(self._item_list)
+
+    def __dir__(self) -> Dict[str, Any]:
+        result = dict(self.__dict__)
+        result.update(self._item_dict)
+        return result
 
     @overload
     def __getitem__(self, key: int) -> T:
