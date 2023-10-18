@@ -7,7 +7,6 @@ from xml.etree import ElementTree
 from .basecomparam import BaseComparam
 from .comparam import Comparam
 from .complexcomparam import ComplexComparam, ComplexValue, create_complex_value_from_et
-from .diaglayertype import DiagLayerType
 from .exceptions import OdxWarning, odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .utils import create_description_from_et
@@ -23,11 +22,10 @@ class CommunicationParameterRef:
     protocol_snref: Optional[str]
     prot_stack_snref: Optional[str]
     id_ref: OdxLinkRef
-    is_functional: bool
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment],
-                dl_type: DiagLayerType) -> "CommunicationParameterRef":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "CommunicationParameterRef":
         id_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
 
         # ODX standard v2.0.0 defined only VALUE. ODX v2.0.1 decided
@@ -41,7 +39,6 @@ class CommunicationParameterRef:
         else:
             value = create_complex_value_from_et(odxrequire(et_element.find("COMPLEX-VALUE")))
 
-        is_functional = dl_type == DiagLayerType.FUNCTIONAL_GROUP
         description = create_description_from_et(et_element.find("DESC"))
 
         prot_stack_snref = None
@@ -55,7 +52,6 @@ class CommunicationParameterRef:
         return CommunicationParameterRef(
             value=value,
             id_ref=id_ref,
-            is_functional=is_functional,
             description=description,
             protocol_snref=protocol_snref,
             prot_stack_snref=prot_stack_snref,

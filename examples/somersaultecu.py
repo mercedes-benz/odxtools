@@ -1820,7 +1820,6 @@ somersault_communication_parameters = [
         value="500000",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
-        is_functional=False,
         description=None,
     ),
     # parameters of the CAN diagnostics frames
@@ -1850,7 +1849,6 @@ somersault_communication_parameters = [
         ],
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
-        is_functional=False,
         description=None,
     ),
     # timeout for responses [us]
@@ -1859,7 +1857,6 @@ somersault_communication_parameters = [
         value="1000000",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
-        is_functional=False,
         description=None,
     ),
     ###
@@ -1871,7 +1868,6 @@ somersault_communication_parameters = [
         value=f"{tester_present_value.hex()}",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
-        is_functional=False,
         description=None,
     ),
     # a response is mandatory
@@ -1880,7 +1876,6 @@ somersault_communication_parameters = [
         value="Response expected",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
-        is_functional=False,
         description=None,
     ),
     # positive response to "tester present"
@@ -1889,7 +1884,6 @@ somersault_communication_parameters = [
         value=f"{tester_pr_value.hex()}",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
-        is_functional=False,
         description=None,
     ),
     # negative response to "tester present"
@@ -1898,7 +1892,6 @@ somersault_communication_parameters = [
         value=f"{tester_nr_value.hex()}",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
-        is_functional=False,
         description=None,
     ),
     # when a tester present message must be send
@@ -1907,7 +1900,6 @@ somersault_communication_parameters = [
         value="On idle",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
-        is_functional=False,
         description=None,
     ),
     # "tester present" messages are send directly to the CAN IDs
@@ -1917,7 +1909,6 @@ somersault_communication_parameters = [
         value="Physical",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
-        is_functional=False,
         description=None,
     ),
     # is a response from the ECU to "tester present" messages expected
@@ -1926,7 +1917,6 @@ somersault_communication_parameters = [
         value="Response expected",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
-        is_functional=False,
         description=None,
     ),
     ###
@@ -1938,7 +1928,6 @@ somersault_communication_parameters = [
         value="4",
         protocol_snref="MyProtocol",
         prot_stack_snref=None,
-        is_functional=False,
         description=None,
     ),
 ]
