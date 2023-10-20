@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
+import dataclasses
 import re
-from inspect import signature
 from typing import Any, Dict, Optional
 from xml.etree import ElementTree
 
@@ -32,10 +32,12 @@ def create_description_from_et(et_element: Optional[ElementTree.Element],) -> Op
 def dataclass_fields_asdict(obj: Any) -> Dict[str, Any]:
     """Extract all attributes from a dataclass object that are fields.
 
-    This makes hierarchies of dataclasses possible while initializing
-    the base class using common code.
+    This is a non-recursive version of `dataclasses.asdict()`. Its
+    purpose is to make hierarchies of dataclasses possible while
+    initializing the base class using common code.
+
     """
-    return {x: getattr(obj, x) for x in signature(type(obj)).parameters}
+    return {x.name: getattr(obj, x.name) for x in dataclasses.fields(obj)}
 
 
 # ISO 22901 section 7.1.1
