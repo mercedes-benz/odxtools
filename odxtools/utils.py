@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import re
+from inspect import signature
 from typing import Any, Dict, Optional
 from xml.etree import ElementTree
 
@@ -34,7 +35,7 @@ def dataclass_fields_asdict(obj: Any) -> Dict[str, Any]:
     This makes hierarchies of dataclasses possible while initializing
     the base class using common code.
     """
-    return {x.name: getattr(obj, x.name) for x in obj.__dataclass_fields__.values()}
+    return {x: getattr(obj, x) for x in signature(type(obj)).parameters}
 
 
 # ISO 22901 section 7.1.1
