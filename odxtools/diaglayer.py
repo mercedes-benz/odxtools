@@ -29,6 +29,7 @@ from .singleecujob import SingleEcuJob
 from .specialdatagroup import SpecialDataGroup
 from .statechart import StateChart
 from .table import Table
+from .udsbinner import UdsBinner
 from .unitgroup import UnitGroup
 from .unitspec import UnitSpec
 
@@ -218,6 +219,17 @@ class DiagLayer:
         # statement...)
         #####
         self.diag_layer_raw._resolve_snrefs(self)
+
+    #####
+    # <convenience functionality>
+    #####
+    @cached_property
+    def uds_service_groups(self) -> UdsBinner:
+        return UdsBinner(self.services)
+
+    #####
+    # </convenience functionality>
+    #####
 
     #####
     # <properties forwarded to the "raw" diag layer>
