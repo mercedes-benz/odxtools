@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+from io import StringIO
 from typing import Dict, Iterable, Optional
 
 from .diagservice import DiagService
@@ -15,7 +16,7 @@ class UdsBinner:
     db = odxtools.load_file("my_cool_diagnostics_db.pdx")
     ...
     uds_bins = UdsBinner(db.ecus.my_ecu)
-    uds_bins.print_info()
+    print(uds_bins)
     """
 
     def __init__(self, services: Iterable[DiagService]):
@@ -62,21 +63,25 @@ class UdsBinner:
 
         return None
 
-    def print_info(self) -> None:
-        """Convenience method to print which of the diagnostic
+    def __str__(self) -> str:
+        """Return an informative string about which of the diagnostic
         services are part of which UDS service group.
+
         """
+        result = StringIO()
         for sid, service_list in self.service_groups.items():
             sid_name = self.sid_to_name.get(sid)
             if isinstance(sid, int):
                 if sid_name is not None:
-                    print(f"UDS service group '{sid_name}' (0x{sid:x}):")
+                    print(f"UDS service group '{sid_name}' (0x{sid:x}):", file=result)
                 else:
-                    print(f"Non-standard UDS service group 0x{sid:x}:")
+                    print(f"Non-standard UDS service group 0x{sid:x}:", file=result)
             else:
-                print(f"Non standard services:")
+                print(f"Non standard services:", file=result)
             for service in service_list:
-                print(f"  {service.short_name}")
+                print(f"  {service.short_name}", file=result)
+
+        return result.getvalue()
 
     #: map from the ID of a service group to its human-readable name
     #: as defined by the UDS standard
@@ -118,6 +123,6 @@ class UdsBinner:
             return self.service_groups.get(sid, NamedItemList())
 
         if sid < 0 or sid > 255:
-            raise AttributeError(f"SIDs must be in range 0x00 to 0xff")
+            raise IndexError(f"SIDs must be in range 0x00 to 0xff")
 
         return self.service_groups.get(sid, NamedItemList())
