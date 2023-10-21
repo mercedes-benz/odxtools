@@ -287,10 +287,13 @@ class BasicStructure(DopBase):
         # sort parameters
         sorted_params: list = list(self.parameters)  # copy list
 
-        def param_sort_key(param: Parameter) -> Tuple[int, int]:
+        def param_sort_key(param: Parameter) -> Tuple[int, int, int]:
             byte_position_int = param.byte_position if param.byte_position is not None else 0
             bit_position_int = param.bit_position if param.bit_position is not None else 0
-            return (byte_position_int, 8 - bit_position_int)
+            param_bit_length_int = param.get_static_bit_length() or 0
+            # take bit-length into account for overlapping parameters. 1000000 is an arbitrary number chosen
+            # to hopefully never be smaller than an actual bit-length
+            return (byte_position_int, 1000000 - param_bit_length_int, 8 - bit_position_int)
 
         sorted_params.sort(key=param_sort_key)
 
@@ -311,8 +314,10 @@ class BasicStructure(DopBase):
         ]
 
         stop_bit = 0  # absolute bit position where the next parameter starts
+        previous_stop_bit = 0  # previous stop-bit position, after it has been changed
 
         divide_string = indent_for_byte_numbering + 8 * "+-----" + "+"
+        skip_divider = False
 
         error = False
         next_line = ""
@@ -321,7 +326,11 @@ class BasicStructure(DopBase):
                 # If we have formatted the last parameter, we're done.
                 break
 
-            formatted_lines.append(f"{divide_string}")
+            if not skip_divider:
+                formatted_lines.append(f"{divide_string}")
+            else:
+                skip_divider = False
+
             if stop_bit // 8 - byte_idx > 5:
                 curr_param = params[param_idx - 1].short_name
                 formatted_lines.append(
@@ -362,8 +371,9 @@ class BasicStructure(DopBase):
 
                         param_idx += 1
 
-                        # adding 8 is is a bit hacky here, but hey, it
+                        # adding 8 is a bit hacky here, but hey, it
                         # works ...
+                        previous_stop_bit = stop_bit
                         stop_bit += 8
 
                         break
@@ -372,12 +382,13 @@ class BasicStructure(DopBase):
                         # The bit length is not set for the current
                         # parameter, i.e. it was either not specified
                         # or the parameter is of variable length and
-                        # has an type which is not handled above. In
+                        # has a type which is not handled above. In
                         # this case, stop trying.
                         error = True
                         break
                     else:
                         bit_length = 0 if bit_length is None else bit_length
+                        previous_stop_bit = stop_bit
                         stop_bit += bit_length or (allow_unknown_lengths and 8)
                         name = params[param_idx].short_name + f" ({bit_length or 'Unknown'} bits)"
                         next_line += "| " + name
@@ -410,6 +421,17 @@ class BasicStructure(DopBase):
 
             formatted_lines.append(next_line)
             next_line = ""
+
+            if 0 < param_idx and param_idx < len(params) - 1 and hasattr(
+                    params[param_idx],
+                    'byte_position') and params[param_idx].byte_position == byte_idx:
+                # don't do anything on the first & last parameters, otherwise, if the current (= next)
+                # parameter has a byte_position, check if it's the same were we are on currently
+                # if it is, we need to repeat the operations on the new parameter
+                # without ending the current box
+                stop_bit = previous_stop_bit
+                skip_divider = True
+                continue
 
             byte_idx += 1
 
