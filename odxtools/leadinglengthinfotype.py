@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Tuple
+from typing import Any, Optional, Tuple
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
@@ -29,6 +29,9 @@ class LeadingLengthInfoType(DiagCodedType):
     @property
     def dct_type(self) -> DctType:
         return "LEADING-LENGTH-INFO-TYPE"
+
+    def get_static_bit_length(self) -> Optional[int]:
+        return self.bit_length
 
     def convert_internal_to_bytes(self, internal_value: Any, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
