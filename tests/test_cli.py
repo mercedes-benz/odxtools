@@ -4,6 +4,7 @@ import unittest
 from argparse import Namespace
 from typing import List, Optional
 
+import odxtools.cli.decode as decode
 import odxtools.cli.find as find
 import odxtools.cli.list as list_tool
 
@@ -37,21 +38,29 @@ class UtilFunctions:
         list_tool.run(list_args)
 
     @staticmethod
-    def run_find_tool(data: str,
+    def run_decode_tool(
+        data: str,
+        decode_data: bool = False,
+        path_to_pdx_file: str = "./examples/somersault.pdx",
+        ecu_variants: Optional[List[str]] = None,
+    ) -> None:
+        decode_args = Namespace(
+            pdx_file=path_to_pdx_file, variants=ecu_variants, data=data, decode=decode_data)
+
+        decode.run(decode_args)
+
+    @staticmethod
+    def run_find_tool(service_names: List[str],
                       path_to_pdx_file: str = "./examples/somersault.pdx",
                       ecu_variants: Optional[List[str]] = None,
-                      decode: bool = False,
-                      ecu_services: Optional[List[str]] = None,
-                      no_details: bool = True,
-                      relaxed_output: bool = False) -> None:
+                      allow_unknown_bit_lengths: bool = False,
+                      no_details: bool = False) -> None:
         find_args = Namespace(
             pdx_file=path_to_pdx_file,
             variants=ecu_variants,
-            data=[data],
-            decode=decode,
-            service_names=ecu_services,
-            no_details=no_details,
-            relaxed_output=relaxed_output)
+            service_names=service_names,
+            relaxed_output=allow_unknown_bit_lengths,
+            no_details=no_details)
 
         find.run(find_args)
 
@@ -68,14 +77,19 @@ class TestCommandLineTools(unittest.TestCase):
         UtilFunctions.run_list_tool(print_all=True)
         UtilFunctions.run_list_tool(ecu_services=["session_start"])
 
-    def test_find_tool(self) -> None:
+    def test_decode_tool(self) -> None:
 
-        UtilFunctions.run_find_tool(data="3E00", ecu_services=["session_start"])
-        UtilFunctions.run_find_tool(data="3e00", ecu_services=["session_start"], no_details=False)
-        UtilFunctions.run_find_tool(data="3E 00")
-        UtilFunctions.run_find_tool(data="3E 00", ecu_variants=["somersault_lazy"])
-        UtilFunctions.run_find_tool(data="3E 00", decode=True)
-        UtilFunctions.run_find_tool(data="3E 00", decode=True, relaxed_output=True)
+        UtilFunctions.run_decode_tool(data="3E00")
+        UtilFunctions.run_decode_tool(data="3e00")
+        UtilFunctions.run_decode_tool(data="3E 00", decode_data=True)
+        UtilFunctions.run_decode_tool(data="3E 00", ecu_variants=["somersault_lazy"])
+        UtilFunctions.run_decode_tool(data="3E 00")
+
+    def test_find_tool(self) -> None:
+        UtilFunctions.run_find_tool(service_names=["headstand"])
+        UtilFunctions.run_find_tool(service_names=["headstand"], allow_unknown_bit_lengths=True)
+        UtilFunctions.run_find_tool(
+            service_names=["headstand"], allow_unknown_bit_lengths=True, no_details=True)
 
     @unittest.skipIf(import_failed, "import of PyInquirer failed")
     def test_browse_tool(self) -> None:

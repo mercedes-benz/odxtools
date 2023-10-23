@@ -4,10 +4,10 @@ from typing import Dict, List, Optional
 
 from ..database import Database
 from ..diagservice import DiagService
-from ..exceptions import odxraise
 from ..odxtypes import ParameterValue
 from ..singleecujob import SingleEcuJob
 from . import _parser_utils
+from ._print_utils import print_diagnostic_service
 
 # name of the tool
 _odxtools_tool_name_ = "find"
@@ -22,15 +22,11 @@ def get_display_value(v: ParameterValue) -> str:
         return str(v)
 
 
-def print_summary(
-    odxdb: Database,
-    ecu_variants: Optional[List[str]] = None,
-    data: bytes = b'',
-    service_names: Optional[List[str]] = None,
-    decode: bool = False,
-    print_params: bool = False,
-    allow_unknown_bit_lengths: bool = False,
-) -> None:
+def print_summary(odxdb: Database,
+                  service_names: List[str],
+                  ecu_variants: Optional[List[str]] = None,
+                  allow_unknown_bit_lengths: bool = False,
+                  print_params: bool = False) -> None:
     ecu_names = ecu_variants if ecu_variants else [ecu.short_name for ecu in odxdb.ecus]
     services: Dict[DiagService, List[str]] = {}
     for ecu_name in ecu_names:
@@ -38,12 +34,6 @@ def print_summary(
         if not ecu:
             print(f"The ecu variant '{ecu_name}' could not be found!")
             continue
-        if data:
-            found_services = ecu._find_services_for_uds(data)
-            for found_service in found_services:
-                ecu_names = services.get(found_service, [])
-                ecu_names.append(ecu_name)
-                services[found_service] = ecu_names
 
         if service_names:
             for service_name_search in service_names:
@@ -53,41 +43,34 @@ def print_summary(
                         ecu_names.append(ecu_name)
                         services[service] = ecu_names
 
-    print(f"Binary data: {data.hex(' ')}")
     for service, ecu_names in services.items():
+        display_names = ", ".join(ecu_names)
+        filler = str.ljust("", len(display_names), "=")
+        print(f"\n{filler}")
+        print(f"{', '.join(ecu_names)}")
+        print(f"{filler}\n\n")
         if isinstance(service, DiagService):
-            print(
-                f"Decoded by service '{service.short_name}' (decoding ECUs: {', '.join(ecu_names)})"
+            print_diagnostic_service(
+                service,
+                print_params=print_params,
+                allow_unknown_bit_lengths=allow_unknown_bit_lengths,
+                print_pre_condition_states=True,
+                print_state_transitions=True,
+                print_audiences=True,
             )
         elif isinstance(service, SingleEcuJob):
-            print(
-                f"Decoded by single ecu job '{service.short_name}' (decoding ECUs: {', '.join(ecu_names)})"
-            )
+            print(f"SingleEcuJob: {service.odx_id}")
         else:
-            print(f"Decoded by unknown diagnostic communication: '{service.short_name}' "
-                  f"(decoding ECUs: {', '.join(ecu_names)})")
-
-        if decode:
-            if data is None:
-                odxraise("Data is required for decoding")
-
-            decoded = service.decode_message(data)
-            print(f"Decoded data:")
-            for param_name, param_value in decoded.param_dict.items():
-                print(f"  {param_name}={get_display_value(param_value)}")
+            print(f"Unknown service: {service}")
 
 
 def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
     parser = subparsers.add_parser(
         "find",
         description="\n".join([
-            "Find & print services by hex-data, or name, can also decodes requests",
+            "Find & print services by name",
             "",
             "Examples:",
-            "  For displaying the service associated with the request 10 01:",
-            "    odxtools find ./path/to/database.pdx -d 10 01",
-            "  For displaying the service associated with the request 10 01, and decoding it:",
-            "    odxtools find ./path/to/database.pdx -D 10 01",
             "  For displaying the services associated with the partial name 'Reset' without details:",
             '    odxtools find ./path/to/database.pdx -s "Reset" --no-details',
             "  For more information use:",
@@ -109,38 +92,19 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
     )
 
     parser.add_argument(
-        "-d",
-        "--data",
-        nargs=1,
-        default=None,
-        metavar="DATA",
-        required=True,
-        help="Print a list of diagnostic services associated with the hex request.",
-    )
-
-    parser.add_argument(
-        "-D",
-        "--decode",
-        default=False,
-        action="store_true",
-        required=False,
-        help="Decode the specified hex request.",
-    )
-
-    parser.add_argument(
         "-s",
         "--service-names",
         nargs="*",
         default=None,
         metavar="SERVICES",
-        required=False,
+        required=True,
         help="Print a list of diagnostic services partially matching given service names",
     )
 
     parser.add_argument(
         "-nd",
         "--no-details",
-        action="store_false",
+        action="store_true",
         required=False,
         help="Don't show all service details",
     )
@@ -154,22 +118,14 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
     )
 
 
-def hex_to_binary(data_str: str) -> bytes:
-    return bytes.fromhex(data_str)
-
-
 def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
     variants = args.variants
-    data = bytes.fromhex(args.data[0])
-    decode = args.decode
 
     print_summary(
         odxdb,
         ecu_variants=None if variants == "all" else variants,
-        data=data,
-        decode=decode,
         service_names=args.service_names,
-        print_params=args.no_details,
+        print_params=not args.no_details,
         allow_unknown_bit_lengths=args.relaxed_output,
     )

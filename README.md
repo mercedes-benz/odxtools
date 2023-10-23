@@ -52,6 +52,7 @@ send to/received from ECUs in an pythonic manner.
   - [The `browse` subcommand](#the-browse-subcommand)
   - [The `snoop` subcommand](#the-snoop-subcommand)
   - [The `find` subcommand](#the-find-subcommand)
+  - [The `decode` subcommand](#the-decode-subcommand)
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [Code of Conduct](#code-of-conduct)
@@ -292,7 +293,8 @@ positional arguments:
     list                Print a summary of automotive diagnostic files.
     browse              Interactively browse the content of automotive diagnostic files.
     snoop               Live decoding of a diagnostic session.
-    find                Find & display services by hex-data, or name, can also decodes requests.
+    find                Find & display services by their name
+    decode              Decode hex-data to service-name & optionally its parameters 
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -495,58 +497,45 @@ Tester: do_forward_flips(forward_soberness_check=18, num_flips=50)
 ### The `find` subcommand
 
 The `find` subcommand can be used to find a service and its associated 
-information by either a hex request, or partial name via cli. 
-
-In addition, it can also decode a hex request and display its parameters 
-mapped to a service. 
+information by a partial name via cli. 
 
 ```bash
 $ odxtools find -h
-usage: odxtools find [-h] [-v VARIANT [VARIANT ...]] [-d [DATA ...]] [-D [DECODE ...]] [-s [SERVICES ...]] [-nd]
-                     [-ro]
-                     PDX_FILE
+usage: odxtools find [-h] [-v VARIANT] -s [SERVICES ...] [-nd] [-ro] PDX_FILE
 
-Find & print services by hex-data, or name, can also decodes requests
+Find & print services by name
 
 Examples:
-  For displaying the service associated with the request 10 01:
-    odxtools find ./path/to/database.pdx -d 10 01
-  For displaying the service associated with the request 10 01, and decoding it:
-    odxtools find ./path/to/database.pdx -D 10 01
   For displaying the services associated with the partial name 'Reset' without details:
     odxtools find ./path/to/database.pdx -s "Reset" --no-details
   For more information use:
     odxtools find -h
 
 positional arguments:
-  PDX_FILE              path to the .pdx file
+  PDX_FILE              Location of the .pdx file
 
 options:
   -h, --help            show this help message and exit
-  -v VARIANT [VARIANT ...], --variants VARIANT [VARIANT ...]
+  -v VARIANT, --variants VARIANT
                         Specifies which ecu variants should be included.
-  -d [DATA ...], --data [DATA ...]
-                        Print a list of diagnostic services associated with the hex request.
-  -D [DECODE ...], --decode [DECODE ...]
-                        Print a list of diagnostic services associated with the hex request and decode the request.
   -s [SERVICES ...], --service-names [SERVICES ...]
                         Print a list of diagnostic services partially matching given service names
   -nd, --no-details     Don't show all service details
   -ro, --relaxed-output
                         Relax output formatting rules (allow unknown bitlengths for ascii representation)
 ```
-Example: Find diagnostic services associated with the hex request `10 00`
+
+Example: Find diagnostic services with the name `session_start`
 
 ```bash
-$ odxtools find $BASE_DIR/odxtools/examples/somersault.pdx -D 10 00
-
+$ odxtools find examples/somersault.pdx -s session_start
 
 =====================================
 somersault_lazy, somersault_assiduous
 =====================================
 
 
- session_start <ID: somersault.service.session_start>
+ session_start <ID: OdxLinkId('somersault.service.session_start')>
   Message format of a request:
            7     6     5     4     3     2     1     0  
         +-----+-----+-----+-----+-----+-----+-----+-----+
@@ -554,8 +543,8 @@ somersault_lazy, somersault_assiduous
         +-----+-----+-----+-----+-----+-----+-----+-----+
       1 | id (8 bits)                                   |
         +-----+-----+-----+-----+-----+-----+-----+-----+
-   Parameter(short_name='sid', type='CODED-CONST', semantic=None, byte_position=0, bit_length=8, coded_value='0x10')
-   Parameter(short_name='id', type='CODED-CONST', semantic=None, byte_position=1, bit_length=8, coded_value='0x0')
+   CodedConstParameter(short_name='sid', long_name=None, description=None, byte_position=0, bit_position=None, semantic=None, sdgs=[], diag_coded_type=StandardLengthType(base_data_type=<DataType.A_UINT32: 'A_UINT32'>, base_type_encoding=None, is_highlow_byte_order_raw=None, bit_length=8, bit_mask=None, is_condensed_raw=None), coded_value=16)
+   CodedConstParameter(short_name='id', long_name=None, description=None, byte_position=1, bit_position=None, semantic=None, sdgs=[], diag_coded_type=StandardLengthType(base_data_type=<DataType.A_UINT32: 'A_UINT32'>, base_type_encoding=None, is_highlow_byte_order_raw=None, bit_length=8, bit_mask=None, is_condensed_raw=None), coded_value=0)
   Number of positive responses: 1
   Message format of a positive response:
            7     6     5     4     3     2     1     0  
@@ -564,9 +553,8 @@ somersault_lazy, somersault_assiduous
         +-----+-----+-----+-----+-----+-----+-----+-----+
       1 | can_do_backward_flips (8 bits)                |
         +-----+-----+-----+-----+-----+-----+-----+-----+
-   Parameter(short_name='sid', type='CODED-CONST', semantic=None, byte_position=0, bit_length=8, coded_value='0x50')
-   Parameter(short_name='can_do_backward_flips', type='VALUE', semantic=None, byte_position=1, bit_length=8, dop_ref='somersault.DOP.boolean')
-    DataObjectProperty('boolean', category='TEXTTABLE', internal_type='A_UINT32', physical_type='A_UNICODE2STRING')
+   CodedConstParameter(short_name='sid', long_name=None, description=None, byte_position=0, bit_position=None, semantic=None, sdgs=[], diag_coded_type=StandardLengthType(base_data_type=<DataType.A_UINT32: 'A_UINT32'>, base_type_encoding=None, is_highlow_byte_order_raw=None, bit_length=8, bit_mask=None, is_condensed_raw=None), coded_value=80)
+   ValueParameter(short_name='can_do_backward_flips', long_name=None, description=None, byte_position=1, bit_position=None, semantic=None, sdgs=[], dop_ref=OdxLinkRef(ref_id='somersault.DOP.boolean', ref_docs=[OdxDocFragment(doc_name='somersault', doc_type='CONTAINER'), OdxDocFragment(doc_name='somersault', doc_type='LAYER')]), dop_snref=None, physical_default_value_raw=None)
   Number of negative responses: 1
   Message format of a negative response:
            7     6     5     4     3     2     1     0  
@@ -577,19 +565,59 @@ somersault_lazy, somersault_assiduous
         +-----+-----+-----+-----+-----+-----+-----+-----+
       2 | response_code (8 bits)                        |
         +-----+-----+-----+-----+-----+-----+-----+-----+
-   Parameter(short_name='sid', type='CODED-CONST', semantic=None, byte_position=0, bit_length=8, coded_value='0x7f')
-   Parameter(short_name='rq_sid', type='MATCHING-REQUEST-PARAM', semantic=None, byte_position=1)
-    Request byte position = 0, byte length = 1
-   Parameter(short_name='response_code', type='VALUE', semantic=None, byte_position=2, bit_length=8, dop_ref='somersault.DOP.error_code')
-    DataObjectProperty('error_code', category='IDENTICAL', internal_type='A_UINT32', physical_type='A_UINT32')
-
-Decoded Request('start_session'):
-	sid: 16
-	id: 0
+   CodedConstParameter(short_name='sid', long_name=None, description=None, byte_position=0, bit_position=None, semantic=None, sdgs=[], diag_coded_type=StandardLengthType(base_data_type=<DataType.A_UINT32: 'A_UINT32'>, base_type_encoding=None, is_highlow_byte_order_raw=None, bit_length=8, bit_mask=None, is_condensed_raw=None), coded_value=127)
+   MatchingRequestParameter(short_name='rq_sid', long_name=None, description=None, byte_position=1, bit_position=None, semantic=None, sdgs=[], request_byte_position=0, byte_length=1)
+   ValueParameter(short_name='response_code', long_name=None, description=None, byte_position=2, bit_position=None, semantic=None, sdgs=[], dop_ref=OdxLinkRef(ref_id='somersault.DOP.error_code', ref_docs=[OdxDocFragment(doc_name='somersault', doc_type='CONTAINER'), OdxDocFragment(doc_name='somersault', doc_type='LAYER')]), dop_snref=None, physical_default_value_raw=None)
 ```
 
-`odxtools find $BASE_DIR/odxtools/examples/somersault.pdx -d 10 00` would display the same information, 
-without the decoded request, and `-s <name>` can be used to find a service by partial name.
+### The `decode` subcommand
+
+The `decode` subcommand can be used to decode hex-data to a service, and its associated
+parameters.
+
+```bash
+$ odxtools decode -h
+usage: odxtools decode [-h] [-v VARIANT] -d DATA [-D] PDX_FILE
+
+Decode request by hex-data
+
+Examples:
+  For displaying the service associated with the request 10 01 & decoding it:
+    odxtools decode ./path/to/database.pdx -D -d '10 01'
+  For displaying the service associated with the request 10 01, without decoding it:
+    odxtools decode ./path/to/database.pdx -d '10 01'
+  For more information use:
+    odxtools decode -h
+
+positional arguments:
+  PDX_FILE              Location of the .pdx file
+
+options:
+  -h, --help            show this help message and exit
+  -v VARIANT, --variants VARIANT
+                        Specifies which ecu variants should be included.
+  -d DATA, --data DATA  Specify data of hex request
+  -D, --decode          Decode the given hex data
+```
+
+Example: Decode diagnostic services with the request `10 00`
+
+```bash
+$ odxtools decode examples/somersault.pdx -d '10 00'
+Binary data: 10 00
+Decoded by service 'session_start' (decoding ECUs: somersault_lazy, somersault_assiduous)
+```
+
+Example: Decode diagnostic services with the request `10 00`, and parameters
+
+```bash
+$ odxtools decode examples/somersault.pdx -d '10 00' -D
+Binary data: 10 00
+Decoded by service 'session_start' (decoding ECUs: somersault_lazy, somersault_assiduous)
+Decoded data:
+sid=16 (0x10)
+id=0 (0x0)
+```
 
 ## Testing
 
