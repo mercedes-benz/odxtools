@@ -25,6 +25,7 @@ from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parentref import ParentRef
 from .request import Request
 from .response import Response
+from .servicebinner import ServiceBinner
 from .singleecujob import SingleEcuJob
 from .specialdatagroup import SpecialDataGroup
 from .statechart import StateChart
@@ -218,6 +219,17 @@ class DiagLayer:
         # statement...)
         #####
         self.diag_layer_raw._resolve_snrefs(self)
+
+    #####
+    # <convenience functionality>
+    #####
+    @cached_property
+    def service_groups(self) -> ServiceBinner:
+        return ServiceBinner(self.services)
+
+    #####
+    # </convenience functionality>
+    #####
 
     #####
     # <properties forwarded to the "raw" diag layer>

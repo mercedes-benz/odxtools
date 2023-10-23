@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 from enum import IntEnum
+from typing import Optional
 
 
 class SID(IntEnum):
@@ -30,3 +31,27 @@ class SID(IntEnum):
     ControlOperationOfOnboardComponentOrSystem = 0x08
     RequestVehicleInformation = 0x09
     PermanentDiagnosticTroubleCodes = 0x0A
+
+
+_sid_to_name = {
+    0x01: "Show Current Data",
+    0x02: "Show Freeze Frame Data",
+    0x03: "Show Stored Diagnostic Trouble Codes",
+    0x04: "Clear Diagnostic Trouble Codes and Stored Values",
+    0x05: "Test Results, non-CAN Oxygen Sensor Monitoring",
+    0x06: "Test Results, CAN Oxygen Sensor Monitoring",
+    0x07: "Show Pending Diagnostic Trouble Codes",
+    0x08: "Control Operation of Onboard Component or System",
+    0x09: "Request Vehicle Information",
+    0x0A: "Permanent Diagnostic Trouble Codes",
+}
+
+
+def sid_to_name(sid: int) -> Optional[str]:
+    if sid in _sid_to_name:
+        return _sid_to_name[sid]
+
+    return None
+
+
+# TODO: PIDs

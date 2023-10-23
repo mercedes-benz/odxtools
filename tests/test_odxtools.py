@@ -192,6 +192,20 @@ class TestNavigation(unittest.TestCase):
         self.assertEqual(service.odx_id.local_id, "somersault.service.session_start")
         self.assertEqual(service.semantic, "SESSION")
 
+    def test_udsbinner(self) -> None:
+        ecu = odxdb.ecus.somersault_lazy
+
+        service_groups = ecu.service_groups
+
+        self.assertEqual(len(service_groups._service_groups), 4)
+        self.assertEqual([s.short_name for s in service_groups[0x10]],
+                         ["session_start", "session_stop"])
+        self.assertEqual(service_groups[0x10].session_start.short_name, "session_start")
+        self.assertEqual([s.short_name for s in service_groups[0xba]], ["do_forward_flips"])
+        self.assertTrue(0x10 in service_groups)
+        self.assertTrue(0x42 not in service_groups)
+        self.assertEqual(service_groups[0x42], NamedItemList())
+
 
 if __name__ == "__main__":
     unittest.main()
