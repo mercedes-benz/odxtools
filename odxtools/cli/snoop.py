@@ -30,7 +30,7 @@ def handle_telegram(telegram_id: int, payload: bytes) -> None:
     global last_request
 
     if telegram_id == ecu_tx_id:
-        if uds.is_reponse_pending(payload):
+        if uds.is_response_pending(payload):
             print(f" -> response pending")
             return
 
