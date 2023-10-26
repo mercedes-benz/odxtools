@@ -3,6 +3,8 @@ from enum import IntEnum
 from itertools import chain
 from typing import Optional
 
+from deprecation import deprecated
+
 import odxtools.obd as obd
 
 
@@ -142,7 +144,7 @@ def negative_response_id(service_id: int) -> int:
     return NegativeResponseId
 
 
-def is_reponse_pending(telegram_payload: bytes, request_sid: Optional[int] = None) -> bool:
+def is_response_pending(telegram_payload: bytes, request_sid: Optional[int] = None) -> bool:
     # "response pending" responses exhibit at least three bytes
     if len(telegram_payload) < 3:
         return False
@@ -168,3 +170,9 @@ def is_reponse_pending(telegram_payload: bytes, request_sid: Optional[int] = Non
 
     # if all of the above applies, we received a "stay tuned" response
     return True
+
+
+# previous versions of odxtools had a typo here. hit happens!
+@deprecated(details="use is_response_pending()")
+def is_reponse_pending(telegram_payload: bytes, request_sid: Optional[int] = None) -> bool:
+    return is_reponse_pending(telegram_payload, request_sid)
