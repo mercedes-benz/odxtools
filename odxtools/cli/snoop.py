@@ -31,20 +31,38 @@ def handle_telegram(telegram_id: int, payload: bytes) -> None:
 
     if telegram_id == ecu_tx_id:
         if uds.is_response_pending(payload):
-            print(f" -> response pending")
+            print(f" -> ECU: ... (response pending)")
             return
 
         decoded_message = None
         if last_request is not None:
             try:
-                decoded_message = odx_diag_layer.decode_response(payload, last_request)[0]
+                decoded_message = odx_diag_layer.decode_response(payload, last_request)
             except DecodeError:
                 pass
 
         if decoded_message is not None:
-            print(f" -> {decoded_message}")
+            for i, resp in enumerate(decoded_message):
+                params = resp.coding_object.parameters
+                dec_str = ""
+                if len(decoded_message) > 1:
+                    dec_str = f" (decoding {i+1})"
+
+                response_type = getattr(resp.coding_object, "response_type", None)
+                rt_str = "unknown"
+                if response_type == "POS-RESPONSE":
+                    rt_str = "positive"
+                elif response_type == "NEG-RESPONSE":
+                    rt_str = "negative"
+
+                print(f" -> {rt_str} ECU response{dec_str}: \"{resp.coding_object.short_name}\"")
+                for param_name, param_val in resp.param_dict.items():
+                    param = [x for x in params if x.short_name == param_name][0]
+                    if not param.is_settable:
+                        continue
+                    print(f"      {param_name} = {repr(param_val)}")
         else:
-            print(f" -> unrecognized response of {len(payload)} bytes length: "
+            print(f" -> ECU response: unrecognized response of {len(payload)} bytes length: "
                   f"0x{payload.hex()}")
 
         return
@@ -57,8 +75,15 @@ def handle_telegram(telegram_id: int, payload: bytes) -> None:
         except DecodeError:
             last_request = None
 
-    if decoded_message:
-        print(f"Tester: {decoded_message}")
+    if decoded_message is not None:
+        print(f"tester request: \"{decoded_message.coding_object.short_name}\"")
+        params = decoded_message.coding_object.parameters
+        for param_name, param_val in decoded_message.param_dict.items():
+            param = [x for x in params if x.short_name == param_name][0]
+            if not param.is_settable:
+                continue
+            print(f"  {param_name} = {repr(param_val)}")
+
     else:
         print(f"Tester: "
               f"{payload.hex()} "
