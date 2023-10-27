@@ -585,7 +585,7 @@ class DiagLayer:
         """
         return self._communication_parameters
 
-    @property
+    @cached_property
     def protocols(self) -> NamedItemList["DiagLayer"]:
         """Return the set of all protocols which are applicable to the diagnostic layer
 
@@ -607,7 +607,6 @@ class DiagLayer:
         self,
         cp_short_name: str,
         *,
-        is_functional: Optional[bool] = None,
         protocol_name: Optional[str] = None,
     ) -> Optional[CommunicationParameterRef]:
         """Find a specific communication parameter according to some criteria.
@@ -616,8 +615,6 @@ class DiagLayer:
 
         # determine the set of applicable communication parameters
         cps = [cp for cp in self.communication_parameters if cp.short_name == cp_short_name]
-        if is_functional is not None:
-            cps = [cp for cp in cps if cp.is_functional in (None, is_functional)]
         if protocol_name is not None:
             cps = [cp for cp in cps if cp.protocol_snref in (None, protocol_name)]
 
@@ -714,7 +711,7 @@ class DiagLayer:
         # ISO_15765_2 subset for CAN. If the wrong one is retrieved,
         # try specifying the protocol_name.)
         com_param = self.get_communication_parameter(
-            "CP_UniqueRespIdTable", protocol_name=protocol_name, is_functional=False)
+            "CP_UniqueRespIdTable", protocol_name=protocol_name)
 
         if com_param is None:
             return None
@@ -732,16 +729,13 @@ class DiagLayer:
         return int(ecu_addr)
 
     def get_doip_logical_gateway_address(self,
-                                         protocol_name: Optional[str] = None,
-                                         is_functional: Optional[bool] = False) -> Optional[int]:
+                                         protocol_name: Optional[str] = None) -> Optional[int]:
         """The logical gateway address for the diagnosis over IP transport protocol"""
 
         # retrieve CP_DoIPLogicalGatewayAddress from the
         # ISO_13400_2_DIS_2015 subset. hopefully.
         com_param = self.get_communication_parameter(
-            "CP_DoIPLogicalGatewayAddress",
-            is_functional=is_functional,
-            protocol_name=protocol_name)
+            "CP_DoIPLogicalGatewayAddress", protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -752,15 +746,13 @@ class DiagLayer:
 
         return int(result)
 
-    def get_doip_logical_tester_address(self,
-                                        protocol_name: Optional[str] = None,
-                                        is_functional: Optional[bool] = False) -> Optional[int]:
+    def get_doip_logical_tester_address(self, protocol_name: Optional[str] = None) -> Optional[int]:
         """DoIp logical gateway address"""
 
         # retrieve CP_DoIPLogicalTesterAddress from the
         # ISO_13400_2_DIS_2015 subset. hopefully.
         com_param = self.get_communication_parameter(
-            "CP_DoIPLogicalTesterAddress", is_functional=is_functional, protocol_name=protocol_name)
+            "CP_DoIPLogicalTesterAddress", protocol_name=protocol_name)
         if com_param is None:
             return None
 
@@ -772,15 +764,13 @@ class DiagLayer:
         return int(result)
 
     def get_doip_logical_functional_address(self,
-                                            protocol_name: Optional[str] = None,
-                                            is_functional: Optional[bool] = False) -> Optional[int]:
+                                            protocol_name: Optional[str] = None) -> Optional[int]:
         """The logical functional DoIP address of the ECU."""
 
         # retrieve CP_DoIPLogicalFunctionalAddress from the
         # ISO_13400_2_DIS_2015 subset. hopefully.
         com_param = self.get_communication_parameter(
             "CP_DoIPLogicalFunctionalAddress",
-            is_functional=is_functional,
             protocol_name=protocol_name,
         )
         if com_param is None:

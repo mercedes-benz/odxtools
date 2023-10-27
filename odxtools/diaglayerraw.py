@@ -163,7 +163,7 @@ class DiagLayerRaw(IdentifiableElement):
         ]
 
         communication_parameters = [
-            CommunicationParameterRef.from_et(el, doc_frags, variant_type)
+            CommunicationParameterRef.from_et(el, doc_frags)
             for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")
         ]
 
