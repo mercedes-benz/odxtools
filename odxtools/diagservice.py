@@ -44,7 +44,7 @@ class DiagService(DiagComm):
     pos_response_refs: List[OdxLinkRef]
     neg_response_refs: List[OdxLinkRef]
 
-    #pos_response_suppressable: Optional[PosResponseSuppressable]
+    # TODO: pos_response_suppressable: Optional[PosResponseSuppressable]
 
     is_cyclic_raw: Optional[bool]
     is_multiple_raw: Optional[bool]
