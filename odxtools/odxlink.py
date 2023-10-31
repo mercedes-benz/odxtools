@@ -81,7 +81,7 @@ class OdxLinkId:
         return OdxLinkId(local_id, doc_fragments)
 
 
-@dataclass(frozen=True)
+@dataclass
 class OdxLinkRef:
     """A reference to an ODX object.
 

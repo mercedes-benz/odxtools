@@ -44,7 +44,7 @@
  {%- if dc.related_diag_comm_refs %}
  <RELATED-DIAG-COMM-REFS>
   {%- for ref in dc.related_diag_comm_refs %}
-  <RELATED-DIAG-COMM-REF ID-REF="{{ref.diag_comm_ref.ref_id}}">
+  <RELATED-DIAG-COMM-REF ID-REF="{{ref.ref_id}}">
    <RELATION-TYPE>{{ref.relation_type}}</RELATION-TYPE>
   </RELATED-DIAG-COMM-REF>
   {%- endfor %}

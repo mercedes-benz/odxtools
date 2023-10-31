@@ -32,35 +32,18 @@ class DiagClassType(Enum):
 
 
 @dataclass
-class RelatedDiagCommRef:
-    diag_comm_ref: OdxLinkRef
+class RelatedDiagCommRef(OdxLinkRef):
     relation_type: str
 
-    @property
-    def diag_comm(self) -> "DiagComm":
-        return self._diag_comm
-
-    @property
-    def short_name(self) -> str:
-        return self.diag_comm.short_name
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        return {}
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._diag_comm = odxlinks.resolve(self.diag_comm_ref, DiagComm)
-
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        pass
-
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "RelatedDiagCommRef":
-        diag_comm_ref = OdxLinkRef.from_et(et_element, doc_frags)
+    def from_et(  # type: ignore[override]
+            et_element: ElementTree.Element,
+            doc_frags: List[OdxDocFragment]) -> "RelatedDiagCommRef":
+        kwargs = dataclass_fields_asdict(odxrequire(OdxLinkRef.from_et(et_element, doc_frags)))
 
         relation_type = odxrequire(et_element.findtext("RELATION-TYPE"))
 
-        return RelatedDiagCommRef(diag_comm_ref=diag_comm_ref, relation_type=relation_type)
+        return RelatedDiagCommRef(relation_type=relation_type, **kwargs)
 
 
 @dataclass
@@ -77,7 +60,7 @@ class DiagComm(IdentifiableElement):
     functional_class_refs: List[OdxLinkRef]
     audience: Optional[Audience]
     protocol_snrefs: List[str]
-    related_diag_comm_refs_raw: List[RelatedDiagCommRef]
+    related_diag_comm_refs: List[RelatedDiagCommRef]
     pre_condition_state_refs: Iterable[OdxLinkRef]
     state_transition_refs: Iterable[OdxLinkRef]
 
@@ -109,7 +92,7 @@ class DiagComm(IdentifiableElement):
             for el in et_element.iterfind("PROTOCOL-SNREFS/PROTOCOL-SNREF")
         ]
 
-        related_diag_comm_refs_raw = [
+        related_diag_comm_refs = [
             RelatedDiagCommRef.from_et(el, doc_frags)
             for el in et_element.iterfind("RELATED-DIAG-COMM-REFS/RELATED-DIAG-COMM-REF")
         ]
@@ -144,7 +127,7 @@ class DiagComm(IdentifiableElement):
             functional_class_refs=functional_class_refs,
             audience=audience,
             protocol_snrefs=protocol_snrefs,
-            related_diag_comm_refs_raw=related_diag_comm_refs_raw,
+            related_diag_comm_refs=related_diag_comm_refs,
             pre_condition_state_refs=pre_condition_state_refs,
             state_transition_refs=state_transition_refs,
             semantic=semantic,
@@ -163,8 +146,8 @@ class DiagComm(IdentifiableElement):
         return self._protocols
 
     @property
-    def related_diag_comm_refs(self) -> NamedItemList[RelatedDiagCommRef]:
-        return self._related_diag_comm_refs
+    def related_diag_comms(self) -> NamedItemList["DiagComm"]:
+        return self._related_diag_comms
 
     @property
     def pre_condition_states(self) -> NamedItemList[State]:
@@ -198,9 +181,6 @@ class DiagComm(IdentifiableElement):
         if self.audience is not None:
             result.update(self.audience._build_odxlinks())
 
-        for rdc in self.related_diag_comm_refs_raw:
-            result.update(rdc._build_odxlinks())
-
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -210,13 +190,11 @@ class DiagComm(IdentifiableElement):
         if self.audience:
             self.audience._resolve_odxlinks(odxlinks)
 
-        for rdc in self.related_diag_comm_refs_raw:
-            rdc._resolve_odxlinks(odxlinks)
-
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
-        self._related_diag_comm_refs = NamedItemList(self.related_diag_comm_refs_raw)
+        self._related_diag_comms = NamedItemList(
+            [odxlinks.resolve(dc_ref, DiagComm) for dc_ref in self.related_diag_comm_refs])
         self._functional_classes = NamedItemList(
             [odxlinks.resolve(fc_ref, FunctionalClass) for fc_ref in self.functional_class_refs])
         self._pre_condition_states = NamedItemList(
@@ -230,9 +208,6 @@ class DiagComm(IdentifiableElement):
 
         if self.audience:
             self.audience._resolve_snrefs(diag_layer)
-
-        for rdc in self.related_diag_comm_refs_raw:
-            rdc._resolve_snrefs(diag_layer)
 
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)

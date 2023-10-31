@@ -208,7 +208,7 @@ class TestSingleEcuJob(unittest.TestCase):
             semantic=None,
             functional_class_refs=[OdxLinkRef.from_id(self.context.extensiveTask.odx_id)],
             protocol_snrefs=[],
-            related_diag_comm_refs_raw=[],
+            related_diag_comm_refs=[],
             pre_condition_state_refs=[],
             state_transition_refs=[],
             diagnostic_class=None,
@@ -341,7 +341,7 @@ class TestSingleEcuJob(unittest.TestCase):
             semantic=None,
             audience=None,
             protocol_snrefs=[],
-            related_diag_comm_refs_raw=[],
+            related_diag_comm_refs=[],
             pre_condition_state_refs=[],
             state_transition_refs=[],
             prog_codes=[
