@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from odxtools.communicationparameterref import CommunicationParameterRef
+from odxtools.comparam import Comparam
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
@@ -74,7 +74,7 @@ def ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> 
         is_mandatory_raw=None,
         is_executable_raw=None,
         is_final_raw=None,
-        comparam_refs=NamedItemList[CommunicationParameterRef](),
+        comparam_refs=NamedItemList[Comparam](),
         is_cyclic_raw=None,
         is_multiple_raw=None,
         addressing_raw=None,
@@ -123,7 +123,7 @@ def supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) 
         is_mandatory_raw=None,
         is_executable_raw=None,
         is_final_raw=None,
-        comparam_refs=NamedItemList[CommunicationParameterRef](),
+        comparam_refs=NamedItemList[Comparam](),
         is_cyclic_raw=None,
         is_multiple_raw=None,
         addressing_raw=None,
@@ -214,7 +214,7 @@ def ecu_variant_1(
         additional_audiences=NamedItemList(),
         sdgs=[],
         parent_refs=[],
-        communication_parameters=[],
+        comparams=[],
         ecu_variant_patterns=[ecu_variant_pattern1],
     )
     result = DiagLayer(diag_layer_raw=raw_layer)
@@ -250,7 +250,7 @@ def ecu_variant_2(
         additional_audiences=NamedItemList(),
         sdgs=[],
         parent_refs=[],
-        communication_parameters=[],
+        comparams=[],
         ecu_variant_patterns=[ecu_variant_pattern2],
     )
     result = DiagLayer(diag_layer_raw=raw_layer)
@@ -287,7 +287,7 @@ def ecu_variant_3(
         additional_audiences=NamedItemList(),
         sdgs=[],
         parent_refs=[],
-        communication_parameters=[],
+        comparams=[],
         ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
     )
     result = DiagLayer(diag_layer_raw=raw_layer)

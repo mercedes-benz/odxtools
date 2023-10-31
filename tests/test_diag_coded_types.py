@@ -265,7 +265,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             state_charts=NamedItemList(),
             sdgs=[],
             parent_refs=[],
-            communication_parameters=[],
+            comparams=[],
             ecu_variant_patterns=[],
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
@@ -558,7 +558,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             state_charts=NamedItemList(),
             sdgs=[],
             parent_refs=[],
-            communication_parameters=[],
+            comparams=[],
             ecu_variant_patterns=[],
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
@@ -860,7 +860,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             state_charts=NamedItemList(),
             sdgs=[],
             parent_refs=[],
-            communication_parameters=[],
+            comparams=[],
             ecu_variant_patterns=[],
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)

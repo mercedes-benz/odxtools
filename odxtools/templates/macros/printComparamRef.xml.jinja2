@@ -2,12 +2,12 @@
  #
  # SPDX-License-Identifier: MIT
 -#}
-{%- import('macros/printComparam.xml.jinja2') as pcp %}
+{%- import('macros/printComparamSpec.xml.jinja2') as pcp %}
 {#- -#}
 
 {%- macro printComparamRef(cp) %}
-<COMPARAM-REF ID-REF="{{cp.id_ref.ref_id}}"
-              DOCREF="{{cp.id_ref.ref_docs[0].doc_name}}"
+<COMPARAM-REF ID-REF="{{cp.spec_ref.ref_id}}"
+              DOCREF="{{cp.spec_ref.ref_docs[0].doc_name}}"
               DOCTYPE="COMPARAM-SUBSET">
   {%- if cp.value is string %}
   <SIMPLE-VALUE>{{cp.value}}</SIMPLE-VALUE>
