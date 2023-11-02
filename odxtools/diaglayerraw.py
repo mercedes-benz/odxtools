@@ -6,8 +6,8 @@ from xml.etree import ElementTree
 
 from .additionalaudience import AdditionalAudience
 from .admindata import AdminData
-from .communicationparameterref import CommunicationParameterRef
 from .companydata import CompanyData
+from .comparaminstance import ComparamInstance
 from .createanystructure import create_any_structure_from_et
 from .createsdgs import create_sdgs_from_et
 from .diagcomm import DiagComm
@@ -60,7 +60,7 @@ class DiagLayerRaw(IdentifiableElement):
     # these attributes are only defined for some kinds of diag layers!
     # TODO: make a proper class hierarchy!
     parent_refs: List[ParentRef]
-    communication_parameters: List[CommunicationParameterRef]
+    comparams: List[ComparamInstance]
     ecu_variant_patterns: List[EcuVariantPattern]
     # comparam_spec: OdxLinkRef # TODO
     # prot_stack_snref: str # TODO
@@ -163,8 +163,8 @@ class DiagLayerRaw(IdentifiableElement):
             for pr_el in et_element.iterfind("PARENT-REFS/PARENT-REF")
         ]
 
-        communication_parameters = [
-            CommunicationParameterRef.from_et(el, doc_frags)
+        comparams = [
+            ComparamInstance.from_et(el, doc_frags)
             for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")
         ]
 
@@ -194,7 +194,7 @@ class DiagLayerRaw(IdentifiableElement):
             additional_audiences=NamedItemList(additional_audiences),
             sdgs=sdgs,
             parent_refs=parent_refs,
-            communication_parameters=communication_parameters,
+            comparams=comparams,
             ecu_variant_patterns=ecu_variant_patterns,
             **kwargs)
 
@@ -231,8 +231,8 @@ class DiagLayerRaw(IdentifiableElement):
             odxlinks.update(sdg._build_odxlinks())
         for parent_ref in self.parent_refs:
             odxlinks.update(parent_ref._build_odxlinks())
-        for communication_parameter in self.communication_parameters:
-            odxlinks.update(communication_parameter._build_odxlinks())
+        for comparam in self.comparams:
+            odxlinks.update(comparam._build_odxlinks())
 
         return odxlinks
 
@@ -269,8 +269,8 @@ class DiagLayerRaw(IdentifiableElement):
             sdg._resolve_odxlinks(odxlinks)
         for parent_ref in self.parent_refs:
             parent_ref._resolve_odxlinks(odxlinks)
-        for communication_parameter in self.communication_parameters:
-            communication_parameter._resolve_odxlinks(odxlinks)
+        for comparam in self.comparams:
+            comparam._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         # do short-name reference resolution
@@ -303,5 +303,5 @@ class DiagLayerRaw(IdentifiableElement):
             sdg._resolve_snrefs(diag_layer)
         for parent_ref in self.parent_refs:
             parent_ref._resolve_snrefs(diag_layer)
-        for communication_parameter in self.communication_parameters:
-            communication_parameter._resolve_snrefs(diag_layer)
+        for comparam in self.comparams:
+            comparam._resolve_snrefs(diag_layer)

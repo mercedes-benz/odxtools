@@ -16,17 +16,22 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class CommunicationParameterRef:
+class ComparamInstance:
+    """
+    This class represents a communication parameter.
+
+    Be aware that the ODX specification calls this class COMPARAM-REF!
+    """
     value: Union[str, ComplexValue]
     description: Optional[str]
     protocol_snref: Optional[str]
     prot_stack_snref: Optional[str]
-    id_ref: OdxLinkRef
+    spec_ref: OdxLinkRef
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "CommunicationParameterRef":
-        id_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
+                doc_frags: List[OdxDocFragment]) -> "ComparamInstance":
+        spec_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
 
         # ODX standard v2.0.0 defined only VALUE. ODX v2.0.1 decided
         # to break things and change it to choice between SIMPLE-VALUE
@@ -49,9 +54,9 @@ class CommunicationParameterRef:
         if (psnref_elem := et_element.find("PROTOCOL-SNREF")) is not None:
             protocol_snref = psnref_elem.get("SHORT-NAME")
 
-        return CommunicationParameterRef(
+        return ComparamInstance(
             value=value,
-            id_ref=id_ref,
+            spec_ref=spec_ref,
             description=description,
             protocol_snref=protocol_snref,
             prot_stack_snref=prot_stack_snref,
@@ -61,14 +66,14 @@ class CommunicationParameterRef:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._comparam = odxlinks.resolve(self.id_ref)
+        self._spec = odxlinks.resolve(self.spec_ref, BaseComparam)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
 
     @property
-    def comparam(self) -> BaseComparam:
-        return self._comparam
+    def spec(self) -> BaseComparam:
+        return self._spec
 
     def get_value(self) -> Optional[str]:
         """Retrieve the value of a simple communication parameter
@@ -77,14 +82,14 @@ class CommunicationParameterRef:
         account.
         """
 
-        if not isinstance(self.comparam, Comparam):
+        if not isinstance(self.spec, Comparam):
             odxraise()
 
         result: Any = None
         if self.value:
             result = self.value
         else:
-            result = self.comparam.physical_default_value
+            result = self.spec.physical_default_value
 
         odxassert(isinstance(result, str))
 
@@ -96,7 +101,7 @@ class CommunicationParameterRef:
         This takes the default value of the comparam (if any) into
         account.
         """
-        comparam_spec = self.comparam
+        comparam_spec = self.spec
         if not isinstance(comparam_spec, ComplexComparam):
             odxraise()
 
@@ -111,7 +116,7 @@ class CommunicationParameterRef:
             )
             return None
 
-        name_list = [cp.short_name for cp in comparam_spec.comparams]
+        name_list = [cp.short_name for cp in comparam_spec.subparams]
         try:
             idx = name_list.index(subparam_name)
         except ValueError:
@@ -124,8 +129,8 @@ class CommunicationParameterRef:
             return None
 
         result = value_list[idx]
-        if not result and (default_values := comparam_spec.complex_physical_default_value):
-            result = default_values[idx]
+        if result is None:
+            result = comparam_spec.subparams[idx].physical_default_value
         if not isinstance(result, str):
             odxraise()
 
@@ -133,9 +138,9 @@ class CommunicationParameterRef:
 
     @property
     def short_name(self) -> str:
-        if self.comparam:
-            return self.comparam.short_name
+        if self.spec:
+            return self.spec.short_name
 
         # ODXLINK IDs allow dots and hyphens, but short names do not.
         # (This should not happen anyway in a correct PDX...)
-        return self.id_ref.ref_id.replace(".", "__").replace("-", "_")
+        return self.spec_ref.ref_id.replace(".", "__").replace("-", "_")

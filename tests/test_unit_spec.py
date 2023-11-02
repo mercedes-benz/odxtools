@@ -129,7 +129,7 @@ class TestUnitSpec(unittest.TestCase):
             admin_data=None,
             company_datas=NamedItemList(),
             parent_refs=[],
-            communication_parameters=[],
+            comparams=[],
             ecu_variant_patterns=[],
             diag_comms=[],
             requests=NamedItemList([

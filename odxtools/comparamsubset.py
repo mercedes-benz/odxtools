@@ -47,17 +47,16 @@ class ComparamSubset(IdentifiableElement):
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
 
-        data_object_props = [
+        data_object_props = NamedItemList([
             DataObjectProperty.from_et(el, doc_frags)
             for el in et_element.iterfind("DATA-OBJECT-PROPS/DATA-OBJECT-PROP")
-        ]
-        comparams = [
-            Comparam.from_et(el, doc_frags) for el in et_element.iterfind("COMPARAMS/COMPARAM")
-        ]
-        complex_comparams = [
+        ])
+        comparams = NamedItemList(
+            [Comparam.from_et(el, doc_frags) for el in et_element.iterfind("COMPARAMS/COMPARAM")])
+        complex_comparams = NamedItemList([
             ComplexComparam.from_et(el, doc_frags)
             for el in et_element.iterfind("COMPLEX-COMPARAMS/COMPLEX-COMPARAM")
-        ]
+        ])
         if unit_spec_elem := et_element.find("UNIT-SPEC"):
             unit_spec = UnitSpec.from_et(unit_spec_elem, doc_frags)
         else:
@@ -69,9 +68,9 @@ class ComparamSubset(IdentifiableElement):
             category=category,
             admin_data=admin_data,
             company_datas=company_datas,
-            data_object_props=NamedItemList(data_object_props),
-            comparams=NamedItemList(comparams),
-            complex_comparams=NamedItemList(complex_comparams),
+            data_object_props=data_object_props,
+            comparams=comparams,
+            complex_comparams=complex_comparams,
             unit_spec=unit_spec,
             sdgs=sdgs,
             **kwargs)

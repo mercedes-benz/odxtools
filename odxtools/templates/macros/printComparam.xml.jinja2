@@ -5,8 +5,8 @@
 
 {%- import('macros/printElementID.xml.jinja2') as peid %}
 
-{%- macro printComplexValue(cv) %}
-<COMPLEX-VALUE>
+{%- macro printComplexValue(cv, tag_name="COMPLEX-VALUE") %}
+<{{tag_name}}>
   {%- for val in cv %}
   {%- if val is none %}
   <SIMPLE-VALUE />
@@ -19,18 +19,18 @@
   <SIMPLE-VALUE>{{val}}</SIMPLE-VALUE>
   {%- endif %}
   {%- endfor %}
-</COMPLEX-VALUE>
+</{{tag_name}}>
 {%- endmacro %}
 
 {# print either a simple or a complex comparam
  #}
-{%- macro printGenericComparam(cp) %}
+{%- macro printAnyComparam(cp) %}
 {#
  # This is slightly hacky: To distinguish complex and simple
  # communication parameters, we check if the 'cp' object has a
  # 'comparams' attribute. If it does, it is a complex parameter.
  #}
-{%- if hasattr(cp, 'comparams') %}
+{%- if hasattr(cp, 'subparams') %}
 {{- printComplexComparam(cp) }}
 {%- else %}
 {{- printSimpleComparam(cp) }}
@@ -41,10 +41,10 @@
 <COMPARAM ID="{{cp.odx_id.local_id}}"
           PARAM-CLASS="{{cp.param_class}}"
           CPTYPE="{{cp.cptype.value}}"
-         {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}
+         {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}{#- #}
           CPUSAGE="{{cp.cpusage.value}}">
- {{ peid.printElementID(cp)|indent(1) }}
- <PHYSICAL-DEFAULT-VALUE>{{cp.physical_default_value}}</PHYSICAL-DEFAULT-VALUE>
+  {{ peid.printElementID(cp)|indent(1) }}
+  <PHYSICAL-DEFAULT-VALUE>{{cp.physical_default_value}}</PHYSICAL-DEFAULT-VALUE>
  <DATA-OBJECT-PROP-REF ID-REF="{{cp.dop_ref.ref_id}}" />
 </COMPARAM>
 {%- endmacro %}
@@ -53,18 +53,16 @@
 <COMPLEX-COMPARAM ID="{{cp.odx_id.local_id}}"
                   PARAM-CLASS="{{cp.param_class}}"
                   CPTYPE="{{cp.cptype.value}}"
-                 {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}
+                 {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}{#- #}
                   CPUSAGE="{{cp.cpusage.value}}"
                  {{make_bool_xml_attrib("ALLOW-MULTIPLE-VALUES", cp.allow_multiple_values_raw)}}
                   {#- #}>
  {{ peid.printElementID(cp)|indent(1) }}
- {%- for sub_cp in cp.comparams %}
- {{- printGenericComparam(sub_cp) | indent(1, first=True) }}
- {%- endfor %}
- {%- if cp.complex_physical_default_value is not none %}
- <COMPLEX-PHYSICAL-DEFAULT-VALUE>
-   {{ printComplexValue(cp.complex_physical_default_value) | indent(3) }}
- </COMPLEX-PHYSICAL-DEFAULT-VALUE>
+ {%- for sub_cp in cp.subparams %}
+ {{- printAnyComparam(sub_cp) | indent(1, first=True) }}
+ {%- if  hasattr(sub_cp, 'subparams') and sub_cp.physical_default_value is not none %}
+ {{ printComplexValue(sub_cp.physical_default_value, "COMPLEX-PHYSICAL-DEFAULT-VALUE") | indent(1) }}
  {%- endif %}
+ {%- endfor %}
 </COMPLEX-COMPARAM>
 {%- endmacro %}

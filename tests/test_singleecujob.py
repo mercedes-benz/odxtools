@@ -391,7 +391,7 @@ class TestSingleEcuJob(unittest.TestCase):
             state_charts=NamedItemList(),
             sdgs=[],
             parent_refs=[],
-            communication_parameters=[],
+            comparams=[],
             ecu_variant_patterns=[],
         )
         dl = DiagLayer(diag_layer_raw=diag_layer_raw)

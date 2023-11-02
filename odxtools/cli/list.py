@@ -20,7 +20,7 @@ def print_summary(
     print_services: bool = False,
     print_dops: bool = False,
     print_params: bool = False,
-    print_com_params: bool = False,
+    print_comparams: bool = False,
     print_pre_condition_states: bool = False,
     print_state_transitions: bool = False,
     print_audiences: bool = False,
@@ -41,11 +41,11 @@ def print_summary(
         all_services: List[DiagComm] = sorted(dl.services, key=lambda x: x.short_name)
 
         data_object_properties = dl.diag_data_dictionary_spec.data_object_props
-        com_params = dl.communication_parameters
+        comparams = dl.comparams
 
         print(f"{dl.variant_type} '{dl.short_name}'")
         print(
-            f" num services: {len(all_services)}, num DOPs: {len(data_object_properties)}, num communication parameters: {len(com_params)}."
+            f" num services: {len(all_services)}, num DOPs: {len(data_object_properties)}, num communication parameters: {len(comparams)}."
         )
 
         for proto in dl.protocols:
@@ -89,11 +89,11 @@ def print_summary(
                     data_object_properties, key=lambda x: (type(x).__name__, x.short_name)):
                 print("  " + str(dop).replace("\n", "\n  "))
 
-        if print_com_params and len(com_params) > 0:
+        if print_comparams and len(comparams) > 0:
             print(
                 f"The communication parameters of the {dl.variant_type.value} '{dl.short_name}' are: "
             )
-            for com_param in com_params:
+            for com_param in comparams:
                 print(f"  {com_param.short_name}: {com_param.value}")
 
 
@@ -196,7 +196,7 @@ def run(args: argparse.Namespace) -> None:
         print_dops=args.all or args.dops,
         variants=None if variants == "all" else variants,
         print_params=args.all or args.params,
-        print_com_params=args.all,
+        print_comparams=args.all,
         print_pre_condition_states=args.all,
         print_state_transitions=args.all,
         print_audiences=args.all,
