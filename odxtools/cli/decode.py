@@ -30,7 +30,8 @@ def print_summary(
     decode: bool = False,
 ) -> None:
     ecu_names = ecu_variants if ecu_variants else [ecu.short_name for ecu in odxdb.ecus]
-    services: Dict[DiagService, List[str]] = {}
+    service_db: Dict[str, DiagService] = {}
+    service_ecus: Dict[str, List[str]] = {}
     for ecu_name in ecu_names:
         ecu = odxdb.ecus[ecu_name]
         if not ecu:
@@ -39,12 +40,14 @@ def print_summary(
         if data:
             found_services = ecu._find_services_for_uds(data)
             for found_service in found_services:
-                ecu_names = services.get(found_service, [])
+                ecu_names = service_ecus.get(found_service.short_name, [])
                 ecu_names.append(ecu_name)
-                services[found_service] = ecu_names
+                service_ecus[found_service.short_name] = ecu_names
+                service_db[found_service.short_name] = found_service
 
     print(f"Binary data: {data.hex(' ')}")
-    for service, ecu_names in services.items():
+    for service_name, ecu_names in service_ecus.items():
+        service = service_db[service_name]
         if isinstance(service, DiagService):
             print(
                 f"Decoded by service '{service.short_name}' (decoding ECUs: {', '.join(ecu_names)})"

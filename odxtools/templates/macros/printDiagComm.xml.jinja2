@@ -1,0 +1,67 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+{%- import('macros/printAudience.xml.jinja2') as paud %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printDiagCommOpenTag(dc, dcTagName) -%}
+<{{dcTagName}} ID="{{dc.odx_id.local_id}}"
+  {{-make_xml_attrib("SEMANTIC", dc.semantic)}}
+  {{-make_xml_attrib("DIAGNOSTIC-CLASS", dc.diagnostic_class and dc.diagnostic_class.value)}}
+  {{-make_bool_xml_attrib("IS-MANDATORY", dc.is_mandatory_raw)}}
+  {{-make_bool_xml_attrib("IS-EXECUTABLE", dc.is_executable_raw)}}
+  {{-make_bool_xml_attrib("IS-FINAL", dc.is_final_raw)}}>
+{%- endmacro -%}
+
+
+{%- macro printDiagCommElems(dc) -%}
+ {{ peid.printElementID(dc)|indent(1) }}
+ {%- if dc.admin_data %}
+  {{- pad.printAdminData(dc.admin_data)|indent(1, first=True) }}
+ {%- endif %}
+ {{- psd.printSpecialDataGroups(dc.sdgs)|indent(1, first=True) }}
+ {%- if dc.functional_class_refs %}
+ <FUNCT-CLASS-REFS>
+  {%- for ref in dc.functional_class_refs %}
+  <FUNCT-CLASS-REF ID-REF="{{ref.ref_id}}" />
+  {%- endfor %}
+ </FUNCT-CLASS-REFS>
+ {%- endif%}
+ {%- if dc.audience %}
+  {{ paud.printAudience(dc.audience)|indent(1) }}
+ {%- endif%}
+ {%- if dc.protocol_snrefs %}
+ <PROTOCOL-SNREFS>
+  {%- for snref in dc.protocol_snrefs %}
+  <PROTOCOL-SNREF SHORT-NAME="{{snref}}" />
+  {%- endfor %}
+ </PROTOCOL-SNREFS>
+ {%- endif%}
+ {%- if dc.related_diag_comm_refs %}
+ <RELATED-DIAG-COMM-REFS>
+  {%- for ref in dc.related_diag_comm_refs %}
+  <RELATED-DIAG-COMM-REF ID-REF="{{ref.ref_id}}">
+   <RELATION-TYPE>{{ref.relation_type}}</RELATION-TYPE>
+  </RELATED-DIAG-COMM-REF>
+  {%- endfor %}
+ </RELATED-DIAG-COMM-REFS>
+ {%- endif%}
+ {%- if dc.pre_condition_state_refs %}
+ <PRE-CONDITION-STATE-REFS>
+  {%- for ps_ref in dc.pre_condition_state_refs %}
+  <PRE-CONDITION-STATE-REF ID-REF="{{ps_ref.ref_id}}" />
+  {%- endfor %}
+ </PRE-CONDITION-STATE-REFS>
+ {%- endif%}
+ {%- if dc.state_transition_refs %}
+ <STATE-TRANSITION-REFS>
+   {%- for st_ref in dc.state_transition_refs %}
+   <STATE-TRANSITION-REF ID-REF="{{st_ref.ref_id}}" />
+   {%- endfor %}
+ </STATE-TRANSITION-REFS>
+ {%- endif%}
+{%- endmacro -%}

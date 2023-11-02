@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 
 import pytest
 
+from odxtools.communicationparameterref import CommunicationParameterRef
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
@@ -67,6 +68,17 @@ def ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> 
         description=None,
         semantic=None,
         admin_data=None,
+        protocol_snrefs=[],
+        related_diag_comm_refs=[],
+        diagnostic_class=None,
+        is_mandatory_raw=None,
+        is_executable_raw=None,
+        is_final_raw=None,
+        comparam_refs=NamedItemList[CommunicationParameterRef](),
+        is_cyclic_raw=None,
+        is_multiple_raw=None,
+        addressing_raw=None,
+        transmission_mode_raw=None,
         audience=None,
         functional_class_refs=[],
         pre_condition_state_refs=[],
@@ -105,6 +117,17 @@ def supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) 
         description=None,
         semantic=None,
         admin_data=None,
+        protocol_snrefs=[],
+        related_diag_comm_refs=[],
+        diagnostic_class=None,
+        is_mandatory_raw=None,
+        is_executable_raw=None,
+        is_final_raw=None,
+        comparam_refs=NamedItemList[CommunicationParameterRef](),
+        is_cyclic_raw=None,
+        is_multiple_raw=None,
+        addressing_raw=None,
+        transmission_mode_raw=None,
         audience=None,
         functional_class_refs=[],
         pre_condition_state_refs=[],

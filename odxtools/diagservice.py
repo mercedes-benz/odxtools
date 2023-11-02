@@ -1,50 +1,66 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Union
+from enum import Enum
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
 from xml.etree import ElementTree
 
-from .admindata import AdminData
-from .audience import Audience
-from .createsdgs import create_sdgs_from_et
-from .element import IdentifiableElement
-from .exceptions import DecodeError, odxassert, odxrequire
-from .functionalclass import FunctionalClass
+from .communicationparameterref import CommunicationParameterRef
+from .diagcomm import DiagComm
+from .exceptions import DecodeError, odxassert, odxraise, odxrequire
 from .message import Message
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import ParameterValue
+from .odxtypes import ParameterValue, odxstr_to_bool
 from .parameters.parameter import Parameter
 from .request import Request
 from .response import Response
-from .specialdatagroup import SpecialDataGroup
-from .state import State
-from .statetransition import StateTransition
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
+class Addressing(Enum):
+    FUNCTIONAL = "FUNCTIONAL"
+    PHYSICAL = "PHYSICAL"
+    FUNCTIONAL_OR_PHYSICAL = "FUNCTIONAL-OR-PHYSICAL"
+
+
+class TransMode(Enum):
+    SEND_ONLY = "SEND-ONLY"
+    RECEIVE_ONLY = "RECEIVE-ONLY"
+    SEND_AND_RECEIVE = "SEND-AND-RECEIVE"
+    SEND_OR_RECEIVE = "SEND-OR-RECEIVE"
+
+
 @dataclass
-class DiagService(IdentifiableElement):
+class DiagService(DiagComm):
     """Representation of a diagnostic service description.
     """
+
+    comparam_refs: NamedItemList[CommunicationParameterRef]
 
     request_ref: OdxLinkRef
     pos_response_refs: List[OdxLinkRef]
     neg_response_refs: List[OdxLinkRef]
-    admin_data: Optional[AdminData]
-    semantic: Optional[str]
-    audience: Optional[Audience]
-    functional_class_refs: Iterable[OdxLinkRef]
-    pre_condition_state_refs: Iterable[OdxLinkRef]
-    state_transition_refs: Iterable[OdxLinkRef]
-    sdgs: List[SpecialDataGroup]
+
+    # TODO: pos_response_suppressable: Optional[PosResponseSuppressable]
+
+    is_cyclic_raw: Optional[bool]
+    is_multiple_raw: Optional[bool]
+    addressing_raw: Optional[Addressing]
+    transmission_mode_raw: Optional[TransMode]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagService":
 
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(DiagComm.from_et(et_element, doc_frags))
+
+        comparam_refs = NamedItemList([
+            CommunicationParameterRef.from_et(el, doc_frags)
+            for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")
+        ])
+
         request_ref = odxrequire(OdxLinkRef.from_et(et_element.find("REQUEST-REF"), doc_frags))
 
         pos_response_refs = [
@@ -57,41 +73,36 @@ class DiagService(IdentifiableElement):
             for el in et_element.iterfind("NEG-RESPONSE-REFS/NEG-RESPONSE-REF")
         ]
 
-        functional_class_refs = []
-        for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF"):
-            ref = odxrequire(OdxLinkRef.from_et(el, doc_frags))
-            functional_class_refs.append(ref)
+        # TODO: POS-RESPONSE-SUPPRESSABLE
 
-        pre_condition_state_refs = []
-        for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF"):
-            ref = odxrequire(OdxLinkRef.from_et(el, doc_frags))
-            pre_condition_state_refs.append(ref)
+        is_cyclic_raw = odxstr_to_bool(et_element.get("IS-CYCLIC"))
+        is_multiple_raw = odxstr_to_bool(et_element.get("IS-MULTIPLE"))
 
-        state_transition_refs = []
-        for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF"):
-            ref = odxrequire(OdxLinkRef.from_et(el, doc_frags))
-            state_transition_refs.append(ref)
+        addressing_raw: Optional[Addressing] = None
+        if (addressing_raw_str := et_element.get("ADDRESSING")) is not None:
+            try:
+                addressing_raw = Addressing(addressing_raw_str)
+            except ValueError:
+                addressing_raw = cast(Addressing, None)
+                odxraise(f"Encountered unknown addressing type '{addressing_raw_str}'")
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        semantic = et_element.get("SEMANTIC")
-
-        audience = None
-        if (audience_elem := et_element.find("AUDIENCE")) is not None:
-            audience = Audience.from_et(audience_elem, doc_frags)
-
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        transmission_mode_raw: Optional[TransMode] = None
+        if (transmission_mode_raw_str := et_element.get("TRANSMISSION-MODE")) is not None:
+            try:
+                transmission_mode_raw = TransMode(transmission_mode_raw_str)
+            except ValueError:
+                transmission_mode_raw = cast(TransMode, None)
+                odxraise(f"Encountered unknown transmission mode '{transmission_mode_raw_str}'")
 
         return DiagService(
+            comparam_refs=comparam_refs,
             request_ref=request_ref,
             pos_response_refs=pos_response_refs,
             neg_response_refs=neg_response_refs,
-            admin_data=admin_data,
-            semantic=semantic,
-            audience=audience,
-            functional_class_refs=functional_class_refs,
-            pre_condition_state_refs=pre_condition_state_refs,
-            state_transition_refs=state_transition_refs,
-            sdgs=sdgs,
+            is_cyclic_raw=is_cyclic_raw,
+            is_multiple_raw=is_multiple_raw,
+            addressing_raw=addressing_raw,
+            transmission_mode_raw=transmission_mode_raw,
             **kwargs)
 
     @property
@@ -123,26 +134,39 @@ class DiagService(IdentifiableElement):
         return self._negative_responses
 
     @property
-    def functional_classes(self) -> NamedItemList[FunctionalClass]:
-        return self._functional_classes
+    def comparams(self) -> NamedItemList[CommunicationParameterRef]:
+        return self.comparam_refs
 
     @property
-    def pre_condition_states(self) -> NamedItemList[State]:
-        return self._pre_condition_states
+    def addressing(self) -> Addressing:
+        return self.addressing_raw or Addressing.PHYSICAL
 
     @property
-    def state_transitions(self) -> NamedItemList[StateTransition]:
-        return self._state_transitions
+    def transmission_mode(self) -> TransMode:
+        return self.transmission_mode_raw or TransMode.SEND_AND_RECEIVE
+
+    @property
+    def is_cyclic(self) -> bool:
+        return self.is_cyclic_raw is True
+
+    @property
+    def is_multiple(self) -> bool:
+        return self.is_multiple_raw is True
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result = {self.odx_id: self}
+        result = super()._build_odxlinks()
 
-        for sdg in self.sdgs:
-            result.update(sdg._build_odxlinks())
+        for cpr in self.comparam_refs:
+            result.update(cpr._build_odxlinks())
 
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        super()._resolve_odxlinks(odxlinks)
+
+        for cpr in self.comparam_refs:
+            cpr._resolve_odxlinks(odxlinks)
+
         self._request = odxlinks.resolve(self.request_ref)
 
         self._positive_responses = NamedItemList[Response](
@@ -151,31 +175,11 @@ class DiagService(IdentifiableElement):
         self._negative_responses = NamedItemList[Response](
             [odxlinks.resolve(x, Response) for x in self.neg_response_refs])
 
-        self._functional_classes = NamedItemList(
-            [odxlinks.resolve(fc_ref, FunctionalClass) for fc_ref in self.functional_class_refs])
-        self._pre_condition_states = NamedItemList(
-            [odxlinks.resolve(st_ref, State) for st_ref in self.pre_condition_state_refs])
-        self._state_transitions = NamedItemList(
-            [odxlinks.resolve(stt_ref, StateTransition) for stt_ref in self.state_transition_refs])
-
-        if self.admin_data:
-            self.admin_data._resolve_odxlinks(odxlinks)
-
-        if self.audience:
-            self.audience._resolve_odxlinks(odxlinks)
-
-        for sdg in self.sdgs:
-            sdg._resolve_odxlinks(odxlinks)
-
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        if self.admin_data:
-            self.admin_data._resolve_snrefs(diag_layer)
+        super()._resolve_snrefs(diag_layer)
 
-        if self.audience:
-            self.audience._resolve_snrefs(diag_layer)
-
-        for sdg in self.sdgs:
-            sdg._resolve_snrefs(diag_layer)
+        for cpr in self.comparam_refs:
+            cpr._resolve_snrefs(diag_layer)
 
     def decode_message(self, raw_message: bytes) -> Message:
         request_prefix = b''
@@ -249,9 +253,3 @@ class DiagService(IdentifiableElement):
     def __call__(self, **params: ParameterValue) -> bytes:
         """Encode a request."""
         return self.encode_request(**params)
-
-    def __hash__(self) -> int:
-        return hash(self.odx_id)
-
-    def __eq__(self, o: Any) -> bool:
-        return isinstance(o, DiagService) and self.odx_id == o.odx_id

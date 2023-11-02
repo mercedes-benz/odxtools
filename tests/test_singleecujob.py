@@ -168,7 +168,7 @@ class TestSingleEcuJob(unittest.TestCase):
             ),
         )
 
-        input_params = [
+        input_params = NamedItemList([
             InputParam(
                 oid=None,
                 short_name="inputParam",
@@ -178,8 +178,8 @@ class TestSingleEcuJob(unittest.TestCase):
                 physical_default_value="Yes!",
                 dop_base_ref=OdxLinkRef.from_id(self.context.inputDOP.odx_id),
             )
-        ]
-        output_params = [
+        ])
+        output_params = NamedItemList([
             OutputParam(
                 odx_id=OdxLinkId("ID.outputParam", doc_frags),
                 oid=None,
@@ -189,25 +189,28 @@ class TestSingleEcuJob(unittest.TestCase):
                 description="<p>The one and only output of this job.</p>",
                 dop_base_ref=OdxLinkRef.from_id(self.context.outputDOP.odx_id),
             )
-        ]
-        neg_output_params = [
+        ])
+        neg_output_params = NamedItemList([
             NegOutputParam(
                 short_name="NegativeOutputParam",
                 long_name=None,
                 description="<p>The one and only output of this job.</p>",
                 dop_base_ref=OdxLinkRef.from_id(self.context.negOutputDOP.odx_id),
             )
-        ]
+        ])
 
         self.singleecujob_object = SingleEcuJob(
             odx_id=OdxLinkId("ID.JumpStart", doc_frags),
-            oid=None,
             short_name="JumpStart",
             long_name=None,
             description=None,
             admin_data=None,
             semantic=None,
             functional_class_refs=[OdxLinkRef.from_id(self.context.extensiveTask.odx_id)],
+            protocol_snrefs=[],
+            related_diag_comm_refs=[],
+            pre_condition_state_refs=[],
+            state_transition_refs=[],
             diagnostic_class=None,
             audience=Audience(
                 enabled_audience_refs=[OdxLinkRef.from_id(self.context.specialAudience.odx_id)],
@@ -331,13 +334,16 @@ class TestSingleEcuJob(unittest.TestCase):
         """Test that empty lists are assigned to list-attributes if no explicit value is passed."""
         sej = SingleEcuJob(
             odx_id=OdxLinkId("ID.SomeID", doc_frags),
-            oid=None,
             short_name="SN.SomeShortName",
             long_name=None,
             description=None,
             admin_data=None,
             semantic=None,
             audience=None,
+            protocol_snrefs=[],
+            related_diag_comm_refs=[],
+            pre_condition_state_refs=[],
+            state_transition_refs=[],
             prog_codes=[
                 ProgCode(
                     code_file="abc.jar",
@@ -348,9 +354,9 @@ class TestSingleEcuJob(unittest.TestCase):
                     revision="12.34",
                 )
             ],
-            input_params=[],
-            output_params=[],
-            neg_output_params=[],
+            input_params=NamedItemList(),
+            output_params=NamedItemList(),
+            neg_output_params=NamedItemList(),
             functional_class_refs=[],
             diagnostic_class=None,
             is_mandatory_raw=None,
