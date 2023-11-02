@@ -5,8 +5,8 @@ from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .companydata import CompanyData
-from .comparamspec import ComparamSpec
-from .complexcomparamspec import ComplexComparamSpec
+from .comparam import Comparam
+from .complexcomparam import ComplexComparam
 from .createcompanydatas import create_company_datas_from_et
 from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
@@ -27,8 +27,8 @@ class ComparamSubset(IdentifiableElement):
     # mandatory in ODX 2.2, but non existent in ODX 2.0
     category: Optional[str]
     data_object_props: NamedItemList[DataObjectProperty]
-    comparam_specs: NamedItemList[ComparamSpec]
-    complex_comparam_specs: NamedItemList[ComplexComparamSpec]
+    comparams: NamedItemList[Comparam]
+    complex_comparams: NamedItemList[ComplexComparam]
     unit_spec: Optional[UnitSpec]
     admin_data: Optional[AdminData]
     company_datas: NamedItemList[CompanyData]
@@ -51,11 +51,10 @@ class ComparamSubset(IdentifiableElement):
             DataObjectProperty.from_et(el, doc_frags)
             for el in et_element.iterfind("DATA-OBJECT-PROPS/DATA-OBJECT-PROP")
         ])
-        comparam_specs = NamedItemList([
-            ComparamSpec.from_et(el, doc_frags) for el in et_element.iterfind("COMPARAMS/COMPARAM")
-        ])
-        complex_comparam_specs = NamedItemList([
-            ComplexComparamSpec.from_et(el, doc_frags)
+        comparams = NamedItemList(
+            [Comparam.from_et(el, doc_frags) for el in et_element.iterfind("COMPARAMS/COMPARAM")])
+        complex_comparams = NamedItemList([
+            ComplexComparam.from_et(el, doc_frags)
             for el in et_element.iterfind("COMPLEX-COMPARAMS/COMPLEX-COMPARAM")
         ])
         if unit_spec_elem := et_element.find("UNIT-SPEC"):
@@ -70,8 +69,8 @@ class ComparamSubset(IdentifiableElement):
             admin_data=admin_data,
             company_datas=company_datas,
             data_object_props=data_object_props,
-            comparam_specs=comparam_specs,
-            complex_comparam_specs=complex_comparam_specs,
+            comparams=comparams,
+            complex_comparams=complex_comparams,
             unit_spec=unit_spec,
             sdgs=sdgs,
             **kwargs)
@@ -84,11 +83,11 @@ class ComparamSubset(IdentifiableElement):
         for dop in self.data_object_props:
             odxlinks[dop.odx_id] = dop
 
-        for comparam_spec in self.comparam_specs:
-            odxlinks.update(comparam_spec._build_odxlinks())
+        for comparam in self.comparams:
+            odxlinks.update(comparam._build_odxlinks())
 
-        for ccomparam_spec in self.complex_comparam_specs:
-            odxlinks.update(ccomparam_spec._build_odxlinks())
+        for ccomparam in self.complex_comparams:
+            odxlinks.update(ccomparam._build_odxlinks())
 
         if self.unit_spec:
             odxlinks.update(self.unit_spec._build_odxlinks())
@@ -109,11 +108,11 @@ class ComparamSubset(IdentifiableElement):
         for dop in self.data_object_props:
             dop._resolve_odxlinks(odxlinks)
 
-        for comparam_spec in self.comparam_specs:
-            comparam_spec._resolve_odxlinks(odxlinks)
+        for comparam in self.comparams:
+            comparam._resolve_odxlinks(odxlinks)
 
-        for ccomparam_spec in self.complex_comparam_specs:
-            ccomparam_spec._resolve_odxlinks(odxlinks)
+        for ccomparam in self.complex_comparams:
+            ccomparam._resolve_odxlinks(odxlinks)
 
         if self.unit_spec:
             self.unit_spec._resolve_odxlinks(odxlinks)
@@ -132,11 +131,11 @@ class ComparamSubset(IdentifiableElement):
         for dop in self.data_object_props:
             dop._resolve_snrefs(diag_layer)
 
-        for comparam_spec in self.comparam_specs:
-            comparam_spec._resolve_snrefs(diag_layer)
+        for comparam in self.comparams:
+            comparam._resolve_snrefs(diag_layer)
 
-        for ccomparam_spec in self.complex_comparam_specs:
-            ccomparam_spec._resolve_snrefs(diag_layer)
+        for ccomparam in self.complex_comparams:
+            ccomparam._resolve_snrefs(diag_layer)
 
         if self.unit_spec:
             self.unit_spec._resolve_snrefs(diag_layer)

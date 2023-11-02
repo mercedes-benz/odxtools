@@ -5,7 +5,7 @@
  # This template writes an .odx-cs file for a communication
  # parameter subset.
 -#}
-{%- import('macros/printComparamSpec.xml.jinja2') as pcp -%}
+{%- import('macros/printComparam.xml.jinja2') as pcp -%}
 {%- import('macros/printAdminData.xml.jinja2') as pad -%}
 {%- import('macros/printCompanyData.xml.jinja2') as pcd -%}
 {%- import('macros/printDOP.xml.jinja2') as pdop %}
@@ -38,17 +38,17 @@
    </COMPANY-DATAS>
    {%- endif %}
    {{- psd.printSpecialDataGroups(comparam_subset.sdgs)|indent(3, first=True) }}
-   {%- if comparam_subset.comparam_specs %}
+   {%- if comparam_subset.comparams %}
    <COMPARAMS>
-     {%- for cp in comparam_subset.comparam_specs %}
-     {{- pcp.printSimpleComparamSpec(cp) | indent(5, first=True) }}
+     {%- for cp in comparam_subset.comparams %}
+     {{- pcp.printSimpleComparam(cp) | indent(5, first=True) }}
      {%- endfor %}
    </COMPARAMS>
    {%- endif %}
-   {%- if comparam_subset.complex_comparam_specs %}
+   {%- if comparam_subset.complex_comparams %}
    <COMPLEX-COMPARAMS>
-     {%- for cp in comparam_subset.complex_comparam_specs %}
-     {{- pcp.printComplexComparamSpec(cp) | indent(5, first=True) }}
+     {%- for cp in comparam_subset.complex_comparams %}
+     {{- pcp.printComplexComparam(cp) | indent(5, first=True) }}
      {%- endfor %}
    </COMPLEX-COMPARAMS>
    {%- endif %}

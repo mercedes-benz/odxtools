@@ -14,7 +14,7 @@ from odxtools.audience import Audience
 from odxtools.companydata import CompanyData
 from odxtools.companydocinfo import CompanyDocInfo
 from odxtools.companyspecificinfo import CompanySpecificInfo
-from odxtools.comparam import Comparam
+from odxtools.comparaminstance import ComparamInstance
 from odxtools.comparamsubset import ComparamSubset
 from odxtools.compumethods.compumethod import CompuMethod
 from odxtools.compumethods.compuscale import CompuScale
@@ -1580,7 +1580,7 @@ somersault_services = {
             is_mandatory_raw=None,
             is_executable_raw=None,
             is_final_raw=None,
-            comparam_refs=NamedItemList[Comparam](),
+            comparam_refs=NamedItemList[ComparamInstance](),
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -1614,7 +1614,7 @@ somersault_services = {
             is_mandatory_raw=None,
             is_executable_raw=None,
             is_final_raw=None,
-            comparam_refs=NamedItemList[Comparam](),
+            comparam_refs=NamedItemList[ComparamInstance](),
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -1648,7 +1648,7 @@ somersault_services = {
             is_mandatory_raw=None,
             is_executable_raw=None,
             is_final_raw=None,
-            comparam_refs=NamedItemList[Comparam](),
+            comparam_refs=NamedItemList[ComparamInstance](),
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -1691,7 +1691,7 @@ somersault_services = {
             is_mandatory_raw=None,
             is_executable_raw=None,
             is_final_raw=None,
-            comparam_refs=NamedItemList[Comparam](),
+            comparam_refs=NamedItemList[ComparamInstance](),
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -1723,7 +1723,7 @@ somersault_services = {
             is_mandatory_raw=None,
             is_executable_raw=None,
             is_final_raw=None,
-            comparam_refs=NamedItemList[Comparam](),
+            comparam_refs=NamedItemList[ComparamInstance](),
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -1774,7 +1774,7 @@ somersault_services = {
             is_mandatory_raw=None,
             is_executable_raw=None,
             is_final_raw=None,
-            comparam_refs=NamedItemList[Comparam](),
+            comparam_refs=NamedItemList[ComparamInstance](),
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -1819,7 +1819,7 @@ somersault_services = {
             is_mandatory_raw=None,
             is_executable_raw=None,
             is_final_raw=None,
-            comparam_refs=NamedItemList[Comparam](),
+            comparam_refs=NamedItemList[ComparamInstance](),
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -1895,7 +1895,7 @@ somersault_comparams = [
     # basic parameters
     ###
     # bus speed
-    Comparam(
+    ComparamInstance(
         spec_ref=OdxLinkRef("ISO_11898_2_DWCAN.CP_Baudrate", cp_dwcan_doc_frags),
         value="500000",
         protocol_snref="MyProtocol",
@@ -1903,7 +1903,7 @@ somersault_comparams = [
         description=None,
     ),
     # parameters of the CAN diagnostics frames
-    Comparam(
+    ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_2.CP_UniqueRespIdTable", cp_iso15765_2_doc_frags),
         value=[
             # CP_CanPhysReqFormat
@@ -1932,7 +1932,7 @@ somersault_comparams = [
         description=None,
     ),
     # timeout for responses [us]
-    Comparam(
+    ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_RC21CompletionTimeout", cp_iso15765_3_doc_frags),
         value="1000000",
         protocol_snref="MyProtocol",
@@ -1943,7 +1943,7 @@ somersault_comparams = [
     # "tester present" message handling
     ###
     # expected "tester present" message
-    Comparam(
+    ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentMessage", cp_iso15765_3_doc_frags),
         value=f"{tester_present_value.hex()}",
         protocol_snref="MyProtocol",
@@ -1951,7 +1951,7 @@ somersault_comparams = [
         description=None,
     ),
     # a response is mandatory
-    Comparam(
+    ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentReqRsp", cp_iso15765_3_doc_frags),
         value="Response expected",
         protocol_snref="MyProtocol",
@@ -1959,7 +1959,7 @@ somersault_comparams = [
         description=None,
     ),
     # positive response to "tester present"
-    Comparam(
+    ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentExpPosResp", cp_iso15765_3_doc_frags),
         value=f"{tester_pr_value.hex()}",
         protocol_snref="MyProtocol",
@@ -1967,7 +1967,7 @@ somersault_comparams = [
         description=None,
     ),
     # negative response to "tester present"
-    Comparam(
+    ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentExpNegResp", cp_iso15765_3_doc_frags),
         value=f"{tester_nr_value.hex()}",
         protocol_snref="MyProtocol",
@@ -1975,7 +1975,7 @@ somersault_comparams = [
         description=None,
     ),
     # when a tester present message must be send
-    Comparam(
+    ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentSendType", cp_iso15765_3_doc_frags),
         value="On idle",
         protocol_snref="MyProtocol",
@@ -1984,7 +1984,7 @@ somersault_comparams = [
     ),
     # "tester present" messages are send directly to the CAN IDs
     # (i.e., they are not embedded in the ISO-TP telegram?)
-    Comparam(
+    ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentAddrMode", cp_iso15765_3_doc_frags),
         value="Physical",
         protocol_snref="MyProtocol",
@@ -1992,7 +1992,7 @@ somersault_comparams = [
         description=None,
     ),
     # is a response from the ECU to "tester present" messages expected
-    Comparam(
+    ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentReqRsp", cp_iso15765_3_doc_frags),
         value="Response expected",
         protocol_snref="MyProtocol",
@@ -2003,7 +2003,7 @@ somersault_comparams = [
     # ISO-TP parameters:
     ###
     # maximum number of frames between flow control ACKs
-    Comparam(
+    ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_2.CP_BlockSize", cp_iso15765_2_doc_frags),
         value="4",
         protocol_snref="MyProtocol",
@@ -2250,7 +2250,7 @@ somersault_assiduous_services = {
             neg_response_refs=[
                 OdxLinkRef.from_id(somersault_assiduous_negative_responses["fell_over"].odx_id),
             ],
-            comparam_refs=NamedItemList[Comparam](),
+            comparam_refs=NamedItemList[ComparamInstance](),
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,

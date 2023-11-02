@@ -4,7 +4,7 @@ from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
 from xml.etree import ElementTree
 
-from .comparam import Comparam
+from .comparaminstance import ComparamInstance
 from .diagcomm import DiagComm
 from .exceptions import DecodeError, odxassert, odxraise, odxrequire
 from .message import Message
@@ -38,7 +38,7 @@ class DiagService(DiagComm):
     """Representation of a diagnostic service description.
     """
 
-    comparam_refs: NamedItemList[Comparam]
+    comparam_refs: NamedItemList[ComparamInstance]
 
     request_ref: OdxLinkRef
     pos_response_refs: List[OdxLinkRef]
@@ -57,7 +57,7 @@ class DiagService(DiagComm):
         kwargs = dataclass_fields_asdict(DiagComm.from_et(et_element, doc_frags))
 
         comparam_refs = NamedItemList([
-            Comparam.from_et(el, doc_frags)
+            ComparamInstance.from_et(el, doc_frags)
             for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")
         ])
 
@@ -134,7 +134,7 @@ class DiagService(DiagComm):
         return self._negative_responses
 
     @property
-    def comparams(self) -> NamedItemList[Comparam]:
+    def comparams(self) -> NamedItemList[ComparamInstance]:
         return self.comparam_refs
 
     @property

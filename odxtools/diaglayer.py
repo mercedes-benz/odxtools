@@ -11,7 +11,7 @@ from deprecation import deprecated
 from .additionalaudience import AdditionalAudience
 from .admindata import AdminData
 from .companydata import CompanyData
-from .comparam import Comparam
+from .comparaminstance import ComparamInstance
 from .diagcomm import DiagComm
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayerraw import DiagLayerRaw
@@ -534,7 +534,7 @@ class DiagLayer:
     #####
     # <communication parameter handling>
     #####
-    def _compute_available_commmunication_parameters(self) -> List[Comparam]:
+    def _compute_available_commmunication_parameters(self) -> List[ComparamInstance]:
         """Compute the list of communication parameters that apply to
         the diagnostic layer
 
@@ -558,7 +558,7 @@ class DiagLayer:
         without a specified protocol are taken as fallbacks...
 
         """
-        com_params_dict: Dict[Tuple[str, Optional[str]], Comparam] = {}
+        com_params_dict: Dict[Tuple[str, Optional[str]], ComparamInstance] = {}
 
         # Look in parent refs for inherited communication
         # parameters. First fetch the communication parameters from
@@ -574,7 +574,7 @@ class DiagLayer:
         return list(com_params_dict.values())
 
     @property
-    def comparams(self) -> NamedItemList[Comparam]:
+    def comparams(self) -> NamedItemList[ComparamInstance]:
         """All communication parameters applicable to this DiagLayer
 
         Note that, although communication parameters use inheritance,
@@ -606,7 +606,7 @@ class DiagLayer:
         cp_short_name: str,
         *,
         protocol_name: Optional[str] = None,
-    ) -> Optional[Comparam]:
+    ) -> Optional[ComparamInstance]:
         """Find a specific communication parameter according to some criteria.
 
         Setting a given parameter to `None` means "don't care"."""
@@ -712,7 +712,7 @@ class DiagLayer:
             return None
 
         # The CP_DoIPLogicalEcuAddress is specified by the
-        # "CP_DoIPLogicalEcuAddress" subvalue of the complex Comparam
+        # "CP_DoIPLogicalEcuAddress" subvalue of the complex comparam
         # CP_UniqueRespIdTable of the ISO_13400_2_DIS_2015 comparam
         # subset. Depending of the underlying transport protocol,
         # (i.e., CAN using ISO-TP) this subvalue might not exist.

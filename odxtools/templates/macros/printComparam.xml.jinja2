@@ -5,8 +5,8 @@
 
 {%- import('macros/printElementID.xml.jinja2') as peid %}
 
-{%- macro printComplexValue(cv) %}
-<COMPLEX-VALUE>
+{%- macro printComplexValue(cv, tag_name="COMPLEX-VALUE") %}
+<{{tag_name}}>
   {%- for val in cv %}
   {%- if val is none %}
   <SIMPLE-VALUE />
@@ -19,30 +19,25 @@
   <SIMPLE-VALUE>{{val}}</SIMPLE-VALUE>
   {%- endif %}
   {%- endfor %}
-</COMPLEX-VALUE>
+</{{tag_name}}>
 {%- endmacro %}
 
 {# print either a simple or a complex comparam
  #}
-{%- macro printAnyComparamSpec(cp) %}
+{%- macro printAnyComparam(cp) %}
 {#
  # This is slightly hacky: To distinguish complex and simple
  # communication parameters, we check if the 'cp' object has a
  # 'comparams' attribute. If it does, it is a complex parameter.
  #}
-{%- if hasattr(cp, 'comparams') %}
-{{- printComplexComparamSpec(cp) }}
-{%- if cp.physical_default_value is not none %}
-<COMPLEX-PHYSICAL-DEFAULT-VALUE>
-  {{ printComplexValue(cp.physical_default_value) | indent(2) }}
-</COMPLEX-PHYSICAL-DEFAULT-VALUE>
-{%- endif %}
+{%- if hasattr(cp, 'subparams') %}
+{{- printComplexComparam(cp) }}
 {%- else %}
-{{- printSimpleComparamSpec(cp) }}
+{{- printSimpleComparam(cp) }}
 {%- endif %}
 {%- endmacro %}
 
-{%- macro printSimpleComparamSpec(cp) %}
+{%- macro printSimpleComparam(cp) %}
 <COMPARAM ID="{{cp.odx_id.local_id}}"
           PARAM-CLASS="{{cp.param_class}}"
           CPTYPE="{{cp.cptype.value}}"
@@ -54,7 +49,7 @@
 </COMPARAM>
 {%- endmacro %}
 
-{%- macro printComplexComparamSpec(cp) %}
+{%- macro printComplexComparam(cp) %}
 <COMPLEX-COMPARAM ID="{{cp.odx_id.local_id}}"
                   PARAM-CLASS="{{cp.param_class}}"
                   CPTYPE="{{cp.cptype.value}}"
@@ -64,7 +59,10 @@
                   {#- #}>
  {{ peid.printElementID(cp)|indent(1) }}
  {%- for sub_cp in cp.subparams %}
- {{- printAnyComparamSpec(sub_cp) | indent(1, first=True) }}
+ {{- printAnyComparam(sub_cp) | indent(1, first=True) }}
+ {%- if  hasattr(sub_cp, 'subparams') and sub_cp.physical_default_value is not none %}
+ {{ printComplexValue(sub_cp.physical_default_value, "COMPLEX-PHYSICAL-DEFAULT-VALUE") | indent(1) }}
+ {%- endif %}
  {%- endfor %}
 </COMPLEX-COMPARAM>
 {%- endmacro %}

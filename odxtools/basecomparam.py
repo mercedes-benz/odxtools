@@ -28,7 +28,7 @@ class Usage(Enum):
 
 
 @dataclass
-class BaseComparamSpec(IdentifiableElement):
+class BaseComparam(IdentifiableElement):
     param_class: str
     cptype: StandardizationLevel
     # Required in ODX 2.2, missing in ODX 2.0
@@ -36,8 +36,7 @@ class BaseComparamSpec(IdentifiableElement):
     display_level: Optional[int]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "BaseComparamSpec":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "BaseComparam":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         param_class = odxrequire(et_element.attrib.get("PARAM-CLASS"))
@@ -61,7 +60,7 @@ class BaseComparamSpec(IdentifiableElement):
                 cpusage = None
                 odxraise(f"Encountered unknown CPUSAGE '{cpusage_str}'")
 
-        return BaseComparamSpec(
+        return BaseComparam(
             param_class=param_class,
             cptype=cptype,
             display_level=display_level,

@@ -7,7 +7,7 @@ from xml.etree import ElementTree
 from .additionalaudience import AdditionalAudience
 from .admindata import AdminData
 from .companydata import CompanyData
-from .comparam import Comparam
+from .comparaminstance import ComparamInstance
 from .createanystructure import create_any_structure_from_et
 from .createsdgs import create_sdgs_from_et
 from .diagcomm import DiagComm
@@ -60,7 +60,7 @@ class DiagLayerRaw(IdentifiableElement):
     # these attributes are only defined for some kinds of diag layers!
     # TODO: make a proper class hierarchy!
     parent_refs: List[ParentRef]
-    comparams: List[Comparam]
+    comparams: List[ComparamInstance]
     ecu_variant_patterns: List[EcuVariantPattern]
     # comparam_spec: OdxLinkRef # TODO
     # prot_stack_snref: str # TODO
@@ -164,7 +164,7 @@ class DiagLayerRaw(IdentifiableElement):
         ]
 
         comparams = [
-            Comparam.from_et(el, doc_frags)
+            ComparamInstance.from_et(el, doc_frags)
             for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")
         ]
 

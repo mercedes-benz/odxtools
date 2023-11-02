@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
-from .basecomparamspec import BaseComparamSpec
+from .basecomparam import BaseComparam
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
@@ -26,8 +26,8 @@ def create_complex_value_from_et(et_element: ElementTree.Element) -> ComplexValu
 
 
 @dataclass
-class ComplexComparamSpec(BaseComparamSpec):
-    subparams: NamedItemList[BaseComparamSpec]
+class ComplexComparam(BaseComparam):
+    subparams: NamedItemList[BaseComparam]
     physical_default_value: Optional[ComplexValue]
     allow_multiple_values_raw: Optional[bool]
 
@@ -37,18 +37,18 @@ class ComplexComparamSpec(BaseComparamSpec):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ComplexComparamSpec":
-        kwargs = dataclass_fields_asdict(BaseComparamSpec.from_et(et_element, doc_frags))
+                doc_frags: List[OdxDocFragment]) -> "ComplexComparam":
+        kwargs = dataclass_fields_asdict(BaseComparam.from_et(et_element, doc_frags))
 
         # to avoid a cyclic import, create_any_comparam_from_et cannot
         # be imported globally. TODO: figure out if this has
         # performance implications
-        from .createanycomparamspec import create_any_comparam_spec_from_et
+        from .createanycomparam import create_any_comparam_from_et
 
-        # extract the specs of the sub-parameters and their default
-        # values. Due to the quirky way this is defined by the ODX
-        # specification, this is a *major* pain in the butt!
-        subparams: NamedItemList[BaseComparamSpec] = NamedItemList()
+        # extract the specifications of the sub-parameters and their
+        # default values. Due to the quirky way this is defined by the
+        # ODX specification, this is a *major* pain in the butt!
+        subparams: NamedItemList[BaseComparam] = NamedItemList()
         elem_it = iter(et_element)
         while True:
             try:
@@ -59,7 +59,7 @@ class ComplexComparamSpec(BaseComparamSpec):
             if elem.tag not in ("COMPARAM", "COMPLEX-COMPARAM"):
                 continue
 
-            subparam = create_any_comparam_spec_from_et(elem, doc_frags)
+            subparam = create_any_comparam_from_et(elem, doc_frags)
 
             # the next element in the list *may* hold the physical
             # default value for the sub-parameter. if it is not the
@@ -83,7 +83,7 @@ class ComplexComparamSpec(BaseComparamSpec):
 
         allow_multiple_values_raw = odxstr_to_bool(et_element.get("ALLOW-MULTIPLE-VALUES"))
 
-        return ComplexComparamSpec(
+        return ComplexComparam(
             subparams=subparams,
             physical_default_value=[],
             allow_multiple_values_raw=allow_multiple_values_raw,
