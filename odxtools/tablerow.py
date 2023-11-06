@@ -6,8 +6,9 @@ from xml.etree import ElementTree
 from .basicstructure import BasicStructure
 from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
+from .dtcdop import DtcDop
 from .element import IdentifiableElement
-from .exceptions import odxassert, odxrequire
+from .exceptions import odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType
 from .specialdatagroup import SpecialDataGroup
@@ -27,7 +28,7 @@ class TableRow(IdentifiableElement):
     structure_snref: Optional[str]
 
     # the referenced DOP must be a simple DOP (i.e.,
-    # DataObjectProperty, cf section 7.3.6.11 of the spec)!
+    # DataObjectProperty or DtcDop, cf section 7.3.6.11 of the spec)!
     dop_ref: Optional[OdxLinkRef]
     dop_snref: Optional[str]
 
@@ -90,7 +91,9 @@ class TableRow(IdentifiableElement):
         if self.structure_ref is not None:
             self._structure = odxlinks.resolve(self.structure_ref, BasicStructure)
         if self.dop_ref is not None:
-            self._dop = odxlinks.resolve(self.dop_ref, DataObjectProperty)
+            self._dop = odxlinks.resolve(self.dop_ref)
+            if not isinstance(self._dop, (DataObjectProperty, DtcDop)):
+                odxraise("The DOP-REF of TABLE-ROWs must reference a simple DOP!")
 
         self._table = odxlinks.resolve(self.table_ref)
 
