@@ -3,8 +3,8 @@ from typing import TYPE_CHECKING, List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
+from .complexdop import ComplexDop
 from .createsdgs import create_sdgs_from_et
-from .dopbase import DopBase
 from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class Field(DopBase):
+class Field(ComplexDop):
     structure_ref: Optional[OdxLinkRef]
     structure_snref: Optional[str]
     env_data_desc_ref: Optional[OdxLinkRef]
@@ -38,7 +38,7 @@ class Field(DopBase):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Field":
-        kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)

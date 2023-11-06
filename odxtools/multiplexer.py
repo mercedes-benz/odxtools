@@ -3,10 +3,9 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
 from xml.etree import ElementTree
 
+from .complexdop import ComplexDop
 from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
-from .dopbase import DopBase
-from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxrequire
 from .multiplexercase import MultiplexerCase
@@ -21,7 +20,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class Multiplexer(DopBase):
+class Multiplexer(ComplexDop):
     """This class represents a Multiplexer (MUX) which are used to interpret data stream depending on the value
     of a switch-key (similar to switch-case statements in programming languages like C or Java)."""
 
@@ -33,7 +32,7 @@ class Multiplexer(DopBase):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Multiplexer":
         """Reads a Multiplexer from Diag Layer."""
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
