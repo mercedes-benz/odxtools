@@ -8,6 +8,7 @@ from .basicstructure import BasicStructure
 from .createanystructure import create_any_structure_from_et
 from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
+from .dopbase import DopBase
 from .dtcdop import DtcDop
 from .dynamiclengthfield import DynamicLengthField
 from .endofpdufield import EndOfPduField
@@ -39,6 +40,19 @@ class DiagDataDictionarySpec:
     muxs: NamedItemList[Multiplexer]
     unit_spec: Optional[UnitSpec]
     sdgs: List[SpecialDataGroup]
+
+    def __post_init__(self) -> None:
+        self._all_data_object_properties: NamedItemList[DopBase] = NamedItemList(
+            chain(
+                self.dtc_dops,
+                self.data_object_props,
+                self.structures,
+                self.end_of_pdu_fields,
+                self.dynamic_length_fields,
+                self.env_data_descs,
+                self.env_datas,
+                self.muxs,
+            ))
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -209,3 +223,7 @@ class DiagDataDictionarySpec:
 
         if self.unit_spec is not None:
             self.unit_spec._resolve_snrefs(diag_layer)
+
+    @property
+    def all_data_object_properties(self) -> NamedItemList[DopBase]:
+        return self._all_data_object_properties

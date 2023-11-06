@@ -293,6 +293,14 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         self.assertEqual(len(ddds.structures), 0)
         self.assertEqual(len(ddds.end_of_pdu_fields), 0)
 
+        ddds = ecu.diag_data_dictionary_spec
+        self.assertEqual({x.short_name
+                          for x in ddds.all_data_object_properties}, {
+                              "num_flips", "soberness_check", "dizzyness_level", "happiness_level",
+                              "duration", "temperature", "error_code", "boolean", "uint8", "float",
+                              "flip_env_data_desc", "flip_env_data", "flip_preference"
+                          })
+
 
 if __name__ == "__main__":
     unittest.main()

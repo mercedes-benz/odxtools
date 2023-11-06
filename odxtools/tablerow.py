@@ -25,8 +25,12 @@ class TableRow(IdentifiableElement):
     key_raw: str
     structure_ref: Optional[OdxLinkRef]
     structure_snref: Optional[str]
+
+    # the referenced DOP must be a simple DOP (i.e.,
+    # DataObjectProperty, cf section 7.3.6.11 of the spec)!
     dop_ref: Optional[OdxLinkRef]
     dop_snref: Optional[str]
+
     semantic: Optional[str]
     sdgs: List[SpecialDataGroup]
 
@@ -114,9 +118,9 @@ class TableRow(IdentifiableElement):
         ddd_spec = diag_layer.diag_data_dictionary_spec
 
         if self.structure_snref is not None:
-            self._structure = ddd_spec.structures[self.structure_snref]
+            self._structure = odxrequire(ddd_spec.structures.get(self.structure_snref))
         if self.dop_snref is not None:
-            self._dop = ddd_spec.data_object_props[self.dop_snref]
+            self._dop = odxrequire(ddd_spec.data_object_props.get(self.dop_snref))
 
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)
