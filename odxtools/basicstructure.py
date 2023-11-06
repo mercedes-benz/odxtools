@@ -3,9 +3,9 @@ import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
+from .complexdop import ComplexDop
 from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
-from .dopbase import DopBase
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert, odxraise
 from .nameditemlist import NamedItemList
@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class BasicStructure(DopBase):
+class BasicStructure(ComplexDop):
     parameters: NamedItemList[Parameter]
     byte_size: Optional[int]
 

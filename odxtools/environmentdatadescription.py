@@ -3,10 +3,9 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree
 
+from .complexdop import ComplexDop
 from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
-from .dopbase import DopBase
-from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .environmentdata import EnvironmentData
 from .exceptions import DecodeError, EncodeError, odxrequire
@@ -19,7 +18,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class EnvironmentDataDescription(DopBase):
+class EnvironmentDataDescription(ComplexDop):
     """This class represents Environment Data Description, which is a complex DOP
     that is used to define the interpretation of environment data."""
 
@@ -38,7 +37,7 @@ class EnvironmentDataDescription(DopBase):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "EnvironmentDataDescription":
         """Reads Environment Data Description from Diag Layer."""
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         param_snref_elem = et_element.find("PARAM-SNREF")
