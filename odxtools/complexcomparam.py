@@ -49,18 +49,14 @@ class ComplexComparam(BaseComparam):
         # default values. Due to the quirky way this is defined by the
         # ODX specification, this is a *major* pain in the butt!
         subparams: NamedItemList[BaseComparam] = NamedItemList()
-        elem_it = iter(et_element)
-        while True:
-            try:
-                elem = next(elem_it)
-            except StopIteration:
-                break
-
-            if elem.tag not in ("COMPARAM", "COMPLEX-COMPARAM"):
+        elems = list(et_element)
+        i = 0
+        while i < len(elems):
+            if elems[i].tag not in ("COMPARAM", "COMPLEX-COMPARAM"):
+                i += 1
                 continue
 
-            subparam = create_any_comparam_from_et(elem, doc_frags)
-
+            subparam = create_any_comparam_from_et(elems[i], doc_frags)
             # the next element in the list *may* hold the physical
             # default value for the sub-parameter. if it is not the
             # correct tag, skip it! Note that the ODX specification
@@ -68,18 +64,12 @@ class ComplexComparam(BaseComparam):
             # tags here, even if the sub-parameter was a simple
             # parameter. This is probably a bug in the ODX
             # specification...
-            tmp_it = elem_it
-            try:
-                elem = next(elem_it)
-            except StopIteration:
-                break
-
-            if elem.tag != "COMPLEX-PHYSICAL-DEFAULT-VALUE":
-                subparam.physical_default_value = create_complex_value_from_et(elem)
-                elem_it = tmp_it
-                continue
+            if i + 1 < len(elems) and elems[i + 1].tag == "COMPLEX-PHYSICAL-DEFAULT-VALUE":
+                subparam.physical_default_value = create_complex_value_from_et(elems[i + 1])
+                i += 1
 
             subparams.append(subparam)
+            i += 1
 
         allow_multiple_values_raw = odxstr_to_bool(et_element.get("ALLOW-MULTIPLE-VALUES"))
 
