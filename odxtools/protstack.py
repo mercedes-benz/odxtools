@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List
 from xml.etree import ElementTree
 
-from .nameditemlist import NamedItemList
 from .comparamsubset import ComparamSubset
 from .element import IdentifiableElement
 from .exceptions import odxrequire
+from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .utils import dataclass_fields_asdict
 
@@ -22,11 +22,7 @@ class ProtStack(IdentifiableElement):
     comparam_subset_refs: List[OdxLinkRef]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ProtStack":
-
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        doc_frags = [OdxDocFragment(short_name, str(et_element.tag))]
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ProtStack":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         pdu_protocol_type = odxrequire(et_element.findtext("PDU-PROTOCOL-TYPE"))

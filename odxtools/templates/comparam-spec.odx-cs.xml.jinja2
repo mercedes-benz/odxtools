@@ -34,7 +34,7 @@
    </COMPANY-DATAS>
    {%- endif %}
 
-   {%- if comparam_spec.prot_stacks is not none %}
+   {%- if comparam_spec.prot_stacks %}
    <PROT-STACKS>
     {%- for ps in comparam_spec.prot_stacks %}
      {{- pps.printProtStack(ps) | indent(5) -}}

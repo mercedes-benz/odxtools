@@ -291,11 +291,11 @@ class DiagLayer:
         return self.diag_layer_raw.ecu_variant_patterns
 
     @property
-    def comparam_spec(self) -> OdxLinkRef:
-        return self.diag_layer_raw.comparam_spec
+    def comparam_spec_ref(self) -> Optional[OdxLinkRef]:
+        return self.diag_layer_raw.comparam_spec_ref
 
     @property
-    def prot_stack_snref(self) -> str:
+    def prot_stack_snref(self) -> Optional[str]:
         return self.diag_layer_raw.prot_stack_snref
 
     #####

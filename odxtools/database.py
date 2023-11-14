@@ -5,8 +5,8 @@ from typing import List, Optional, Tuple
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
-from .comparamsubset import ComparamSubset
 from .comparamspec import ComparamSpec
+from .comparamsubset import ComparamSubset
 from .diaglayer import DiagLayer
 from .diaglayercontainer import DiagLayerContainer
 from .globals import logger
@@ -75,7 +75,7 @@ class Database:
             else:
                 spec = root.find("COMPARAM-SPEC")
                 if spec is not None:
-                    comparam_specs.append(ComparamSpec.from_et(subset, []))
+                    comparam_specs.append(ComparamSpec.from_et(spec, []))
 
         self._diag_layer_containers = NamedItemList(dlcs)
         self._diag_layer_containers.sort(key=short_name_as_key)
@@ -150,7 +150,7 @@ class Database:
     @property
     def comparam_subsets(self) -> NamedItemList[ComparamSubset]:
         return self._comparam_subsets
-    
+
     @property
-    def comparam_specs(self):
+    def comparam_specs(self) -> NamedItemList[ComparamSpec]:
         return self._comparam_specs

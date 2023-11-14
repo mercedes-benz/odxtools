@@ -148,7 +148,9 @@ def write_pdx_file(
             file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
 
             zf.writestr(zf_file_name, comparam_spec_tpl.render(**vars))
-        del vars["comparam_spec"]
+
+        if "comparam_spec" in vars:
+            del vars["comparam_spec"]
 
         # write the actual diagnostic data.
         dlc_tpl = jinja_env.get_template("diag_layer_container.odx-d.xml.jinja2")

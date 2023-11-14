@@ -6,12 +6,14 @@ from xml.etree import ElementTree
 from .admindata import AdminData
 from .companydata import CompanyData
 from .createcompanydatas import create_company_datas_from_et
+from .createsdgs import create_sdgs_from_et
 from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
-from .utils import dataclass_fields_asdict
 from .protstack import ProtStack
+from .specialdatagroup import SpecialDataGroup
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -21,11 +23,11 @@ if TYPE_CHECKING:
 class ComparamSpec(IdentifiableElement):
     admin_data: Optional[AdminData]
     company_datas: NamedItemList[CompanyData]
+    sdgs: List[SpecialDataGroup]
     prot_stacks: NamedItemList[ProtStack]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ComparamSpec":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ComparamSpec":
 
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         doc_frags = [OdxDocFragment(short_name, str(et_element.tag))]
@@ -33,14 +35,16 @@ class ComparamSpec(IdentifiableElement):
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
         prot_stacks = NamedItemList([
             ProtStack.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("PROT-STACKS/PROT-STACK")
         ])
-        
+
         return ComparamSpec(
             admin_data=admin_data,
             company_datas=company_datas,
+            sdgs=sdgs,
             prot_stacks=prot_stacks,
             **kwargs)
 
@@ -52,13 +56,14 @@ class ComparamSpec(IdentifiableElement):
         if self.admin_data is not None:
             odxlinks.update(self.admin_data._build_odxlinks())
 
-        if self.company_datas is not None:
-            for cd in self.company_datas:
-                odxlinks.update(cd._build_odxlinks())
+        for cd in self.company_datas:
+            odxlinks.update(cd._build_odxlinks())
 
-        if self.prot_stacks is not None:
-            for ps in self.prot_stacks:
-                odxlinks.update(ps._build_odxlinks())
+        for sdg in self.sdgs:
+            odxlinks.update(sdg._build_odxlinks())
+
+        for ps in self.prot_stacks:
+            odxlinks.update(ps._build_odxlinks())
 
         return odxlinks
 
@@ -66,22 +71,24 @@ class ComparamSpec(IdentifiableElement):
         if self.admin_data is not None:
             self.admin_data._resolve_odxlinks(odxlinks)
 
-        if self.company_datas is not None:
-            for cd in self.company_datas:
-                cd._resolve_odxlinks(odxlinks)
+        for cd in self.company_datas:
+            cd._resolve_odxlinks(odxlinks)
 
-        if self.prot_stacks is not None:
-            for ps in self.prot_stacks:
-                ps._resolve_odxlinks(odxlinks)
+        for sdg in self.sdgs:
+            sdg._resolve_odxlinks(odxlinks)
+
+        for ps in self.prot_stacks:
+            ps._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         if self.admin_data is not None:
             self.admin_data._resolve_snrefs(diag_layer)
 
-        if self.company_datas is not None:
-            for cd in self.company_datas:
-                cd._resolve_snrefs(diag_layer)
+        for cd in self.company_datas:
+            cd._resolve_snrefs(diag_layer)
 
-        if self.prot_stacks is not None:
-            for ps in self.prot_stacks:
-                ps._resolve_snrefs(diag_layer)
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(diag_layer)
+
+        for ps in self.prot_stacks:
+            ps._resolve_snrefs(diag_layer)

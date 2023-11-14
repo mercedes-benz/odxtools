@@ -2054,6 +2054,8 @@ somersault_diaglayer_raw = DiagLayerRaw(
     parent_refs=[],
     comparams=somersault_comparams,
     ecu_variant_patterns=[],
+    comparam_spec_ref=None,
+    prot_stack_snref=None,
 )
 somersault_diaglayer = DiagLayer(diag_layer_raw=somersault_diaglayer_raw)
 
@@ -2096,6 +2098,8 @@ somersault_lazy_diaglayer_raw = DiagLayerRaw(
     ],
     comparams=somersault_comparams,
     ecu_variant_patterns=[],
+    comparam_spec_ref=None,
+    prot_stack_snref=None,
 )
 somersault_lazy_diaglayer = DiagLayer(diag_layer_raw=somersault_lazy_diaglayer_raw)
 
@@ -2314,6 +2318,8 @@ somersault_assiduous_diaglayer_raw = DiagLayerRaw(
     ],
     comparams=somersault_comparams,
     ecu_variant_patterns=[],
+    comparam_spec_ref=None,
+    prot_stack_snref=None,
 )
 somersault_assiduous_diaglayer = DiagLayer(diag_layer_raw=somersault_assiduous_diaglayer_raw)
 
