@@ -4,10 +4,10 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printFunctionalClass(fc) -%}
 <FUNCT-CLASS ID="{{fc.odx_id.local_id}}">
- {{ peid.printElementID(fc)|indent(1) }}
+ {{ peid.printElementIdSubtags(fc)|indent(1) }}
 </FUNCT-CLASS>
 {%- endmacro -%}

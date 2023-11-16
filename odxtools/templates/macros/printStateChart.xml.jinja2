@@ -3,13 +3,13 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printState.xml.jinja2') as ps %}
 {%- import('macros/printStateTransition.xml.jinja2') as pst %}
 
 {%- macro printStateChart(state_chart) -%}
 <STATE-CHART ID="{{state_chart.odx_id.local_id}}">
- {{ peid.printElementID(state_chart)|indent(1) }}
+ {{ peid.printElementIdSubtags(state_chart)|indent(1) }}
  <SEMANTIC>{{state_chart.semantic}}</SEMANTIC>
  {%- if state_chart.state_transitions %}
  <STATE-TRANSITIONS>

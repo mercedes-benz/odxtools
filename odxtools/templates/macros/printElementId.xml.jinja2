@@ -3,7 +3,7 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- macro printElementID(obj) -%}
+{%- macro printElementIdSubtags(obj) -%}
 <SHORT-NAME>{{ obj.short_name }}</SHORT-NAME>
 {%- if obj.long_name %}
 <LONG-NAME>{{ obj.long_name|e }}</LONG-NAME>

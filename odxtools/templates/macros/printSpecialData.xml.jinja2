@@ -3,7 +3,7 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printSpecialData(sd) %}
 <SD
@@ -18,7 +18,7 @@
 
 {%- macro printSdgCaption(sdg_caption) %}
 <SDG-CAPTION ID="{{sdg_caption.odx_id.local_id}}">
- {{ peid.printElementID(sdg_caption)|indent(1) }}
+ {{ peid.printElementIdSubtags(sdg_caption)|indent(1) }}
 </SDG-CAPTION>
 {%- endmacro %}
 

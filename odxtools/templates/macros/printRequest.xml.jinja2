@@ -3,14 +3,14 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printDOP.xml.jinja2') as pdop %}
 {%- import('macros/printParam.xml.jinja2') as pp %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printRequest(request) -%}
 <REQUEST ID="{{request.odx_id.local_id}}">
- {{ peid.printElementID(request)|indent(1) }}
+ {{ peid.printElementIdSubtags(request)|indent(1) }}
 {%- if request.parameters %}
  <PARAMS>
  {%- for param in request.parameters -%}
