@@ -3,12 +3,12 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printCompanyData(company_data) -%}
 <COMPANY-DATA ID="{{company_data.odx_id.local_id}}">
- {{ peid.printElementID(company_data)|indent(1) }}
+ {{ peid.printElementIdSubtags(company_data)|indent(1) }}
  {%- if company_data.roles is not none %}
  <ROLES>
   {%- for role in company_data.roles %}
@@ -20,7 +20,7 @@
  <TEAM-MEMBERS>
   {%- for team_member in company_data.team_members %}
   <TEAM-MEMBER ID="{{team_member.odx_id.local_id}}">
-   {{ peid.printElementID(team_member)|indent(3) }}
+   {{ peid.printElementIdSubtags(team_member)|indent(3) }}
    {%- if team_member.roles is not none %}
    <ROLES>
     {%- for role in team_member.roles %}
@@ -60,7 +60,7 @@
    <RELATED-DOC>
     {%- if rd.xdoc  is not none %}
     <XDOC>
-     {{ peid.printElementID(rd.xdoc)|indent(5) }}
+     {{ peid.printElementIdSubtags(rd.xdoc)|indent(5) }}
      {%- if rd.xdoc.number is not none %}
      <NUMBER>{{rd.xdoc.number|e}}</NUMBER>
      {%- endif %}

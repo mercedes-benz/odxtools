@@ -3,7 +3,7 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printAdminData.xml.jinja2') as pad %}
 {%- import('macros/printAudience.xml.jinja2') as paud %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
@@ -19,7 +19,7 @@
 
 
 {%- macro printDiagCommElems(dc) -%}
- {{ peid.printElementID(dc)|indent(1) }}
+ {{ peid.printElementIdSubtags(dc)|indent(1) }}
  {%- if dc.admin_data %}
   {{- pad.printAdminData(dc.admin_data)|indent(1, first=True) }}
  {%- endif %}

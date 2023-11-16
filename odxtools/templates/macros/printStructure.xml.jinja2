@@ -3,12 +3,12 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printParam.xml.jinja2') as pp %}
 
 {%- macro printStructure(st) -%}
 <STRUCTURE ID="{{st.odx_id.local_id}}">
- {{ peid.printElementID(st)|indent(1) }}
+ {{ peid.printElementIdSubtags(st)|indent(1) }}
 {%- if st.byte_size is not none %}
  <BYTE-SIZE>{{st.byte_size}}</BYTE-SIZE>
 {%- endif %}

@@ -3,11 +3,11 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printMux(mux) %}
 <MUX ID="{{mux.odx_id.local_id}}">
-  {{ peid.printElementID(mux)|indent(1) }}
+  {{ peid.printElementIdSubtags(mux)|indent(1) }}
   <BYTE-POSITION>{{mux.byte_position}}</BYTE-POSITION>
   <SWITCH-KEY>
     <BYTE-POSITION>{{mux.switch_key.byte_position}}</BYTE-POSITION>
@@ -18,7 +18,7 @@
   </SWITCH-KEY>
   {%- if mux.default_case is not none %}
   <DEFAULT-CASE>
-    {{ peid.printElementID(mux.default_case)|indent(4) }}
+    {{ peid.printElementIdSubtags(mux.default_case)|indent(4) }}
     {%- if mux.default_case.structure_ref is not none %}
     <STRUCTURE-REF ID-REF="{{mux.default_case.structure_ref.ref_id}}"/>
     {%- endif %}
@@ -31,7 +31,7 @@
   <CASES>
     {%- for case in mux.cases %}
     <CASE>
-      {{ peid.printElementID(case)|indent(6) }}
+      {{ peid.printElementIdSubtags(case)|indent(6) }}
       {%- if case.structure_ref is not none %}
       <STRUCTURE-REF ID-REF="{{case.structure_ref.ref_id}}"/>
       {%- endif %}

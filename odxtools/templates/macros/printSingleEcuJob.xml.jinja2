@@ -3,7 +3,7 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printDiagComm.xml.jinja2') as pdc %}
 
 {%- macro printSingleEcuJob(job) -%}
@@ -64,7 +64,7 @@
 {%- macro printInputParam(param) -%}
 <INPUT-PARAM {{-make_xml_attrib("OID", param.oid)}}
              {{-make_xml_attrib("SEMANTIC", param.semantic)}}>
- {{ peid.printElementID(param)|indent(1) }}
+ {{ peid.printElementIdSubtags(param)|indent(1) }}
 {%- if param.physical_default_value %}
  <PHYSICAL-DEFAULT-VALUE>{{param.physical_default_value}}</PHYSICAL-DEFAULT-VALUE>
 {%- endif %}
@@ -76,7 +76,7 @@
 <OUTPUT-PARAM ID="{{param.odx_id.local_id}}"
               {{-make_xml_attrib("OID", param.oid)}}
               {{-make_xml_attrib("SEMANTIC", param.semantic)}}>
- {{ peid.printElementID(param)|indent(1) }}
+ {{ peid.printElementIdSubtags(param)|indent(1) }}
  <DOP-BASE-REF ID-REF="{{param.dop_base_ref.ref_id}}" />
 </OUTPUT-PARAM>
 {%- endmacro -%}
@@ -84,7 +84,7 @@
 
 {%- macro printNegOutputParam(param) -%}
 <NEG-OUTPUT-PARAM>
- {{ peid.printElementID(param)|indent(1) }}
+ {{ peid.printElementIdSubtags(param)|indent(1) }}
  <DOP-BASE-REF ID-REF="{{param.dop_base_ref.ref_id}}" />
 </NEG-OUTPUT-PARAM>
 {%- endmacro -%}

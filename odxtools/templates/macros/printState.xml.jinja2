@@ -3,10 +3,10 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printState(state) -%}
 <STATE ID="{{state.odx_id.local_id}}">
- {{ peid.printElementID(state)|indent(1) }}
+ {{ peid.printElementIdSubtags(state)|indent(1) }}
 </STATE>
 {%- endmacro -%}
