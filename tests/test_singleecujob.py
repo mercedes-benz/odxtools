@@ -393,6 +393,8 @@ class TestSingleEcuJob(unittest.TestCase):
             parent_refs=[],
             comparams=[],
             ecu_variant_patterns=[],
+            comparam_spec_ref=None,
+            prot_stack_snref=None,
         )
         dl = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()

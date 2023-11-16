@@ -1,0 +1,45 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+ #
+ # This template writes an .odx-cs file for a communication
+ # parameter subset.
+-#}
+{%- import('macros/printAdminData.xml.jinja2') as pad -%}
+{%- import('macros/printCompanyData.xml.jinja2') as pcd -%}
+{%- import('macros/printProtStack.xml.jinja2') as pps %}
+{#- -#}
+
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
+<!-- Written using odxtools {{odxtools_version}} -->
+ <COMPARAM-SPEC ID="{{comparam_spec.odx_id.local_id}}">
+   <SHORT-NAME>{{comparam_spec.short_name}}</SHORT-NAME>
+   {%- if comparam_spec.long_name is not none %}
+   <LONG-NAME>{{comparam_spec.long_name|e}}</LONG-NAME>
+   {%- endif %}
+   {%- if comparam_spec.description and comparam_spec.description.strip() %}
+   <DESC>
+     {{comparam_spec.description}}
+   </DESC>
+   {%- endif %}
+   {%- if comparam_spec.admin_data is not none %}
+   {{- pad.printAdminData(comparam_spec.admin_data) | indent(3) }}
+   {%- endif %}
+   {%- if comparam_spec.company_datas %}
+   <COMPANY-DATAS>
+    {%- for cd in comparam_spec.company_datas %}
+     {{- pcd.printCompanyData(cd) | indent(5) -}}
+    {%- endfor %}
+   </COMPANY-DATAS>
+   {%- endif %}
+
+   {%- if comparam_spec.prot_stacks %}
+   <PROT-STACKS>
+    {%- for ps in comparam_spec.prot_stacks %}
+     {{- pps.printProtStack(ps) | indent(5) -}}
+    {%- endfor %}
+   </PROT-STACKS>
+   {%- endif %}
+ </COMPARAM-SPEC>
+</ODX>

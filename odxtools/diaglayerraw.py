@@ -62,8 +62,8 @@ class DiagLayerRaw(IdentifiableElement):
     parent_refs: List[ParentRef]
     comparams: List[ComparamInstance]
     ecu_variant_patterns: List[EcuVariantPattern]
-    # comparam_spec: OdxLinkRef # TODO
-    # prot_stack_snref: str # TODO
+    comparam_spec_ref: Optional[OdxLinkRef]
+    prot_stack_snref: Optional[str]
     # diag_variables: List[DiagVariable] # TODO
     # diag_variable_groups: List[DiagVariableGroup] # TODO
     # dyn_defined_spec: Optional[DynDefinedSpec] # TODO
@@ -177,6 +177,9 @@ class DiagLayerRaw(IdentifiableElement):
                 len(ecu_variant_patterns) == 0,
                 "DiagLayer of type other than 'ECU-VARIANT' must not define a ECU-VARIANT-PATTERN")
 
+        comparam_spec_ref = OdxLinkRef.from_et(et_element.find("COMPARAM-SPEC-REF"), doc_frags)
+        prot_stack_snref = et_element.findtext("PROT-STACK-SNREF")
+
         # Create DiagLayer
         return DiagLayerRaw(
             variant_type=variant_type,
@@ -196,6 +199,8 @@ class DiagLayerRaw(IdentifiableElement):
             parent_refs=parent_refs,
             comparams=comparams,
             ecu_variant_patterns=ecu_variant_patterns,
+            comparam_spec_ref=comparam_spec_ref,
+            prot_stack_snref=prot_stack_snref,
             **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
