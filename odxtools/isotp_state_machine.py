@@ -106,7 +106,7 @@ class IsoTpStateMachine:
         else:
             self.on_frame_type_error(telegram_idx, frame_type)
 
-    async def read_telegrams(self, bus: Union[can.Bus,
+    async def read_telegrams(self, bus: Union[can.BusABC,
                                               TextIO]) -> AsyncGenerator[Tuple[int, bytes], None]:
         """This is equivalent to the :py:meth:`file.readlines()` method, but
         it yields ISO-TP telegrams instead of lines.
@@ -116,7 +116,7 @@ class IsoTpStateMachine:
         :param bus: Input file or socket of can bus to read the can frames
         """
 
-        if isinstance(bus, can.Bus):
+        if isinstance(bus, can.BusABC):
             # create an "on receive" event for the can bus
             rx_event = asyncio.Event()
             loop = asyncio.get_running_loop()
@@ -224,7 +224,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
     other people's conversations."""
 
     def __init__(self,
-                 can_bus: can.Bus,
+                 can_bus: can.BusABC,
                  can_rx_ids: List[int],
                  can_tx_ids: List[int],
                  padding_size: int = 0,
