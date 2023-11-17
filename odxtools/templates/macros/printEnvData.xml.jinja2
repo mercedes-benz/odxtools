@@ -14,7 +14,7 @@
       {{pparam.printParam(param) | indent(6, first=True) }}
       {%- endfor %}
     </PARAMS>
-    {%- if not env_data.dtc_values %}
+    {%- if env_data.all_value %}
     <ALL-VALUE/>
     {%- else %}
     <DTC-VALUES>

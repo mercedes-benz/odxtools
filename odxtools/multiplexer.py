@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
 from xml.etree import ElementTree
 
 from .complexdop import ComplexDop
-from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxrequire
@@ -28,13 +27,13 @@ class Multiplexer(ComplexDop):
     switch_key: MultiplexerSwitchKey
     default_case: Optional[MultiplexerDefaultCase]
     cases: List[MultiplexerCase]
+    is_visible_raw: Optional[bool]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Multiplexer":
         """Reads a Multiplexer from Diag Layer."""
         kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
-        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+
         byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
         switch_key = MultiplexerSwitchKey.from_et(
             odxrequire(et_element.find("SWITCH-KEY")), doc_frags)
@@ -47,14 +46,19 @@ class Multiplexer(ComplexDop):
         if (cases_elem := et_element.find("CASES")) is not None:
             cases = [MultiplexerCase.from_et(el, doc_frags) for el in cases_elem.iterfind("CASE")]
 
+        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
+
         return Multiplexer(
-            sdgs=sdgs,
             is_visible_raw=is_visible_raw,
             byte_position=byte_position,
             switch_key=switch_key,
             default_case=default_case,
             cases=cases,
             **kwargs)
+
+    @property
+    def is_visible(self) -> bool:
+        return self.is_visible_raw is True
 
     def _get_case_limits(self, case: MultiplexerCase) -> Tuple[AtomicOdxType, AtomicOdxType]:
         key_type = self.switch_key.dop.physical_type.base_data_type

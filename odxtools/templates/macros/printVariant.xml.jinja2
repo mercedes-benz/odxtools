@@ -41,7 +41,7 @@
    {%- if ddds.dtc_dops  %}
    <DTC-DOPS>
      {%- for dop in ddds.dtc_dops -%}
-     {{ pdop.printDTCDOP(dop)|indent(3) }}
+     {{ pdop.printDtcDop(dop)|indent(3) }}
      {%- endfor %}
    </DTC-DOPS>
    {%- endif %}
@@ -55,7 +55,7 @@
    {%- if ddds.data_object_props %}
    <DATA-OBJECT-PROPS>
      {%- for dop in ddds.data_object_props %}
-     {{- pdop.printDOP(dop, "DATA-OBJECT-PROP")|indent(3) }}
+     {{- pdop.printDataObjectProp(dop)|indent(3) }}
      {%- endfor %}
    </DATA-OBJECT-PROPS>
    {%- endif %}

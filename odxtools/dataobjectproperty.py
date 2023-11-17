@@ -1,21 +1,18 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
 from xml.etree import ElementTree
 
 from .compumethods.compumethod import CompuMethod
 from .compumethods.createanycompumethod import create_any_compu_method_from_et
 from .createanydiagcodedtype import create_any_diag_coded_type_from_et
-from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
 from .diagcodedtype import DiagCodedType
-from .diagnostictroublecode import DiagnosticTroubleCode
 from .dopbase import DopBase
-from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import AtomicOdxType, ParameterValue, odxstr_to_bool
+from .odxtypes import AtomicOdxType, ParameterValue
 from .physicaltype import PhysicalType
 from .unit import Unit
 from .utils import dataclass_fields_asdict
@@ -26,20 +23,32 @@ if TYPE_CHECKING:
 
 @dataclass
 class DataObjectProperty(DopBase):
-    """This class represents a DATA-OBJECT-PROP."""
+    """This class represents a DATA-OBJECT-PROP.
 
+    Note that this class only represents non-complex DOPs. A better
+    name would thus be SimpleDataObjectProp...
+    """
+
+    #: The type used to represent a value internally
     diag_coded_type: DiagCodedType
+
+    #: The type of the value in the physical world
     physical_type: PhysicalType
+
+    #: Conversion from the physical to the internal representation and vice-versa.
     compu_method: CompuMethod
+
+    #: The unit associated with physical values (e.g. 'm/s^2')
     unit_ref: Optional[OdxLinkRef]
+
+    # TODO: physical_const: Optional[InternalConstr]
+    # TODO: internal_const: Optional[InternalConstr]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DataObjectProperty":
-        """Reads a DATA-OBJECT-PROP or a DTC-DOP."""
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
-        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
+        """Reads a DATA-OBJECT-PROP."""
+        kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, doc_frags))
 
         diag_coded_type = create_any_diag_coded_type_from_et(
             odxrequire(et_element.find("DIAG-CODED-TYPE")), doc_frags)
@@ -54,45 +63,12 @@ class DataObjectProperty(DopBase):
         )
         unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
 
-        if et_element.tag == "DATA-OBJECT-PROP":
-            dop = DataObjectProperty(
-                is_visible_raw=is_visible_raw,
-                diag_coded_type=diag_coded_type,
-                physical_type=physical_type,
-                compu_method=compu_method,
-                unit_ref=unit_ref,
-                sdgs=sdgs,
-                **kwargs)
-        else:
-            dtclist: List[Union[DiagnosticTroubleCode, OdxLinkRef]] = []
-            if (dtcs_elem := et_element.find("DTCS")) is not None:
-                for dtc_proxy_elem in dtcs_elem:
-                    if dtc_proxy_elem.tag == "DTC":
-                        dtclist.append(DiagnosticTroubleCode.from_et(dtc_proxy_elem, doc_frags))
-                    elif dtc_proxy_elem.tag == "DTC-REF":
-                        dtclist.append(OdxLinkRef.from_et(dtc_proxy_elem, doc_frags))
-
-            # TODO: NOT-INHERITED-DTC-SNREFS
-            linked_dtc_dop_refs = [
-                cast(OdxLinkRef, OdxLinkRef.from_et(dtc_ref_elem, doc_frags))
-                for dtc_ref_elem in et_element.iterfind("LINKED-DTC-DOPS/"
-                                                        "LINKED-DTC-DOP/"
-                                                        "DTC-DOP-REF")
-            ]
-
-            from .dtcdop import DtcDop
-
-            dop = DtcDop(
-                diag_coded_type=diag_coded_type,
-                physical_type=physical_type,
-                compu_method=compu_method,
-                unit_ref=unit_ref,
-                dtcs_raw=dtclist,
-                linked_dtc_dop_refs=linked_dtc_dop_refs,
-                is_visible_raw=is_visible_raw,
-                sdgs=sdgs,
-                **kwargs)
-        return dop
+        return DataObjectProperty(
+            diag_coded_type=diag_coded_type,
+            physical_type=physical_type,
+            compu_method=compu_method,
+            unit_ref=unit_ref,
+            **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()

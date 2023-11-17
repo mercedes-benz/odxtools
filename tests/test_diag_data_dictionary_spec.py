@@ -47,12 +47,11 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             short_name="dtc_dop",
             long_name=None,
             description=None,
-            is_visible_raw=None,
+            admin_data=None,
             diag_coded_type=uint_type,
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             linked_dtc_dop_refs=[],
             compu_method=ident_compu_method,
-            unit_ref=None,
             dtcs_raw=[
                 DiagnosticTroubleCode(
                     odx_id=OdxLinkId("DOP.dtc_dop.DTC.X10", doc_frags),
@@ -68,6 +67,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                 )
             ],
             sdgs=[],
+            is_visible_raw=None,
         )
 
         dop_1 = DataObjectProperty(
@@ -75,7 +75,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             short_name="the_dop",
             long_name=None,
             description=None,
-            is_visible_raw=None,
+            admin_data=None,
             diag_coded_type=uint_type,
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=ident_compu_method,
@@ -88,7 +88,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             short_name="another_dop",
             long_name=None,
             description=None,
-            is_visible_raw=None,
+            admin_data=None,
             diag_coded_type=uint_type,
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=ident_compu_method,
@@ -160,8 +160,8 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             short_name="flip_env_data",
             long_name="Flip Env Data",
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             parameters=NamedItemList([
                 ValueParameter(
                     short_name="flip_speed",
@@ -211,8 +211,8 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             short_name="flip_env_data_desc",
             long_name="Flip Env Data Desc",
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             param_snref="flip_speed",
             param_snpathref=None,
             env_datas=[],
@@ -224,8 +224,8 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             short_name="flip_preference",
             long_name="Flip Preference",
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             byte_position=0,
             switch_key=MultiplexerSwitchKey(
                 byte_position=0,
@@ -259,6 +259,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     structure_snref=None,
                 ),
             ],
+            is_visible_raw=None,
         )
 
         ddds = DiagDataDictionarySpec(

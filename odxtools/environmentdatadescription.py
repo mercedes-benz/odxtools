@@ -4,13 +4,12 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree
 
 from .complexdop import ComplexDop
-from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .environmentdata import EnvironmentData
 from .exceptions import DecodeError, EncodeError, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import ParameterValue, odxstr_to_bool
+from .odxtypes import ParameterValue
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -23,7 +22,7 @@ class EnvironmentDataDescription(ComplexDop):
     that is used to define the interpretation of environment data."""
 
     # in ODX 2.0.0, ENV-DATAS seems to be a mandatory
-    # sub-element of ENV-DATA-DESC, on ODX 2.2 it is not
+    # sub-element of ENV-DATA-DESC, in ODX 2.2 it is not
     # present
     env_datas: List[EnvironmentData]
     env_data_refs: List[OdxLinkRef]
@@ -38,15 +37,12 @@ class EnvironmentDataDescription(ComplexDop):
                 doc_frags: List[OdxDocFragment]) -> "EnvironmentDataDescription":
         """Reads Environment Data Description from Diag Layer."""
         kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
-        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
-        param_snref_elem = et_element.find("PARAM-SNREF")
+
         param_snref = None
-        if param_snref_elem is not None:
+        if (param_snref_elem := et_element.find("PARAM-SNREF")) is not None:
             param_snref = odxrequire(param_snref_elem.get("SHORT-NAME"))
-        param_snpathref_elem = et_element.find("PARAM-SNPATHREF")
         param_snpathref = None
-        if param_snpathref_elem is not None:
+        if (param_snpathref_elem := et_element.find("PARAM-SNPATHREF")) is not None:
             param_snpathref = odxrequire(param_snpathref_elem.get("SHORT-NAME-PATH"))
         env_data_refs = [
             odxrequire(OdxLinkRef.from_et(env_data_ref, doc_frags))
@@ -60,12 +56,10 @@ class EnvironmentDataDescription(ComplexDop):
         ]
 
         return EnvironmentDataDescription(
-            sdgs=sdgs,
-            is_visible_raw=is_visible_raw,
             param_snref=param_snref,
             param_snpathref=param_snpathref,
-            env_datas=env_datas,
             env_data_refs=env_data_refs,
+            env_datas=env_datas,
             **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

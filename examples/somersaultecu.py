@@ -455,11 +455,11 @@ somersault_dops = {
             short_name="num_flips",
             long_name=None,
             description=None,
+            admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
-            is_visible_raw=None,
             sdgs=[],
         ),
     "soberness_check":
@@ -468,11 +468,11 @@ somersault_dops = {
             short_name="soberness_check",
             long_name=None,
             description=None,
+            admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
-            is_visible_raw=None,
             sdgs=[],
         ),
     "dizzyness_level":
@@ -481,11 +481,11 @@ somersault_dops = {
             short_name="dizzyness_level",
             long_name=None,
             description=None,
+            admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
-            is_visible_raw=None,
             sdgs=[],
         ),
     "happiness_level":
@@ -494,11 +494,11 @@ somersault_dops = {
             short_name="happiness_level",
             long_name=None,
             description=None,
+            admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
-            is_visible_raw=None,
             sdgs=[],
         ),
     "duration":
@@ -507,11 +507,11 @@ somersault_dops = {
             short_name="duration",
             long_name=None,
             description=None,
+            admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=OdxLinkRef.from_id(somersault_units["second"].odx_id),
-            is_visible_raw=None,
             sdgs=[],
         ),
     "temperature":
@@ -520,11 +520,11 @@ somersault_dops = {
             short_name="temperature",
             long_name=None,
             description=None,
+            admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=OdxLinkRef.from_id(somersault_units["celsius"].odx_id),
-            is_visible_raw=None,
             sdgs=[],
         ),
     "error_code":
@@ -533,11 +533,11 @@ somersault_dops = {
             short_name="error_code",
             long_name=None,
             description=None,
+            admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
-            is_visible_raw=None,
             sdgs=[],
         ),
     "boolean":
@@ -546,12 +546,12 @@ somersault_dops = {
             short_name="boolean",
             long_name=None,
             description=None,
+            admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
             physical_type=PhysicalType(
                 DataType.A_UNICODE2STRING, display_radix=None, precision=None),
             compu_method=somersault_compumethods["boolean"],
             unit_ref=None,
-            is_visible_raw=None,
             sdgs=[],
         ),
     "uint8":
@@ -560,11 +560,11 @@ somersault_dops = {
             short_name="uint8",
             long_name=None,
             description=None,
+            admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
-            is_visible_raw=None,
             sdgs=[],
         ),
     "float":
@@ -573,11 +573,11 @@ somersault_dops = {
             short_name="float",
             long_name=None,
             description=None,
+            admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["float32"],
             physical_type=PhysicalType(DataType.A_FLOAT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["float_passthrough"],
             unit_ref=None,
-            is_visible_raw=None,
             sdgs=[],
         ),
 }
@@ -593,8 +593,8 @@ somersault_positive_responses = {
             short_name="session",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="POS-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(
@@ -630,8 +630,8 @@ somersault_positive_responses = {
             short_name="tester_present",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="POS-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(
@@ -665,8 +665,8 @@ somersault_positive_responses = {
             short_name="grudging_forward",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="POS-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(
@@ -702,8 +702,8 @@ somersault_positive_responses = {
             short_name="happy_forward",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="POS-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(
@@ -750,8 +750,8 @@ somersault_positive_responses = {
             short_name="grudging_backward",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="POS-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(
@@ -799,8 +799,8 @@ somersault_positive_responses = {
             short_name="status_report",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="POS-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(
@@ -875,8 +875,8 @@ somersault_positive_responses = {
             short_name="set_operation_params",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="POS-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(
@@ -904,8 +904,8 @@ somersault_negative_responses = {
             short_name="general_negative_response",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="NEG-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(
@@ -954,8 +954,8 @@ somersault_negative_responses = {
             short_name="tester_nok",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="NEG-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(
@@ -989,8 +989,8 @@ somersault_negative_responses = {
             short_name="flips_not_done",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="NEG-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(
@@ -1054,8 +1054,8 @@ somersault_global_negative_responses = {
             short_name="too_hot",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="GLOBAL-NEG-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(
@@ -1197,7 +1197,7 @@ somersault_muxs = {
             short_name="flip_preference",
             long_name="Flip Preference",
             description=None,
-            is_visible_raw=None,
+            admin_data=None,
             sdgs=[],
             byte_position=0,
             switch_key=MultiplexerSwitchKey(
@@ -1232,6 +1232,7 @@ somersault_muxs = {
                     structure_snref=None,
                 ),
             ],
+            is_visible_raw=None,
         )
 }
 
@@ -1243,8 +1244,8 @@ somersault_env_datas = {
             short_name="flip_env_data",
             long_name="Flip Env Data",
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             byte_size=None,
             dtc_values=[],
             parameters=NamedItemList([
@@ -1284,9 +1285,9 @@ somersault_env_data_descs = {
             short_name="flip_env_data_desc",
             long_name="Flip Env Data Desc",
             description=None,
+            admin_data=None,
             param_snref="flip_speed",
             param_snpathref=None,
-            is_visible_raw=None,
             env_datas=[],
             env_data_refs=[OdxLinkRef("somersault.env_data.flip_env_data", doc_frags)],
             sdgs=[],
@@ -1301,8 +1302,8 @@ somersault_requests = {
             short_name="start_session",
             long_name="Start the diagnostic session & do some mischief",
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             parameters=[
                 CodedConstParameter(
                     short_name="sid",
@@ -1335,8 +1336,8 @@ somersault_requests = {
             short_name="stop_session",
             long_name="Terminate the current diagnostic session",
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             parameters=[
                 CodedConstParameter(
                     short_name="sid",
@@ -1369,8 +1370,8 @@ somersault_requests = {
             short_name="tester_present",
             long_name="Prevent the current diagnostic session from timing out",
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             parameters=[
                 CodedConstParameter(
                     short_name="sid",
@@ -1404,8 +1405,8 @@ somersault_requests = {
             long_name="Specify the mode of operation for the ECU; e.g. if rings "
             "of fire ought to be used for maximum effect",
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             parameters=[
                 CodedConstParameter(
                     short_name="sid",
@@ -1439,8 +1440,8 @@ somersault_requests = {
             short_name="do_forward_flips",
             long_name="Do forward somersaults & some other mischief",
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             parameters=[
                 CodedConstParameter(
                     short_name="sid",
@@ -1487,8 +1488,8 @@ somersault_requests = {
             short_name="do_backward_flips",
             long_name="Do a backward somersault & some other mischief",
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             parameters=[
                 CodedConstParameter(
                     short_name="sid",
@@ -1535,8 +1536,8 @@ somersault_requests = {
             short_name="report_status",
             long_name="Report back the current level of dizzy- & happiness.",
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             parameters=[
                 CodedConstParameter(
                     short_name="sid",
@@ -2116,8 +2117,8 @@ somersault_assiduous_requests = {
             short_name="do_headstand",
             long_name="Do a headstand & whatever else is required to entertain the customer",
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -2155,8 +2156,8 @@ somersault_assiduous_positive_responses = {
             short_name="headstand_done",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="POS-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(
@@ -2195,8 +2196,8 @@ somersault_assiduous_negative_responses = {
             short_name="fell_over",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             response_type="POS-RESPONSE",
             parameters=NamedItemList([
                 CodedConstParameter(

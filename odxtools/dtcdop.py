@@ -1,31 +1,87 @@
 # SPDX-License-Identifier: MIT
 # from dataclasses import dataclass, field
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Tuple, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
+from xml.etree import ElementTree
 
-from .dataobjectproperty import DataObjectProperty
+from .compumethods.compumethod import CompuMethod
+from .compumethods.createanycompumethod import create_any_compu_method_from_et
+from .createanydiagcodedtype import create_any_diag_coded_type_from_et
 from .decodestate import DecodeState
+from .diagcodedtype import DiagCodedType
 from .diagnostictroublecode import DiagnosticTroubleCode
+from .dopbase import DopBase
 from .encodestate import EncodeState
-from .exceptions import EncodeError, odxassert
+from .exceptions import DecodeError, EncodeError, odxassert, odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import ParameterValue
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxtypes import ParameterValue, odxstr_to_bool
+from .physicaltype import PhysicalType
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
 
 
 @dataclass
-class DtcDop(DataObjectProperty):
+class DtcDop(DopBase):
     """A DOP describing a diagnostic trouble code"""
 
+    diag_coded_type: DiagCodedType
+    physical_type: PhysicalType
+    compu_method: CompuMethod
     dtcs_raw: List[Union[DiagnosticTroubleCode, OdxLinkRef]]
     linked_dtc_dop_refs: List[OdxLinkRef]
+    is_visible_raw: Optional[bool]
+
+    @staticmethod
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DtcDop":
+        """Reads a DTC-DOP."""
+        kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, doc_frags))
+
+        diag_coded_type = create_any_diag_coded_type_from_et(
+            odxrequire(et_element.find("DIAG-CODED-TYPE")), doc_frags)
+        physical_type = PhysicalType.from_et(
+            odxrequire(et_element.find("PHYSICAL-TYPE")), doc_frags)
+        compu_method = create_any_compu_method_from_et(
+            odxrequire(et_element.find("COMPU-METHOD")),
+            doc_frags,
+            diag_coded_type.base_data_type,
+            physical_type.base_data_type,
+        )
+        dtcs_raw: List[Union[DiagnosticTroubleCode, OdxLinkRef]] = []
+        if (dtcs_elem := et_element.find("DTCS")) is not None:
+            for dtc_proxy_elem in dtcs_elem:
+                if dtc_proxy_elem.tag == "DTC":
+                    dtcs_raw.append(DiagnosticTroubleCode.from_et(dtc_proxy_elem, doc_frags))
+                elif dtc_proxy_elem.tag == "DTC-REF":
+                    dtcs_raw.append(OdxLinkRef.from_et(dtc_proxy_elem, doc_frags))
+
+        # TODO: NOT-INHERITED-DTC-SNREFS
+        linked_dtc_dop_refs = [
+            cast(OdxLinkRef, OdxLinkRef.from_et(dtc_ref_elem, doc_frags))
+            for dtc_ref_elem in et_element.iterfind("LINKED-DTC-DOPS/"
+                                                    "LINKED-DTC-DOP/"
+                                                    "DTC-DOP-REF")
+        ]
+        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
+
+        return DtcDop(
+            diag_coded_type=diag_coded_type,
+            physical_type=physical_type,
+            compu_method=compu_method,
+            dtcs_raw=dtcs_raw,
+            linked_dtc_dop_refs=linked_dtc_dop_refs,
+            is_visible_raw=is_visible_raw,
+            **kwargs)
 
     @property
     def dtcs(self) -> NamedItemList[DiagnosticTroubleCode]:
         return self._dtcs
+
+    @property
+    def is_visible(self) -> bool:
+        return self.is_visible_raw is True
 
     @property
     def linked_dtc_dops(self) -> NamedItemList["DtcDop"]:
@@ -34,8 +90,19 @@ class DtcDop(DataObjectProperty):
     def convert_bytes_to_physical(self,
                                   decode_state: DecodeState,
                                   bit_position: int = 0) -> Tuple[ParameterValue, int]:
-        trouble_code, cursor_position = super().convert_bytes_to_physical(
+
+        int_trouble_code, cursor_position = self.diag_coded_type.convert_bytes_to_internal(
             decode_state, bit_position=bit_position)
+
+        if self.compu_method.is_valid_internal_value(int_trouble_code):
+            trouble_code = self.compu_method.convert_internal_to_physical(int_trouble_code)
+        else:
+            # TODO: How to prevent this?
+            raise DecodeError(
+                f"DTC-DOP {self.short_name} could not convert the coded value "
+                f" {repr(int_trouble_code)} to physical type {self.physical_type.base_data_type}.")
+
+        assert isinstance(trouble_code, int)
 
         dtcs = [x for x in self.dtcs if x.trouble_code == trouble_code]
 
