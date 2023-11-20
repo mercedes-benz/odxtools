@@ -185,7 +185,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     short_name="certificateClient",
                     long_name=None,
                     description=None,
-                    is_visible_raw=None,
+                    admin_data=None,
                     diag_coded_type=diagcodedtypes["certificateClient"],
                     physical_type=PhysicalType(
                         DataType.A_BYTEFIELD, display_radix=None, precision=None),
@@ -201,8 +201,8 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             short_name="sendCertificate",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="SID",
@@ -452,7 +452,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     short_name="uint8_times_8",
                     long_name=None,
                     description=None,
-                    is_visible_raw=None,
+                    admin_data=None,
                     diag_coded_type=diagcodedtypes["uint8"],
                     physical_type=PhysicalType(
                         DataType.A_UINT32, display_radix=None, precision=None),
@@ -466,7 +466,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     short_name="certificateClient",
                     long_name=None,
                     description=None,
-                    is_visible_raw=None,
+                    admin_data=None,
                     diag_coded_type=diagcodedtypes["length_key_id_to_lengthOfCertificateClient"],
                     physical_type=PhysicalType(
                         DataType.A_UINT32, display_radix=None, precision=None),
@@ -482,8 +482,8 @@ class TestParamLengthInfoType(unittest.TestCase):
             short_name="sendCertificate",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="SID",
@@ -773,7 +773,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     short_name="certificateClient",
                     long_name=None,
                     description=None,
-                    is_visible_raw=None,
+                    admin_data=None,
                     diag_coded_type=diagcodedtypes["certificateClient"],
                     physical_type=PhysicalType(
                         DataType.A_BYTEFIELD, display_radix=None, precision=None),
@@ -789,8 +789,8 @@ class TestMinMaxLengthType(unittest.TestCase):
             short_name="sendCertificate",
             long_name=None,
             description=None,
+            admin_data=None,
             sdgs=[],
-            is_visible_raw=None,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="SID",

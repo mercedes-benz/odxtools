@@ -110,9 +110,9 @@ class TestUnitSpec(unittest.TestCase):
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop_id", doc_frags),
             short_name="dop_sn",
+            admin_data=None,
             long_name=None,
             description=None,
-            is_visible_raw=None,
             diag_coded_type=dct,
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=IdenticalCompuMethod(
@@ -152,10 +152,10 @@ class TestUnitSpec(unittest.TestCase):
                 Request(
                     odx_id=OdxLinkId("rq_id", doc_frags),
                     short_name="rq_sn",
+                    admin_data=None,
                     long_name=None,
                     description=None,
                     sdgs=[],
-                    is_visible_raw=None,
                     parameters=NamedItemList([
                         CodedConstParameter(
                             short_name="sid",

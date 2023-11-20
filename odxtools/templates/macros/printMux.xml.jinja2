@@ -6,7 +6,9 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printMux(mux) %}
-<MUX ID="{{mux.odx_id.local_id}}">
+<MUX ID="{{mux.odx_id.local_id}}"
+     {{-make_bool_xml_attrib("IS-VISIBLE", mux.is_visible_raw)}}
+     {#- #}>
   {{ peid.printElementIdSubtags(mux)|indent(1) }}
   <BYTE-POSITION>{{mux.byte_position}}</BYTE-POSITION>
   <SWITCH-KEY>

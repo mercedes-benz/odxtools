@@ -73,7 +73,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 short_name="inputDOP",
                 long_name=None,
                 description=None,
-                is_visible_raw=None,
+                admin_data=None,
                 diag_coded_type=StandardLengthType(
                     base_data_type=DataType.A_INT32,
                     bit_length=1,
@@ -115,7 +115,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 short_name="outputDOP",
                 long_name=None,
                 description=None,
-                is_visible_raw=None,
+                admin_data=None,
                 diag_coded_type=StandardLengthType(
                     base_data_type=DataType.A_INT32,
                     bit_length=1,
@@ -143,7 +143,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 short_name="negOutputDOP",
                 long_name=None,
                 description=None,
-                is_visible_raw=None,
+                admin_data=None,
                 diag_coded_type=StandardLengthType(
                     base_data_type=DataType.A_INT32,
                     bit_length=1,

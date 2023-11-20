@@ -4,7 +4,6 @@ from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
 from .complexdop import ComplexDop
-from .createsdgs import create_sdgs_from_et
 from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
@@ -21,6 +20,7 @@ class Field(ComplexDop):
     structure_snref: Optional[str]
     env_data_desc_ref: Optional[OdxLinkRef]
     env_data_desc_snref: Optional[str]
+    is_visible_raw: Optional[bool]
 
     def __post_init__(self) -> None:
         self._structure: Optional[BasicStructure] = None
@@ -39,7 +39,6 @@ class Field(ComplexDop):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Field":
         kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
         structure_snref = None
@@ -53,13 +52,16 @@ class Field(ComplexDop):
 
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
         return Field(
-            sdgs=sdgs,
             structure_ref=structure_ref,
             structure_snref=structure_snref,
             env_data_desc_ref=env_data_desc_ref,
             env_data_desc_snref=env_data_desc_snref,
             is_visible_raw=is_visible_raw,
             **kwargs)
+
+    @property
+    def is_visible(self) -> bool:
+        return self.is_visible_raw in (None, True)
 
     @property
     def structure(self) -> BasicStructure:

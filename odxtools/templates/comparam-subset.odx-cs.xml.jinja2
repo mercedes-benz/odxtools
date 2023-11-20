@@ -55,7 +55,7 @@
    {% if comparam_subset.data_object_props %}
    <DATA-OBJECT-PROPS>
      {%- for dop in comparam_subset.data_object_props %}
-     {{- pdop.printDOP(dop, "DATA-OBJECT-PROP") | indent(2, first=True) }}
+     {{- pdop.printDataObjectProp(dop) | indent(5, first=True) }}
      {%- endfor %}
    </DATA-OBJECT-PROPS>
    {% endif %}

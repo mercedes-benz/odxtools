@@ -86,7 +86,7 @@
   {%- endfor %}
   </COMPU-SCALES>
   {%- if cm.compu_default_value is not none %}
-  <COMPU-DEFAULT-VALUE> 
+  <COMPU-DEFAULT-VALUE>
     <VT>{{cm.compu_default_value.compu_const}}</VT>
     {%- if cm.compu_default_value.compu_inverse_value is not none %}
     <COMPU-INVERSE-VALUE>
@@ -163,35 +163,47 @@
 </COMPU-METHOD>
 {%- endmacro -%}
 
-{%- macro printDOP(dop, tag_name) %}
-<{{tag_name}} ID="{{dop.odx_id.local_id}}">
+{%- macro printDopBaseAttribs(dop) %}
+{{- make_xml_attrib("ID", dop.odx_id.local_id) }}
+{{- make_xml_attrib("OID", dop.oid) }}
+{#- -#}
+{%- endmacro %}
+
+{%- macro printDopBaseSubtags(dop) %}
  {{ peid.printElementIdSubtags(dop)|indent(1) }}
  {%- if dop.admin_data %}
- {{- pad.printAdminData(dop.admin_data)|indent(2, first=True) }}
+ {{ pad.printAdminData(dop.admin_data)|indent(1) }}
  {%- endif %}
- {{- psd.printSpecialDataGroups(dop.sdgs)|indent(2, first=True) }}
- {%- if dop.compu_method %}
- {{ printCompuMethod(dop.compu_method)|indent(1) }}
- {%- endif %}
- {%- if dop.diag_coded_type %}
- {{ printDiagCodedType(dop.diag_coded_type)|indent(1) -}}
- {%- endif -%}
- {%- if dop.physical_type %}
- {{ printPhysicalType(dop.physical_type)|indent(1) }}
- {%- endif -%}
+ {{ psd.printSpecialDataGroups(dop.sdgs)|indent(1) }}
+{%- endmacro -%}
+
+{%- macro printComplexDopAttribs(st) %}
+ {{- printDopBaseAttribs(st) }}
+{%- endmacro -%}
+
+{%- macro printComplexDopSubtags(st) %}
+ {{- printDopBaseSubtags(st) }}
+{%- endmacro -%}
+
+{%- macro printDataObjectProp(dop) %}
+<DATA-OBJECT-PROP {{- printDopBaseAttribs(dop) }}>
+ {{- printDopBaseSubtags(dop) }}
+ {{- printCompuMethod(dop.compu_method)|indent(1) }}
+ {{- printDiagCodedType(dop.diag_coded_type)|indent(1) }}
+ {{- printPhysicalType(dop.physical_type)|indent(1) }}
  {%- if dop.unit_ref %}
  <UNIT-REF ID-REF="{{ dop.unit_ref.ref_id }}" />
  {%- endif %}
-</{{tag_name}}>
-{%- endmacro -%}
+</DATA-OBJECT-PROP>
+{%- endmacro %}
 
-{%- macro printDTCDOP(dop) %}
-<DTC-DOP ID="{{dop.odx_id.local_id}}">
- {{ peid.printElementIdSubtags(dop)|indent(1) }}
- {{- psd.printSpecialDataGroups(dop.sdgs)|indent(1, first=True) }}
- {{- printDiagCodedType(dop.diag_coded_type)|indent(1, first=True) }}
- {{- printPhysicalType(dop.physical_type)|indent(1, first=True) }}
- {{- printCompuMethod(dop.compu_method)|indent(1, first=True) }}
+{%- macro printDtcDop(dop) %}
+<DTC-DOP {{- printDopBaseAttribs(dop) }}
+         {{- make_bool_xml_attrib("IS-VISIBLE", dop.is_visible_raw) }}>
+ {{- printDopBaseSubtags(dop)|indent(1) }}
+ {{- printDiagCodedType(dop.diag_coded_type)|indent(1) }}
+ {{- printPhysicalType(dop.physical_type)|indent(1) }}
+ {{- printCompuMethod(dop.compu_method)|indent(1) }}
  <DTCS>
  {%- for dtc in dop.dtcs_raw %}
  {%- if hasattr(dtc, "ref_id") %}
