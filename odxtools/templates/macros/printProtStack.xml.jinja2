@@ -3,12 +3,12 @@
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementID.xml.jinja2') as peid %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printProtStack(ps) %}
 <PROT-STACK ID="{{ps.odx_id.local_id}}">
- {{ peid.printElementID(ps) | indent(1) }}
+ {{ peid.printElementIdSubtags(ps) | indent(1) }}
  <PDU-PROTOCOL-TYPE>{{ ps.pdu_protocol_type }}</PDU-PROTOCOL-TYPE>
  <PHYSICAL-LINK-TYPE>{{ ps.physical_link_type }}</PHYSICAL-LINK-TYPE>
  {%- if ps.comparam_subset_refs %}

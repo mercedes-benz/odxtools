@@ -9,7 +9,6 @@ from .comparamspec import ComparamSpec
 from .comparamsubset import ComparamSubset
 from .diaglayer import DiagLayer
 from .diaglayercontainer import DiagLayerContainer
-from .globals import logger
 from .nameditemlist import NamedItemList, short_name_as_key
 from .odxlink import OdxLinkDatabase
 
@@ -44,10 +43,11 @@ class Database:
             names = list(pdx_zip.namelist())
             names.sort()
             for zip_member in names:
-                # file name can end with .odx, .odx-d, .odx-c, .odx-cs, .odx-e, .odx-f, .odx-fd, .odx-m, .odx-v
-                # We could test for all that, or just make sure suffix starts with .odx
+                # file name can end with .odx, .odx-d, .odx-c,
+                # .odx-cs, .odx-e, .odx-f, .odx-fd, .odx-m, .odx-v We
+                # could test for all that, or just make sure suffix
+                # starts with .odx
                 if Path(zip_member).suffix.startswith(".odx"):
-                    logger.info(f"Processing the file {zip_member}")
                     d = pdx_zip.read(zip_member)
                     root = ElementTree.fromstring(d)
                     documents.append(root)
@@ -60,22 +60,21 @@ class Database:
         comparam_specs: List[ComparamSpec] = []
         for root in documents:
             # ODX spec version
-            model_version = version(root.attrib.get("MODEL-VERSION", "2.0"))
             dlc = root.find("DIAG-LAYER-CONTAINER")
             if dlc is not None:
                 dlcs.append(DiagLayerContainer.from_et(dlc, []))
-            # In ODX 2.0 there was only COMPARAM-SPEC
-            # In ODX 2.2 content of COMPARAM-SPEC was renamed to COMPARAM-SUBSET
-            # and COMPARAM-SPEC becomes a container for PROT-STACKS
-            # and a PROT-STACK references a list of COMPARAM-SUBSET
-            if model_version >= version("2.2"):
-                subset = root.find("COMPARAM-SUBSET")
-                if subset is not None:
-                    comparam_subsets.append(ComparamSubset.from_et(subset, []))
-            else:
-                spec = root.find("COMPARAM-SPEC")
-                if spec is not None:
-                    comparam_specs.append(ComparamSpec.from_et(spec, []))
+
+            # In ODX 2.0 there was only COMPARAM-SPEC. In ODX 2.2 the
+            # content of COMPARAM-SPEC was moved to COMPARAM-SUBSET
+            # and COMPARAM-SPEC became a container for PROT-STACKS and
+            # a PROT-STACK references a list of COMPARAM-SUBSET
+            cp_subset = root.find("COMPARAM-SUBSET")
+            if cp_subset is not None:
+                comparam_subsets.append(ComparamSubset.from_et(cp_subset, []))
+
+            cp_spec = root.find("COMPARAM-SPEC")
+            if cp_spec is not None:
+                comparam_specs.append(ComparamSpec.from_et(cp_spec, []))
 
         self._diag_layer_containers = NamedItemList(dlcs)
         self._diag_layer_containers.sort(key=short_name_as_key)
