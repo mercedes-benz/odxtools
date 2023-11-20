@@ -141,7 +141,7 @@
 {%- if dlr.positive_responses %}
  <POS-RESPONSES>
 {%- for resp in dlr.positive_responses %}
-  {{ presp.printResponse(resp)|indent(2) }}
+  {{ presp.printResponse(resp, "POS-RESPONSE")|indent(2) }}
 {%- endfor %}
  </POS-RESPONSES>
 {%- endif %}

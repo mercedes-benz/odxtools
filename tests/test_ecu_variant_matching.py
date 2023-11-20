@@ -16,7 +16,7 @@ from odxtools.matchingparameter import MatchingParameter
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.request import Request
-from odxtools.response import Response
+from odxtools.response import Response, ResponseType
 
 doc_frags = [OdxDocFragment(doc_name="pytest", doc_type="WinneThePoh")]
 
@@ -33,7 +33,7 @@ def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
         admin_data=None,
         sdgs=[],
         parameters=NamedItemList(),
-        response_type="POS-RESPONSE",
+        response_type=ResponseType.POS_RESPONSE,
         byte_size=None,
     )
     odxlinks.update({resp.odx_id: resp})

@@ -1,13 +1,21 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
+from enum import Enum
+from typing import List, Optional, cast
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
+from .exceptions import odxraise
 from .odxlink import OdxDocFragment
 from .odxtypes import ParameterValue
 from .parameters.matchingrequestparameter import MatchingRequestParameter
 from .utils import dataclass_fields_asdict
+
+
+class ResponseType(Enum):
+    POS_RESPONSE = "POS-RESPONSE"
+    NEG_RESPONSE = "NEG-RESPONSE"
+    GLOBAL_NEG_RESPONSE = "GLOBAL-NEG-RESPONSE"
 
 
 # TODO: The spec does not say that responses are basic structures. For
@@ -15,14 +23,20 @@ from .utils import dataclass_fields_asdict
 # decoding machinery...
 @dataclass
 class Response(BasicStructure):
-    response_type: str  # "POS-RESPONSE", "NEG-RESPONSE", or "GLOBAL-NEG-RESPONSE"
+    response_type: ResponseType
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Response":
         """Reads a response."""
         kwargs = dataclass_fields_asdict(BasicStructure.from_et(et_element, doc_frags))
 
-        return Response(response_type=et_element.tag, **kwargs)
+        try:
+            response_type = ResponseType(et_element.tag)
+        except ValueError:
+            response_type = cast(ResponseType, None)
+            odxraise(f"Encountered unknown response type '{et_element.tag}'")
+
+        return Response(response_type=response_type, **kwargs)
 
     def encode(self, coded_request: Optional[bytes] = None, **params: ParameterValue) -> bytes:
         if coded_request is not None:

@@ -27,7 +27,7 @@ from odxtools.parameters.physicalconstantparameter import PhysicalConstantParame
 from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaltype import PhysicalType
 from odxtools.request import Request
-from odxtools.response import Response
+from odxtools.response import Response, ResponseType
 from odxtools.standardlengthtype import StandardLengthType
 from odxtools.structure import Structure
 
@@ -156,7 +156,7 @@ class TestIdentifyingService(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type="NEG-RESPONSE",
+            response_type=ResponseType.NEG_RESPONSE,
             parameters=NamedItemList([req_param1, resp2_param2]),
             byte_size=None,
         )
@@ -1132,7 +1132,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type="POS-RESPONSE",
+            response_type=ResponseType.POS_RESPONSE,
             parameters=NamedItemList([resp_param1, resp_param2]),
             byte_size=None,
         )
@@ -1166,7 +1166,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type="NEG-RESPONSE",
+            response_type=ResponseType.NEG_RESPONSE,
             parameters=NamedItemList([resp_param1, resp_param2]),
             byte_size=None,
         )
@@ -1331,7 +1331,7 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
             parameters=NamedItemList([resp_param1, resp_param2]),
             byte_size=None,
-            response_type="POS-RESPONSE",
+            response_type=ResponseType.POS_RESPONSE,
         )
         odxlinks.update(pos_response._build_odxlinks())
 

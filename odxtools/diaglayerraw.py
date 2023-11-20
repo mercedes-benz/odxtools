@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from copy import copy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
 from xml.etree import ElementTree
 
 from .additionalaudience import AdditionalAudience
@@ -15,7 +15,7 @@ from .diaglayertype import DiagLayerType
 from .diagservice import DiagService
 from .ecuvariantpattern import EcuVariantPattern
 from .element import IdentifiableElement
-from .exceptions import odxassert, odxrequire
+from .exceptions import odxassert, odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -70,8 +70,11 @@ class DiagLayerRaw(IdentifiableElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayerRaw":
-
-        variant_type = DiagLayerType(et_element.tag)
+        try:
+            variant_type = DiagLayerType(et_element.tag)
+        except ValueError:
+            variant_type = cast(DiagLayerType, None)
+            odxraise(f"Encountered unknown diagnostic layer type '{et_element.tag}'")
 
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
 
