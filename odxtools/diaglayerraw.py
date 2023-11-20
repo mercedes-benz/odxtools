@@ -8,7 +8,6 @@ from .additionalaudience import AdditionalAudience
 from .admindata import AdminData
 from .companydata import CompanyData
 from .comparaminstance import ComparamInstance
-from .createanystructure import create_any_structure_from_et
 from .createsdgs import create_sdgs_from_et
 from .diagcomm import DiagComm
 from .diagdatadictionaryspec import DiagDataDictionarySpec
@@ -16,7 +15,7 @@ from .diaglayertype import DiagLayerType
 from .diagservice import DiagService
 from .ecuvariantpattern import EcuVariantPattern
 from .element import IdentifiableElement
-from .exceptions import odxassert, odxraise, odxrequire
+from .exceptions import odxassert, odxrequire
 from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -113,33 +112,25 @@ class DiagLayerRaw(IdentifiableElement):
 
                 diag_comms.append(dc)
 
-        requests = []
-        for rq_elem in et_element.iterfind("REQUESTS/REQUEST"):
-            rq = odxrequire(create_any_structure_from_et(rq_elem, doc_frags))
-            if not isinstance(rq, Request):
-                odxraise()
-            requests.append(rq)
+        requests = NamedItemList([
+            Request.from_et(rq_elem, doc_frags)
+            for rq_elem in et_element.iterfind("REQUESTS/REQUEST")
+        ])
 
-        positive_responses = []
-        for pr_elem in et_element.iterfind("POS-RESPONSES/POS-RESPONSE"):
-            pr = odxrequire(create_any_structure_from_et(pr_elem, doc_frags))
-            if not isinstance(pr, Response):
-                odxraise()
-            positive_responses.append(pr)
+        positive_responses = NamedItemList([
+            Response.from_et(rs_elem, doc_frags)
+            for rs_elem in et_element.iterfind("POS-RESPONSES/POS-RESPONSE")
+        ])
 
-        negative_responses = []
-        for nr_elem in et_element.iterfind("NEG-RESPONSES/NEG-RESPONSE"):
-            nr = odxrequire(create_any_structure_from_et(nr_elem, doc_frags))
-            if not isinstance(nr, Response):
-                odxraise()
-            negative_responses.append(nr)
+        negative_responses = NamedItemList([
+            Response.from_et(rs_elem, doc_frags)
+            for rs_elem in et_element.iterfind("NEG-RESPONSES/NEG-RESPONSE")
+        ])
 
-        global_negative_responses = []
-        for nr_elem in et_element.iterfind("GLOBAL-NEG-RESPONSES/GLOBAL-NEG-RESPONSE"):
-            nr = odxrequire(create_any_structure_from_et(nr_elem, doc_frags))
-            if not isinstance(nr, Response):
-                odxraise()
-            global_negative_responses.append(nr)
+        global_negative_responses = NamedItemList([
+            Response.from_et(rs_elem, doc_frags)
+            for rs_elem in et_element.iterfind("GLOBAL-NEG-RESPONSES/GLOBAL-NEG-RESPONSE")
+        ])
 
         import_refs = [
             OdxLinkRef.from_et(el, doc_frags)
@@ -188,9 +179,9 @@ class DiagLayerRaw(IdentifiableElement):
             functional_classes=NamedItemList(functional_classes),
             diag_data_dictionary_spec=diag_data_dictionary_spec,
             diag_comms=diag_comms,
-            requests=NamedItemList(requests),
-            positive_responses=NamedItemList(positive_responses),
-            negative_responses=NamedItemList(negative_responses),
+            requests=requests,
+            positive_responses=positive_responses,
+            negative_responses=negative_responses,
             global_negative_responses=NamedItemList(global_negative_responses),
             import_refs=import_refs,
             state_charts=NamedItemList(state_charts),

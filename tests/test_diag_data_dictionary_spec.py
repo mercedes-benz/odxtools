@@ -204,6 +204,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             ]),
             byte_size=None,
             dtc_values=[],
+            all_value=None,
         )
 
         env_data_desc = EnvironmentDataDescription(

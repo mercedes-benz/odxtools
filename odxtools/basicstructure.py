@@ -2,6 +2,7 @@
 import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from xml.etree import ElementTree
 
 from .complexdop import ComplexDop
 from .dataobjectproperty import DataObjectProperty
@@ -9,9 +10,10 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert, odxraise
 from .nameditemlist import NamedItemList
-from .odxlink import OdxLinkDatabase, OdxLinkId
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterDict, ParameterValue, ParameterValueDict
 from .parameters.codedconstparameter import CodedConstParameter
+from .parameters.createanyparameter import create_any_parameter_from_et
 from .parameters.lengthkeyparameter import LengthKeyParameter
 from .parameters.matchingrequestparameter import MatchingRequestParameter
 from .parameters.nrcconstparameter import NrcConstParameter
@@ -20,6 +22,7 @@ from .parameters.parameterwithdop import ParameterWithDOP
 from .parameters.physicalconstantparameter import PhysicalConstantParameter
 from .parameters.tablekeyparameter import TableKeyParameter
 from .parameters.valueparameter import ValueParameter
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -29,6 +32,22 @@ if TYPE_CHECKING:
 class BasicStructure(ComplexDop):
     parameters: NamedItemList[Parameter]
     byte_size: Optional[int]
+
+    @staticmethod
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "BasicStructure":
+        """Read a BASIC-STRUCTURE."""
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
+
+        parameters = NamedItemList([
+            create_any_parameter_from_et(et_parameter, doc_frags)
+            for et_parameter in et_element.iterfind("PARAMS/PARAM")
+        ])
+
+        byte_size_str = et_element.findtext("BYTE-SIZE")
+        byte_size = int(byte_size_str) if byte_size_str is not None else None
+
+        return BasicStructure(parameters=parameters, byte_size=byte_size, **kwargs)
 
     def get_static_bit_length(self) -> Optional[int]:
         # Explicit size was specified
