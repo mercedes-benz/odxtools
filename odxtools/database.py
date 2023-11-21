@@ -43,10 +43,10 @@ class Database:
             names = list(pdx_zip.namelist())
             names.sort()
             for zip_member in names:
-                # file name can end with .odx, .odx-d, .odx-c,
-                # .odx-cs, .odx-e, .odx-f, .odx-fd, .odx-m, .odx-v We
-                # could test for all that, or just make sure suffix
-                # starts with .odx
+                # The name of ODX files can end with .odx, .odx-d,
+                # .odx-c, .odx-cs, .odx-e, .odx-f, .odx-fd, .odx-m,
+                # .odx-v .  We could test for all that, or just make
+                # sure that the file's suffix starts with .odx
                 if Path(zip_member).suffix.startswith(".odx"):
                     d = pdx_zip.read(zip_member)
                     root = ElementTree.fromstring(d)
