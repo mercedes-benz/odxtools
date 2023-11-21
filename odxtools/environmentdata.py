@@ -1,13 +1,11 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
 from .exceptions import odxrequire
-from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment
-from .parameters.createanyparameter import create_any_parameter_from_et
 from .utils import dataclass_fields_asdict
 
 
@@ -15,6 +13,7 @@ from .utils import dataclass_fields_asdict
 class EnvironmentData(BasicStructure):
     """This class represents Environment Data that describes the circumstances in which the error occurred."""
 
+    all_value: Optional[bool]
     dtc_values: List[int]
 
     @staticmethod
@@ -22,19 +21,12 @@ class EnvironmentData(BasicStructure):
                 doc_frags: List[OdxDocFragment]) -> "EnvironmentData":
         """Reads Environment Data from Diag Layer."""
         kwargs = dataclass_fields_asdict(BasicStructure.from_et(et_element, doc_frags))
-        parameters = [
-            create_any_parameter_from_et(et_parameter, doc_frags)
-            for et_parameter in et_element.iterfind("PARAMS/PARAM")
-        ]
-        byte_size_text = et_element.findtext("BYTE-SIZE")
-        byte_size = None if byte_size_text is None else int(byte_size_text)
+
+        all_value_elem = et_element.find("ALL-VALUE")
+        all_value = None if all_value_elem is None else True
         dtc_values = [
             int(odxrequire(dtcv_elem.text))
             for dtcv_elem in et_element.iterfind("DTC-VALUES/DTC-VALUE")
         ]
 
-        return EnvironmentData(
-            parameters=NamedItemList(parameters),
-            byte_size=byte_size,
-            dtc_values=dtc_values,
-            **kwargs)
+        return EnvironmentData(all_value=all_value, dtc_values=dtc_values, **kwargs)

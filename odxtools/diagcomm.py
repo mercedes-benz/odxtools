@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -114,7 +114,6 @@ class DiagComm(IdentifiableElement):
             try:
                 diagnostic_class = DiagClassType(diagnostic_class_str)
             except ValueError:
-                diagnostic_class = cast(DiagClassType, None)
                 odxraise(f"Encountered unknown diagnostic class type '{diagnostic_class_str}'")
 
         is_mandatory_raw = odxstr_to_bool(et_element.get("IS-MANDATORY"))

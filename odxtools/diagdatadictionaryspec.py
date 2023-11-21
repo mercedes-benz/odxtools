@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
-from .createanystructure import create_any_structure_from_et
 from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
 from .dopbase import DopBase
@@ -14,12 +13,13 @@ from .dynamiclengthfield import DynamicLengthField
 from .endofpdufield import EndOfPduField
 from .environmentdata import EnvironmentData
 from .environmentdatadescription import EnvironmentDataDescription
-from .exceptions import odxraise, odxrequire
+from .exceptions import odxraise
 from .globals import logger
 from .multiplexer import Multiplexer
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .specialdatagroup import SpecialDataGroup
+from .structure import Structure
 from .table import Table
 from .unitspec import UnitSpec
 
@@ -64,7 +64,7 @@ class DiagDataDictionarySpec:
         ]
 
         structures = [
-            odxrequire(create_any_structure_from_et(structure_element, doc_frags))
+            Structure.from_et(structure_element, doc_frags)
             for structure_element in et_element.iterfind("STRUCTURES/STRUCTURE")
         ]
 

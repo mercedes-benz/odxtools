@@ -20,8 +20,12 @@ if TYPE_CHECKING:
 
 @dataclass
 class Multiplexer(ComplexDop):
-    """This class represents a Multiplexer (MUX) which are used to interpret data stream depending on the value
-    of a switch-key (similar to switch-case statements in programming languages like C or Java)."""
+    """This class represents a Multiplexer (MUX)
+
+    Multiplexers are used to interpret data stream depending on the
+    value of a switch-key (similar to switch-case statements in
+    programming languages like C or Java).
+    """
 
     byte_position: int
     switch_key: MultiplexerSwitchKey

@@ -1,0 +1,23 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printDOP.xml.jinja2') as pdop %}
+{%- import('macros/printParam.xml.jinja2') as pp %}
+
+{%- macro printBasicStructureSubtags(st) %}
+ {{ pdop.printComplexDopSubtags(st)|indent(1) }}
+{%- if st.byte_size is not none %}
+ <BYTE-SIZE>{{st.byte_size}}</BYTE-SIZE>
+{%- endif %}
+ <PARAMS>
+{%- for param in st.parameters -%}
+  {{ pp.printParam(param)|indent(2)}}
+{%- endfor %}
+ </PARAMS>
+{%- endmacro -%}
+
+{%- macro printBasicStructureAttribs(st) %}
+ {{- pdop.printComplexDopAttribs(st) }}
+{%- endmacro -%}

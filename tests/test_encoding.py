@@ -17,7 +17,7 @@ from odxtools.parameters.parameter import Parameter
 from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaltype import PhysicalType
 from odxtools.request import Request
-from odxtools.response import Response
+from odxtools.response import Response, ResponseType
 from odxtools.standardlengthtype import StandardLengthType
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
@@ -217,7 +217,7 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type="POS-RESPONSE",
+            response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([param1, param2]),
             byte_size=None,
         )
