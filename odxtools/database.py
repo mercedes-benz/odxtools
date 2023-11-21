@@ -101,12 +101,18 @@ class Database:
         for subset in self.comparam_subsets:
             self._odxlinks.update(subset._build_odxlinks())
 
+        for spec in self.comparam_specs:
+            self._odxlinks.update(spec._build_odxlinks())
+
         for dlc in self.diag_layer_containers:
             self._odxlinks.update(dlc._build_odxlinks())
 
         # Resolve ODXLINK references
         for subset in self.comparam_subsets:
             subset._resolve_odxlinks(self._odxlinks)
+
+        for spec in self.comparam_specs:
+            spec._resolve_odxlinks(self._odxlinks)
 
         for dlc in self.diag_layer_containers:
             dlc._resolve_odxlinks(self._odxlinks)
