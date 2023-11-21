@@ -156,7 +156,7 @@ class TestIdentifyingService(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.NEG_RESPONSE,
+            response_type=ResponseType.NEGATIVE,
             parameters=NamedItemList([req_param1, resp2_param2]),
             byte_size=None,
         )
@@ -1132,7 +1132,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.POS_RESPONSE,
+            response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([resp_param1, resp_param2]),
             byte_size=None,
         )
@@ -1166,7 +1166,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.NEG_RESPONSE,
+            response_type=ResponseType.NEGATIVE,
             parameters=NamedItemList([resp_param1, resp_param2]),
             byte_size=None,
         )
@@ -1331,7 +1331,7 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
             parameters=NamedItemList([resp_param1, resp_param2]),
             byte_size=None,
-            response_type=ResponseType.POS_RESPONSE,
+            response_type=ResponseType.POSITIVE,
         )
         odxlinks.update(pos_response._build_odxlinks())
 

@@ -217,7 +217,7 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.POS_RESPONSE,
+            response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([param1, param2]),
             byte_size=None,
         )

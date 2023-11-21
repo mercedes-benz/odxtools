@@ -595,7 +595,7 @@ somersault_positive_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.POS_RESPONSE,
+            response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -632,7 +632,7 @@ somersault_positive_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.POS_RESPONSE,
+            response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -667,7 +667,7 @@ somersault_positive_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.POS_RESPONSE,
+            response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -704,7 +704,7 @@ somersault_positive_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.POS_RESPONSE,
+            response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -752,7 +752,7 @@ somersault_positive_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.POS_RESPONSE,
+            response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -801,7 +801,7 @@ somersault_positive_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.POS_RESPONSE,
+            response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -877,7 +877,7 @@ somersault_positive_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.POS_RESPONSE,
+            response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -906,7 +906,7 @@ somersault_negative_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.NEG_RESPONSE,
+            response_type=ResponseType.NEGATIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -956,7 +956,7 @@ somersault_negative_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.NEG_RESPONSE,
+            response_type=ResponseType.NEGATIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -991,7 +991,7 @@ somersault_negative_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.NEG_RESPONSE,
+            response_type=ResponseType.NEGATIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -1056,7 +1056,7 @@ somersault_global_negative_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.GLOBAL_NEG_RESPONSE,
+            response_type=ResponseType.GLOBAL_NEGATIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -2159,7 +2159,7 @@ somersault_assiduous_positive_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.POS_RESPONSE,
+            response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",
@@ -2199,7 +2199,7 @@ somersault_assiduous_negative_responses = {
             description=None,
             admin_data=None,
             sdgs=[],
-            response_type=ResponseType.POS_RESPONSE,
+            response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
                     short_name="sid",

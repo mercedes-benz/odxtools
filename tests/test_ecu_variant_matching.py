@@ -33,7 +33,7 @@ def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
         admin_data=None,
         sdgs=[],
         parameters=NamedItemList(),
-        response_type=ResponseType.POS_RESPONSE,
+        response_type=ResponseType.POSITIVE,
         byte_size=None,
     )
     odxlinks.update({resp.odx_id: resp})

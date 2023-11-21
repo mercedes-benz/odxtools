@@ -13,9 +13,9 @@ from .utils import dataclass_fields_asdict
 
 
 class ResponseType(Enum):
-    POS_RESPONSE = "POS-RESPONSE"
-    NEG_RESPONSE = "NEG-RESPONSE"
-    GLOBAL_NEG_RESPONSE = "GLOBAL-NEG-RESPONSE"
+    POSITIVE = "POS-RESPONSE"
+    NEGATIVE = "NEG-RESPONSE"
+    GLOBAL_NEGATIVE = "GLOBAL-NEG-RESPONSE"
 
 
 # TODO: The spec does not say that responses are basic structures. For
