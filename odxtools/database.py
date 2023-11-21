@@ -81,7 +81,10 @@ class Database:
 
             cp_spec = root.find("COMPARAM-SPEC")
             if cp_spec is not None:
-                comparam_specs.append(ComparamSpec.from_et(cp_spec, []))
+                if model_version == "2.0":
+                    comparam_subsets.append(ComparamSubset.from_et(cp_spec, []))
+                else:  # odx >= 2.2
+                    comparam_specs.append(ComparamSpec.from_et(cp_spec, []))
 
         self._diag_layer_containers = NamedItemList(dlcs)
         self._diag_layer_containers.sort(key=short_name_as_key)
