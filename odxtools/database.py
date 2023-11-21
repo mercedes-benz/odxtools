@@ -9,6 +9,7 @@ from .comparamspec import ComparamSpec
 from .comparamsubset import ComparamSubset
 from .diaglayer import DiagLayer
 from .diaglayercontainer import DiagLayerContainer
+from .exceptions import odxraise
 from .nameditemlist import NamedItemList, short_name_as_key
 from .odxlink import OdxLinkDatabase
 
@@ -27,6 +28,7 @@ class Database:
                  *,
                  pdx_zip: Optional[ZipFile] = None,
                  odx_d_file_name: Optional[str] = None) -> None:
+        self.model_version = None
 
         if pdx_zip is None and odx_d_file_name is None:
             # create an empty database object
@@ -60,6 +62,11 @@ class Database:
         comparam_specs: List[ComparamSpec] = []
         for root in documents:
             # ODX spec version
+            model_version = version(root.attrib.get("MODEL-VERSION", "2.0"))
+            if self.model_version is not None and self.model_version != model_version:
+                odxraise(f"Different ODX versions used in the same file (ODX {model_version} "
+                         f"and ODX {self.model_version}")
+            self.model_version = model_version
             dlc = root.find("DIAG-LAYER-CONTAINER")
             if dlc is not None:
                 dlcs.append(DiagLayerContainer.from_et(dlc, []))
