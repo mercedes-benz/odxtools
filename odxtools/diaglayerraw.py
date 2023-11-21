@@ -8,6 +8,7 @@ from .additionalaudience import AdditionalAudience
 from .admindata import AdminData
 from .companydata import CompanyData
 from .comparaminstance import ComparamInstance
+from .comparamspec import ComparamSpec
 from .createsdgs import create_sdgs_from_et
 from .diagcomm import DiagComm
 from .diagdatadictionaryspec import DiagDataDictionarySpec
@@ -20,6 +21,7 @@ from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parentref import ParentRef
+from .protstack import ProtStack
 from .request import Request
 from .response import Response
 from .singleecujob import SingleEcuJob
@@ -172,7 +174,9 @@ class DiagLayerRaw(IdentifiableElement):
                 "DiagLayer of type other than 'ECU-VARIANT' must not define a ECU-VARIANT-PATTERN")
 
         comparam_spec_ref = OdxLinkRef.from_et(et_element.find("COMPARAM-SPEC-REF"), doc_frags)
-        prot_stack_snref = et_element.findtext("PROT-STACK-SNREF")
+        prot_stack_snref: Optional[str] = None
+        if (prot_stack_snref_elem := et_element.find("PROT-STACK-SNREF")) is not None:
+            prot_stack_snref = odxrequire(prot_stack_snref_elem.get("SHORT-NAME"))
 
         # Create DiagLayer
         return DiagLayerRaw(
@@ -238,6 +242,9 @@ class DiagLayerRaw(IdentifiableElement):
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         """Recursively resolve all references."""
 
+        if self.comparam_spec_ref is not None:
+            self._comparam_spec = odxlinks.resolve(self.comparam_spec_ref, ComparamSpec)
+
         # do ODXLINK reference resolution
         if self.admin_data is not None:
             self.admin_data._resolve_odxlinks(odxlinks)
@@ -272,6 +279,11 @@ class DiagLayerRaw(IdentifiableElement):
             comparam._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        self._prot_stack: Optional[ProtStack] = None
+        if self.prot_stack_snref is not None:
+            self._prot_stack = odxrequire(
+                odxrequire(self.comparam_spec).prot_stacks.get(self.prot_stack_snref))
+
         # do short-name reference resolution
         if self.admin_data is not None:
             self.admin_data._resolve_snrefs(diag_layer)
@@ -304,3 +316,11 @@ class DiagLayerRaw(IdentifiableElement):
             parent_ref._resolve_snrefs(diag_layer)
         for comparam in self.comparams:
             comparam._resolve_snrefs(diag_layer)
+
+    @property
+    def comparam_spec(self) -> Optional[ComparamSpec]:
+        return self._comparam_spec
+
+    @property
+    def prot_stack(self) -> Optional[ProtStack]:
+        return self._prot_stack

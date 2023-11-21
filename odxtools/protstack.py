@@ -49,3 +49,7 @@ class ProtStack(IdentifiableElement):
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
+
+    @property
+    def comparam_subsets(self) -> NamedItemList[ComparamSubset]:
+        return self._comparam_subsets

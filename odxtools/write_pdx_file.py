@@ -134,14 +134,15 @@ def write_pdx_file(
             file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
 
             zf.writestr(zf_file_name, comparam_subset_tpl.render(**vars))
-        del vars["comparam_subset"]
+
+            del vars["comparam_subset"]
 
         # write the communication parameter specs
-        comparam_spec_tpl = jinja_env.get_template("comparam-spec.odx-cs.xml.jinja2")
+        comparam_spec_tpl = jinja_env.get_template("comparam-spec.odx-c.xml.jinja2")
         for comparam_spec in database.comparam_specs:
-            zf_file_name = f"{comparam_spec.short_name}.odx-cs"
+            zf_file_name = f"{comparam_spec.short_name}.odx-c"
             zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            zf_mime_type = "application/x-asam.odx.odx-cs"
+            zf_mime_type = "application/x-asam.odx.odx-c"
 
             vars["comparam_spec"] = comparam_spec
 
@@ -149,7 +150,6 @@ def write_pdx_file(
 
             zf.writestr(zf_file_name, comparam_spec_tpl.render(**vars))
 
-        if "comparam_spec" in vars:
             del vars["comparam_spec"]
 
         # write the actual diagnostic data.
@@ -164,7 +164,7 @@ def write_pdx_file(
 
             file_index.append((file_name, creation_date, mime_type))
             zf.writestr(file_name, dlc_tpl.render(**vars))
-        del vars["dlc"]
+            del vars["dlc"]
 
         # write the index.xml file
         vars["file_index"] = file_index

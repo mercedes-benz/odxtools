@@ -9,7 +9,7 @@ from .comparamspec import ComparamSpec
 from .comparamsubset import ComparamSubset
 from .diaglayer import DiagLayer
 from .diaglayercontainer import DiagLayerContainer
-from .globals import logger
+from .exceptions import odxraise
 from .nameditemlist import NamedItemList, short_name_as_key
 from .odxlink import OdxLinkDatabase
 
@@ -28,6 +28,7 @@ class Database:
                  *,
                  pdx_zip: Optional[ZipFile] = None,
                  odx_d_file_name: Optional[str] = None) -> None:
+        self.model_version = None
 
         if pdx_zip is None and odx_d_file_name is None:
             # create an empty database object
@@ -44,10 +45,11 @@ class Database:
             names = list(pdx_zip.namelist())
             names.sort()
             for zip_member in names:
-                # file name can end with .odx, .odx-d, .odx-c, .odx-cs, .odx-e, .odx-f, .odx-fd, .odx-m, .odx-v
-                # We could test for all that, or just make sure suffix starts with .odx
+                # The name of ODX files can end with .odx, .odx-d,
+                # .odx-c, .odx-cs, .odx-e, .odx-f, .odx-fd, .odx-m,
+                # .odx-v .  We could test for all that, or just make
+                # sure that the file's suffix starts with .odx
                 if Path(zip_member).suffix.startswith(".odx"):
-                    logger.info(f"Processing the file {zip_member}")
                     d = pdx_zip.read(zip_member)
                     root = ElementTree.fromstring(d)
                     documents.append(root)
@@ -61,21 +63,28 @@ class Database:
         for root in documents:
             # ODX spec version
             model_version = version(root.attrib.get("MODEL-VERSION", "2.0"))
+            if self.model_version is not None and self.model_version != model_version:
+                odxraise(f"Different ODX versions used in the same file (ODX {model_version} "
+                         f"and ODX {self.model_version}")
+            self.model_version = model_version
             dlc = root.find("DIAG-LAYER-CONTAINER")
             if dlc is not None:
                 dlcs.append(DiagLayerContainer.from_et(dlc, []))
-            # In ODX 2.0 there was only COMPARAM-SPEC
-            # In ODX 2.2 content of COMPARAM-SPEC was renamed to COMPARAM-SUBSET
-            # and COMPARAM-SPEC becomes a container for PROT-STACKS
-            # and a PROT-STACK references a list of COMPARAM-SUBSET
-            if model_version >= version("2.2"):
-                subset = root.find("COMPARAM-SUBSET")
-                if subset is not None:
-                    comparam_subsets.append(ComparamSubset.from_et(subset, []))
-            else:
-                spec = root.find("COMPARAM-SPEC")
-                if spec is not None:
-                    comparam_specs.append(ComparamSpec.from_et(spec, []))
+
+            # In ODX 2.0 there was only COMPARAM-SPEC. In ODX 2.2 the
+            # content of COMPARAM-SPEC was moved to COMPARAM-SUBSET
+            # and COMPARAM-SPEC became a container for PROT-STACKS and
+            # a PROT-STACK references a list of COMPARAM-SUBSET
+            cp_subset = root.find("COMPARAM-SUBSET")
+            if cp_subset is not None:
+                comparam_subsets.append(ComparamSubset.from_et(cp_subset, []))
+
+            cp_spec = root.find("COMPARAM-SPEC")
+            if cp_spec is not None:
+                if model_version == "2.0":
+                    comparam_subsets.append(ComparamSubset.from_et(cp_spec, []))
+                else:  # odx >= 2.2
+                    comparam_specs.append(ComparamSpec.from_et(cp_spec, []))
 
         self._diag_layer_containers = NamedItemList(dlcs)
         self._diag_layer_containers.sort(key=short_name_as_key)
@@ -102,12 +111,18 @@ class Database:
         for subset in self.comparam_subsets:
             self._odxlinks.update(subset._build_odxlinks())
 
+        for spec in self.comparam_specs:
+            self._odxlinks.update(spec._build_odxlinks())
+
         for dlc in self.diag_layer_containers:
             self._odxlinks.update(dlc._build_odxlinks())
 
         # Resolve ODXLINK references
         for subset in self.comparam_subsets:
             subset._resolve_odxlinks(self._odxlinks)
+
+        for spec in self.comparam_specs:
+            spec._resolve_odxlinks(self._odxlinks)
 
         for dlc in self.diag_layer_containers:
             dlc._resolve_odxlinks(self._odxlinks)

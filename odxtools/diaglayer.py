@@ -12,6 +12,7 @@ from .additionalaudience import AdditionalAudience
 from .admindata import AdminData
 from .companydata import CompanyData
 from .comparaminstance import ComparamInstance
+from .comparamspec import ComparamSpec
 from .diagcomm import DiagComm
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayerraw import DiagLayerRaw
@@ -24,6 +25,7 @@ from .message import Message
 from .nameditemlist import NamedItemList, OdxNamed
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .parentref import ParentRef
+from .protstack import ProtStack
 from .request import Request
 from .response import Response
 from .servicebinner import ServiceBinner
@@ -297,6 +299,14 @@ class DiagLayer:
     @property
     def prot_stack_snref(self) -> Optional[str]:
         return self.diag_layer_raw.prot_stack_snref
+
+    @property
+    def comparam_spec(self) -> Optional[ComparamSpec]:
+        return self.diag_layer_raw.comparam_spec
+
+    @property
+    def prot_stack(self) -> Optional[ProtStack]:
+        return self.diag_layer_raw.prot_stack
 
     #####
     # </properties forwarded to the "raw" diag layer>
