@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+import re
 import warnings
 from dataclasses import dataclass
 from functools import cached_property
@@ -635,6 +636,68 @@ class DiagLayer:
             return None
 
         return cps[0]
+
+    def get_can_mtu(self, protocol_name: Optional[str] = None) -> Optional[int]:
+        """Return the maximum size of CAN frames that can be
+        transmitted in bytes.
+
+        For classic CAN busses, this is basically always 8. CAN-FD can
+        send up to 64 bytes per frame.
+        """
+        com_param = self.get_comparam("CP_CANFDTxMaxDataLength", protocol_name=protocol_name)
+        if com_param is None:
+            rx_id = self.get_can_receive_id(protocol_name=protocol_name)
+            if rx_id is not None:
+                # bus is CAN. We also use 8 bytes for CAN-FD if this
+                # parameter was not specified.
+                return 8
+
+            # bus is not CAN
+            return None
+
+        val = com_param.value
+        if not isinstance(val, str):
+            return None
+
+        m = re.search("TX_DL *= *([0-9]*)", val)
+        if m:
+            return int(m.group(1))
+
+        # unexpected format of parameter value
+        return 8
+
+    def use_can_fd(self, protocol_name: Optional[str] = None) -> bool:
+        return (self.get_can_mtu(protocol_name=protocol_name) or 0) > 8
+
+    def get_can_baudrate(self, protocol_name: Optional[str] = None) -> Optional[int]:
+        """Baudrate of the CAN bus which is used by the ECU"""
+        com_param = self.get_comparam("CP_Baudrate", protocol_name=protocol_name)
+        if com_param is None:
+            return None
+
+        val = com_param.value
+        if not isinstance(val, str):
+            return None
+
+        return int(val)
+
+    def get_can_fd_baudrate(self, protocol_name: Optional[str] = None) -> Optional[int]:
+        """Data baudrate of the CAN bus which is used by the ECU
+
+        If the ECU is not using CAN-FD, None is returned.
+        """
+        if not self.use_can_fd(protocol_name=protocol_name):
+            return None
+
+        com_param = self.get_comparam("CP_CANFDBaudrate", protocol_name=protocol_name)
+        if com_param is None:
+            return None
+
+        val = com_param.value
+        if not isinstance(val, str):
+            return None
+
+        return int(val)
 
     def get_can_receive_id(self, protocol_name: Optional[str] = None) -> Optional[int]:
         """CAN ID to which the ECU listens for diagnostic messages"""
