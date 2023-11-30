@@ -34,7 +34,7 @@
 {%- macro printPhysicalType(physical_type) %}
 {%- if physical_type.display_radix is not none %}
 <PHYSICAL-TYPE BASE-DATA-TYPE="{{physical_type.base_data_type.value}}" DISPLAY-RADIX="{{physical_type.display_radix.name}}" />
-{%- elif physical_type.precision is not none   %}
+{%- elif physical_type.precision is not none %}
 <PHYSICAL-TYPE BASE-DATA-TYPE="{{physical_type.base_data_type.value}}">
  <PRECISION>{{physical_type.precision}}</PRECISION>
 </PHYSICAL-TYPE>
@@ -44,12 +44,45 @@
 {%- endmacro -%}
 
 {%- macro printLimitValue(lv) -%}
-{%- if hasattr(lv, 'hex') %}
+{%- if hasattr(lv, 'hex') -%}
 {#- bytes or bytarray limit #}
 {{lv.hex()}}
-{%- else %}
+{%- else -%}
 {{lv}}
-{%- endif %}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro printScaleConstr(sc) %}
+<SCALE-CONSTR VALIDITY="{{sc.validity.value}}">
+  {%- if sc.short_label and sc.short_label.strip() %}
+  <SHORT-LABEL>{{sc.short_label|e}}</SHORT-LABEL>
+  {%- endif %}
+  {%- if sc.description and sc.description.strip() %}
+  <DESC>
+    {{sc.description}}
+  </DESC>
+  {%- endif %}
+  <LOWER-LIMIT>{{printLimitValue(sc.lower_limit.value)}}</LOWER-LIMIT>
+  <UPPER-LIMIT>{{printLimitValue(sc.upper_limit.value)}}</UPPER-LIMIT>
+</SCALE-CONSTR>
+{%- endmacro -%}
+
+{%- macro printInternalConstr(ic) %}
+<INTERNAL-CONSTR>
+  {%- if ic.lower_limit %}
+  <LOWER-LIMIT>{{printLimitValue(ic.lower_limit.value)}}</LOWER-LIMIT>
+  {%- endif %}
+  {%- if ic.upper_limit %}
+  <UPPER-LIMIT>{{printLimitValue(ic.upper_limit.value)}}</UPPER-LIMIT>
+  {%- endif %}
+  {%- if ic.scale_constrs %}
+  <SCALE-CONSTRS>
+  {%- for sc in ic.scale_constrs %}
+    {{- printScaleConstr(sc)|indent(4)}}
+  {%- endfor %}
+  </SCALE-CONSTRS>
+  {%- endif %}
+</INTERNAL-CONSTR>
 {%- endmacro -%}
 
 {%- macro printCompuMethod(cm) -%}
@@ -69,10 +102,10 @@
     </DESC>
    {%- endif %}
    {%- if cs.lower_limit is not none %}
-    <LOWER-LIMIT>{{printLimitValue(cs.lower_limit.value)}}</LOWER-LIMIT>
+     <LOWER-LIMIT>{{printLimitValue(cs.lower_limit.value)}}</LOWER-LIMIT>
    {%- endif %}
    {%- if cs.upper_limit is not none %}
-    <UPPER-LIMIT>{{printLimitValue(cs.upper_limit.value)}}</UPPER-LIMIT>
+     <UPPER-LIMIT>{{printLimitValue(cs.upper_limit.value)}}</UPPER-LIMIT>
    {%- endif %}
    {%- if cs.compu_inverse_value is not none %}
     <COMPU-INVERSE-VALUE>
@@ -191,6 +224,9 @@
  {{- printCompuMethod(dop.compu_method)|indent(1) }}
  {{- printDiagCodedType(dop.diag_coded_type)|indent(1) }}
  {{- printPhysicalType(dop.physical_type)|indent(1) }}
+ {%- if dop.internal_constr %}
+ {{- printInternalConstr(dop.internal_constr)|indent(1) }}
+ {%- endif %}
  {%- if dop.unit_ref %}
  <UNIT-REF ID-REF="{{ dop.unit_ref.ref_id }}" />
  {%- endif %}

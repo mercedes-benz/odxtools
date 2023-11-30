@@ -109,6 +109,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 ),
                 unit_ref=None,
                 sdgs=[],
+                internal_constr=None,
             ),
             outputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.outputDOP", doc_frags),
@@ -137,6 +138,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 ),
                 unit_ref=None,
                 sdgs=[],
+                internal_constr=None,
             ),
             negOutputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.negOutputDOP", doc_frags),
@@ -165,6 +167,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 ),
                 unit_ref=None,
                 sdgs=[],
+                internal_constr=None,
             ),
         )
 

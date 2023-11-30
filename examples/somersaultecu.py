@@ -461,6 +461,7 @@ somersault_dops = {
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         ),
     "soberness_check":
         DataObjectProperty(
@@ -474,6 +475,7 @@ somersault_dops = {
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         ),
     "dizzyness_level":
         DataObjectProperty(
@@ -487,6 +489,7 @@ somersault_dops = {
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         ),
     "happiness_level":
         DataObjectProperty(
@@ -500,6 +503,7 @@ somersault_dops = {
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         ),
     "duration":
         DataObjectProperty(
@@ -513,6 +517,7 @@ somersault_dops = {
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=OdxLinkRef.from_id(somersault_units["second"].odx_id),
             sdgs=[],
+            internal_constr=None,
         ),
     "temperature":
         DataObjectProperty(
@@ -526,6 +531,7 @@ somersault_dops = {
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=OdxLinkRef.from_id(somersault_units["celsius"].odx_id),
             sdgs=[],
+            internal_constr=None,
         ),
     "error_code":
         DataObjectProperty(
@@ -539,6 +545,7 @@ somersault_dops = {
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         ),
     "boolean":
         DataObjectProperty(
@@ -553,6 +560,7 @@ somersault_dops = {
             compu_method=somersault_compumethods["boolean"],
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         ),
     "uint8":
         DataObjectProperty(
@@ -566,6 +574,7 @@ somersault_dops = {
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         ),
     "float":
         DataObjectProperty(
@@ -579,6 +588,7 @@ somersault_dops = {
             compu_method=somersault_compumethods["float_passthrough"],
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         ),
 }
 

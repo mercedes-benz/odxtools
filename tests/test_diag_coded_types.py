@@ -192,6 +192,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     compu_method=compumethods["bytes_passthrough"],
                     unit_ref=None,
                     sdgs=[],
+                    internal_constr=None,
                 ),
         }
 
@@ -459,6 +460,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     compu_method=compumethods["multiply_with_8"],
                     unit_ref=None,
                     sdgs=[],
+                    internal_constr=None,
                 ),
             "certificateClient":
                 DataObjectProperty(
@@ -473,6 +475,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     compu_method=compumethods["uint_passthrough"],
                     unit_ref=None,
                     sdgs=[],
+                    internal_constr=None,
                 ),
         }
 
@@ -780,6 +783,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     compu_method=compumethods["bytes_passthrough"],
                     unit_ref=None,
                     sdgs=[],
+                    internal_constr=None,
                 ),
         }
 

@@ -142,6 +142,7 @@ class TestEncodeRequest(unittest.TestCase):
             compu_method=compu_method,
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         )
         odxlinks.update({dop.odx_id: dop})
         param1 = ValueParameter(
@@ -358,6 +359,7 @@ class TestEncodeRequest(unittest.TestCase):
             "sdgs": [],
             "short_name": 'dop',
             "unit_ref": None,
+            "internal_constr": None,
         }
         param_kwargs: Dict[str, Any] = {
             "long_name": None,

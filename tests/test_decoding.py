@@ -540,6 +540,7 @@ class TestDecoding(unittest.TestCase):
             compu_method=compu_method,
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         )
 
         req_param1 = CodedConstParameter(
@@ -730,6 +731,7 @@ class TestDecoding(unittest.TestCase):
             compu_method=compu_method,
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         )
 
         req_param1 = CodedConstParameter(
@@ -939,6 +941,7 @@ class TestDecoding(unittest.TestCase):
             compu_method=compu_method,
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         )
         req_param1 = CodedConstParameter(
             short_name="SID",
@@ -1366,6 +1369,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
                 internal_type=DataType.A_BYTEFIELD, physical_type=DataType.A_BYTEFIELD),
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         )
         dop = self.dop_bytes_termination_end_of_pdu
         odxlinks.update(dop._build_odxlinks())
@@ -1520,6 +1524,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
             ),
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         )
         odxlinks.update(dop._build_odxlinks())
         req_param1 = CodedConstParameter(

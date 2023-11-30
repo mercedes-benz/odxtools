@@ -81,6 +81,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             compu_method=ident_compu_method,
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         )
 
         dop_2 = DataObjectProperty(
@@ -94,6 +95,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             compu_method=ident_compu_method,
             unit_ref=None,
             sdgs=[],
+            internal_constr=None,
         )
 
         flip_quality_id = OdxLinkId("somersault.table.flip_quality", doc_frags)
