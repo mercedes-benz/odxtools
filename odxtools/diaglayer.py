@@ -672,11 +672,37 @@ class DiagLayer:
         # unexpected format of parameter value
         return 8
 
-    def use_can_fd(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> bool:
-        return (self.get_can_mtu(protocol=protocol) or 0) > 8
+    def use_can(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> bool:
+        """
+        Check if CAN ought to be used as the link layer protocol.
+        """
+        return self.get_can_receive_id(protocol=protocol) is not None
+
+    def use_can_fd(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> Optional[bool]:
+        """Check if CAN-FD ought to be used.
+
+        If the ECU is not using CAN-FD for the specified protocol, `False`
+        is returned. If it is not using CAN, the result is `None`.
+
+        If this method returns `True`, `.use_can() == True` is implied
+        for the protocol.
+        """
+
+        if (can_mtu := self.get_can_mtu(protocol=protocol)) is not None:
+            # it is a bit hacky to make using CAN FD dependent on the
+            # specified MTU. TODO(?): Find a better way of determining
+            # if CAN FD ought to be used.
+            return can_mtu > 8
+
+        return None
 
     def get_can_baudrate(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> Optional[int]:
-        """Baudrate of the CAN bus which is used by the ECU"""
+        """Baudrate of the CAN bus which is used by the ECU [bits/s]
+
+        If the ECU is not using CAN for the specified protocol, None
+        is returned.
+
+        """
         com_param = self.get_comparam("CP_Baudrate", protocol=protocol)
         if com_param is None:
             return None
@@ -689,9 +715,10 @@ class DiagLayer:
 
     def get_can_fd_baudrate(self,
                             protocol: Optional[Union[str, "DiagLayer"]] = None) -> Optional[int]:
-        """Data baudrate of the CAN bus which is used by the ECU
+        """Data baudrate of the CAN bus which is used by the ECU [bits/s]
 
-        If the ECU is not using CAN-FD, None is returned.
+        If the ECU is not using CAN-FD for the specified protocol,
+        None is returned.
         """
         if not self.use_can_fd(protocol=protocol):
             return None
