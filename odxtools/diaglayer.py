@@ -678,23 +678,24 @@ class DiagLayer:
         """
         return self.get_can_receive_id(protocol=protocol) is not None
 
-    def use_can_fd(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> Optional[bool]:
+    def use_can_fd(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> bool:
         """Check if CAN-FD ought to be used.
 
         If the ECU is not using CAN-FD for the specified protocol, `False`
-        is returned. If it is not using CAN, the result is `None`.
+        is returned.
 
         If this method returns `True`, `.use_can() == True` is implied
         for the protocol.
         """
 
-        if (can_mtu := self.get_can_mtu(protocol=protocol)) is not None:
-            # it is a bit hacky to make using CAN FD dependent on the
-            # specified MTU. TODO(?): Find a better way of determining
-            # if CAN FD ought to be used.
-            return can_mtu > 8
+        if not self.use_can(protocol):
+            return False
 
-        return None
+        com_param = self.get_comparam("CP_CANFDTxMaxDataLength", protocol=protocol)
+        if com_param is None:
+            return False
+
+        return "CANFD" in com_param.value
 
     def get_can_baudrate(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> Optional[int]:
         """Baudrate of the CAN bus which is used by the ECU [bits/s]
