@@ -75,9 +75,11 @@ class DiagCodedType(abc.ABC):
         base_data_type: DataType,
         is_highlow_byte_order: bool,
     ) -> Tuple[AtomicOdxType, int]:
-        """Extract the internal value.
+        """Extract an internal value from a blob of raw bytes.
 
-        Helper method for `DiagCodedType.convert_bytes_to_internal`.
+        :return: Tuple with the internal value of the object and the
+                 byte position of the first undecoded byte after the
+                 extracted object.
         """
         # If the bit length is zero, return "empty" values of each type
         if bit_length == 0:
@@ -89,27 +91,29 @@ class DiagCodedType(abc.ABC):
         cursor_position = byte_position + byte_length
         extracted_bytes = coded_message[byte_position:cursor_position]
 
-        # Apply byteorder
-        if not is_highlow_byte_order and base_data_type not in [
-                DataType.A_UNICODE2STRING,
-                DataType.A_BYTEFIELD,
-                DataType.A_ASCIISTRING,
-                DataType.A_UTF8STRING,
+        # Apply byteorder for numerical objects. Note that doing this
+        # here might lead to garbage data being included in the result
+        # if the data to be extracted is not byte aligned and crosses
+        # byte boundaries, but it is what the specification says.
+        if not is_highlow_byte_order and base_data_type in [
+                DataType.A_INT32,
+                DataType.A_UINT32,
+                DataType.A_FLOAT32,
+                DataType.A_FLOAT64,
         ]:
             extracted_bytes = extracted_bytes[::-1]
 
         format_letter = ODX_TYPE_TO_FORMAT_LETTER[base_data_type]
         padding = (8 - (bit_length + bit_position) % 8) % 8
         text_encoding = 'utf-8'
-        text_errors = 'strict'
-        if not exceptions.strict_mode:
-            text_errors = 'replace'
+        text_errors = 'strict' if exceptions.strict_mode else 'replace'
         if base_data_type == DataType.A_ASCIISTRING:
-            # The spec says ASCII, meaning only byte values 0-127
+            # The spec says ASCII, meaning only byte values 0-127.
             # But in practice, vendors use iso-8859-1, aka latin-1
-            # reason being iso-8859-1 never fails
-            # since it has a valid character mapping for every possible byte sequence.
+            # reason being iso-8859-1 never fails since it has a valid
+            # character mapping for every possible byte sequence.
             text_encoding = 'iso-8859-1'
+
         internal_value = bitstruct.unpack_from(
             f"{format_letter}{bit_length}",
             extracted_bytes,
@@ -119,11 +123,10 @@ class DiagCodedType(abc.ABC):
         )[0]
 
         if base_data_type == DataType.A_UNICODE2STRING:
-            # Convert bytes to string with utf-16 decoding
-            if is_highlow_byte_order:
-                internal_value = internal_value.decode("utf-16-be")
-            else:
-                internal_value = internal_value.decode("utf-16-le")
+            # For UTF-16, we need to manually decode the extracted
+            # bytes to a string
+            text_encoding = "utf-16-be" if is_highlow_byte_order else "utf-16-le"
+            internal_value = internal_value.decode(text_encoding)
 
         return internal_value, cursor_position
 
