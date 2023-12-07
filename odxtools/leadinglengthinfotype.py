@@ -38,7 +38,7 @@ class LeadingLengthInfoType(DiagCodedType):
 
         byte_length = self._minimal_byte_length_of(internal_value)
 
-        length_byte = self._to_bytes(
+        length_bytes = self._encode_internal_value(
             byte_length,
             bit_position=bit_position,
             bit_length=self.bit_length,
@@ -46,7 +46,7 @@ class LeadingLengthInfoType(DiagCodedType):
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-        value_byte = self._to_bytes(
+        value_bytes = self._encode_internal_value(
             internal_value,
             bit_position=0,
             bit_length=8 * byte_length,
@@ -54,7 +54,7 @@ class LeadingLengthInfoType(DiagCodedType):
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-        return length_byte + value_byte
+        return length_bytes + value_bytes
 
     def convert_bytes_to_internal(self,
                                   decode_state: DecodeState,
@@ -62,7 +62,7 @@ class LeadingLengthInfoType(DiagCodedType):
         coded_message = decode_state.coded_message
 
         # Extract length of the parameter value
-        byte_length, byte_position = self._extract_internal(
+        byte_length, byte_position = self._extract_internal_value(
             coded_message=coded_message,
             byte_position=decode_state.cursor_position,
             bit_position=bit_position,
@@ -77,7 +77,7 @@ class LeadingLengthInfoType(DiagCodedType):
         # Extract actual value
         # TODO: The returned value is None if the byte_length is 0. Maybe change it
         #       to some default value like an empty bytearray() or 0?
-        value, cursor_position = self._extract_internal(
+        value, cursor_position = self._extract_internal_value(
             coded_message=coded_message,
             byte_position=byte_position,
             bit_position=0,

@@ -63,7 +63,7 @@ class MinMaxLengthType(DiagCodedType):
             data_length = len(internal_value)
 
         value_bytes = bytearray(
-            self._to_bytes(
+            self._encode_internal_value(
                 internal_value,
                 bit_position=0,
                 bit_length=8 * data_length,
@@ -145,7 +145,7 @@ class MinMaxLengthType(DiagCodedType):
                     terminator_pos += 1
 
             # Extract the value
-            value, byte_pos = self._extract_internal(
+            value, byte_pos = self._extract_internal_value(
                 decode_state.coded_message,
                 byte_position=cursor_pos,
                 bit_position=bit_position,
@@ -164,7 +164,7 @@ class MinMaxLengthType(DiagCodedType):
             # or at the end of the PDU.
             byte_length = max_terminator_pos - cursor_pos
 
-            value, byte_pos = self._extract_internal(
+            value, byte_pos = self._extract_internal_value(
                 decode_state.coded_message,
                 byte_position=cursor_pos,
                 bit_position=bit_position,

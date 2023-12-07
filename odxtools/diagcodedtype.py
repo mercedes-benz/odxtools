@@ -66,8 +66,8 @@ class DiagCodedType(abc.ABC):
     def is_highlow_byte_order(self) -> bool:
         return self.is_highlow_byte_order_raw in [None, True]
 
-    def _extract_internal(
-        self,
+    @staticmethod
+    def _extract_internal_value(
         coded_message: bytes,
         byte_position: int,
         bit_position: int,
@@ -99,7 +99,7 @@ class DiagCodedType(abc.ABC):
             extracted_bytes = extracted_bytes[::-1]
 
         format_letter = ODX_TYPE_TO_FORMAT_LETTER[base_data_type]
-        padding = 8 * byte_length - (bit_length + bit_position)
+        padding = (8 - (bit_length + bit_position) % 8) % 8
         text_encoding = 'utf-8'
         text_errors = 'strict'
         if not exceptions.strict_mode:
@@ -127,8 +127,8 @@ class DiagCodedType(abc.ABC):
 
         return internal_value, cursor_position
 
-    def _to_bytes(
-        self,
+    @staticmethod
+    def _encode_internal_value(
         internal_value: AtomicOdxType,
         bit_position: int,
         bit_length: int,
