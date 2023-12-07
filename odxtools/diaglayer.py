@@ -643,12 +643,15 @@ class DiagLayer:
 
         return cps[0]
 
-    def get_can_mtu(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> Optional[int]:
-        """Return the maximum size of CAN frames that can be
+    def get_max_can_payload_size(self,
+                                 protocol: Optional[Union[str,
+                                                          "DiagLayer"]] = None) -> Optional[int]:
+        """Return the maximum size of a CAN frame payload that can be
         transmitted in bytes.
 
         For classic CAN busses, this is basically always 8. CAN-FD can
         send up to 64 bytes per frame.
+
         """
         com_param = self.get_comparam("CP_CANFDTxMaxDataLength", protocol=protocol)
         if com_param is None:
@@ -672,23 +675,23 @@ class DiagLayer:
         # unexpected format of parameter value
         return 8
 
-    def use_can(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> bool:
+    def uses_can(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> bool:
         """
         Check if CAN ought to be used as the link layer protocol.
         """
         return self.get_can_receive_id(protocol=protocol) is not None
 
-    def use_can_fd(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> bool:
+    def uses_can_fd(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> bool:
         """Check if CAN-FD ought to be used.
 
         If the ECU is not using CAN-FD for the specified protocol, `False`
         is returned.
 
-        If this method returns `True`, `.use_can() == True` is implied
+        If this method returns `True`, `.uses_can() == True` is implied
         for the protocol.
         """
 
-        if not self.use_can(protocol):
+        if not self.uses_can(protocol):
             return False
 
         com_param = self.get_comparam("CP_CANFDTxMaxDataLength", protocol=protocol)
@@ -721,7 +724,7 @@ class DiagLayer:
         If the ECU is not using CAN-FD for the specified protocol,
         None is returned.
         """
-        if not self.use_can_fd(protocol=protocol):
+        if not self.uses_can_fd(protocol=protocol):
             return None
 
         com_param = self.get_comparam("CP_CANFDBaudrate", protocol=protocol)
