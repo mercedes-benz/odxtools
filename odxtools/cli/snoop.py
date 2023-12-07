@@ -244,10 +244,10 @@ def run(args: argparse.Namespace) -> None:
 
     # if no can IDs have been explicitly specified, take them from the DL
     if args.rx is None and odx_diag_layer:
-        args.rx = str(odx_diag_layer.get_can_receive_id(protocol_name=protocol_name))
+        args.rx = str(odx_diag_layer.get_can_receive_id(protocol=protocol_name))
 
     if args.tx is None and odx_diag_layer:
-        args.tx = str(odx_diag_layer.get_can_send_id(protocol_name=protocol_name))
+        args.tx = str(odx_diag_layer.get_can_send_id(protocol=protocol_name))
 
     if args.rx is None:
         print(f"Could not determine a CAN receive ID.")
