@@ -4,7 +4,6 @@ from typing import Any, Dict, List
 
 import pytest
 
-from odxtools.comparaminstance import ComparamInstance
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
@@ -74,7 +73,7 @@ def ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> 
         is_mandatory_raw=None,
         is_executable_raw=None,
         is_final_raw=None,
-        comparam_refs=NamedItemList[ComparamInstance](),
+        comparam_refs=[],
         is_cyclic_raw=None,
         is_multiple_raw=None,
         addressing_raw=None,
@@ -123,7 +122,7 @@ def supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) 
         is_mandatory_raw=None,
         is_executable_raw=None,
         is_final_raw=None,
-        comparam_refs=NamedItemList[ComparamInstance](),
+        comparam_refs=[],
         is_cyclic_raw=None,
         is_multiple_raw=None,
         addressing_raw=None,

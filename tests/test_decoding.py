@@ -2,7 +2,6 @@
 import unittest
 from typing import cast
 
-from odxtools.comparaminstance import ComparamInstance
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.limit import IntervalType, Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
@@ -95,7 +94,7 @@ class TestIdentifyingService(unittest.TestCase):
             admin_data=None,
             semantic=None,
             audience=None,
-            comparam_refs=NamedItemList[ComparamInstance](),
+            comparam_refs=[],
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -170,7 +169,7 @@ class TestIdentifyingService(unittest.TestCase):
             admin_data=None,
             semantic=None,
             audience=None,
-            comparam_refs=NamedItemList[ComparamInstance](),
+            comparam_refs=[],
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -294,7 +293,7 @@ class TestDecoding(unittest.TestCase):
             is_executable_raw=None,
             is_final_raw=None,
             semantic=None,
-            comparam_refs=NamedItemList[ComparamInstance](),
+            comparam_refs=[],
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -438,7 +437,7 @@ class TestDecoding(unittest.TestCase):
             is_final_raw=None,
             admin_data=None,
             semantic=None,
-            comparam_refs=NamedItemList[ComparamInstance](),
+            comparam_refs=[],
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -624,7 +623,7 @@ class TestDecoding(unittest.TestCase):
             is_final_raw=None,
             admin_data=None,
             semantic=None,
-            comparam_refs=NamedItemList[ComparamInstance](),
+            comparam_refs=[],
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -829,7 +828,7 @@ class TestDecoding(unittest.TestCase):
             is_final_raw=None,
             admin_data=None,
             semantic=None,
-            comparam_refs=NamedItemList[ComparamInstance](),
+            comparam_refs=[],
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -988,7 +987,7 @@ class TestDecoding(unittest.TestCase):
             is_executable_raw=None,
             is_final_raw=None,
             semantic=None,
-            comparam_refs=NamedItemList[ComparamInstance](),
+            comparam_refs=[],
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
@@ -1184,7 +1183,7 @@ class TestDecoding(unittest.TestCase):
             is_executable_raw=None,
             is_final_raw=None,
             semantic=None,
-            comparam_refs=NamedItemList[ComparamInstance](),
+            comparam_refs=[],
             is_cyclic_raw=None,
             is_multiple_raw=None,
             addressing_raw=None,
