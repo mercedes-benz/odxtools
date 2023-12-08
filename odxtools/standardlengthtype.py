@@ -48,7 +48,7 @@ class StandardLengthType(DiagCodedType):
 
     def convert_internal_to_bytes(self, internal_value: AtomicOdxType, encode_state: EncodeState,
                                   bit_position: int) -> bytes:
-        return self._to_bytes(
+        return self._encode_internal_value(
             self.__apply_mask(internal_value),
             bit_position,
             self.bit_length,
@@ -59,7 +59,7 @@ class StandardLengthType(DiagCodedType):
     def convert_bytes_to_internal(self,
                                   decode_state: DecodeState,
                                   bit_position: int = 0) -> Tuple[AtomicOdxType, int]:
-        internal_value, cursor_position = self._extract_internal(
+        internal_value, cursor_position = self._extract_internal_value(
             decode_state.coded_message,
             decode_state.cursor_position,
             bit_position,

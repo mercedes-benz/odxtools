@@ -66,7 +66,7 @@ class ParamLengthInfoType(DiagCodedType):
         if bit_length is None:
             odxraise()
 
-        return self._to_bytes(
+        return self._encode_internal_value(
             internal_value,
             bit_position=bit_position,
             bit_length=bit_length,
@@ -91,7 +91,7 @@ class ParamLengthInfoType(DiagCodedType):
             odxraise(f"Did not find any length key with short name {self.length_key.short_name}")
 
         # Extract the internal value and return.
-        return self._extract_internal(
+        return self._extract_internal_value(
             decode_state.coded_message,
             decode_state.cursor_position,
             bit_position,

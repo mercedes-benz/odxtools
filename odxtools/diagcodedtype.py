@@ -3,7 +3,10 @@ import abc
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Tuple, Union
 
-import bitstruct
+try:
+    import bitstruct.c as bitstruct
+except ImportError:
+    import bitstruct
 
 from . import exceptions
 from .decodestate import DecodeState
@@ -23,8 +26,8 @@ ODX_TYPE_TO_FORMAT_LETTER = {
     DataType.A_FLOAT64: "f",
     DataType.A_BYTEFIELD: "r",
     DataType.A_UNICODE2STRING: "r",  # UTF-16 strings must be converted explicitly
-    DataType.A_ASCIISTRING: "t",
-    DataType.A_UTF8STRING: "t",
+    DataType.A_ASCIISTRING: "r",
+    DataType.A_UTF8STRING: "r",
 }
 
 # Allowed diag-coded types
@@ -66,8 +69,8 @@ class DiagCodedType(abc.ABC):
     def is_highlow_byte_order(self) -> bool:
         return self.is_highlow_byte_order_raw in [None, True]
 
-    def _extract_internal(
-        self,
+    @staticmethod
+    def _extract_internal_value(
         coded_message: bytes,
         byte_position: int,
         bit_position: int,
@@ -75,9 +78,11 @@ class DiagCodedType(abc.ABC):
         base_data_type: DataType,
         is_highlow_byte_order: bool,
     ) -> Tuple[AtomicOdxType, int]:
-        """Extract the internal value.
+        """Extract an internal value from a blob of raw bytes.
 
-        Helper method for `DiagCodedType.convert_bytes_to_internal`.
+        :return: Tuple with the internal value of the object and the
+                 byte position of the first undecoded byte after the
+                 extracted object.
         """
         # If the bit length is zero, return "empty" values of each type
         if bit_length == 0:
@@ -89,46 +94,45 @@ class DiagCodedType(abc.ABC):
         cursor_position = byte_position + byte_length
         extracted_bytes = coded_message[byte_position:cursor_position]
 
-        # Apply byteorder
-        if not is_highlow_byte_order and base_data_type not in [
-                DataType.A_UNICODE2STRING,
-                DataType.A_BYTEFIELD,
-                DataType.A_ASCIISTRING,
-                DataType.A_UTF8STRING,
+        # Apply byteorder for numerical objects. Note that doing this
+        # here might lead to garbage data being included in the result
+        # if the data to be extracted is not byte aligned and crosses
+        # byte boundaries, but it is what the specification says.
+        if not is_highlow_byte_order and base_data_type in [
+                DataType.A_INT32,
+                DataType.A_UINT32,
+                DataType.A_FLOAT32,
+                DataType.A_FLOAT64,
         ]:
             extracted_bytes = extracted_bytes[::-1]
 
-        format_letter = ODX_TYPE_TO_FORMAT_LETTER[base_data_type]
-        padding = 8 * byte_length - (bit_length + bit_position)
-        text_encoding = 'utf-8'
-        text_errors = 'strict'
-        if not exceptions.strict_mode:
-            text_errors = 'replace'
-        if base_data_type == DataType.A_ASCIISTRING:
-            # The spec says ASCII, meaning only byte values 0-127
-            # But in practice, vendors use iso-8859-1, aka latin-1
-            # reason being iso-8859-1 never fails
-            # since it has a valid character mapping for every possible byte sequence.
-            text_encoding = 'iso-8859-1'
-        internal_value = bitstruct.unpack_from(
-            f"{format_letter}{bit_length}",
+        padding = (8 - (bit_length + bit_position) % 8) % 8
+        internal_value, = bitstruct.unpack_from(
+            f"{ODX_TYPE_TO_FORMAT_LETTER[base_data_type]}{bit_length}",
             extracted_bytes,
-            offset=padding,
-            text_encoding=text_encoding,
-            text_errors=text_errors,
-        )[0]
+            offset=padding)
 
-        if base_data_type == DataType.A_UNICODE2STRING:
-            # Convert bytes to string with utf-16 decoding
-            if is_highlow_byte_order:
-                internal_value = internal_value.decode("utf-16-be")
-            else:
-                internal_value = internal_value.decode("utf-16-le")
+        text_errors = 'strict' if exceptions.strict_mode else 'replace'
+        if base_data_type == DataType.A_ASCIISTRING:
+            # The spec says ASCII, meaning only byte values 0-127.
+            # But in practice, vendors use iso-8859-1, aka latin-1
+            # reason being iso-8859-1 never fails since it has a valid
+            # character mapping for every possible byte sequence.
+            text_encoding = 'iso-8859-1'
+            internal_value = internal_value.decode(encoding=text_encoding, errors=text_errors)
+        elif base_data_type == DataType.A_UTF8STRING:
+            text_encoding = "utf-8"
+            internal_value = internal_value.decode(encoding=text_encoding, errors=text_errors)
+        elif base_data_type == DataType.A_UNICODE2STRING:
+            # For UTF-16, we need to manually decode the extracted
+            # bytes to a string
+            text_encoding = "utf-16-be" if is_highlow_byte_order else "utf-16-le"
+            internal_value = internal_value.decode(encoding=text_encoding, errors=text_errors)
 
         return internal_value, cursor_position
 
-    def _to_bytes(
-        self,
+    @staticmethod
+    def _encode_internal_value(
         internal_value: AtomicOdxType,
         bit_position: int,
         bit_length: int,
@@ -137,23 +141,44 @@ class DiagCodedType(abc.ABC):
     ) -> bytes:
         """Convert the internal_value to bytes."""
         # Check that bytes and strings actually fit into the bit length
-        if base_data_type in [DataType.A_BYTEFIELD]:
+        if base_data_type == DataType.A_BYTEFIELD:
             if not isinstance(internal_value, bytes):
                 odxraise()
             if 8 * len(internal_value) > bit_length:
                 raise EncodeError(f"The bytefield {internal_value.hex()} is too large "
                                   f"({len(internal_value)} bytes)."
                                   f" The maximum length is {bit_length//8}.")
-        if base_data_type in [DataType.A_ASCIISTRING, DataType.A_UTF8STRING]:
+        if base_data_type == DataType.A_ASCIISTRING:
             if not isinstance(internal_value, str):
                 odxraise()
+
+            # The spec says ASCII, meaning only byte values 0-127.
+            # But in practice, vendors use iso-8859-1, aka latin-1
+            # reason being iso-8859-1 never fails since it has a valid
+            # character mapping for every possible byte sequence.
+            internal_value = internal_value.encode("iso-8859-1")
+
             if 8 * len(internal_value) > bit_length:
                 raise EncodeError(f"The string {repr(internal_value)} is too large."
                                   f" The maximum number of characters is {bit_length//8}.")
-        if base_data_type in [DataType.A_UNICODE2STRING]:
+        elif base_data_type == DataType.A_UTF8STRING:
             if not isinstance(internal_value, str):
                 odxraise()
-            if 16 * len(internal_value) > bit_length:
+
+            internal_value = internal_value.encode("utf-8")
+
+            if 8 * len(internal_value) > bit_length:
+                raise EncodeError(f"The string {repr(internal_value)} is too large."
+                                  f" The maximum number of bytes is {bit_length//8}.")
+
+        elif base_data_type == DataType.A_UNICODE2STRING:
+            if not isinstance(internal_value, str):
+                odxraise()
+
+            text_encoding = "utf-16-be" if is_highlow_byte_order else "utf-16-le"
+            internal_value = internal_value.encode(text_encoding)
+
+            if 8 * len(internal_value) > bit_length:
                 raise EncodeError(f"The string {repr(internal_value)} is too large."
                                   f" The maximum number of characters is {bit_length//16}.")
 
@@ -167,33 +192,24 @@ class DiagCodedType(abc.ABC):
             return b''
 
         char = ODX_TYPE_TO_FORMAT_LETTER[base_data_type]
+        padding = (8 - ((bit_length + bit_position) % 8)) % 8
+        odxassert((0 <= padding and padding < 8 and (padding + bit_length + bit_position) % 8 == 0),
+                  f"Incorrect padding {padding}")
+        left_pad = f"p{padding}" if padding > 0 else ""
 
-        # The coded byte is divided into (0..0)(value)(0..0) with bit lengths (left_pad)(bit_length)(bit_position)
-        offset = (8 - ((bit_length + bit_position) % 8)) % 8
-        odxassert((0 <= offset and offset < 8 and (offset + bit_length + bit_position) % 8 == 0),
-                  f"Computational mistake, offset={offset}")
-        left_pad = f"p{offset}" if offset > 0 else ""
+        # actually encode the value
+        coded = bitstruct.pack(f"{left_pad}{char}{bit_length}", internal_value)
 
-        # Convert string to bytes with utf-16 encoding
-        if base_data_type == DataType.A_UNICODE2STRING:
-            if not isinstance(internal_value, str):
-                odxraise()
-            if is_highlow_byte_order:
-                internal_value = internal_value.encode("utf-16-be")
-            else:
-                internal_value = internal_value.encode("utf-16-le")
-
-        code = bitstruct.pack(f"{left_pad}{char}{bit_length}", internal_value)
-
-        if not is_highlow_byte_order and base_data_type not in [
-                DataType.A_UNICODE2STRING,
-                DataType.A_BYTEFIELD,
-                DataType.A_ASCIISTRING,
-                DataType.A_UTF8STRING,
+        # apply byte order for numeric objects
+        if not is_highlow_byte_order and base_data_type in [
+                DataType.A_INT32,
+                DataType.A_UINT32,
+                DataType.A_FLOAT32,
+                DataType.A_FLOAT64,
         ]:
-            code = code[::-1]
+            coded = coded[::-1]
 
-        return code
+        return coded
 
     def _minimal_byte_length_of(self, internal_value: Union[bytes, str]) -> int:
         """Helper method to get the minimal byte length.
