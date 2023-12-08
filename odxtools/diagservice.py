@@ -38,7 +38,7 @@ class DiagService(DiagComm):
     """Representation of a diagnostic service description.
     """
 
-    comparam_refs: NamedItemList[ComparamInstance]
+    comparam_refs: List[ComparamInstance]
 
     request_ref: OdxLinkRef
     pos_response_refs: List[OdxLinkRef]
@@ -56,10 +56,10 @@ class DiagService(DiagComm):
 
         kwargs = dataclass_fields_asdict(DiagComm.from_et(et_element, doc_frags))
 
-        comparam_refs = NamedItemList([
+        comparam_refs = [
             ComparamInstance.from_et(el, doc_frags)
             for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")
-        ])
+        ]
 
         request_ref = odxrequire(OdxLinkRef.from_et(et_element.find("REQUEST-REF"), doc_frags))
 
@@ -135,7 +135,7 @@ class DiagService(DiagComm):
 
     @property
     def comparams(self) -> NamedItemList[ComparamInstance]:
-        return self.comparam_refs
+        return self._comparams
 
     @property
     def addressing(self) -> Addressing:
@@ -180,6 +180,10 @@ class DiagService(DiagComm):
 
         for cpr in self.comparam_refs:
             cpr._resolve_snrefs(diag_layer)
+
+        # comparams named list is lazy loaded
+        # since ComparamInstance short_name is only valid after resolution
+        self._comparams = NamedItemList(self.comparam_refs)
 
     def decode_message(self, raw_message: bytes) -> Message:
         request_prefix = b''
