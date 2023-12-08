@@ -4,7 +4,6 @@ from typing import Any, Dict, List
 
 import pytest
 
-from odxtools.comparaminstance import ComparamInstance
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType

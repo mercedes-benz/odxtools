@@ -2,7 +2,6 @@
 import unittest
 from typing import cast
 
-from odxtools.comparaminstance import ComparamInstance
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.limit import IntervalType, Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
