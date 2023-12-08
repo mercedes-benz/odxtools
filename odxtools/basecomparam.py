@@ -53,6 +53,7 @@ class BaseComparam(IdentifiableElement):
 
         # Required in ODX 2.2, missing in ODX 2.0
         cpusage_str = et_element.attrib.get("CPUSAGE")
+        cpusage = None
         if cpusage_str is not None:
             try:
                 cpusage = Usage(cpusage_str)

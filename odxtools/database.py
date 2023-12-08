@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MIT
 from itertools import chain
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional
 from xml.etree import ElementTree
 from zipfile import ZipFile
+from packaging.version import Version
 
 from .comparamspec import ComparamSpec
 from .comparamsubset import ComparamSubset
@@ -12,10 +13,6 @@ from .diaglayercontainer import DiagLayerContainer
 from .exceptions import odxraise
 from .nameditemlist import NamedItemList, short_name_as_key
 from .odxlink import OdxLinkDatabase
-
-
-def version(v: str) -> Tuple[int, ...]:
-    return tuple(map(int, (v.split("."))))
 
 
 class Database:
@@ -62,7 +59,7 @@ class Database:
         comparam_specs: List[ComparamSpec] = []
         for root in documents:
             # ODX spec version
-            model_version = version(root.attrib.get("MODEL-VERSION", "2.0"))
+            model_version = Version(root.attrib.get("MODEL-VERSION", "2.0"))
             if self.model_version is not None and self.model_version != model_version:
                 odxraise(f"Different ODX versions used in the same file (ODX {model_version} "
                          f"and ODX {self.model_version}")
@@ -81,7 +78,7 @@ class Database:
 
             cp_spec = root.find("COMPARAM-SPEC")
             if cp_spec is not None:
-                if model_version == "2.0":
+                if model_version < Version("2.2"):
                     comparam_subsets.append(ComparamSubset.from_et(cp_spec, []))
                 else:  # odx >= 2.2
                     comparam_specs.append(ComparamSpec.from_et(cp_spec, []))
