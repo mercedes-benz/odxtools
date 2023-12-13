@@ -120,6 +120,7 @@ class TestUnitSpec(unittest.TestCase):
             unit_ref=OdxLinkRef.from_id(unit.odx_id),
             sdgs=[],
             internal_constr=None,
+            physical_constr=None,
         )
         dl_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,

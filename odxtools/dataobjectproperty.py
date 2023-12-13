@@ -42,8 +42,8 @@ class DataObjectProperty(DopBase):
     #: The unit associated with physical values (e.g. 'm/s^2')
     unit_ref: Optional[OdxLinkRef]
 
-    # TODO: physical_const: Optional[InternalConstr]
     internal_constr: Optional[InternalConstr]
+    physical_constr: Optional[InternalConstr]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -69,12 +69,18 @@ class DataObjectProperty(DopBase):
             internal_constr = InternalConstr.from_et(
                 internal_constr_elem, internal_type=diag_coded_type.base_data_type)
 
+        physical_constr = None
+        if (physical_constr_elem := et_element.find("PHYS-CONSTR")) is not None:
+            physical_constr = InternalConstr.from_et(
+                physical_constr_elem, internal_type=diag_coded_type.base_data_type)
+
         return DataObjectProperty(
             diag_coded_type=diag_coded_type,
             physical_type=physical_type,
             compu_method=compu_method,
             unit_ref=unit_ref,
             internal_constr=internal_constr,
+            physical_constr=physical_constr,
             **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

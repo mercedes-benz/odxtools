@@ -67,8 +67,12 @@
 </SCALE-CONSTR>
 {%- endmacro -%}
 
-{%- macro printInternalConstr(ic) %}
+{%- macro printInternalConstr(ic, is_physical) %}
+{%- if is_physical %}
+<PHYS-CONSTR>
+{%- else %}
 <INTERNAL-CONSTR>
+{%- endif %}
   {%- if ic.lower_limit %}
   <LOWER-LIMIT>{{printLimitValue(ic.lower_limit.value)}}</LOWER-LIMIT>
   {%- endif %}
@@ -82,7 +86,11 @@
   {%- endfor %}
   </SCALE-CONSTRS>
   {%- endif %}
+{%- if is_physical %}
+</PHYS-CONSTR>
+{%- else %}
 </INTERNAL-CONSTR>
+{%- endif %}
 {%- endmacro -%}
 
 {%- macro printCompuMethod(cm) -%}
@@ -225,10 +233,13 @@
  {{- printDiagCodedType(dop.diag_coded_type)|indent(1) }}
  {{- printPhysicalType(dop.physical_type)|indent(1) }}
  {%- if dop.internal_constr %}
- {{- printInternalConstr(dop.internal_constr)|indent(1) }}
+ {{- printInternalConstr(dop.internal_constr, False)|indent(1) }}
  {%- endif %}
  {%- if dop.unit_ref %}
  <UNIT-REF ID-REF="{{ dop.unit_ref.ref_id }}" />
+ {%- endif %}
+ {%- if dop.physical_constr %}
+ {{- printInternalConstr(dop.internal_constr, True)|indent(1) }}
  {%- endif %}
 </DATA-OBJECT-PROP>
 {%- endmacro %}

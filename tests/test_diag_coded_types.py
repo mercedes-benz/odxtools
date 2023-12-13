@@ -193,6 +193,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     unit_ref=None,
                     sdgs=[],
                     internal_constr=None,
+                    physical_constr=None,
                 ),
         }
 
@@ -461,6 +462,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     unit_ref=None,
                     sdgs=[],
                     internal_constr=None,
+                    physical_constr=None,
                 ),
             "certificateClient":
                 DataObjectProperty(
@@ -476,6 +478,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     unit_ref=None,
                     sdgs=[],
                     internal_constr=None,
+                    physical_constr=None,
                 ),
         }
 
@@ -784,6 +787,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     unit_ref=None,
                     sdgs=[],
                     internal_constr=None,
+                    physical_constr=None,
                 ),
         }
 
