@@ -53,6 +53,7 @@ send to/received from ECUs in an pythonic manner.
   - [The `snoop` subcommand](#the-snoop-subcommand)
   - [The `find` subcommand](#the-find-subcommand)
   - [The `decode` subcommand](#the-decode-subcommand)
+  - [The `compare` subcommand](#the-compare-subcommand)
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [Code of Conduct](#code-of-conduct)
@@ -277,7 +278,7 @@ using `odxtools --help`:
 
 ```bash
 $ odxtools --help
-usage: odxtools [-h] [--version] {list,browse,snoop,find} ...
+usage: odxtools [-h] [--version] {list,browse,snoop,find,decode,compare} ...
 
 Utilities to interact with automotive diagnostic descriptions based on the ODX standard.
 
@@ -288,13 +289,14 @@ Examples:
    odxtools browse ./path/to/database.pdx
 
 positional arguments:
-  {list,browse,snoop,find}
+  {list,browse,snoop,find,decode,compare}
                         Select a sub command
     list                Print a summary of automotive diagnostic files.
     browse              Interactively browse the content of automotive diagnostic files.
     snoop               Live decoding of a diagnostic session.
     find                Find & display services by their name
-    decode              Decode hex-data to service-name & optionally its parameters 
+    decode              Find & print service by hex-data. Can also decode the hex-data to its named parameters.
+    compare             Compares two ecu versions or databases with each other. Checks whether diagnostic services and its parameters have changed.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -319,7 +321,7 @@ print the relevant parts of its content to the terminal.
 
 ```bash
 $ odxtools list -h
-usage: odxtools list [-h] [-v VARIANT [VARIANT ...]] [-s [SERVICE [SERVICE ...]]] [-p] [-d] [-a] PDX_FILE
+usage: odxtools list [-h] [-v VARIANT [VARIANT ...]] [-g] [-s [SERVICE [SERVICE ...]]] [-p] [-d] [-a] [-po] PDX_FILE
 
 List the content of automotive diagnostic files (*.pdx)
 
@@ -338,26 +340,53 @@ optional arguments:
   -h, --help            show this help message and exit
   -v VARIANT [VARIANT ...], --variants VARIANT [VARIANT ...]
                         Specifies which variants should be included.
+  -g, --global-negative-responses
+                        Print a list of the global negative responses for the selected ECUs.
   -s [SERVICE [SERVICE ...]], --services [SERVICE [SERVICE ...]]
                         Print a list of diagnostic services specified in the pdx.
                         If no service names are specified, all services are printed.
   -p, --params          Print a list of all parameters relevant for the selected items.
   -d, --dops            Print a list of all data object properties relevant for the selected items
   -a, --all             Print a list of all diagnostic services and DOPs specified in the pdx
+  -po, --plumbing-output
+                        Print full objects instead of selected and formatted attributes
 ```
 
-The options `--variants` and `--services` can be used to specify which
-services should be printed.  If the `--params` option is specified,
-the message layout is printed for all specified variants/services and
-the `--all` parameter prints all data of the file that is recognized
-by `odxtools`. Example:
+The options `--variants` and `--services` can be used to specify which services should be printed.  
+If the `--params` option is specified, the message layout and information about the service parameters (reuest as well as responses) are printed for all specified variants/services.
+If the `--global-negative-responses` option is specified, all global negative responses are printed for all specified variants.
+If the `--dops` option is specified, a list of all data object properties (their names) is printed for all specified variants/services.
+With the parameter `--all` all data of the file that is recognized by `odxtools` is printed.
+The default output does not display all information of the specified objects but a selection. To see all object information choose the parameter `--plumbing-output`.
+
+Example:
 
 ```bash
 $ odxtools list $BASE_DIR/odxtools/examples/somersault.pdx --variants somersault_lazy --services do_forward_flips --params
-ECU-VARIANT 'somersault_lazy' (Receive ID: 0x7b, Send ID: 0x1c8)
- num services: 5, num DOPs: 6, num communication parameters: 11.
-The services of the ECU-VARIANT 'somersault_lazy' are:
- do_forward_flips <ID: somersault.service.do_forward_flips>
+Overview of diagnostic layers:
+    | Name            | Variant Type | Num. of Services | Num. of DOPs | Num. of comparams
+----+-----------------+--------------+------------------+--------------+-------------------
+  0 | somersault_lazy | ECU-VARIANT  |                5 |           10 |                10
+
+Diagnostic layer: 'somersault_lazy'
+ Variant Type: ECU-VARIANT
+ Description: Sloppy variant of the somersault ECU (lazy < assiduous)
+
+The services of 'somersault_lazy' are:
+ do_forward_flips <ID: OdxLinkId('somersault.service.do_forward_flips')>
+  Service description: Do a forward flip.
+
+  Request Properties:
+   Request Name: do_forward_flips
+   Byte-Array: ---      Hex-String: 0x---
+   Service Parameters: [sid, forward_soberness_check, num_flips]
+
+    | Name                    | Byte Pos. | Bit Length | Param. Type | Data Type | Value | Value Desc. | Linked DOP
+----+-------------------------+-----------+------------+-------------+-----------+-------+-------------+-----------------
+  0 | sid                     |         0 |          8 | CODED-CONST | A_UINT32  | 0xBA  | coded value |
+  1 | forward_soberness_check |         1 |          8 | VALUE       | A_UINT32  |       |             | soberness_check
+  2 | num_flips               |         2 |          8 | VALUE       | A_UINT32  |       |             | num_flips
+
   Message format of a request:
            7     6     5     4     3     2     1     0
         +-----+-----+-----+-----+-----+-----+-----+-----+
@@ -367,12 +396,17 @@ The services of the ECU-VARIANT 'somersault_lazy' are:
         +-----+-----+-----+-----+-----+-----+-----+-----+
       2 | num_flips(8 bits)                             |
         +-----+-----+-----+-----+-----+-----+-----+-----+
-   Parameter(short_name='sid', type='CODED-CONST', semantic=None, byte_position=0, bit_length=8, coded_value='0xba')
-   Parameter(short_name='forward_soberness_check', type='VALUE', semantic=None, byte_position=1, bit_length=8, dop_ref='somersault.DOP.soberness_check')
-    DataObjectProperty('soberness_check', category='LINEAR', internal_type='A_UINT32', physical_type='A_UINT32')
-   Parameter(short_name='num_flips', type='VALUE', semantic=None, byte_position=2, bit_length=8, dop_ref='somersault.DOP.num_flips')
-    DataObjectProperty('num_flips', category='LINEAR', internal_type='A_UINT32', physical_type='A_UINT32')
-  Number of positive responses: 1
+   
+  Positive Response Properties:
+   Number of Positive Responses: 1
+   Positive Responses: [grudging_forward]
+   Service Parameters: [sid, num_flips_done]
+
+    | Name           | Byte Pos. | Bit Length | Parameter Type         | Data Type | Value | Value Desc. | Linked DOP
+----+----------------+-----------+------------+------------------------+-----------+-------+-------------+-------------
+  0 | sid            |         0 |          8 | CODED-CONST            | A_UINT32  | 0xFA  | coded value |
+  1 | num_flips_done |         1 |          8 | MATCHING-REQUEST-PARAM |           |       |             |
+
   Message format of a positive response:
            7     6     5     4     3     2     1     0
         +-----+-----+-----+-----+-----+-----+-----+-----+
@@ -380,9 +414,19 @@ The services of the ECU-VARIANT 'somersault_lazy' are:
         +-----+-----+-----+-----+-----+-----+-----+-----+
       1 | num_flips_done(8 bits)                        |
         +-----+-----+-----+-----+-----+-----+-----+-----+
-   Parameter(short_name='sid', type='CODED-CONST', semantic=None, byte_position=0, bit_length=8, coded_value='0xfa')
-   Parameter(short_name='num_flips_done', type='MATCHING-REQUEST-PARAM', semantic=None, byte_position=1)
-    Request byte position = 2, byte length = 1
+   
+  Negative Response Properties:
+   Number of Negative Responses: 1
+   Negative Responses: [flips_not_done]
+   Service Parameters: [sid, rq_sid, reason, flips_successfully_done]
+
+    | Name                    |Byte Pos. | Bit Length | Parameter Type         | Data Type | Value     | Value Desc. | Linked DOP
+----+-------------------------+----------+------------+------------------------+-----------+-----------+-------------+-------------
+  0 | sid                     |        0 |          8 | CODED-CONST            | A_UINT32  | 0x7F      | coded value |
+  1 | rq_sid                  |        1 |          8 | MATCHING-REQUEST-PARAM |           |           |             |
+  2 | reason                  |        2 |          8 | NRC-CONST              | A_UINT32  | [0, 1, 2] | coded value |
+  3 | flips_successfully_done |        3 |          8 | VALUE                  | A_UINT32  |           |             | num_flips
+
   Number of negative responses: 1
   Message format of a negative response:
            7     6     5     4     3     2     1     0
@@ -395,13 +439,7 @@ The services of the ECU-VARIANT 'somersault_lazy' are:
         +-----+-----+-----+-----+-----+-----+-----+-----+
       3 | flips_successfully_done(8 bits)               |
         +-----+-----+-----+-----+-----+-----+-----+-----+
-   Parameter(short_name='sid', type='CODED-CONST', semantic=None, byte_position=0, bit_length=8, coded_value='0x7f')
-   Parameter(short_name='rq_sid', type='MATCHING-REQUEST-PARAM', semantic=None, byte_position=1)
-    Request byte position = 0, byte length = 1
-   Parameter(short_name='reason', type='VALUE', semantic=None, byte_position=2, bit_length=8, dop_ref='somersault.DOP.error_code')
-    DataObjectProperty('error_code', category='LINEAR', internal_type='A_UINT32', physical_type='A_UINT32')
-   Parameter(short_name='flips_successfully_done', type='VALUE', semantic=None, byte_position=3, bit_length=8, dop_ref='somersault.DOP.num_flips')
-    DataObjectProperty('num_flips', category='LINEAR', internal_type='A_UINT32', physical_type='A_UINT32')
+   
 ```
 
 ### The `browse` subcommand
@@ -496,12 +534,11 @@ Tester: do_forward_flips(forward_soberness_check=18, num_flips=50)
 
 ### The `find` subcommand
 
-The `find` subcommand can be used to find a service and its associated 
-information by a partial name via cli. 
+The `find` subcommand can be used to find a service and its associated information by a partial name via cli.
 
 ```bash
 $ odxtools find -h
-usage: odxtools find [-h] [-v VARIANT] -s [SERVICES ...] [-nd] [-ro] PDX_FILE
+usage: odxtools find [-h] [-v VARIANT] -s [SERVICES ...] [-nd] [-ro] [-po] PDX_FILE
 
 Find & print services by name
 
@@ -523,12 +560,14 @@ options:
   -nd, --no-details     Don't show all service details
   -ro, --relaxed-output
                         Relax output formatting rules (allow unknown bitlengths for ascii representation)
+  -po, --plumbing-output
+                        Print full objects instead of selected and formatted attributes
 ```
 
 Example: Find diagnostic services with the name `session_start`
 
 ```bash
-$ odxtools find examples/somersault.pdx -s session_start
+$ odxtools find $BASE_DIR/odxtools/examples/somersault.pdx -s session_start
 
 =====================================
 somersault_lazy, somersault_assiduous
@@ -536,6 +575,17 @@ somersault_lazy, somersault_assiduous
 
 
  session_start <ID: OdxLinkId('somersault.service.session_start')>
+
+  Request Properties:
+   Request Name: start_session
+   Byte-Array: bytearray(b'\x10\x00')   Hex-String: 0x1000
+   Service Parameters: [sid, id]
+
+    | Name | Byte Pos. | Bit Length | Param. Type | Data Type | Value | Value Desc. | Linked DOP
+----+------+-----------+------------+-------------+-----------+-------+-------------+------------
+  0 | sid  |         0 |          8 | CODED-CONST | A_UINT32  | 0x10  | coded value |
+  1 | id   |         1 |          8 | CODED-CONST | A_UINT32  | 0x00  | coded value |
+
   Message format of a request:
            7     6     5     4     3     2     1     0  
         +-----+-----+-----+-----+-----+-----+-----+-----+
@@ -543,9 +593,17 @@ somersault_lazy, somersault_assiduous
         +-----+-----+-----+-----+-----+-----+-----+-----+
       1 | id (8 bits)                                   |
         +-----+-----+-----+-----+-----+-----+-----+-----+
-   CodedConstParameter(short_name='sid', long_name=None, description=None, byte_position=0, bit_position=None, semantic=None, sdgs=[], diag_coded_type=StandardLengthType(base_data_type=<DataType.A_UINT32: 'A_UINT32'>, base_type_encoding=None, is_highlow_byte_order_raw=None, bit_length=8, bit_mask=None, is_condensed_raw=None), coded_value=16)
-   CodedConstParameter(short_name='id', long_name=None, description=None, byte_position=1, bit_position=None, semantic=None, sdgs=[], diag_coded_type=StandardLengthType(base_data_type=<DataType.A_UINT32: 'A_UINT32'>, base_type_encoding=None, is_highlow_byte_order_raw=None, bit_length=8, bit_mask=None, is_condensed_raw=None), coded_value=0)
-  Number of positive responses: 1
+
+  Positive Response Properties:
+   Number of Positive Responses: 1
+   Positive Responses: [session]
+   Service Parameters: [sid, can_do_backward_flips]
+
+    | Name                  | Byte Pos. | Bit Length | Param. Type | Data Type        | Value | Value Desc. | Linked DOP
+----+-----------------------+-----------+------------+-------------+------------------+-------+-------------+------------
+  0 | sid                   |         0 |          8 | CODED-CONST | A_UINT32         | 0x50  | coded value |
+  1 | can_do_backward_flips |         1 |          8 | VALUE       | A_UNICODE2STRING |       |             | boolean
+
   Message format of a positive response:
            7     6     5     4     3     2     1     0  
         +-----+-----+-----+-----+-----+-----+-----+-----+
@@ -553,9 +611,18 @@ somersault_lazy, somersault_assiduous
         +-----+-----+-----+-----+-----+-----+-----+-----+
       1 | can_do_backward_flips (8 bits)                |
         +-----+-----+-----+-----+-----+-----+-----+-----+
-   CodedConstParameter(short_name='sid', long_name=None, description=None, byte_position=0, bit_position=None, semantic=None, sdgs=[], diag_coded_type=StandardLengthType(base_data_type=<DataType.A_UINT32: 'A_UINT32'>, base_type_encoding=None, is_highlow_byte_order_raw=None, bit_length=8, bit_mask=None, is_condensed_raw=None), coded_value=80)
-   ValueParameter(short_name='can_do_backward_flips', long_name=None, description=None, byte_position=1, bit_position=None, semantic=None, sdgs=[], dop_ref=OdxLinkRef(ref_id='somersault.DOP.boolean', ref_docs=[OdxDocFragment(doc_name='somersault', doc_type='CONTAINER'), OdxDocFragment(doc_name='somersault', doc_type='LAYER')]), dop_snref=None, physical_default_value_raw=None)
-  Number of negative responses: 1
+
+  Negative Response Properties:
+   Number of Negative Responses: 1
+   Negative Responses: [general_negative_response]
+   Service Parameters: [sid, rq_sid, response_code]
+
+    | Name          | Byte Pos.| Bit Length | Parameter Type         | Data Type | Value | Value Desc. | Linked DOP
+----+---------------+----------+------------+------------------------+-----------+-------+-------------+------------
+  0 | sid           |        0 |          8 | CODED-CONST            | A_UINT32  | 0x7F  | coded value |
+  1 | rq_sid        |        1 |          8 | MATCHING-REQUEST-PARAM |           |       |             |
+  2 | response_code |        2 |          8 | VALUE                  | A_UINT32  |       |             | error_code
+
   Message format of a negative response:
            7     6     5     4     3     2     1     0  
         +-----+-----+-----+-----+-----+-----+-----+-----+
@@ -565,9 +632,7 @@ somersault_lazy, somersault_assiduous
         +-----+-----+-----+-----+-----+-----+-----+-----+
       2 | response_code (8 bits)                        |
         +-----+-----+-----+-----+-----+-----+-----+-----+
-   CodedConstParameter(short_name='sid', long_name=None, description=None, byte_position=0, bit_position=None, semantic=None, sdgs=[], diag_coded_type=StandardLengthType(base_data_type=<DataType.A_UINT32: 'A_UINT32'>, base_type_encoding=None, is_highlow_byte_order_raw=None, bit_length=8, bit_mask=None, is_condensed_raw=None), coded_value=127)
-   MatchingRequestParameter(short_name='rq_sid', long_name=None, description=None, byte_position=1, bit_position=None, semantic=None, sdgs=[], request_byte_position=0, byte_length=1)
-   ValueParameter(short_name='response_code', long_name=None, description=None, byte_position=2, bit_position=None, semantic=None, sdgs=[], dop_ref=OdxLinkRef(ref_id='somersault.DOP.error_code', ref_docs=[OdxDocFragment(doc_name='somersault', doc_type='CONTAINER'), OdxDocFragment(doc_name='somersault', doc_type='LAYER')]), dop_snref=None, physical_default_value_raw=None)
+
 ```
 
 ### The `decode` subcommand
@@ -603,7 +668,7 @@ options:
 Example: Decode diagnostic services with the request `10 00`
 
 ```bash
-$ odxtools decode examples/somersault.pdx -d '10 00'
+$ odxtools decode $BASE_DIR/odxtools/examples/somersault.pdx -d '10 00'
 Binary data: 10 00
 Decoded by service 'session_start' (decoding ECUs: somersault_lazy, somersault_assiduous)
 ```
@@ -611,12 +676,285 @@ Decoded by service 'session_start' (decoding ECUs: somersault_lazy, somersault_a
 Example: Decode diagnostic services with the request `10 00`, and parameters
 
 ```bash
-$ odxtools decode examples/somersault.pdx -d '10 00' -D
+$ odxtools decode $BASE_DIR/odxtools/examples/somersault.pdx -d '10 00' -D
 Binary data: 10 00
 Decoded by service 'session_start' (decoding ECUs: somersault_lazy, somersault_assiduous)
 Decoded data:
-sid=16 (0x10)
-id=0 (0x0)
+  sid=16 (0x10)
+  id=0 (0x0)
+```
+
+### The `compare` subcommand
+
+The `compare` subcommand can be used to compare databases (pdx-files) and diagnostic layers with each other. All diagnostic services as well as its parameters of specified databases and variants are compared with each other and changes are displayed.
+
+#### database comparison:
+- new diagnostic layers
+- deleted diagnostic layers
+- diagnostic layer comparison
+
+#### diagnostic layer comparison:
+- new services
+- deleted services
+- renamed services
+- service parameter comparison
+
+#### service parameter comparison:
+find changes in following properties:
+- Name
+- Byte Position
+- Bit Length
+- Semantic
+- Parameter Type
+- Coded Value
+- Data Type
+- Data Object Property (Name, Data Type, Bit Length, Default Value)
+
+```bash
+$ odxtools compare -h
+usage: odxtools compare [-h] [-v VARIANT [VARIANT ...]] [-db DATABASE [DATABASE ...]] [-nd] [-od] PDX_FILE
+
+Compares two ecu versions or databases with each other. Checks whether diagnostic services and its parameters have changed.
+
+Examples:
+  Comparison of two ecu versions:
+    odxtools compare ./path/to/database.pdx -v variant1 variant2
+  Comparison of two database versions:
+    odxtools compare ./path/to/database.pdx -db ./path/to/old-database.pdx
+  For more information use:
+    odxtools compare -h
+
+positional arguments:
+  PDX_FILE              Location of the .pdx file
+
+options:
+  -h, --help            show this help message and exit
+  -v VARIANT [VARIANT ...], --variants VARIANT [VARIANT ...]
+                        Compare specified ecu variants to each other.
+  -db DATABASE [DATABASE ...], --database DATABASE [DATABASE ...]
+                        Compare specified database file(s) to database file of first input argument.
+  -nd, --no-details     Don't show all service parameter details
+  -od, --object-details
+                        Print all object details instead of just the name
+```
+
+Example: Compare the ecu variants `somersault_lazy` and `somersault_assiduous`
+
+```bash
+$ odxtools compare $BASE_DIR/odxtools/examples/somersault.pdx -v somersault_lazy somersault_assiduous
+
+Overview of diagnostic layers:
+    | Name                 | Variant Type | Num. of Services | Num. of DOPs | Num. of comparams
+----+----------------------+--------------+------------------+--------------+-------------------
+  0 | somersault_lazy      | ECU-VARIANT  |                5 |           10 |                10
+  1 | somersault_assiduous | ECU-VARIANT  |                8 |           10 |                10
+
+
+Changes in ecu variant somersault_lazy
+ (compared to somersault_assiduous)
+
+ Changed diagnostic services for ecu variant: somersault_lazy
+
+ Deleted services
+    | Name                 | Semantic   | Hex-Request
+----+----------------------+------------+---------------
+  0 | set_operation_params | FUNCTION   |
+  1 | do_backward_flips    | FUNCTION   |
+  2 | headstand            | UNKNOWN    |
+```
+
+Example: Compare two databases
+
+```bash
+$ odxtools compare $BASE_DIR/odxtools/examples/somersault_modified.pdx -db $BASE_DIR/odxtools/examples/somersault.pdx -nd
+
+Changes in file somersault_modified.pdx
+ (compared to somersault.pdx)
+
+Overview of diagnostic layers (for somersault_modified.pdx)
+    | Name                 | Variant Type | Num. of Services | Num. of DOPs | Num. of comparams
+----+----------------------+--------------+------------------+--------------+-------------------
+  0 | somersault           | BASE-VARIANT |                6 |           10 |                10
+  1 | somersault_lazy      | ECU-VARIANT  |                5 |           10 |                10
+  2 | somersault_assiduous | ECU-VARIANT  |                8 |           10 |                10
+  3 | somersault_young     | ECU-VARIANT  |                6 |           10 |                10
+
+
+Overview of diagnostic layers (for somersault.pdx)
+    | Name                 | Variant Type | Num. of Services | Num. of DOPs | Num. of comparams
+----+----------------------+--------------+------------------+--------------+-------------------
+  0 | somersault           | BASE-VARIANT |                7 |           10 |                10
+  1 | somersault_lazy      | ECU-VARIANT  |                5 |           10 |                10
+  2 | somersault_assiduous | ECU-VARIANT  |                8 |           10 |                10
+
+ Changed ecu variants:
+         New ecu variants:
+                         somersault_young
+         Deleted ecu variants:
+
+ Changed diagnostic services for ecu variant: somersault_lazy
+
+ Renamed services
+    | Name          | Semantic   | Hex-Request   | Old service name
+----+---------------+------------+---------------+--------------------
+  0 | session_start | SESSION    | 0x1000        | start_session
+
+ Services with parameter changes
+    | Name           | Semantic      | Hex-Request | Changed parameters
+----+----------------+---------------+-------------+-----------------------------------------------------------------------------------------------
+  0 | session_start  | SESSION       | 0x1000      | positive response parameter 'can_do_backward_flips',
+  1 | session_stop   | SESSION       | 0x1001      | request parameter 'id', positive response parameter 'can_do_backward_flips',
+  2 | tester_present | TESTERPRESENT | 0x3E00      | request parameter 'id', positive response parameter 'status',
+  3 | report_status  | CURRENTDATA   | 0x2200      | positive response parameter 'dizzyness_level', positive response parameter 'happiness_level',
+
+ Detailed changes of diagnostic service session_start
+
+Properties of 2. positive response parameter can_do_backward_flips have changed
+    | Property      | Old Value   | New Value
+----+---------------+-------------+------------------
+  0 | Linked DOP    | uint8       | boolean
+  1 | DOP data type | A_UINT32    | A_UNICODE2STRING
+
+ Detailed changes of diagnostic service session_stop
+
+Properties of 2. request parameter id have changed
+    | Property   |   Old Value |   New Value
+----+------------+-------------+-------------
+  0 | Bit Length |          16 |           8
+
+Properties of 2. positive response parameter can_do_backward_flips have changed
+    | Property      | Old Value   | New Value
+----+---------------+-------------+------------------
+  0 | Linked DOP    | uint8       | boolean
+  1 | DOP data type | A_UINT32    | A_UNICODE2STRING
+
+ Detailed changes of diagnostic service tester_present
+
+Properties of 2. request parameter id have changed
+    | Property   | Old Value   | New Value
+----+------------+-------------+-------------
+  0 | Value      | 0x01        | 0x00
+
+Properties of 2. positive response parameter status have changed
+    | Property   | Old Value   | New Value
+----+------------+-------------+-------------
+  0 | Bit Length | 16          | 8
+  1 | Value      | 0x0043      | 0x00
+
+ Detailed changes of diagnostic service report_status
+
+Properties of 2. positive response parameter dizzyness_level have changed
+    | Property       | Old Value       | New Value
+----+----------------+-----------------+-----------------
+  0 | Parameter name | happiness_level | dizzyness_level
+  1 | Linked DOP     | happiness_level | dizzyness_level
+
+Properties of 3. positive response parameter happiness_level have changed
+    | Property       | Old Value       | New Value
+----+----------------+-----------------+-----------------
+  0 | Parameter name | dizzyness_level | happiness_level
+  1 | Linked DOP     | dizzyness_level | happiness_level
+
+ Changed diagnostic services for ecu variant: somersault_assiduous
+
+ New services
+    | Name     | Semantic   | Hex-Request
+----+----------+------------+---------------
+  0 | flicflac | FUNCTION   |
+
+ Deleted services
+    | Name                 | Semantic   | Hex-Request
+----+----------------------+------------+---------------
+  0 | set_operation_params | FUNCTION   |
+
+ Renamed services
+    | Name          | Semantic   | Hex-Request   | Old service name
+----+---------------+------------+---------------+--------------------
+  0 | session_start | SESSION    | 0x1000        | start_session
+
+ Services with parameter changes
+    | Name              | Semantic      | Hex-Request | Changed parameters
+----+-------------------+---------------+-------------+---------------------------------------------------------------------------------------------------------------------------------------------
+  0 | session_start     | SESSION       | 0x1000      | positive response parameter 'can_do_backward_flips',
+  1 | session_stop      | SESSION       | 0x1001      | request parameter 'id', positive response parameter 'can_do_backward_flips',
+  2 | tester_present    | TESTERPRESENT | 0x3E00      | request parameter 'id', positive response parameter 'status',
+  3 | do_backward_flips | FUNCTION      |             | request parameter 'backward_soberness_check', positive response parameter 'num_flips_done', positive response parameter 'grumpiness_level',
+  4 | report_status     | CURRENTDATA   | 0x2200      | positive response parameter 'dizzyness_level', positive response parameter 'happiness_level',
+  5 | headstand         | UNKNOWN       |             | request parameter list,
+
+ Detailed changes of diagnostic service session_start
+
+Properties of 2. positive response parameter can_do_backward_flips have changed
+    | Property      | Old Value   | New Value
+----+---------------+-------------+------------------
+  0 | Linked DOP    | uint8       | boolean
+  1 | DOP data type | A_UINT32    | A_UNICODE2STRING
+
+ Detailed changes of diagnostic service session_stop
+
+Properties of 2. request parameter id have changed
+    | Property   |   Old Value |   New Value
+----+------------+-------------+-------------
+  0 | Bit Length |          16 |           8
+
+Properties of 2. positive response parameter can_do_backward_flips have changed
+    | Property      | Old Value   | New Value
+----+---------------+-------------+------------------
+  0 | Linked DOP    | uint8       | boolean
+  1 | DOP data type | A_UINT32    | A_UNICODE2STRING
+
+ Detailed changes of diagnostic service tester_present
+
+Properties of 2. request parameter id have changed
+    | Property   | Old Value   | New Value
+----+------------+-------------+-------------
+  0 | Value      | 0x01        | 0x00
+
+Properties of 2. positive response parameter status have changed
+    | Property   | Old Value   | New Value
+----+------------+-------------+-------------
+  0 | Bit Length | 16          | 8
+  1 | Value      | 0x0043      | 0x00
+
+ Detailed changes of diagnostic service do_backward_flips
+
+Properties of 2. request parameter backward_soberness_check have changed
+    | Property       | Old Value      | New Value
+----+----------------+----------------+--------------------------
+  0 | Parameter name | backward_check | backward_soberness_check
+
+Properties of 2. positive response parameter num_flips_done have changed
+    | Property      |   Old Value | New Value
+----+---------------+-------------+-------------
+  0 | Byte position |           1 |
+
+Properties of 3. positive response parameter grumpiness_level have changed
+    | Property       | Old Value   | New Value
+----+----------------+-------------+-------------
+  0 | Byte position  | 2           |
+  1 | Parameter type | CODED-CONST | VALUE
+
+ Detailed changes of diagnostic service report_status
+
+Properties of 2. positive response parameter dizzyness_level have changed
+    | Property       | Old Value       | New Value
+----+----------------+-----------------+-----------------
+  0 | Parameter name | happiness_level | dizzyness_level
+  1 | Linked DOP     | happiness_level | dizzyness_level
+
+Properties of 3. positive response parameter happiness_level have changed
+    | Property       | Old Value       | New Value
+----+----------------+-----------------+-----------------
+  0 | Parameter name | dizzyness_level | happiness_level
+  1 | Linked DOP     | dizzyness_level | happiness_level
+
+ Detailed changes of diagnostic service headstand
+
+List of request parameters for service headstand is not identical.
+    | List     | Values
+----+----------+---------------------
+  0 | Old list | [sid, id, duration]
+  1 | New list | [sid, duration]
 ```
 
 ## Testing
