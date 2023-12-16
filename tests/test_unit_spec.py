@@ -119,6 +119,8 @@ class TestUnitSpec(unittest.TestCase):
                 internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
             unit_ref=OdxLinkRef.from_id(unit.odx_id),
             sdgs=[],
+            internal_constr=None,
+            physical_constr=None,
         )
         dl_raw = DiagLayerRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
