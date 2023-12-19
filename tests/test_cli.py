@@ -25,7 +25,8 @@ class UtilFunctions:
                       ecu_services: Optional[List[str]] = None,
                       print_params: bool = False,
                       print_dops: bool = False,
-                      print_all: bool = False) -> None:
+                      print_all: bool = False,
+                      plumbing_output: bool = False) -> None:
         list_args = Namespace(
             pdx_file=path_to_pdx_file,
             variants=ecu_variants,
@@ -33,7 +34,8 @@ class UtilFunctions:
             services=ecu_services,
             params=print_params,
             dops=print_dops,
-            all=print_all)
+            all=print_all,
+            plumbing_output=plumbing_output)
 
         list_tool.run(list_args)
 
@@ -54,13 +56,15 @@ class UtilFunctions:
                       path_to_pdx_file: str = "./examples/somersault.pdx",
                       ecu_variants: Optional[List[str]] = None,
                       allow_unknown_bit_lengths: bool = False,
-                      no_details: bool = False) -> None:
+                      no_details: bool = False,
+                      plumbing_output: bool = False) -> None:
         find_args = Namespace(
             pdx_file=path_to_pdx_file,
             variants=ecu_variants,
             service_names=service_names,
             relaxed_output=allow_unknown_bit_lengths,
-            no_details=no_details)
+            no_details=no_details,
+            plumbing_output=plumbing_output)
 
         find.run(find_args)
 
@@ -75,6 +79,7 @@ class TestCommandLineTools(unittest.TestCase):
         UtilFunctions.run_list_tool(print_params=True)
         UtilFunctions.run_list_tool(print_dops=True)
         UtilFunctions.run_list_tool(print_all=True)
+        UtilFunctions.run_list_tool(plumbing_output=True)
         UtilFunctions.run_list_tool(ecu_services=["session_start"])
 
     def test_decode_tool(self) -> None:

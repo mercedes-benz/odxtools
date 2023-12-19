@@ -19,14 +19,13 @@ def format_desc(desc: str, ident: int = 0) -> str:
     return desc
 
 
-def print_diagnostic_service(
-    service: DiagService,
-    print_params: bool = False,
-    print_pre_condition_states: bool = False,
-    print_state_transitions: bool = False,
-    print_audiences: bool = False,
-    allow_unknown_bit_lengths: bool = False,
-) -> None:
+def print_diagnostic_service(service: DiagService,
+                             print_params: bool = False,
+                             print_pre_condition_states: bool = False,
+                             print_state_transitions: bool = False,
+                             print_audiences: bool = False,
+                             allow_unknown_bit_lengths: bool = False,
+                             plumbing_output: bool = False) -> None:
     print(f" {service.short_name} <ID: {service.odx_id}>")
 
     if service.description:

@@ -460,7 +460,10 @@ class BasicStructure(ComplexDop):
         else:
             return []
 
-    def print_message_format(self, indent: int = 5, allow_unknown_lengths: bool = False) -> None:
+    def print_message_format(self,
+                             indent: int = 5,
+                             allow_unknown_lengths: bool = False,
+                             plumbing_output: bool = True) -> None:
         """
         Print a description of the message format to `stdout`.
         """
@@ -470,5 +473,6 @@ class BasicStructure(ComplexDop):
             print(f"{indent * ' '}" + f"\n{indent * ' '}".join(message_as_lines))
         else:
             print("Sorry, couldn't pretty print message layout. :(")
-        for p in self.parameters:
-            print(indent * " " + str(p).replace("\n", f"\n{indent * ' '}"))
+        if plumbing_output:
+            for p in self.parameters:
+                print(indent * " " + str(p).replace("\n", f"\n{indent * ' '}"))

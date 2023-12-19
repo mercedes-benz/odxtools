@@ -14,20 +14,19 @@ from ._print_utils import format_desc, print_diagnostic_service
 _odxtools_tool_name_ = "list"
 
 
-def print_summary(
-    odxdb: Database,
-    print_global_negative_responses: bool = False,
-    print_services: bool = False,
-    print_dops: bool = False,
-    print_params: bool = False,
-    print_comparams: bool = False,
-    print_pre_condition_states: bool = False,
-    print_state_transitions: bool = False,
-    print_audiences: bool = False,
-    allow_unknown_bit_lengths: bool = False,
-    variants: Optional[str] = None,
-    service_filter: Callable[[DiagComm], bool] = lambda x: True,
-) -> None:
+def print_summary(odxdb: Database,
+                  print_global_negative_responses: bool = False,
+                  print_services: bool = False,
+                  print_dops: bool = False,
+                  print_params: bool = False,
+                  print_comparams: bool = False,
+                  print_pre_condition_states: bool = False,
+                  print_state_transitions: bool = False,
+                  print_audiences: bool = False,
+                  allow_unknown_bit_lengths: bool = False,
+                  variants: Optional[str] = None,
+                  service_filter: Callable[[DiagComm], bool] = lambda x: True,
+                  plumbing_output: bool = False) -> None:
 
     diag_layer_names = variants if variants else [dl.short_name for dl in odxdb.diag_layers]
 
@@ -178,6 +177,14 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
         help="Print a list of all diagnostic services and DOPs specified in the pdx",
     )
 
+    parser.add_argument(
+        "-po",
+        "--plumbing-output",
+        action="store_true",
+        required=False,
+        help="Print full objects instead of selected and formatted attributes",
+    )
+
 
 def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
@@ -201,4 +208,4 @@ def run(args: argparse.Namespace) -> None:
         print_state_transitions=args.all,
         print_audiences=args.all,
         allow_unknown_bit_lengths=args.all,
-    )
+        plumbing_output=args.plumbing_output)
