@@ -84,7 +84,7 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
             "  For more information use:",
             "    odxtools decode -h",
         ]),
-        help="Find & print service by hex-data. Can also decode the hex-data to into their named parameters.",
+        help="Find & print service by hex-data. Can also decode the hex-data to its named parameters.",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     _parser_utils.add_pdx_argument(parser)
