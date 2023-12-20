@@ -119,7 +119,7 @@ class TestNamedItemList(unittest.TestCase):
 
         # try to append an item that cannot be mapped to a name
         with self.assertRaises(OdxError):
-            foo.append((0, 3)) # type: ignore[arg-type]
+            foo.append((0, 3))  # type: ignore[arg-type]
 
         # add a keyword identifier
         foo.append(X("as", 3))

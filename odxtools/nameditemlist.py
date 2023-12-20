@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: MIT
 import abc
-from collections import OrderedDict, UserList
 from keyword import iskeyword
-from typing import (Any, Callable, Collection, Dict, Iterable, Iterator, List, Optional, Protocol,
-                    SupportsIndex, Tuple, TypeVar, Union, cast, overload, runtime_checkable, Generic)
+from typing import (Any, Collection, Dict, Iterable, List, Optional, Protocol, SupportsIndex, Tuple,
+                    TypeVar, Union, cast, overload, runtime_checkable)
 
 from .exceptions import odxraise
 
@@ -20,7 +19,7 @@ T = TypeVar("T")
 TNamed = TypeVar("TNamed", bound=OdxNamed)
 
 
-class ItemAttributeList(Generic[T], UserList):
+class ItemAttributeList(List[T]):
     """A list that provides direct access to its items as named attributes.
 
     This is a hybrid between a list and a user-defined object: One can
@@ -35,8 +34,7 @@ class ItemAttributeList(Generic[T], UserList):
     """
 
     def __init__(self, input_list: Optional[Iterable[T]] = None) -> None:
-        self._item_dict: OrderedDict[str, T] = OrderedDict()
-        self.data: List[T] = []
+        self._item_dict: Dict[str, T] = {}
 
         if input_list is not None:
             for item in input_list:
@@ -53,6 +51,11 @@ class ItemAttributeList(Generic[T], UserList):
 
         \return The name under which item is accessible
         """
+        self._add_attribute_item(item)
+
+        super().append(item)
+
+    def _add_attribute_item(self, item: T) -> None:
         item_name = self._get_item_key(item)
 
         # eliminate conflicts between the name of the new item and
@@ -74,24 +77,47 @@ class ItemAttributeList(Generic[T], UserList):
         item_name = tmp
 
         self._item_dict[item_name] = item
-        self.data.append(item)
 
-    def sort(self, *, key: Any = None, reverse: bool = False) -> None:
-        if key is None:
-            self._item_dict = OrderedDict(
-                sorted(self._item_dict.items(), key=lambda x: x[0], reverse=reverse))
-        else:
-            key_fn = cast(Callable[[T], str], key)
-            self._item_dict = OrderedDict(
-                sorted(self._item_dict.items(), key=lambda x: key_fn(x[1]), reverse=reverse))
+    def insert(self, index: SupportsIndex, obj: T) -> None:
+        self._add_attribute_item(obj)
 
-        self.data = list(self._item_dict.values())
+        list.insert(self, index, obj)
+
+    def remove(self, obj: T) -> None:
+        list.remove(self, obj)
+
+        keys = [k for (k, v) in self._item_dict.items() if v == obj]
+        for key in keys:
+            del self._item_dict[key]
+
+    def pop(self, index: SupportsIndex = -1) -> T:
+        result = list.pop(self, index)
+        keys = [k for (k, v) in self._item_dict.items() if v == result]
+        for key in keys:
+            del self._item_dict[key]
+        return result
+
+    def extend(self, items: Iterable[T]) -> None:
+        for item in items:
+            self.append(item)
+
+    def clear(self) -> None:
+        super().clear()
+
+        self._item_dict = {}
+
+    def copy(self) -> "ItemAttributeList[T]":
+        result = self.__class__()
+        for item in self:
+            list.append(result, item)
+        result._item_dict = self._item_dict.copy()
+        return result
 
     def keys(self) -> Collection[str]:
         return self._item_dict.keys()
 
     def values(self) -> Collection[T]:
-        return self.data
+        return self._item_dict.values()
 
     def items(self) -> Collection[Tuple[str, T]]:
         return self._item_dict.items()
@@ -114,10 +140,8 @@ class ItemAttributeList(Generic[T], UserList):
         ...
 
     def __getitem__(self, key: Union[SupportsIndex, str, slice]) -> Union[T, List[T]]:
-        if isinstance(key, SupportsIndex):
-            return self.data[key]
-        elif isinstance(key, slice):
-            return self.data[key]
+        if isinstance(key, (SupportsIndex, slice)):
+            return super().__getitem__(key)
         else:
             return self._item_dict[key]
 
@@ -129,10 +153,9 @@ class ItemAttributeList(Generic[T], UserList):
 
     def get(self, key: Union[int, str], default: Optional[T] = None) -> Optional[T]:
         if isinstance(key, int):
-            if abs(key) < -len(self._item_dict) or key >= len(self._item_dict):
-                return default
-
-            return self.data[key]
+            if 0 <= key and key < len(self):
+                return super().__getitem__(key)
+            return default
         else:
             return cast(Optional[T], self._item_dict.get(key, default))
 
@@ -146,7 +169,7 @@ class ItemAttributeList(Generic[T], UserList):
             return self._item_dict == other._item_dict
 
     def __str__(self) -> str:
-        return f"[{', '.join(self._item_dict.keys())}]"
+        return f"[{', '.join( [self._get_item_key(x) for x in self])}]"
 
     def __repr__(self) -> str:
         return self.__str__()
@@ -154,7 +177,7 @@ class ItemAttributeList(Generic[T], UserList):
 
 class NamedItemList(ItemAttributeList[T]):
 
-    def _get_item_key(self, obj: OdxNamed) -> str:
+    def _get_item_key(self, obj: T) -> str:
         """Transform an object's `short_name` attribute into a valid
         python identifier
 
