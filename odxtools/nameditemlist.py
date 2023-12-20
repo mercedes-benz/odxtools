@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 import abc
-from collections import OrderedDict
+from collections import OrderedDict, UserList
 from keyword import iskeyword
 from typing import (Any, Callable, Collection, Dict, Iterable, Iterator, List, Optional, Protocol,
-                    SupportsIndex, Tuple, TypeVar, Union, cast, overload, runtime_checkable)
+                    SupportsIndex, Tuple, TypeVar, Union, cast, overload, runtime_checkable, Generic)
 
 from .exceptions import odxraise
 
@@ -20,7 +20,7 @@ T = TypeVar("T")
 TNamed = TypeVar("TNamed", bound=OdxNamed)
 
 
-class ItemAttributeList(List[T]):
+class ItemAttributeList(Generic[T], UserList):
     """A list that provides direct access to its items as named attributes.
 
     This is a hybrid between a list and a user-defined object: One can
@@ -36,7 +36,7 @@ class ItemAttributeList(List[T]):
 
     def __init__(self, input_list: Optional[Iterable[T]] = None) -> None:
         self._item_dict: OrderedDict[str, T] = OrderedDict()
-        self._item_list: List[T] = []
+        self.data: List[T] = []
 
         if input_list is not None:
             for item in input_list:
@@ -74,7 +74,7 @@ class ItemAttributeList(List[T]):
         item_name = tmp
 
         self._item_dict[item_name] = item
-        self._item_list.append(item)
+        self.data.append(item)
 
     def sort(self, *, key: Any = None, reverse: bool = False) -> None:
         if key is None:
@@ -85,29 +85,23 @@ class ItemAttributeList(List[T]):
             self._item_dict = OrderedDict(
                 sorted(self._item_dict.items(), key=lambda x: key_fn(x[1]), reverse=reverse))
 
-        self._item_list = list(self._item_dict.values())
+        self.data = list(self._item_dict.values())
 
     def keys(self) -> Collection[str]:
         return self._item_dict.keys()
 
     def values(self) -> Collection[T]:
-        return self._item_list
+        return self.data
 
     def items(self) -> Collection[Tuple[str, T]]:
         return self._item_dict.items()
-
-    def __contains__(self, x: object) -> bool:
-        return x in self._item_list
-
-    def __len__(self) -> int:
-        return len(self._item_list)
 
     def __dir__(self) -> Dict[str, Any]:
         result = dict(self.__dict__)
         result.update(self._item_dict)
         return result
 
-    @overload
+    @overload  # type: ignore[override]
     def __getitem__(self, key: SupportsIndex) -> T:
         ...
 
@@ -121,9 +115,9 @@ class ItemAttributeList(List[T]):
 
     def __getitem__(self, key: Union[SupportsIndex, str, slice]) -> Union[T, List[T]]:
         if isinstance(key, SupportsIndex):
-            return self._item_list[key]
+            return self.data[key]
         elif isinstance(key, slice):
-            return self._item_list[key]
+            return self.data[key]
         else:
             return self._item_dict[key]
 
@@ -138,7 +132,7 @@ class ItemAttributeList(List[T]):
             if abs(key) < -len(self._item_dict) or key >= len(self._item_dict):
                 return default
 
-            return self._item_list[key]
+            return self.data[key]
         else:
             return cast(Optional[T], self._item_dict.get(key, default))
 
@@ -151,9 +145,6 @@ class ItemAttributeList(List[T]):
         else:
             return self._item_dict == other._item_dict
 
-    def __iter__(self) -> Iterator[T]:
-        return iter(self._item_list)
-
     def __str__(self) -> str:
         return f"[{', '.join(self._item_dict.keys())}]"
 
@@ -161,7 +152,7 @@ class ItemAttributeList(List[T]):
         return self.__str__()
 
 
-class NamedItemList(ItemAttributeList[TNamed]):
+class NamedItemList(ItemAttributeList[T]):
 
     def _get_item_key(self, obj: OdxNamed) -> str:
         """Transform an object's `short_name` attribute into a valid
