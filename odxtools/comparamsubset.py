@@ -57,7 +57,7 @@ class ComparamSubset(IdentifiableElement):
             ComplexComparam.from_et(el, doc_frags)
             for el in et_element.iterfind("COMPLEX-COMPARAMS/COMPLEX-COMPARAM")
         ])
-        if unit_spec_elem := et_element.find("UNIT-SPEC"):
+        if (unit_spec_elem := et_element.find("UNIT-SPEC")) is not None:
             unit_spec = UnitSpec.from_et(unit_spec_elem, doc_frags)
         else:
             unit_spec = None
