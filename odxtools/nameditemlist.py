@@ -161,32 +161,28 @@ class ItemAttributeList(Generic[T]):
         return self.__str__()
 
 
-def short_name_as_key(obj: OdxNamed) -> str:
-    """Transform an object's `short_name` attribute into a valid
-    python identifier
-
-    Although short names are almost identical to valid python
-    identifiers, their first character is allowed to be a number or
-    they may be python keywords. This method prepends an underscore to
-    such short names.
-
-    """
-    if not isinstance(obj, OdxNamed):
-        odxraise()
-    sn = obj.short_name
-    if not isinstance(sn, str):
-        odxraise()
-
-    # make sure that the name of the item in question is not a python
-    # keyword (this would lead to syntax errors) and that does not
-    # start with a digit
-    if sn[0].isdigit() or iskeyword(sn):
-        return f"_{sn}"
-
-    return sn
-
-
 class NamedItemList(Generic[TNamed], ItemAttributeList[TNamed]):
 
     def _get_item_key(self, obj: OdxNamed) -> str:
-        return short_name_as_key(obj)
+        """Transform an object's `short_name` attribute into a valid
+        python identifier
+
+        Although short names are almost identical to valid python
+        identifiers, their first character is allowed to be a number or
+        they may be python keywords. This method prepends an underscore to
+        such short names.
+
+        """
+        if not isinstance(obj, OdxNamed):
+            odxraise()
+        sn = obj.short_name
+        if not isinstance(sn, str):
+            odxraise()
+
+        # make sure that the name of the item in question is not a python
+        # keyword (this would lead to syntax errors) and that does not
+        # start with a digit
+        if sn[0].isdigit() or iskeyword(sn):
+            return f"_{sn}"
+
+        return sn
