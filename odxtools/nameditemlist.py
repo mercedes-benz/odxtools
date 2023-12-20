@@ -2,8 +2,8 @@
 import abc
 from collections import OrderedDict
 from keyword import iskeyword
-from typing import (Any, Callable, Collection, Dict, Generic, Iterable, Iterator, List, Optional,
-                    Protocol, Tuple, TypeVar, Union, cast, overload, runtime_checkable)
+from typing import (Any, Callable, Collection, Dict, Iterable, Iterator, List, Optional, Protocol,
+                    SupportsIndex, Tuple, TypeVar, Union, cast, overload, runtime_checkable)
 
 from .exceptions import odxraise
 
@@ -20,7 +20,7 @@ T = TypeVar("T")
 TNamed = TypeVar("TNamed", bound=OdxNamed)
 
 
-class ItemAttributeList(Generic[T]):
+class ItemAttributeList(List[T]):
     """A list that provides direct access to its items as named attributes.
 
     This is a hybrid between a list and a user-defined object: One can
@@ -76,7 +76,7 @@ class ItemAttributeList(Generic[T]):
         self._item_dict[item_name] = item
         self._item_list.append(item)
 
-    def sort(self, key: Optional[Callable[[T], str]] = None, reverse: bool = False) -> None:
+    def sort(self, *, key: Any = None, reverse: bool = False) -> None:
         if key is None:
             self._item_dict = OrderedDict(
                 sorted(self._item_dict.items(), key=lambda x: x[0], reverse=reverse))
@@ -96,7 +96,7 @@ class ItemAttributeList(Generic[T]):
     def items(self) -> Collection[Tuple[str, T]]:
         return self._item_dict.items()
 
-    def __contains__(self, x: T) -> bool:
+    def __contains__(self, x: object) -> bool:
         return x in self._item_list
 
     def __len__(self) -> int:
@@ -108,7 +108,7 @@ class ItemAttributeList(Generic[T]):
         return result
 
     @overload
-    def __getitem__(self, key: int) -> T:
+    def __getitem__(self, key: SupportsIndex) -> T:
         ...
 
     @overload
@@ -119,8 +119,8 @@ class ItemAttributeList(Generic[T]):
     def __getitem__(self, key: slice) -> List[T]:
         ...
 
-    def __getitem__(self, key: Union[int, str, slice]) -> Union[T, List[T]]:
-        if isinstance(key, int):
+    def __getitem__(self, key: Union[SupportsIndex, str, slice]) -> Union[T, List[T]]:
+        if isinstance(key, SupportsIndex):
             return self._item_list[key]
         elif isinstance(key, slice):
             return self._item_list[key]
@@ -161,7 +161,7 @@ class ItemAttributeList(Generic[T]):
         return self.__str__()
 
 
-class NamedItemList(Generic[TNamed], ItemAttributeList[TNamed]):
+class NamedItemList(ItemAttributeList[TNamed]):
 
     def _get_item_key(self, obj: OdxNamed) -> str:
         """Transform an object's `short_name` attribute into a valid
