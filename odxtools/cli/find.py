@@ -26,7 +26,8 @@ def print_summary(odxdb: Database,
                   service_names: List[str],
                   ecu_variants: Optional[List[str]] = None,
                   allow_unknown_bit_lengths: bool = False,
-                  print_params: bool = False) -> None:
+                  print_params: bool = False,
+                  plumbing_output: bool = False) -> None:
     ecu_names = ecu_variants if ecu_variants else [ecu.short_name for ecu in odxdb.ecus]
     service_db: Dict[str, DiagService] = {}
     service_ecus: Dict[str, List[str]] = {}
@@ -60,7 +61,7 @@ def print_summary(odxdb: Database,
                 print_pre_condition_states=True,
                 print_state_transitions=True,
                 print_audiences=True,
-            )
+                plumbing_output=plumbing_output)
         elif isinstance(service, SingleEcuJob):
             print(f"SingleEcuJob: {service.odx_id}")
         else:
@@ -79,7 +80,7 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
             "  For more information use:",
             "    odxtools find -h",
         ]),
-        help="Find & print services by hex-data, or name. Can also decode the request.",
+        help="Find & display services by their name",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     _parser_utils.add_pdx_argument(parser)
@@ -120,6 +121,14 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
         help="Relax output formatting rules (allow unknown bitlengths for ascii representation)",
     )
 
+    parser.add_argument(
+        "-po",
+        "--plumbing-output",
+        action="store_true",
+        required=False,
+        help="Print full objects instead of selected and formatted attributes",
+    )
+
 
 def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
@@ -131,4 +140,4 @@ def run(args: argparse.Namespace) -> None:
         service_names=args.service_names,
         print_params=not args.no_details,
         allow_unknown_bit_lengths=args.relaxed_output,
-    )
+        plumbing_output=args.plumbing_output)

@@ -142,6 +142,8 @@ class DiagCodedType(abc.ABC):
         """Convert the internal_value to bytes."""
         # Check that bytes and strings actually fit into the bit length
         if base_data_type == DataType.A_BYTEFIELD:
+            if isinstance(internal_value, bytearray):
+                internal_value = bytes(internal_value)
             if not isinstance(internal_value, bytes):
                 odxraise()
             if 8 * len(internal_value) > bit_length:
