@@ -4,6 +4,7 @@ import unittest
 from argparse import Namespace
 from typing import List, Optional
 
+import odxtools.cli.compare as compare
 import odxtools.cli.decode as decode
 import odxtools.cli.find as find
 import odxtools.cli.list as list_tool
@@ -68,6 +69,22 @@ class UtilFunctions:
 
         find.run(find_args)
 
+    @staticmethod
+    def run_compare_tool(path_to_pdx_file: str = "./examples/somersault.pdx",
+                         ecu_variants: Optional[List[str]] = None,
+                         database: Optional[List[str]] = None,
+                         no_details: bool = True,
+                         plumbing_output: bool = False) -> None:
+
+        compare_args = Namespace(
+            pdx_file=path_to_pdx_file,
+            variants=ecu_variants,
+            database=database,
+            no_details=no_details,
+            plumbing_output=plumbing_output)
+
+        compare.run(compare_args)
+
 
 class TestCommandLineTools(unittest.TestCase):
 
@@ -95,6 +112,20 @@ class TestCommandLineTools(unittest.TestCase):
         UtilFunctions.run_find_tool(service_names=["headstand"], allow_unknown_bit_lengths=True)
         UtilFunctions.run_find_tool(
             service_names=["headstand"], allow_unknown_bit_lengths=True, no_details=True)
+
+    def test_compare_tool(self) -> None:
+
+        UtilFunctions.run_compare_tool()
+        UtilFunctions.run_compare_tool(database=[r"./examples/somersault_modified.pdx"])
+        UtilFunctions.run_compare_tool(
+            database=[r"./examples/somersault_modified.pdx"], no_details=False)
+        UtilFunctions.run_compare_tool(
+            database=[r"./examples/somersault_modified.pdx"], ecu_variants=["somersault_lazy"])
+        UtilFunctions.run_compare_tool(ecu_variants=[
+            "somersault_lazy", "somersault_assiduous", "somersault_young", "somersault_old"
+        ])
+        UtilFunctions.run_compare_tool(
+            ecu_variants=["somersault_lazy", "somersault_assiduous"], plumbing_output=True)
 
     @unittest.skipIf(import_failed, "import of PyInquirer failed")
     def test_browse_tool(self) -> None:

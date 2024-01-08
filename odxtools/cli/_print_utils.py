@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 
 import markdownify
 from rich import console, print
-from tabulate import tabulate
+from tabulate import tabulate  # TODO: switch to rich tables
 
 from ..diaglayer import DiagLayer
 from ..diagservice import DiagService
@@ -141,6 +141,7 @@ def print_service_parameters(service: DiagService,
 
 def extract_service_tabulation_data(services: List[DiagService]) -> Dict[str, Any]:
     # extracts data of diagnostic services into Dictionary which can be printed by tabulate module
+    # TODO: consider indentation
 
     name = []
     semantic = []
@@ -151,7 +152,8 @@ def extract_service_tabulation_data(services: List[DiagService]) -> Dict[str, An
         semantic.append(service.semantic)
 
         if service.request and not service.request.required_parameters:
-            request.append(f"0x{str(service().hex().upper())}")
+            request.append(f"0x{str(s.hex().upper())[:32]}...") if len(
+                s := service()) > 32 else request.append(f"0x{str(s.hex().upper())}")
         else:
             request.append(None)
 
@@ -160,6 +162,7 @@ def extract_service_tabulation_data(services: List[DiagService]) -> Dict[str, An
 
 def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Dict[str, Any]:
     # extracts data of parameters of diagnostic services into Dictionary which can be printed by tabulate module
+    # TODO: consider indentation
 
     name = []
     byte = []
