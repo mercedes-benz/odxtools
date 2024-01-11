@@ -60,9 +60,9 @@
  {{ peid.printElementIdSubtags(cp)|indent(1) }}
  {%- for sub_cp in cp.subparams %}
  {{- printAnyComparam(sub_cp) | indent(1, first=True) }}
- {%- if  hasattr(sub_cp, 'subparams') and sub_cp.physical_default_value is not none %}
- {{ printComplexValue(sub_cp.physical_default_value, "COMPLEX-PHYSICAL-DEFAULT-VALUE") | indent(1) }}
- {%- endif %}
  {%- endfor %}
+ {%- if  cp.physical_default_value is not none %}
+ {{ printComplexValue(cp.physical_default_value, "COMPLEX-PHYSICAL-DEFAULT-VALUE") | indent(1) }}
+ {%- endif %}
 </COMPLEX-COMPARAM>
 {%- endmacro %}

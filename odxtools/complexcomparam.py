@@ -50,32 +50,35 @@ class ComplexComparam(BaseComparam):
         # ODX specification, this is a *major* pain in the butt!
         subparams: NamedItemList[BaseComparam] = NamedItemList()
         elems = list(et_element)
+
+        # go to the first COMPARAM or COMPLEX-COMPARAM sub-element
         i = 0
         while i < len(elems):
+            if elems[i].tag in ("COMPARAM", "COMPLEX-COMPARAM"):
+                break
+            i += 1
+
+        # extract the sub-parameters
+        while i < len(elems):
             if elems[i].tag not in ("COMPARAM", "COMPLEX-COMPARAM"):
-                i += 1
-                continue
+                break
 
             subparam = create_any_comparam_from_et(elems[i], doc_frags)
-            # the next element in the list *may* hold the physical
-            # default value for the sub-parameter. if it is not the
-            # correct tag, skip it! Note that the ODX specification
-            # *only* allows to specify COMPLEX-PHYSICAL-DEFAULT-VALUE
-            # tags here, even if the sub-parameter was a simple
-            # parameter. This is probably a bug in the ODX
-            # specification...
-            if i + 1 < len(elems) and elems[i + 1].tag == "COMPLEX-PHYSICAL-DEFAULT-VALUE":
-                subparam.physical_default_value = create_complex_value_from_et(elems[i + 1])
-                i += 1
-
             subparams.append(subparam)
             i += 1
+
+        # extract the complex physical default value. (what's the
+        # purpose of this? the sub-parameters can define their own
+        # default values if a default is desired...)
+        complex_physical_default_value: Optional[ComplexValue] = None
+        if (cpdv_elem := et_element.find("COMPLEX-PHYSICAL-DEFAULT-VALUE")) is not None:
+            complex_physical_default_value = create_complex_value_from_et(cpdv_elem)
 
         allow_multiple_values_raw = odxstr_to_bool(et_element.get("ALLOW-MULTIPLE-VALUES"))
 
         return ComplexComparam(
             subparams=subparams,
-            physical_default_value=[],
+            physical_default_value=complex_physical_default_value,
             allow_multiple_values_raw=allow_multiple_values_raw,
             **kwargs)
 
