@@ -9,7 +9,7 @@
 {%- macro printEnvData(env_data) %}
 <ENV-DATA {{ pbs.printBasicStructureAttribs(env_data) }}>
   {{ pbs.printBasicStructureSubtags(env_data)|indent(1) }}
-  {%- if env_data.all_value %}
+  {%- if not env_data.dtc_values %}
   <ALL-VALUE/>
   {%- else %}
   <DTC-VALUES>
