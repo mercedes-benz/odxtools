@@ -54,7 +54,7 @@
 
 {%- macro printScaleConstr(sc) %}
 <SCALE-CONSTR VALIDITY="{{sc.validity.value}}">
-  {%- if sc.short_label and sc.short_label.strip() %}
+  {%- if sc.short_label is not none %}
   <SHORT-LABEL>{{sc.short_label|e}}</SHORT-LABEL>
   {%- endif %}
   {%- if sc.description and sc.description.strip() %}
