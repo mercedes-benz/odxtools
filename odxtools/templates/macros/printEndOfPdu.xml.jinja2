@@ -9,5 +9,11 @@
 <END-OF-PDU-FIELD ID="{{eopdu.odx_id.local_id}}">
  {{ peid.printElementIdSubtags(eopdu)|indent(1) }}
  <BASIC-STRUCTURE-REF ID-REF="{{eopdu.structure_ref.ref_id}}" />
+ {%- if eopdu.max_number_of_items is not none %}
+ <MAX-NUMBER-OF-ITEMS>{{eopdu.max_number_of_items}}</MAX-NUMBER-OF-ITEMS>
+ {%- endif %}
+ {%- if eopdu.min_number_of_items is not none %}
+ <MIN-NUMBER-OF-ITEMS>{{eopdu.min_number_of_items}}</MIN-NUMBER-OF-ITEMS>
+ {%- endif %}
 </END-OF-PDU-FIELD>
 {%- endmacro -%}
