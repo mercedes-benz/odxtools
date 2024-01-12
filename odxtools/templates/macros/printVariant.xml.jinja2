@@ -23,6 +23,7 @@
 {%- import('macros/printStateChart.xml.jinja2') as psc %}
 {%- import('macros/printAudience.xml.jinja2') as paud %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printEcuVariantPattern.xml.jinja2') as pvpat %}
 
 {%- macro printVariant(dl) -%}
 {%- set dlr = dl.diag_layer_raw %}
@@ -180,6 +181,15 @@
  {{ pcom.printComparamRef(cp)|indent(2) }}
  {%- endfor %}
  </COMPARAM-REFS>
+{%- endif %}
+{%- if dlr.variant_type.value == "ECU-VARIANT" %}
+ {%- if dlr.ecu_variant_patterns %}
+ <ECU-VARIANT-PATTERNS>
+   {%- for vp in dlr.ecu_variant_patterns -%}
+   {{ pvpat.printEcuVariantPattern(vp)|indent(2) }}
+   {%- endfor -%}
+ </ECU-VARIANT-PATTERNS>
+ {%- endif %}
 {%- endif %}
 {%- if dlr.variant_type.value == "PROTOCOL" %}
 	<COMPARAM-SPEC-REF ID-REF="{{dlr.comparam_spec_ref.ref_id}}" DOCREF="{{dlr.comparam_spec_ref.ref_docs[0].doc_name}}" DOCTYPE="COMPARAM-SPEC"/>
