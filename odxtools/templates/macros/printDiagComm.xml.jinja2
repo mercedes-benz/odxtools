@@ -8,17 +8,17 @@
 {%- import('macros/printAudience.xml.jinja2') as paud %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
-{%- macro printDiagCommOpenTag(dc, dcTagName) -%}
-<{{dcTagName}} ID="{{dc.odx_id.local_id}}"
-  {{-make_xml_attrib("SEMANTIC", dc.semantic)}}
-  {{-make_xml_attrib("DIAGNOSTIC-CLASS", dc.diagnostic_class and dc.diagnostic_class.value)}}
-  {{-make_bool_xml_attrib("IS-MANDATORY", dc.is_mandatory_raw)}}
-  {{-make_bool_xml_attrib("IS-EXECUTABLE", dc.is_executable_raw)}}
-  {{-make_bool_xml_attrib("IS-FINAL", dc.is_final_raw)}}>
+{%- macro printDiagCommAttribs(dc) -%}
+ID="{{dc.odx_id.local_id}}"
+{{-make_xml_attrib("SEMANTIC", dc.semantic)}}
+{{-make_xml_attrib("DIAGNOSTIC-CLASS", dc.diagnostic_class and dc.diagnostic_class.value)}}
+{{-make_bool_xml_attrib("IS-MANDATORY", dc.is_mandatory_raw)}}
+{{-make_bool_xml_attrib("IS-EXECUTABLE", dc.is_executable_raw)}}
+{{-make_bool_xml_attrib("IS-FINAL", dc.is_final_raw)}}
 {%- endmacro -%}
 
 
-{%- macro printDiagCommElems(dc) -%}
+{%- macro printDiagCommSubtags(dc) -%}
  {{ peid.printElementIdSubtags(dc)|indent(1) }}
  {%- if dc.admin_data %}
   {{- pad.printAdminData(dc.admin_data)|indent(1, first=True) }}

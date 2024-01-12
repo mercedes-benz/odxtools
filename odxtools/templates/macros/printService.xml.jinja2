@@ -6,31 +6,39 @@
 {%- import('macros/printDiagComm.xml.jinja2') as pdc %}
 
 {%- macro printService(service) -%}
-{{pdc.printDiagCommOpenTag(service, "DIAG-SERVICE") }}
-{{pdc.printDiagCommElems(service) | indent(1, first=True) }}
-{%- if service.comparam_refs %}
- <COMPARAM-REFS>
-{%- for ref in service.comparam_refs %}
-  <COMPARAM-REF ID-REF="{{ref.ref_id}}" />
-{%- endfor %}
- </COMPARAM-REFS>
-{%- endif%}
-{%- if service.request_ref %}
- <REQUEST-REF ID-REF="{{service.request_ref.ref_id}}"/>
-{%- endif %}
-{%- if service.pos_response_refs %}
- <POS-RESPONSE-REFS>
-{%- for ref in service.pos_response_refs %}
-  <POS-RESPONSE-REF ID-REF="{{ref.ref_id}}" />
-{%- endfor %}
- </POS-RESPONSE-REFS>
-{%- endif%}
-{%- if service.neg_response_refs %}
- <NEG-RESPONSE-REFS>
-{%- for ref in service.neg_response_refs %}
-  <NEG-RESPONSE-REF ID-REF="{{ref.ref_id}}" />
-{%- endfor %}
- </NEG-RESPONSE-REFS>
-{%- endif%}
+<DIAG-SERVICE {{pdc.printDiagCommAttribs(service) | indent(1) }}
+ {{-make_bool_xml_attrib("IS-CYCLIC", service.is_cyclic_raw)}}
+ {{-make_bool_xml_attrib("IS-MULTIPLE", service.is_multiple_raw)}}
+ {%- if service.addressing_raw is not none %}
+ {{-make_xml_attrib("ADDRESSING", service.addressing_raw.value)}}
+ {%- endif %}
+ {%- if service.transmission_mode_raw is not none %}
+ {{-make_xml_attrib("TRANSMISSION-MODE", service.transmission_mode_raw.value)}}>
+ {%- endif %}>
+  {{pdc.printDiagCommSubtags(service) | indent(1, first=True) }}
+  {%- if service.comparam_refs %}
+  <COMPARAM-REFS>
+    {%- for ref in service.comparam_refs %}
+    <COMPARAM-REF ID-REF="{{ref.ref_id}}" />
+    {%- endfor %}
+  </COMPARAM-REFS>
+  {%- endif%}
+  {%- if service.request_ref %}
+  <REQUEST-REF ID-REF="{{service.request_ref.ref_id}}"/>
+  {%- endif %}
+  {%- if service.pos_response_refs %}
+  <POS-RESPONSE-REFS>
+    {%- for ref in service.pos_response_refs %}
+    <POS-RESPONSE-REF ID-REF="{{ref.ref_id}}" />
+    {%- endfor %}
+  </POS-RESPONSE-REFS>
+  {%- endif%}
+  {%- if service.neg_response_refs %}
+  <NEG-RESPONSE-REFS>
+    {%- for ref in service.neg_response_refs %}
+    <NEG-RESPONSE-REF ID-REF="{{ref.ref_id}}" />
+    {%- endfor %}
+  </NEG-RESPONSE-REFS>
+  {%- endif%}
 </DIAG-SERVICE>
 {%- endmacro -%}

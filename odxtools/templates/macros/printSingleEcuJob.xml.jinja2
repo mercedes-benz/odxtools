@@ -7,34 +7,34 @@
 {%- import('macros/printDiagComm.xml.jinja2') as pdc %}
 
 {%- macro printSingleEcuJob(job) -%}
-{{pdc.printDiagCommOpenTag(job, "SINGLE-ECU-JOB") }}
-{{pdc.printDiagCommElems(job) | indent(1, first=True) }}
+<SINGLE-ECU-JOB {{pdc.printDiagCommAttribs(job)|indent(1) }}>
+  {{pdc.printDiagCommSubtags(job) | indent(2, first=True) }}
   <PROG-CODES>
-{%- for prog in job.prog_codes %}
-  {{ printProgCode(prog)|indent(2) }}
-{%- endfor %}
- </PROG-CODES>
-{%- if job.input_params %}
- <INPUT-PARAMS>
-{%- for param in job.input_params %}
-  {{ printInputParam(param)|indent(2) }}
-{%- endfor %}
- </INPUT-PARAMS>
-{%- endif %}
-{%- if job.output_params %}
- <OUTPUT-PARAMS>
-{%- for param in job.output_params %}
-  {{ printOutputParam(param)|indent(2) }}
-{%- endfor %}
- </OUTPUT-PARAMS>
-{%- endif %}
-{%- if job.neg_output_params %}
- <NEG-OUTPUT-PARAMS>
-{%- for param in job.neg_output_params %}
-  {{ printNegOutputParam(param)|indent(2) }}
-{%- endfor %}
- </NEG-OUTPUT-PARAMS>
-{%- endif %}
+    {%- for prog in job.prog_codes %}
+    {{ printProgCode(prog)|indent(4) }}
+    {%- endfor %}
+  </PROG-CODES>
+  {%- if job.input_params %}
+  <INPUT-PARAMS>
+    {%- for param in job.input_params %}
+    {{ printInputParam(param)|indent(4) }}
+    {%- endfor %}
+  </INPUT-PARAMS>
+  {%- endif %}
+  {%- if job.output_params %}
+  <OUTPUT-PARAMS>
+    {%- for param in job.output_params %}
+    {{ printOutputParam(param)|indent(4) }}
+    {%- endfor %}
+  </OUTPUT-PARAMS>
+  {%- endif %}
+  {%- if job.neg_output_params %}
+  <NEG-OUTPUT-PARAMS>
+    {%- for param in job.neg_output_params %}
+    {{ printNegOutputParam(param)|indent(4) }}
+    {%- endfor %}
+  </NEG-OUTPUT-PARAMS>
+  {%- endif %}
 </SINGLE-ECU-JOB>
 {%- endmacro -%}
 
