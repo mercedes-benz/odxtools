@@ -164,3 +164,11 @@ class Database:
     @property
     def comparam_specs(self) -> NamedItemList[ComparamSpec]:
         return self._comparam_specs
+
+    def __repr__(self) -> str:
+        return f"Database(model_version={self.model_version}, " \
+            f"protocols={[x.short_name for x in self.protocols]}, " \
+            f"ecus={[x.short_name for x in self.ecus]}, " \
+            f"diag_layer_containers={repr(self.diag_layer_containers)}, " \
+            f"comparam_subsets={repr(self.comparam_subsets)}, " \
+            f"comparam_specs={repr(self.comparam_specs)})"
