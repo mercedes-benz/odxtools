@@ -1294,7 +1294,7 @@ somersault_env_datas = {
                     sdgs=[],
                 ),
             ]),
-            all_value=None,
+            all_value=True,
         )
 }
 

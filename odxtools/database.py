@@ -12,7 +12,7 @@ from .comparamsubset import ComparamSubset
 from .diaglayer import DiagLayer
 from .diaglayercontainer import DiagLayerContainer
 from .exceptions import odxraise
-from .nameditemlist import NamedItemList, short_name_as_key
+from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase
 
 
@@ -85,11 +85,8 @@ class Database:
                     comparam_specs.append(ComparamSpec.from_et(cp_spec, []))
 
         self._diag_layer_containers = NamedItemList(dlcs)
-        self._diag_layer_containers.sort(key=short_name_as_key)
         self._comparam_subsets = NamedItemList(comparam_subsets)
-        self._comparam_subsets.sort(key=short_name_as_key)
         self._comparam_specs = NamedItemList(comparam_specs)
-        self._comparam_specs.sort(key=short_name_as_key)
 
         self.refresh()
 

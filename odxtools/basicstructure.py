@@ -183,7 +183,7 @@ class BasicStructure(ComplexDop):
             # but it could be that bit_length was mis calculated and not the actual bytes are wrong
             # Could happen with overlapping parameters and parameters with gaps
             warnings.warn(
-                "Verification of coded message {coded_message.hex()} possibly failed: Size may be incorrect.",
+                f"Verification of coded message '{coded_message.hex()}' possibly failed: Size may be incorrect.",
                 OdxWarning,
                 stacklevel=1)
 

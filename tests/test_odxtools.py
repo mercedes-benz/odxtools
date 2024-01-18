@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 import unittest
 from dataclasses import dataclass
+from typing import List
 
 import odxtools
 from odxtools.exceptions import OdxError
@@ -97,7 +98,7 @@ class TestNamedItemList(unittest.TestCase):
             value: int
 
         foo = NamedItemList([X("hello", 0), X("world", 1)])
-        self.assertEqual(foo.hello, X("hello", 0))  # type: ignore[attr-defined]
+        self.assertEqual(foo.hello, X("hello", 0))
         self.assertEqual(foo[0], X("hello", 0))
         self.assertEqual(foo[1], X("world", 1))
         self.assertEqual(foo[:1], [X("hello", 0)])
@@ -106,15 +107,15 @@ class TestNamedItemList(unittest.TestCase):
             foo[2]
         self.assertEqual(foo["hello"], X("hello", 0))
         self.assertEqual(foo["world"], X("world", 1))
-        self.assertEqual(foo.hello, X("hello", 0))  # type: ignore[attr-defined]
-        self.assertEqual(foo.world, X("world", 1))  # type: ignore[attr-defined]
+        self.assertEqual(foo.hello, X("hello", 0))
+        self.assertEqual(foo.world, X("world", 1))
 
         foo.append(X("hello", 2))
         self.assertEqual(foo[2], X("hello", 2))
         self.assertEqual(foo["hello"], X("hello", 0))
         self.assertEqual(foo["hello_2"], X("hello", 2))
-        self.assertEqual(foo.hello, X("hello", 0))  # type: ignore[attr-defined]
-        self.assertEqual(foo.hello_2, X("hello", 2))  # type: ignore[attr-defined]
+        self.assertEqual(foo.hello, X("hello", 0))
+        self.assertEqual(foo.hello_2, X("hello", 2))
 
         # try to append an item that cannot be mapped to a name
         with self.assertRaises(OdxError):
@@ -124,13 +125,13 @@ class TestNamedItemList(unittest.TestCase):
         foo.append(X("as", 3))
         self.assertEqual(foo[3], X("as", 3))
         self.assertEqual(foo["_as"], X("as", 3))
-        self.assertEqual(foo._as, X("as", 3))  # type: ignore[attr-defined]
+        self.assertEqual(foo._as, X("as", 3))
 
         # add an object which's name conflicts with a method of the class
         foo.append(X("sort", 4))
         self.assertEqual(foo[4], X("sort", 4))
         self.assertEqual(foo["sort_2"], X("sort", 4))
-        self.assertEqual(foo.sort_2, X("sort", 4))  # type: ignore[attr-defined]
+        self.assertEqual(foo.sort_2, X("sort", 4))
 
         # test the get() function
         self.assertEqual(foo.get(0), X("hello", 0))
@@ -149,6 +150,13 @@ class TestNamedItemList(unittest.TestCase):
         self.assertEqual(set(foo.keys()), {"hello", "world", "hello_2", "_as", "sort_2"})
         self.assertEqual(len(foo.items()), len(foo))
         self.assertEqual(len(foo.values()), len(foo))
+
+        # ensure that mypy accepts NamedItemList objecs where List
+        # objects are expected
+        def bar(x: List[X]) -> None:
+            pass
+
+        bar(foo)
 
 
 class TestNavigation(unittest.TestCase):
