@@ -3,6 +3,7 @@ import argparse
 import logging
 import sys
 from typing import List, Optional, Union
+from tabulate import tabulate  # TODO: switch to rich tables
 
 import PyInquirer.prompt as PI_prompt
 
@@ -19,6 +20,7 @@ from ..parameters.valueparameter import ValueParameter
 from ..request import Request
 from ..response import Response
 from . import _parser_utils
+from ._print_utils import extract_parameter_tabulation_data
 
 # name of the tool
 _odxtools_tool_name_ = "browse"
@@ -339,9 +341,15 @@ def browse(odxdb: Database) -> None:
                 continue
 
             sub_service = answer.get("message_type")
-            sub_service.print_message_format()
 
-            encode_message_interactively(sub_service, ask_user_confirmation=True)
+            if sub_service.request is not None:
+                table = extract_parameter_tabulation_data(sub_service.request.parameters)
+                table_str = tabulate(table, headers='keys', tablefmt='presto')
+                print(table_str)
+
+                encode_message_interactively(sub_service, ask_user_confirmation=True)
+            else:
+                print(f"Service '{sub_service.short_name}' does not feature a request!")
 
 
 def add_subparser(subparsers: "argparse._SubParsersAction") -> None:

@@ -302,43 +302,6 @@ class TestEncodeRequest(unittest.TestCase):
             byte_size=None,
         )
 
-    def test_issue_70(self) -> None:
-        # see https://github.com/mercedes-benz/odxtools/issues/70
-        # make sure overlapping params don't cause this function to go crazy
-        unit_kwargs = {
-            "base_data_type": DataType.A_UINT32,
-            "base_type_encoding": None,
-            "is_highlow_byte_order_raw": None,
-            "bit_mask": None,
-            "is_condensed_raw": None,
-        }
-        uint2 = StandardLengthType(bit_length=2, **unit_kwargs)  # type: ignore[arg-type]
-        uint1 = StandardLengthType(bit_length=1, **unit_kwargs)  # type: ignore[arg-type]
-        param_kwargs: Dict[str, Any] = {
-            "long_name": None,
-            "description": None,
-            "byte_position": None,
-            "semantic": None,
-            "sdgs": [],
-            "coded_value": 0,
-        }
-        params: List[Parameter] = [
-            CodedConstParameter(
-                short_name="p1", diag_coded_type=uint2, bit_position=0, **param_kwargs),
-            CodedConstParameter(
-                short_name="p2", diag_coded_type=uint2, bit_position=2, **param_kwargs),
-            CodedConstParameter(
-                short_name="p3", diag_coded_type=uint2, bit_position=3, **param_kwargs),
-            CodedConstParameter(
-                short_name="p4", diag_coded_type=uint1, bit_position=5, **param_kwargs),
-            CodedConstParameter(
-                short_name="p5", diag_coded_type=uint1, bit_position=6, **param_kwargs),
-            CodedConstParameter(
-                short_name="p6", diag_coded_type=uint1, bit_position=7, **param_kwargs),
-        ]
-        req = self._create_request(params)
-        self.assertEqual(req._message_format_lines(), [])
-
     def test_bit_mask(self) -> None:
         unit_kwargs: Dict[str, Any] = {
             "base_data_type": DataType.A_UINT32,

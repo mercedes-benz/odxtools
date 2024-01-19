@@ -85,8 +85,6 @@ def print_service_parameters(service: DiagService,
         print_fn()
         print_fn(table_str)
         print_fn()
-        print_fn(f"\n   Message format of the request:")
-        service.request.print_message_format(indent=0, allow_unknown_lengths=allow_unknown_bit_lengths)
     else:
         print_fn(f"  No Request!")
 
