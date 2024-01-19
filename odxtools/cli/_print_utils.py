@@ -37,33 +37,35 @@ def print_diagnostic_service(service: DiagService,
                              print_audiences: bool = False,
                              allow_unknown_bit_lengths: bool = False,
                              print_fn: Callable = print) -> None:
-    print_fn(f" {service.short_name} <ID: {service.odx_id}>")
+
+    print_fn(f" Service '{service.short_name}':")
 
     if service.description:
         desc = format_desc(service.description, indent=3)
-        print_fn(f"  Service description: " + desc)
+        print_fn(f"  Description: " + desc)
 
     if print_pre_condition_states and len(service.pre_condition_states) > 0:
         pre_condition_states_short_names = [
             pre_condition_state.short_name for pre_condition_state in service.pre_condition_states
         ]
-        print_fn(f"  Pre-Condition-States: {', '.join(pre_condition_states_short_names)}")
+        print_fn(f"  Pre-Condition States: {', '.join(pre_condition_states_short_names)}")
 
     if print_state_transitions and len(service.state_transitions) > 0:
         state_transitions = [
             f"{state_transition.source_snref} -> {state_transition.target_snref}"
             for state_transition in service.state_transitions
         ]
-        print_fn(f"  State-Transitions: {', '.join(state_transitions)}")
+        print_fn(f"  State Transitions: {', '.join(state_transitions)}")
 
     if print_audiences and service.audience:
         enabled_audiences_short_names = [
             enabled_audience.short_name for enabled_audience in service.audience.enabled_audiences
         ]
-        print_fn(f"  Enabled-Audiences: {', '.join(enabled_audiences_short_names)}")
+        print_fn(f"  Enabled Audiences: {', '.join(enabled_audiences_short_names)}")
 
     if print_params:
-        print_service_parameters(service, allow_unknown_bit_lengths=allow_unknown_bit_lengths)
+        print_service_parameters(
+            service, allow_unknown_bit_lengths=allow_unknown_bit_lengths, print_fn=print_fn)
 
 
 def print_service_parameters(service: DiagService,
@@ -71,60 +73,48 @@ def print_service_parameters(service: DiagService,
                              print_fn: Callable = print) -> None:
     # prints parameter details of request, positive response and negative response of diagnostic service
 
-    assert service.request is not None
-    assert service.positive_responses is not None
-    assert service.negative_responses is not None
-
     # Request
-    print_fn(f"\n  Request Properties:")
-    print_fn(f"   Request Name: {service.request.short_name}")
-
     if service.request and not service.request.required_parameters:
         ba = f"   Byte-Array: {service()!r}"
         hs = f"   Hex-String: 0x{str(service().hex().upper())}"
         print_fn(ba)
         print_fn(hs)
+        print_fn(f"    Parameters:")
+        table = extract_parameter_tabulation_data(list(service.request.parameters))
+        table_str = textwrap.indent(tabulate(table, headers='keys', tablefmt='presto'), "    ")
+        print_fn()
+        print_fn(table_str)
+        print_fn()
+        print_fn(f"\n   Message format of the request:")
+        service.request.print_message_format(indent=0, allow_unknown_lengths=allow_unknown_bit_lengths)
     else:
-        print_fn(f"   Byte-Array: ---\n   Hex-String: ---")
+        print_fn(f"  No Request!")
 
-    print_fn(f"   Service Parameters: {service.request.parameters}\n")
-    table = extract_parameter_tabulation_data(list(service.request.parameters))
-    print_fn(tabulate(table, headers='keys', tablefmt='presto'))
-    print_fn(f"\n   Message format of the request:")
-    service.request.print_message_format(indent=0, allow_unknown_lengths=allow_unknown_bit_lengths)
+    # Positive Responses
+    if not service.positive_responses:
+        print_fn(f"  No positive responses")
 
-    # Positive Response
-    print_fn(f"\n  Positive Response Properties:")
-    print_fn(f"   Number of Positive Responses: {len(service.positive_responses)}")
-    print_fn(f"   Positive Responses: {service.positive_responses}")
-    if len(service.positive_responses) == 1:
-        resp = service.positive_responses[0]
-        print_fn(f"   Service Parameters: {resp.parameters}\n")
+    for resp in service.positive_responses:
+        print_fn(f"  Positive Response '{resp.short_name}':")
+        print_fn(f"   Parameters:\n")
         table = extract_parameter_tabulation_data(list(resp.parameters))
-        print_fn(tabulate(table, headers='keys', tablefmt='presto'))
-        print_fn(f"\n   Message format of the positive response:")
-        resp.print_message_format(indent=0, allow_unknown_lengths=allow_unknown_bit_lengths)
+        table_str = textwrap.indent(tabulate(table, headers='keys', tablefmt='presto'), "    ")
+        print_fn(table_str)
+        print_fn()
 
     # Negative Response
-    print_fn(f"\n  Negative Response Properties:")
-    print_fn(f"   Number of Negative Responses: {len(service.negative_responses)}")
-    print_fn(f"   Negative Responses: {service.negative_responses}")
-    if len(service.negative_responses) == 1:
-        resp = service.negative_responses[0]
-        print_fn(f"   Service Parameters: {resp.parameters}\n")
+    if not service.negative_responses:
+        print_fn(f"  No negative responses")
+
+    for resp in service.negative_responses:
+        print_fn(f" Negative Response '{resp.short_name}':")
+        print_fn(f"   Parameters:\n")
         table = extract_parameter_tabulation_data(list(resp.parameters))
-        print_fn(tabulate(table, headers='keys', tablefmt='presto'))
-        print_fn(f"\n   Message format of a negative response:")
-        resp.print_message_format(indent=0, allow_unknown_lengths=allow_unknown_bit_lengths)
+        table_str = textwrap.indent(tabulate(table, headers='keys', tablefmt='presto'), "    ")
+        print_fn(table_str)
+        print_fn()
 
     print_fn("\n")
-
-    if (service.positive_responses and
-            len(service.positive_responses) > 1) or (service.negative_responses and
-                                                     len(service.negative_responses) > 1):
-        # Does this ever happen?
-        raise NotImplementedError(
-            f"The diagnostic service {service.odx_id} offers more than one response!")
 
 
 def extract_service_tabulation_data(services: List[DiagService]) -> Dict[str, Any]:
@@ -139,9 +129,10 @@ def extract_service_tabulation_data(services: List[DiagService]) -> Dict[str, An
         name.append(service.short_name)
         semantic.append(service.semantic)
 
-        if service.request and not service.request.required_parameters:
-            request.append(f"0x{str(s.hex().upper())[:32]}...") if len(
-                s := service()) > 32 else request.append(f"0x{str(s.hex().upper())}")
+        if service.request:
+            prefix = service.request.coded_const_prefix()
+            request.append(f"0x{str(prefix.hex().upper())[:32]}...") if len(
+                prefix) > 32 else request.append(f"0x{str(prefix.upper())}")
         else:
             request.append(None)
 
@@ -224,7 +215,7 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Dict[str, 
         'Parameter Type': param_type,
         'Data Type': data_type,
         'Value': value,
-        'Value Description': value_type,
+        'Value Type': value_type,
         'Linked DOP': dop
     }
 
