@@ -74,11 +74,11 @@ def print_service_parameters(service: DiagService,
     # prints parameter details of request, positive response and negative response of diagnostic service
 
     # Request
-    if service.request and not service.request.required_parameters:
-        ba = f"   Byte-Array: {service()!r}"
-        hs = f"   Hex-String: 0x{str(service().hex().upper())}"
-        print_fn(ba)
-        print_fn(hs)
+    if service.request:
+        print_fn(f"  Request '{service.request.short_name}':")
+        const_prefix = service.request.coded_const_prefix()
+        print_fn(
+            f"    Identifying Prefix: 0x{const_prefix.hex().upper()} ({bytes(const_prefix)!r})")
         print_fn(f"    Parameters:")
         table = extract_parameter_tabulation_data(list(service.request.parameters))
         table_str = textwrap.indent(tabulate(table, headers='keys', tablefmt='presto'), "    ")
