@@ -172,7 +172,7 @@ class ItemAttributeList(List[T]):
         return f"[{', '.join( [self._get_item_key(x) for x in self])}]"
 
     def __repr__(self) -> str:
-        return self.__str__()
+        return f"{type(self).__name__}([{', '.join([repr(x) for x in self])}])"
 
 
 class NamedItemList(ItemAttributeList[T]):

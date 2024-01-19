@@ -26,8 +26,7 @@ def print_summary(odxdb: Database,
                   service_names: List[str],
                   ecu_variants: Optional[List[str]] = None,
                   allow_unknown_bit_lengths: bool = False,
-                  print_params: bool = False,
-                  plumbing_output: bool = False) -> None:
+                  print_params: bool = False) -> None:
     ecu_names = ecu_variants if ecu_variants else [ecu.short_name for ecu in odxdb.ecus]
     service_db: Dict[str, DiagService] = {}
     service_ecus: Dict[str, List[str]] = {}
@@ -60,8 +59,7 @@ def print_summary(odxdb: Database,
                 allow_unknown_bit_lengths=allow_unknown_bit_lengths,
                 print_pre_condition_states=True,
                 print_state_transitions=True,
-                print_audiences=True,
-                plumbing_output=plumbing_output)
+                print_audiences=True)
         elif isinstance(service, SingleEcuJob):
             print(f"SingleEcuJob: {service.odx_id}")
         else:
@@ -121,14 +119,6 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
         help="Relax output formatting rules (allow unknown bitlengths for ascii representation)",
     )
 
-    parser.add_argument(
-        "-po",
-        "--plumbing-output",
-        action="store_true",
-        required=False,
-        help="Print full objects instead of selected and formatted attributes",
-    )
-
 
 def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
@@ -139,5 +129,4 @@ def run(args: argparse.Namespace) -> None:
         ecu_variants=None if variants == "all" else variants,
         service_names=args.service_names,
         print_params=not args.no_details,
-        allow_unknown_bit_lengths=args.relaxed_output,
-        plumbing_output=args.plumbing_output)
+        allow_unknown_bit_lengths=args.relaxed_output)

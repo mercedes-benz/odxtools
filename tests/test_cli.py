@@ -27,7 +27,7 @@ class UtilFunctions:
                       print_params: bool = False,
                       print_dops: bool = False,
                       print_all: bool = False,
-                      plumbing_output: bool = False) -> None:
+                      dump_database: bool = False) -> None:
         list_args = Namespace(
             pdx_file=path_to_pdx_file,
             variants=ecu_variants,
@@ -36,7 +36,7 @@ class UtilFunctions:
             params=print_params,
             dops=print_dops,
             all=print_all,
-            plumbing_output=plumbing_output)
+            dump_database=dump_database)
 
         list_tool.run(list_args)
 
@@ -58,14 +58,14 @@ class UtilFunctions:
                       ecu_variants: Optional[List[str]] = None,
                       allow_unknown_bit_lengths: bool = False,
                       no_details: bool = False,
-                      plumbing_output: bool = False) -> None:
+                      dump_database: bool = False) -> None:
         find_args = Namespace(
             pdx_file=path_to_pdx_file,
             variants=ecu_variants,
             service_names=service_names,
             relaxed_output=allow_unknown_bit_lengths,
             no_details=no_details,
-            plumbing_output=plumbing_output)
+            dump_database=dump_database)
 
         find.run(find_args)
 
@@ -73,15 +73,13 @@ class UtilFunctions:
     def run_compare_tool(path_to_pdx_file: str = "./examples/somersault.pdx",
                          ecu_variants: Optional[List[str]] = None,
                          database: Optional[List[str]] = None,
-                         no_details: bool = True,
-                         plumbing_output: bool = False) -> None:
+                         no_details: bool = True) -> None:
 
         compare_args = Namespace(
             pdx_file=path_to_pdx_file,
             variants=ecu_variants,
             database=database,
-            no_details=no_details,
-            plumbing_output=plumbing_output)
+            no_details=no_details)
 
         compare.run(compare_args)
 
@@ -96,7 +94,7 @@ class TestCommandLineTools(unittest.TestCase):
         UtilFunctions.run_list_tool(print_params=True)
         UtilFunctions.run_list_tool(print_dops=True)
         UtilFunctions.run_list_tool(print_all=True)
-        UtilFunctions.run_list_tool(plumbing_output=True)
+        UtilFunctions.run_list_tool(dump_database=True)
         UtilFunctions.run_list_tool(ecu_services=["session_start"])
 
     def test_decode_tool(self) -> None:
@@ -124,8 +122,7 @@ class TestCommandLineTools(unittest.TestCase):
         UtilFunctions.run_compare_tool(ecu_variants=[
             "somersault_lazy", "somersault_assiduous", "somersault_young", "somersault_old"
         ])
-        UtilFunctions.run_compare_tool(
-            ecu_variants=["somersault_lazy", "somersault_assiduous"], plumbing_output=True)
+        UtilFunctions.run_compare_tool(ecu_variants=["somersault_lazy", "somersault_assiduous"])
 
     @unittest.skipIf(import_failed, "import of PyInquirer failed")
     def test_browse_tool(self) -> None:
