@@ -177,9 +177,18 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Dict[str, 
             value_type.append('coded values')
             dop.append(None)
         elif isinstance(param, (PhysicalConstantParameter, SystemParameter, ValueParameter)):
-            dop.append(param.dop.short_name)
-            if (tmp := getattr(param, "physical_type", None)) is not None:
-                data_type.append(tmp.base_data_type.name)
+            # this is a hack to make this routine work for parameters
+            # which reference DOPs of a type that a is not yet
+            # internalized. (all parameter objects of the tested types
+            # are supposed to have a DOP.)
+            param_dop = getattr(param, "_dop", None)
+
+            if param_dop is not None:
+                dop.append(param_dop.short_name)
+
+            if param_dop is not None and (phys_type := getattr(param, "physical_type",
+                                                               None)) is not None:
+                data_type.append(phys_type.base_data_type.name)
             else:
                 data_type.append(None)
             if isinstance(param, PhysicalConstantParameter):
