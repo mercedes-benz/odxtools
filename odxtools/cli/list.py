@@ -71,7 +71,7 @@ def print_summary(odxdb: Database,
                 )
 
         if dl.description:
-            desc = format_desc(dl.description, ident=2)
+            desc = format_desc(dl.description, indent=2)
             rich.print(f" [blue]Description[/blue]: " + desc)
 
         if print_global_negative_responses and dl.global_negative_responses:

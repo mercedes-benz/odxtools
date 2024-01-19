@@ -16,7 +16,7 @@ from ..parameters.valueparameter import ValueParameter
 from ..singleecujob import SingleEcuJob
 
 
-def format_desc(desc: str, ident: int = 0) -> str:
+def format_desc(desc: str, indent: int = 0) -> str:
     # Collapse whitespaces
     desc = re.sub(r"\s+", " ", desc)
     # Covert XHTML to Markdown
@@ -25,7 +25,7 @@ def format_desc(desc: str, ident: int = 0) -> str:
     desc = re.sub(r"(\n\s*)+\n+", "\n", desc).strip()
 
     if "\n" in desc:
-        desc = "\n" + ident * " " + ("\n" + ident * " ").join(desc.split("\n"))
+        desc = "\n" + indent * " " + ("\n" + indent * " ").join(desc.split("\n"))
     return desc
 
 
@@ -39,7 +39,7 @@ def print_diagnostic_service(service: DiagService,
     print_fn(f" {service.short_name} <ID: {service.odx_id}>")
 
     if service.description:
-        desc = format_desc(service.description, ident=3)
+        desc = format_desc(service.description, indent=3)
         print_fn(f"  Service description: " + desc)
 
     if print_pre_condition_states and len(service.pre_condition_states) > 0:
