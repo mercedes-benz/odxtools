@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import re
+import textwrap
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import markdownify
@@ -23,9 +24,9 @@ def format_desc(desc: str, indent: int = 0) -> str:
     desc = markdownify.markdownify(desc)
     # Collapse blank lines
     desc = re.sub(r"(\n\s*)+\n+", "\n", desc).strip()
+    # add indentation
+    desc = textwrap.indent(desc, " " * indent)
 
-    if "\n" in desc:
-        desc = "\n" + indent * " " + ("\n" + indent * " ").join(desc.split("\n"))
     return desc
 
 
