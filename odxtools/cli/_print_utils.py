@@ -1,9 +1,8 @@
 # SPDX-License-Identifier: MIT
 import re
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 import markdownify
-from rich import console, print
 from tabulate import tabulate  # TODO: switch to rich tables
 
 from ..diaglayer import DiagLayer
@@ -15,8 +14,6 @@ from ..parameters.physicalconstantparameter import PhysicalConstantParameter
 from ..parameters.systemparameter import SystemParameter
 from ..parameters.valueparameter import ValueParameter
 from ..singleecujob import SingleEcuJob
-
-terminal = console.Console()
 
 
 def format_desc(desc: str, ident: int = 0) -> str:
@@ -37,86 +34,89 @@ def print_diagnostic_service(service: DiagService,
                              print_pre_condition_states: bool = False,
                              print_state_transitions: bool = False,
                              print_audiences: bool = False,
-                             allow_unknown_bit_lengths: bool = False) -> None:
-    print(f" [cyan]{service.short_name}[/cyan] <ID: {service.odx_id}>")
+                             allow_unknown_bit_lengths: bool = False,
+                             print_fn: Callable = print) -> None:
+    print_fn(f" {service.short_name} <ID: {service.odx_id}>")
 
     if service.description:
         desc = format_desc(service.description, ident=3)
-        print(f"  Service description: " + desc)
+        print_fn(f"  Service description: " + desc)
 
     if print_pre_condition_states and len(service.pre_condition_states) > 0:
         pre_condition_states_short_names = [
             pre_condition_state.short_name for pre_condition_state in service.pre_condition_states
         ]
-        print(f"  Pre-Condition-States: {', '.join(pre_condition_states_short_names)}")
+        print_fn(f"  Pre-Condition-States: {', '.join(pre_condition_states_short_names)}")
 
     if print_state_transitions and len(service.state_transitions) > 0:
         state_transitions = [
             f"{state_transition.source_snref} -> {state_transition.target_snref}"
             for state_transition in service.state_transitions
         ]
-        print(f"  State-Transitions: {', '.join(state_transitions)}")
+        print_fn(f"  State-Transitions: {', '.join(state_transitions)}")
 
     if print_audiences and service.audience:
         enabled_audiences_short_names = [
             enabled_audience.short_name for enabled_audience in service.audience.enabled_audiences
         ]
-        print(f"  Enabled-Audiences: {', '.join(enabled_audiences_short_names)}")
+        print_fn(f"  Enabled-Audiences: {', '.join(enabled_audiences_short_names)}")
 
     if print_params:
         print_service_parameters(service, allow_unknown_bit_lengths=allow_unknown_bit_lengths)
 
 
-def print_service_parameters(service: DiagService, allow_unknown_bit_lengths: bool = False) -> None:
-    # prints parameter details of request, posivite response and negative response of diagnostic service
+def print_service_parameters(service: DiagService,
+                             allow_unknown_bit_lengths: bool = False,
+                             print_fn: Callable = print) -> None:
+    # prints parameter details of request, positive response and negative response of diagnostic service
 
     assert service.request is not None
     assert service.positive_responses is not None
     assert service.negative_responses is not None
 
     # Request
-    print(f"\n  [yellow]Request Properties[/yellow]:")
-    print(f"   Request Name: {service.request.short_name}")
+    print_fn(f"\n  Request Properties:")
+    print_fn(f"   Request Name: {service.request.short_name}")
 
     if service.request and not service.request.required_parameters:
         ba = f"   Byte-Array: {service()!r}"
         hs = f"   Hex-String: 0x{str(service().hex().upper())}"
-        terminal.print(ba, overflow="ellipsis", soft_wrap=True)
-        terminal.print(hs, overflow="ellipsis", soft_wrap=True)
+        print_fn(ba)
+        print_fn(hs)
     else:
-        print(f"   Byte-Array: ---\n   Hex-String: ---")
+        print_fn(f"   Byte-Array: ---\n   Hex-String: ---")
 
-    print(f"   Service Parameters: {service.request.parameters}\n")
+    print_fn(f"   Service Parameters: {service.request.parameters}\n")
     table = extract_parameter_tabulation_data(list(service.request.parameters))
-    print(tabulate(table, headers='keys', tablefmt='presto'))
-    print(f"\n   Message format of the request:")
+    print_fn(tabulate(table, headers='keys', tablefmt='presto'))
+    print_fn(f"\n   Message format of the request:")
     service.request.print_message_format(indent=0, allow_unknown_lengths=allow_unknown_bit_lengths)
 
     # Positive Response
-    print(f"\n  [yellow]Positive Response Properties[/yellow]:")
-    print(f"   Number of Positive Responses: {len(service.positive_responses)}")
-    print(f"   Positive Responses: {service.positive_responses}")
+    print_fn(f"\n  Positive Response Properties:")
+    print_fn(f"   Number of Positive Responses: {len(service.positive_responses)}")
+    print_fn(f"   Positive Responses: {service.positive_responses}")
     if len(service.positive_responses) == 1:
         resp = service.positive_responses[0]
-        print(f"   Service Parameters: {resp.parameters}\n")
+        print_fn(f"   Service Parameters: {resp.parameters}\n")
         table = extract_parameter_tabulation_data(list(resp.parameters))
-        print(tabulate(table, headers='keys', tablefmt='presto'))
-        print(f"\n   Message format of the positive response:")
+        print_fn(tabulate(table, headers='keys', tablefmt='presto'))
+        print_fn(f"\n   Message format of the positive response:")
         resp.print_message_format(indent=0, allow_unknown_lengths=allow_unknown_bit_lengths)
 
     # Negative Response
-    print(f"\n  [yellow]Negative Response Properties[/yellow]:")
-    print(f"   Number of Negative Responses: {len(service.negative_responses)}")
-    print(f"   Negative Responses: {service.negative_responses}")
+    print_fn(f"\n  Negative Response Properties:")
+    print_fn(f"   Number of Negative Responses: {len(service.negative_responses)}")
+    print_fn(f"   Negative Responses: {service.negative_responses}")
     if len(service.negative_responses) == 1:
         resp = service.negative_responses[0]
-        print(f"   Service Parameters: {resp.parameters}\n")
+        print_fn(f"   Service Parameters: {resp.parameters}\n")
         table = extract_parameter_tabulation_data(list(resp.parameters))
-        print(tabulate(table, headers='keys', tablefmt='presto'))
-        print(f"\n   Message format of a negative response:")
+        print_fn(tabulate(table, headers='keys', tablefmt='presto'))
+        print_fn(f"\n   Message format of a negative response:")
         resp.print_message_format(indent=0, allow_unknown_lengths=allow_unknown_bit_lengths)
 
-    print("\n")
+    print_fn("\n")
 
     if (service.positive_responses and
             len(service.positive_responses) > 1) or (service.negative_responses and
@@ -228,7 +228,7 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Dict[str, 
     }
 
 
-def print_dl_metrics(variants: List[DiagLayer]) -> None:
+def print_dl_metrics(variants: List[DiagLayer], print_fn: Callable = print) -> None:
 
     name = []
     type = []
@@ -252,4 +252,4 @@ def print_dl_metrics(variants: List[DiagLayer]) -> None:
         'Number of DOPs': num_dops,
         'Number of communication parameters': num_comparams
     }
-    print(tabulate(table, headers='keys', tablefmt='presto'))
+    print_fn(tabulate(table, headers='keys', tablefmt='presto'))

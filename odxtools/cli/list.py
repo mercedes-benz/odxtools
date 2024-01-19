@@ -2,7 +2,7 @@
 import argparse
 from typing import Callable, List, Optional
 
-from rich import print as print
+import rich
 
 from ..database import Database
 from ..diagcomm import DiagComm
@@ -40,18 +40,18 @@ def print_summary(odxdb: Database,
             diag_layers.append([x for x in odxdb.diag_layers if x.short_name == name][0])
 
         else:
-            print(f"The variant '{name}' could not be found!")
+            rich.print(f"The variant '{name}' could not be found!")
             return
 
     if diag_layers:
-        print("\n")
-        print(f"Overview of diagnostic layers: ")
-        print_dl_metrics(diag_layers)
+        rich.print("\n")
+        rich.print(f"Overview of diagnostic layers: ")
+        print_dl_metrics(diag_layers, print_fn=rich.print)
 
     for dl in diag_layers:
-        print("\n")
-        print(f"[green]Diagnostic layer:[/green] '[bold white]{dl.short_name}[/bold white]'")
-        print(f" [blue]Variant Type[/blue]: {dl.variant_type.value}")
+        rich.print("\n")
+        rich.print(f"[green]Diagnostic layer:[/green] '[bold white]{dl.short_name}[/bold white]'")
+        rich.print(f" [blue]Variant Type[/blue]: {dl.variant_type.value}")
 
         assert isinstance(dl, DiagLayer)
         all_services: List[DiagComm] = sorted(dl.services, key=lambda x: x.short_name)
@@ -61,30 +61,30 @@ def print_summary(odxdb: Database,
 
         for proto in dl.protocols:
             if (can_rx_id := dl.get_can_receive_id(proto.short_name)) is not None:
-                print(
+                rich.print(
                     f"  [blue]CAN receive ID[/blue] for protocol '{proto.short_name}': 0x{can_rx_id:x}"
                 )
 
             if (can_tx_id := dl.get_can_send_id(proto.short_name)) is not None:
-                print(
+                rich.print(
                     f"  [blue]CAN send ID[/blue] for protocol '{proto.short_name}': 0x{can_tx_id:x}"
                 )
 
         if dl.description:
             desc = format_desc(dl.description, ident=2)
-            print(f" [blue]Description[/blue]: " + desc)
+            rich.print(f" [blue]Description[/blue]: " + desc)
 
         if print_global_negative_responses and dl.global_negative_responses:
-            print("\n")
-            print(f"The [blue]global negative responses[/blue] of '{dl.short_name}' are: ")
+            rich.print("\n")
+            rich.print(f"The [blue]global negative responses[/blue] of '{dl.short_name}' are: ")
             for gnr in dl.global_negative_responses:
-                print(f" {gnr.short_name}")
+                rich.print(f" {gnr.short_name}")
 
         if print_services and len(all_services) > 0:
             services = [s for s in all_services if service_filter(s)]
             if len(services) > 0:
-                print("\n")
-                print(f"The [blue]services[/blue] of '{dl.short_name}' are: ")
+                rich.print("\n")
+                rich.print(f"The [blue]services[/blue] of '{dl.short_name}' are: ")
                 for service in services:
                     if isinstance(service, DiagService):
                         print_diagnostic_service(
@@ -93,26 +93,28 @@ def print_summary(odxdb: Database,
                             print_pre_condition_states=print_pre_condition_states,
                             print_state_transitions=print_state_transitions,
                             print_audiences=print_audiences,
-                            allow_unknown_bit_lengths=allow_unknown_bit_lengths)
+                            allow_unknown_bit_lengths=allow_unknown_bit_lengths,
+                            print_fn=rich.print)
                     elif isinstance(service, SingleEcuJob):
-                        print(f" [blue]Single ECU job[/blue]: {service.odx_id}")
+                        rich.print(f" [blue]Single ECU job[/blue]: {service.odx_id}")
                     else:
-                        print(f" Unidentifiable service: {service}")
+                        rich.print(f" Unidentifiable service: {service}")
 
         if print_dops and len(data_object_properties) > 0:
-            print("\n")
-            print(f"The [blue]DOPs[/blue] of the {dl.variant_type.value} '{dl.short_name}' are: ")
+            rich.print("\n")
+            rich.print(
+                f"The [blue]DOPs[/blue] of the {dl.variant_type.value} '{dl.short_name}' are: ")
             for dop in sorted(
                     data_object_properties, key=lambda x: (type(x).__name__, x.short_name)):
-                print("  " + str(dop.short_name).replace("\n", "\n  "))
+                rich.print("  " + str(dop.short_name).replace("\n", "\n  "))
 
         if print_comparams and len(comparams) > 0:
-            print("\n")
-            print(
+            rich.print("\n")
+            rich.print(
                 f"The [blue]communication parameters[/blue] of the {dl.variant_type.value} '{dl.short_name}' are: "
             )
             for com_param in comparams:
-                print(f"  {com_param.short_name}: {com_param.value}")
+                rich.print(f"  {com_param.short_name}: {com_param.value}")
 
 
 def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
