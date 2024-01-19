@@ -94,7 +94,7 @@ def prompt_single_parameter_value(parameter: Parameter) -> Optional[AtomicOdxTyp
         choices = [scale.compu_const for scale in scales if scale is not None]
         param_prompt[0]["choices"] = choices
 
-    answer = PI_prompt.prompt(param_prompt)
+    answer = PI_prompt(param_prompt)
     if answer.get(parameter.short_name) == "" and not parameter.is_required:
         return None
     elif parameter.physical_type.base_data_type is not None:
@@ -132,7 +132,7 @@ def encode_message_interactively(sub_service: Union[Request, Response],
                 "message": f"Do you want to encode a message? [y/n]",
                 "choices": ["yes", "no"],
             }]
-            answer = PI_prompt.prompt(encode_message_prompt)
+            answer = PI_prompt(encode_message_prompt)
             if answer.get("yes_no_prompt") == "no":
                 return
 
@@ -147,7 +147,7 @@ def encode_message_interactively(sub_service: Union[Request, Response],
                 "filter":
                     lambda input: _convert_string_to_bytes(input),
             }]
-            answer = PI_prompt.prompt(answered_request_prompt)
+            answer = PI_prompt(answered_request_prompt)
             answered_request = answer.get("request")
             print(f"Input interpretation as list: {list(answered_request)}")
 
@@ -266,7 +266,7 @@ def browse(odxdb: Database) -> None:
             "message": "Select a Variant.",
             "choices": list(dl_names) + ["[exit]"],
         }]
-        answer = PI_prompt.prompt(selection)
+        answer = PI_prompt(selection)
         if answer.get("variant") == "[exit]":
             return
 
@@ -302,7 +302,7 @@ def browse(odxdb: Database) -> None:
                     f"The variant {variant.short_name} offers the following services. Select one!",
                 "choices": [s.short_name for s in services] + ["[back]"],
             }]
-            answer = PI_prompt.prompt(selection)
+            answer = PI_prompt(selection)
             if answer.get("service") == "[back]":
                 break
 
@@ -336,20 +336,18 @@ def browse(odxdb: Database) -> None:
                     "short": f"Negative response: {nr.short_name}",
                 } for nr in service.negative_responses] + ["[back]"],  # type: ignore
             }]
-            answer = PI_prompt.prompt(selection)
+            answer = PI_prompt(selection)
             if answer.get("message_type") == "[back]":
                 continue
 
-            sub_service = answer.get("message_type")
+            codec = answer.get("message_type")
 
-            if sub_service.request is not None:
-                table = extract_parameter_tabulation_data(sub_service.request.parameters)
+            if codec is not None:
+                table = extract_parameter_tabulation_data(codec.parameters)
                 table_str = tabulate(table, headers='keys', tablefmt='presto')
                 print(table_str)
 
-                encode_message_interactively(sub_service, ask_user_confirmation=True)
-            else:
-                print(f"Service '{sub_service.short_name}' does not feature a request!")
+                encode_message_interactively(codec, ask_user_confirmation=True)
 
 
 def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
