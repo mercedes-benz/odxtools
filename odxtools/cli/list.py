@@ -2,7 +2,7 @@
 import argparse
 from typing import Callable, List, Optional
 
-from rich import print
+from rich import print as print
 
 from ..database import Database
 from ..diagcomm import DiagComm
@@ -27,8 +27,7 @@ def print_summary(odxdb: Database,
                   print_audiences: bool = False,
                   allow_unknown_bit_lengths: bool = False,
                   variants: Optional[List[str]] = None,
-                  service_filter: Callable[[DiagComm], bool] = lambda x: True,
-                  plumbing_output: bool = False) -> None:
+                  service_filter: Callable[[DiagComm], bool] = lambda x: True) -> None:
 
     diag_layer_names = [dl.short_name for dl in odxdb.diag_layers]
     diag_layers: List[DiagLayer] = []
@@ -79,10 +78,7 @@ def print_summary(odxdb: Database,
             print("\n")
             print(f"The [blue]global negative responses[/blue] of '{dl.short_name}' are: ")
             for gnr in dl.global_negative_responses:
-                if plumbing_output:
-                    print(f" {gnr}")
-                else:
-                    print(f" {gnr.short_name}")
+                print(f" {gnr.short_name}")
 
         if print_services and len(all_services) > 0:
             services = [s for s in all_services if service_filter(s)]
@@ -97,8 +93,7 @@ def print_summary(odxdb: Database,
                             print_pre_condition_states=print_pre_condition_states,
                             print_state_transitions=print_state_transitions,
                             print_audiences=print_audiences,
-                            allow_unknown_bit_lengths=allow_unknown_bit_lengths,
-                            plumbing_output=plumbing_output)
+                            allow_unknown_bit_lengths=allow_unknown_bit_lengths)
                     elif isinstance(service, SingleEcuJob):
                         print(f" [blue]Single ECU job[/blue]: {service.odx_id}")
                     else:
@@ -109,10 +104,7 @@ def print_summary(odxdb: Database,
             print(f"The [blue]DOPs[/blue] of the {dl.variant_type.value} '{dl.short_name}' are: ")
             for dop in sorted(
                     data_object_properties, key=lambda x: (type(x).__name__, x.short_name)):
-                if plumbing_output:
-                    print("  " + str(dop).replace("\n", "\n  "))
-                else:
-                    print("  " + str(dop.short_name).replace("\n", "\n  "))
+                print("  " + str(dop.short_name).replace("\n", "\n  "))
 
         if print_comparams and len(comparams) > 0:
             print("\n")
@@ -205,16 +197,20 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
     )
 
     parser.add_argument(
-        "-po",
-        "--plumbing-output",
+        "--dump-database",
         action="store_true",
         required=False,
-        help="Print full objects instead of selected and formatted attributes",
+        help="Ignore all other parameters and print a comprehensive dump the full database "
+        "instead of providing a pretty-printed summary",
     )
 
 
 def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
+
+    if args.dump_database:
+        print(repr(odxdb))
+        return
 
     def service_filter(s: DiagComm) -> bool:
         if args.services and len(args.services) > 0:
@@ -234,5 +230,4 @@ def run(args: argparse.Namespace) -> None:
         print_pre_condition_states=args.all,
         print_state_transitions=args.all,
         print_audiences=args.all,
-        allow_unknown_bit_lengths=args.all,
-        plumbing_output=args.plumbing_output)
+        allow_unknown_bit_lengths=args.all)

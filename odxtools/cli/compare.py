@@ -106,8 +106,7 @@ class Display:
                         print(tabulate(detailed_info, headers='keys', tablefmt='presto'))
                 if self.param_detailed:
                     # print all parameter details of diagnostic service
-                    print_service_parameters(
-                        service, allow_unknown_bit_lengths=True, plumbing_output=self.obj_detailed)
+                    print_service_parameters(service, allow_unknown_bit_lengths=True)
 
     def print_database_changes(self, changes_variants: SpecsChangesVariants) -> None:
         # prints result of database comparison (input variable: dictionary: changes_variants)
@@ -590,13 +589,6 @@ def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
         help="Don't show all service parameter details",
     )
 
-    parser.add_argument(
-        "-po",
-        "--plumbing-output",
-        action="store_true",
-        required=False,
-        help="Print full objects instead of selected and formatted attributes",
-    )
     # TODO
     # Idea: provide folder with multiple pdx files as argument
     # -> load all pdx files in folder, sort them alphabetically, compare databases pairwaise
@@ -608,7 +600,6 @@ def run(args: argparse.Namespace) -> None:
 
     task = Comparison()
     task.param_detailed = args.no_details
-    task.obj_detailed = args.plumbing_output
 
     db_names = [args.pdx_file if isinstance(args.pdx_file, str) else str(args.pdx_file[0])]
 

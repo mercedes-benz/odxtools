@@ -37,8 +37,7 @@ def print_diagnostic_service(service: DiagService,
                              print_pre_condition_states: bool = False,
                              print_state_transitions: bool = False,
                              print_audiences: bool = False,
-                             allow_unknown_bit_lengths: bool = False,
-                             plumbing_output: bool = False) -> None:
+                             allow_unknown_bit_lengths: bool = False) -> None:
     print(f" [cyan]{service.short_name}[/cyan] <ID: {service.odx_id}>")
 
     if service.description:
@@ -65,15 +64,10 @@ def print_diagnostic_service(service: DiagService,
         print(f"  Enabled-Audiences: {', '.join(enabled_audiences_short_names)}")
 
     if print_params:
-        print_service_parameters(
-            service,
-            allow_unknown_bit_lengths=allow_unknown_bit_lengths,
-            plumbing_output=plumbing_output)
+        print_service_parameters(service, allow_unknown_bit_lengths=allow_unknown_bit_lengths)
 
 
-def print_service_parameters(service: DiagService,
-                             allow_unknown_bit_lengths: bool = False,
-                             plumbing_output: bool = False) -> None:
+def print_service_parameters(service: DiagService, allow_unknown_bit_lengths: bool = False) -> None:
     # prints parameter details of request, posivite response and negative response of diagnostic service
 
     assert service.request is not None
@@ -96,8 +90,7 @@ def print_service_parameters(service: DiagService,
     table = extract_parameter_tabulation_data(list(service.request.parameters))
     print(tabulate(table, headers='keys', tablefmt='presto'))
     print(f"\n   Message format of the request:")
-    service.request.print_message_format(
-        indent=0, allow_unknown_lengths=allow_unknown_bit_lengths, plumbing_output=plumbing_output)
+    service.request.print_message_format(indent=0, allow_unknown_lengths=allow_unknown_bit_lengths)
 
     # Positive Response
     print(f"\n  [yellow]Positive Response Properties[/yellow]:")
@@ -109,10 +102,7 @@ def print_service_parameters(service: DiagService,
         table = extract_parameter_tabulation_data(list(resp.parameters))
         print(tabulate(table, headers='keys', tablefmt='presto'))
         print(f"\n   Message format of the positive response:")
-        resp.print_message_format(
-            indent=0,
-            allow_unknown_lengths=allow_unknown_bit_lengths,
-            plumbing_output=plumbing_output)
+        resp.print_message_format(indent=0, allow_unknown_lengths=allow_unknown_bit_lengths)
 
     # Negative Response
     print(f"\n  [yellow]Negative Response Properties[/yellow]:")
@@ -124,10 +114,7 @@ def print_service_parameters(service: DiagService,
         table = extract_parameter_tabulation_data(list(resp.parameters))
         print(tabulate(table, headers='keys', tablefmt='presto'))
         print(f"\n   Message format of a negative response:")
-        resp.print_message_format(
-            indent=0,
-            allow_unknown_lengths=allow_unknown_bit_lengths,
-            plumbing_output=plumbing_output)
+        resp.print_message_format(indent=0, allow_unknown_lengths=allow_unknown_bit_lengths)
 
     print("\n")
 
