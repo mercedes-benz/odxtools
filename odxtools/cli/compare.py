@@ -407,45 +407,38 @@ class Comparison(Display):
         # service_dict["changed_name_of_service"][{0 = services, 1 = old service names}][i]
         # service_dict["changed_parameters_of_service"][{0 = services, 1 = changed_parameters, 2 = information_texts}][i]
 
-        # write diagnostic services of each diagnostic layer into a list (type: odxtools.diagservice.DiagService)
-        services_for_dl1 = dl1.services
-        services_for_dl2 = dl2.services
+        dl1_service_names = [service.short_name for service in dl1.services]
 
-        # write request parameters (hex string) refering to Diag-Services into a list (type: bytearray)
-        requests_for_dl1: List[Union[bytes, str]] = []
-        requests_for_dl2: List[Union[bytes, str]] = []
-
-        # method service() fails when request parameters are not coded or have a default value
-        # Error message: odxtools.exceptions.OdxError: The parameters {'foo'} are required but missing!
-        for service in services_for_dl1:
-            assert isinstance(service, DiagService)
-            if not getattr(service.request, "required_parameters", None):
-                requests_for_dl1.append(service())
-            else:
-                requests_for_dl1.append(service.short_name)
-
-        for service in services_for_dl2:
-            assert isinstance(service, DiagService)
-            if not getattr(service.request, "required_parameters", None):
-                requests_for_dl2.append(service())
-            else:
-                requests_for_dl2.append(service.short_name)
+        # extract the constant prefixes for the requests of all
+        # services (used for duck-typed rename detection)
+        dl1_request_prefixes: List[Optional[bytes]] = [
+            None if s.request is None else s.request.coded_const_prefix() for s in dl1.services
+        ]
+        dl2_request_prefixes: List[Optional[bytes]] = [
+            None if s.request is None else s.request.coded_const_prefix() for s in dl2.services
+        ]
 
         # compare diagnostic services
-        for service1_idx, service1 in enumerate(services_for_dl1):
+        for service1 in dl1.services:
 
             # check for added diagnostic services
-            if (service1.short_name not in [service.short_name for service in services_for_dl2] and
-                    requests_for_dl1[service1_idx] not in requests_for_dl2):
+            rq_prefix: Optional[bytes] = None
+            if service1.request is not None:
+                rq_prefix = service1.request.coded_const_prefix()
 
-                service_dict["new_services"].append(service1)  # type: ignore[union-attr, arg-type]
+            if service1 not in dl2.services:
+                if rq_prefix is None or rq_prefix not in dl2_request_prefixes:
+                    # TODO: this will not work in cases where the constant
+                    # prefix of a request was modified...
+                    service_dict["new_services"].append(  # type: ignore[union-attr]
+                        service1)  # type: ignore[arg-type]
 
             # check whether names of diagnostic services have changed
-            elif (service1.short_name not in [service.short_name for service in services_for_dl2]
-                  and requests_for_dl1[service1_idx] in requests_for_dl2):
+            elif service1 not in dl2.services and rq_prefix in dl2_request_prefixes:
 
                 # get related diagnostic service for request
-                decoded_message = dl2.decode(service1())
+                service2_idx = dl2_request_prefixes.index(rq_prefix)
+                service2 = dl2.services[service2_idx]
 
                 # save information about changes in dictionary
 
@@ -454,10 +447,10 @@ class Comparison(Display):
                     service1)
                 # add old service name (type: String)
                 service_dict["changed_name_of_service"][1].append(  # type: ignore[union-attr]
-                    decoded_message[0].service.short_name)
+                    service2.short_name)
 
                 # compare request, pos. response and neg. response parameters of diagnostic services
-                detailed_information = self.compare_services(service1, decoded_message[0].service)
+                detailed_information = self.compare_services(service1, service2)
                 # detailed_information = [[infotext1, table1, infotext2, table2, ...], changed_params]
 
                 # add information about changed diagnostic service parameters to dicitionary
@@ -475,12 +468,12 @@ class Comparison(Display):
                         2].append(  # type: ignore[union-attr]
                             detailed_information[0])
 
-            for service2_idx, service2 in enumerate(services_for_dl2):
+            for service2_idx, service2 in enumerate(dl2.services):
 
                 # check for deleted diagnostic services
-                if (service2.short_name not in [service.short_name for service in services_for_dl1]
-                        and requests_for_dl2[service2_idx] not in requests_for_dl1 and
-                        service2 not in service_dict["deleted_services"]):
+                if service2.short_name not in dl1_service_names and dl2_request_prefixes[
+                        service2_idx] not in dl1_request_prefixes and service2 not in service_dict[
+                            "deleted_services"]:
 
                     service_dict["deleted_services"].append(  # type: ignore[union-attr]
                         service2)  # type: ignore[arg-type]
