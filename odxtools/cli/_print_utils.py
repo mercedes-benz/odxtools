@@ -130,7 +130,7 @@ def extract_service_tabulation_data(services: List[DiagService]) -> Dict[str, An
         if service.request:
             prefix = service.request.coded_const_prefix()
             request.append(f"0x{str(prefix.hex().upper())[:32]}...") if len(
-                prefix) > 32 else request.append(f"0x{str(prefix.upper())}")
+                prefix) > 32 else request.append(f"0x{str(prefix.hex().upper())}")
         else:
             request.append(None)
 
