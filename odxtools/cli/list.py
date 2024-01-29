@@ -53,7 +53,6 @@ def print_summary(odxdb: Database,
         rich.print(f"Diagnostic layer: '{dl.short_name}'")
         rich.print(f" Variant Type: {dl.variant_type.value}")
 
-        assert isinstance(dl, DiagLayer)
         all_services: List[DiagComm] = sorted(dl.services, key=lambda x: x.short_name)
 
         data_object_properties = dl.diag_data_dictionary_spec.data_object_props
