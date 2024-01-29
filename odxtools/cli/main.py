@@ -60,11 +60,10 @@ def start_cli() -> None:
 
     for tool in tool_modules:
         if tool._odxtools_tool_name_ == args.subparser_name:
+            orig_strict = odxtools.exceptions.strict_mode
             odxtools.exceptions.strict_mode = not args.no_strict
             try:
                 tool.run(args)
-            except:
-                raise
             finally:
-                odxtools.exceptions.strict_mode = False
+                odxtools.exceptions.strict_mode = orig_strict
             return
