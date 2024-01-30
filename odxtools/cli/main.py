@@ -3,6 +3,8 @@ import argparse
 import importlib
 from typing import Any, List
 
+import odxtools
+
 from ..version import __version__ as odxtools_version
 from .dummy_sub_parser import DummyTool
 
@@ -32,6 +34,14 @@ def start_cli() -> None:
     )
 
     argparser.add_argument(
+        "--no-strict",
+        action="store_true",
+        default=False,
+        required=False,
+        help="Load the dataset in non-strict mode (which is more robust but might lead to undefined behavior)",
+    )
+
+    argparser.add_argument(
         "--version", required=False, action="store_true", help="Print the odxtools version")
 
     subparsers = argparser.add_subparsers(help="Select a subcommand", dest="subparser_name")
@@ -50,4 +60,10 @@ def start_cli() -> None:
 
     for tool in tool_modules:
         if tool._odxtools_tool_name_ == args.subparser_name:
-            tool.run(args)
+            orig_strict = odxtools.exceptions.strict_mode
+            odxtools.exceptions.strict_mode = not args.no_strict
+            try:
+                tool.run(args)
+            finally:
+                odxtools.exceptions.strict_mode = orig_strict
+            return

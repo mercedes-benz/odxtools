@@ -21,6 +21,7 @@ class UtilFunctions:
 
     @staticmethod
     def run_list_tool(path_to_pdx_file: str = "./examples/somersault.pdx",
+                      no_strict: bool = False,
                       ecu_variants: Optional[List[str]] = None,
                       print_neg_responses: bool = False,
                       ecu_services: Optional[List[str]] = None,
@@ -30,6 +31,7 @@ class UtilFunctions:
                       dump_database: bool = False) -> None:
         list_args = Namespace(
             pdx_file=path_to_pdx_file,
+            no_strict=no_strict,
             variants=ecu_variants,
             global_negative_responses=print_neg_responses,
             services=ecu_services,
@@ -71,12 +73,14 @@ class UtilFunctions:
 
     @staticmethod
     def run_compare_tool(path_to_pdx_file: str = "./examples/somersault.pdx",
+                         no_strict: bool = False,
                          ecu_variants: Optional[List[str]] = None,
                          database: Optional[List[str]] = None,
                          no_details: bool = True) -> None:
 
         compare_args = Namespace(
             pdx_file=path_to_pdx_file,
+            no_strict=no_strict,
             variants=ecu_variants,
             database=database,
             no_details=no_details)
@@ -89,6 +93,7 @@ class TestCommandLineTools(unittest.TestCase):
     def test_list_tool(self) -> None:
 
         UtilFunctions.run_list_tool()
+        UtilFunctions.run_list_tool(no_strict=True)
         UtilFunctions.run_list_tool(ecu_variants=["somersault"])
         UtilFunctions.run_list_tool(print_neg_responses=True)
         UtilFunctions.run_list_tool(print_params=True)
@@ -114,11 +119,12 @@ class TestCommandLineTools(unittest.TestCase):
     def test_compare_tool(self) -> None:
 
         UtilFunctions.run_compare_tool()
-        UtilFunctions.run_compare_tool(database=[r"./examples/somersault_modified.pdx"])
+        UtilFunctions.run_compare_tool(database=["./examples/somersault_modified.pdx"])
+        UtilFunctions.run_compare_tool(no_strict=True)
         UtilFunctions.run_compare_tool(
-            database=[r"./examples/somersault_modified.pdx"], no_details=False)
+            database=["./examples/somersault_modified.pdx"], no_details=False)
         UtilFunctions.run_compare_tool(
-            database=[r"./examples/somersault_modified.pdx"], ecu_variants=["somersault_lazy"])
+            database=["./examples/somersault_modified.pdx"], ecu_variants=["somersault_lazy"])
         UtilFunctions.run_compare_tool(ecu_variants=[
             "somersault_lazy", "somersault_assiduous", "somersault_young", "somersault_old"
         ])
