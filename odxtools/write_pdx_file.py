@@ -13,11 +13,29 @@ import odxtools
 from .database import Database
 from .odxtypes import bool_to_odxstr
 
-odxdatabase = None
+odxdatabase: Optional[Database] = None
 
 
 def jinja2_odxraise_helper(msg: str) -> None:
     raise Exception(msg)
+
+
+def get_parent_container_name(dl_short_name: str) -> str:
+    """
+    Given the short name of a diagnostic layer, return the name of a container
+    which the layer is part of.
+
+    If no such container exists, a `RuntimeException` is thrown.
+    """
+
+    assert odxdatabase is not None
+
+    for dlc in odxdatabase.diag_layer_containers:
+        if dl_short_name in [dl.short_name for dl in dlc.diag_layers]:
+            return dlc.short_name
+
+    raise RuntimeError(f"get_parent_container_name() could not determine a "
+                       f"container for diagnostic layer '{dl_short_name}'.")
 
 
 def make_xml_attrib(attrib_name: str, attrib_val: Optional[Any]) -> str:
@@ -117,6 +135,7 @@ def write_pdx_file(
         jinja_env.globals["odxraise"] = jinja2_odxraise_helper
         jinja_env.globals["make_xml_attrib"] = make_xml_attrib
         jinja_env.globals["make_bool_xml_attrib"] = make_bool_xml_attrib
+        jinja_env.globals["get_parent_container_name"] = get_parent_container_name
 
         vars: Dict[str, Any] = {}
         vars["odxtools_version"] = odxtools.__version__
