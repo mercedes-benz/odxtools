@@ -139,6 +139,21 @@ class BasicStructure(ComplexDop):
                 # the ODX is located last in the PDU...
                 encode_state.is_end_of_pdu = is_end_of_pdu
 
+            if isinstance(
+                    param,
+                (LengthKeyParameter, TableKeyParameter)) and param.short_name in param_value:
+                # This is a hack to always encode a dummy value for
+                # length- and table keys. since these can be specified
+                # implicitly (i.e., by means of parameters that use
+                # these keys), to avoid getting an "overlapping
+                # parameter" warning, we must encode a value of zero
+                # into the PDU here and add the real value of the
+                # parameter in a post processing step.
+                tmp = encode_state.parameter_values.pop(param.short_name)
+                encode_state.coded_message = param.encode_into_pdu(encode_state)
+                encode_state.parameter_values[param.short_name] = tmp
+                continue
+
             encode_state.coded_message = param.encode_into_pdu(encode_state)
 
         if self.byte_size is not None and len(encode_state.coded_message) < self.byte_size:
