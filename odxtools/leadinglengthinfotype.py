@@ -11,6 +11,11 @@ from .odxtypes import AtomicOdxType, DataType
 
 @dataclass
 class LeadingLengthInfoType(DiagCodedType):
+    #: bit length of the length specifier field
+    #:
+    #: this is then followed by the number of bytes specified by that
+    #: field, i.e., this is NOT the length of the LeadingLengthInfoType
+    #: object.
     bit_length: int
 
     def __post_init__(self) -> None:
@@ -31,7 +36,11 @@ class LeadingLengthInfoType(DiagCodedType):
         return "LEADING-LENGTH-INFO-TYPE"
 
     def get_static_bit_length(self) -> Optional[int]:
-        return self.bit_length
+        # note that self.bit_length is just the length of the length
+        # specifier field. This is then followed by the same number of
+        # bytes as the value of this field, i.e., the length of this
+        # DCT is dynamic!
+        return None
 
     def convert_internal_to_bytes(self, internal_value: Any, encode_state: EncodeState,
                                   bit_position: int) -> bytes:

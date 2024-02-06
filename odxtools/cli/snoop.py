@@ -12,6 +12,7 @@ import odxtools.isotp_state_machine as ism
 import odxtools.uds as uds
 from odxtools.exceptions import DecodeError
 from odxtools.isotp_state_machine import IsoTpStateMachine
+from odxtools.response import Response, ResponseType
 
 from . import _parser_utils
 
@@ -31,7 +32,7 @@ def handle_telegram(telegram_id: int, payload: bytes) -> None:
 
     if telegram_id == ecu_tx_id:
         if uds.is_response_pending(payload):
-            print(f" -> ECU: ... (response pending)")
+            print(f" ... (response pending)")
             return
 
         decoded_message = None
@@ -48,21 +49,29 @@ def handle_telegram(telegram_id: int, payload: bytes) -> None:
                 if len(decoded_message) > 1:
                     dec_str = f" (decoding {i+1})"
 
-                response_type = getattr(resp.coding_object, "response_type", None)
                 rt_str = "unknown"
-                if response_type == "POS-RESPONSE":
-                    rt_str = "positive"
-                elif response_type == "NEG-RESPONSE":
-                    rt_str = "negative"
+                if isinstance(resp.coding_object, Response):
+                    if resp.coding_object.response_type == ResponseType.POSITIVE:
+                        rt_str = "positive"
+                    elif resp.coding_object.response_type in (ResponseType.NEGATIVE,
+                                                              ResponseType.GLOBAL_NEGATIVE):
+                        rt_str = "negative"
 
-                print(f" -> {rt_str} ECU response{dec_str}: \"{resp.coding_object.short_name}\"")
+                settable_params = []
                 for param_name, param_val in resp.param_dict.items():
                     param = [x for x in params if x.short_name == param_name][0]
                     if not param.is_settable:
                         continue
-                    print(f"      {param_name} = {repr(param_val)}")
+                    settable_params.append((param_name, param_val))
+
+                if settable_params:
+                    print(f" {rt_str} response{dec_str} {resp.coding_object.short_name}:")
+                    for param_name, param_val in settable_params:
+                        print(f"      {param_name} = {repr(param_val)}")
+                else:
+                    print(f" {rt_str} response{dec_str} {resp.coding_object.short_name}")
         else:
-            print(f" -> ECU response: unrecognized response of {len(payload)} bytes length: "
+            print(f" unrecognized response of {len(payload)} bytes length: "
                   f"0x{payload.hex()}")
 
         return
@@ -76,7 +85,7 @@ def handle_telegram(telegram_id: int, payload: bytes) -> None:
             last_request = None
 
     if decoded_message is not None:
-        print(f"tester request: \"{decoded_message.coding_object.short_name}\"")
+        print(f"request {decoded_message.coding_object.short_name}:")
         params = decoded_message.coding_object.parameters
         for param_name, param_val in decoded_message.param_dict.items():
             param = [x for x in params if x.short_name == param_name][0]

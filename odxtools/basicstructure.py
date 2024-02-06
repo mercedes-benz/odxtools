@@ -8,7 +8,7 @@ from .complexdop import ComplexDop
 from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert, odxraise
+from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert, odxraise, strict_mode
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterDict, ParameterValue, ParameterValueDict
@@ -74,10 +74,10 @@ class BasicStructure(ComplexDop):
     def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:
         prefix = b''
         encode_state = EncodeState(prefix, parameter_values={}, triggering_request=request_prefix)
-        for p in self.parameters:
-            if isinstance(p, (CodedConstParameter, NrcConstParameter, MatchingRequestParameter,
-                              PhysicalConstantParameter)):
-                encode_state.coded_message = p.encode_into_pdu(encode_state)
+        for param in self.parameters:
+            if isinstance(param, (CodedConstParameter, NrcConstParameter, MatchingRequestParameter,
+                                  PhysicalConstantParameter)):
+                encode_state.coded_message = param.encode_into_pdu(encode_state)
             else:
                 break
         return encode_state.coded_message
@@ -124,6 +124,13 @@ class BasicStructure(ComplexDop):
                 f"Expected a dictionary for the values of structure {self.short_name}, "
                 f"got {type(param_value)}")
 
+        # in strict mode, ensure that no values for unknown parameters are specified.
+        if strict_mode:
+            param_names = [param.short_name for param in self.parameters]
+            for param_key in param_value:
+                if param_key not in param_names:
+                    odxraise(f"Value for unknown parameter '{param_key}' specified")
+
         encode_state = EncodeState(
             b'',
             dict(param_value),
@@ -138,6 +145,21 @@ class BasicStructure(ComplexDop):
                 # This assumes that the last parameter specified in
                 # the ODX is located last in the PDU...
                 encode_state.is_end_of_pdu = is_end_of_pdu
+
+            if isinstance(
+                    param,
+                (LengthKeyParameter, TableKeyParameter)) and param.short_name in param_value:
+                # This is a hack to always encode a dummy value for
+                # length- and table keys. since these can be specified
+                # implicitly (i.e., by means of parameters that use
+                # these keys), to avoid getting an "overlapping
+                # parameter" warning, we must encode a value of zero
+                # into the PDU here and add the real value of the
+                # parameter in a post processing step.
+                tmp = encode_state.parameter_values.pop(param.short_name)
+                encode_state.coded_message = param.encode_into_pdu(encode_state)
+                encode_state.parameter_values[param.short_name] = tmp
+                continue
 
             encode_state.coded_message = param.encode_into_pdu(encode_state)
 
@@ -213,10 +235,10 @@ class BasicStructure(ComplexDop):
         inner_decode_state = DecodeState(
             coded_message=byte_code, parameter_values={}, cursor_position=0)
 
-        for parameter in self.parameters:
-            value, cursor_position = parameter.decode_from_pdu(inner_decode_state)
+        for param in self.parameters:
+            value, cursor_position = param.decode_from_pdu(inner_decode_state)
 
-            inner_decode_state.parameter_values[parameter.short_name] = value
+            inner_decode_state.parameter_values[param.short_name] = value
             inner_decode_state = DecodeState(
                 coded_message=byte_code,
                 parameter_values=inner_decode_state.parameter_values,
@@ -282,8 +304,8 @@ class BasicStructure(ComplexDop):
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
-        for p in self.parameters:
-            result.update(p._build_odxlinks())
+        for param in self.parameters:
+            result.update(param._build_odxlinks())
 
         return result
 
@@ -291,12 +313,12 @@ class BasicStructure(ComplexDop):
         """Recursively resolve any references (odxlinks or sn-refs)"""
         super()._resolve_odxlinks(odxlinks)
 
-        for p in self.parameters:
-            p._resolve_odxlinks(odxlinks)
+        for param in self.parameters:
+            param._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         """Recursively resolve any references (odxlinks or sn-refs)"""
         super()._resolve_snrefs(diag_layer)
 
-        for p in self.parameters:
-            p._resolve_snrefs(diag_layer)
+        for param in self.parameters:
+            param._resolve_snrefs(diag_layer)

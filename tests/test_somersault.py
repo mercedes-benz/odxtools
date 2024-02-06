@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import unittest
 
-from odxtools.exceptions import odxrequire
+from odxtools.exceptions import OdxError, odxrequire
 from odxtools.load_pdx_file import load_pdx_file
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
 
@@ -145,9 +145,11 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual([x.short_name for x in service.negative_responses], ["flips_not_done"])
 
         pr = service.positive_responses.grudging_forward
-        self.assertEqual([x.short_name for x in pr.parameters], ["sid", "num_flips_done"])
+        self.assertEqual([x.short_name for x in pr.parameters],
+                         ["sid", "num_flips_done", "sault_time"])
         self.assertEqual([x.short_name for x in pr.required_parameters], [])
-        self.assertEqual(pr.get_static_bit_length(), 16)
+        self.assertEqual([x.short_name for x in pr.free_parameters], ["sault_time"])
+        self.assertEqual(pr.get_static_bit_length(), 24)
 
         nr = service.negative_responses.flips_not_done
         self.assertEqual(
@@ -162,7 +164,16 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(nrc_const.coded_values, [0, 1, 2])
 
 
-class TestDecode(unittest.TestCase):
+class TestEnDecode(unittest.TestCase):
+
+    def test_encode_specify_unknown_param(self) -> None:
+        ecu = odxdb.ecus.somersault_lazy
+        service = ecu.services.do_forward_flips
+        request = odxrequire(service.request)
+        with self.assertRaises(OdxError) as eo:
+            request.encode(forward_soberness_check=0x12, num_flips=5, grass_level="what grass?")
+
+        self.assertEqual(str(eo.exception), "Value for unknown parameter 'grass_level' specified")
 
     def test_decode_request(self) -> None:
         messages = odxdb.ecus.somersault_assiduous.decode(bytes([0x03, 0x45]))
@@ -226,9 +237,9 @@ class TestDecode(unittest.TestCase):
             dizzyness_level=42,
             happiness_level=92,
             last_pos_response=("forward_grudging", {
-                "dizzyness_level": 42
+                "sault_time": 249
             }))
-        self.assertEqual(resp_data.hex(), "622a5c03fa7b")
+        self.assertEqual(resp_data.hex(), "622a5c03fa7bf9")
 
         decoded_resp_data = pr.decode(resp_data)
         assert isinstance(decoded_resp_data, dict)
@@ -241,7 +252,7 @@ class TestDecode(unittest.TestCase):
         self.assertEqual(
             set(decoded_resp_data["last_pos_response"]
                 [1].keys()),  # type: ignore[index, union-attr]
-            {"sid", "num_flips_done"})
+            {"sid", "num_flips_done", "sault_time"})
         # the num_flips_done parameter is a matching request parameter
         # for this response, so it produces a binary blob. possibly,
         # it should be changed to a ValueParameter...
@@ -249,13 +260,16 @@ class TestDecode(unittest.TestCase):
             decoded_resp_data["last_pos_response"][1]  # type: ignore[index, call-overload]
             ["num_flips_done"],  # type: ignore[index, call-overload]
             bytes([123]))
+        self.assertEqual(
+            decoded_resp_data["last_pos_response"][1]  # type: ignore[index, call-overload]
+            ["sault_time"],  # type: ignore[index, call-overload]
+            249)
 
         # test the "backward flips grudgingly done" response
         resp_data = pr.encode(
             dizzyness_level=75,
             happiness_level=3,
             last_pos_response=("backward_grudging", {
-                'dizzyness_level': 75,
                 'num_flips_done': 5,
                 'grumpiness_level': 150
             }))
@@ -310,14 +324,14 @@ class TestDecode(unittest.TestCase):
 
         with patch("sys.stdout", stdout):
             pos_response.print_free_parameters_info()
-            expected_output = "forward_soberness_check: uint8\nnum_flips: uint8\n"
+            expected_output = "forward_soberness_check: uint8\nnum_flips: uint8\nsault_time: uint8\n"
             actual_output = stdout.getvalue()
             self.assertEqual(actual_output, expected_output)
 
         with patch("sys.stdout", stdout):
             neg_response.print_free_parameters_info()
             expected_output = (
-                "forward_soberness_check: uint8\nnum_flips: uint8\nflips_successfully_done: uint8\n"
+                "forward_soberness_check: uint8\nnum_flips: uint8\nsault_time: uint8\nflips_successfully_done: uint8\n"
             )
             actual_output = stdout.getvalue()
             self.assertEqual(actual_output, expected_output)
@@ -336,9 +350,13 @@ class TestDecode(unittest.TestCase):
             f"There should be only one service for 0x0145 but there are: {messages}",
         )
         m = messages[0]
-        self.assertEqual(m.coded_message, bytes([0xFA, 0x03]))
+        self.assertEqual(m.coded_message.hex(), "fa03ff")
         self.assertEqual(m.coding_object, pos_response)
-        self.assertEqual(m.param_dict, {"sid": 0xFA, "num_flips_done": bytearray([0x03])})
+        self.assertEqual(m.param_dict, {
+            "sid": 0xFA,
+            "num_flips_done": bytearray([0x03]),
+            "sault_time": 255
+        })
 
 
 class TestNavigation(unittest.TestCase):
