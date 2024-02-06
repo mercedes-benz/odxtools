@@ -74,10 +74,10 @@ class BasicStructure(ComplexDop):
     def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:
         prefix = b''
         encode_state = EncodeState(prefix, parameter_values={}, triggering_request=request_prefix)
-        for p in self.parameters:
-            if isinstance(p, (CodedConstParameter, NrcConstParameter, MatchingRequestParameter,
-                              PhysicalConstantParameter)):
-                encode_state.coded_message = p.encode_into_pdu(encode_state)
+        for param in self.parameters:
+            if isinstance(param, (CodedConstParameter, NrcConstParameter, MatchingRequestParameter,
+                                  PhysicalConstantParameter)):
+                encode_state.coded_message = param.encode_into_pdu(encode_state)
             else:
                 break
         return encode_state.coded_message
@@ -213,10 +213,10 @@ class BasicStructure(ComplexDop):
         inner_decode_state = DecodeState(
             coded_message=byte_code, parameter_values={}, cursor_position=0)
 
-        for parameter in self.parameters:
-            value, cursor_position = parameter.decode_from_pdu(inner_decode_state)
+        for param in self.parameters:
+            value, cursor_position = param.decode_from_pdu(inner_decode_state)
 
-            inner_decode_state.parameter_values[parameter.short_name] = value
+            inner_decode_state.parameter_values[param.short_name] = value
             inner_decode_state = DecodeState(
                 coded_message=byte_code,
                 parameter_values=inner_decode_state.parameter_values,
@@ -282,8 +282,8 @@ class BasicStructure(ComplexDop):
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
-        for p in self.parameters:
-            result.update(p._build_odxlinks())
+        for param in self.parameters:
+            result.update(param._build_odxlinks())
 
         return result
 
@@ -291,12 +291,12 @@ class BasicStructure(ComplexDop):
         """Recursively resolve any references (odxlinks or sn-refs)"""
         super()._resolve_odxlinks(odxlinks)
 
-        for p in self.parameters:
-            p._resolve_odxlinks(odxlinks)
+        for param in self.parameters:
+            param._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         """Recursively resolve any references (odxlinks or sn-refs)"""
         super()._resolve_snrefs(diag_layer)
 
-        for p in self.parameters:
-            p._resolve_snrefs(diag_layer)
+        for param in self.parameters:
+            param._resolve_snrefs(diag_layer)
