@@ -8,7 +8,7 @@ from .complexdop import ComplexDop
 from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert, odxraise
+from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert, odxraise, strict_mode
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterDict, ParameterValue, ParameterValueDict
@@ -123,6 +123,13 @@ class BasicStructure(ComplexDop):
             raise EncodeError(
                 f"Expected a dictionary for the values of structure {self.short_name}, "
                 f"got {type(param_value)}")
+
+        # in strict mode, ensure that no values for unknown parameters are specified.
+        if strict_mode:
+            param_names = [param.short_name for param in self.parameters]
+            for param_key in param_value:
+                if param_key not in param_names:
+                    odxraise(f"Value for unknown parameter '{param_key}' specified")
 
         encode_state = EncodeState(
             b'',
