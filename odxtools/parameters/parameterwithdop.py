@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-from copy import copy
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
@@ -77,13 +76,16 @@ class ParameterWithDOP(Parameter):
             physical_value, encode_state, bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
-        decode_state = copy(decode_state)
-        if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
-            decode_state.cursor_position = self.byte_position
+        orig_cursor_pos = decode_state.cursor_position
+        if (pos := getattr(self, "byte_position", None)) is not None:
+            decode_state.cursor_position = decode_state.origin_position + pos
+
+        bit_position = self.bit_position or 0
 
         # Use DOP to decode
-        bit_position_int = self.bit_position if self.bit_position is not None else 0
         phys_val, cursor_position = self.dop.convert_bytes_to_physical(
-            decode_state, bit_position=bit_position_int)
+            decode_state, bit_position=bit_position)
+
+        decode_state.cursor_position = max(orig_cursor_pos, cursor_position)
 
         return phys_val, cursor_position

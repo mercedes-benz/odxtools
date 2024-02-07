@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+from copy import copy
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
 from xml.etree import ElementTree
@@ -114,12 +115,12 @@ class Multiplexer(ComplexDop):
                               f"{self.short_name} was passed the bit position {bit_position}")
         key_value, key_next_byte = self.switch_key.dop.convert_bytes_to_physical(decode_state)
 
-        byte_code = decode_state.coded_message[decode_state.cursor_position:]
-        case_decode_state = DecodeState(
-            coded_message=byte_code[self.byte_position:],
-            parameter_values={},
-            cursor_position=0,
-        )
+        case_decode_state = copy(decode_state)
+        if self.byte_position is not None:
+            case_decode_state.origin_position = decode_state.origin_position + self.byte_position
+        else:
+            case_decode_state.origin_position = decode_state.cursor_position
+
         case_found = False
         case_next_byte = 0
         case_value = None

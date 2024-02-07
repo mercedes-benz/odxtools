@@ -107,10 +107,6 @@ class TableStructParameter(Parameter):
         bit_position = self.bit_position or 0
         if tr.structure is not None:
             # the selected table row references a structure
-            if not isinstance(tr_value, dict):
-                raise EncodeError(f"The value of `{tr_short_name}` must "
-                                  f"be a key-value dictionary.")
-
             inner_encode_state = EncodeState(
                 coded_message=b'',
                 parameter_values=tr_value,
@@ -153,8 +149,7 @@ class TableStructParameter(Parameter):
             val, i = dop.convert_bytes_to_physical(decode_state)
             return (table_row.short_name, val), i
         elif table_row.structure is not None:
-            structure = table_row.structure
-            val, i = structure.convert_bytes_to_physical(decode_state)
+            val, i = table_row.structure.convert_bytes_to_physical(decode_state)
             return (table_row.short_name, val), i
         else:
             # the table row associated with the key neither defines a

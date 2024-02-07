@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 import warnings
-from copy import copy
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
 
@@ -64,15 +63,15 @@ class CodedConstParameter(Parameter):
             self.coded_value, encode_state=encode_state, bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[AtomicOdxType, int]:
-        decode_state = copy(decode_state)
-        if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
-            # Update byte position
-            decode_state.cursor_position = self.byte_position
-
         # Extract coded values
-        bit_position_int = self.bit_position if self.bit_position is not None else 0
+        orig_cursor_pos = decode_state.cursor_position
+        if self.byte_position is not None:
+            decode_state.cursor_position = decode_state.origin_position + self.byte_position
+
         coded_val, cursor_position = self.diag_coded_type.convert_bytes_to_internal(
-            decode_state, bit_position=bit_position_int)
+            decode_state, bit_position=self.bit_position or 0)
+
+        decode_state.cursor_position = orig_cursor_pos
 
         # Check if the coded value in the message is correct.
         if self.coded_value != coded_val:
