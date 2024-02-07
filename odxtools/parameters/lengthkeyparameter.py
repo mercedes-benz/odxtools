@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Dict, Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import odxrequire
+from ..exceptions import odxraise, odxrequire
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
 from .parameter import ParameterType
@@ -67,4 +67,11 @@ class LengthKeyParameter(ParameterWithDOP):
         return super().encode_into_pdu(encode_state)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
-        return super().decode_from_pdu(decode_state)
+        phys_val, cursor_position = super().decode_from_pdu(decode_state)
+
+        if not isinstance(phys_val, int):
+            odxraise(f"The pysical type of length keys must be an integer, "
+                     f"(is {type(phys_val).__name__})")
+        decode_state.length_keys[self.short_name] = phys_val
+
+        return phys_val, cursor_position

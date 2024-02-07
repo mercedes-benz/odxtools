@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 import warnings
-from copy import copy
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree
@@ -233,18 +232,22 @@ class BasicStructure(ComplexDop):
             raise DecodeError("Structures must be aligned, i.e. bit_position=0, but "
                               f"{self.short_name} was passed the bit position {bit_position}")
 
-        inner_decode_state = copy(decode_state)
-        inner_decode_state.parameter_values = {}
-        inner_decode_state.origin_position = decode_state.cursor_position
+        # move the origin since positions specified by sub-parameters of
+        # structures are relative to the beginning of the structure object.
+        orig_origin = decode_state.origin_position
+        decode_state.origin_position = decode_state.cursor_position
 
+        result = {}
         for param in self.parameters:
-            value, cursor_position = param.decode_from_pdu(inner_decode_state)
+            value, cursor_position = param.decode_from_pdu(decode_state)
 
-            inner_decode_state.parameter_values[param.short_name] = value
-            inner_decode_state.cursor_position = max(inner_decode_state.cursor_position,
-                                                     cursor_position)
+            result[param.short_name] = value
+            decode_state.cursor_position = max(decode_state.cursor_position, cursor_position)
 
-        return inner_decode_state.parameter_values, inner_decode_state.cursor_position
+        # decoding of the structure finished. move back the origin.
+        decode_state.origin_position = orig_origin
+
+        return result, decode_state.cursor_position
 
     def encode(self, coded_request: Optional[bytes] = None, **params: ParameterValue) -> bytes:
         """
@@ -263,7 +266,7 @@ class BasicStructure(ComplexDop):
 
     def decode(self, message: bytes) -> ParameterValueDict:
         # dummy decode state to be passed to convert_bytes_to_physical
-        decode_state = DecodeState(parameter_values={}, coded_message=message)
+        decode_state = DecodeState(coded_message=message)
         param_values, cursor_position = self.convert_bytes_to_physical(decode_state)
         if not isinstance(param_values, dict):
             odxraise(f"Decoding a structure must result in a dictionary of parameter "

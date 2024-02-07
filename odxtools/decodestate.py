@@ -2,8 +2,6 @@
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Dict
 
-from .odxtypes import ParameterValueDict
-
 if TYPE_CHECKING:
     from .tablerow import TableRow
 
@@ -14,9 +12,6 @@ class DecodeState:
 
     #: bytes to be decoded
     coded_message: bytes
-
-    # TODO: remove this!
-    parameter_values: ParameterValueDict
 
     #: Absolute position of the origin
     #:
