@@ -139,7 +139,6 @@ class TableKeyParameter(Parameter):
         if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
             cursor_position = self.byte_position
 
-        # update the decode_state's table key
         if self.table_row is not None:
             # the table row to be used is statically specified -> no
             # need to decode anything!
@@ -158,6 +157,10 @@ class TableKeyParameter(Parameter):
             elif len(table_row_candidates) > 1:
                 raise DecodeError(
                     f"Multiple rows exhibiting key '{str(key_dop_val)}' found in table")
-            phys_val = table_row_candidates[0].short_name
+            table_row = table_row_candidates[0]
+            phys_val = table_row.short_name
+
+            # update the decode_state's table key
+            decode_state.table_keys[self.short_name] = table_row
 
         return phys_val, cursor_position

@@ -888,7 +888,7 @@ class TestDecoding(unittest.TestCase):
         diag_layer._resolve_odxlinks(odxlinks)
         diag_layer._finalize_init(odxlinks)
 
-        coded_message = bytes([0x12, 0x34, 0x34])
+        coded_message = bytes([0x12, 0x34, 0x54])
         expected_message = Message(
             coded_message=coded_message,
             service=service,
@@ -903,7 +903,7 @@ class TestDecoding(unittest.TestCase):
                     },
                     {
                         "struct_param_1": 4,
-                        "struct_param_2": 3
+                        "struct_param_2": 5
                     },
                 ],
             },

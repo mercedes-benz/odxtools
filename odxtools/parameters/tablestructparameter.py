@@ -107,10 +107,6 @@ class TableStructParameter(Parameter):
         bit_position = self.bit_position or 0
         if tr.structure is not None:
             # the selected table row references a structure
-            if not isinstance(tr_value, dict):
-                raise EncodeError(f"The value of `{tr_short_name}` must "
-                                  f"be a key-value dictionary.")
-
             inner_encode_state = EncodeState(
                 coded_message=b'',
                 parameter_values=tr_value,
@@ -139,13 +135,13 @@ class TableStructParameter(Parameter):
         # find the selected table row
         key_name = self.table_key.short_name
 
-        table = self.table_key.table
-        tr_short_name = decode_state.parameter_values[key_name]
-        candidate_trs = [tr for tr in table.table_rows if tr.short_name == tr_short_name]
-        if len(candidate_trs) != 1:
-            raise EncodeError(f"Could not uniquely resolve a table row named "
-                              f"'{str(tr_short_name)}' in table '{str(table.short_name)}' ")
-        table_row = candidate_trs[0]
+        decode_state.table_keys[key_name]
+        table_row = decode_state.table_keys.get(key_name)
+        if table_row is None:
+            raise odxraise(f"No table key '{key_name}' found when decoding "
+                           f"table struct parameter '{str(self.short_name)}'")
+            dummy_val = cast(str, None), cast(int, None)
+            return dummy_val, decode_state.cursor_position
 
         # Use DOP or structure to decode the value
         if table_row.dop is not None:
@@ -153,10 +149,9 @@ class TableStructParameter(Parameter):
             val, i = dop.convert_bytes_to_physical(decode_state)
             return (table_row.short_name, val), i
         elif table_row.structure is not None:
-            structure = table_row.structure
-            val, i = structure.convert_bytes_to_physical(decode_state)
+            val, i = table_row.structure.convert_bytes_to_physical(decode_state)
             return (table_row.short_name, val), i
         else:
             # the table row associated with the key neither defines a
-            # DOP not a structure -> ignore it
+            # DOP nor a structure -> ignore it
             return (table_row.short_name, cast(int, None)), decode_state.cursor_position

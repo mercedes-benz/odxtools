@@ -40,7 +40,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x2, 0x34, 0x56]), {}, 0)
+        state = DecodeState(bytes([0x2, 0x34, 0x56]), cursor_position=0)
         internal, cursor_position = dct.convert_bytes_to_internal(state, 0)
         self.assertEqual(internal, bytes([0x34, 0x56]))
 
@@ -50,7 +50,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x1, 0xC2, 0x3, 0x4]), {}, 1)
+        state = DecodeState(bytes([0x1, 0xC2, 0x3, 0x4]), cursor_position=1)
         # 0xC2 = 11000010, with bit_position=1 and bit_lenth=5, the extracted bits are 00001,
         # i.e. the leading length is 1, i.e. only the byte 0x3 should be extracted.
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=1)
@@ -63,7 +63,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x0, 0x1]), {}, 0)
+        state = DecodeState(bytes([0x0, 0x1]), cursor_position=0)
         internal, cursor_position = dct.convert_bytes_to_internal(state, 0)
         self.assertEqual(internal, b'')
         self.assertEqual(cursor_position, 1)
@@ -110,7 +110,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x12, 0x4, 0x00, 0x61, 0x00, 0x39]), {}, 1)
+        state = DecodeState(bytes([0x12, 0x4, 0x00, 0x61, 0x00, 0x39]), cursor_position=1)
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
         self.assertEqual(internal, "a9")
         self.assertEqual(cursor_position, 6)
@@ -121,7 +121,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=False,
         )
-        state = DecodeState(bytes([0x12, 0x4, 0x61, 0x00, 0x39, 0x00]), {}, 1)
+        state = DecodeState(bytes([0x12, 0x4, 0x61, 0x00, 0x39, 0x00]), cursor_position=1)
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
         self.assertEqual(internal, "a9")
         self.assertEqual(cursor_position, 6)
@@ -312,7 +312,7 @@ class TestStandardLengthType(unittest.TestCase):
             is_condensed_raw=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x1, 0x72, 0x3]), {}, 1)
+        state = DecodeState(bytes([0x1, 0x72, 0x3]), cursor_position=1)
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=1)
         self.assertEqual(internal, 25)
         self.assertEqual(cursor_position, 2)
@@ -326,7 +326,7 @@ class TestStandardLengthType(unittest.TestCase):
             is_highlow_byte_order_raw=False,
             is_condensed_raw=None,
         )
-        state = DecodeState(bytes([0x1, 0x2, 0x3]), {}, 1)
+        state = DecodeState(bytes([0x1, 0x2, 0x3]), cursor_position=1)
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
         self.assertEqual(internal, 0x0302)
         self.assertEqual(cursor_position, 3)
@@ -340,7 +340,7 @@ class TestStandardLengthType(unittest.TestCase):
             is_condensed_raw=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78]), {}, 1)
+        state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78]), cursor_position=1)
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
         self.assertEqual(internal, bytes([0x34, 0x56]))
         self.assertEqual(cursor_position, 3)
@@ -374,7 +374,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         dct._resolve_odxlinks(odxlinks)
         state = DecodeState(
             coded_message=bytes([0x10, 0x12, 0x34, 0x56]),
-            parameter_values={length_key.short_name: 16},
+            length_keys={length_key.short_name: 16},
             cursor_position=1,
         )
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
@@ -613,7 +613,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             termination="HEX-FF",
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x12, 0xFF, 0x34, 0x56, 0xFF]), {}, 1)
+        state = DecodeState(bytes([0x12, 0xFF, 0x34, 0x56, 0xFF]), cursor_position=1)
         internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
         self.assertEqual(internal, bytes([0xFF, 0x34, 0x56]))
         self.assertEqual(cursor_position, 5)
@@ -628,7 +628,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             termination="HEX-FF",
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x12, 0xFF]), {}, 1)
+        state = DecodeState(bytes([0x12, 0xFF]), cursor_position=1)
         self.assertRaises(DecodeError, dct.convert_bytes_to_internal, state)
 
     def test_decode_min_max_length_type_end_of_pdu(self) -> None:
@@ -642,7 +642,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 termination=termination,
                 is_highlow_byte_order_raw=None,
             )
-            state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78, 0x9A]), {}, 1)
+            state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78, 0x9A]), cursor_position=1)
             internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
             self.assertEqual(internal, bytes([0x34, 0x56, 0x78, 0x9A]))
             self.assertEqual(cursor_position, 5)
@@ -658,7 +658,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 termination=termination,
                 is_highlow_byte_order_raw=None,
             )
-            state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78, 0x9A]), {}, 1)
+            state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78, 0x9A]), cursor_position=1)
             internal, cursor_position = dct.convert_bytes_to_internal(state, bit_position=0)
             self.assertEqual(internal, bytes([0x34, 0x56, 0x78]))
             self.assertEqual(cursor_position, 4)

@@ -78,17 +78,17 @@ class ParamLengthInfoType(DiagCodedType):
                                   decode_state: DecodeState,
                                   bit_position: int = 0) -> Tuple[AtomicOdxType, int]:
         # Find length key with matching ID.
-        bit_length = None
-        for parameter_name, value in decode_state.parameter_values.items():
-            if parameter_name == self.length_key.short_name:
-                # The bit length of the parameter to be extracted is given by the length key.
-                bit_length = value
-                if not isinstance(bit_length, int):
-                    odxraise(f"The bit length must be an integer, is {type(bit_length)}")
-                break
+        bit_length = 0
 
-        if not isinstance(bit_length, int):
-            odxraise(f"Did not find any length key with short name {self.length_key.short_name}")
+        # The bit length of the parameter to be extracted is given by the length key.
+        if self.length_key.short_name not in decode_state.length_keys:
+            odxraise(f"Unspecified mandatory length key parameter "
+                     f"{self.length_key.short_name}")
+        else:
+            bit_length = decode_state.length_keys[self.length_key.short_name]
+            if not isinstance(bit_length, int):
+                odxraise(f"The bit length must be an integer, is {type(bit_length)}")
+                bit_length = 0
 
         # Extract the internal value and return.
         return self._extract_internal_value(

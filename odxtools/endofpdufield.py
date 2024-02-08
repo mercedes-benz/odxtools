@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-from copy import copy
 from dataclasses import dataclass
 from typing import List, Optional, Tuple
 from xml.etree import ElementTree
@@ -62,18 +61,16 @@ class EndOfPduField(Field):
     def convert_bytes_to_physical(self,
                                   decode_state: DecodeState,
                                   bit_position: int = 0) -> Tuple[ParameterValue, int]:
-        decode_state = copy(decode_state)
         cursor_position = decode_state.cursor_position
-        byte_code = decode_state.coded_message
 
         value = []
-        while len(byte_code) > cursor_position:
+        while cursor_position < len(decode_state.coded_message):
             # ATTENTION: the ODX specification is very misleading
             # here: it says that the item is repeated until the end of
             # the PDU, but it means that DOP of the items that are
             # repeated are identical, not their values
             new_value, cursor_position = self.structure.convert_bytes_to_physical(
-                decode_state, bit_position=bit_position)
+                decode_state, bit_position=0)
             # Update next byte_position
             decode_state.cursor_position = cursor_position
             value.append(new_value)
