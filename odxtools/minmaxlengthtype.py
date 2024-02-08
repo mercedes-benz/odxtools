@@ -146,7 +146,7 @@ class MinMaxLengthType(DiagCodedType):
             value, byte_pos = self._extract_internal_value(
                 decode_state.coded_message,
                 byte_position=cursor_pos,
-                bit_position=bit_position,
+                bit_position=0,
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
                 is_highlow_byte_order=self.is_highlow_byte_order,
@@ -157,6 +157,8 @@ class MinMaxLengthType(DiagCodedType):
 
             # next byte starts after the actual data and the termination sequence
             decode_state.cursor_position = byte_pos
+            decode_state.cursor_bit_position = None
+
             return value
         else:
             # If termination == "END-OF-PDU", the parameter ends after max_length
@@ -166,11 +168,13 @@ class MinMaxLengthType(DiagCodedType):
             value, byte_pos = self._extract_internal_value(
                 decode_state.coded_message,
                 byte_position=cursor_pos,
-                bit_position=bit_position,
+                bit_position=0,
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
                 is_highlow_byte_order=self.is_highlow_byte_order,
             )
 
             decode_state.cursor_position = byte_pos
+            decode_state.cursor_bit_position = None
+
             return value

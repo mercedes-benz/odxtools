@@ -65,18 +65,19 @@ class LeadingLengthInfoType(DiagCodedType):
 
         return length_bytes + value_bytes
 
-    def decode_from_pdu(self, decode_state: DecodeState, bit_position: int = 0) -> AtomicOdxType:
+    def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         coded_message = decode_state.coded_message
 
         # Extract length of the parameter value
         byte_length, byte_position = self._extract_internal_value(
             coded_message=coded_message,
             byte_position=decode_state.cursor_position,
-            bit_position=bit_position,
+            bit_position=decode_state.cursor_bit_position or 0,
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,  # length is an integer
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
+        decode_state.cursor_bit_position = None
 
         if not isinstance(byte_length, int):
             odxraise()

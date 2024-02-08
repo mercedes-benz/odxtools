@@ -68,8 +68,8 @@ class CodedConstParameter(Parameter):
         if self.byte_position is not None:
             decode_state.cursor_position = decode_state.origin_position + self.byte_position
 
-        bit_pos = self.bit_position or 0
-        coded_val = self.diag_coded_type.decode_from_pdu(decode_state, bit_position=bit_pos)
+        decode_state.cursor_bit_position = self.bit_position
+        coded_val = self.diag_coded_type.decode_from_pdu(decode_state)
 
         # Check if the coded value in the message is correct.
         if self.coded_value != coded_val:

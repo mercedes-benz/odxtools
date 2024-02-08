@@ -143,7 +143,8 @@ class DataObjectProperty(DopBase):
         """
         odxassert(0 <= bit_position and bit_position < 8)
 
-        internal = self.diag_coded_type.decode_from_pdu(decode_state, bit_position=bit_position)
+        decode_state.cursor_bit_position = bit_position
+        internal = self.diag_coded_type.decode_from_pdu(decode_state)
 
         if self.compu_method.is_valid_internal_value(internal):
             return self.compu_method.convert_internal_to_physical(

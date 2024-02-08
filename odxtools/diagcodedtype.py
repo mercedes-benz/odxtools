@@ -254,7 +254,7 @@ class DiagCodedType(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def decode_from_pdu(self, decode_state: DecodeState, bit_position: int = 0) -> AtomicOdxType:
+    def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         """Decode the parameter value from the coded message.
 
         Parameters

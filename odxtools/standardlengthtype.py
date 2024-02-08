@@ -60,7 +60,7 @@ class StandardLengthType(DiagCodedType):
         internal_value, cursor_position = self._extract_internal_value(
             decode_state.coded_message,
             decode_state.cursor_position,
-            bit_position,
+            decode_state.cursor_bit_position or 0,
             self.bit_length,
             self.base_data_type,
             self.is_highlow_byte_order,
@@ -68,5 +68,6 @@ class StandardLengthType(DiagCodedType):
         internal_value = self.__apply_mask(internal_value)
 
         decode_state.cursor_position = cursor_position
+        decode_state.cursor_bit_position = None
 
         return internal_value

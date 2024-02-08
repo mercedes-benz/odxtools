@@ -91,8 +91,8 @@ class DtcDop(DopBase):
                                   decode_state: DecodeState,
                                   bit_position: int = 0) -> Tuple[ParameterValue, int]:
 
-        int_trouble_code = self.diag_coded_type.decode_from_pdu(
-            decode_state, bit_position=bit_position)
+        decode_state.cursor_bit_position = bit_position
+        int_trouble_code = self.diag_coded_type.decode_from_pdu(decode_state)
 
         if self.compu_method.is_valid_internal_value(int_trouble_code):
             trouble_code = self.compu_method.convert_internal_to_physical(int_trouble_code)

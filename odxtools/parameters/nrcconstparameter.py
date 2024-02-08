@@ -85,9 +85,8 @@ class NrcConstParameter(Parameter):
             decode_state.cursor_position = self.byte_position
 
         # Extract coded values
-        bit_position_int = self.bit_position if self.bit_position is not None else 0
-        coded_value = self.diag_coded_type.decode_from_pdu(
-            decode_state, bit_position=bit_position_int)
+        decode_state.cursor_bit_position = self.bit_position
+        coded_value = self.diag_coded_type.decode_from_pdu(decode_state)
 
         # Check if the coded value in the message is correct.
         if coded_value not in self.coded_values:
