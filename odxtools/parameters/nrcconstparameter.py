@@ -86,7 +86,7 @@ class NrcConstParameter(Parameter):
 
         # Extract coded values
         bit_position_int = self.bit_position if self.bit_position is not None else 0
-        coded_value, cursor_position = self.diag_coded_type.convert_bytes_to_internal(
+        coded_value = self.diag_coded_type.decode_from_pdu(
             decode_state, bit_position=bit_position_int)
 
         # Check if the coded value in the message is correct.
@@ -101,7 +101,7 @@ class NrcConstParameter(Parameter):
                 stacklevel=1,
             )
 
-        return coded_value, cursor_position
+        return coded_value, decode_state.cursor_position
 
     def get_description_of_valid_values(self) -> str:
         """return a human-understandable description of valid physical values"""

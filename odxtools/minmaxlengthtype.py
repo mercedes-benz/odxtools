@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
@@ -100,9 +100,7 @@ class MinMaxLengthType(DiagCodedType):
 
         return value_bytes
 
-    def convert_bytes_to_internal(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[AtomicOdxType, int]:
+    def decode_from_pdu(self, decode_state: DecodeState, bit_position: int = 0) -> AtomicOdxType:
         if decode_state.cursor_position + self.min_length > len(decode_state.coded_message):
             raise DecodeError("The PDU ended before minimum length was reached.")
 
@@ -158,7 +156,8 @@ class MinMaxLengthType(DiagCodedType):
                 byte_pos += len(termination_seq)
 
             # next byte starts after the actual data and the termination sequence
-            return value, byte_pos
+            decode_state.cursor_position = byte_pos
+            return value
         else:
             # If termination == "END-OF-PDU", the parameter ends after max_length
             # or at the end of the PDU.
@@ -172,4 +171,6 @@ class MinMaxLengthType(DiagCodedType):
                 base_data_type=self.base_data_type,
                 is_highlow_byte_order=self.is_highlow_byte_order,
             )
-            return value, byte_pos
+
+            decode_state.cursor_position = byte_pos
+            return value

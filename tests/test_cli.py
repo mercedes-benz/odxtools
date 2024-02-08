@@ -9,12 +9,12 @@ import odxtools.cli.decode as decode
 import odxtools.cli.find as find
 import odxtools.cli.list as list_tool
 
-import_failed = False
+browse_import_failed = False
 
 try:
     import odxtools.cli.browse as browse
 except ImportError:
-    import_failed = True
+    browse_import_failed = True
 
 
 class UtilFunctions:
@@ -130,10 +130,12 @@ class TestCommandLineTools(unittest.TestCase):
         ])
         UtilFunctions.run_compare_tool(ecu_variants=["somersault_lazy", "somersault_assiduous"])
 
-    @unittest.skipIf(import_failed, "import of PyInquirer failed")
+    @unittest.skipIf(browse_import_failed, "importing the browse tool failed")
     def test_browse_tool(self) -> None:
         browse_args = Namespace(pdx_file="./examples/somersault.pdx")
-        browse.run(browse_args)
+        with self.assertRaises(SystemError):
+            # browse can only be run interactively
+            browse.run(browse_args)
 
 
 if __name__ == "__main__":

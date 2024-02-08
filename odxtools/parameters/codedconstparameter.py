@@ -68,10 +68,8 @@ class CodedConstParameter(Parameter):
         if self.byte_position is not None:
             decode_state.cursor_position = decode_state.origin_position + self.byte_position
 
-        coded_val, cursor_position = self.diag_coded_type.convert_bytes_to_internal(
-            decode_state, bit_position=self.bit_position or 0)
-
-        decode_state.cursor_position = orig_cursor_pos
+        bit_pos = self.bit_position or 0
+        coded_val = self.diag_coded_type.decode_from_pdu(decode_state, bit_position=bit_pos)
 
         # Check if the coded value in the message is correct.
         if self.coded_value != coded_val:
@@ -85,7 +83,9 @@ class CodedConstParameter(Parameter):
                 stacklevel=1,
             )
 
-        return coded_val, cursor_position
+        decode_state.cursor_position = max(orig_cursor_pos, decode_state.cursor_position)
+
+        return coded_val, decode_state.cursor_position
 
     @property
     def _coded_value_str(self) -> str:

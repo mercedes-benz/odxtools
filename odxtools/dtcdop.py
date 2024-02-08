@@ -91,7 +91,7 @@ class DtcDop(DopBase):
                                   decode_state: DecodeState,
                                   bit_position: int = 0) -> Tuple[ParameterValue, int]:
 
-        int_trouble_code, cursor_position = self.diag_coded_type.convert_bytes_to_internal(
+        int_trouble_code = self.diag_coded_type.decode_from_pdu(
             decode_state, bit_position=bit_position)
 
         if self.compu_method.is_valid_internal_value(int_trouble_code):
@@ -110,7 +110,7 @@ class DtcDop(DopBase):
 
         if len(dtcs) == 1:
             # we found exactly one described DTC
-            return dtcs[0], cursor_position
+            return dtcs[0], decode_state.cursor_position
 
         # the DTC was not specified. This probably means that the
         # diagnostic description file is incomplete. We do not bail
@@ -129,7 +129,7 @@ class DtcDop(DopBase):
             sdgs=[],
         )
 
-        return dtc, cursor_position
+        return dtc, decode_state.cursor_position
 
     def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
                                   bit_position: int) -> bytes:

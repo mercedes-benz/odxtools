@@ -143,11 +143,11 @@ class DataObjectProperty(DopBase):
         """
         odxassert(0 <= bit_position and bit_position < 8)
 
-        internal, cursor_position = self.diag_coded_type.convert_bytes_to_internal(
-            decode_state, bit_position=bit_position)
+        internal = self.diag_coded_type.decode_from_pdu(decode_state, bit_position=bit_position)
 
         if self.compu_method.is_valid_internal_value(internal):
-            return self.compu_method.convert_internal_to_physical(internal), cursor_position
+            return self.compu_method.convert_internal_to_physical(
+                internal), decode_state.cursor_position
         else:
             # TODO: How to prevent this?
             raise DecodeError(

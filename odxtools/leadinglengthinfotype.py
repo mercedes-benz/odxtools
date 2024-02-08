@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
@@ -65,9 +65,7 @@ class LeadingLengthInfoType(DiagCodedType):
 
         return length_bytes + value_bytes
 
-    def convert_bytes_to_internal(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[AtomicOdxType, int]:
+    def decode_from_pdu(self, decode_state: DecodeState, bit_position: int = 0) -> AtomicOdxType:
         coded_message = decode_state.coded_message
 
         # Extract length of the parameter value
@@ -95,4 +93,5 @@ class LeadingLengthInfoType(DiagCodedType):
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-        return value, cursor_position
+        decode_state.cursor_position = cursor_position
+        return value

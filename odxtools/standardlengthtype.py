@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
@@ -56,9 +56,7 @@ class StandardLengthType(DiagCodedType):
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-    def convert_bytes_to_internal(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[AtomicOdxType, int]:
+    def decode_from_pdu(self, decode_state: DecodeState, bit_position: int = 0) -> AtomicOdxType:
         internal_value, cursor_position = self._extract_internal_value(
             decode_state.coded_message,
             decode_state.cursor_position,
@@ -68,4 +66,7 @@ class StandardLengthType(DiagCodedType):
             self.is_highlow_byte_order,
         )
         internal_value = self.__apply_mask(internal_value)
-        return internal_value, cursor_position
+
+        decode_state.cursor_position = cursor_position
+
+        return internal_value
