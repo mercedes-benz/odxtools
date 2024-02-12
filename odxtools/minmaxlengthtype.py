@@ -101,11 +101,11 @@ class MinMaxLengthType(DiagCodedType):
         return value_bytes
 
     def decode_from_pdu(self, decode_state: DecodeState, bit_position: int = 0) -> AtomicOdxType:
-        if decode_state.cursor_position + self.min_length > len(decode_state.coded_message):
+        if decode_state.cursor_byte_position + self.min_length > len(decode_state.coded_message):
             raise DecodeError("The PDU ended before minimum length was reached.")
 
         coded_message = decode_state.coded_message
-        cursor_pos = decode_state.cursor_position
+        cursor_pos = decode_state.cursor_byte_position
         termination_seq = self.__termination_sequence()
 
         max_terminator_pos = len(coded_message)
@@ -156,7 +156,7 @@ class MinMaxLengthType(DiagCodedType):
                 byte_pos += len(termination_seq)
 
             # next byte starts after the actual data and the termination sequence
-            decode_state.cursor_position = byte_pos
+            decode_state.cursor_byte_position = byte_pos
             decode_state.cursor_bit_position = None
 
             return value
@@ -174,7 +174,7 @@ class MinMaxLengthType(DiagCodedType):
                 is_highlow_byte_order=self.is_highlow_byte_order,
             )
 
-            decode_state.cursor_position = byte_pos
+            decode_state.cursor_byte_position = byte_pos
             decode_state.cursor_bit_position = None
 
             return value

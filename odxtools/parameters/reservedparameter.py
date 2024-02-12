@@ -33,13 +33,14 @@ class ReservedParameter(Parameter):
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         byte_position = (
-            self.byte_position if self.byte_position is not None else decode_state.cursor_position)
+            self.byte_position
+            if self.byte_position is not None else decode_state.cursor_byte_position)
         abs_bit_position = byte_position * 8 + (self.bit_position or 0)
         bit_length = self.bit_length
 
         # the cursor points to the first byte which has not been fully
         # consumed
-        cursor_position = (abs_bit_position + bit_length) // 8
+        cursor_byte_position = (abs_bit_position + bit_length) // 8
 
         # ignore the value of the parameter data
-        return cast(int, None), cursor_position
+        return cast(int, None), cursor_byte_position

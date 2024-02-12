@@ -110,7 +110,7 @@ class DtcDop(DopBase):
 
         if len(dtcs) == 1:
             # we found exactly one described DTC
-            return dtcs[0], decode_state.cursor_position
+            return dtcs[0], decode_state.cursor_byte_position
 
         # the DTC was not specified. This probably means that the
         # diagnostic description file is incomplete. We do not bail
@@ -129,7 +129,7 @@ class DtcDop(DopBase):
             sdgs=[],
         )
 
-        return dtc, decode_state.cursor_position
+        return dtc, decode_state.cursor_byte_position
 
     def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
                                   bit_position: int) -> bytes:

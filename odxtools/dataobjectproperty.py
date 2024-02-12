@@ -148,7 +148,7 @@ class DataObjectProperty(DopBase):
 
         if self.compu_method.is_valid_internal_value(internal):
             return self.compu_method.convert_internal_to_physical(
-                internal), decode_state.cursor_position
+                internal), decode_state.cursor_byte_position
         else:
             # TODO: How to prevent this?
             raise DecodeError(

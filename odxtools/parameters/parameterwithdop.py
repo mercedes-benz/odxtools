@@ -76,16 +76,16 @@ class ParameterWithDOP(Parameter):
             physical_value, encode_state, bit_position=bit_position_int)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
-        orig_cursor_pos = decode_state.cursor_position
+        orig_cursor_pos = decode_state.cursor_byte_position
         if (pos := getattr(self, "byte_position", None)) is not None:
-            decode_state.cursor_position = decode_state.origin_position + pos
+            decode_state.cursor_byte_position = decode_state.origin_byte_position + pos
 
         bit_position = self.bit_position or 0
 
         # Use DOP to decode
-        phys_val, cursor_position = self.dop.convert_bytes_to_physical(
+        phys_val, cursor_byte_position = self.dop.convert_bytes_to_physical(
             decode_state, bit_position=bit_position)
 
-        decode_state.cursor_position = max(orig_cursor_pos, cursor_position)
+        decode_state.cursor_byte_position = max(orig_cursor_pos, cursor_byte_position)
 
-        return phys_val, cursor_position
+        return phys_val, cursor_byte_position

@@ -57,9 +57,9 @@ class StandardLengthType(DiagCodedType):
         )
 
     def decode_from_pdu(self, decode_state: DecodeState, bit_position: int = 0) -> AtomicOdxType:
-        internal_value, cursor_position = self._extract_internal_value(
+        internal_value, cursor_byte_position = self._extract_internal_value(
             decode_state.coded_message,
-            decode_state.cursor_position,
+            decode_state.cursor_byte_position,
             decode_state.cursor_bit_position or 0,
             self.bit_length,
             self.base_data_type,
@@ -67,7 +67,7 @@ class StandardLengthType(DiagCodedType):
         )
         internal_value = self.__apply_mask(internal_value)
 
-        decode_state.cursor_position = cursor_position
+        decode_state.cursor_byte_position = cursor_byte_position
         decode_state.cursor_bit_position = None
 
         return internal_value

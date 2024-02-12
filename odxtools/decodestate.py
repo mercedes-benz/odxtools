@@ -17,12 +17,12 @@ class DecodeState:
     #:
     #: i.e., the absolute byte position to which all relative positions
     #: refer to, e.g. the position of the first byte of a structure.
-    origin_position: int = 0
+    origin_byte_position: int = 0
 
     #: Absolute position of the next undecoded byte to be considered
     #:
     #: (if not explicitly specified by the object to be decoded.)
-    cursor_position: int = 0
+    cursor_byte_position: int = 0
 
     #: the bit position [0, 7] where the object to be extracted begins
     #:

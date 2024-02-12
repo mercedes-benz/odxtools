@@ -91,9 +91,9 @@ class ParamLengthInfoType(DiagCodedType):
             bit_length = 0
 
         # Extract the internal value and return.
-        value, cursor_position = self._extract_internal_value(
+        value, cursor_byte_position = self._extract_internal_value(
             decode_state.coded_message,
-            decode_state.cursor_position,
+            decode_state.cursor_byte_position,
             decode_state.cursor_bit_position or 0,
             bit_length,
             self.base_data_type,
@@ -101,6 +101,6 @@ class ParamLengthInfoType(DiagCodedType):
         )
 
         decode_state.cursor_bit_position = None
-        decode_state.cursor_position = cursor_position
+        decode_state.cursor_byte_position = cursor_byte_position
 
         return value

@@ -64,9 +64,9 @@ class CodedConstParameter(Parameter):
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[AtomicOdxType, int]:
         # Extract coded values
-        orig_cursor_pos = decode_state.cursor_position
+        orig_cursor_pos = decode_state.cursor_byte_position
         if self.byte_position is not None:
-            decode_state.cursor_position = decode_state.origin_position + self.byte_position
+            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
 
         decode_state.cursor_bit_position = self.bit_position
         coded_val = self.diag_coded_type.decode_from_pdu(decode_state)
@@ -77,15 +77,15 @@ class CodedConstParameter(Parameter):
                 f"Coded constant parameter does not match! "
                 f"The parameter {self.short_name} expected coded "
                 f"value {str(self._coded_value_str)} but got {str(coded_val)} "
-                f"at byte position {decode_state.cursor_position} "
+                f"at byte position {decode_state.cursor_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
                 DecodeError,
                 stacklevel=1,
             )
 
-        decode_state.cursor_position = max(orig_cursor_pos, decode_state.cursor_position)
+        decode_state.cursor_byte_position = max(orig_cursor_pos, decode_state.cursor_byte_position)
 
-        return coded_val, decode_state.cursor_position
+        return coded_val, decode_state.cursor_byte_position
 
     @property
     def _coded_value_str(self) -> str:

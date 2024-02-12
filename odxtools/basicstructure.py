@@ -234,20 +234,21 @@ class BasicStructure(ComplexDop):
 
         # move the origin since positions specified by sub-parameters of
         # structures are relative to the beginning of the structure object.
-        orig_origin = decode_state.origin_position
-        decode_state.origin_position = decode_state.cursor_position
+        orig_origin = decode_state.origin_byte_position
+        decode_state.origin_byte_position = decode_state.cursor_byte_position
 
         result = {}
         for param in self.parameters:
-            value, cursor_position = param.decode_from_pdu(decode_state)
+            value, cursor_byte_position = param.decode_from_pdu(decode_state)
 
             result[param.short_name] = value
-            decode_state.cursor_position = max(decode_state.cursor_position, cursor_position)
+            decode_state.cursor_byte_position = max(decode_state.cursor_byte_position,
+                                                    cursor_byte_position)
 
         # decoding of the structure finished. move back the origin.
-        decode_state.origin_position = orig_origin
+        decode_state.origin_byte_position = orig_origin
 
-        return result, decode_state.cursor_position
+        return result, decode_state.cursor_byte_position
 
     def encode(self, coded_request: Optional[bytes] = None, **params: ParameterValue) -> bytes:
         """
@@ -267,14 +268,14 @@ class BasicStructure(ComplexDop):
     def decode(self, message: bytes) -> ParameterValueDict:
         # dummy decode state to be passed to convert_bytes_to_physical
         decode_state = DecodeState(coded_message=message)
-        param_values, cursor_position = self.convert_bytes_to_physical(decode_state)
+        param_values, cursor_byte_position = self.convert_bytes_to_physical(decode_state)
         if not isinstance(param_values, dict):
             odxraise(f"Decoding a structure must result in a dictionary of parameter "
                      f"values (is {type(param_values)})")
-        if len(message) != cursor_position:
+        if len(message) != cursor_byte_position:
             warnings.warn(
                 f"The message {message.hex()} is longer than could be parsed."
-                f" Expected {cursor_position} but got {len(message)}.",
+                f" Expected {cursor_byte_position} but got {len(message)}.",
                 DecodeError,
                 stacklevel=1,
             )

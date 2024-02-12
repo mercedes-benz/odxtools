@@ -61,18 +61,18 @@ class EndOfPduField(Field):
     def convert_bytes_to_physical(self,
                                   decode_state: DecodeState,
                                   bit_position: int = 0) -> Tuple[ParameterValue, int]:
-        cursor_position = decode_state.cursor_position
+        cursor_byte_position = decode_state.cursor_byte_position
 
         value = []
-        while cursor_position < len(decode_state.coded_message):
+        while cursor_byte_position < len(decode_state.coded_message):
             # ATTENTION: the ODX specification is very misleading
             # here: it says that the item is repeated until the end of
             # the PDU, but it means that DOP of the items that are
             # repeated are identical, not their values
-            new_value, cursor_position = self.structure.convert_bytes_to_physical(
+            new_value, cursor_byte_position = self.structure.convert_bytes_to_physical(
                 decode_state, bit_position=0)
             # Update next byte_position
-            decode_state.cursor_position = cursor_position
+            decode_state.cursor_byte_position = cursor_byte_position
             value.append(new_value)
 
-        return value, cursor_position
+        return value, cursor_byte_position
