@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 import argparse
 import sys
+import traceback
+from io import StringIO
 
 
 class DummyTool:
@@ -19,10 +21,17 @@ class DummyTool:
         self._error = error
 
     def add_subparser(self, subparser_list: "argparse._SubParsersAction") -> None:
+        desc = StringIO()
+
+        print(f"Tool '{self._odxtools_tool_name_}' is unavailable: {self._error}", file=desc)
+        print(file=desc)
+        print(f"Traceback:", file=desc)
+        traceback.print_tb(self._error.__traceback__, file=desc)
+
         subparser_list.add_parser(
             self._odxtools_tool_name_,
-            description=f"Tool '{self._odxtools_tool_name_}' is unavailable: {self._error}",
-            help="Dummy tool",
+            description=desc.getvalue(),
+            help="Tool unavailable",
             formatter_class=argparse.RawTextHelpFormatter,
         )
 
