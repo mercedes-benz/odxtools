@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 # from dataclasses import dataclass, field
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
 from xml.etree import ElementTree
 
 from .compumethods.compumethod import CompuMethod
@@ -87,7 +87,7 @@ class DtcDop(DopBase):
     def linked_dtc_dops(self) -> NamedItemList["DtcDop"]:
         return self._linked_dtc_dops
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
 
         int_trouble_code = self.diag_coded_type.decode_from_pdu(decode_state)
 
@@ -107,7 +107,7 @@ class DtcDop(DopBase):
 
         if len(dtcs) == 1:
             # we found exactly one described DTC
-            return dtcs[0], decode_state.cursor_byte_position
+            return dtcs[0]
 
         # the DTC was not specified. This probably means that the
         # diagnostic description file is incomplete. We do not bail
@@ -126,7 +126,7 @@ class DtcDop(DopBase):
             sdgs=[],
         )
 
-        return dtc, decode_state.cursor_byte_position
+        return dtc
 
     def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
                                   bit_position: int) -> bytes:

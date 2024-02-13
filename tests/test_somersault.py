@@ -259,7 +259,7 @@ class TestEnDecode(unittest.TestCase):
         self.assertEqual(
             decoded_resp_data["last_pos_response"][1]  # type: ignore[index, call-overload]
             ["num_flips_done"],  # type: ignore[index, call-overload]
-            bytes([123]))
+            123)
         self.assertEqual(
             decoded_resp_data["last_pos_response"][1]  # type: ignore[index, call-overload]
             ["sault_time"],  # type: ignore[index, call-overload]
@@ -352,11 +352,7 @@ class TestEnDecode(unittest.TestCase):
         m = messages[0]
         self.assertEqual(m.coded_message.hex(), "fa03ff")
         self.assertEqual(m.coding_object, pos_response)
-        self.assertEqual(m.param_dict, {
-            "sid": 0xFA,
-            "num_flips_done": bytearray([0x03]),
-            "sault_time": 255
-        })
+        self.assertEqual(m.param_dict, {"sid": 0xFA, "num_flips_done": 0x03, "sault_time": 255})
 
 
 class TestNavigation(unittest.TestCase):

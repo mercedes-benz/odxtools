@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from ..dataobjectproperty import DataObjectProperty
 from ..decodestate import DecodeState
@@ -75,16 +75,16 @@ class ParameterWithDOP(Parameter):
         return dop.convert_physical_to_bytes(
             physical_value, encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
-        orig_cursor_pos = decode_state.cursor_byte_position
-        if (pos := getattr(self, "byte_position", None)) is not None:
-            decode_state.cursor_byte_position = decode_state.origin_byte_position + pos
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
+        orig_cursor = decode_state.cursor_byte_position
+        if self.byte_position is not None:
+            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
 
         decode_state.cursor_bit_position = self.bit_position or 0
 
         # Use DOP to decode
-        phys_val, cursor_byte_position = self.dop.decode_from_pdu(decode_state)
+        phys_val = self.dop.decode_from_pdu(decode_state)
 
-        decode_state.cursor_byte_position = max(orig_cursor_pos, cursor_byte_position)
+        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
 
-        return phys_val, cursor_byte_position
+        return phys_val

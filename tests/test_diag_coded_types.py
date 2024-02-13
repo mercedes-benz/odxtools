@@ -52,7 +52,8 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         )
         # 0xC2 = 0b11000010, with bit_position=1 and bit_lenth=5, the extracted bits are 00001,
         # i.e. the leading length is 1, i.e. only the byte 0x3 should be extracted.
-        state = DecodeState(bytes([0x1, 0xC2, 0x3, 0x4]), cursor_byte_position=1, cursor_bit_position=1)
+        state = DecodeState(
+            bytes([0x1, 0xC2, 0x3, 0x4]), cursor_byte_position=1, cursor_bit_position=1)
         internal_value = dct.decode_from_pdu(state)
         self.assertEqual(internal_value, bytes([0x3]))
 

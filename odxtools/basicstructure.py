@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from .complexdop import ComplexDop
@@ -225,7 +225,7 @@ class BasicStructure(ComplexDop):
             is_end_of_pdu=encode_state.is_end_of_pdu,
         )
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         # move the origin since positions specified by sub-parameters of
         # structures are relative to the beginning of the structure object.
         orig_origin = decode_state.origin_byte_position
@@ -233,16 +233,14 @@ class BasicStructure(ComplexDop):
 
         result = {}
         for param in self.parameters:
-            value, cursor_byte_position = param.decode_from_pdu(decode_state)
+            value = param.decode_from_pdu(decode_state)
 
             result[param.short_name] = value
-            decode_state.cursor_byte_position = max(decode_state.cursor_byte_position,
-                                                    cursor_byte_position)
 
         # decoding of the structure finished. go back the original origin.
         decode_state.origin_byte_position = orig_origin
 
-        return result, decode_state.cursor_byte_position
+        return result
 
     def encode(self, coded_request: Optional[bytes] = None, **params: ParameterValue) -> bytes:
         """
@@ -261,7 +259,7 @@ class BasicStructure(ComplexDop):
 
     def decode(self, message: bytes) -> ParameterValueDict:
         decode_state = DecodeState(coded_message=message)
-        param_values, _ = self.decode_from_pdu(decode_state)
+        param_values = self.decode_from_pdu(decode_state)
 
         if len(message) != decode_state.cursor_byte_position:
             warnings.warn(

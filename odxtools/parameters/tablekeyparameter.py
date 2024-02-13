@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -135,20 +135,20 @@ class TableKeyParameter(Parameter):
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         return super().encode_into_pdu(encode_state)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
-        if self.byte_position is not None and self.byte_position != decode_state.cursor_byte_position:
-            cursor_byte_position = self.byte_position
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
+        orig_cursor = decode_state.cursor_byte_position
+        if self.byte_position is not None:
+            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
 
         if self.table_row is not None:
             # the table row to be used is statically specified -> no
             # need to decode anything!
             phys_val = self.table_row.short_name
-            cursor_byte_position = decode_state.cursor_byte_position
         else:
             # Use DOP to decode
             key_dop = odxrequire(self.table.key_dop)
             decode_state.cursor_bit_position = self.bit_position or 0
-            key_dop_val, cursor_byte_position = key_dop.decode_from_pdu(decode_state)
+            key_dop_val = key_dop.decode_from_pdu(decode_state)
 
             table_row_candidates = [x for x in self.table.table_rows if x.key == key_dop_val]
             if len(table_row_candidates) == 0:
@@ -162,4 +162,6 @@ class TableKeyParameter(Parameter):
             # update the decode_state's table key
             decode_state.table_keys[self.short_name] = table_row
 
-        return phys_val, cursor_byte_position
+        decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
+
+        return phys_val

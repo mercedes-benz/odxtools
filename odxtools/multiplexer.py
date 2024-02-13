@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree
 
 from .complexdop import ComplexDop
@@ -109,51 +109,45 @@ class Multiplexer(ComplexDop):
 
         raise EncodeError(f"The case {case_name} is not found in Multiplexer {self.short_name}")
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
 
         # multiplexers are structures and thus the origin position
         # must be moved to the start of the multiplexer
         orig_origin = decode_state.origin_byte_position
+        orig_cursor = decode_state.cursor_byte_position
         if self.byte_position is not None:
-            decode_state.origin_byte_position = decode_state.origin_byte_position + self.byte_position
-        else:
-            decode_state.origin_byte_position = decode_state.cursor_byte_position
+            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
+        decode_state.origin_byte_position = decode_state.cursor_byte_position
 
-        key_value, key_next_byte = self.switch_key.dop.decode_from_pdu(decode_state)
+        key_value = self.switch_key.dop.decode_from_pdu(decode_state)
 
         if not isinstance(key_value, int):
             odxraise(f"Multiplexer keys must be integers (is '{type(key_value).__name__}'"
                      f" for multiplexer '{self.short_name}')")
 
-        case_found = False
-        case_next_byte = 0
-        case_value = None
+        case_value: Optional[ParameterValue] = None
         for case in self.cases or []:
             lower, upper = self._get_case_limits(case)
             if lower <= key_value and key_value <= upper:
-                case_found = True
                 if case._structure:
-                    case_value, case_next_byte = case._structure.decode_from_pdu(decode_state)
+                    case_value = case._structure.decode_from_pdu(decode_state)
                 break
 
-        if not case_found and self.default_case is not None:
-            case_found = True
+        if case_value is None and self.default_case is not None:
             if self.default_case._structure:
-                case_value, case_next_byte = self.default_case._structure.decode_from_pdu(
-                    decode_state)
+                case_value = self.default_case._structure.decode_from_pdu(decode_state)
 
-        if not case_found:
-            raise DecodeError(
-                f"Failed to find a matching case in {self.short_name} for value {key_value!r}")
+        if case_value is None:
+            odxraise(f"Failed to find a matching case in {self.short_name} for value {key_value!r}",
+                     DecodeError)
 
-        mux_value = {case.short_name: cast(ParameterValue, case_value)}
-        mux_next_byte = decode_state.cursor_byte_position + max(
-            key_next_byte + self.switch_key.byte_position, case_next_byte + self.byte_position)
+        mux_value = (case.short_name, case_value)
 
         # go back to the original origin
         decode_state.origin_byte_position = orig_origin
+        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
 
-        return mux_value, mux_next_byte
+        return mux_value
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()

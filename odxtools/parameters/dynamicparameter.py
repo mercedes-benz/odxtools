@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Tuple
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -26,5 +25,5 @@ class DynamicParameter(Parameter):
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         raise NotImplementedError("Encoding a DynamicParameter is not implemented yet.")
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         raise NotImplementedError("Decoding a DynamicParameter is not implemented yet.")

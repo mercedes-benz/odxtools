@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Tuple
+from typing import TYPE_CHECKING, Any, Dict
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -66,12 +66,12 @@ class LengthKeyParameter(ParameterWithDOP):
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         return super().encode_into_pdu(encode_state)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
-        phys_val, cursor_byte_position = super().decode_from_pdu(decode_state)
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
+        phys_val = super().decode_from_pdu(decode_state)
 
         if not isinstance(phys_val, int):
             odxraise(f"The pysical type of length keys must be an integer, "
                      f"(is {type(phys_val).__name__})")
         decode_state.length_keys[self.short_name] = phys_val
 
-        return phys_val, cursor_byte_position
+        return phys_val

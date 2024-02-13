@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
-from copy import copy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
@@ -78,11 +77,11 @@ class NrcConstParameter(Parameter):
         return self.diag_coded_type.convert_internal_to_bytes(
             coded_value, encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[AtomicOdxType, int]:
-        decode_state = copy(decode_state)
-        if self.byte_position is not None and self.byte_position != decode_state.cursor_byte_position:
-            # Update byte position
-            decode_state.cursor_byte_position = self.byte_position
+    def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
+        orig_cursor = decode_state.cursor_byte_position
+        if self.byte_position is not None:
+            # Update cursor position
+            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
 
         # Extract coded values
         decode_state.cursor_bit_position = self.bit_position or 0
@@ -100,7 +99,9 @@ class NrcConstParameter(Parameter):
                 stacklevel=1,
             )
 
-        return coded_value, decode_state.cursor_byte_position
+        decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
+
+        return coded_value
 
     def get_description_of_valid_values(self) -> str:
         """return a human-understandable description of valid physical values"""
