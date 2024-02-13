@@ -4,7 +4,7 @@ import logging
 import sys
 from typing import List, Optional, Union
 
-import PyInquirer.prompt as PI_prompt
+from InquirerPy import prompt as PI_prompt
 from tabulate import tabulate  # TODO: switch to rich tables
 
 from ..database import Database
