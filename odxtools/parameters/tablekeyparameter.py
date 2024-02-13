@@ -147,9 +147,8 @@ class TableKeyParameter(Parameter):
         else:
             # Use DOP to decode
             key_dop = odxrequire(self.table.key_dop)
-            bit_position_int = self.bit_position if self.bit_position is not None else 0
-            key_dop_val, cursor_byte_position = key_dop.convert_bytes_to_physical(
-                decode_state, bit_position=bit_position_int)
+            decode_state.cursor_bit_position = self.bit_position or 0
+            key_dop_val, cursor_byte_position = key_dop.decode_from_pdu(decode_state)
 
             table_row_candidates = [x for x in self.table.table_rows if x.key == key_dop_val]
             if len(table_row_candidates) == 0:

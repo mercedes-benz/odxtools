@@ -146,10 +146,10 @@ class TableStructParameter(Parameter):
         # Use DOP or structure to decode the value
         if table_row.dop is not None:
             dop = table_row.dop
-            val, i = dop.convert_bytes_to_physical(decode_state)
+            val, i = dop.decode_from_pdu(decode_state)
             return (table_row.short_name, val), i
         elif table_row.structure is not None:
-            val, i = table_row.structure.convert_bytes_to_physical(decode_state)
+            val, i = table_row.structure.decode_from_pdu(decode_state)
             return (table_row.short_name, val), i
         else:
             # the table row associated with the key neither defines a

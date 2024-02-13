@@ -58,9 +58,7 @@ class EndOfPduField(Field):
             coded_message += self.structure.convert_physical_to_bytes(value, encode_state)
         return coded_message
 
-    def convert_bytes_to_physical(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         cursor_byte_position = decode_state.cursor_byte_position
 
         value = []
@@ -69,8 +67,7 @@ class EndOfPduField(Field):
             # here: it says that the item is repeated until the end of
             # the PDU, but it means that DOP of the items that are
             # repeated are identical, not their values
-            new_value, cursor_byte_position = self.structure.convert_bytes_to_physical(
-                decode_state, bit_position=0)
+            new_value, cursor_byte_position = self.structure.decode_from_pdu(decode_state)
             # Update next byte_position
             decode_state.cursor_byte_position = cursor_byte_position
             value.append(new_value)

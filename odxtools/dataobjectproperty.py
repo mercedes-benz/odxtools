@@ -133,17 +133,12 @@ class DataObjectProperty(DopBase):
         return self.diag_coded_type.convert_internal_to_bytes(
             internal_val, encode_state, bit_position=bit_position)
 
-    def convert_bytes_to_physical(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[Any, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[Any, int]:
         """
         Convert the internal representation of a value into its physical value.
 
         Returns a (physical_value, start_position_of_next_parameter) tuple.
         """
-        odxassert(0 <= bit_position and bit_position < 8)
-
-        decode_state.cursor_bit_position = bit_position
         internal = self.diag_coded_type.decode_from_pdu(decode_state)
 
         if self.compu_method.is_valid_internal_value(internal):

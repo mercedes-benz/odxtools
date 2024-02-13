@@ -50,10 +50,9 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(
-            bytes([0x1, 0xC2, 0x3, 0x4]), cursor_byte_position=1, cursor_bit_position=1)
-        # 0xC2 = 11000010, with bit_position=1 and bit_lenth=5, the extracted bits are 00001,
+        # 0xC2 = 0b11000010, with bit_position=1 and bit_lenth=5, the extracted bits are 00001,
         # i.e. the leading length is 1, i.e. only the byte 0x3 should be extracted.
+        state = DecodeState(bytes([0x1, 0xC2, 0x3, 0x4]), cursor_byte_position=1, cursor_bit_position=1)
         internal_value = dct.decode_from_pdu(state)
         self.assertEqual(internal_value, bytes([0x3]))
 
@@ -644,7 +643,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 is_highlow_byte_order_raw=None,
             )
             state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78, 0x9A]), cursor_byte_position=1)
-            internal_value = dct.decode_from_pdu(state, bit_position=0)
+            internal_value = dct.decode_from_pdu(state)
             self.assertEqual(internal_value, bytes([0x34, 0x56, 0x78, 0x9A]))
             self.assertEqual(state.cursor_byte_position, 5)
 

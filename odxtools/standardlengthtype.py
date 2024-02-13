@@ -56,7 +56,7 @@ class StandardLengthType(DiagCodedType):
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-    def decode_from_pdu(self, decode_state: DecodeState, bit_position: int = 0) -> AtomicOdxType:
+    def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         internal_value, cursor_byte_position = self._extract_internal_value(
             decode_state.coded_message,
             decode_state.cursor_byte_position,

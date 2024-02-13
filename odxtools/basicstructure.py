@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
 from xml.etree import ElementTree
 
 from .complexdop import ComplexDop
@@ -225,13 +225,7 @@ class BasicStructure(ComplexDop):
             is_end_of_pdu=encode_state.is_end_of_pdu,
         )
 
-    def convert_bytes_to_physical(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
-        if bit_position != 0:
-            raise DecodeError("Structures must be aligned, i.e. bit_position=0, but "
-                              f"{self.short_name} was passed the bit position {bit_position}")
-
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         # move the origin since positions specified by sub-parameters of
         # structures are relative to the beginning of the structure object.
         orig_origin = decode_state.origin_byte_position
@@ -245,7 +239,7 @@ class BasicStructure(ComplexDop):
             decode_state.cursor_byte_position = max(decode_state.cursor_byte_position,
                                                     cursor_byte_position)
 
-        # decoding of the structure finished. move back the origin.
+        # decoding of the structure finished. go back the original origin.
         decode_state.origin_byte_position = orig_origin
 
         return result, decode_state.cursor_byte_position
@@ -266,20 +260,21 @@ class BasicStructure(ComplexDop):
             is_end_of_pdu=True)
 
     def decode(self, message: bytes) -> ParameterValueDict:
-        # dummy decode state to be passed to convert_bytes_to_physical
         decode_state = DecodeState(coded_message=message)
-        param_values, cursor_byte_position = self.convert_bytes_to_physical(decode_state)
-        if not isinstance(param_values, dict):
-            odxraise(f"Decoding a structure must result in a dictionary of parameter "
-                     f"values (is {type(param_values)})")
-        if len(message) != cursor_byte_position:
+        param_values, _ = self.decode_from_pdu(decode_state)
+
+        if len(message) != decode_state.cursor_byte_position:
             warnings.warn(
-                f"The message {message.hex()} is longer than could be parsed."
-                f" Expected {cursor_byte_position} but got {len(message)}.",
+                f"The message {message.hex()} probably could not be completely parsed:"
+                f" Expected length of {decode_state.cursor_byte_position} but got {len(message)}.",
                 DecodeError,
                 stacklevel=1,
             )
-        return param_values
+
+        if not isinstance(param_values, dict):
+            odxraise("Decoding structures must result in a dictionary")
+
+        return cast(ParameterValueDict, param_values)
 
     def parameter_dict(self) -> ParameterDict:
         """

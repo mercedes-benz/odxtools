@@ -69,8 +69,6 @@ class DopBase(IdentifiableElement):
         """Convert the physical value into bytes."""
         raise NotImplementedError
 
-    def convert_bytes_to_physical(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         """Extract the bytes from the PDU and convert them to the physical value."""
         raise NotImplementedError

@@ -55,7 +55,5 @@ class DynamicLengthField(Field):
     ) -> bytes:
         raise NotImplementedError()
 
-    def convert_bytes_to_physical(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
         raise NotImplementedError()

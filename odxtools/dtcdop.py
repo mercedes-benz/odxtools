@@ -87,11 +87,8 @@ class DtcDop(DopBase):
     def linked_dtc_dops(self) -> NamedItemList["DtcDop"]:
         return self._linked_dtc_dops
 
-    def convert_bytes_to_physical(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
 
-        decode_state.cursor_bit_position = bit_position
         int_trouble_code = self.diag_coded_type.decode_from_pdu(decode_state)
 
         if self.compu_method.is_valid_internal_value(int_trouble_code):
