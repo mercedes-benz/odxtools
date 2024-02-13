@@ -157,7 +157,7 @@ class MinMaxLengthType(DiagCodedType):
 
             # next byte starts after the actual data and the termination sequence
             decode_state.cursor_byte_position = byte_pos
-            decode_state.cursor_bit_position = None
+            decode_state.cursor_bit_position = 0
 
             return value
         else:
@@ -175,6 +175,6 @@ class MinMaxLengthType(DiagCodedType):
             )
 
             decode_state.cursor_byte_position = byte_pos
-            decode_state.cursor_bit_position = None
+            decode_state.cursor_bit_position = 0
 
             return value

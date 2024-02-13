@@ -94,13 +94,13 @@ class ParamLengthInfoType(DiagCodedType):
         value, cursor_byte_position = self._extract_internal_value(
             decode_state.coded_message,
             decode_state.cursor_byte_position,
-            decode_state.cursor_bit_position or 0,
+            decode_state.cursor_bit_position,
             bit_length,
             self.base_data_type,
             self.is_highlow_byte_order,
         )
 
-        decode_state.cursor_bit_position = None
+        decode_state.cursor_bit_position = 0
         decode_state.cursor_byte_position = cursor_byte_position
 
         return value

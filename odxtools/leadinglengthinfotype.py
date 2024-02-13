@@ -72,12 +72,12 @@ class LeadingLengthInfoType(DiagCodedType):
         byte_length, byte_position = self._extract_internal_value(
             coded_message=coded_message,
             byte_position=decode_state.cursor_byte_position,
-            bit_position=decode_state.cursor_bit_position or 0,
+            bit_position=decode_state.cursor_bit_position,
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,  # length is an integer
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
-        decode_state.cursor_bit_position = None
+        decode_state.cursor_bit_position = 0
 
         if not isinstance(byte_length, int):
             odxraise()

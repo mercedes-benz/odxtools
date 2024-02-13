@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING, Dict
 
 if TYPE_CHECKING:
     from .tablerow import TableRow
@@ -28,7 +28,7 @@ class DecodeState:
     #:
     #: If bit position is undefined (`None`), the object to be extracted
     #: starts at bit 0.
-    cursor_bit_position: Optional[int] = None
+    cursor_bit_position: int = 0
 
     #: values of the length key parameters decoded so far
     length_keys: Dict[str, int] = field(default_factory=dict)
