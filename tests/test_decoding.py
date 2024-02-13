@@ -1242,7 +1242,7 @@ class TestDecoding(unittest.TestCase):
                 coding_object=message,
                 param_dict={
                     "SID": sid,
-                    "matching_req_param": 0xAB
+                    "matching_req_param": bytes([0xAB])
                 },
             )
             decoded_message = diag_layer.decode(coded_message)[0]

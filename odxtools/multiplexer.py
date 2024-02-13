@@ -11,7 +11,7 @@ from .multiplexercase import MultiplexerCase
 from .multiplexerdefaultcase import MultiplexerDefaultCase
 from .multiplexerswitchkey import MultiplexerSwitchKey
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
-from .odxtypes import ParameterValue, odxstr_to_bool
+from .odxtypes import AtomicOdxType, ParameterValue, odxstr_to_bool
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -64,14 +64,13 @@ class Multiplexer(ComplexDop):
     def is_visible(self) -> bool:
         return self.is_visible_raw is True
 
-    def _get_case_limits(self, case: MultiplexerCase) -> Tuple[int, int]:
+    def _get_case_limits(self, case: MultiplexerCase) -> Tuple[AtomicOdxType, AtomicOdxType]:
         key_type = self.switch_key.dop.physical_type.base_data_type
         lower_limit = key_type.make_from(case.lower_limit)
         upper_limit = key_type.make_from(case.upper_limit)
-        if not isinstance(lower_limit, int):
-            odxraise("Bounds of limits must be integers")
-        if not isinstance(upper_limit, int):
-            odxraise("Bounds of limits must be integers")
+        if not isinstance(lower_limit, type(upper_limit)) and not isinstance(
+                upper_limit, type(lower_limit)):
+            odxraise("Upper and lower bounds of limits must compareable")
         return lower_limit, upper_limit
 
     def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
@@ -88,15 +87,15 @@ class Multiplexer(ComplexDop):
         case_name, case_value = next(iter(physical_value.items()))
         case_pos = self.byte_position
 
-        for case in self.cases or []:
-            if case.short_name == case_name:
-                if case._structure:
-                    case_bytes = case._structure.convert_physical_to_bytes(
+        for mux_case in self.cases or []:
+            if mux_case.short_name == case_name:
+                if mux_case._structure:
+                    case_bytes = mux_case._structure.convert_physical_to_bytes(
                         case_value, encode_state, 0)
                 else:
                     case_bytes = b''
 
-                key_value, _ = self._get_case_limits(case)
+                key_value, _ = self._get_case_limits(mux_case)
                 key_bytes = self.switch_key.dop.convert_physical_to_bytes(
                     key_value, encode_state, bit_position=self.switch_key.bit_position or 0)
 
@@ -128,7 +127,7 @@ class Multiplexer(ComplexDop):
         case_value: Optional[ParameterValue] = None
         for case in self.cases or []:
             lower, upper = self._get_case_limits(case)
-            if lower <= key_value and key_value <= upper:
+            if lower <= key_value and key_value <= upper:  # type: ignore[operator]
                 if case._structure:
                     case_value = case._structure.decode_from_pdu(decode_state)
                 break

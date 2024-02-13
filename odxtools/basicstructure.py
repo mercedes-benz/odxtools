@@ -262,12 +262,11 @@ class BasicStructure(ComplexDop):
         param_values = self.decode_from_pdu(decode_state)
 
         if len(message) != decode_state.cursor_byte_position:
-            warnings.warn(
+            odxraise(
                 f"The message {message.hex()} probably could not be completely parsed:"
                 f" Expected length of {decode_state.cursor_byte_position} but got {len(message)}.",
-                DecodeError,
-                stacklevel=1,
-            )
+                DecodeError)
+            return {}
 
         if not isinstance(param_values, dict):
             odxraise("Decoding structures must result in a dictionary")

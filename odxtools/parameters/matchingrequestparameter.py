@@ -3,10 +3,9 @@ from dataclasses import dataclass
 from typing import Optional
 
 from ..decodestate import DecodeState
-from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError
-from ..odxtypes import DataType, ParameterValue
+from ..odxtypes import ParameterValue
 from .parameter import Parameter, ParameterType
 
 
@@ -43,13 +42,11 @@ class MatchingRequestParameter(Parameter):
         if self.byte_position is not None:
             decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
 
-        result, decode_state.cursor_byte_position = DiagCodedType._extract_internal_value(
-            coded_message=decode_state.coded_message,
-            byte_position=decode_state.cursor_byte_position,
-            bit_position=self.bit_position or 0,
-            bit_length=self.byte_length * 8,
-            base_data_type=DataType.A_UINT32,
-            is_highlow_byte_order=False)
+        byte_position = decode_state.cursor_byte_position
+        bit_position = self.bit_position or 0
+        byte_length = (8 * self.byte_length + bit_position + 7) // 8
+        result = decode_state.coded_message[byte_position:byte_position + byte_length]
+        decode_state.cursor_byte_position += byte_length
 
         decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
         decode_state.cursor_bit_position = 0
