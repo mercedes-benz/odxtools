@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
@@ -100,14 +100,12 @@ class MinMaxLengthType(DiagCodedType):
 
         return value_bytes
 
-    def convert_bytes_to_internal(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[AtomicOdxType, int]:
-        if decode_state.cursor_position + self.min_length > len(decode_state.coded_message):
+    def decode_from_pdu(self, decode_state: DecodeState, bit_position: int = 0) -> AtomicOdxType:
+        if decode_state.cursor_byte_position + self.min_length > len(decode_state.coded_message):
             raise DecodeError("The PDU ended before minimum length was reached.")
 
         coded_message = decode_state.coded_message
-        cursor_pos = decode_state.cursor_position
+        cursor_pos = decode_state.cursor_byte_position
         termination_seq = self.__termination_sequence()
 
         max_terminator_pos = len(coded_message)
@@ -148,7 +146,7 @@ class MinMaxLengthType(DiagCodedType):
             value, byte_pos = self._extract_internal_value(
                 decode_state.coded_message,
                 byte_position=cursor_pos,
-                bit_position=bit_position,
+                bit_position=0,
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
                 is_highlow_byte_order=self.is_highlow_byte_order,
@@ -158,7 +156,10 @@ class MinMaxLengthType(DiagCodedType):
                 byte_pos += len(termination_seq)
 
             # next byte starts after the actual data and the termination sequence
-            return value, byte_pos
+            decode_state.cursor_byte_position = byte_pos
+            decode_state.cursor_bit_position = 0
+
+            return value
         else:
             # If termination == "END-OF-PDU", the parameter ends after max_length
             # or at the end of the PDU.
@@ -167,9 +168,13 @@ class MinMaxLengthType(DiagCodedType):
             value, byte_pos = self._extract_internal_value(
                 decode_state.coded_message,
                 byte_position=cursor_pos,
-                bit_position=bit_position,
+                bit_position=0,
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
                 is_highlow_byte_order=self.is_highlow_byte_order,
             )
-            return value, byte_pos
+
+            decode_state.cursor_byte_position = byte_pos
+            decode_state.cursor_bit_position = 0
+
+            return value

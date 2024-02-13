@@ -38,9 +38,9 @@ class MatchingRequestParameter(Parameter):
                                                self.byte_length]
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
-        byte_position = decode_state.cursor_position
+        byte_position = decode_state.cursor_byte_position
         if self.byte_position is not None:
-            byte_position = decode_state.origin_position + self.byte_position
+            byte_position = decode_state.origin_byte_position + self.byte_position
         bit_position = self.bit_position or 0
         byte_length = (8 * self.byte_length + bit_position + 7) // 8
         val_as_bytes = decode_state.coded_message[byte_position:byte_position + byte_length]

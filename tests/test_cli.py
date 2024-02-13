@@ -3,18 +3,19 @@
 import unittest
 from argparse import Namespace
 from typing import List, Optional
+from unittest.mock import MagicMock, patch
 
 import odxtools.cli.compare as compare
 import odxtools.cli.decode as decode
 import odxtools.cli.find as find
 import odxtools.cli.list as list_tool
 
-import_failed = False
+browse_import_failed = False
 
 try:
     import odxtools.cli.browse as browse
 except ImportError:
-    import_failed = True
+    browse_import_failed = True
 
 
 class UtilFunctions:
@@ -130,10 +131,15 @@ class TestCommandLineTools(unittest.TestCase):
         ])
         UtilFunctions.run_compare_tool(ecu_variants=["somersault_lazy", "somersault_assiduous"])
 
-    @unittest.skipIf(import_failed, "import of PyInquirer failed")
-    def test_browse_tool(self) -> None:
+    @unittest.skipIf(browse_import_failed, "importing the browse tool failed")
+    # browse is an interactive tool, so we need to mock a few
+    # functions to make PyInquirer reliably bail out
+    @patch("sys.stdout.isatty", return_value=False)
+    def test_browse_tool(self, pi_prompt: MagicMock) -> None:
         browse_args = Namespace(pdx_file="./examples/somersault.pdx")
-        browse.run(browse_args)
+        with self.assertRaises(SystemError):
+            # browse can only be run interactively
+            browse.run(browse_args)
 
 
 if __name__ == "__main__":

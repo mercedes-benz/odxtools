@@ -117,9 +117,9 @@ class Multiplexer(ComplexDop):
 
         case_decode_state = copy(decode_state)
         if self.byte_position is not None:
-            case_decode_state.origin_position = decode_state.origin_position + self.byte_position
+            case_decode_state.origin_byte_position = decode_state.origin_byte_position + self.byte_position
         else:
-            case_decode_state.origin_position = decode_state.cursor_position
+            case_decode_state.origin_byte_position = decode_state.cursor_byte_position
 
         case_found = False
         case_next_byte = 0
@@ -144,7 +144,7 @@ class Multiplexer(ComplexDop):
                 f"Failed to find a matching case in {self.short_name} for value {key_value!r}")
 
         mux_value = {case.short_name: cast(ParameterValue, case_value)}
-        mux_next_byte = decode_state.cursor_position + max(
+        mux_next_byte = decode_state.cursor_byte_position + max(
             key_next_byte + self.switch_key.byte_position, case_next_byte + self.byte_position)
         return mux_value, mux_next_byte
 

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Tuple
+from typing import TYPE_CHECKING, Any, Dict, cast
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
@@ -74,9 +74,7 @@ class ParamLengthInfoType(DiagCodedType):
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-    def convert_bytes_to_internal(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[AtomicOdxType, int]:
+    def decode_from_pdu(self, decode_state: DecodeState, bit_position: int = 0) -> AtomicOdxType:
         # Find length key with matching ID.
         bit_length = 0
 
@@ -84,18 +82,25 @@ class ParamLengthInfoType(DiagCodedType):
         if self.length_key.short_name not in decode_state.length_keys:
             odxraise(f"Unspecified mandatory length key parameter "
                      f"{self.length_key.short_name}")
-        else:
-            bit_length = decode_state.length_keys[self.length_key.short_name]
-            if not isinstance(bit_length, int):
-                odxraise(f"The bit length must be an integer, is {type(bit_length)}")
-                bit_length = 0
+            decode_state.cursor_bit_position = None
+            return cast(None, AtomicOdxType)
+
+        bit_length = decode_state.length_keys[self.length_key.short_name]
+        if not isinstance(bit_length, int):
+            odxraise(f"The bit length must be an integer, is {type(bit_length)}")
+            bit_length = 0
 
         # Extract the internal value and return.
-        return self._extract_internal_value(
+        value, cursor_byte_position = self._extract_internal_value(
             decode_state.coded_message,
-            decode_state.cursor_position,
-            bit_position,
+            decode_state.cursor_byte_position,
+            decode_state.cursor_bit_position,
             bit_length,
             self.base_data_type,
             self.is_highlow_byte_order,
         )
+
+        decode_state.cursor_bit_position = 0
+        decode_state.cursor_byte_position = cursor_byte_position
+
+        return value

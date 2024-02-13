@@ -80,14 +80,13 @@ class NrcConstParameter(Parameter):
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[AtomicOdxType, int]:
         decode_state = copy(decode_state)
-        if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
+        if self.byte_position is not None and self.byte_position != decode_state.cursor_byte_position:
             # Update byte position
-            decode_state.cursor_position = self.byte_position
+            decode_state.cursor_byte_position = self.byte_position
 
         # Extract coded values
-        bit_position_int = self.bit_position if self.bit_position is not None else 0
-        coded_value, cursor_position = self.diag_coded_type.convert_bytes_to_internal(
-            decode_state, bit_position=bit_position_int)
+        decode_state.cursor_bit_position = self.bit_position or 0
+        coded_value = self.diag_coded_type.decode_from_pdu(decode_state)
 
         # Check if the coded value in the message is correct.
         if coded_value not in self.coded_values:
@@ -95,13 +94,13 @@ class NrcConstParameter(Parameter):
                 f"Coded constant parameter does not match! "
                 f"The parameter {self.short_name} expected a coded "
                 f"value in {str(self.coded_values)} but got {str(coded_value)} "
-                f"at byte position {decode_state.cursor_position} "
+                f"at byte position {decode_state.cursor_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
                 DecodeError,
                 stacklevel=1,
             )
 
-        return coded_value, cursor_position
+        return coded_value, decode_state.cursor_byte_position
 
     def get_description_of_valid_values(self) -> str:
         """return a human-understandable description of valid physical values"""

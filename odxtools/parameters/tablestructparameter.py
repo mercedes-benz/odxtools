@@ -127,10 +127,10 @@ class TableStructParameter(Parameter):
         return super().encode_into_pdu(encode_state)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
-        if self.byte_position is not None and self.byte_position != decode_state.cursor_position:
+        if self.byte_position is not None and self.byte_position != decode_state.cursor_byte_position:
             next_pos = self.byte_position if self.byte_position is not None else 0
             decode_state = copy(decode_state)
-            decode_state.cursor_position = next_pos
+            decode_state.cursor_byte_position = next_pos
 
         # find the selected table row
         key_name = self.table_key.short_name
@@ -141,7 +141,7 @@ class TableStructParameter(Parameter):
             raise odxraise(f"No table key '{key_name}' found when decoding "
                            f"table struct parameter '{str(self.short_name)}'")
             dummy_val = cast(str, None), cast(int, None)
-            return dummy_val, decode_state.cursor_position
+            return dummy_val, decode_state.cursor_byte_position
 
         # Use DOP or structure to decode the value
         if table_row.dop is not None:
@@ -154,4 +154,4 @@ class TableStructParameter(Parameter):
         else:
             # the table row associated with the key neither defines a
             # DOP nor a structure -> ignore it
-            return (table_row.short_name, cast(int, None)), decode_state.cursor_position
+            return (table_row.short_name, cast(int, None)), decode_state.cursor_byte_position

@@ -91,8 +91,8 @@ class DiagCodedType(abc.ABC):
         byte_length = (bit_length + bit_position + 7) // 8
         if byte_position + byte_length > len(coded_message):
             raise DecodeError(f"Expected a longer message.")
-        cursor_position = byte_position + byte_length
-        extracted_bytes = coded_message[byte_position:cursor_position]
+        cursor_byte_position = byte_position + byte_length
+        extracted_bytes = coded_message[byte_position:cursor_byte_position]
 
         # Apply byteorder for numerical objects. Note that doing this
         # here might lead to garbage data being included in the result
@@ -129,7 +129,7 @@ class DiagCodedType(abc.ABC):
             text_encoding = "utf-16-be" if is_highlow_byte_order else "utf-16-le"
             internal_value = internal_value.decode(encoding=text_encoding, errors=text_errors)
 
-        return internal_value, cursor_position
+        return internal_value, cursor_byte_position
 
     @staticmethod
     def _encode_internal_value(
@@ -254,9 +254,7 @@ class DiagCodedType(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def convert_bytes_to_internal(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[AtomicOdxType, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         """Decode the parameter value from the coded message.
 
         Parameters
