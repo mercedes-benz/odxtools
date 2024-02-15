@@ -2,7 +2,7 @@
 import argparse
 import logging
 import sys
-from typing import List, Optional, Union
+from typing import List, Optional, Union, cast
 
 from InquirerPy import prompt as PI_prompt
 from tabulate import tabulate  # TODO: switch to rich tables
@@ -99,7 +99,7 @@ def prompt_single_parameter_value(parameter: Parameter) -> Optional[AtomicOdxTyp
         return None
     elif parameter.physical_type.base_data_type is not None:
         return _convert_string_to_odx_type(
-            answer.get(parameter.short_name), parameter.physical_type.base_data_type)
+            cast(str, answer.get(parameter.short_name)), parameter.physical_type.base_data_type)
     else:
         logging.warning(
             f"Parameter {parameter.short_name} does not have a physical data type. Param details: {parameter}"
@@ -148,7 +148,7 @@ def encode_message_interactively(sub_service: Union[Request, Response],
                     lambda input: _convert_string_to_bytes(input),
             }]
             answer = PI_prompt(answered_request_prompt)
-            answered_request = answer.get("request")
+            answered_request = cast(bytes, answer.get("request"))
             print(f"Input interpretation as list: {list(answered_request)}")
 
         # Request values for parameters
@@ -270,7 +270,10 @@ def browse(odxdb: Database) -> None:
         if answer.get("variant") == "[exit]":
             return
 
-        variant = odxdb.diag_layers[answer.get("variant")]
+        variant_name = answer.get("variant")
+        assert isinstance(variant_name, str)
+        variant = odxdb.diag_layers[variant_name]
+        print(f"{type(answer.get('variant'))=}")
         assert isinstance(variant, DiagLayer)
 
         if (rx_id := variant.get_receive_id()) is not None:
@@ -287,7 +290,6 @@ def browse(odxdb: Database) -> None:
             f"{variant.variant_type.value} '{variant.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
         )
 
-        service_sn = 0
         while True:
             services: List[DiagService] = [
                 s for s in variant.services if isinstance(s, DiagService)
@@ -307,6 +309,7 @@ def browse(odxdb: Database) -> None:
                 break
 
             service_sn = answer.get("service")
+            assert isinstance(service_sn, str)
 
             service = variant.services[service_sn]
             assert isinstance(service, DiagService)
@@ -341,8 +344,8 @@ def browse(odxdb: Database) -> None:
                 continue
 
             codec = answer.get("message_type")
-
             if codec is not None:
+                assert isinstance(codec, (Request, Response))
                 table = extract_parameter_tabulation_data(codec.parameters)
                 table_str = tabulate(table, headers='keys', tablefmt='presto')
                 print(table_str)
