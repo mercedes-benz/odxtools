@@ -43,7 +43,7 @@ class MatchingRequestParameter(Parameter):
         if self.byte_position is not None:
             decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
 
-        result, decode_state.cursor_byte_position = DiagCodedType._extract_internal_value(
+        result, decode_state.cursor_byte_position = DiagCodedType._extract_atomic_value(
             coded_message=decode_state.coded_message,
             byte_position=decode_state.cursor_byte_position,
             bit_position=self.bit_position or 0,

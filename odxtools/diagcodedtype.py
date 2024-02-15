@@ -70,7 +70,7 @@ class DiagCodedType(abc.ABC):
         return self.is_highlow_byte_order_raw in [None, True]
 
     @staticmethod
-    def _extract_internal_value(
+    def _extract_atomic_value(
         coded_message: bytes,
         byte_position: int,
         bit_position: int,

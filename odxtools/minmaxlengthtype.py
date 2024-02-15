@@ -145,7 +145,7 @@ class MinMaxLengthType(DiagCodedType):
                     terminator_pos += 1
 
             # Extract the value
-            value, byte_pos = self._extract_internal_value(
+            value, byte_pos = self._extract_atomic_value(
                 decode_state.coded_message,
                 byte_position=cursor_pos,
                 bit_position=0,
@@ -167,7 +167,7 @@ class MinMaxLengthType(DiagCodedType):
             # or at the end of the PDU.
             byte_length = max_terminator_pos - cursor_pos
 
-            value, byte_pos = self._extract_internal_value(
+            value, byte_pos = self._extract_atomic_value(
                 decode_state.coded_message,
                 byte_position=cursor_pos,
                 bit_position=0,
