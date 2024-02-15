@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from .compumethods.compumethod import CompuMethod
@@ -133,22 +133,16 @@ class DataObjectProperty(DopBase):
         return self.diag_coded_type.convert_internal_to_bytes(
             internal_val, encode_state, bit_position=bit_position)
 
-    def convert_bytes_to_physical(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[Any, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         """
         Convert the internal representation of a value into its physical value.
 
         Returns a (physical_value, start_position_of_next_parameter) tuple.
         """
-        odxassert(0 <= bit_position and bit_position < 8)
-
-        decode_state.cursor_bit_position = bit_position
         internal = self.diag_coded_type.decode_from_pdu(decode_state)
 
         if self.compu_method.is_valid_internal_value(internal):
-            return self.compu_method.convert_internal_to_physical(
-                internal), decode_state.cursor_byte_position
+            return self.compu_method.convert_internal_to_physical(internal)
         else:
             # TODO: How to prevent this?
             raise DecodeError(

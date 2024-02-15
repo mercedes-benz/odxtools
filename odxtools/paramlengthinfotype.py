@@ -74,7 +74,7 @@ class ParamLengthInfoType(DiagCodedType):
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-    def decode_from_pdu(self, decode_state: DecodeState, bit_position: int = 0) -> AtomicOdxType:
+    def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         # Find length key with matching ID.
         bit_length = 0
 

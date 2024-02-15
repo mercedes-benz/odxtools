@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
-from copy import copy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Dict, Optional, cast
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -126,11 +125,10 @@ class TableStructParameter(Parameter):
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         return super().encode_into_pdu(encode_state)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
-        if self.byte_position is not None and self.byte_position != decode_state.cursor_byte_position:
-            next_pos = self.byte_position if self.byte_position is not None else 0
-            decode_state = copy(decode_state)
-            decode_state.cursor_byte_position = next_pos
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
+        orig_cursor = decode_state.cursor_byte_position
+        if self.byte_position is not None:
+            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
 
         # find the selected table row
         key_name = self.table_key.short_name
@@ -141,17 +139,20 @@ class TableStructParameter(Parameter):
             raise odxraise(f"No table key '{key_name}' found when decoding "
                            f"table struct parameter '{str(self.short_name)}'")
             dummy_val = cast(str, None), cast(int, None)
-            return dummy_val, decode_state.cursor_byte_position
+            return dummy_val
 
         # Use DOP or structure to decode the value
         if table_row.dop is not None:
             dop = table_row.dop
-            val, i = dop.convert_bytes_to_physical(decode_state)
-            return (table_row.short_name, val), i
+            val = dop.decode_from_pdu(decode_state)
+            decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
+            return (table_row.short_name, val)
         elif table_row.structure is not None:
-            val, i = table_row.structure.convert_bytes_to_physical(decode_state)
-            return (table_row.short_name, val), i
+            val = table_row.structure.decode_from_pdu(decode_state)
+            decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
+            return (table_row.short_name, val)
         else:
             # the table row associated with the key neither defines a
             # DOP nor a structure -> ignore it
-            return (table_row.short_name, cast(int, None)), decode_state.cursor_byte_position
+            decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
+            return (table_row.short_name, cast(int, None))

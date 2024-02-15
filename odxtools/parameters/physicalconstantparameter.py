@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Tuple
+from typing import TYPE_CHECKING, Any, Dict
 
 from ..dataobjectproperty import DataObjectProperty
 from ..decodestate import DecodeState
@@ -64,18 +64,19 @@ class PhysicalConstantParameter(ParameterWithDOP):
         return dop.convert_physical_to_bytes(
             self.physical_constant_value, encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         # Decode value
-        phys_val, cursor_byte_position = super().decode_from_pdu(decode_state)
+        phys_val = super().decode_from_pdu(decode_state)
 
         # Check if decoded value matches expected value
         if phys_val != self.physical_constant_value:
             warnings.warn(
                 f"Physical constant parameter does not match! "
-                f"The parameter {self.short_name} expected physical value {self.physical_constant_value!r} but got {phys_val!r} "
-                f"at byte position {cursor_byte_position} "
+                f"The parameter {self.short_name} expected physical value "
+                f"{self.physical_constant_value!r} but got {phys_val!r} "
+                f"at byte position {decode_state.cursor_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
                 DecodeError,
                 stacklevel=1,
             )
-        return phys_val, cursor_byte_position
+        return phys_val

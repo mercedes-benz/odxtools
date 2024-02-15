@@ -1,13 +1,12 @@
 # SPDX-License-Identifier: MIT
-from copy import copy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree
 
 from .complexdop import ComplexDop
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, odxrequire
+from .exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from .multiplexercase import MultiplexerCase
 from .multiplexerdefaultcase import MultiplexerDefaultCase
 from .multiplexerswitchkey import MultiplexerSwitchKey
@@ -69,6 +68,9 @@ class Multiplexer(ComplexDop):
         key_type = self.switch_key.dop.physical_type.base_data_type
         lower_limit = key_type.make_from(case.lower_limit)
         upper_limit = key_type.make_from(case.upper_limit)
+        if not isinstance(lower_limit, type(upper_limit)) and not isinstance(
+                upper_limit, type(lower_limit)):
+            odxraise("Upper and lower bounds of limits must compareable")
         return lower_limit, upper_limit
 
     def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
@@ -85,15 +87,15 @@ class Multiplexer(ComplexDop):
         case_name, case_value = next(iter(physical_value.items()))
         case_pos = self.byte_position
 
-        for case in self.cases or []:
-            if case.short_name == case_name:
-                if case._structure:
-                    case_bytes = case._structure.convert_physical_to_bytes(
+        for mux_case in self.cases or []:
+            if mux_case.short_name == case_name:
+                if mux_case._structure:
+                    case_bytes = mux_case._structure.convert_physical_to_bytes(
                         case_value, encode_state, 0)
                 else:
                     case_bytes = b''
 
-                key_value, _ = self._get_case_limits(case)
+                key_value, _ = self._get_case_limits(mux_case)
                 key_bytes = self.switch_key.dop.convert_physical_to_bytes(
                     key_value, encode_state, bit_position=self.switch_key.bit_position or 0)
 
@@ -106,47 +108,45 @@ class Multiplexer(ComplexDop):
 
         raise EncodeError(f"The case {case_name} is not found in Multiplexer {self.short_name}")
 
-    def convert_bytes_to_physical(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
 
-        if bit_position != 0:
-            raise DecodeError("Multiplexers must be byte-aligned, i.e. bit_position=0, but "
-                              f"{self.short_name} was passed the bit position {bit_position}")
-        key_value, key_next_byte = self.switch_key.dop.convert_bytes_to_physical(decode_state)
-
-        case_decode_state = copy(decode_state)
+        # multiplexers are structures and thus the origin position
+        # must be moved to the start of the multiplexer
+        orig_origin = decode_state.origin_byte_position
+        orig_cursor = decode_state.cursor_byte_position
         if self.byte_position is not None:
-            case_decode_state.origin_byte_position = decode_state.origin_byte_position + self.byte_position
-        else:
-            case_decode_state.origin_byte_position = decode_state.cursor_byte_position
+            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
+        decode_state.origin_byte_position = decode_state.cursor_byte_position
 
-        case_found = False
-        case_next_byte = 0
-        case_value = None
+        key_value = self.switch_key.dop.decode_from_pdu(decode_state)
+
+        if not isinstance(key_value, int):
+            odxraise(f"Multiplexer keys must be integers (is '{type(key_value).__name__}'"
+                     f" for multiplexer '{self.short_name}')")
+
+        case_value: Optional[ParameterValue] = None
         for case in self.cases or []:
             lower, upper = self._get_case_limits(case)
-            if lower <= key_value and key_value <= upper:
-                case_found = True
+            if lower <= key_value and key_value <= upper:  # type: ignore[operator]
                 if case._structure:
-                    case_value, case_next_byte = case._structure.convert_bytes_to_physical(
-                        case_decode_state)
+                    case_value = case._structure.decode_from_pdu(decode_state)
                 break
 
-        if not case_found and self.default_case is not None:
-            case_found = True
+        if case_value is None and self.default_case is not None:
             if self.default_case._structure:
-                case_value, case_next_byte = self.default_case._structure.convert_bytes_to_physical(
-                    case_decode_state)
+                case_value = self.default_case._structure.decode_from_pdu(decode_state)
 
-        if not case_found:
-            raise DecodeError(
-                f"Failed to find a matching case in {self.short_name} for value {key_value!r}")
+        if case_value is None:
+            odxraise(f"Failed to find a matching case in {self.short_name} for value {key_value!r}",
+                     DecodeError)
 
-        mux_value = {case.short_name: cast(ParameterValue, case_value)}
-        mux_next_byte = decode_state.cursor_byte_position + max(
-            key_next_byte + self.switch_key.byte_position, case_next_byte + self.byte_position)
-        return mux_value, mux_next_byte
+        mux_value = (case.short_name, case_value)
+
+        # go back to the original origin
+        decode_state.origin_byte_position = orig_origin
+        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
+
+        return mux_value
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()

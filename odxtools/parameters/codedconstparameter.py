@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, Optional
 
 from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
@@ -62,7 +62,7 @@ class CodedConstParameter(Parameter):
         return self.diag_coded_type.convert_internal_to_bytes(
             self.coded_value, encode_state=encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[AtomicOdxType, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         # Extract coded values
         orig_cursor_pos = decode_state.cursor_byte_position
         if self.byte_position is not None:
@@ -85,7 +85,7 @@ class CodedConstParameter(Parameter):
 
         decode_state.cursor_byte_position = max(orig_cursor_pos, decode_state.cursor_byte_position)
 
-        return coded_val, decode_state.cursor_byte_position
+        return coded_val
 
     @property
     def _coded_value_str(self) -> str:

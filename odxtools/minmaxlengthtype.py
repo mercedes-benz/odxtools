@@ -100,7 +100,9 @@ class MinMaxLengthType(DiagCodedType):
 
         return value_bytes
 
-    def decode_from_pdu(self, decode_state: DecodeState, bit_position: int = 0) -> AtomicOdxType:
+    def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
+        odxassert(decode_state.cursor_bit_position == 0,
+                  "No bit position can be specified for MIN-MAX-LENGTH-TYPE values.")
         if decode_state.cursor_byte_position + self.min_length > len(decode_state.coded_message):
             raise DecodeError("The PDU ended before minimum length was reached.")
 

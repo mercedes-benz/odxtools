@@ -2,7 +2,7 @@
 import abc
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
 
 from ..decodestate import DecodeState
 from ..element import NamedElement
@@ -93,7 +93,7 @@ class Parameter(NamedElement, abc.ABC):
         pass
 
     @abc.abstractmethod
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         """Decode the parameter value from the coded message.
 
         If the parameter does have a byte position property, the coded bytes the parameter covers are extracted

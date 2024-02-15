@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Optional, Tuple, cast
+from typing import Optional, cast
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -31,16 +31,16 @@ class ReservedParameter(Parameter):
         bit_position_int = self.bit_position if self.bit_position is not None else 0
         return (0).to_bytes((self.bit_length + bit_position_int + 7) // 8, "big")
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> Tuple[ParameterValue, int]:
-        byte_position = (
-            self.byte_position
-            if self.byte_position is not None else decode_state.cursor_byte_position)
-        abs_bit_position = byte_position * 8 + (self.bit_position or 0)
-        bit_length = self.bit_length
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
+        # move the cursor
+        orig_cursor = decode_state.cursor_byte_position
+        if self.byte_position is not None:
+            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
 
-        # the cursor points to the first byte which has not been fully
-        # consumed
-        cursor_byte_position = (abs_bit_position + bit_length) // 8
+        decode_state.cursor_byte_position += ((self.bit_position or 0) + self.bit_length + 7) // 8
+
+        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
+        decode_state.cursor_bit_position = 0
 
         # ignore the value of the parameter data
-        return cast(int, None), cursor_byte_position
+        return cast(int, None)
