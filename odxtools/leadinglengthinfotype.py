@@ -66,18 +66,13 @@ class LeadingLengthInfoType(DiagCodedType):
         return length_bytes + value_bytes
 
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
-        coded_message = decode_state.coded_message
 
         # Extract length of the parameter value
-        byte_length, byte_position = self._extract_atomic_value(
-            coded_message=coded_message,
-            byte_position=decode_state.cursor_byte_position,
-            bit_position=decode_state.cursor_bit_position,
+        byte_length = decode_state.extract_atomic_value(
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,  # length is an integer
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
-        decode_state.cursor_bit_position = 0
 
         if not isinstance(byte_length, int):
             odxraise()
@@ -85,14 +80,10 @@ class LeadingLengthInfoType(DiagCodedType):
         # Extract actual value
         # TODO: The returned value is None if the byte_length is 0. Maybe change it
         #       to some default value like an empty bytearray() or 0?
-        value, cursor_byte_position = self._extract_atomic_value(
-            coded_message=coded_message,
-            byte_position=byte_position,
-            bit_position=0,
+        value = decode_state.extract_atomic_value(
             bit_length=8 * byte_length,
             base_data_type=self.base_data_type,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-        decode_state.cursor_byte_position = cursor_byte_position
         return value

@@ -88,16 +88,10 @@ class ParamLengthInfoType(DiagCodedType):
             bit_length = 0
 
         # Extract the internal value and return.
-        value, cursor_byte_position = self._extract_atomic_value(
-            decode_state.coded_message,
-            decode_state.cursor_byte_position,
-            decode_state.cursor_bit_position,
+        value = decode_state.extract_atomic_value(
             bit_length,
             self.base_data_type,
             self.is_highlow_byte_order,
         )
-
-        decode_state.cursor_bit_position = 0
-        decode_state.cursor_byte_position = cursor_byte_position
 
         return value

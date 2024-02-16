@@ -1,34 +1,21 @@
 # SPDX-License-Identifier: MIT
 import abc
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Union
+
+from .decodestate import ODX_TYPE_TO_FORMAT_LETTER, DecodeState
+from .encodestate import EncodeState
+from .exceptions import EncodeError, odxassert, odxraise
+from .odxlink import OdxLinkDatabase, OdxLinkId
+from .odxtypes import AtomicOdxType, DataType
 
 try:
     import bitstruct.c as bitstruct
 except ImportError:
     import bitstruct
 
-from . import exceptions
-from .decodestate import DecodeState
-from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, odxassert, odxraise
-from .odxlink import OdxLinkDatabase, OdxLinkId
-from .odxtypes import AtomicOdxType, DataType
-
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
-
-# format specifiers for the data type using the bitstruct module
-ODX_TYPE_TO_FORMAT_LETTER = {
-    DataType.A_INT32: "s",
-    DataType.A_UINT32: "u",
-    DataType.A_FLOAT32: "f",
-    DataType.A_FLOAT64: "f",
-    DataType.A_BYTEFIELD: "r",
-    DataType.A_UNICODE2STRING: "r",  # UTF-16 strings must be converted explicitly
-    DataType.A_ASCIISTRING: "r",
-    DataType.A_UTF8STRING: "r",
-}
 
 # Allowed diag-coded types
 DctType = Literal[
@@ -68,68 +55,6 @@ class DiagCodedType(abc.ABC):
     @property
     def is_highlow_byte_order(self) -> bool:
         return self.is_highlow_byte_order_raw in [None, True]
-
-    @staticmethod
-    def _extract_atomic_value(
-        coded_message: bytes,
-        byte_position: int,
-        bit_position: int,
-        bit_length: int,
-        base_data_type: DataType,
-        is_highlow_byte_order: bool,
-    ) -> Tuple[AtomicOdxType, int]:
-        """Extract an internal value from a blob of raw bytes.
-
-        :return: Tuple with the internal value of the object and the
-                 byte position of the first undecoded byte after the
-                 extracted object.
-        """
-        # If the bit length is zero, return "empty" values of each type
-        if bit_length == 0:
-            return base_data_type.as_python_type()(), byte_position
-
-        byte_length = (bit_length + bit_position + 7) // 8
-        if byte_position + byte_length > len(coded_message):
-            raise DecodeError(f"Expected a longer message.")
-        cursor_byte_position = byte_position + byte_length
-        extracted_bytes = coded_message[byte_position:cursor_byte_position]
-
-        # Apply byteorder for numerical objects. Note that doing this
-        # here might lead to garbage data being included in the result
-        # if the data to be extracted is not byte aligned and crosses
-        # byte boundaries, but it is what the specification says.
-        if not is_highlow_byte_order and base_data_type in [
-                DataType.A_INT32,
-                DataType.A_UINT32,
-                DataType.A_FLOAT32,
-                DataType.A_FLOAT64,
-        ]:
-            extracted_bytes = extracted_bytes[::-1]
-
-        padding = (8 - (bit_length + bit_position) % 8) % 8
-        internal_value, = bitstruct.unpack_from(
-            f"{ODX_TYPE_TO_FORMAT_LETTER[base_data_type]}{bit_length}",
-            extracted_bytes,
-            offset=padding)
-
-        text_errors = 'strict' if exceptions.strict_mode else 'replace'
-        if base_data_type == DataType.A_ASCIISTRING:
-            # The spec says ASCII, meaning only byte values 0-127.
-            # But in practice, vendors use iso-8859-1, aka latin-1
-            # reason being iso-8859-1 never fails since it has a valid
-            # character mapping for every possible byte sequence.
-            text_encoding = 'iso-8859-1'
-            internal_value = internal_value.decode(encoding=text_encoding, errors=text_errors)
-        elif base_data_type == DataType.A_UTF8STRING:
-            text_encoding = "utf-8"
-            internal_value = internal_value.decode(encoding=text_encoding, errors=text_errors)
-        elif base_data_type == DataType.A_UNICODE2STRING:
-            # For UTF-16, we need to manually decode the extracted
-            # bytes to a string
-            text_encoding = "utf-16-be" if is_highlow_byte_order else "utf-16-le"
-            internal_value = internal_value.decode(encoding=text_encoding, errors=text_errors)
-
-        return internal_value, cursor_byte_position
 
     @staticmethod
     def _encode_internal_value(
