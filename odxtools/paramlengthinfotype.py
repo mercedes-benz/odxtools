@@ -75,10 +75,7 @@ class ParamLengthInfoType(DiagCodedType):
         )
 
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
-        # Find length key with matching ID.
-        bit_length = 0
-
-        # The bit length of the parameter to be extracted is given by the length key.
+        # First, we need to find a length key with matching ID.
         if self.length_key.short_name not in decode_state.length_keys:
             odxraise(f"Unspecified mandatory length key parameter "
                      f"{self.length_key.short_name}")
@@ -91,16 +88,10 @@ class ParamLengthInfoType(DiagCodedType):
             bit_length = 0
 
         # Extract the internal value and return.
-        value, cursor_byte_position = self._extract_internal_value(
-            decode_state.coded_message,
-            decode_state.cursor_byte_position,
-            decode_state.cursor_bit_position,
+        value = decode_state.extract_atomic_value(
             bit_length,
             self.base_data_type,
             self.is_highlow_byte_order,
         )
-
-        decode_state.cursor_bit_position = 0
-        decode_state.cursor_byte_position = cursor_byte_position
 
         return value

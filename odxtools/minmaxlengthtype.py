@@ -107,36 +107,40 @@ class MinMaxLengthType(DiagCodedType):
             raise DecodeError("The PDU ended before minimum length was reached.")
 
         coded_message = decode_state.coded_message
-        cursor_pos = decode_state.cursor_byte_position
+        orig_cursor_pos = decode_state.cursor_byte_position
         termination_seq = self.__termination_sequence()
 
         max_terminator_pos = len(coded_message)
         if self.max_length is not None:
-            max_terminator_pos = min(max_terminator_pos, cursor_pos + self.max_length)
+            max_terminator_pos = min(max_terminator_pos, orig_cursor_pos + self.max_length)
 
         if self.termination != "END-OF-PDU":
             # The parameter either ends after the maximum length, at
             # the end of the PDU or if a termination sequence is
             # found.
 
-            terminator_pos = cursor_pos + self.min_length
+            # Find the location of the termination sequence. The
+            # problem here is that the alignment of the termination
+            # sequence must be correct for it to be a termination
+            # sequence. (e.g., an odd-aligned double-zero for UTF-16
+            # strings is *not* a termination sequence!)
+            terminator_pos = orig_cursor_pos + self.min_length
             while True:
-                # Search the termination sequence
-                terminator_pos = coded_message.find(termination_seq, terminator_pos,
-                                                    max_terminator_pos)
+                terminator_pos = decode_state.coded_message.find(termination_seq, terminator_pos,
+                                                                 max_terminator_pos)
                 if terminator_pos < 0:
                     # termination sequence was not found, i.e., we
                     # are terminated by either the end of the PDU or
                     # our maximum size. (whatever is the smaller
                     # value.)
-                    byte_length = max_terminator_pos - cursor_pos
+                    byte_length = max_terminator_pos - orig_cursor_pos
                     break
-                elif (terminator_pos - cursor_pos) % len(termination_seq) == 0:
+                elif (terminator_pos - orig_cursor_pos) % len(termination_seq) == 0:
                     # we found the termination sequence at a position
                     # and it is correctly aligned (two-byte
                     # termination sequences must be word aligned
                     # relative to the beginning of the parameter)!
-                    byte_length = terminator_pos - cursor_pos
+                    byte_length = terminator_pos - orig_cursor_pos
                     break
                 else:
                     # we found the termination sequence, but its
@@ -145,38 +149,28 @@ class MinMaxLengthType(DiagCodedType):
                     terminator_pos += 1
 
             # Extract the value
-            value, byte_pos = self._extract_internal_value(
-                decode_state.coded_message,
-                byte_position=cursor_pos,
-                bit_position=0,
+            value = decode_state.extract_atomic_value(
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
                 is_highlow_byte_order=self.is_highlow_byte_order,
             )
 
-            if byte_pos != len(coded_message) and byte_pos - cursor_pos != self.max_length:
-                byte_pos += len(termination_seq)
-
-            # next byte starts after the actual data and the termination sequence
-            decode_state.cursor_byte_position = byte_pos
-            decode_state.cursor_bit_position = 0
+            if decode_state.cursor_byte_position != len(
+                    decode_state.coded_message
+            ) and decode_state.cursor_byte_position - orig_cursor_pos != self.max_length:
+                # next object starts after the actual data and the termination sequence
+                decode_state.cursor_byte_position += len(termination_seq)
 
             return value
         else:
             # If termination == "END-OF-PDU", the parameter ends after max_length
             # or at the end of the PDU.
-            byte_length = max_terminator_pos - cursor_pos
+            byte_length = max_terminator_pos - orig_cursor_pos
 
-            value, byte_pos = self._extract_internal_value(
-                decode_state.coded_message,
-                byte_position=cursor_pos,
-                bit_position=0,
+            value = decode_state.extract_atomic_value(
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
                 is_highlow_byte_order=self.is_highlow_byte_order,
             )
-
-            decode_state.cursor_byte_position = byte_pos
-            decode_state.cursor_bit_position = 0
 
             return value
