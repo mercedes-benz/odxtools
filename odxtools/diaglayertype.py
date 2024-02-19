@@ -20,11 +20,23 @@ class DiagLayerType(Enum):
         """
 
         PRIORITY_OF_DIAG_LAYER_TYPE: Dict[DiagLayerType, int] = {
-            DiagLayerType.ECU_SHARED_DATA: 0,
-            DiagLayerType.PROTOCOL: 1,
-            DiagLayerType.FUNCTIONAL_GROUP: 2,
-            DiagLayerType.BASE_VARIANT: 3,
-            DiagLayerType.ECU_VARIANT: 4,
+            DiagLayerType.PROTOCOL:
+                1,
+            DiagLayerType.FUNCTIONAL_GROUP:
+                2,
+            DiagLayerType.BASE_VARIANT:
+                3,
+            DiagLayerType.ECU_VARIANT:
+                4,
+
+            # ECU shared data layers are a bit weird (see section
+            # 7.3.2.4.4 of the ASAM specification): they can be
+            # inherited from by any other layer but they will
+            # override any objects which are also provided by any of
+            # the other parent layers. tl;dr: When it comes to
+            # inheritance, they have the highest priority.
+            DiagLayerType.ECU_SHARED_DATA:
+                100,
         }
 
         return PRIORITY_OF_DIAG_LAYER_TYPE[self]

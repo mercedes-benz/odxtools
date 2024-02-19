@@ -20,7 +20,7 @@ from .diaglayerraw import DiagLayerRaw
 from .diaglayertype import DiagLayerType
 from .diagservice import DiagService
 from .ecuvariantpattern import EcuVariantPattern
-from .exceptions import DecodeError, OdxWarning, odxassert
+from .exceptions import DecodeError, OdxWarning, odxassert, odxraise
 from .functionalclass import FunctionalClass
 from .message import Message
 from .nameditemlist import NamedItemList, OdxNamed
@@ -37,7 +37,6 @@ from .table import Table
 from .unitgroup import UnitGroup
 from .unitspec import UnitSpec
 
-T = TypeVar("T")
 TNamed = TypeVar("TNamed", bound=OdxNamed)
 
 PrefixTree = Dict[int, Union[List[DiagService], "PrefixTree"]]
@@ -389,9 +388,9 @@ class DiagLayer:
 
     def _compute_available_objects(
         self,
-        get_local_objects: Callable[["DiagLayer"], Iterable[T]],
+        get_local_objects: Callable[["DiagLayer"], Iterable[TNamed]],
         get_not_inherited: Callable[[ParentRef], Iterable[str]],
-    ) -> Iterable[T]:
+    ) -> Iterable[TNamed]:
         """Helper method to compute the set of all objects applicable
         to the DiagLayer if these objects are subject to the value
         inheritance mechanism
@@ -410,31 +409,72 @@ class DiagLayer:
 
         """
 
-        result_dict: Dict[str, T] = {}
+        local_objects = get_local_objects(self)
+        local_object_short_names = {x.short_name for x in local_objects}
+        result_dict: Dict[str, Tuple[TNamed, DiagLayer]] = {}
 
         # populate the result dictionary with the inherited objects
-        #
-        # TODO (?): make sure that there are no "illegal" collisions
-        # i.e., different objects with the same short name stemming
-        # from parent layers exhibiting the same priority that are not
-        # overwritten by a locally defined object. (IMO, this is quite
-        # a corner case.)
-        for parent_ref in self._get_parent_refs_sorted_by_priority():
+        for parent_ref in self._get_parent_refs_sorted_by_priority(reverse=True):
             parent_dl = parent_ref.layer
-            for dc in parent_dl._compute_available_objects(get_local_objects, get_not_inherited):
-                result_dict[dc.short_name] = dc  # type: ignore[attr-defined]
 
-            # remove the explictly not inherited objects
-            for sn in get_not_inherited(parent_ref):
-                if sn in result_dict:
-                    del result_dict[sn]
+            # retrieve the set of short names of the objects which we
+            # are not supposed to inherit
+            not_inherited_short_names = set(get_not_inherited(parent_ref))
 
-        # consider the locally defined objects (override the
-        # inherited entries or add new ones)
-        for obj in get_local_objects(self):
-            result_dict[obj.short_name] = obj  # type: ignore[attr-defined]
+            # compute the list of objects which we are supposed to
+            # inherit from this diagnostic layer
+            inherited_objects = [
+                x
+                for x in parent_dl._compute_available_objects(get_local_objects, get_not_inherited)
+                if x.short_name not in not_inherited_short_names
+            ]
 
-        return result_dict.values()
+            # update the result set with the objects from the current parent_ref
+            for obj in inherited_objects:
+
+                # no object with the given short name currently
+                # exits. add it to the result set and continue
+                if obj.short_name not in result_dict:
+                    result_dict[obj.short_name] = (obj, parent_dl)
+                    continue
+
+                # if an object with a given name already exists,
+                # there's no problem if it was inherited from a parent
+                # of different priority than the one currently
+                # considered
+                orig_prio = result_dict[obj.short_name][1].variant_type.inheritance_priority
+                new_prio = parent_dl.variant_type.inheritance_priority
+                if new_prio < orig_prio:
+                    continue
+                elif orig_prio < new_prio:
+                    result_dict[obj.short_name] = (obj, parent_dl)
+                    continue
+
+                # if there is a conflict on the same priority level,
+                # it does not matter if the object is overridden
+                # locally anyway...
+                if obj.short_name in local_object_short_names:
+                    continue
+
+                # if all of these conditions do not apply, and if the
+                # inherited objects are identical, there is no
+                # conflict. (note that value comparisons of complete
+                # complex objects tend to be expensive, so this test
+                # is done last.)
+                if obj == result_dict[obj.short_name][0]:
+                    continue
+
+                odxraise(f"Diagnostic layer {self.short_name} cannot inherit object "
+                         f"{obj.short_name} due to an unresolveable inheritance conflict between "
+                         f"parent layers {result_dict[obj.short_name][1].short_name} "
+                         f"and {parent_dl.short_name}")
+
+        # add the locally defined entries, overriding the inherited
+        # ones if necessary
+        for obj in local_objects:
+            result_dict[obj.short_name] = (obj, self)
+
+        return [x[0] for x in result_dict.values()]
 
     def _get_local_diag_comms(self, odxlinks: OdxLinkDatabase) -> Iterable[DiagComm]:
         """Return the list of locally defined diagnostic communications.
