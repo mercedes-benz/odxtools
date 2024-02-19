@@ -73,11 +73,12 @@ class BasicStructure(ComplexDop):
 
     def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:
         prefix = b''
-        encode_state = EncodeState(prefix, parameter_values={}, triggering_request=request_prefix)
+        encode_state = EncodeState(
+            bytearray(prefix), parameter_values={}, triggering_request=request_prefix)
         for param in self.parameters:
             if isinstance(param, (CodedConstParameter, NrcConstParameter, MatchingRequestParameter,
                                   PhysicalConstantParameter)):
-                encode_state.coded_message = param.encode_into_pdu(encode_state)
+                encode_state.coded_message = bytearray(param.encode_into_pdu(encode_state))
             else:
                 break
         return encode_state.coded_message
@@ -132,7 +133,7 @@ class BasicStructure(ComplexDop):
                     odxraise(f"Value for unknown parameter '{param_key}' specified")
 
         encode_state = EncodeState(
-            b'',
+            bytearray(),
             dict(param_value),
             triggering_request=triggering_coded_request,
             is_end_of_pdu=False,
@@ -157,11 +158,11 @@ class BasicStructure(ComplexDop):
                 # into the PDU here and add the real value of the
                 # parameter in a post processing step.
                 tmp = encode_state.parameter_values.pop(param.short_name)
-                encode_state.coded_message = param.encode_into_pdu(encode_state)
+                encode_state.coded_message = bytearray(param.encode_into_pdu(encode_state))
                 encode_state.parameter_values[param.short_name] = tmp
                 continue
 
-            encode_state.coded_message = param.encode_into_pdu(encode_state)
+            encode_state.coded_message = bytearray(param.encode_into_pdu(encode_state))
 
         if self.byte_size is not None and len(encode_state.coded_message) < self.byte_size:
             # Padding bytes needed
@@ -176,7 +177,7 @@ class BasicStructure(ComplexDop):
                 continue
 
             # Encode the key parameter into the message
-            encode_state.coded_message = param.encode_into_pdu(encode_state)
+            encode_state.coded_message = bytearray(param.encode_into_pdu(encode_state))
 
         # Assert that length is as expected
         self._validate_coded_message(encode_state.coded_message)

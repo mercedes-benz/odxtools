@@ -76,7 +76,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(bytes([]), {})
+        state = EncodeState(bytearray([]), {})
         byte_val = dct.convert_internal_to_bytes("4V", state, bit_position=1)
         self.assertEqual(byte_val, bytes([0x4, 0x34, 0x56]))
 
@@ -86,7 +86,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(bytes([]), {})
+        state = EncodeState(bytearray([]), {})
         internal = dct.convert_internal_to_bytes(bytes([0x3]), state, bit_position=1)
         self.assertEqual(internal, bytes([0x2, 0x3]))
 
@@ -97,7 +97,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(bytes([0x12, 0x34]), {})
+        state = EncodeState(bytearray([0x12, 0x34]), {})
         byte_val = dct.convert_internal_to_bytes(bytes([0x0]), state, bit_position=0)
         # Right now `bytes([0x1, 0x0])` is the encoded value.
         # However, since bytes() is shorter and would be decoded
@@ -134,7 +134,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(coded_message=bytes([0x12]), parameter_values={})
+        state = EncodeState(coded_message=bytearray([0x12]), parameter_values={})
         byte_val = dct.convert_internal_to_bytes("a9", state, bit_position=0)
         self.assertEqual(byte_val, bytes([0x4, 0x00, 0x61, 0x00, 0x39]))
 
@@ -405,7 +405,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         odxlinks = OdxLinkDatabase()
         odxlinks.update({length_key_id: length_key})
         dct._resolve_odxlinks(odxlinks)
-        state = EncodeState(bytes([0x10]), {length_key.short_name: 40})
+        state = EncodeState(bytearray([0x10]), {length_key.short_name: 40})
         byte_val = dct.convert_internal_to_bytes(0x12345, state, bit_position=0)
         self.assertEqual(byte_val.hex(), "0000012345")
 
@@ -673,7 +673,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             termination="HEX-FF",
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(bytes([0x12]), parameter_values={}, is_end_of_pdu=False)
+        state = EncodeState(bytearray([0x12]), parameter_values={}, is_end_of_pdu=False)
         byte_val = dct.convert_internal_to_bytes(bytes([0x34, 0x56]), state, bit_position=0)
         self.assertEqual(byte_val, bytes([0x34, 0x56, 0xFF]))
 
@@ -686,7 +686,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             termination="ZERO",
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(bytes([0x12]), parameter_values={}, is_end_of_pdu=False)
+        state = EncodeState(bytearray([0x12]), parameter_values={}, is_end_of_pdu=False)
         byte_val = dct.convert_internal_to_bytes("Hi", state, bit_position=0)
         self.assertEqual(byte_val, bytes([0x48, 0x69, 0x0]))
 
@@ -701,7 +701,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 termination=termination,
                 is_highlow_byte_order_raw=None,
             )
-            state = EncodeState(bytes([0x12]), parameter_values={}, is_end_of_pdu=True)
+            state = EncodeState(bytearray([0x12]), parameter_values={}, is_end_of_pdu=True)
             byte_val = dct.convert_internal_to_bytes(
                 bytes([0x34, 0x56, 0x78, 0x9A]), state, bit_position=0)
             self.assertEqual(byte_val, bytes([0x34, 0x56, 0x78, 0x9A]))
@@ -714,7 +714,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             termination="END-OF-PDU",
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(bytes([0x12]), parameter_values={}, is_end_of_pdu=False)
+        state = EncodeState(bytearray([0x12]), parameter_values={}, is_end_of_pdu=False)
 
     def test_encode_min_max_length_type_max_length(self) -> None:
         """If the internal value is larger than max length, an EncodeError must be raised."""
@@ -727,7 +727,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 termination=termination,
                 is_highlow_byte_order_raw=None,
             )
-            state = EncodeState(bytes([0x12]), parameter_values={}, is_end_of_pdu=True)
+            state = EncodeState(bytearray([0x12]), parameter_values={}, is_end_of_pdu=True)
             byte_val = dct.convert_internal_to_bytes(
                 bytes([0x34, 0x56, 0x78]), state, bit_position=0)
             self.assertEqual(byte_val, bytes([0x34, 0x56, 0x78]))
