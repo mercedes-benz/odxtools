@@ -1,13 +1,11 @@
 # SPDX-License-Identifier: MIT
 import abc
-import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
 
 from ..decodestate import DecodeState
 from ..element import NamedElement
 from ..encodestate import EncodeState
-from ..exceptions import OdxWarning
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
 from ..specialdatagroup import SpecialDataGroup
@@ -155,27 +153,6 @@ class Parameter(NamedElement, abc.ABC):
         else:
             byte_position = len(msg_blob)
 
-        return self._encode_into_blob(msg_blob, param_blob, byte_position)
+        encode_state.emplace_atomic_value(param_blob, byte_position, self.short_name)
 
-    def _encode_into_blob(self, blob: bytes, new_data: bytes, pos: Optional[int] = None) -> bytes:
-        if pos is None:
-            pos = len(blob)
-
-        # Make blob longer if necessary
-        min_length = pos + len(new_data)
-
-        result_blob = bytearray(blob)
-        if len(blob) < min_length:
-            result_blob.extend([0] * (min_length - len(blob)))
-
-        for byte_idx_val, byte_idx_rpc in enumerate(range(pos, pos + len(new_data))):
-            # insert byte value
-            if result_blob[byte_idx_rpc] & new_data[byte_idx_val] != 0:
-                warnings.warn(
-                    f"Parameter {self.short_name} overlaps with another parameter (bytes are already set)",
-                    OdxWarning,
-                    stacklevel=1,
-                )
-            result_blob[byte_idx_rpc] |= new_data[byte_idx_val]
-
-        return result_blob
+        return encode_state.coded_message

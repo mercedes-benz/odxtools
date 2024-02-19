@@ -45,12 +45,13 @@ class EndOfPduField(Field):
         encode_state: EncodeState,
         bit_position: int = 0,
     ) -> bytes:
+
         odxassert(
             bit_position == 0, "End of PDU field must be byte aligned. "
             "Is there an error in reading the .odx?", EncodeError)
         if not isinstance(physical_values, list):
             odxraise(
-                f"Expected a list of values for structure {self.short_name}, "
+                f"Expected a list of values for end-of-pdu field {self.short_name}, "
                 f"got {type(physical_values)}", EncodeError)
 
         coded_message = b''

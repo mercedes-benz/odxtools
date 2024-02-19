@@ -231,7 +231,8 @@ class DiagService(DiagComm):
 
         missing_params = {x.short_name
                           for x in self.request.required_parameters}.difference(params.keys())
-        odxassert(not missing_params, f"The parameters {missing_params} are required but missing!")
+        odxassert(
+            len(missing_params) == 0, f"The parameters {missing_params} are required but missing!")
 
         # make sure that no unknown parameters are specified
         rq_all_param_names = {x.short_name for x in self.request.parameters}

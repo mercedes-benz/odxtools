@@ -107,7 +107,7 @@ class TableStructParameter(Parameter):
         if tr.structure is not None:
             # the selected table row references a structure
             inner_encode_state = EncodeState(
-                coded_message=b'',
+                coded_message=bytearray(b''),
                 parameter_values=tr_value,
                 triggering_request=encode_state.triggering_request)
 
