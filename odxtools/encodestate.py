@@ -37,8 +37,8 @@ class EncodeState:
 
     def emplace_atomic_value(self,
                              new_data: bytes,
-                             pos: Optional[int] = None,
-                             param_name: str = "unknown") -> None:
+                             param_name: str,
+                             pos: Optional[int] = None) -> None:
         if pos is None:
             pos = len(self.coded_message)
 
@@ -51,7 +51,7 @@ class EncodeState:
             # insert byte value
             if self.coded_message[byte_idx_rpc] & new_data[byte_idx_val] != 0:
                 warnings.warn(
-                    f"Parameter '{param_name}' overlaps with another parameter (bytes are already set)",
+                    f"Object '{param_name}' overlaps with another parameter (bytes are already set)",
                     OdxWarning,
                     stacklevel=1,
                 )

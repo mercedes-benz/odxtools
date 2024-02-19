@@ -49,26 +49,26 @@ class DynamicLengthField(Field):
 
     def convert_physical_to_bytes(
         self,
-        physical_values: ParameterValue,
+        physical_value: ParameterValue,
         encode_state: EncodeState,
         bit_position: int = 0,
     ) -> bytes:
 
         odxassert(bit_position == 0, "No bit position can be specified for dynamic length fields!")
-        if not isinstance(physical_values, list):
+        if not isinstance(physical_value, list):
             odxraise(
                 f"Expected a list of values for dynamic length field {self.short_name}, "
-                f"got {type(physical_values)}", EncodeError)
+                f"got {type(physical_value)}", EncodeError)
 
         det_num_items = self.determine_number_of_items
-        num_item = det_num_items.dop.convert_physical_to_bytes(
-            len(physical_values), encode_state, det_num_items.bit_position or 0)
+        field_len = det_num_items.dop.convert_physical_to_bytes(
+            len(physical_value), encode_state, det_num_items.bit_position or 0)
 
         # hack to emplace the length specifier at the correct location
         tmp = encode_state.coded_message
         encode_state.coded_message = bytearray()
-        encode_state.emplace_atomic_value(num_item, det_num_items.byte_position,
-                                          self.short_name + ".num_items")
+        encode_state.emplace_atomic_value(field_len, self.short_name + ".num_items",
+                                          det_num_items.byte_position)
         result = encode_state.coded_message
         encode_state.coded_message = tmp
 
@@ -80,7 +80,7 @@ class DynamicLengthField(Field):
             odxraise(f"The length specifier of field {self.short_name} overlaps "
                      f"with the first item!")
 
-        for value in physical_values:
+        for value in physical_value:
             result += self.structure.convert_physical_to_bytes(value, encode_state)
 
         return result
