@@ -18,6 +18,9 @@ if TYPE_CHECKING:
 class ValueParameter(ParameterWithDOP):
     physical_default_value_raw: Optional[str]
 
+    def __post_init__(self) -> None:
+        self._physical_default_value: Optional[AtomicOdxType] = None
+
     @property
     def parameter_type(self) -> ParameterType:
         return "VALUE"
@@ -31,7 +34,6 @@ class ValueParameter(ParameterWithDOP):
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 
-        self._physical_default_value: Optional[AtomicOdxType] = None
         if self.physical_default_value_raw is not None:
             dop = odxrequire(self.dop)
             if not isinstance(dop, DataObjectProperty):

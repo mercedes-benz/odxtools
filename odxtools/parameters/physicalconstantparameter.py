@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict
 
@@ -70,13 +69,10 @@ class PhysicalConstantParameter(ParameterWithDOP):
 
         # Check if decoded value matches expected value
         if phys_val != self.physical_constant_value:
-            warnings.warn(
+            odxraise(
                 f"Physical constant parameter does not match! "
                 f"The parameter {self.short_name} expected physical value "
                 f"{self.physical_constant_value!r} but got {phys_val!r} "
                 f"at byte position {decode_state.cursor_byte_position} "
-                f"in coded message {decode_state.coded_message.hex()}.",
-                DecodeError,
-                stacklevel=1,
-            )
+                f"in coded message {decode_state.coded_message.hex()}.", DecodeError)
         return phys_val
