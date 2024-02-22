@@ -21,7 +21,7 @@ from odxtools.message import Message
 from odxtools.minmaxlengthtype import MinMaxLengthType
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from odxtools.odxtypes import DataType
+from odxtools.odxtypes import DataType, ParameterValueDict
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.matchingrequestparameter import MatchingRequestParameter
 from odxtools.parameters.physicalconstantparameter import PhysicalConstantParameter
@@ -1478,7 +1478,7 @@ class TestDecoding(unittest.TestCase):
             self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
             self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
-    def test_decode_dtc(self) -> None:
+    def test_code_dtc(self) -> None:
         odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
@@ -1570,9 +1570,14 @@ class TestDecoding(unittest.TestCase):
         dop._resolve_odxlinks(odxlinks)
         pos_response._resolve_odxlinks(odxlinks)
 
-        coded_message = bytes([0x12, 0x34])
-        decoded_param_dict = pos_response.decode(coded_message)
-        self.assertEqual(decoded_param_dict["DTC_Param"], dtc1)
+        expected_coded_message = bytes([0x12, 0x34])
+        expected_param_dict: ParameterValueDict = {"SID": 0x12, "DTC_Param": dtc1}
+
+        actual_param_dict = pos_response.decode(expected_coded_message)
+        self.assertEqual(actual_param_dict, expected_param_dict)
+
+        actual_coded_message = pos_response.encode(coded_request=None, **expected_param_dict)
+        self.assertEqual(actual_coded_message, expected_coded_message)
 
 
 class TestDecodingAndEncoding(unittest.TestCase):

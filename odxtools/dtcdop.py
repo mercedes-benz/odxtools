@@ -137,13 +137,17 @@ class DtcDop(DopBase):
             trouble_code = physical_value
         elif isinstance(physical_value, str):
             # assume that physical value is the short_name
-            dtc = next(filter(lambda dtc: dtc.short_name == physical_value, self.dtcs))
-            trouble_code = dtc.trouble_code
+            dtcs = [dtc for dtc in self.dtcs if dtc.short_name == physical_value]
+            odxassert(len(dtcs) == 1)
+            trouble_code = dtcs[0].trouble_code
         else:
             raise EncodeError(f"The DTC-DOP {self.short_name} expected a"
                               f" DiagnosticTroubleCode but got {physical_value!r}.")
 
-        return super().convert_physical_to_bytes(trouble_code, encode_state, bit_position)
+        internal_trouble_code = self.compu_method.convert_physical_to_internal(trouble_code)
+
+        return self.diag_coded_type.convert_internal_to_bytes(
+            internal_trouble_code, encode_state=encode_state, bit_position=bit_position)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
