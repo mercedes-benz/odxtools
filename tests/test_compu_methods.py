@@ -224,20 +224,36 @@ class TestLinearCompuMethod(unittest.TestCase):
             internal_upper_limit=Limit(15),
         )
 
+        self.assertEqual(compu_method.internal_lower_limit,
+                         Limit(2, interval_type=IntervalType.OPEN))
+        self.assertEqual(compu_method.internal_upper_limit,
+                         Limit(15, interval_type=IntervalType.CLOSED))
+
         self.assertEqual(compu_method.physical_lower_limit,
                          Limit(-74, interval_type=IntervalType.CLOSED))
         self.assertEqual(compu_method.physical_upper_limit,
-                         Limit(-14, interval_type=IntervalType.CLOSED))
+                         Limit(-9, interval_type=IntervalType.OPEN))
+
+        self.assertFalse(compu_method.internal_lower_limit.complies_to_lower(2))
+        self.assertTrue(compu_method.internal_lower_limit.complies_to_lower(3))
+        self.assertTrue(compu_method.internal_upper_limit.complies_to_upper(15))
+        self.assertFalse(compu_method.internal_upper_limit.complies_to_upper(16))
+
+        self.assertFalse(compu_method.physical_lower_limit.complies_to_lower(-75))
+        self.assertTrue(compu_method.physical_lower_limit.complies_to_lower(-74))
+        self.assertTrue(compu_method.physical_upper_limit.complies_to_upper(-10))
+        self.assertFalse(compu_method.physical_upper_limit.complies_to_upper(-9))
 
         self.assertTrue(compu_method.is_valid_internal_value(3))
         self.assertTrue(compu_method.is_valid_internal_value(15))
         self.assertFalse(compu_method.is_valid_internal_value(2))
         self.assertFalse(compu_method.is_valid_internal_value(16))
 
+        self.assertFalse(compu_method.is_valid_physical_value(-75))
         self.assertTrue(compu_method.is_valid_physical_value(-74))
         self.assertTrue(compu_method.is_valid_physical_value(-14))
-        self.assertFalse(compu_method.is_valid_physical_value(-75))
-        self.assertFalse(compu_method.is_valid_physical_value(-13))
+        self.assertTrue(compu_method.is_valid_physical_value(-10))
+        self.assertFalse(compu_method.is_valid_physical_value(-9))
 
 
 class TestTabIntpCompuMethod(unittest.TestCase):

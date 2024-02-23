@@ -99,8 +99,10 @@ class LinearCompuMethod(CompuMethod):
             odxassert(isinstance(limit.value, (int, float)))
             if limit.interval_type == IntervalType.INFINITE:
                 return limit
-            elif (limit.interval_type == limit.interval_type.OPEN and
-                  self.internal_type.as_python_type() == int):
+            elif (limit.interval_type.value == limit.interval_type.OPEN and
+                  isinstance(self.internal_type.as_python_type(), int)):
+                if not isinstance(limit.value, int):
+                    odxraise()
                 closed_limit = limit.value - 1 if is_upper_limit else limit.value + 1
                 return Limit(
                     value=self._convert_internal_to_physical(closed_limit),
