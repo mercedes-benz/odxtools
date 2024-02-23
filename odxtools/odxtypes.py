@@ -125,7 +125,7 @@ class DataType(Enum):
     A_ASCIISTRING = "A_ASCIISTRING"
     A_UTF8STRING = "A_UTF8STRING"
 
-    def as_python_type(self) -> type:
+    def as_python_type(self) -> Type[AtomicOdxType]:
         return _ODX_TYPE_TO_PYTHON_TYPE[self.value]
 
     def from_string(self, value: str) -> AtomicOdxType:

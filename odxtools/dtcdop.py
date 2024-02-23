@@ -59,7 +59,7 @@ class DtcDop(DopBase):
 
         # TODO: NOT-INHERITED-DTC-SNREFS
         linked_dtc_dop_refs = [
-            cast(OdxLinkRef, OdxLinkRef.from_et(dtc_ref_elem, doc_frags))
+            OdxLinkRef.from_et(dtc_ref_elem, doc_frags)
             for dtc_ref_elem in et_element.iterfind("LINKED-DTC-DOPS/"
                                                     "LINKED-DTC-DOP/"
                                                     "DTC-DOP-REF")

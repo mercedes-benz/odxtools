@@ -81,7 +81,7 @@ class SomersaultSID(IntEnum):
 
 # extend the Somersault SIDs by the UDS ones
 tmp = [(i.name, i.value) for i in chain(uds.SID, SomersaultSID)]
-SID: Any = IntEnum("SID", tmp)  # type: ignore
+SID: Any = IntEnum("SID", tmp)  # type: ignore[misc]
 
 dlc_short_name = "somersault"
 
@@ -625,7 +625,7 @@ somersault_positive_responses = {
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
                     coded_value=uds.positive_response_id(
-                        SID.DiagnosticSessionControl.value),  # type: ignore
+                        SID.DiagnosticSessionControl.value),  # type: ignore[attr-defined]
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -661,7 +661,8 @@ somersault_positive_responses = {
                     description=None,
                     diag_coded_type=somersault_diagcodedtypes["uint16"],
                     byte_position=0,
-                    coded_value=uds.positive_response_id(SID.TesterPresent.value),  # type: ignore
+                    coded_value=uds.positive_response_id(
+                        SID.TesterPresent.value),  # type: ignore[attr-defined]
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -745,7 +746,8 @@ somersault_positive_responses = {
                     description=None,
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
-                    coded_value=uds.positive_response_id(SID.ForwardFlip.value),  # type: ignore
+                    coded_value=uds.positive_response_id(
+                        SID.ForwardFlip.value),  # type: ignore[attr-defined]
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -793,7 +795,8 @@ somersault_positive_responses = {
                     description=None,
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
-                    coded_value=uds.positive_response_id(SID.BackwardFlip.value),  # type: ignore
+                    coded_value=uds.positive_response_id(
+                        SID.BackwardFlip.value),  # type: ignore[attr-defined]
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -843,7 +846,7 @@ somersault_positive_responses = {
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
                     coded_value=uds.positive_response_id(
-                        SID.ReadDataByIdentifier.value),  # type: ignore
+                        SID.ReadDataByIdentifier.value),  # type: ignore[attr-defined]
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -919,7 +922,7 @@ somersault_positive_responses = {
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
                     coded_value=uds.positive_response_id(
-                        SID.ForwardFlipCondition.value),  # type: ignore
+                        SID.ForwardFlipCondition.value),  # type: ignore[attr-defined]
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -1008,7 +1011,7 @@ somersault_negative_responses = {
                     description=None,
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=1,
-                    coded_value=uds.SID.TesterPresent.value,  # type: ignore
+                    coded_value=uds.SID.TesterPresent.value,  # type: ignore[attr-defined]
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -1345,7 +1348,8 @@ somersault_requests = {
                     description=None,
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
-                    coded_value=SID.DiagnosticSessionControl.value,  # type: ignore
+                    coded_value=SID.DiagnosticSessionControl  # type: ignore[attr-defined,arg-type]
+                    .value,
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -1379,7 +1383,8 @@ somersault_requests = {
                     description=None,
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
-                    coded_value=SID.DiagnosticSessionControl.value,  # type: ignore
+                    coded_value=SID.DiagnosticSessionControl  # type: ignore[attr-defined,arg-type]
+                    .value,
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -1413,7 +1418,7 @@ somersault_requests = {
                     description=None,
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
-                    coded_value=SID.TesterPresent.value,  # type: ignore
+                    coded_value=SID.TesterPresent.value,  # type: ignore[attr-defined,arg-type]
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -1448,7 +1453,8 @@ somersault_requests = {
                     description=None,
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
-                    coded_value=SID.ForwardFlipCondition.value,  # type: ignore
+                    coded_value=SID.ForwardFlipCondition  # type: ignore[attr-defined,arg-type]
+                    .value,
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -1483,7 +1489,7 @@ somersault_requests = {
                     description=None,
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
-                    coded_value=SID.ForwardFlip.value,  # type: ignore
+                    coded_value=SID.ForwardFlip.value,  # type: ignore[attr-defined,arg-type]
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -1531,7 +1537,7 @@ somersault_requests = {
                     description=None,
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
-                    coded_value=SID.BackwardFlip.value,  # type: ignore
+                    coded_value=SID.BackwardFlip.value,  # type: ignore[attr-defined,arg-type]
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -1579,7 +1585,8 @@ somersault_requests = {
                     description=None,
                     diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
-                    coded_value=SID.ReadDataByIdentifier.value,  # type: ignore
+                    coded_value=SID.ReadDataByIdentifier  # type: ignore[attr-defined,arg-type]
+                    .value,
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -2395,7 +2402,7 @@ for odx_cs_filename in (
         comparam_subsets.append(ComparamSubset.from_et(subset, []))
 
 # create a database object
-database = Database()
+database: Database = Database()
 database._diag_layer_containers = NamedItemList([somersault_dlc])
 database._comparam_subsets = NamedItemList(comparam_subsets)
 

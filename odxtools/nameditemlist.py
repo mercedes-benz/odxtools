@@ -127,7 +127,7 @@ class ItemAttributeList(List[T]):
         result.update(self._item_dict)
         return result
 
-    @overload  # type: ignore[override]
+    @overload
     def __getitem__(self, key: SupportsIndex) -> T:
         ...
 

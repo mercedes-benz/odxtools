@@ -71,7 +71,10 @@ class ParentRef:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._layer = odxlinks.resolve(self.layer_ref)
+        if TYPE_CHECKING:
+            self._layer = odxlinks.resolve(self.layer_ref, DiagLayer)
+        else:
+            self._layer = odxlinks.resolve(self.layer_ref)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass

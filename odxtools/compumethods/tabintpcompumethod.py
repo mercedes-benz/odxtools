@@ -124,9 +124,7 @@ class TabIntpCompuMethod(CompuMethod):
         odxassert(
             isinstance(physical_value, (int, float)),
             "Only integers and floats can be piecewise linearly interpolated")
-        result = self._piecewise_linear_interpolate(
-            physical_value,  # type: ignore[arg-type]
-            reference_points)
+        result = self._piecewise_linear_interpolate(physical_value, reference_points)
 
         if result is None:
             raise EncodeError(f"Internal value {physical_value!r} must be inside the range"
@@ -142,9 +140,7 @@ class TabIntpCompuMethod(CompuMethod):
                               "either int or float")
 
         reference_points = list(zip(self.internal_points, self.physical_points))
-        result = self._piecewise_linear_interpolate(
-            internal_value,  # type: ignore[arg-type]
-            reference_points)
+        result = self._piecewise_linear_interpolate(internal_value, reference_points)
 
         if result is None:
             raise DecodeError(f"Internal value {internal_value!r} must be inside the range"

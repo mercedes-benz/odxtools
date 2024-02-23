@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import abc
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Union, cast
 
 from .decodestate import ODX_TYPE_TO_FORMAT_LETTER, DecodeState
 from .encodestate import EncodeState
@@ -111,9 +111,9 @@ class DiagCodedType(abc.ABC):
 
         # If the bit length is zero, return empty bytes
         if bit_length == 0:
-            if (base_data_type in [
+            if (base_data_type.value in [
                     DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32, DataType.A_FLOAT64
-            ] and base_data_type != 0):
+            ] and base_data_type.value != 0):
                 raise EncodeError(
                     f"The number {repr(internal_value)} cannot be encoded into {bit_length} bits.")
             return b''
@@ -136,7 +136,7 @@ class DiagCodedType(abc.ABC):
         ]:
             coded = coded[::-1]
 
-        return coded
+        return cast(bytes, coded)
 
     def _minimal_byte_length_of(self, internal_value: Union[bytes, str]) -> int:
         """Helper method to get the minimal byte length.

@@ -3,7 +3,7 @@
 
 import argparse
 import os
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set, Union, cast
 
 from rich import print
 from tabulate import tabulate  # TODO: switch to rich tables
@@ -19,6 +19,7 @@ from ..parameters.parameter import Parameter
 from ..parameters.physicalconstantparameter import PhysicalConstantParameter
 from ..parameters.valueparameter import ValueParameter
 from . import _parser_utils
+from ._parser_utils import TSubparsersAction
 from ._print_utils import (extract_service_tabulation_data, print_dl_metrics,
                            print_service_parameters)
 
@@ -104,8 +105,10 @@ class Display:
                     f"  Detailed changes of diagnostic service [u cyan]{service.short_name}[/u cyan]"
                 )
                 #   detailed_info in [infotext1, dict1, infotext2, dict2, ...]
-                for detailed_info in service_dict["changed_parameters_of_service"][2][
-                        service_idx]:  # type: ignore[arg-type, index, union-attr]
+                info_list = cast(
+                    list,  # type: ignore[type-arg]
+                    service_dict["changed_parameters_of_service"])[2][service_idx]
+                for detailed_info in info_list:
                     if isinstance(detailed_info, str):
                         print()
                         print(detailed_info)
@@ -256,7 +259,8 @@ class Comparison(Display):
 
         return {"Property": property, "Old Value": old, "New Value": new}
 
-    def compare_services(self, service1: DiagService, service2: DiagService) -> list:
+    def compare_services(self, service1: DiagService,
+                         service2: DiagService) -> List[SpecsServiceDict]:
         # compares request, positive response and negative response parameters of two diagnostic services
 
         information: List[Union[str, Dict[str, Any]]] = [
@@ -382,9 +386,10 @@ class Comparison(Display):
                            str(service2.negative_responses)]
             })
 
-        return [information, changed_params]
+        return [information, changed_params]  # type: ignore[list-item]
 
-    def compare_diagnostic_layers(self, dl1: DiagLayer, dl2: DiagLayer) -> dict:
+    def compare_diagnostic_layers(self, dl1: DiagLayer,
+                                  dl2: DiagLayer) -> dict:  # type: ignore[type-arg]
         # compares diagnostic services of two diagnostic layers with each other
         # save changes in dictionary (service_dict)
         # TODO: add comparison of SingleECUJobs
@@ -467,11 +472,11 @@ class Comparison(Display):
                         # add parameters which have been changed (type: String)
                         service_dict["changed_parameters_of_service"][
                             1].append(  # type: ignore[union-attr]
-                                detailed_information[1])
+                                detailed_information[1])  # type: ignore[arg-type]
                         # add detailed information about changed service parameters (type: list) [infotext1, table1, infotext2, table2, ...]
                         service_dict["changed_parameters_of_service"][
                             2].append(  # type: ignore[union-attr]
-                                detailed_information[0])
+                                detailed_information[0])  # type: ignore[arg-type]
 
             for service2_idx, service2 in enumerate(dl2.services):
 
@@ -496,13 +501,14 @@ class Comparison(Display):
                                 service1)
                         # add parameters which have been changed (type: String)
                         service_dict["changed_parameters_of_service"][  # type: ignore[union-attr]
-                            1].append(detailed_information[1])
+                            1].append(detailed_information[1])  # type: ignore[arg-type]
                         # add detailed information about changed service parameters (type: list) [infotext1, table1, infotext2, table2, ...]
                         service_dict["changed_parameters_of_service"][  # type: ignore[union-attr]
-                            2].append(detailed_information[0])
+                            2].append(detailed_information[0])  # type: ignore[arg-type]
         return service_dict
 
-    def compare_databases(self, database_new: Database, database_old: Database) -> dict:
+    def compare_databases(self, database_new: Database,
+                          database_old: Database) -> dict:  # type: ignore[type-arg]
         # compares two PDX-files with each other
 
         new_variants: NewVariants = []
@@ -539,7 +545,7 @@ class Comparison(Display):
         return changes_variants
 
 
-def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
+def add_subparser(subparsers: TSubparsersAction) -> None:
     parser = subparsers.add_parser(
         "compare",
         description="\n".join([

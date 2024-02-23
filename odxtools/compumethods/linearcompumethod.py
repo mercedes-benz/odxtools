@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import cast
 
-from ..exceptions import DecodeError, EncodeError, odxassert
+from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
 from ..odxtypes import AtomicOdxType, DataType
 from .compumethod import CompuMethod, CompuMethodCategory
 from .limit import IntervalType, Limit

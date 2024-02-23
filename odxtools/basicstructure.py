@@ -254,9 +254,7 @@ class BasicStructure(ComplexDop):
             Parameters of the RPC as mapping from SHORT-NAME of the parameter to the value
         """
         return self.convert_physical_to_internal(
-            params,  # type: ignore[arg-type]
-            triggering_coded_request=coded_request,
-            is_end_of_pdu=True)
+            params, triggering_coded_request=coded_request, is_end_of_pdu=True)
 
     def decode(self, message: bytes) -> ParameterValueDict:
         decode_state = DecodeState(coded_message=message)

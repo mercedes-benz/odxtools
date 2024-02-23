@@ -95,7 +95,10 @@ class TableRow(IdentifiableElement):
             if not isinstance(self._dop, (DataObjectProperty, DtcDop)):
                 odxraise("The DOP-REF of TABLE-ROWs must reference a simple DOP!")
 
-        self._table = odxlinks.resolve(self.table_ref)
+        if TYPE_CHECKING:
+            self._table = odxlinks.resolve(self.table_ref, Table)
+        else:
+            self._table = odxlinks.resolve(self.table_ref)
 
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)

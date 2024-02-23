@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict, cast
 
 import odxtools.exceptions as exceptions
 
@@ -118,4 +118,4 @@ class DecodeState:
         self.cursor_byte_position += byte_length
         self.cursor_bit_position = 0
 
-        return internal_value
+        return cast(AtomicOdxType, internal_value)

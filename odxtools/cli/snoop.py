@@ -15,6 +15,7 @@ from odxtools.isotp_state_machine import IsoTpStateMachine
 from odxtools.response import Response, ResponseType
 
 from . import _parser_utils
+from ._parser_utils import TSubparsersAction
 
 # name of the tool
 _odxtools_tool_name_ = "snoop"
@@ -209,7 +210,7 @@ def add_cli_arguments(parser: argparse.ArgumentParser) -> None:
     _parser_utils.add_pdx_argument(parser)
 
 
-def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
+def add_subparser(subparsers: TSubparsersAction) -> None:
     parser = subparsers.add_parser(
         "snoop",
         description="Live decoding of a diagnostic session.",
