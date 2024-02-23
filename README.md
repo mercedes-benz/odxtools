@@ -445,7 +445,7 @@ The services of 'somersault_lazy' are:
 ### The `browse` subcommand
 
 The `browse` subcommand uses
-[PyInquirer](https://github.com/CITGuru/PyInquirer/) to interactively
+[InquirerPy](https://github.com/kazhala/InquirerPy) to interactively
 navigate through the database of a `.pdx` file. For example, using the
 `browse` subcommand you can select the ECU and service without
 spamming the terminal:
@@ -977,7 +977,7 @@ project, please read the [contributing guide](https://github.com/mercedes-benz/o
 
 ## Code of Conduct
 
-Please read our [Code of Conduct](https://github.com/mercedes-benz/daimler-foss/blob/master/CODE_OF_CONDUCT.md)
+Please read our [Code of Conduct](https://github.com/mercedes-benz/foss/blob/master/CODE_OF_CONDUCT.md)
 as it is our base for interaction.
 
 ## Provider Information
