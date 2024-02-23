@@ -72,7 +72,7 @@ class DecodeState:
         """
         # If the bit length is zero, return "empty" values of each type
         if bit_length == 0:
-            return base_data_type.as_python_type()()
+            return base_data_type.python_type()
 
         byte_length = (bit_length + self.cursor_bit_position + 7) // 8
         if self.cursor_byte_position + byte_length > len(self.coded_message):

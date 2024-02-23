@@ -100,7 +100,7 @@ class LinearCompuMethod(CompuMethod):
             if limit.interval_type == IntervalType.INFINITE:
                 return limit
             elif (limit.interval_type.value == limit.interval_type.OPEN and
-                  isinstance(self.internal_type.as_python_type(), int)):
+                  isinstance(self.internal_type.python_type, int)):
                 if not isinstance(limit.value, int):
                     odxraise()
                 closed_limit = limit.value - 1 if is_upper_limit else limit.value + 1
@@ -177,7 +177,7 @@ class LinearCompuMethod(CompuMethod):
 
     def is_valid_physical_value(self, physical_value: AtomicOdxType) -> bool:
         # Do type checks
-        expected_type = self.physical_type.as_python_type()
+        expected_type = self.physical_type.python_type
         if expected_type == float and not isinstance(physical_value, (int, float)):
             return False
         elif expected_type != float and not isinstance(physical_value, expected_type):
@@ -191,7 +191,7 @@ class LinearCompuMethod(CompuMethod):
         return True
 
     def is_valid_internal_value(self, internal_value: AtomicOdxType) -> bool:
-        expected_type = self.internal_type.as_python_type()
+        expected_type = self.internal_type.python_type
         if expected_type == float and not isinstance(internal_value, (int, float)):
             return False
         elif expected_type != float and not isinstance(internal_value, expected_type):
