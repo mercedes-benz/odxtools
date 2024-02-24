@@ -27,14 +27,9 @@ In the context of project-related discussions, please respect our
 
 ### CLA
 
-Before your first pull request can be merged, you need to sign our
-[Contributor License Agreement (CLA)](CONTRIBUTORS_LICENSE_AGREEMENT.md)
-and send it to
-[cla-mbition@mercedes-benz.com](mailto:cla-mbition@mercedes-benz.com).
-
-After sending the signed document, your code contributions can
-immediately be merged, i.e., you do not need to wait for any
-acknowledgement email.
+Before you can contribute, you will need to sign our Contributor
+License Agreement (CLA). When you create your first pull request, you
+will be requested by our CLA-assistant to sign this CLA.
 
 ### Pull requests
 
