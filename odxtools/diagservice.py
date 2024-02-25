@@ -167,10 +167,7 @@ class DiagService(DiagComm):
         for cpr in self.comparam_refs:
             cpr._resolve_odxlinks(odxlinks)
 
-        if TYPE_CHECKING:
-            self._request = odxlinks.resolve(self.request_ref, Request)
-        else:
-            self._request = odxlinks.resolve(self.request_ref)
+        self._request = odxlinks.resolve(self.request_ref, Request)
 
         self._positive_responses = NamedItemList[Response](
             [odxlinks.resolve(x, Response) for x in self.pos_response_refs])

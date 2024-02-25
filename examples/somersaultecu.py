@@ -2402,7 +2402,7 @@ for odx_cs_filename in (
         comparam_subsets.append(ComparamSubset.from_et(subset, []))
 
 # create a database object
-database: Database = Database()
+database = Database()
 database._diag_layer_containers = NamedItemList([somersault_dlc])
 database._comparam_subsets = NamedItemList(comparam_subsets)
 
