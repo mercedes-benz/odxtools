@@ -37,9 +37,10 @@ def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
     )
     odxlinks.update({resp.odx_id: resp})
 
-    def decode(message: bytes) -> None:
+    def decode(message: bytes) -> Dict[str, Any]:
         msg_str = message.decode(encoding="utf-8")
         msg_dict = json.loads(msg_str)
+        assert isinstance(msg_dict, dict)
         return msg_dict
 
     monkeypatch.setattr(resp, "decode", decode)

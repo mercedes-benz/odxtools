@@ -350,7 +350,7 @@ class DiagLayer:
         return self._global_negative_responses
 
     @property
-    @deprecated(details="use diag_data_dictionary_spec.tables")
+    @deprecated(details="use diag_data_dictionary_spec.tables")  # type: ignore[misc]
     def tables(self) -> NamedItemList[Table]:
         return self.diag_data_dictionary_spec.tables
 
@@ -767,7 +767,7 @@ class DiagLayer:
 
         return int(result)
 
-    @deprecated(details="use get_can_receive_id()")
+    @deprecated(details="use get_can_receive_id()")  # type: ignore[misc]
     def get_receive_id(self) -> Optional[int]:
         return self.get_can_receive_id()
 
@@ -796,7 +796,7 @@ class DiagLayer:
 
         return int(result)
 
-    @deprecated(details="use get_can_send_id()")
+    @deprecated(details="use get_can_send_id()")  # type: ignore[misc]
     def get_send_id(self) -> Optional[int]:
         return self.get_can_send_id()
 

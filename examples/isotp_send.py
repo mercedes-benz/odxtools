@@ -37,7 +37,7 @@ isotp_socket = isotp.socket()
 # bs: maximum block size. (Must be smaller than 4096?)
 isotp_socket.set_fc_opts(stmin=5, bs=100)
 
-can_bus = can.Bus(channel=channel, interface="socketcan")  # type: ignore[abstract]
+can_bus = can.Bus(channel=channel, interface="socketcan")
 
 # note that we specify the CAN IDs from the ECU's point of view, i.e.,
 # from the tester's (our) perspective, they are reversed.

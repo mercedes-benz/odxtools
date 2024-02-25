@@ -35,7 +35,7 @@ class OutputParam(IdentifiableElement):
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._dop_base = odxlinks.resolve(self.dop_base_ref)
+        self._dop_base = odxlinks.resolve(self.dop_base_ref, DopBase)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
@@ -46,6 +46,6 @@ class OutputParam(IdentifiableElement):
         return self._dop_base
 
     @property
-    @deprecated(details="use .dop_base")
+    @deprecated(details="use .dop_base")  # type: ignore[misc]
     def dop(self) -> DopBase:
         return self._dop_base

@@ -38,7 +38,7 @@ def _parse_compu_scale_to_linear_compu_method(
         DataType.A_UINT32,
     ])
 
-    if physical_type.as_python_type() == float:
+    if physical_type.python_type == float:
         computation_python_type = physical_type.from_string
     else:
         computation_python_type = internal_type.from_string

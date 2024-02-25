@@ -36,7 +36,7 @@ def print_diagnostic_service(service: DiagService,
                              print_state_transitions: bool = False,
                              print_audiences: bool = False,
                              allow_unknown_bit_lengths: bool = False,
-                             print_fn: Callable = print) -> None:
+                             print_fn: Callable[..., Any] = print) -> None:
 
     print_fn(f" Service '{service.short_name}':")
 
@@ -70,7 +70,7 @@ def print_diagnostic_service(service: DiagService,
 
 def print_service_parameters(service: DiagService,
                              allow_unknown_bit_lengths: bool = False,
-                             print_fn: Callable = print) -> None:
+                             print_fn: Callable[..., Any] = print) -> None:
     # prints parameter details of request, positive response and negative response of diagnostic service
 
     # Request
@@ -227,7 +227,7 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Dict[str, 
     }
 
 
-def print_dl_metrics(variants: List[DiagLayer], print_fn: Callable = print) -> None:
+def print_dl_metrics(variants: List[DiagLayer], print_fn: Callable[..., Any] = print) -> None:
 
     name = []
     type = []

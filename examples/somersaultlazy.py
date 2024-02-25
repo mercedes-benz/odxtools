@@ -14,15 +14,19 @@ import somersaultecu
 
 import odxtools
 import odxtools.uds as uds
+from odxtools.exceptions import odxrequire
 from odxtools.message import Message
 from odxtools.odxtypes import ParameterValueDict
+from odxtools.response import Response, ResponseType
+
+from .somersaultecu import database as somersaultdatabase
 
 tester_logger = logging.getLogger("somersault_lazy_tester")
 ecu_logger = logging.getLogger("somersault_lazy_ecu")
 
 is_sterile = False
 can_channel: Optional[str] = None
-somersault_lazy_diag_layer = somersaultecu.database.ecus.somersault_lazy  # type:ignore
+somersault_lazy_diag_layer = somersaultdatabase.ecus.somersault_lazy
 
 # the raw payload data of the telegrams received by the ECU and by the
 # tester when in sterile mode (unittest without a CAN channel)
@@ -162,8 +166,8 @@ class SomersaultLazyEcu:
 
         self.isotp_socket = create_isotp_socket(
             can_channel,
-            rxid=somersault_lazy_diag_layer.get_can_receive_id(),
-            txid=somersault_lazy_diag_layer.get_can_send_id(),
+            rxid=odxrequire(somersault_lazy_diag_layer.get_can_receive_id()),
+            txid=odxrequire(somersault_lazy_diag_layer.get_can_send_id()),
         )
 
         ##############
@@ -172,13 +176,11 @@ class SomersaultLazyEcu:
         ##############
 
         # determine the timeout on inactivity [s]
-        self._idle_timeout = somersault_lazy_diag_layer.get_tester_present_time()
-        if self._idle_timeout is None:
-            self._idle_timeout = 3.0  # default specified by the standard
+        self._idle_timeout = somersault_lazy_diag_layer.get_tester_present_time() or 3.0
 
         # we send a response to tester present messages. make sure
         # that this is specified
-        cp = somersault_lazy_diag_layer.get_communication_parameter("CP_TesterPresentReqRsp")
+        cp = odxrequire(somersault_lazy_diag_layer.get_comparam("CP_TesterPresentReqRsp"))
         assert cp.value == "Response expected" or cp.value == "1"
 
     async def _handle_requests_task(self) -> None:
@@ -367,17 +369,18 @@ async def tester_await_response(isotp_socket: Optional[isotp.tpsock.socket],
     try:
         replies = somersault_lazy_diag_layer.decode_response(raw_response, raw_message)
         assert len(replies) == 1  # replies must always be uniquely decodable
+        assert isinstance(replies[0].coding_object, Response)
 
-        if replies[0].coding_object.response_type == "POS-RESPONSE":
+        if replies[0].coding_object.response_type == ResponseType.POSITIVE:
             rtype = "positive"
-        elif replies[0].coding_object.response_type == "NEG-RESPONSE":
+        elif replies[0].coding_object.response_type == ResponseType.NEGATIVE:
             rtype = "negative"
         else:
             rtype = "unknown"
 
         tester_logger.debug(f"received {rtype} response")
 
-        return replies[0]
+        return replies[0].param_dict
 
     except odxtools.exceptions.DecodeError as e:
         if len(raw_response) >= 3:
@@ -408,8 +411,8 @@ async def tester_main() -> None:
     # reversed.
     isotp_socket = create_isotp_socket(
         can_channel,
-        txid=somersault_lazy_diag_layer.get_can_receive_id(),
-        rxid=somersault_lazy_diag_layer.get_can_send_id(),
+        txid=odxrequire(somersault_lazy_diag_layer.get_can_receive_id()),
+        rxid=odxrequire(somersault_lazy_diag_layer.get_can_send_id()),
     )
 
     # try to to do a single forward flip without having an active session (ought to fail)

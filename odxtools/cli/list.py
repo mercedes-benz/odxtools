@@ -10,6 +10,7 @@ from ..diaglayer import DiagLayer
 from ..diagservice import DiagService
 from ..singleecujob import SingleEcuJob
 from . import _parser_utils
+from ._parser_utils import TSubparsersAction
 from ._print_utils import format_desc, print_diagnostic_service, print_dl_metrics
 
 # name of the tool
@@ -111,7 +112,7 @@ def print_summary(odxdb: Database,
                 rich.print(f"  {com_param.short_name}: {com_param.value}")
 
 
-def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
+def add_subparser(subparsers: TSubparsersAction) -> None:
     parser = subparsers.add_parser(
         "list",
         description="\n".join([

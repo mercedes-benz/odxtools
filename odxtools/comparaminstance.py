@@ -7,7 +7,7 @@ from xml.etree import ElementTree
 from .basecomparam import BaseComparam
 from .comparam import Comparam
 from .complexcomparam import ComplexComparam, ComplexValue, create_complex_value_from_et
-from .exceptions import OdxWarning, odxassert, odxraise, odxrequire
+from .exceptions import OdxWarning, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .utils import create_description_from_et
 
@@ -75,7 +75,7 @@ class ComparamInstance:
     def spec(self) -> BaseComparam:
         return self._spec
 
-    def get_value(self) -> Optional[str]:
+    def get_value(self) -> str:
         """Retrieve the value of a simple communication parameter
 
         This takes the default value of the comparam (if any) into
@@ -91,7 +91,8 @@ class ComparamInstance:
         else:
             result = self.spec.physical_default_value
 
-        odxassert(isinstance(result, str))
+        if not isinstance(result, str):
+            odxraise()
 
         return result
 

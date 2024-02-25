@@ -6,7 +6,7 @@ from odxtools.load_pdx_file import load_pdx_file
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
 
 try:
-    from unittest.mock import patch  # type: ignore
+    from unittest.mock import patch
 except ImportError:
     from mock import patch  # type: ignore # noqa: UP026
 

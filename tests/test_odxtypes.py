@@ -20,14 +20,14 @@ class TestDataType(unittest.TestCase):
         self.assertTrue(DataType.A_BYTEFIELD.from_string("12") == b"\x12")
 
     def test_python_types(self) -> None:
-        self.assertTrue(DataType.A_UINT32.as_python_type() == int)
-        self.assertTrue(DataType.A_INT32.as_python_type() == int)
-        self.assertTrue(DataType.A_FLOAT32.as_python_type() == float)
-        self.assertTrue(DataType.A_FLOAT64.as_python_type() == float)
-        self.assertTrue(DataType.A_BYTEFIELD.as_python_type() == bytearray)
-        self.assertTrue(DataType.A_UNICODE2STRING.as_python_type() == str)
-        self.assertTrue(DataType.A_UTF8STRING.as_python_type() == str)
-        self.assertTrue(DataType.A_ASCIISTRING.as_python_type() == str)
+        self.assertTrue(DataType.A_UINT32.python_type == int)
+        self.assertTrue(DataType.A_INT32.python_type == int)
+        self.assertTrue(DataType.A_FLOAT32.python_type == float)
+        self.assertTrue(DataType.A_FLOAT64.python_type == float)
+        self.assertTrue(DataType.A_BYTEFIELD.python_type == bytearray)
+        self.assertTrue(DataType.A_UNICODE2STRING.python_type == str)
+        self.assertTrue(DataType.A_UTF8STRING.python_type == str)
+        self.assertTrue(DataType.A_ASCIISTRING.python_type == str)
 
     def test_isinstance(self) -> None:
         self.assertTrue(DataType.A_ASCIISTRING.isinstance("123"))

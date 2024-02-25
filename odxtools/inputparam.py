@@ -53,6 +53,6 @@ class InputParam(NamedElement):
         return self._dop_base
 
     @property
-    @deprecated(details="use .dop_base")
+    @deprecated(details="use .dop_base")  # type: ignore[misc]
     def dop(self) -> DopBase:
         return self._dop_base

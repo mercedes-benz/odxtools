@@ -31,6 +31,6 @@ class Message:
         return self.param_dict[key]
 
     @property
-    @deprecated("use .coding_object")
+    @deprecated("use .coding_object")  # type: ignore[misc]
     def structure(self) -> Union["Request", "Response"]:
         return self.coding_object

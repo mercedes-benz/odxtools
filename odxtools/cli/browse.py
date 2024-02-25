@@ -4,7 +4,7 @@ import logging
 import sys
 from typing import List, Optional, Union, cast
 
-from InquirerPy import prompt as PI_prompt
+import InquirerPy.prompt as PI_prompt
 from tabulate import tabulate  # TODO: switch to rich tables
 
 from ..database import Database
@@ -20,6 +20,7 @@ from ..parameters.valueparameter import ValueParameter
 from ..request import Request
 from ..response import Response
 from . import _parser_utils
+from ._parser_utils import TSubparsersAction
 from ._print_utils import extract_parameter_tabulation_data
 
 # name of the tool
@@ -250,7 +251,8 @@ def encode_message_from_string_values(
                 parameter_values[parameter_sn] = _convert_string_to_odx_type(
                     parameter_value, DataType.A_BYTEFIELD)
 
-    payload = sub_service.encode(**parameter_values)  # type: ignore
+    payload = sub_service.encode(coded_request=b'\xff' * 100, **parameter_values)
+
     print(f"Message payload: 0x{bytes(payload).hex()}")
 
 
@@ -353,7 +355,7 @@ def browse(odxdb: Database) -> None:
                 encode_message_interactively(codec, ask_user_confirmation=True)
 
 
-def add_subparser(subparsers: "argparse._SubParsersAction") -> None:
+def add_subparser(subparsers: TSubparsersAction) -> None:
     # Browse interactively to avoid spamming the console.
     parser = subparsers.add_parser(
         "browse",

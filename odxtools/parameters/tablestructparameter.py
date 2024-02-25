@@ -36,7 +36,7 @@ class TableStructParameter(Parameter):
         super()._resolve_odxlinks(odxlinks)
 
         if self.table_key_ref is not None:
-            self._table_key = odxlinks.resolve(self.table_key_ref)
+            self._table_key = odxlinks.resolve(self.table_key_ref, TableKeyParameter)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)

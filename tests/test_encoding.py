@@ -310,8 +310,8 @@ class TestEncodeRequest(unittest.TestCase):
             "is_condensed_raw": None,
             "bit_length": 16,
         }
-        inner = StandardLengthType(bit_mask=0x0ff0, **unit_kwargs)  # type: ignore[arg-type]
-        outer = StandardLengthType(bit_mask=0xf00f, **unit_kwargs)  # type: ignore[arg-type]
+        inner = StandardLengthType(bit_mask=0x0ff0, **unit_kwargs)
+        outer = StandardLengthType(bit_mask=0xf00f, **unit_kwargs)
         dop_id = OdxLinkId('dop', [])
         dop_kwargs: Dict[str, Any] = {
             "compu_method": IdenticalCompuMethod(DataType.A_UINT32, DataType.A_UINT32),

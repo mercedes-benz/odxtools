@@ -125,7 +125,8 @@ class DataType(Enum):
     A_ASCIISTRING = "A_ASCIISTRING"
     A_UTF8STRING = "A_UTF8STRING"
 
-    def as_python_type(self) -> type:
+    @property
+    def python_type(self) -> Type[AtomicOdxType]:
         return _ODX_TYPE_TO_PYTHON_TYPE[self.value]
 
     def from_string(self, value: str) -> AtomicOdxType:
@@ -158,10 +159,10 @@ class DataType(Enum):
             return self.from_string(value)
         else:
             # regular type cast of python objects
-            return self.as_python_type()(value)
+            return self.python_type(value)
 
     def isinstance(self, value: Any) -> bool:
-        expected_type = self.as_python_type()
+        expected_type = self.python_type
         if isinstance(value, expected_type):
             return True
         elif expected_type == float and isinstance(value, (int, float)):

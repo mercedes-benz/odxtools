@@ -128,7 +128,7 @@ def write_pdx_file(
             zf_name = os.path.basename(output_file_name)
             with zf.open(zf_name, "w") as out_file:
                 file_index.append((zf_name, creation_date, mime_type))
-                out_file.write(data)  # type: ignore
+                out_file.write(data)
 
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
         jinja_env.globals["hasattr"] = hasattr

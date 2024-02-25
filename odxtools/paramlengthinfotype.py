@@ -30,7 +30,10 @@ class ParamLengthInfoType(DiagCodedType):
         """Recursively resolve any odxlinks references"""
         super()._resolve_odxlinks(odxlinks)
 
-        self._length_key = odxlinks.resolve(self.length_key_ref)
+        if TYPE_CHECKING:
+            self._length_key = odxlinks.resolve(self.length_key_ref, LengthKeyParameter)
+        else:
+            self._length_key = odxlinks.resolve(self.length_key_ref)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         """Recursively resolve any short-name references"""
