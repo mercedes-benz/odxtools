@@ -28,16 +28,15 @@ class TexttableCompuMethod(CompuMethod):
     def category(self) -> CompuMethodCategory:
         return "TEXTTABLE"
 
-
     def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> AtomicOdxType:
         matching_scales = [x for x in self.internal_to_phys if x.compu_const == physical_value]
         for scale in matching_scales:
             if scale.compu_inverse_value is not None:
                 return scale.compu_inverse_value
-            elif scale.lower_limit is not None:
-                return scale.lower_limit.value
-            elif scale.upper_limit is not None:
-                return scale.upper_limit.value
+            elif scale.lower_limit is not None and scale.lower_limit._value is not None:
+                return scale.lower_limit._value
+            elif scale.upper_limit is not None and scale.upper_limit._value is not None:
+                return scale.upper_limit._value
 
         if self.compu_default_value is not None and self.compu_default_value.compu_inverse_value is not None:
             return self.compu_default_value.compu_inverse_value
@@ -51,18 +50,16 @@ class TexttableCompuMethod(CompuMethod):
         return scale.applies(internal_value)
 
     def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> AtomicOdxType:
-        matching_scales = [ x for x in self.internal_to_phys if x.applies(internal_value) ]
+        matching_scales = [x for x in self.internal_to_phys if x.applies(internal_value)]
         if len(matching_scales) == 0:
             if self.compu_default_value is None or self.compu_default_value.compu_const is None:
-                odxraise(f"Texttable could not decode {internal_value!r}.",
-                         DecodeError)
+                odxraise(f"Texttable could not decode {internal_value!r}.", DecodeError)
                 return cast(None, AtomicOdxType)
 
             return self.compu_default_value.compu_const
 
         if len(matching_scales) != 1 or matching_scales[0].compu_const is None:
-            odxraise(f"Texttable could not decode {internal_value!r}.",
-                     DecodeError)
+            odxraise(f"Texttable could not decode {internal_value!r}.", DecodeError)
 
         return matching_scales[0].compu_const
 

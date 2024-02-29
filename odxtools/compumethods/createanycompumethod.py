@@ -10,7 +10,7 @@ from ..odxtypes import DataType
 from .compumethod import CompuMethod
 from .compuscale import CompuScale
 from .identicalcompumethod import IdenticalCompuMethod
-from .limit import IntervalType, Limit
+from .limit import Limit
 from .linearcompumethod import LinearCompuMethod
 from .scalelinearcompumethod import ScaleLinearCompuMethod
 from .tabintpcompumethod import TabIntpCompuMethod
@@ -18,8 +18,9 @@ from .texttablecompumethod import TexttableCompuMethod
 
 
 def _parse_compu_scale_to_linear_compu_method(
+    et_element: ElementTree.Element,
+    doc_frags: List[OdxDocFragment],
     *,
-    scale_element: ElementTree.Element,
     internal_type: DataType,
     physical_type: DataType,
     is_scale_linear: bool = False,
@@ -47,7 +48,7 @@ def _parse_compu_scale_to_linear_compu_method(
     kwargs["internal_type"] = internal_type
     kwargs["physical_type"] = physical_type
 
-    coeffs = odxrequire(scale_element.find("COMPU-RATIONAL-COEFFS"))
+    coeffs = odxrequire(et_element.find("COMPU-RATIONAL-COEFFS"))
     nums = coeffs.iterfind("COMPU-NUMERATOR/V")
 
     offset = computation_python_type(odxrequire(next(nums).text))
@@ -63,26 +64,20 @@ def _parse_compu_scale_to_linear_compu_method(
                 stacklevel=1)
     # Read lower limit
     internal_lower_limit = Limit.from_et(
-        scale_element.find("LOWER-LIMIT"),
-        internal_type=internal_type,
+        et_element.find("LOWER-LIMIT"),
+        doc_frags,
+        value_type=internal_type,
     )
-    if internal_lower_limit is None:
-        internal_lower_limit = Limit(0, IntervalType.INFINITE)
+
     kwargs["internal_lower_limit"] = internal_lower_limit
 
     # Read upper limit
     internal_upper_limit = Limit.from_et(
-        scale_element.find("UPPER-LIMIT"),
-        internal_type=internal_type,
+        et_element.find("UPPER-LIMIT"),
+        doc_frags,
+        value_type=internal_type,
     )
-    if internal_upper_limit is None:
-        if not is_scale_linear:
-            internal_upper_limit = Limit(0, IntervalType.INFINITE)
-        else:
-            odxassert(internal_lower_limit is not None and
-                      internal_lower_limit.interval_type == IntervalType.CLOSED)
-            logger.info("Scale linear without UPPER-LIMIT")
-            internal_upper_limit = internal_lower_limit
+
     kwargs["internal_upper_limit"] = internal_upper_limit
     kwargs["denominator"] = denominator
     kwargs["factor"] = factor
@@ -92,7 +87,7 @@ def _parse_compu_scale_to_linear_compu_method(
 
 
 def create_compu_default_value(et_element: Optional[ElementTree.Element],
-                               doc_frags: List[OdxDocFragment], internal_type: DataType,
+                               doc_frags: List[OdxDocFragment], internal_type: DataType, *,
                                physical_type: DataType) -> Optional[CompuScale]:
     if et_element is None:
         return None
@@ -104,7 +99,7 @@ def create_compu_default_value(et_element: Optional[ElementTree.Element],
 
 
 def create_any_compu_method_from_et(et_element: ElementTree.Element,
-                                    doc_frags: List[OdxDocFragment], internal_type: DataType,
+                                    doc_frags: List[OdxDocFragment], *, internal_type: DataType,
                                     physical_type: DataType) -> CompuMethod:
     compu_category = et_element.findtext("CATEGORY")
     odxassert(compu_category in [
@@ -158,13 +153,13 @@ def create_any_compu_method_from_et(et_element: ElementTree.Element,
         # Compu method can be described by the function f(x) = (offset + factor * x) / denominator
 
         scale_elem = odxrequire(et_element.find("COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE"))
-        return _parse_compu_scale_to_linear_compu_method(scale_element=scale_elem, **kwargs)
+        return _parse_compu_scale_to_linear_compu_method(scale_elem, doc_frags, **kwargs)
 
     elif compu_category == "SCALE-LINEAR":
 
         scale_elems = et_element.iterfind("COMPU-INTERNAL-TO-PHYS/COMPU-SCALES/COMPU-SCALE")
         linear_methods = [
-            _parse_compu_scale_to_linear_compu_method(scale_element=scale_elem, **kwargs)
+            _parse_compu_scale_to_linear_compu_method(scale_elem, doc_frags, **kwargs)
             for scale_elem in scale_elems
         ]
         return ScaleLinearCompuMethod(linear_methods=linear_methods, **kwargs)

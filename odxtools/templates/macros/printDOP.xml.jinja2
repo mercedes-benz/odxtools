@@ -43,12 +43,24 @@
 {%- endif %}
 {%- endmacro -%}
 
-{%- macro printLimitValue(lv) -%}
-{%- if hasattr(lv, 'hex') -%}
-{#- bytes or bytarray limit #}
-{{lv.hex()}}
-{%- else -%}
-{{lv}}
+{%- macro printLimit(tag_name, limit_obj) -%}
+{%- if limit_obj is not none %}
+<{{tag_name}}
+{%- if limit_obj.interval_type is not none %}
+  {{- make_xml_attrib("INTERVAL-TYPE", limit_obj.interval_type.value) }}
+  {%- endif %}
+{%- if limit_obj.value_raw is none %}
+  {#- #}/>
+{%- else %}
+  {#- #}>
+  {%- if hasattr(limit_obj._value, 'hex') -%}
+  {#- bytes or bytarray limit #}
+  {{- limit_obj._value.hex().upper() }}
+  {%- else -%}
+  {{- limit_obj._value }}
+  {%- endif -%}
+</{{tag_name}}>
+{%- endif -%}
 {%- endif -%}
 {%- endmacro -%}
 
@@ -62,8 +74,8 @@
     {{sc.description}}
   </DESC>
   {%- endif %}
-  <LOWER-LIMIT>{{printLimitValue(sc.lower_limit.value)}}</LOWER-LIMIT>
-  <UPPER-LIMIT>{{printLimitValue(sc.upper_limit.value)}}</UPPER-LIMIT>
+  {{printLimit("LOWER-LIMIT", sc.lower_limit) }}
+  {{printLimit("UPPER-LIMIT", sc.upper_limit) }}
 </SCALE-CONSTR>
 {%- endmacro -%}
 
@@ -73,12 +85,8 @@
 {%- else %}
 <INTERNAL-CONSTR>
 {%- endif %}
-  {%- if ic.lower_limit %}
-  <LOWER-LIMIT>{{printLimitValue(ic.lower_limit.value)}}</LOWER-LIMIT>
-  {%- endif %}
-  {%- if ic.upper_limit %}
-  <UPPER-LIMIT>{{printLimitValue(ic.upper_limit.value)}}</UPPER-LIMIT>
-  {%- endif %}
+  {{printLimit("LOWER-LIMIT", ic.lower_limit) }}
+  {{printLimit("UPPER-LIMIT", ic.upper_limit) }}
   {%- if ic.scale_constrs %}
   <SCALE-CONSTRS>
   {%- for sc in ic.scale_constrs %}
@@ -109,12 +117,8 @@
     {{cs.description}}
     </DESC>
    {%- endif %}
-   {%- if cs.lower_limit is not none %}
-     <LOWER-LIMIT>{{printLimitValue(cs.lower_limit.value)}}</LOWER-LIMIT>
-   {%- endif %}
-   {%- if cs.upper_limit is not none %}
-     <UPPER-LIMIT>{{printLimitValue(cs.upper_limit.value)}}</UPPER-LIMIT>
-   {%- endif %}
+   {{printLimit("LOWER-LIMIT", cs.lower_limit) }}
+   {{printLimit("UPPER-LIMIT", cs.upper_limit) }}
    {%- if cs.compu_inverse_value is not none %}
     <COMPU-INVERSE-VALUE>
      <V>{{cs.compu_inverse_value}}</V>
@@ -141,12 +145,8 @@
  <COMPU-INTERNAL-TO-PHYS>
 		<COMPU-SCALES>
 			<COMPU-SCALE>
-   {%- if cm.internal_lower_limit is not none and cm.internal_lower_limit.interval_type.value != "INFINITE" %}
-				<LOWER-LIMIT>{{printLimitValue(cm.internal_lower_limit.value)}}</LOWER-LIMIT>
-   {%- endif %}
-   {%- if cm.internal_upper_limit is not none and cm.internal_upper_limit.interval_type.value != "INFINITE" %}
-				<UPPER-LIMIT>{{printLimitValue(cm.internal_upper_limit.value)}}</UPPER-LIMIT>
-   {%- endif %}
+     {{printLimit("LOWER-LIMIT", cm.internal_lower_limit) }}
+     {{printLimit("UPPER-LIMIT", cm.internal_upper_limit) }}
 				<COMPU-RATIONAL-COEFFS>
 					<COMPU-NUMERATOR>
 						<V>{{cm.offset}}</V>
@@ -166,12 +166,8 @@
 		<COMPU-SCALES>
   {%- for lm in cm.linear_methods %}
  		<COMPU-SCALE>
-   {%- if lm.internal_lower_limit is not none and lm.internal_lower_limit.interval_type.value != "INFINITE" %}
-				<LOWER-LIMIT>{{printLimitValue(lm.internal_lower_limit.value)}}</LOWER-LIMIT>
-   {%- endif %}
-   {%- if lm.internal_upper_limit is not none and lm.internal_upper_limit.interval_type.value != "INFINITE" %}
-				<UPPER-LIMIT>{{printLimitValue(lm.internal_upper_limit.value)}}</UPPER-LIMIT>
-   {%- endif %}
+    {{printLimit("LOWER-LIMIT", lm.internal_lower_limit) }}
+    {{printLimit("UPPER-LIMIT", lm.internal_upper_limit) }}
 				<COMPU-RATIONAL-COEFFS>
 					<COMPU-NUMERATOR>
 							<V>{{lm.offset}}</V>
@@ -191,8 +187,8 @@
  <COMPU-INTERNAL-TO-PHYS>
   <COMPU-SCALES>
   {%- for idx in range( cm.internal_points | length ) %}
-   <COMPU-SCALE>
-    <LOWER-LIMIT INTERVAL-TYPE="CLOSED">{{ printLimitValue(cm.internal_points[idx]) }}</LOWER-LIMIT>
+  <COMPU-SCALE>
+    <LOWER-LIMIT>{{ cm.internal_points[idx] }}</LOWER-LIMIT>
     <COMPU-CONST>
      <V>{{ cm.physical_points[idx] }}</V>
     </COMPU-CONST>

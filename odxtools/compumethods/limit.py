@@ -1,10 +1,13 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import List, Optional, overload
 from xml.etree import ElementTree
 
-from ..exceptions import odxassert, odxraise, odxrequire
+from typing_extensions import final
+
+from ..exceptions import odxraise
+from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType, compare_odx_values
 
 
@@ -16,42 +19,50 @@ class IntervalType(Enum):
 
 @dataclass
 class Limit:
-    value: AtomicOdxType
-    interval_type: IntervalType = IntervalType.CLOSED
+    value_raw: Optional[str]
+    value_type: Optional[DataType]
+    interval_type: Optional[IntervalType]
 
     def __post_init__(self) -> None:
-        if self.interval_type == IntervalType.INFINITE:
-            self.value = 0
+        self._value: Optional[AtomicOdxType] = None
+
+        if self.value_type is not None:
+            self.set_value_type(self.value_type)
 
     @staticmethod
-    def from_et(et_element: Optional[ElementTree.Element], *,
-                internal_type: DataType) -> Optional["Limit"]:
+    @overload
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment],
+                value_type: Optional[DataType]) -> "Limit":
+        ...
+
+    @staticmethod
+    @overload
+    def from_et(et_element: None, doc_frags: List[OdxDocFragment],
+                value_type: Optional[DataType]) -> None:
+        ...
+
+    @staticmethod
+    def from_et(et_element: Optional[ElementTree.Element], doc_frags: List[OdxDocFragment],
+                value_type: Optional[DataType]) -> Optional["Limit"]:
 
         if et_element is None:
             return None
 
+        interval_type = None
         if (interval_type_str := et_element.get("INTERVAL-TYPE")) is not None:
             try:
                 interval_type = IntervalType(interval_type_str)
             except ValueError:
-                interval_type = IntervalType.CLOSED
                 odxraise(f"Encountered unknown interval type '{interval_type_str}'")
-        else:
-            interval_type = IntervalType.CLOSED
 
-        if interval_type == IntervalType.INFINITE:
-            if et_element.tag == "LOWER-LIMIT":
-                return Limit(float("-inf"), interval_type)
-            else:
-                odxassert(et_element.tag == "UPPER-LIMIT")
-                return Limit(float("inf"), interval_type)
-        elif internal_type == DataType.A_BYTEFIELD:
-            hex_text = odxrequire(et_element.text)
-            if len(hex_text) % 2 == 1:
-                hex_text = "0" + hex_text
-            return Limit(bytes.fromhex(hex_text), interval_type)
-        else:
-            return Limit(internal_type.from_string(odxrequire(et_element.text)), interval_type)
+        value_raw = et_element.text
+
+        return Limit(value_raw=value_raw, interval_type=interval_type, value_type=value_type)
+
+    def set_value_type(self, value_type: DataType) -> None:
+        self.value_type = value_type
+        if self.value_raw is not None:
+            self._value = value_type.from_string(self.value_raw)
 
     def complies_to_upper(self, value: AtomicOdxType) -> bool:
         """Checks if the value is in the range w.r.t. the upper limit.
@@ -60,12 +71,17 @@ class Limit:
         * If the interval type is open, return `value < limit.value`.
         * If the interval type is infinite, return `True`.
         """
+        if self._value is None:
+            # if no value is specified, assume interval type INFINITE
+            # (what are we supposed to compare against?)
+            return True
+
         if self.interval_type is None or self.interval_type == IntervalType.CLOSED:
             # assume interval type CLOSED if a value was specified,
             # but no interval type
-            return compare_odx_values(value, self.value) <= 0
+            return compare_odx_values(value, self._value) <= 0
         elif self.interval_type == IntervalType.OPEN:
-            return compare_odx_values(value, self.value) < 0
+            return compare_odx_values(value, self._value) < 0
 
         if self.interval_type != IntervalType.INFINITE:
             odxraise("Unhandled interval type {self.interval_type}")
@@ -79,12 +95,18 @@ class Limit:
         * If the interval type is open, return `limit.value < value`.
         * If the interval type is infinite, return `True`.
         """
+
+        if self._value is None:
+            # if no value is specified, assume interval type INFINITE
+            # (what are we supposed to compare against?)
+            return True
+
         if self.interval_type is None or self.interval_type == IntervalType.CLOSED:
             # assume interval type CLOSED if a value was specified,
             # but no interval type
-            return compare_odx_values(value, self.value) >= 0
+            return compare_odx_values(value, self._value) >= 0
         elif self.interval_type == IntervalType.OPEN:
-            return compare_odx_values(value, self.value) > 0
+            return compare_odx_values(value, self._value) > 0
 
         if self.interval_type != IntervalType.INFINITE:
             odxraise("Unhandled interval type {self.interval_type}")

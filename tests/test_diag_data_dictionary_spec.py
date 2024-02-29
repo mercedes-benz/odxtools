@@ -3,6 +3,7 @@ import unittest
 
 from examples import somersaultecu
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
+from odxtools.compumethods.limit import Limit
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diagnostictroublecode import DiagnosticTroubleCode
@@ -249,8 +250,10 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     short_name="forward_flip",
                     long_name="Forward Flip",
                     description=None,
-                    lower_limit="1",
-                    upper_limit="3",
+                    lower_limit=Limit(
+                        value_raw="1", value_type=DataType.A_INT32, interval_type=None),
+                    upper_limit=Limit(
+                        value_raw="3", value_type=DataType.A_INT32, interval_type=None),
                     structure_ref=OdxLinkRef("structure_ref", doc_frags),
                     structure_snref=None,
                 ),
@@ -258,8 +261,10 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     short_name="backward_flip",
                     long_name="Backward Flip",
                     description=None,
-                    lower_limit="1",
-                    upper_limit="3",
+                    lower_limit=Limit(
+                        value_raw="1", value_type=DataType.A_INT32, interval_type=None),
+                    upper_limit=Limit(
+                        value_raw="3", value_type=DataType.A_INT32, interval_type=None),
                     structure_ref=OdxLinkRef("structure_ref", doc_frags),
                     structure_snref=None,
                 ),

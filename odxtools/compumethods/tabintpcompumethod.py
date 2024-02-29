@@ -69,8 +69,23 @@ class TabIntpCompuMethod(CompuMethod):
     physical_points: List[Union[float, int]]
 
     def __post_init__(self) -> None:
-        self._physical_lower_limit = Limit(min(self.physical_points), IntervalType.CLOSED)
-        self._physical_upper_limit = Limit(max(self.physical_points), IntervalType.CLOSED)
+        self._physical_lower_limit = Limit(
+            value_raw=str(min(self.physical_points)),
+            value_type=self.physical_type,
+            interval_type=IntervalType.CLOSED)
+        self._physical_upper_limit = Limit(
+            value_raw=str(max(self.physical_points)),
+            value_type=self.physical_type,
+            interval_type=IntervalType.CLOSED)
+
+        self._internal_lower_limit = Limit(
+            value_raw=str(min(self.internal_points)),
+            value_type=self.internal_type,
+            interval_type=IntervalType.CLOSED)
+        self._internal_upper_limit = Limit(
+            value_raw=str(max(self.internal_points)),
+            value_type=self.internal_type,
+            interval_type=IntervalType.CLOSED)
 
         self._assert_validity()
 

@@ -59,20 +59,20 @@ class DataObjectProperty(DopBase):
         compu_method = create_any_compu_method_from_et(
             odxrequire(et_element.find("COMPU-METHOD")),
             doc_frags,
-            diag_coded_type.base_data_type,
-            physical_type.base_data_type,
+            internal_type=diag_coded_type.base_data_type,
+            physical_type=physical_type.base_data_type,
         )
         unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
 
         internal_constr = None
         if (internal_constr_elem := et_element.find("INTERNAL-CONSTR")) is not None:
             internal_constr = InternalConstr.from_et(
-                internal_constr_elem, internal_type=diag_coded_type.base_data_type)
+                internal_constr_elem, doc_frags, value_type=diag_coded_type.base_data_type)
 
         physical_constr = None
         if (physical_constr_elem := et_element.find("PHYS-CONSTR")) is not None:
             physical_constr = InternalConstr.from_et(
-                physical_constr_elem, internal_type=physical_type.base_data_type)
+                physical_constr_elem, doc_frags, value_type=physical_type.base_data_type)
 
         return DataObjectProperty(
             diag_coded_type=diag_coded_type,
@@ -126,8 +126,9 @@ class DataObjectProperty(DopBase):
         Convert a physical representation of a parameter to a string bytes that can be send over the wire
         """
         if not self.is_valid_physical_value(physical_value):
-            raise EncodeError(f"The value {repr(physical_value)} of type {type(physical_value)}"
-                              f" is not a valid.")
+            raise EncodeError(
+                f"The value {repr(physical_value)} of type {type(physical_value).__name__}"
+                f" is not a valid.")
 
         internal_val = self.convert_physical_to_internal(physical_value)
         return self.diag_coded_type.convert_internal_to_bytes(
