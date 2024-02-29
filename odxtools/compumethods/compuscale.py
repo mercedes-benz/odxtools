@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import List, Optional
 from xml.etree import ElementTree
 
+from ..exceptions import odxraise
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import create_description_from_et
@@ -65,3 +66,32 @@ class CompuScale:
             compu_inverse_value=compu_inverse_value,
             compu_const=compu_const,
             compu_rational_coeffs=compu_rational_coeffs)
+
+    def applies(self, internal_value: AtomicOdxType) -> bool:
+
+        if self.lower_limit is None and self.upper_limit is None:
+            odxraise("No limits specified for compu scale")
+            return False
+        elif self.upper_limit is None:
+            # no upper limit has been specified. the spec says that
+            # the value specified by the lower limit is the only one
+            # which is allowed (cf section 7.3.6.6.1)
+            assert self.lower_limit is not None
+
+            return internal_value == self.lower_limit.value
+        elif self.lower_limit is None:
+            # only the upper limit has been specified. the spec is
+            # ambiguous: it only says that if no upper limit is
+            # defined, the lower limit shall also be used as the upper
+            # limit and a closed interval type ought to be assumed,
+            # but it does not say what happens if the lower limit is
+            # not defined (which is allowed by the XSD). We thus
+            # assume that if only the upper limit is defined, is
+            # treated the same way as if only the lower limit is
+            # specified.
+            assert self.upper_limit is not None
+
+            return internal_value == self.upper_limit.value
+
+        return self.lower_limit.complies_to_lower(internal_value) and \
+            self.upper_limit.complies_to_upper(internal_value)
