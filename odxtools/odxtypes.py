@@ -102,6 +102,58 @@ _ODX_TYPE_TO_PYTHON_TYPE: Dict[str, Type[AtomicOdxType]] = {
 }
 
 
+def compare_odx_values(a: AtomicOdxType, b: AtomicOdxType) -> int:
+    # this function implements the comparison according to the ODX
+    # specification. (cf section 7.3.6.5)
+
+    # numeric values are compared numerically (duh!)
+    if isinstance(a, (int, float)):
+        if not isinstance(b, (int, float)):
+            odxraise()
+
+        tmp = a - b
+        if tmp < 0:
+            return -1
+        elif tmp > 0:
+            return 1
+        return 0
+
+    # strings are compared lexicographically. (the spec only allows
+    # equals, but this cannot easily implemented using a single
+    # comparison function.
+    if isinstance(a, str):
+        if not isinstance(b, str):
+            odxraise()
+
+        if a < b:
+            return -1
+        elif b < a:
+            return 1
+        else:
+            return 0
+
+    # bytefields are treated like long integers: to pad the shorter
+    # object with zeros and treat the results like strings.
+    if isinstance(a, (bytes, bytearray)):
+        if not isinstance(b, (bytes, bytearray)):
+            odxraise()
+
+        obj_len = max(len(a), len(b))
+
+        tmp_a = a.ljust(obj_len, b'\x00')
+        tmp_b = b.ljust(obj_len, b'\x00')
+
+        if tmp_a > tmp_b:
+            return 1
+        elif tmp_a < tmp_b:
+            return -1
+        else:
+            return 0
+
+    odxraise(f"Unhandled comparsion between objects of type {type(a).__name__} "
+             f"and {type(b).__name__}")
+
+
 class DataType(Enum):
     """Types for the physical and internal value.
 

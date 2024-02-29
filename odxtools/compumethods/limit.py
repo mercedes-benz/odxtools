@@ -5,7 +5,7 @@ from typing import Optional
 from xml.etree import ElementTree
 
 from ..exceptions import odxassert, odxraise, odxrequire
-from ..odxtypes import AtomicOdxType, DataType
+from ..odxtypes import AtomicOdxType, DataType, compare_odx_values
 
 
 class IntervalType(Enum):
@@ -60,12 +60,17 @@ class Limit:
         * If the interval type is open, return `value < limit.value`.
         * If the interval type is infinite, return `True`.
         """
-        if self.interval_type == IntervalType.CLOSED:
-            return value <= self.value  # type: ignore[operator]
+        if self.interval_type is None or self.interval_type == IntervalType.CLOSED:
+            # assume interval type CLOSED if a value was specified,
+            # but no interval type
+            return compare_odx_values(value, self.value) <= 0
         elif self.interval_type == IntervalType.OPEN:
-            return value < self.value  # type: ignore[operator]
-        elif self.interval_type == IntervalType.INFINITE:
-            return True
+            return compare_odx_values(value, self.value) < 0
+
+        if self.interval_type != IntervalType.INFINITE:
+            odxraise("Unhandled interval type {self.interval_type}")
+
+        return True
 
     def complies_to_lower(self, value: AtomicOdxType) -> bool:
         """Checks if the value is in the range w.r.t. the lower limit.
@@ -74,9 +79,14 @@ class Limit:
         * If the interval type is open, return `limit.value < value`.
         * If the interval type is infinite, return `True`.
         """
-        if self.interval_type == IntervalType.CLOSED:
-            return self.value <= value  # type: ignore[operator]
+        if self.interval_type is None or self.interval_type == IntervalType.CLOSED:
+            # assume interval type CLOSED if a value was specified,
+            # but no interval type
+            return compare_odx_values(value, self.value) >= 0
         elif self.interval_type == IntervalType.OPEN:
-            return self.value < value  # type: ignore[operator]
-        elif self.interval_type == IntervalType.INFINITE:
-            return True
+            return compare_odx_values(value, self.value) > 0
+
+        if self.interval_type != IntervalType.INFINITE:
+            odxraise("Unhandled interval type {self.interval_type}")
+
+        return True
