@@ -4,8 +4,6 @@ from enum import Enum
 from typing import List, Optional, overload
 from xml.etree import ElementTree
 
-from typing_extensions import final
-
 from ..exceptions import odxraise
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType, compare_odx_values
