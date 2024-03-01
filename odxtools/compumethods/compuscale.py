@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import List, Optional
 from xml.etree import ElementTree
 
-from ..exceptions import odxraise
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import create_description_from_et
@@ -81,8 +80,8 @@ class CompuScale:
     def applies(self, internal_value: AtomicOdxType) -> bool:
 
         if self.lower_limit is None and self.upper_limit is None:
-            odxraise("No limits specified for compu scale")
-            return False
+            # Everything is allowed: No limits have been specified
+            return True
         elif self.upper_limit is None:
             # no upper limit has been specified. the spec says that
             # the value specified by the lower limit is the only one
