@@ -14,11 +14,11 @@ from .endofpdufield import EndOfPduField
 from .environmentdata import EnvironmentData
 from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxraise
-from .globals import logger
 from .multiplexer import Multiplexer
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .specialdatagroup import SpecialDataGroup
+from .staticfield import StaticField
 from .structure import Structure
 from .table import Table
 from .unitspec import UnitSpec
@@ -33,6 +33,7 @@ class DiagDataDictionarySpec:
     data_object_props: NamedItemList[DataObjectProperty]
     structures: NamedItemList[BasicStructure]
     end_of_pdu_fields: NamedItemList[EndOfPduField]
+    static_fields: NamedItemList[StaticField]
     dynamic_length_fields: NamedItemList[DynamicLengthField]
     tables: NamedItemList[Table]
     env_data_descs: NamedItemList[EnvironmentDataDescription]
@@ -48,6 +49,7 @@ class DiagDataDictionarySpec:
                 self.data_object_props,
                 self.structures,
                 self.end_of_pdu_fields,
+                self.static_fields,
                 self.dynamic_length_fields,
                 self.env_data_descs,
                 self.env_datas,
@@ -71,6 +73,11 @@ class DiagDataDictionarySpec:
         end_of_pdu_fields = [
             EndOfPduField.from_et(eofp_element, doc_frags)
             for eofp_element in et_element.iterfind("END-OF-PDU-FIELDS/END-OF-PDU-FIELD")
+        ]
+
+        static_fields = [
+            StaticField.from_et(dl_element, doc_frags)
+            for dl_element in et_element.iterfind("STATIC-FIELDS/STATIC-FIELD")
         ]
 
         dynamic_length_fields = [
@@ -115,25 +122,13 @@ class DiagDataDictionarySpec:
         else:
             unit_spec = None
 
-        # TODO: Parse different specs.. Which of them are needed?
-        for (path, name) in [
-            ("STATIC-FIELDS", "static fields"),
-            ("DYNAMIC-LENGTH-FIELDS/DYNAMIC-LENGTH-FIELD", "dynamic length fields"),
-            (
-                "DYNAMIC-ENDMARKER-FIELDS/DYNAMIC-ENDMARKER-FIELD",
-                "dynamic endmarker fields",
-            ),
-        ]:
-            num = len(list(et_element.iterfind(path)))
-            if num > 0:
-                logger.info(f"Not implemented: Did not parse {num} {name}.")
-
         sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
         return DiagDataDictionarySpec(
             data_object_props=NamedItemList(data_object_props),
             structures=NamedItemList(structures),
             end_of_pdu_fields=NamedItemList(end_of_pdu_fields),
+            static_fields=NamedItemList(static_fields),
             dynamic_length_fields=NamedItemList(dynamic_length_fields),
             dtc_dops=NamedItemList(dtc_dops),
             unit_spec=unit_spec,
@@ -162,6 +157,8 @@ class DiagDataDictionarySpec:
             odxlinks.update(sdg._build_odxlinks())
         for structure in self.structures:
             odxlinks.update(structure._build_odxlinks())
+        for static_field in self.static_fields:
+            odxlinks.update(static_field._build_odxlinks())
         for dynamic_length_field in self.dynamic_length_fields:
             odxlinks.update(dynamic_length_field._build_odxlinks())
         for end_of_pdu_field in self.end_of_pdu_fields:
@@ -179,6 +176,8 @@ class DiagDataDictionarySpec:
             data_object_prop._resolve_odxlinks(odxlinks)
         for dtc_dop in self.dtc_dops:
             dtc_dop._resolve_odxlinks(odxlinks)
+        for static_field in self.static_fields:
+            static_field._resolve_odxlinks(odxlinks)
         for dynamic_length_field in self.dynamic_length_fields:
             dynamic_length_field._resolve_odxlinks(odxlinks)
         for end_of_pdu_field in self.end_of_pdu_fields:
@@ -204,6 +203,8 @@ class DiagDataDictionarySpec:
             data_object_prop._resolve_snrefs(diag_layer)
         for dtc_dop in self.dtc_dops:
             dtc_dop._resolve_snrefs(diag_layer)
+        for static_field in self.static_fields:
+            static_field._resolve_snrefs(diag_layer)
         for dynamic_length_field in self.dynamic_length_fields:
             dynamic_length_field._resolve_snrefs(diag_layer)
         for end_of_pdu_field in self.end_of_pdu_fields:

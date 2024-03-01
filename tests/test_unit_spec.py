@@ -143,6 +143,7 @@ class TestUnitSpec(unittest.TestCase):
                 structures=NamedItemList(),
                 end_of_pdu_fields=NamedItemList(),
                 dynamic_length_fields=NamedItemList(),
+                static_fields=NamedItemList(),
                 tables=NamedItemList(),
                 env_data_descs=NamedItemList(),
                 env_datas=NamedItemList(),
