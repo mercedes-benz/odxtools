@@ -132,6 +132,7 @@ class TestUnitSpec(unittest.TestCase):
             company_datas=NamedItemList(),
             functional_classes=NamedItemList(),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
+                admin_data=None,
                 data_object_props=NamedItemList([dop]),
                 unit_spec=UnitSpec(
                     units=[unit],

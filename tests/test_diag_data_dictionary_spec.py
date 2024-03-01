@@ -268,6 +268,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         )
 
         ddds = DiagDataDictionarySpec(
+            admin_data=None,
             dtc_dops=NamedItemList([dtc_dop]),
             data_object_props=NamedItemList([dop_1, dop_2]),
             tables=NamedItemList([table]),

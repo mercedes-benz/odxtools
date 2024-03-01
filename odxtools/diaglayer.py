@@ -192,6 +192,7 @@ class DiagLayer:
         # inherited objects. To me, this seems rather inelegant, but
         # hey, it's described like this in the standard.
         self._diag_data_dictionary_spec = DiagDataDictionarySpec(
+            admin_data=None,
             data_object_props=dops,
             dtc_dops=dtc_dops,
             structures=structures,
