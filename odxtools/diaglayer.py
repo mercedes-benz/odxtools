@@ -195,6 +195,7 @@ class DiagLayer:
             data_object_props=dops,
             dtc_dops=dtc_dops,
             structures=structures,
+            static_fields=NamedItemList(),
             end_of_pdu_fields=end_of_pdu_fields,
             dynamic_length_fields=dynamic_length_fields,
             tables=tables,

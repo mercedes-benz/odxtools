@@ -30,6 +30,7 @@ from odxtools.physicaltype import PhysicalType
 from odxtools.request import Request
 from odxtools.response import Response, ResponseType
 from odxtools.standardlengthtype import StandardLengthType
+from odxtools.staticfield import StaticField
 from odxtools.structure import Structure
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
@@ -654,6 +655,7 @@ class TestDecoding(unittest.TestCase):
                 dtc_dops=NamedItemList(),
                 data_object_props=NamedItemList([dop]),
                 structures=NamedItemList([struct]),
+                static_fields=NamedItemList(),
                 end_of_pdu_fields=NamedItemList(),
                 dynamic_length_fields=NamedItemList(),
                 tables=NamedItemList(),
@@ -702,8 +704,221 @@ class TestDecoding(unittest.TestCase):
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
         self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
 
+    def test_static_field_coding(self) -> None:
+        """Test en- and decoding of static fields."""
+        diag_coded_type = StandardLengthType(
+            base_data_type=DataType.A_UINT32,
+            base_type_encoding=None,
+            bit_length=8,
+            bit_mask=None,
+            is_condensed_raw=None,
+            is_highlow_byte_order_raw=None,
+        )
+
+        compu_method = IdenticalCompuMethod(
+            internal_type=DataType.A_INT32, physical_type=DataType.A_INT32)
+        dop = DataObjectProperty(
+            odx_id=OdxLinkId("static_field.dop.id", doc_frags),
+            short_name="static_field_dop_sn",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            diag_coded_type=diag_coded_type,
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            compu_method=compu_method,
+            unit_ref=None,
+            sdgs=[],
+            internal_constr=None,
+            physical_constr=None,
+        )
+
+        req_param1 = CodedConstParameter(
+            short_name="SID",
+            long_name=None,
+            description=None,
+            semantic=None,
+            diag_coded_type=diag_coded_type,
+            coded_value=0x12,
+            byte_position=0,
+            bit_position=None,
+            sdgs=[],
+        )
+
+        struct_param1 = ValueParameter(
+            short_name="static_field_struct_param_1",
+            long_name=None,
+            description=None,
+            semantic=None,
+            dop_ref=OdxLinkRef.from_id(dop.odx_id),
+            dop_snref=None,
+            physical_default_value_raw=None,
+            byte_position=None,
+            bit_position=None,
+            sdgs=[],
+        )
+        struct_param2 = ValueParameter(
+            short_name="static_field_struct_param_2",
+            long_name=None,
+            description=None,
+            semantic=None,
+            dop_ref=OdxLinkRef.from_id(dop.odx_id),
+            dop_snref=None,
+            physical_default_value_raw=None,
+            byte_position=None,
+            bit_position=None,
+            sdgs=[],
+        )
+        struct = Structure(
+            odx_id=OdxLinkId("static_field_struct.id", doc_frags),
+            short_name="static_field_struct",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            parameters=NamedItemList([struct_param1, struct_param2]),
+            byte_size=None,
+        )
+        static_field = StaticField(
+            odx_id=OdxLinkId("static_field.id", doc_frags),
+            short_name="static_field_sn",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            structure_ref=OdxLinkRef.from_id(struct.odx_id),
+            structure_snref=None,
+            env_data_desc_ref=None,
+            env_data_desc_snref=None,
+            is_visible_raw=True,
+            fixed_number_of_items=2,
+            item_byte_size=3,
+        )
+        req_param2 = ValueParameter(
+            short_name="static_field_param",
+            long_name=None,
+            description=None,
+            semantic=None,
+            dop_ref=OdxLinkRef.from_id(static_field.odx_id),
+            dop_snref=None,
+            physical_default_value_raw=None,
+            byte_position=None,
+            bit_position=None,
+            sdgs=[],
+        )
+
+        req = Request(
+            odx_id=OdxLinkId("static_field.request.id", doc_frags),
+            short_name="static_field_request_sn",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            parameters=NamedItemList([req_param1, req_param2]),
+            byte_size=None,
+        )
+        service = DiagService(
+            odx_id=OdxLinkId("static_field.service.id", doc_frags),
+            short_name="static_field_service_sn",
+            long_name=None,
+            description=None,
+            protocol_snrefs=[],
+            related_diag_comm_refs=[],
+            diagnostic_class=None,
+            is_mandatory_raw=None,
+            is_executable_raw=None,
+            is_final_raw=None,
+            admin_data=None,
+            semantic=None,
+            comparam_refs=[],
+            is_cyclic_raw=None,
+            is_multiple_raw=None,
+            addressing_raw=None,
+            transmission_mode_raw=None,
+            audience=None,
+            functional_class_refs=[],
+            pre_condition_state_refs=[],
+            state_transition_refs=[],
+            request_ref=OdxLinkRef.from_id(req.odx_id),
+            pos_response_refs=[],
+            neg_response_refs=[],
+            sdgs=[],
+        )
+        diag_layer_raw = DiagLayerRaw(
+            variant_type=DiagLayerType.BASE_VARIANT,
+            odx_id=OdxLinkId("dl.id", doc_frags),
+            short_name="dl_sn",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            company_datas=NamedItemList(),
+            functional_classes=NamedItemList(),
+            diag_data_dictionary_spec=DiagDataDictionarySpec(
+                dtc_dops=NamedItemList(),
+                data_object_props=NamedItemList([dop]),
+                structures=NamedItemList([struct]),
+                end_of_pdu_fields=NamedItemList(),
+                dynamic_length_fields=NamedItemList(),
+                static_fields=NamedItemList([static_field]),
+                tables=NamedItemList(),
+                env_data_descs=NamedItemList(),
+                env_datas=NamedItemList(),
+                muxs=NamedItemList(),
+                unit_spec=None,
+                sdgs=[]),
+            diag_comms=[service],
+            requests=NamedItemList([req]),
+            positive_responses=NamedItemList(),
+            negative_responses=NamedItemList(),
+            global_negative_responses=NamedItemList(),
+            additional_audiences=NamedItemList(),
+            import_refs=[],
+            state_charts=NamedItemList(),
+            sdgs=[],
+            parent_refs=[],
+            comparams=[],
+            ecu_variant_patterns=[],
+            comparam_spec_ref=None,
+            prot_stack_snref=None,
+        )
+        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(diag_layer._build_odxlinks())
+        diag_layer._resolve_odxlinks(odxlinks)
+        diag_layer._finalize_init(odxlinks)
+
+        expected_message = Message(
+            coded_message=bytes([0x12, 0x34, 0x56, 0x00, 0x78, 0x9a, 0x00]),
+            service=service,
+            coding_object=req,
+            param_dict={
+                "SID":
+                    0x12,
+                "static_field_param": [
+                    {
+                        "static_field_struct_param_1": 0x34,
+                        "static_field_struct_param_2": 0x56
+                    },
+                    {
+                        "static_field_struct_param_1": 0x78,
+                        "static_field_struct_param_2": 0x9a
+                    },
+                ],
+            },
+        )
+
+        # test encoding
+        encoded_message = diag_layer.services.static_field_service_sn(**expected_message.param_dict)
+        self.assertEqual(encoded_message, expected_message.coded_message)
+
+        # test decoding
+        decoded_message = diag_layer.decode(expected_message.coded_message)[0]
+        self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
+        self.assertEqual(expected_message.service, decoded_message.service)
+        self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
+        self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
+
     def test_dynamic_length_field_coding(self) -> None:
-        """Test en- and decoding of a dynamic length fields."""
+        """Test en- and decoding of dynamic length fields."""
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
@@ -865,6 +1080,7 @@ class TestDecoding(unittest.TestCase):
                 structures=NamedItemList([struct]),
                 end_of_pdu_fields=NamedItemList(),
                 dynamic_length_fields=NamedItemList([dlf]),
+                static_fields=NamedItemList(),
                 tables=NamedItemList(),
                 env_data_descs=NamedItemList(),
                 env_datas=NamedItemList(),
@@ -1086,6 +1302,7 @@ class TestDecoding(unittest.TestCase):
                 dtc_dops=NamedItemList(),
                 data_object_props=NamedItemList([dop]),
                 structures=NamedItemList([struct]),
+                static_fields=NamedItemList(),
                 end_of_pdu_fields=NamedItemList([eopf]),
                 dynamic_length_fields=NamedItemList(),
                 tables=NamedItemList(),
@@ -1247,6 +1464,7 @@ class TestDecoding(unittest.TestCase):
                 dtc_dops=NamedItemList(),
                 data_object_props=NamedItemList([dop]),
                 structures=NamedItemList(),
+                static_fields=NamedItemList(),
                 end_of_pdu_fields=NamedItemList(),
                 dynamic_length_fields=NamedItemList(),
                 tables=NamedItemList(),

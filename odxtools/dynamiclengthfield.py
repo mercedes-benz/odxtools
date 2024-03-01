@@ -99,6 +99,7 @@ class DynamicLengthField(Field):
         decode_state.cursor_bit_position = det_num_items.bit_position or 0
 
         n = det_num_items.dop.decode_from_pdu(decode_state)
+        result: List[ParameterValue] = []
 
         if not isinstance(n, int):
             odxraise(f"Number of items specified by a dynamic length field {self.short_name} "
@@ -107,11 +108,11 @@ class DynamicLengthField(Field):
             odxraise(
                 f"Number of items specified by a dynamic length field {self.short_name} "
                 f"must be positive (is: {n})", DecodeError)
-        else:
-            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.offset
-            result: List[ParameterValue] = []
-            for _ in range(n):
-                result.append(self.structure.decode_from_pdu(decode_state))
+            n = 0
+
+        decode_state.cursor_byte_position = decode_state.origin_byte_position + self.offset
+        for _ in range(n):
+            result.append(self.structure.decode_from_pdu(decode_state))
 
         decode_state.origin_byte_position = orig_origin
         decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
