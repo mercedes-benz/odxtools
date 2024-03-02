@@ -246,6 +246,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             company_datas=NamedItemList(),
             functional_classes=NamedItemList(),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
+                admin_data=None,
                 data_object_props=NamedItemList(dops.values()),
                 dtc_dops=NamedItemList(),
                 structures=NamedItemList(),
@@ -546,6 +547,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             company_datas=NamedItemList(),
             functional_classes=NamedItemList(),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
+                admin_data=None,
                 data_object_props=NamedItemList(dops.values()),
                 dtc_dops=NamedItemList(),
                 structures=NamedItemList(),
@@ -853,6 +855,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             company_datas=NamedItemList(),
             functional_classes=NamedItemList(),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
+                admin_data=None,
                 data_object_props=NamedItemList(dops.values()),
                 dtc_dops=NamedItemList(),
                 structures=NamedItemList(),

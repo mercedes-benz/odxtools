@@ -2054,6 +2054,7 @@ somersault_comparams = [
 ]
 
 somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
+    admin_data=None,
     data_object_props=NamedItemList(somersault_dops.values()),
     unit_spec=UnitSpec(
         unit_groups=list(somersault_unit_groups.values()),
@@ -2326,6 +2327,7 @@ somersault_assiduous_diaglayer_raw = DiagLayerRaw(
     company_datas=NamedItemList(),
     functional_classes=NamedItemList(),
     diag_data_dictionary_spec=DiagDataDictionarySpec(
+        admin_data=None,
         dtc_dops=NamedItemList(),
         data_object_props=NamedItemList(),
         static_fields=NamedItemList(),
