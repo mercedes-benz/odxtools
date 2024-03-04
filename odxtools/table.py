@@ -45,7 +45,8 @@ class Table(IdentifiableElement):
         for sub_elem in et_element:
             if sub_elem.tag == "TABLE-ROW":
                 table_rows_raw.append(
-                    TableRow.from_et(sub_elem, doc_frags, table_ref=OdxLinkRef.from_id(odx_id)))
+                    TableRow.tablerow_from_et(
+                        sub_elem, doc_frags, table_ref=OdxLinkRef.from_id(odx_id)))
             elif sub_elem.tag == "TABLE-ROW-REF":
                 table_rows_raw.append(OdxLinkRef.from_et(sub_elem, doc_frags))
 

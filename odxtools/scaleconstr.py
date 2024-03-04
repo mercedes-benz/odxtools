@@ -31,14 +31,14 @@ class ScaleConstr:
     value_type: DataType
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
-                value_type: DataType) -> "ScaleConstr":
+    def scale_constr_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+                             value_type: DataType) -> "ScaleConstr":
         short_label = et_element.findtext("SHORT-LABEL")
         description = create_description_from_et(et_element.find("DESC"))
 
-        lower_limit = Limit.from_et(
+        lower_limit = Limit.limit_from_et(
             et_element.find("LOWER-LIMIT"), doc_frags, value_type=value_type)
-        upper_limit = Limit.from_et(
+        upper_limit = Limit.limit_from_et(
             et_element.find("UPPER-LIMIT"), doc_frags, value_type=value_type)
 
         validity_str = odxrequire(et_element.get("VALIDITY"))
