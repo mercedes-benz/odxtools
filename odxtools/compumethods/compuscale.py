@@ -42,13 +42,22 @@ class CompuScale:
     compu_const: Optional[AtomicOdxType]
     compu_rational_coeffs: Optional[CompuRationalCoeffs]
 
+    # the following two attributes are not specified for COMPU-SCALE
+    # tags in the XML, but they are required to do anything useful
+    # with it.
+    internal_type: DataType
+    physical_type: DataType
+
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
                 internal_type: DataType, physical_type: DataType) -> "CompuScale":
         short_label = et_element.findtext("SHORT-LABEL")
         description = create_description_from_et(et_element.find("DESC"))
-        lower_limit = Limit.from_et(et_element.find("LOWER-LIMIT"), internal_type=internal_type)
-        upper_limit = Limit.from_et(et_element.find("UPPER-LIMIT"), internal_type=internal_type)
+
+        lower_limit = Limit.from_et(
+            et_element.find("LOWER-LIMIT"), doc_frags, value_type=internal_type)
+        upper_limit = Limit.from_et(
+            et_element.find("UPPER-LIMIT"), doc_frags, value_type=internal_type)
 
         compu_inverse_value = internal_type.create_from_et(et_element.find("COMPU-INVERSE-VALUE"))
         compu_const = physical_type.create_from_et(et_element.find("COMPU-CONST"))
@@ -64,4 +73,35 @@ class CompuScale:
             upper_limit=upper_limit,
             compu_inverse_value=compu_inverse_value,
             compu_const=compu_const,
-            compu_rational_coeffs=compu_rational_coeffs)
+            compu_rational_coeffs=compu_rational_coeffs,
+            internal_type=internal_type,
+            physical_type=physical_type)
+
+    def applies(self, internal_value: AtomicOdxType) -> bool:
+
+        if self.lower_limit is None and self.upper_limit is None:
+            # Everything is allowed: No limits have been specified
+            return True
+        elif self.upper_limit is None:
+            # no upper limit has been specified. the spec says that
+            # the value specified by the lower limit is the only one
+            # which is allowed (cf section 7.3.6.6.1)
+            assert self.lower_limit is not None
+
+            return internal_value == self.lower_limit._value
+        elif self.lower_limit is None:
+            # only the upper limit has been specified. the spec is
+            # ambiguous: it only says that if no upper limit is
+            # defined, the lower limit shall also be used as the upper
+            # limit and a closed interval type ought to be assumed,
+            # but it does not say what happens if the lower limit is
+            # not defined (which is allowed by the XSD). We thus
+            # assume that if only the upper limit is defined, is
+            # treated the same way as if only the lower limit is
+            # specified.
+            assert self.upper_limit is not None
+
+            return internal_value == self.upper_limit._value
+
+        return self.lower_limit.complies_to_lower(internal_value) and \
+            self.upper_limit.complies_to_upper(internal_value)

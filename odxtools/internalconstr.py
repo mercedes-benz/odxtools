@@ -4,6 +4,7 @@ from typing import List, Optional
 from xml.etree import ElementTree
 
 from .compumethods.limit import Limit
+from .odxlink import OdxDocFragment
 from .odxtypes import DataType
 from .scaleconstr import ScaleConstr
 
@@ -19,16 +20,24 @@ class InternalConstr:
     upper_limit: Optional[Limit]
     scale_constrs: List[ScaleConstr]
 
-    @staticmethod
-    def from_et(et_element: ElementTree.Element, internal_type: DataType) -> "InternalConstr":
+    value_type: DataType
 
-        lower_limit = Limit.from_et(et_element.find("LOWER-LIMIT"), internal_type=internal_type)
-        upper_limit = Limit.from_et(et_element.find("UPPER-LIMIT"), internal_type=internal_type)
+    @staticmethod
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+                value_type: DataType) -> "InternalConstr":
+
+        lower_limit = Limit.from_et(
+            et_element.find("LOWER-LIMIT"), doc_frags, value_type=value_type)
+        upper_limit = Limit.from_et(
+            et_element.find("UPPER-LIMIT"), doc_frags, value_type=value_type)
 
         scale_constrs = [
-            ScaleConstr.from_et(sc_el, internal_type)
+            ScaleConstr.from_et(sc_el, doc_frags, value_type=value_type)
             for sc_el in et_element.iterfind("SCALE-CONSTRS/SCALE-CONSTR")
         ]
 
         return InternalConstr(
-            lower_limit=lower_limit, upper_limit=upper_limit, scale_constrs=scale_constrs)
+            lower_limit=lower_limit,
+            upper_limit=upper_limit,
+            scale_constrs=scale_constrs,
+            value_type=value_type)

@@ -36,7 +36,8 @@ class Multiplexer(ComplexDop):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Multiplexer":
         """Reads a Multiplexer from Diag Layer."""
-        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
+        base_obj = ComplexDop.from_et(et_element, doc_frags)
+        kwargs = dataclass_fields_asdict(base_obj)
 
         byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
         switch_key = MultiplexerSwitchKey.from_et(
@@ -164,8 +165,9 @@ class Multiplexer(ComplexDop):
         if self.default_case is not None:
             self.default_case._resolve_odxlinks(odxlinks)
 
-        for case in self.cases:
-            case._resolve_odxlinks(odxlinks)
+        for mux_case in self.cases:
+            mux_case._mux_case_resolve_odxlinks(
+                odxlinks, key_physical_type=self.switch_key.dop.physical_type.base_data_type)
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
@@ -174,5 +176,5 @@ class Multiplexer(ComplexDop):
         if self.default_case is not None:
             self.default_case._resolve_snrefs(diag_layer)
 
-        for case in self.cases:
-            case._resolve_snrefs(diag_layer)
+        for mux_case in self.cases:
+            mux_case._resolve_snrefs(diag_layer)

@@ -46,8 +46,8 @@ class DtcDop(DopBase):
         compu_method = create_any_compu_method_from_et(
             odxrequire(et_element.find("COMPU-METHOD")),
             doc_frags,
-            diag_coded_type.base_data_type,
-            physical_type.base_data_type,
+            internal_type=diag_coded_type.base_data_type,
+            physical_type=physical_type.base_data_type,
         )
         dtcs_raw: List[Union[DiagnosticTroubleCode, OdxLinkRef]] = []
         if (dtcs_elem := et_element.find("DTCS")) is not None:

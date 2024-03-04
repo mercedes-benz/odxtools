@@ -3,7 +3,7 @@ import unittest
 from typing import Any, Dict, List, cast
 
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
-from odxtools.compumethods.limit import IntervalType, Limit
+from odxtools.compumethods.limit import Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diaglayer import DiagLayer
@@ -128,9 +128,9 @@ class TestEncodeRequest(unittest.TestCase):
             denominator=1,
             internal_type=DataType.A_UINT32,
             physical_type=DataType.A_UINT32,
-            internal_lower_limit=Limit(0, IntervalType.INFINITE),
-            internal_upper_limit=Limit(0, IntervalType.INFINITE),
-        )
+            internal_lower_limit=Limit(
+                value_raw="0", value_type=DataType.A_UINT32, interval_type=None),
+            internal_upper_limit=None)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),
             short_name="dop_sn",

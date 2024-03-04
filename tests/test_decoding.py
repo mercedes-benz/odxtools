@@ -1369,8 +1369,10 @@ class TestDecoding(unittest.TestCase):
             denominator=1,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32,
-            internal_lower_limit=Limit(0, IntervalType.INFINITE),
-            internal_upper_limit=Limit(0, IntervalType.INFINITE),
+            internal_lower_limit=Limit(
+                value_raw=None, value_type=DataType.A_INT32, interval_type=IntervalType.INFINITE),
+            internal_upper_limit=Limit(
+                value_raw=None, value_type=DataType.A_INT32, interval_type=IntervalType.INFINITE),
         )
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
@@ -1978,8 +1980,14 @@ class TestDecodingAndEncoding(unittest.TestCase):
                 denominator=1,
                 internal_type=DataType.A_UINT32,
                 physical_type=DataType.A_INT32,
-                internal_lower_limit=Limit(0, IntervalType.INFINITE),
-                internal_upper_limit=Limit(0, IntervalType.INFINITE),
+                internal_lower_limit=Limit(
+                    value_raw=None,
+                    value_type=DataType.A_UINT32,
+                    interval_type=IntervalType.INFINITE),
+                internal_upper_limit=Limit(
+                    value_raw=None,
+                    value_type=DataType.A_UINT32,
+                    interval_type=IntervalType.INFINITE),
             ),
             unit_ref=None,
             sdgs=[],

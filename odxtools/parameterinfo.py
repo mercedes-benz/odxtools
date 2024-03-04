@@ -84,11 +84,18 @@ def parameter_info(param_list: Iterable[Union[Parameter, EndOfPduField]]) -> str
             result += f": float\n"
             ll = cm.physical_lower_limit
             ul = cm.physical_upper_limit
-            result += (f" range: "
-                       f"{'[' if ll.interval_type == IntervalType.CLOSED else '('}"
-                       f"{ll.value!r}, "
-                       f"{ul.value!r}"
-                       f"{']' if ul.interval_type == IntervalType.CLOSED else ')'}\n")
+            if ll is None:
+                ll_str = "(inf"
+            else:
+                ll_delim = '[' if ll.interval_type == IntervalType.CLOSED else '('
+                ll_str = f"{ll_delim}{ll._value!r}"
+
+            if ul is None:
+                ul_str = "inf)"
+            else:
+                ul_delim = ']' if ul.interval_type == IntervalType.CLOSED else ')'
+                ul_str = f"{ul._value!r}{ul_delim}"
+            result += f" range: {ll_str}, {ul_str}\n"
 
             unit = dop.unit
             unit_str = unit.display_name if unit is not None else None

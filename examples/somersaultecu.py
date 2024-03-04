@@ -424,23 +424,33 @@ somersault_compumethods: Dict[str, CompuMethod] = {
                 upper_limit=None,
                 short_label=None,
                 description=None,
+                internal_type=DataType.A_UINT32,
+                physical_type=DataType.A_UNICODE2STRING,
                 compu_inverse_value=None,
                 compu_rational_coeffs=None),
             internal_to_phys=[
                 CompuScale(
                     compu_const="false",
-                    lower_limit=Limit(0),
-                    upper_limit=Limit(0),
+                    lower_limit=Limit(
+                        value_raw="0", value_type=DataType.A_UINT32, interval_type=None),
+                    upper_limit=Limit(
+                        value_raw="0", value_type=DataType.A_UINT32, interval_type=None),
                     short_label=None,
                     description=None,
+                    internal_type=DataType.A_UINT32,
+                    physical_type=DataType.A_UNICODE2STRING,
                     compu_inverse_value=None,
                     compu_rational_coeffs=None),
                 CompuScale(
                     compu_const="true",
-                    lower_limit=Limit(1),
-                    upper_limit=Limit(1),
+                    lower_limit=Limit(
+                        value_raw="1", value_type=DataType.A_UINT32, interval_type=None),
+                    upper_limit=Limit(
+                        value_raw="1", value_type=DataType.A_UINT32, interval_type=None),
                     short_label=None,
                     description=None,
+                    internal_type=DataType.A_UINT32,
+                    physical_type=DataType.A_UNICODE2STRING,
                     compu_inverse_value=None,
                     compu_rational_coeffs=None),
             ],
@@ -1252,8 +1262,10 @@ somersault_muxs = {
                     short_name="forward_flip",
                     long_name="Forward Flip",
                     description=None,
-                    lower_limit="1",
-                    upper_limit="3",
+                    lower_limit=Limit(
+                        value_raw="1", value_type=DataType.A_INT32, interval_type=None),
+                    upper_limit=Limit(
+                        value_raw="3", value_type=DataType.A_INT32, interval_type=None),
                     structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
                     structure_snref=None,
                 ),
@@ -1261,8 +1273,10 @@ somersault_muxs = {
                     short_name="backward_flip",
                     long_name="Backward Flip",
                     description=None,
-                    lower_limit="1",
-                    upper_limit="3",
+                    lower_limit=Limit(
+                        value_raw="1", value_type=DataType.A_INT32, interval_type=None),
+                    upper_limit=Limit(
+                        value_raw="3", value_type=DataType.A_INT32, interval_type=None),
                     structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
                     structure_snref=None,
                 ),
