@@ -158,8 +158,8 @@ python3 -m odxtools list -a "$YOUR_PDX_FILE"
   ```python
   # [...]
 
-  print(f"ECU {ecu.short_name} listens for requests on CAN ID 0x{ecu.get_receive_id():x}")
-  print(f"ECU {ecu.short_name} transmits responses on CAN ID 0x{ecu.get_send_id():x}")
+  print(f"ECU {ecu.short_name} listens for requests on CAN ID 0x{ecu.get_can_receive_id():x}")
+  print(f"ECU {ecu.short_name} transmits responses on CAN ID 0x{ecu.get_can_send_id():x}")
   ```
 
 - Encode a `session_start` request to the `somersault_lazy` ECU:
@@ -173,16 +173,25 @@ python3 -m odxtools list -a "$YOUR_PDX_FILE"
   # -> bytearray(b'\x10\x00')
   ```
 
+- Print all mutable parameters of the `session_start` service's first
+  positive response:
+
+  ```python
+  # [...]
+
+  ecu.services.session_start.positive_responses[0].print_free_parameters_info()
+  ```
+
 - Encode the positive response to the `start_session` request:
 
   ```python
   # [...]
 
   raw_request_data = ecu.services.session_start()
-  raw_response_data = ecu.services.session_start.positive_responses[0].encode(coded_request=raw_request_data)
+  raw_response_data = ecu.services.session_start.positive_responses[0].encode(can_do_backward_flips="true", coded_request=raw_request_data)
 
-  print(f"Positive response to session_start() of ECU {ecu.short_name}: {raw_response_data}")
-  # -> bytearray(b'P')
+  print(f"Positive response to session_start() of ECU {ecu.short_name}: {raw_response_data.hex(' ')}")
+  # -> Positive response to session_start() of ECU somersault_lazy: 50 01
   ```
 
 - Decode a request:
@@ -192,8 +201,9 @@ python3 -m odxtools list -a "$YOUR_PDX_FILE"
 
   raw_data = b"\x10\x00"
   decoded_message = ecu.decode(raw_data)
-  print(f"decoded message: {decoded_message}")
-  # -> decoded message: [start_session()]
+  for x in decoded_message:
+    print(f"decoded as '{x.coding_object.short_name}': {x.param_dict}")
+  # -> decoded as 'start_session': {'sid': 16, 'id': 0}
   ```
 
 - Decode a response to a request:
@@ -201,11 +211,12 @@ python3 -m odxtools list -a "$YOUR_PDX_FILE"
   ```python
   # [...]
 
-  raw_request_data = b"\x10\x00"
-  raw_response_data = b'P'
+  raw_request_data = bytes.fromhex("1000")
+  raw_response_data = bytes.fromhex("5001")
   decoded_response = ecu.decode_response(raw_response_data, raw_request_data)
-  print(f"decoded response: {decoded_response}")
-  # -> decoded response: [session()]
+  for x in decoded_response:
+    print(f"decoded as '{x.coding_object.short_name}': {x.param_dict}")
+  # -> decoded as 'session': {'sid': 80, 'can_do_backward_flips': 'true'}
   ```
 
 ## Using the non-strict mode

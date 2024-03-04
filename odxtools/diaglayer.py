@@ -1139,7 +1139,7 @@ class DiagLayer:
 
         if len(decoded_messages) == 0:
             raise DecodeError(
-                f"None of the services {candidate_services} could parse {message.hex()}.")
+                f"None of the services {[x.short_name for x in candidate_services]} could parse {message.hex()}.")
 
         return decoded_messages
 
