@@ -37,12 +37,12 @@ class MultiplexerCase(NamedElement):
         if (structure_snref_elem := et_element.find("STRUCTURE-SNREF")) is not None:
             structure_snref = odxrequire(structure_snref_elem.get("SHORT-NAME"))
 
-        lower_limit = Limit.from_et(
+        lower_limit = Limit.limit_from_et(
             odxrequire(et_element.find("LOWER-LIMIT")),
             doc_frags,
             value_type=None,
         )
-        upper_limit = Limit.from_et(
+        upper_limit = Limit.limit_from_et(
             odxrequire(et_element.find("UPPER-LIMIT")),
             doc_frags,
             value_type=None,

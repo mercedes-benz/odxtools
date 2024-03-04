@@ -29,19 +29,19 @@ class Limit:
 
     @staticmethod
     @overload
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment],
-                value_type: Optional[DataType]) -> "Limit":
+    def limit_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment],
+                      value_type: Optional[DataType]) -> "Limit":
         ...
 
     @staticmethod
     @overload
-    def from_et(et_element: None, doc_frags: List[OdxDocFragment],
-                value_type: Optional[DataType]) -> None:
+    def limit_from_et(et_element: None, doc_frags: List[OdxDocFragment],
+                      value_type: Optional[DataType]) -> None:
         ...
 
     @staticmethod
-    def from_et(et_element: Optional[ElementTree.Element], doc_frags: List[OdxDocFragment],
-                value_type: Optional[DataType]) -> Optional["Limit"]:
+    def limit_from_et(et_element: Optional[ElementTree.Element], doc_frags: List[OdxDocFragment],
+                      value_type: Optional[DataType]) -> Optional["Limit"]:
 
         if et_element is None:
             return None

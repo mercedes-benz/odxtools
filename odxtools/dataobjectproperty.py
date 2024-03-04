@@ -66,12 +66,12 @@ class DataObjectProperty(DopBase):
 
         internal_constr = None
         if (internal_constr_elem := et_element.find("INTERNAL-CONSTR")) is not None:
-            internal_constr = InternalConstr.from_et(
+            internal_constr = InternalConstr.constr_from_et(
                 internal_constr_elem, doc_frags, value_type=diag_coded_type.base_data_type)
 
         physical_constr = None
         if (physical_constr_elem := et_element.find("PHYS-CONSTR")) is not None:
-            physical_constr = InternalConstr.from_et(
+            physical_constr = InternalConstr.constr_from_et(
                 physical_constr_elem, doc_frags, value_type=physical_type.base_data_type)
 
         return DataObjectProperty(

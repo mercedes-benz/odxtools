@@ -63,7 +63,7 @@ def _parse_compu_scale_to_linear_compu_method(
                 OdxWarning,
                 stacklevel=1)
     # Read lower limit
-    internal_lower_limit = Limit.from_et(
+    internal_lower_limit = Limit.limit_from_et(
         et_element.find("LOWER-LIMIT"),
         doc_frags,
         value_type=internal_type,
@@ -72,7 +72,7 @@ def _parse_compu_scale_to_linear_compu_method(
     kwargs["internal_lower_limit"] = internal_lower_limit
 
     # Read upper limit
-    internal_upper_limit = Limit.from_et(
+    internal_upper_limit = Limit.limit_from_et(
         et_element.find("UPPER-LIMIT"),
         doc_frags,
         value_type=internal_type,
@@ -92,7 +92,7 @@ def create_compu_default_value(et_element: Optional[ElementTree.Element],
     if et_element is None:
         return None
     compu_const = physical_type.create_from_et(et_element)
-    scale = CompuScale.from_et(
+    scale = CompuScale.compuscale_from_et(
         et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
     scale.compu_const = compu_const
     return scale
@@ -137,7 +137,7 @@ def create_any_compu_method_from_et(et_element: ElementTree.Element,
         internal_to_phys: List[CompuScale] = []
         for scale_elem in compu_internal_to_phys.iterfind("COMPU-SCALES/COMPU-SCALE"):
             internal_to_phys.append(
-                CompuScale.from_et(
+                CompuScale.compuscale_from_et(
                     scale_elem, doc_frags, internal_type=internal_type,
                     physical_type=physical_type))
         compu_default_value = create_compu_default_value(

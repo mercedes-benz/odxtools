@@ -49,14 +49,14 @@ class CompuScale:
     physical_type: DataType
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
-                internal_type: DataType, physical_type: DataType) -> "CompuScale":
+    def compuscale_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+                           internal_type: DataType, physical_type: DataType) -> "CompuScale":
         short_label = et_element.findtext("SHORT-LABEL")
         description = create_description_from_et(et_element.find("DESC"))
 
-        lower_limit = Limit.from_et(
+        lower_limit = Limit.limit_from_et(
             et_element.find("LOWER-LIMIT"), doc_frags, value_type=internal_type)
-        upper_limit = Limit.from_et(
+        upper_limit = Limit.limit_from_et(
             et_element.find("UPPER-LIMIT"), doc_frags, value_type=internal_type)
 
         compu_inverse_value = internal_type.create_from_et(et_element.find("COMPU-INVERSE-VALUE"))

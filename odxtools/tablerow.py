@@ -51,9 +51,13 @@ class TableRow(IdentifiableElement):
         )
 
     @staticmethod
-    def from_et(  # type: ignore[override]
-            et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
-            table_ref: OdxLinkRef) -> "TableRow":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> Any:
+        raise RuntimeError(
+            "Calling TableRow.from_et() is not allowed. Use TableRow.tablerow_from_et().")
+
+    @staticmethod
+    def tablerow_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+                         table_ref: OdxLinkRef) -> "TableRow":
         """Reads a TABLE-ROW."""
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         semantic = et_element.get("SEMANTIC")
