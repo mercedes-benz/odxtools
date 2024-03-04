@@ -139,7 +139,7 @@ class IsoTpStateMachine:
                     return
 
                 if m := self.can_normal_frame_re.match(cur_line.strip()):
-                    #frame_interface = m.group(1)
+                    # frame_interface = m.group(1)
                     frame_id = int(m.group(2), 16)
 
                     frame_data_formatted = m.group(3).strip()
@@ -151,7 +151,7 @@ class IsoTpStateMachine:
                 elif (m := self.can_log_frame_re.match(
                         cur_line.strip())) or (m := self.can_fd_log_frame_re.match(
                             cur_line.strip())):
-                    #frame_interface = m.group(2)
+                    # frame_interface = m.group(2)
                     frame_id = int(m.group(2), 16)
 
                     frame_data_formatted = m.group(3).strip()
@@ -257,7 +257,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
 
     def on_single_frame(self, telegram_idx: int, frame_payload: bytes) -> None:
         # send ACK
-        #rx_id = self.can_rx_id(telegram_idx)
+        # rx_id = self.can_rx_id(telegram_idx)
         tx_id = self.can_tx_id(telegram_idx)
         block_size = 0xFF
         min_separation_time = 0  # ms
@@ -276,7 +276,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
 
     def on_first_frame(self, telegram_idx: int, frame_payload: bytes) -> None:
         # send ACK
-        #rx_id = self.can_rx_id(telegram_idx)
+        # rx_id = self.can_rx_id(telegram_idx)
         tx_id = self.can_tx_id(telegram_idx)
         block_size = 0xFF  # default value, can be overwritten later
         min_separation_time = 0  # ms
@@ -308,7 +308,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         # send new ACK if necessary
         block_size = self._block_size[telegram_idx]
         if block_size is not None and num_received >= block_size:
-            #rx_id = self.can_rx_id(telegram_idx)
+            # rx_id = self.can_rx_id(telegram_idx)
             tx_id = self.can_tx_id(telegram_idx)
             min_separation_time = 0  # ms
             fc_payload = bitstruct.pack(
