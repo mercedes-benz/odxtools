@@ -19,7 +19,7 @@ from ..parameters.parameter import Parameter
 from ..parameters.physicalconstantparameter import PhysicalConstantParameter
 from ..parameters.valueparameter import ValueParameter
 from . import _parser_utils
-from ._parser_utils import TSubparsersAction
+from ._parser_utils import SubparsersList
 from ._print_utils import (extract_service_tabulation_data, print_dl_metrics,
                            print_service_parameters)
 
@@ -482,11 +482,13 @@ class Comparison(Display):
 
                 # check for deleted diagnostic services
                 if service2.short_name not in dl1_service_names and dl2_request_prefixes[
-                        service2_idx] not in dl1_request_prefixes and service2 not in service_dict[
-                            "deleted_services"]:
+                        service2_idx] not in dl1_request_prefixes:
 
-                    service_dict["deleted_services"].append(  # type: ignore[union-attr]
-                        service2)  # type: ignore[arg-type]
+                    deleted_list = service_dict["deleted_services"]
+                    assert isinstance(deleted_list, list)
+                    if service2 not in deleted_list:
+                        service_dict["deleted_services"].append(  # type: ignore[union-attr]
+                            service2)  # type: ignore[arg-type]
 
                 if service1.short_name == service2.short_name:
                     # compare request, pos. response and neg. response parameters of both diagnostic services
@@ -545,7 +547,7 @@ class Comparison(Display):
         return changes_variants
 
 
-def add_subparser(subparsers: TSubparsersAction) -> None:
+def add_subparser(subparsers: SubparsersList) -> None:
     parser = subparsers.add_parser(
         "compare",
         description="\n".join([

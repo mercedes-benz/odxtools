@@ -120,6 +120,7 @@ class ComparamInstance:
         name_list = [cp.short_name for cp in comparam_spec.subparams]
         try:
             idx = name_list.index(subparam_name)
+            subparam = comparam_spec.subparams[idx]
         except ValueError:
             warnings.warn(
                 f"Communication parameter '{self.short_name}' "
@@ -130,8 +131,8 @@ class ComparamInstance:
             return None
 
         result = value_list[idx]
-        if result is None:
-            result = comparam_spec.subparams[idx].physical_default_value
+        if result is None and isinstance(subparam, (Comparam, ComplexComparam)):
+            result = subparam.physical_default_value
         if not isinstance(result, str):
             odxraise()
 

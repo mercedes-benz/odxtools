@@ -210,18 +210,18 @@ class BasicStructure(ComplexDop):
                 stacklevel=1)
 
     def convert_physical_to_bytes(self,
-                                  param_values: ParameterValue,
+                                  physical_value: ParameterValue,
                                   encode_state: EncodeState,
                                   bit_position: int = 0) -> bytes:
-        if not isinstance(param_values, dict):
+        if not isinstance(physical_value, dict):
             raise EncodeError(
                 f"Expected a dictionary for the values of structure {self.short_name}, "
-                f"got {type(param_values)}")
+                f"got {type(physical_value)}")
         if bit_position != 0:
             raise EncodeError("Structures must be aligned, i.e. bit_position=0, but "
                               f"{self.short_name} was passed the bit position {bit_position}")
         return self.convert_physical_to_internal(
-            param_values,
+            physical_value,
             triggering_coded_request=encode_state.triggering_request,
             is_end_of_pdu=encode_state.is_end_of_pdu,
         )

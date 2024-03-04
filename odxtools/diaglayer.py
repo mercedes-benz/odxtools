@@ -53,6 +53,9 @@ class DiagLayer:
 
     diag_layer_raw: DiagLayerRaw
 
+    def __post_init__(self) -> None:
+        self._global_negative_responses: NamedItemList[Response]
+
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayer":
         diag_layer_raw = DiagLayerRaw.from_et(et_element, doc_frags)
@@ -1149,14 +1152,8 @@ class DiagLayer:
 
         return self._decode(message, candidate_services)
 
-    def decode_response(self, response: bytes, request: Union[bytes, Message]) -> List[Message]:
-        if isinstance(request, Message):
-            candidate_services = [request.service]
-        else:
-            if not isinstance(request, (bytes, bytearray)):
-                raise TypeError(f"Request parameter must have type "
-                                f"Message, bytes or bytearray but was {type(request)}")
-            candidate_services = self._find_services_for_uds(request)
+    def decode_response(self, response: bytes, request: bytes) -> List[Message]:
+        candidate_services = self._find_services_for_uds(request)
         if candidate_services is None:
             raise DecodeError(f"Couldn't find corresponding service for request {request.hex()}.")
 

@@ -12,7 +12,7 @@ class OdxNamed(Protocol):
 
     @property
     def short_name(self) -> str:
-        pass
+        ...
 
 
 T = TypeVar("T")
@@ -139,7 +139,8 @@ class ItemAttributeList(List[T]):
     def __getitem__(self, key: slice) -> List[T]:
         ...
 
-    def __getitem__(self, key: Union[SupportsIndex, str, slice]) -> Union[T, List[T]]:
+    def __getitem__(  # type: ignore
+            self, key: Union[SupportsIndex, str, slice]) -> Union[T, List[T]]:
         if isinstance(key, (SupportsIndex, slice)):
             return super().__getitem__(key)
         else:
@@ -177,7 +178,7 @@ class ItemAttributeList(List[T]):
 
 class NamedItemList(ItemAttributeList[T]):
 
-    def _get_item_key(self, obj: T) -> str:
+    def _get_item_key(self, item: T) -> str:
         """Transform an object's `short_name` attribute into a valid
         python identifier
 
@@ -187,9 +188,9 @@ class NamedItemList(ItemAttributeList[T]):
         such short names.
 
         """
-        if not isinstance(obj, OdxNamed):
+        if not isinstance(item, OdxNamed):
             odxraise()
-        sn = obj.short_name
+        sn = item.short_name
         if not isinstance(sn, str):
             odxraise()
 

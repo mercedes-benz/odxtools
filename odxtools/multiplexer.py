@@ -74,8 +74,10 @@ class Multiplexer(ComplexDop):
             odxraise("Upper and lower bounds of limits must compareable")
         return lower_limit, upper_limit
 
-    def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
-                                  bit_position: int) -> bytes:
+    def convert_physical_to_bytes(self,
+                                  physical_value: ParameterValue,
+                                  encode_state: EncodeState,
+                                  bit_position: int = 0) -> bytes:
 
         if bit_position != 0:
             raise EncodeError("Multiplexer must be aligned, i.e. bit_position=0, but "
@@ -126,22 +128,23 @@ class Multiplexer(ComplexDop):
                      f" for multiplexer '{self.short_name}')")
 
         case_value: Optional[ParameterValue] = None
-        for case in self.cases or []:
-            lower, upper = self._get_case_limits(case)
+        mux_case = None
+        for mux_case in self.cases or []:
+            lower, upper = self._get_case_limits(mux_case)
             if lower <= key_value and key_value <= upper:  # type: ignore[operator]
-                if case._structure:
-                    case_value = case._structure.decode_from_pdu(decode_state)
+                if mux_case._structure:
+                    case_value = mux_case._structure.decode_from_pdu(decode_state)
                 break
 
         if case_value is None and self.default_case is not None:
             if self.default_case._structure:
                 case_value = self.default_case._structure.decode_from_pdu(decode_state)
 
-        if case_value is None:
+        if mux_case is None or case_value is None:
             odxraise(f"Failed to find a matching case in {self.short_name} for value {key_value!r}",
                      DecodeError)
 
-        mux_value = (case.short_name, case_value)
+        mux_value = (mux_case.short_name, case_value)
 
         # go back to the original origin
         decode_state.origin_byte_position = orig_origin

@@ -7,7 +7,7 @@ from ..diagservice import DiagService
 from ..odxtypes import ParameterValue
 from ..singleecujob import SingleEcuJob
 from . import _parser_utils
-from ._parser_utils import TSubparsersAction
+from ._parser_utils import SubparsersList
 from ._print_utils import print_diagnostic_service
 
 # name of the tool
@@ -67,7 +67,7 @@ def print_summary(odxdb: Database,
             print(f"Unknown service: {service}")
 
 
-def add_subparser(subparsers: TSubparsersAction) -> None:
+def add_subparser(subparsers: SubparsersList) -> None:
     parser = subparsers.add_parser(
         "find",
         description="\n".join([

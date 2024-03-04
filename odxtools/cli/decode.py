@@ -9,7 +9,7 @@ from ..exceptions import odxraise
 from ..odxtypes import ParameterValue
 from ..singleecujob import SingleEcuJob
 from . import _parser_utils
-from ._parser_utils import TSubparsersAction
+from ._parser_utils import SubparsersList
 
 # name of the tool
 _odxtools_tool_name_ = "decode"
@@ -71,7 +71,7 @@ def print_summary(
                 print(f"  {param_name}={get_display_value(param_value)}")
 
 
-def add_subparser(subparsers: TSubparsersAction) -> None:
+def add_subparser(subparsers: SubparsersList) -> None:
     parser = subparsers.add_parser(
         "decode",
         description="\n".join([

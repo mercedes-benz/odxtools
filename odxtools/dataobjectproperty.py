@@ -120,8 +120,10 @@ class DataObjectProperty(DopBase):
 
         return self.compu_method.convert_physical_to_internal(physical_value)
 
-    def convert_physical_to_bytes(self, physical_value: Any, encode_state: EncodeState,
-                                  bit_position: int) -> bytes:
+    def convert_physical_to_bytes(self,
+                                  physical_value: Any,
+                                  encode_state: EncodeState,
+                                  bit_position: int = 0) -> bytes:
         """
         Convert a physical representation of a parameter to a string bytes that can be send over the wire
         """

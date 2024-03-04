@@ -55,10 +55,13 @@ class IsoTpStateMachine:
             return  # unknown CAN ID
 
         # decode the isotp segment
-        (frame_type,) = bitstruct.unpack("u4", data)
+        frame_type, _ = bitstruct.unpack("u4", data)
+        assert isinstance(frame_type, int)
+
         telegram_len = None
         if frame_type == IsoTp.FRAME_TYPE_SINGLE:
             frame_type, telegram_len = bitstruct.unpack("u4u4", data)
+            assert isinstance(telegram_len, int)
 
             self.on_single_frame(telegram_idx, data[1:1 + telegram_len])
             self.on_telegram_complete(telegram_idx, data[1:1 + telegram_len])
@@ -67,6 +70,7 @@ class IsoTpStateMachine:
 
         elif frame_type == IsoTp.FRAME_TYPE_FIRST:
             frame_type, telegram_len = bitstruct.unpack("u4u12", data)
+            assert isinstance(telegram_len, int)
 
             self._telegram_specified_len[telegram_idx] = telegram_len
             self._telegram_data[telegram_idx] = bytearray(data[2:])
@@ -76,11 +80,13 @@ class IsoTpStateMachine:
 
         elif frame_type == IsoTp.FRAME_TYPE_CONSECUTIVE:
             frame_type, rx_segment_idx = bitstruct.unpack("u4u4", data)
+            assert isinstance(rx_segment_idx, int)
 
             expected_segment_idx = (self._telegram_last_rx_fragment_idx[telegram_idx] + 1) % 16
             telegram_data = self._telegram_data[telegram_idx]
             assert isinstance(telegram_data, bytearray)
 
+            n = -1
             if expected_segment_idx == rx_segment_idx:
                 self._telegram_last_rx_fragment_idx[telegram_idx] = rx_segment_idx
                 telegram_data += data[1:]
@@ -102,6 +108,8 @@ class IsoTpStateMachine:
 
         elif frame_type == IsoTp.FRAME_TYPE_FLOW_CONTROL:
             frame_type, flow_control_flag = bitstruct.unpack("u4u4", data)
+            assert isinstance(flow_control_flag, int)
+
             self.on_flow_control_frame(telegram_idx, flow_control_flag)
         else:
             self.on_frame_type_error(telegram_idx, frame_type)
@@ -139,7 +147,7 @@ class IsoTpStateMachine:
                     return
 
                 if m := self.can_normal_frame_re.match(cur_line.strip()):
-                    #frame_interface = m.group(1)
+                    # frame_interface = m.group(1)
                     frame_id = int(m.group(2), 16)
 
                     frame_data_formatted = m.group(3).strip()
@@ -151,7 +159,7 @@ class IsoTpStateMachine:
                 elif (m := self.can_log_frame_re.match(
                         cur_line.strip())) or (m := self.can_fd_log_frame_re.match(
                             cur_line.strip())):
-                    #frame_interface = m.group(2)
+                    # frame_interface = m.group(2)
                     frame_id = int(m.group(2), 16)
 
                     frame_data_formatted = m.group(3).strip()
@@ -257,7 +265,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
 
     def on_single_frame(self, telegram_idx: int, frame_payload: bytes) -> None:
         # send ACK
-        #rx_id = self.can_rx_id(telegram_idx)
+        # rx_id = self.can_rx_id(telegram_idx)
         tx_id = self.can_tx_id(telegram_idx)
         block_size = 0xFF
         min_separation_time = 0  # ms
@@ -276,7 +284,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
 
     def on_first_frame(self, telegram_idx: int, frame_payload: bytes) -> None:
         # send ACK
-        #rx_id = self.can_rx_id(telegram_idx)
+        # rx_id = self.can_rx_id(telegram_idx)
         tx_id = self.can_tx_id(telegram_idx)
         block_size = 0xFF  # default value, can be overwritten later
         min_separation_time = 0  # ms
@@ -308,7 +316,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         # send new ACK if necessary
         block_size = self._block_size[telegram_idx]
         if block_size is not None and num_received >= block_size:
-            #rx_id = self.can_rx_id(telegram_idx)
+            # rx_id = self.can_rx_id(telegram_idx)
             tx_id = self.can_tx_id(telegram_idx)
             min_separation_time = 0  # ms
             fc_payload = bitstruct.pack(

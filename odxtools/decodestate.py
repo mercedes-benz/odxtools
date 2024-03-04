@@ -100,6 +100,7 @@ class DecodeState:
 
         text_errors = 'strict' if exceptions.strict_mode else 'replace'
         if base_data_type == DataType.A_ASCIISTRING:
+            assert isinstance(internal_value, (bytes, bytearray))
             # The spec says ASCII, meaning only byte values 0-127.
             # But in practice, vendors use iso-8859-1, aka latin-1
             # reason being iso-8859-1 never fails since it has a valid
@@ -107,9 +108,11 @@ class DecodeState:
             text_encoding = 'iso-8859-1'
             internal_value = internal_value.decode(encoding=text_encoding, errors=text_errors)
         elif base_data_type == DataType.A_UTF8STRING:
+            assert isinstance(internal_value, (bytes, bytearray))
             text_encoding = "utf-8"
             internal_value = internal_value.decode(encoding=text_encoding, errors=text_errors)
         elif base_data_type == DataType.A_UNICODE2STRING:
+            assert isinstance(internal_value, (bytes, bytearray))
             # For UTF-16, we need to manually decode the extracted
             # bytes to a string
             text_encoding = "utf-16-be" if is_highlow_byte_order else "utf-16-le"

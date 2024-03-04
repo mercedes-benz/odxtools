@@ -1,19 +1,11 @@
 # SPDX-License-Identifier: MIT
 import unittest
+from io import StringIO
+from unittest.mock import patch
 
 from odxtools.exceptions import OdxError, odxrequire
 from odxtools.load_pdx_file import load_pdx_file
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
-
-try:
-    from unittest.mock import patch
-except ImportError:
-    from mock import patch  # type: ignore # noqa: UP026
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
 
 odxdb = load_pdx_file("./examples/somersault.pdx")
 
@@ -241,29 +233,24 @@ class TestEnDecode(unittest.TestCase):
             }))
         self.assertEqual(resp_data.hex(), "622a5c03fa7bf9")
 
+        # test decoding an object featuring a TableStruct parameter
         decoded_resp_data = pr.decode(resp_data)
         assert isinstance(decoded_resp_data, dict)
         self.assertEqual(decoded_resp_data["dizzyness_level"], 42)
         self.assertEqual(decoded_resp_data["happiness_level"], 92)
         self.assertEqual(decoded_resp_data["last_pos_response_key"], "forward_grudging")
-        self.assertEqual(
-            decoded_resp_data["last_pos_response"][0],  # type: ignore[index]
-            "forward_grudging")
-        self.assertEqual(
-            set(decoded_resp_data["last_pos_response"]
-                [1].keys()),  # type: ignore[index, union-attr]
-            {"sid", "num_flips_done", "sault_time"})
+        last_pos_response = decoded_resp_data["last_pos_response"]
+        assert isinstance(last_pos_response, tuple)
+        lpr_name, lpr_value = last_pos_response
+        assert isinstance(lpr_name, str)
+        assert isinstance(lpr_value, dict)
+        self.assertEqual(lpr_name, "forward_grudging")
+        self.assertEqual(set(lpr_value.keys()), {"sid", "num_flips_done", "sault_time"})
         # the num_flips_done parameter is a matching request parameter
         # for this response, so it produces a binary blob. possibly,
         # it should be changed to a ValueParameter...
-        self.assertEqual(
-            decoded_resp_data["last_pos_response"][1]  # type: ignore[index, call-overload]
-            ["num_flips_done"],  # type: ignore[index, call-overload]
-            123)
-        self.assertEqual(
-            decoded_resp_data["last_pos_response"][1]  # type: ignore[index, call-overload]
-            ["sault_time"],  # type: ignore[index, call-overload]
-            249)
+        self.assertEqual(lpr_value["num_flips_done"], 123)
+        self.assertEqual(lpr_value["sault_time"], 249)
 
         # test the "backward flips grudgingly done" response
         resp_data = pr.encode(

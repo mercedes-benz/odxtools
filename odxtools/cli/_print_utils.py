@@ -156,6 +156,7 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Dict[str, 
         byte.append(param.byte_position)
         semantic.append(param.semantic)
         param_type.append(param.parameter_type)
+        length = 0
         if param.get_static_bit_length() is not None:
             bit_length.append(param.get_static_bit_length())
             length = (param.get_static_bit_length() or 0) // 4

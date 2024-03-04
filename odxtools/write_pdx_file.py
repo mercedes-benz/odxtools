@@ -120,9 +120,9 @@ def write_pdx_file(
             creation_date = file_cdate.strftime("%Y-%m-%dT%H:%M:%S")
 
             mime_type = "text/plain"
-            if template_file_name.endswith(".odx-cs"):
+            if output_file_name.endswith(".odx-cs"):
                 mime_type = "application/x-asam.odx.odx-cs"
-            elif template_file_name.endswith(".odx-d"):
+            elif output_file_name.endswith(".odx-d"):
                 mime_type = "application/x-asam.odx.odx-d"
 
             zf_name = os.path.basename(output_file_name)

@@ -4,7 +4,7 @@ import logging
 import sys
 from typing import List, Optional, Union, cast
 
-import InquirerPy.prompt as PI_prompt
+import InquirerPy.prompt as IP_prompt
 from tabulate import tabulate  # TODO: switch to rich tables
 
 from ..database import Database
@@ -20,7 +20,7 @@ from ..parameters.valueparameter import ValueParameter
 from ..request import Request
 from ..response import Response
 from . import _parser_utils
-from ._parser_utils import TSubparsersAction
+from ._parser_utils import SubparsersList
 from ._print_utils import extract_parameter_tabulation_data
 
 # name of the tool
@@ -89,13 +89,15 @@ def prompt_single_parameter_value(parameter: Parameter) -> Optional[AtomicOdxTyp
         # else _convert_string_to_odx_type(x, p.physical_type.base_data_type, param=p) # This does not work because the next parameter to be promted is used (for some reason?)
     }]
 
-    if hasattr(parameter, "dop") and hasattr(parameter.dop, "compu_method") \
-       and hasattr(parameter.dop.compu_method, "get_scales"):
-        scales = parameter.dop.compu_method.get_scales()
+    if (dop := getattr(parameter, "dop", None)) and \
+       (compu_method := getattr(dop, "compu_method", None)):
+        scales = compu_method.internal_to_phys
         choices = [scale.compu_const for scale in scales if scale is not None]
+        if (cdv := compu_method.compu_default_value) is not None:
+            choices.append(cdv.compu_const)
         param_prompt[0]["choices"] = choices
 
-    answer = PI_prompt(param_prompt)
+    answer = IP_prompt(param_prompt)
     if answer.get(parameter.short_name) == "" and not parameter.is_required:
         return None
     elif parameter.physical_type.base_data_type is not None:
@@ -105,7 +107,7 @@ def prompt_single_parameter_value(parameter: Parameter) -> Optional[AtomicOdxTyp
         logging.warning(
             f"Parameter {parameter.short_name} does not have a physical data type. Param details: {parameter}"
         )
-        return answer.get(parameter.short_name)
+        return cast(str, answer.get(parameter.short_name))
 
 
 def encode_message_interactively(sub_service: Union[Request, Response],
@@ -118,7 +120,7 @@ def encode_message_interactively(sub_service: Union[Request, Response],
     for param_or_dict in param_dict.values():
         if isinstance(param_or_dict, dict):
             for param in param_or_dict.values():
-                if not isinstance(param_or_dict, dict) and param.is_settable:
+                if isinstance(param, Parameter) and param.is_settable:
                     exists_definable_param = True
         elif param_or_dict.is_settable:
             exists_definable_param = True
@@ -133,10 +135,11 @@ def encode_message_interactively(sub_service: Union[Request, Response],
                 "message": f"Do you want to encode a message? [y/n]",
                 "choices": ["yes", "no"],
             }]
-            answer = PI_prompt(encode_message_prompt)
+            answer = IP_prompt(encode_message_prompt)
             if answer.get("yes_no_prompt") == "no":
                 return
 
+        answered_request = b''
         if isinstance(sub_service, Response):
             answered_request_prompt = [{
                 "type":
@@ -148,7 +151,7 @@ def encode_message_interactively(sub_service: Union[Request, Response],
                 "filter":
                     lambda input: _convert_string_to_bytes(input),
             }]
-            answer = PI_prompt(answered_request_prompt)
+            answer = IP_prompt(answered_request_prompt)
             answered_request = cast(bytes, answer.get("request"))
             print(f"Input interpretation as list: {list(answered_request)}")
 
@@ -268,7 +271,7 @@ def browse(odxdb: Database) -> None:
             "message": "Select a Variant.",
             "choices": list(dl_names) + ["[exit]"],
         }]
-        answer = PI_prompt(selection)
+        answer = IP_prompt(selection)
         if answer.get("variant") == "[exit]":
             return
 
@@ -306,7 +309,7 @@ def browse(odxdb: Database) -> None:
                     f"The variant {variant.short_name} offers the following services. Select one!",
                 "choices": [s.short_name for s in services] + ["[back]"],
             }]
-            answer = PI_prompt(selection)
+            answer = IP_prompt(selection)
             if answer.get("service") == "[back]":
                 break
 
@@ -341,7 +344,7 @@ def browse(odxdb: Database) -> None:
                     "short": f"Negative response: {nr.short_name}",
                 } for nr in service.negative_responses] + ["[back]"],  # type: ignore
             }]
-            answer = PI_prompt(selection)
+            answer = IP_prompt(selection)
             if answer.get("message_type") == "[back]":
                 continue
 
@@ -355,7 +358,7 @@ def browse(odxdb: Database) -> None:
                 encode_message_interactively(codec, ask_user_confirmation=True)
 
 
-def add_subparser(subparsers: TSubparsersAction) -> None:
+def add_subparser(subparsers: SubparsersList) -> None:
     # Browse interactively to avoid spamming the console.
     parser = subparsers.add_parser(
         "browse",

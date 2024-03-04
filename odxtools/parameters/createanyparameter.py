@@ -40,6 +40,8 @@ def create_any_parameter_from_et(et_element: ElementTree.Element,
     sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
 
     # Which attributes are set depends on the type of the parameter.
+    dop_ref = None
+    dop_snref = None
     if parameter_type in ["VALUE", "PHYS-CONST", "SYSTEM", "LENGTH-KEY"]:
         dop_ref = OdxLinkRef.from_et(et_element.find("DOP-REF"), doc_frags)
         dop_snref = None
