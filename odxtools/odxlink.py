@@ -181,7 +181,7 @@ class OdxLinkDatabase:
     def resolve(self, ref: OdxLinkRef, expected_type: Type[T]) -> T:
         ...
 
-    def resolve(self, ref: OdxLinkRef, expected_type: Optional[Type[T]] = None) -> Any:
+    def resolve(self, ref: OdxLinkRef, expected_type: Optional[Any] = None) -> Any:
         """
         Resolve a reference to an object
 
@@ -223,7 +223,7 @@ class OdxLinkDatabase:
 
     def resolve_lenient(self,
                         ref: OdxLinkRef,
-                        expected_type: Optional[Type[T]] = None) -> Optional[Any]:
+                        expected_type: Optional[Any] = None) -> Optional[Any]:
         """
         Resolve a reference to an object
 

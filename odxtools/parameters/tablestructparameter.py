@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Dict, Optional, cast
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import EncodeError, OdxWarning, odxraise
+from ..exceptions import DecodeError, EncodeError, OdxWarning, odxraise
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..odxtypes import ParameterValue
 from .parameter import Parameter, ParameterType
@@ -136,8 +136,9 @@ class TableStructParameter(Parameter):
         decode_state.table_keys[key_name]
         table_row = decode_state.table_keys.get(key_name)
         if table_row is None:
-            raise odxraise(f"No table key '{key_name}' found when decoding "
-                           f"table struct parameter '{str(self.short_name)}'")
+            odxraise(
+                f"No table key '{key_name}' found when decoding "
+                f"table struct parameter '{str(self.short_name)}'", DecodeError)
             dummy_val = cast(str, None), cast(int, None)
             return dummy_val
 

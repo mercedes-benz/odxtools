@@ -1,10 +1,8 @@
 # SPDX-License-Identifier: MIT
-import warnings
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
-from ..exceptions import OdxWarning, odxassert, odxraise, odxrequire
-from ..globals import logger
+from ..exceptions import odxassert, odxraise, odxrequire
 from ..odxlink import OdxDocFragment
 from ..odxtypes import DataType
 from .compumethod import CompuMethod
@@ -58,10 +56,8 @@ def _parse_compu_scale_to_linear_compu_method(
     if (string := coeffs.findtext("COMPU-DENOMINATOR/V")) is not None:
         denominator = float(string)
         if denominator == 0:
-            warnings.warn(
-                "CompuMethod: A denominator of zero will lead to divisions by zero.",
-                OdxWarning,
-                stacklevel=1)
+            odxraise("CompuMethod: A denominator of zero will lead to divisions by zero.")
+
     # Read lower limit
     internal_lower_limit = Limit.limit_from_et(
         et_element.find("LOWER-LIMIT"),
@@ -184,6 +180,7 @@ def create_any_compu_method_from_et(et_element: ElementTree.Element,
         return TabIntpCompuMethod(
             internal_points=internal_points, physical_points=physical_points, **kwargs)
 
-    # TODO: Implement other categories (never instantiate CompuMethod)
-    logger.warning(f"Warning: Computation category {compu_category} is not implemented!")
+    # TODO: Implement all categories (never instantiate the CompuMethod base class!)
+    odxraise(f"Warning: Computation category {compu_category} is not implemented!")
+
     return IdenticalCompuMethod(internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32)

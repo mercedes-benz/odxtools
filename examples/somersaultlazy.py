@@ -7,14 +7,15 @@ import argparse
 import asyncio
 import logging
 import random
-from typing import List, Optional, Union
+from socket import socket
+from typing import List, Optional, Union, cast
 
 import isotp
+import isotp.tpsock
 import somersaultecu
 
-import odxtools
 import odxtools.uds as uds
-from odxtools.exceptions import odxrequire
+from odxtools.exceptions import DecodeError, odxrequire
 from odxtools.message import Message
 from odxtools.odxtypes import ParameterValueDict
 from odxtools.response import Response, ResponseType
@@ -41,11 +42,13 @@ def create_isotp_socket(channel: Optional[str], rxid: int,
     if is_sterile:
         return None
 
+    assert channel is not None
+
     # create an ISO-TP socket without a timeout (timeouts are handled
     # using asyncio). Also, for asyncio to work with this socket, it
     # must be non-blocking...
     result_socket = isotp.socket(timeout=None)
-    result_socket._socket.setblocking(0)
+    result_socket._socket.setblocking(False)
 
     # set the ISO-TP flow control options:
     #
@@ -81,7 +84,7 @@ async def ecu_send(isotp_socket: Optional[isotp.tpsock.socket], payload: bytes) 
         assert isotp_socket is not None
 
         loop = asyncio.get_running_loop()
-        await loop.sock_sendall(isotp_socket, payload)
+        await loop.sock_sendall(cast(socket, isotp_socket), payload)
 
 
 async def ecu_recv(isotp_socket: Optional[isotp.tpsock.socket]) -> bytes:
@@ -107,7 +110,7 @@ async def ecu_recv(isotp_socket: Optional[isotp.tpsock.socket]) -> bytes:
         assert isotp_socket is not None
 
         loop = asyncio.get_running_loop()
-        return await loop.sock_recv(isotp_socket, 4095)
+        return await loop.sock_recv(cast(socket, isotp_socket), 4095)
 
 
 async def tester_send(isotp_socket: Optional[isotp.tpsock.socket], payload: bytes) -> None:
@@ -127,7 +130,7 @@ async def tester_send(isotp_socket: Optional[isotp.tpsock.socket], payload: byte
         assert isotp_socket is not None
 
         loop = asyncio.get_running_loop()
-        await loop.sock_sendall(isotp_socket, payload)
+        await loop.sock_sendall(cast(socket, isotp_socket), payload)
 
 
 async def tester_recv(isotp_socket: Optional[isotp.tpsock.socket]) -> bytes:
@@ -153,7 +156,7 @@ async def tester_recv(isotp_socket: Optional[isotp.tpsock.socket]) -> bytes:
         assert isotp_socket is not None
 
         loop = asyncio.get_running_loop()
-        return await loop.sock_recv(isotp_socket, 4095)
+        return await loop.sock_recv(cast(socket, isotp_socket), 4095)
 
 
 class SomersaultLazyEcu:
@@ -202,7 +205,7 @@ class SomersaultLazyEcu:
                 # that requests can always be uniquely decoded
                 assert len(messages) == 1
                 await self._handle_request(messages[0])
-            except odxtools.exceptions.DecodeError as e:
+            except DecodeError as e:
                 ecu_logger.warning(f"Could not decode request "
                                    f"0x{data.hex()}: {e}")
                 return
@@ -382,7 +385,7 @@ async def tester_await_response(isotp_socket: Optional[isotp.tpsock.socket],
 
         return replies[0].param_dict
 
-    except odxtools.exceptions.DecodeError as e:
+    except DecodeError as e:
         if len(raw_response) >= 3:
             sid = raw_response[0]
             rq_sid = raw_response[1]

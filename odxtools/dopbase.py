@@ -64,8 +64,10 @@ class DopBase(IdentifiableElement):
         """
         raise NotImplementedError
 
-    def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
-                                  bit_position: int) -> bytes:
+    def convert_physical_to_bytes(self,
+                                  physical_value: ParameterValue,
+                                  encode_state: EncodeState,
+                                  bit_position: int = 0) -> bytes:
         """Convert the physical value into bytes."""
         raise NotImplementedError
 

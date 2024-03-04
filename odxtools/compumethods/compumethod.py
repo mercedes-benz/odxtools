@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-import abc
 from dataclasses import dataclass
 from typing import Literal
 
@@ -15,14 +14,13 @@ CompuMethodCategory = Literal[
 
 
 @dataclass
-class CompuMethod(abc.ABC):
+class CompuMethod:
     internal_type: DataType
     physical_type: DataType
 
     @property
-    @abc.abstractmethod
     def category(self) -> CompuMethodCategory:
-        pass
+        raise NotImplementedError()
 
     def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> AtomicOdxType:
         raise NotImplementedError()

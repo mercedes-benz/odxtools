@@ -41,7 +41,7 @@ class EndOfPduField(Field):
 
     def convert_physical_to_bytes(
         self,
-        physical_values: ParameterValue,
+        physical_value: ParameterValue,
         encode_state: EncodeState,
         bit_position: int = 0,
     ) -> bytes:
@@ -49,13 +49,13 @@ class EndOfPduField(Field):
         odxassert(
             bit_position == 0, "End of PDU field must be byte aligned. "
             "Is there an error in reading the .odx?", EncodeError)
-        if not isinstance(physical_values, list):
+        if not isinstance(physical_value, list):
             odxraise(
                 f"Expected a list of values for end-of-pdu field {self.short_name}, "
-                f"got {type(physical_values)}", EncodeError)
+                f"got {type(physical_value)}", EncodeError)
 
         coded_message = b''
-        for value in physical_values:
+        for value in physical_value:
             coded_message += self.structure.convert_physical_to_bytes(value, encode_state)
         return coded_message
 

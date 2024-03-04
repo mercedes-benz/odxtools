@@ -4,6 +4,7 @@ import importlib
 from typing import Any, List
 
 import odxtools
+import odxtools.exceptions
 
 from ..version import __version__ as odxtools_version
 from .dummy_sub_parser import DummyTool

@@ -142,6 +142,7 @@ class DiagCodedType(abc.ABC):
         """Helper method to get the minimal byte length.
         (needed for LeadingLength- and MinMaxLengthType)
         """
+        byte_length: int = -1
         # A_BYTEFIELD, A_ASCIISTRING, A_UNICODE2STRING, A_UTF8STRING
         if self.base_data_type == DataType.A_BYTEFIELD:
             byte_length = len(internal_value)

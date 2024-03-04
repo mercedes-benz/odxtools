@@ -62,6 +62,10 @@ class Limit:
         if self.value_raw is not None:
             self._value = value_type.from_string(self.value_raw)
 
+    @property
+    def value(self) -> Optional[AtomicOdxType]:
+        return self._value
+
     def complies_to_upper(self, value: AtomicOdxType) -> bool:
         """Checks if the value is in the range w.r.t. the upper limit.
 

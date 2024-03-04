@@ -86,8 +86,10 @@ class EnvironmentDataDescription(ComplexDop):
             for ed in self.env_datas:
                 ed._resolve_snrefs(diag_layer)
 
-    def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
-                                  bit_position: int) -> bytes:
+    def convert_physical_to_bytes(self,
+                                  physical_value: ParameterValue,
+                                  encode_state: EncodeState,
+                                  bit_position: int = 0) -> bytes:
         """Convert the physical value into bytes.
 
         Since environmental data is supposed to never appear on the

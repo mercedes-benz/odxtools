@@ -4,7 +4,7 @@ import sys
 import traceback
 from io import StringIO
 
-from ._parser_utils import TSubparsersAction
+from ._parser_utils import SubparsersList
 
 
 class DummyTool:
@@ -22,7 +22,7 @@ class DummyTool:
         self._odxtools_tool_name_ = tool_name
         self._error = error
 
-    def add_subparser(self, subparser_list: TSubparsersAction) -> None:
+    def add_subparser(self, subparser_list: SubparsersList) -> None:
         desc = StringIO()
 
         print(f"Tool '{self._odxtools_tool_name_}' is unavailable: {self._error}", file=desc)

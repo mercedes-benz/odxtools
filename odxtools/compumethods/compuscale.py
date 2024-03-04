@@ -88,7 +88,7 @@ class CompuScale:
             # which is allowed (cf section 7.3.6.6.1)
             assert self.lower_limit is not None
 
-            return internal_value == self.lower_limit._value
+            return internal_value == self.lower_limit.value
         elif self.lower_limit is None:
             # only the upper limit has been specified. the spec is
             # ambiguous: it only says that if no upper limit is
@@ -101,7 +101,7 @@ class CompuScale:
             # specified.
             assert self.upper_limit is not None
 
-            return internal_value == self.upper_limit._value
+            return internal_value == self.upper_limit.value
 
         return self.lower_limit.complies_to_lower(internal_value) and \
             self.upper_limit.complies_to_upper(internal_value)

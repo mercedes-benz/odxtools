@@ -131,7 +131,7 @@ class ComparamInstance:
 
         result = value_list[idx]
         if result is None:
-            result = comparam_spec.subparams[idx].physical_default_value
+            result = getattr(comparam_spec.subparams[idx], "physical_default_value", None)
         if not isinstance(result, str):
             odxraise()
 

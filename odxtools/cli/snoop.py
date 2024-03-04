@@ -15,7 +15,7 @@ from odxtools.isotp_state_machine import IsoTpStateMachine
 from odxtools.response import Response, ResponseType
 
 from . import _parser_utils
-from ._parser_utils import TSubparsersAction
+from ._parser_utils import SubparsersList
 
 # name of the tool
 _odxtools_tool_name_ = "snoop"
@@ -30,6 +30,8 @@ ecu_tx_id = None
 def handle_telegram(telegram_id: int, payload: bytes) -> None:
     global odx_diag_layer
     global last_request
+
+    assert odx_diag_layer is not None
 
     if telegram_id == ecu_tx_id:
         if uds.is_response_pending(payload):
@@ -210,7 +212,7 @@ def add_cli_arguments(parser: argparse.ArgumentParser) -> None:
     _parser_utils.add_pdx_argument(parser)
 
 
-def add_subparser(subparsers: TSubparsersAction) -> None:
+def add_subparser(subparsers: SubparsersList) -> None:
     parser = subparsers.add_parser(
         "snoop",
         description="Live decoding of a diagnostic session.",

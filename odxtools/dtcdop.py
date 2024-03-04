@@ -128,8 +128,10 @@ class DtcDop(DopBase):
 
         return dtc
 
-    def convert_physical_to_bytes(self, physical_value: ParameterValue, encode_state: EncodeState,
-                                  bit_position: int) -> bytes:
+    def convert_physical_to_bytes(self,
+                                  physical_value: ParameterValue,
+                                  encode_state: EncodeState,
+                                  bit_position: int = 0) -> bytes:
         if isinstance(physical_value, DiagnosticTroubleCode):
             trouble_code = physical_value.trouble_code
         elif isinstance(physical_value, int):

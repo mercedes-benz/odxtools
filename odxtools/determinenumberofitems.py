@@ -7,7 +7,7 @@ from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 
 if TYPE_CHECKING:
-    from ..diaglayer import DiagLayer
+    from .diaglayer import DiagLayer
 
 
 @dataclass
