@@ -31,6 +31,13 @@ ParameterType = Literal[
 
 @dataclass
 class Parameter(NamedElement, abc.ABC):
+    """This class corresponds to the POSITIONABLE-PARAMETER type of
+    the ODX specification.
+
+    Be aware that, even though the ODX specification seems to make the
+    distinction of "positionable" and "normal" parameters, it does not
+    define any non-positionable parameter types.
+    """
     byte_position: Optional[int]
     bit_position: Optional[int]
     semantic: Optional[str]
