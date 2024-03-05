@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 
+from typing_extensions import override
+
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..odxtypes import ParameterValue
@@ -27,5 +29,6 @@ class SystemParameter(ParameterWithDOP):
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         raise NotImplementedError("Encoding a SystemParameter is not implemented yet.")
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-        raise NotImplementedError("Decoding a SystemParameter is not implemented yet.")
+    @override
+    def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
+        raise NotImplementedError("Decoding SystemParameter is not implemented yet.")

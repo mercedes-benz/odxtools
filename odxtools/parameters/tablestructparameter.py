@@ -3,6 +3,8 @@ import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Optional, cast
 
+from typing_extensions import override
+
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, OdxWarning, odxraise
@@ -125,11 +127,8 @@ class TableStructParameter(Parameter):
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         return super().encode_into_pdu(encode_state)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-        orig_cursor = decode_state.cursor_byte_position
-        if self.byte_position is not None:
-            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
-
+    @override
+    def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         # find the selected table row
         key_name = self.table_key.short_name
 
@@ -146,14 +145,11 @@ class TableStructParameter(Parameter):
         if table_row.dop is not None:
             dop = table_row.dop
             val = dop.decode_from_pdu(decode_state)
-            decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
             return (table_row.short_name, val)
         elif table_row.structure is not None:
             val = table_row.structure.decode_from_pdu(decode_state)
-            decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
             return (table_row.short_name, val)
         else:
             # the table row associated with the key neither defines a
             # DOP nor a structure -> ignore it
-            decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
             return (table_row.short_name, cast(int, None))

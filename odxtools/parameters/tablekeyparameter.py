@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from typing_extensions import override
+
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
@@ -135,11 +137,8 @@ class TableKeyParameter(Parameter):
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         return super().encode_into_pdu(encode_state)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-        orig_cursor = decode_state.cursor_byte_position
-        if self.byte_position is not None:
-            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
-
+    @override
+    def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         if self.table_row is not None:
             # the table row to be used is statically specified -> no
             # need to decode anything!
@@ -147,7 +146,6 @@ class TableKeyParameter(Parameter):
         else:
             # Use DOP to decode
             key_dop = odxrequire(self.table.key_dop)
-            decode_state.cursor_bit_position = self.bit_position or 0
             key_dop_val = key_dop.decode_from_pdu(decode_state)
 
             table_row_candidates = [x for x in self.table.table_rows if x.key == key_dop_val]
@@ -161,7 +159,5 @@ class TableKeyParameter(Parameter):
 
             # update the decode_state's table key
             decode_state.table_keys[self.short_name] = table_row
-
-        decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
 
         return phys_val

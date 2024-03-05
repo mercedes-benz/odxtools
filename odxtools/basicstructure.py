@@ -68,7 +68,8 @@ class BasicStructure(ComplexDop):
             cursor += param_bit_length
             length = max(length, cursor)
 
-        # Round up to account for padding bits
+        # Round up to account for padding bits (all structures are
+        # byte aligned)
         return ((length + 7) // 8) * 8
 
     def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:

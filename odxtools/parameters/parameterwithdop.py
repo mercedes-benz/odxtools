@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from typing_extensions import override
+
 from ..dataobjectproperty import DataObjectProperty
 from ..decodestate import DecodeState
 from ..dopbase import DopBase
@@ -75,16 +77,6 @@ class ParameterWithDOP(Parameter):
         return dop.convert_physical_to_bytes(
             physical_value, encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-        orig_cursor = decode_state.cursor_byte_position
-        if self.byte_position is not None:
-            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
-
-        decode_state.cursor_bit_position = self.bit_position or 0
-
-        # Use DOP to decode
-        phys_val = self.dop.decode_from_pdu(decode_state)
-
-        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
-
-        return phys_val
+    @override
+    def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
+        return self.dop.decode_from_pdu(decode_state)

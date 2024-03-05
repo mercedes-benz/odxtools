@@ -3,6 +3,8 @@ import abc
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
 
+from typing_extensions import final
+
 from ..decodestate import DecodeState
 from ..element import NamedElement
 from ..encodestate import EncodeState
@@ -31,12 +33,13 @@ ParameterType = Literal[
 
 @dataclass
 class Parameter(NamedElement, abc.ABC):
-    """This class corresponds to the POSITIONABLE-PARAMETER type of
-    the ODX specification.
+    """This class corresponds to POSITIONABLE-PARAM in the ODX
+    specification.
 
     Be aware that, even though the ODX specification seems to make the
     distinction of "positionable" and "normal" parameters, it does not
     define any non-positionable parameter types.
+
     """
     byte_position: Optional[int]
     bit_position: Optional[int]
@@ -97,35 +100,27 @@ class Parameter(NamedElement, abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
+    @final
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-        """Decode the parameter value from the coded message.
+        orig_cursor = decode_state.cursor_byte_position
+        if self.byte_position is not None:
+            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
 
-        If the parameter does have a byte position property, the coded bytes the parameter covers are extracted
-        at this byte position and the function parameter `default_byte_position` is ignored.
+        decode_state.cursor_bit_position = self.bit_position or 0
 
-        If the parameter does not have a byte position and a byte position is passed,
-        the bytes are extracted at the byte position given by the argument `default_byte_position`.
+        result = self._decode_positioned_from_pdu(decode_state)
 
-        If the parameter does not have a byte position and the argument `default_byte_position` is None,
-        this function throws a `DecodeError`.
+        decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
+        decode_state.cursor_bit_position = 0
 
-        Parameters
-        ----------
-        decode_state : DecodeState
-            The decoding state containing
-            * the byte message to be decoded
-            * the parameter values that are already decoded
-            * the next byte position that is used iff the parameter does not specify a byte position
+        return result
 
-        Returns
-        -------
-        ParameterValuePair | List[ParameterValuePair]
-            the decoded parameter value (the type is defined by the DOP)
-        int
-            the next byte position after the extracted parameter
-        """
-        pass
+    def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
+        """Method which actually decodes the parameter
+
+        Its location is managed by `Parameter`."""
+        raise NotImplementedError(
+            "Required method '_decode_positioned_from_pdu()' not implemented by child class")
 
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         """Encode the value of a parameter into a binary blob and return it

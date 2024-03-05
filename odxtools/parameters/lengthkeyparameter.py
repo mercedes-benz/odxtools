@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict
 
+from typing_extensions import override
+
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import odxraise, odxrequire
@@ -66,8 +68,9 @@ class LengthKeyParameter(ParameterWithDOP):
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         return super().encode_into_pdu(encode_state)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-        phys_val = super().decode_from_pdu(decode_state)
+    @override
+    def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
+        phys_val = super()._decode_positioned_from_pdu(decode_state)
 
         if not isinstance(phys_val, int):
             odxraise(f"The pysical type of length keys must be an integer, "

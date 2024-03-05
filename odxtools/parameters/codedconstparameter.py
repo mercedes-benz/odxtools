@@ -3,6 +3,8 @@ import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from typing_extensions import override
+
 from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
@@ -62,13 +64,8 @@ class CodedConstParameter(Parameter):
         return self.diag_coded_type.convert_internal_to_bytes(
             self.coded_value, encode_state=encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
-        # Extract coded values
-        orig_cursor_pos = decode_state.cursor_byte_position
-        if self.byte_position is not None:
-            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
-
-        decode_state.cursor_bit_position = self.bit_position or 0
+    @override
+    def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         coded_val = self.diag_coded_type.decode_from_pdu(decode_state)
 
         # Check if the coded value in the message is correct.
@@ -82,8 +79,6 @@ class CodedConstParameter(Parameter):
                 DecodeError,
                 stacklevel=1,
             )
-
-        decode_state.cursor_byte_position = max(orig_cursor_pos, decode_state.cursor_byte_position)
 
         return coded_val
 
