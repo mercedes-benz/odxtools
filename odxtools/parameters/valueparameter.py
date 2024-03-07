@@ -1,12 +1,16 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree import ElementTree
+
+from typing_extensions import override
 
 from ..dataobjectproperty import DataObjectProperty
 from ..encodestate import EncodeState
 from ..exceptions import odxraise, odxrequire
-from ..odxlink import OdxLinkDatabase, OdxLinkId
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType
+from ..utils import dataclass_fields_asdict
 from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
@@ -21,16 +25,31 @@ class ValueParameter(ParameterWithDOP):
     def __post_init__(self) -> None:
         self._physical_default_value: Optional[AtomicOdxType] = None
 
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "ValueParameter":
+
+        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
+
+        physical_default_value_raw = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
+
+        return ValueParameter(physical_default_value_raw=physical_default_value_raw, **kwargs)
+
     @property
+    @override
     def parameter_type(self) -> ParameterType:
         return "VALUE"
 
+    @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
+    @override
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         super()._resolve_odxlinks(odxlinks)
 
+    @override
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 
@@ -48,13 +67,16 @@ class ValueParameter(ParameterWithDOP):
         return self._physical_default_value
 
     @property
+    @override
     def is_required(self) -> bool:
         return self._physical_default_value is None
 
     @property
+    @override
     def is_settable(self) -> bool:
         return True
 
+    @override
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         physical_value = encode_state.parameter_values.get(self.short_name,
                                                            self.physical_default_value)

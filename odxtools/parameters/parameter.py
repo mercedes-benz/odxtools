@@ -1,15 +1,18 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
+from xml.etree import ElementTree
 
-from typing_extensions import final
+from typing_extensions import final, override
 
+from ..createsdgs import create_sdgs_from_et
 from ..decodestate import DecodeState
 from ..element import NamedElement
 from ..encodestate import EncodeState
-from ..odxlink import OdxLinkDatabase, OdxLinkId
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
 from ..specialdatagroup import SpecialDataGroup
+from ..utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from ..diaglayer import DiagLayer
@@ -45,6 +48,28 @@ class Parameter(NamedElement):
     semantic: Optional[str]
     sdgs: List[SpecialDataGroup]
 
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Parameter":
+
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+
+        semantic = et_element.get("SEMANTIC")
+        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+
+        byte_position_str = et_element.findtext("BYTE-POSITION")
+        bit_position_str = et_element.findtext("BIT-POSITION")
+
+        byte_position = int(byte_position_str) if byte_position_str is not None else None
+        bit_position = int(bit_position_str) if bit_position_str is not None else None
+
+        return Parameter(
+            byte_position=byte_position,
+            bit_position=bit_position,
+            semantic=semantic,
+            sdgs=sdgs,
+            **kwargs)
+
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
 
@@ -63,7 +88,8 @@ class Parameter(NamedElement):
 
     @property
     def parameter_type(self) -> ParameterType:
-        raise NotImplementedError(".parameter_type is not implemented by the concrete parameter class")
+        raise NotImplementedError(
+            ".parameter_type is not implemented by the concrete parameter class")
 
     def get_static_bit_length(self) -> Optional[int]:
         return None
@@ -95,7 +121,8 @@ class Parameter(NamedElement):
         """Get the coded value of the parameter given the encode state.
         Note that this method is called by `encode_into_pdu`.
         """
-        raise NotImplementedError(".get_coded_value_as_bytes() is not implemented by the concrete parameter class")
+        raise NotImplementedError(
+            ".get_coded_value_as_bytes() is not implemented by the concrete parameter class")
 
     @final
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

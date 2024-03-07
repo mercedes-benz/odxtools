@@ -1,14 +1,16 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, List
+from xml.etree import ElementTree
 
 from typing_extensions import override
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import odxraise, odxrequire
-from ..odxlink import OdxLinkDatabase, OdxLinkId
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
+from ..utils import dataclass_fields_asdict
 from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
@@ -29,10 +31,23 @@ class LengthKeyParameter(ParameterWithDOP):
 
     odx_id: OdxLinkId
 
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "LengthKeyParameter":
+
+        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
+
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+
+        return LengthKeyParameter(odx_id=odx_id, **kwargs)
+
     @property
+    @override
     def parameter_type(self) -> ParameterType:
         return "LENGTH-KEY"
 
+    @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
@@ -40,23 +55,28 @@ class LengthKeyParameter(ParameterWithDOP):
 
         return result
 
+    @override
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         super()._resolve_odxlinks(odxlinks)
 
+    @override
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 
     @property
+    @override
     def is_required(self) -> bool:
         return False
 
     @property
+    @override
     def is_settable(self) -> bool:
         # length keys can be explicitly set, but they do not need to
         # be because they can be implicitly determined by the length
         # of the corresponding field
         return True
 
+    @override
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         physical_value = encode_state.parameter_values.get(self.short_name, 0)
 
@@ -65,6 +85,7 @@ class LengthKeyParameter(ParameterWithDOP):
                          f"A DOP is required for length key parameter {self.short_name}")
         return dop.convert_physical_to_bytes(physical_value, encode_state, bit_position=bit_pos)
 
+    @override
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         return super().encode_into_pdu(encode_state)
 

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree import ElementTree
 
 from typing_extensions import override
 
@@ -10,9 +11,10 @@ from ..dopbase import DopBase
 from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
 from ..exceptions import odxassert, odxrequire
-from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..odxtypes import ParameterValue
 from ..physicaltype import PhysicalType
+from ..utils import dataclass_fields_asdict
 from .parameter import Parameter
 
 if TYPE_CHECKING:
@@ -24,14 +26,30 @@ class ParameterWithDOP(Parameter):
     dop_ref: Optional[OdxLinkRef]
     dop_snref: Optional[str]
 
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "ParameterWithDOP":
+
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+
+        dop_ref = OdxLinkRef.from_et(et_element.find("DOP-REF"), doc_frags)
+        dop_snref = None
+        if (dop_snref_elem := et_element.find("DOP-SNREF")) is not None:
+            dop_snref = odxrequire(dop_snref_elem.get("SHORT-NAME"))
+
+        return ParameterWithDOP(dop_ref=dop_ref, dop_snref=dop_snref, **kwargs)
+
     def __post_init__(self) -> None:
         odxassert(self.dop_snref is not None or self.dop_ref is not None,
                   f"Param {self.short_name} without a DOP-(SN)REF should not exist!")
         self._dop: Optional[DopBase] = None
 
+    @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
+    @override
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         super()._resolve_odxlinks(odxlinks)
 
@@ -42,6 +60,7 @@ class ParameterWithDOP(Parameter):
             # (e.g., static and dynamic fields)
             self._dop = odxlinks.resolve_lenient(self.dop_ref)
 
+    @override
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 
@@ -57,6 +76,7 @@ class ParameterWithDOP(Parameter):
             self._dop, "Specifying a data object property is mandatory but it "
             "could not be resolved")
 
+    @override
     def get_static_bit_length(self) -> Optional[int]:
         if self._dop is not None:
             return self._dop.get_static_bit_length()
@@ -70,6 +90,7 @@ class ParameterWithDOP(Parameter):
         else:
             return None
 
+    @override
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         dop = odxrequire(self.dop, "Reference to DOP is not resolved")
         physical_value = encode_state.parameter_values[self.short_name]

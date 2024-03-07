@@ -2,15 +2,18 @@
 import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree import ElementTree
 
 from typing_extensions import override
 
+from ..createanydiagcodedtype import create_any_diag_coded_type_from_et
 from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, EncodeError
-from ..odxlink import OdxLinkDatabase, OdxLinkId
+from ..exceptions import DecodeError, EncodeError, odxrequire
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType, DataType
+from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
@@ -31,10 +34,29 @@ class NrcConstParameter(Parameter):
     diag_coded_type: DiagCodedType
     coded_values: List[AtomicOdxType]
 
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "NrcConstParameter":
+
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+
+        dct_elem = odxrequire(et_element.find("DIAG-CODED-TYPE"))
+        diag_coded_type = create_any_diag_coded_type_from_et(dct_elem, doc_frags)
+        coded_values = [
+            diag_coded_type.base_data_type.from_string(odxrequire(val.text))
+            for val in et_element.iterfind("CODED-VALUES/CODED-VALUE")
+        ]
+
+        return NrcConstParameter(
+            diag_coded_type=diag_coded_type, coded_values=coded_values, **kwargs)
+
     @property
+    @override
     def parameter_type(self) -> ParameterType:
         return "NRC-CONST"
 
+    @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
@@ -42,12 +64,15 @@ class NrcConstParameter(Parameter):
 
         return result
 
+    @override
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         super()._resolve_odxlinks(odxlinks)
 
+    @override
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 
+    @override
     def get_static_bit_length(self) -> Optional[int]:
         return self.diag_coded_type.get_static_bit_length()
 
@@ -56,13 +81,16 @@ class NrcConstParameter(Parameter):
         return self.diag_coded_type.base_data_type
 
     @property
+    @override
     def is_required(self) -> bool:
         return False
 
     @property
+    @override
     def is_settable(self) -> bool:
         return False
 
+    @override
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         if self.short_name in encode_state.parameter_values:
             if encode_state.parameter_values[self.short_name] not in self.coded_values:
