@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict
 
+from typing_extensions import override
+
 from ..dataobjectproperty import DataObjectProperty
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -63,9 +65,10 @@ class PhysicalConstantParameter(ParameterWithDOP):
         return dop.convert_physical_to_bytes(
             self.physical_constant_value, encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
+    @override
+    def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         # Decode value
-        phys_val = super().decode_from_pdu(decode_state)
+        phys_val = super()._decode_positioned_from_pdu(decode_state)
 
         # Check if decoded value matches expected value
         if phys_val != self.physical_constant_value:

@@ -3,6 +3,8 @@ import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
+from typing_extensions import override
+
 from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
@@ -77,14 +79,9 @@ class NrcConstParameter(Parameter):
         return self.diag_coded_type.convert_internal_to_bytes(
             coded_value, encode_state, bit_position=bit_position_int)
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
-        orig_cursor = decode_state.cursor_byte_position
-        if self.byte_position is not None:
-            # Update cursor position
-            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
-
+    @override
+    def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         # Extract coded values
-        decode_state.cursor_bit_position = self.bit_position or 0
         coded_value = self.diag_coded_type.decode_from_pdu(decode_state)
 
         # Check if the coded value in the message is correct.
@@ -98,8 +95,6 @@ class NrcConstParameter(Parameter):
                 DecodeError,
                 stacklevel=1,
             )
-
-        decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
 
         return coded_value
 

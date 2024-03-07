@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from typing_extensions import override
+
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError
@@ -37,16 +39,11 @@ class MatchingRequestParameter(Parameter):
                                                .request_byte_position:self.request_byte_position +
                                                self.byte_length]
 
-    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-        orig_cursor = decode_state.cursor_byte_position
-        if self.byte_position is not None:
-            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
-
+    @override
+    def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         result = decode_state.extract_atomic_value(
             bit_length=self.byte_length * 8,
             base_data_type=DataType.A_UINT32,
             is_highlow_byte_order=False)
-
-        decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
 
         return result
