@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-import abc
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
 
@@ -32,7 +31,7 @@ ParameterType = Literal[
 
 
 @dataclass
-class Parameter(NamedElement, abc.ABC):
+class Parameter(NamedElement):
     """This class corresponds to POSITIONABLE-PARAM in the ODX
     specification.
 
@@ -63,9 +62,8 @@ class Parameter(NamedElement, abc.ABC):
             sdg._resolve_snrefs(diag_layer)
 
     @property
-    @abc.abstractmethod
     def parameter_type(self) -> ParameterType:
-        pass
+        raise NotImplementedError(".parameter_type is not implemented by the concrete parameter class")
 
     def get_static_bit_length(self) -> Optional[int]:
         return None
@@ -80,7 +78,7 @@ class Parameter(NamedElement, abc.ABC):
         specified.
 
         """
-        raise NotImplementedError
+        raise NotImplementedError(".is_required is not implemented by the concrete parameter class")
 
     @property
     def is_settable(self) -> bool:
@@ -91,14 +89,13 @@ class Parameter(NamedElement, abc.ABC):
         have a default value are settable but not required to be
         specified.
         """
-        raise NotImplementedError
+        raise NotImplementedError(".is_settable is not implemented by the concrete parameter class")
 
-    @abc.abstractmethod
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         """Get the coded value of the parameter given the encode state.
         Note that this method is called by `encode_into_pdu`.
         """
-        pass
+        raise NotImplementedError(".get_coded_value_as_bytes() is not implemented by the concrete parameter class")
 
     @final
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
