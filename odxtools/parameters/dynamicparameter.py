@@ -45,6 +45,5 @@ class DynamicParameter(Parameter):
         raise NotImplementedError("Encoding a DynamicParameter is not implemented yet.")
 
     @override
-    @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         raise NotImplementedError("Decoding a DynamicParameter is not implemented yet.")
