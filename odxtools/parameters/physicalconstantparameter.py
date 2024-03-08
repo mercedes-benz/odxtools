@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any, Dict, List
+from xml.etree import ElementTree
 
 from typing_extensions import override
 
@@ -8,8 +9,9 @@ from ..dataobjectproperty import DataObjectProperty
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, odxraise, odxrequire
-from ..odxlink import OdxLinkDatabase, OdxLinkId
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
+from ..utils import dataclass_fields_asdict
 from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
@@ -22,16 +24,32 @@ class PhysicalConstantParameter(ParameterWithDOP):
 
     physical_constant_value_raw: str
 
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "PhysicalConstantParameter":
+
+        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
+
+        physical_constant_value_raw = odxrequire(et_element.findtext("PHYS-CONSTANT-VALUE"))
+
+        return PhysicalConstantParameter(
+            physical_constant_value_raw=physical_constant_value_raw, **kwargs)
+
     @property
+    @override
     def parameter_type(self) -> ParameterType:
         return "PHYS-CONST"
 
+    @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
+    @override
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         super()._resolve_odxlinks(odxlinks)
 
+    @override
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 
@@ -46,13 +64,16 @@ class PhysicalConstantParameter(ParameterWithDOP):
         return self._physical_constant_value
 
     @property
+    @override
     def is_required(self) -> bool:
         return False
 
     @property
+    @override
     def is_settable(self) -> bool:
         return False
 
+    @override
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         dop = odxrequire(self.dop, "Reference to DOP is not resolved")
         if (self.short_name in encode_state.parameter_values and

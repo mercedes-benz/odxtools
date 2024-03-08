@@ -8,17 +8,17 @@
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printParam(param) -%}
-{%- if param.semantic is not none %}
-{%-  set semattrib = " SEMANTIC=\""+param.semantic+"\"" -%}
-{%- else %}
-{%-  set semattrib = "" -%}
-{%- endif -%}
-{%- if param.parameter_type == "TABLE-KEY" and param.odx_id is not none  %}
-<PARAM {{semattrib}} ID="{{param.odx_id.local_id}}" xsi:type="{{param.parameter_type}}">
+{%- set semattrib = make_xml_attrib("SEMANTIC", param.semantic) -%}
+{%- if param.parameter_type == "TABLE-KEY"  %}
+<PARAM {{ semattrib }}
+  {{- make_xml_attrib("ID", param.odx_id and param.odx_id.local_id) }}
+  xsi:type="{{param.parameter_type}}">
 {%- elif param.parameter_type == "SYSTEM" %}
-<PARAM SYSPARAM="{{param.sysparam}}" xsi:type="{{param.parameter_type}}">
+<PARAM {{ semattrib }}
+  {{- make_xml_attrib("SYSPARAM", param.sysparam) }}
+  xsi:type="{{param.parameter_type}}">
 {%- else %}
-<PARAM {{semattrib}} xsi:type="{{param.parameter_type}}">
+<PARAM {{ semattrib }} xsi:type="{{param.parameter_type}}">
 {%- endif%}
  {{ peid.printElementIdSubtags(param)|indent(1) }}
  {{- psd.printSpecialDataGroups(param.sdgs)|indent(1, first=True) }}

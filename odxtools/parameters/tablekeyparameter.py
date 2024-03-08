@@ -1,14 +1,16 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from xml.etree import ElementTree
 
 from typing_extensions import override
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
-from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..odxtypes import ParameterValue
+from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
@@ -26,6 +28,33 @@ class TableKeyParameter(Parameter):
     table_row_snref: Optional[str]
     table_row_ref: Optional[OdxLinkRef]
 
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "TableKeyParameter":
+
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+
+        table_ref = OdxLinkRef.from_et(et_element.find("TABLE-REF"), doc_frags)
+        table_snref = None
+        if (table_snref_elem := et_element.find("TABLE-SNREF")) is not None:
+            table_snref = odxrequire(table_snref_elem.get("SHORT-NAME"))
+
+        table_row_ref = OdxLinkRef.from_et(et_element.find("TABLE-ROW-REF"), doc_frags)
+        table_row_snref = None
+        if (table_row_snref_elem := et_element.find("TABLE-ROW-SNREF")) is not None:
+            table_row_snref = odxrequire(table_row_snref_elem.get("SHORT-NAME"))
+
+        return TableKeyParameter(
+            odx_id=odx_id,
+            table_ref=table_ref,
+            table_snref=table_snref,
+            table_row_ref=table_row_ref,
+            table_row_snref=table_row_snref,
+            **kwargs)
+
     def __post_init__(self) -> None:
         self._table: "Table"
         self._table_row: Optional["TableRow"] = None
@@ -34,9 +63,11 @@ class TableKeyParameter(Parameter):
             odxraise("Either a table or a table row must be defined.")
 
     @property
+    @override
     def parameter_type(self) -> ParameterType:
         return "TABLE-KEY"
 
+    @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
@@ -44,6 +75,7 @@ class TableKeyParameter(Parameter):
 
         return result
 
+    @override
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         super()._resolve_odxlinks(odxlinks)
 
@@ -61,6 +93,7 @@ class TableKeyParameter(Parameter):
                 self._table_row = odxlinks.resolve(self.table_row_ref)
             self._table = self._table_row.table
 
+    @override
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 
@@ -88,15 +121,18 @@ class TableKeyParameter(Parameter):
         return self._table_row
 
     @property
+    @override
     def is_required(self) -> bool:
         # TABLE-KEY parameters can be implicitly determined from the
         # corresponding TABLE-STRUCT
         return False
 
     @property
+    @override
     def is_settable(self) -> bool:
         return True
 
+    @override
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         tr_short_name = encode_state.parameter_values.get(self.short_name)
 
@@ -134,6 +170,7 @@ class TableKeyParameter(Parameter):
         bit_position = 0 if self.bit_position is None else self.bit_position
         return key_dop.convert_physical_to_bytes(tr.key, encode_state, bit_position=bit_position)
 
+    @override
     def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
         return super().encode_into_pdu(encode_state)
 

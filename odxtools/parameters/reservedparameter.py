@@ -1,12 +1,16 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
+from xml.etree import ElementTree
 
 from typing_extensions import override
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
+from ..exceptions import odxrequire
+from ..odxlink import OdxDocFragment
 from ..odxtypes import DataType, ParameterValue
+from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 
 
@@ -14,21 +18,37 @@ from .parameter import Parameter, ParameterType
 class ReservedParameter(Parameter):
     bit_length: int
 
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "ReservedParameter":
+
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+
+        bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))
+
+        return ReservedParameter(bit_length=bit_length, **kwargs)
+
     @property
+    @override
     def parameter_type(self) -> ParameterType:
         return "RESERVED"
 
     @property
+    @override
     def is_required(self) -> bool:
         return False
 
     @property
+    @override
     def is_settable(self) -> bool:
         return False
 
+    @override
     def get_static_bit_length(self) -> Optional[int]:
         return self.bit_length
 
+    @override
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
         return (0).to_bytes(((self.bit_position or 0) + self.bit_length + 7) // 8, "big")
 
