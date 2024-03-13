@@ -54,8 +54,6 @@ class ReservedParameter(Parameter):
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-        decode_state.cursor_byte_position += ((self.bit_position or 0) + self.bit_length + 7) // 8
-
         return decode_state.extract_atomic_value(
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,
