@@ -175,4 +175,4 @@ def is_response_pending(telegram_payload: bytes, request_sid: Optional[int] = No
 # previous versions of odxtools had a typo here. hit happens!
 @deprecated(details="use is_response_pending()")  # type: ignore[misc]
 def is_reponse_pending(telegram_payload: bytes, request_sid: Optional[int] = None) -> bool:
-    return is_reponse_pending(telegram_payload, request_sid)  # type: ignore[no-any-return]
+    return is_response_pending(telegram_payload, request_sid)
