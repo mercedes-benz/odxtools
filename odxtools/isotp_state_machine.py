@@ -55,7 +55,7 @@ class IsoTpStateMachine:
             return  # unknown CAN ID
 
         # decode the isotp segment
-        frame_type, _ = bitstruct.unpack("u4", data)
+        frame_type, _ = bitstruct.unpack("u4u4", data)
         assert isinstance(frame_type, int)
 
         telegram_len = None
