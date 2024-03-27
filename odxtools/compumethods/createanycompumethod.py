@@ -137,7 +137,7 @@ def create_any_compu_method_from_et(et_element: ElementTree.Element,
                     scale_elem, doc_frags, internal_type=internal_type,
                     physical_type=physical_type))
         compu_default_value = create_compu_default_value(
-            et_element.find("COMPU-DEFAULT-VALUE"), doc_frags, **kwargs)
+            et_element.find("COMPU-INTERNAL-TO-PHYS/COMPU-DEFAULT-VALUE"), doc_frags, **kwargs)
 
         return TexttableCompuMethod(
             internal_to_phys=internal_to_phys,
