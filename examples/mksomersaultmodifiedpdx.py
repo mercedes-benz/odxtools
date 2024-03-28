@@ -6,6 +6,7 @@
 # modified programatically. Note that this is pretty hacky...
 import argparse
 from copy import deepcopy
+from typing import List, TypeVar
 
 import odxtools
 import odxtools.uds as uds
@@ -18,6 +19,17 @@ from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.request import Request
 from odxtools.response import Response, ResponseType
+
+T = TypeVar("T")
+
+
+def find_named_object(item_list: List[T], name: str) -> T:
+    for x in item_list:
+        if getattr(x, "short_name", None) == name:
+            return x
+
+    raise KeyError(str(name))
+
 
 argparser = argparse.ArgumentParser(
     description="\n".join([
@@ -45,15 +57,37 @@ dlc = db.diag_layer_containers[0]
 # modify the positive response of the tester_present service for all ECUs
 somersault_dlr = dlc.base_variants.somersault.diag_layer_raw
 
-tester_present_service = [
-    x for x in somersault_dlr.diag_comms if getattr(x, "short_name", None) == "tester_present"
-][0]
+# rename the "session_start" and "session_stop" services to
+# "start_session" and "stop_session"
+start_service = find_named_object(somersault_dlr.diag_comms, "session_start")
+assert isinstance(start_service, DiagService)
+start_service.short_name = "start_session"
+
+stop_service = find_named_object(somersault_dlr.diag_comms, "session_stop")
+assert isinstance(stop_service, DiagService)
+stop_service.short_name = "stop_session"
+
+tester_present_service = find_named_object(somersault_dlr.diag_comms, "tester_present")
 assert isinstance(tester_present_service, DiagService)
 tester_present_pr = tester_present_service.positive_responses[0]
 param = tester_present_pr.parameters.status
 assert isinstance(param, CodedConstParameter)
 param.diag_coded_type = somersaultecu.somersault_diagcodedtypes["uint16"]
 param.coded_value = 0x1234
+
+# change the DOP used by the "can_do_backward_flips" parameter of the
+# positive response to the "session" service from "bool" to "uint8"
+cdbf_param = start_service.positive_responses[0].parameters.can_do_backward_flips
+doc_frags = start_service.odx_id.doc_fragments
+assert isinstance(cdbf_param, ValueParameter)
+cdbf_param.dop_ref = OdxLinkRef("somersault.DOP.uint8", doc_frags)
+
+# change the byte and bit positions of the "num_flips_done" parameter
+# of the "grudging_backward" response for all variants variant
+gb_response = find_named_object(somersault_dlr.positive_responses, "grudging_backward")
+param = gb_response.parameters.num_flips_done
+param.byte_position = 2
+param.bit_position = 4
 
 # add a new "somersault_young" variant which can do flic-flacs and
 # does not take any instructions
@@ -67,20 +101,18 @@ somersault_young_dlr.description = \
 
 It is as grumpy as the lazy variant, but it is more agile, so it can do flic-flacs.
 
-On the flipside it is unwilling to take any instructions, so no operational parameters
-can be set.
-</p>"""
+On the flipside, it is unwilling to take any instructions, so no
+operational parameters can be set. Finally, it is unwilling to compete
+(i.e. it does not time its somersaults).</p>"""
 
 # remove the "sault_time" parameter from the positive response of the
 # "do_forward_flips" service.
 do_forward_flips_service = somersault_young.services.do_forward_flips
 pr = do_forward_flips_service.positive_responses[0]
-new_params = [x for x in pr.parameters if x.short_name != "sault_time"]
+new_params = [x for x in pr.parameters if getattr(x, "short_name", None) != "sault_time"]
 pr.parameters = NamedItemList(new_params)
-somersault_young_dlr.diag_comms.append(do_forward_flips_service)
-doc_frags = do_forward_flips_service.odx_id.doc_fragments
 
-# add "flic-flac" service
+# add a "flic-flac" service
 flic_flac_request = Request(
     odx_id=OdxLinkId("somersault.RQ.flic_flac", doc_frags),
     short_name="RQ_flic_flac",
@@ -175,10 +207,10 @@ flic_flac_service = DiagService(
 )
 
 # create a new list of diagnostic communications that does not include
-# the "set_operation_params" service
+# the "set_operation_params" and "compulsory_program" services
 ss_young_diag_comms = [
     x for x in somersault_young_dlr.diag_comms
-    if getattr(x, "short_name", None) != "somersault_young_dlr"
+    if getattr(x, "short_name", None) not in ("set_operation_params", "compulsory_program")
 ]
 
 # append the flic-flac service
@@ -189,9 +221,9 @@ somersault_young_dlr.diag_comms = ss_young_diag_comms
 
 dlc.ecu_variants.append(DiagLayer(diag_layer_raw=somersault_young_dlr))
 
-# make the database consistent. Note: For just writing the object to
-# disk, this is not necessary (but it is useful if the object is going
-# to be used for something else later...)
+# make the database consistent. Note: For just writing to disk this is
+# not necessary (but it is useful if the database is going to be used
+# for something else later...)
 db.refresh()
 
 # write the result
