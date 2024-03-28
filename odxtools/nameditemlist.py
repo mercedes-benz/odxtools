@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import abc
+from copy import deepcopy
 from keyword import iskeyword
 from typing import (Any, Collection, Dict, Iterable, List, Optional, Protocol, SupportsIndex, Tuple,
                     TypeVar, Union, cast, overload, runtime_checkable)
@@ -174,6 +175,19 @@ class ItemAttributeList(List[T]):
 
     def __repr__(self) -> str:
         return f"{type(self).__name__}([{', '.join([repr(x) for x in self])}])"
+
+    def __copy__(self) -> Any:
+        return self.__class__(list(self))
+
+    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+        result._item_dict = {}
+        for x in self:
+            result.append(deepcopy(x, memo))
+
+        return result
 
 
 class NamedItemList(ItemAttributeList[T]):

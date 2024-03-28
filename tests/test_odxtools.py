@@ -85,8 +85,9 @@ class TestComposeUDS(unittest.TestCase):
             OdxLinkRef("somersault.PR.happy_forward", container_doc_frags))
 
         coded_request = request.encode(forward_soberness_check=0x12, num_flips=12)
+        self.assertEqual(bytes(coded_request), bytes.fromhex("ba120c"))
         coded_response = response.encode(yeha_level=3, coded_request=coded_request)
-        self.assertEqual(bytes(coded_response), 0xFA0003.to_bytes(3, "big"))
+        self.assertEqual(bytes(coded_response), bytes.fromhex("faba03"))
 
 
 class TestNamedItemList(unittest.TestCase):
