@@ -2426,12 +2426,3 @@ database._comparam_subsets = NamedItemList(comparam_subsets)
 
 # Create ID mapping and resolve references
 database.refresh()
-
-# delete all variables except "database"
-for name in dir():
-    if name not in (
-            "database",
-            "SID",
-    ):
-        del globals()[name]
-del globals()["name"]
