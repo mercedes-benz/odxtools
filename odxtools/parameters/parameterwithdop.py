@@ -66,7 +66,13 @@ class ParameterWithDOP(Parameter):
 
         if self.dop_snref:
             ddds = diag_layer.diag_data_dictionary_spec
-            self._dop = odxrequire(ddds.all_data_object_properties.get(self.dop_snref))
+            if snref_shortname := ddds.all_data_object_properties.get(self.dop_snref):
+                self._dop = odxrequire(snref_shortname)
+            else:
+                # TODO: In section 7.3.2.5 "Importing and referencing of cobjects",
+                # the ability to cross-reference shortnames using "dop_snref" is
+                # odefined.
+                ...
 
     @property
     def dop(self) -> DopBase:
