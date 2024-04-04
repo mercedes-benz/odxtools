@@ -67,8 +67,8 @@ class Multiplexer(ComplexDop):
 
     def _get_case_limits(self, case: MultiplexerCase) -> Tuple[AtomicOdxType, AtomicOdxType]:
         key_type = self.switch_key.dop.physical_type.base_data_type
-        lower_limit = key_type.make_from(case.lower_limit)
-        upper_limit = key_type.make_from(case.upper_limit)
+        lower_limit = key_type.make_from(case.lower_limit.value)
+        upper_limit = key_type.make_from(case.upper_limit.value)
         if not isinstance(lower_limit, type(upper_limit)) and not isinstance(
                 upper_limit, type(lower_limit)):
             odxraise("Upper and lower bounds of limits must compareable")
