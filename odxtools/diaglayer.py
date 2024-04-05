@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 import re
 import warnings
+from copy import copy
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
@@ -75,6 +76,46 @@ class DiagLayer:
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         """Recursively resolve all references."""
+
+        # deal with the import references: these basically extend the
+        # pool of objects that are referenceable without having to
+        # explicitly specify the DOCREF attribute in the
+        # reference. This mechanism can thus be seen as a kind of
+        # "poor man's inheritance".
+        if self.import_refs:
+            imported_links: Dict[OdxLinkId, Any] = {}
+            for import_ref in self.import_refs:
+                imported_dl = odxlinks.resolve(import_ref, DiagLayer)
+
+                odxassert(
+                    imported_dl.variant_type == DiagLayerType.ECU_SHARED_DATA,
+                    f"Tried to import references from diagnostic layer "
+                    f"'{imported_dl.short_name}' of type {imported_dl.variant_type.value}. "
+                    f"Only ECU-SHARED-DATA layers may be referenced using the "
+                    f"IMPORT-REF mechanism")
+
+                # TODO: ensure that the imported diagnostic layer has
+                # not been referenced in any PARENT-REF of the current
+                # layer or any of its parents.
+
+                # TODO: detect and complain about cyclic IMPORT-REFs
+
+                # TODO (?): detect conflicts with locally-defined
+                # objects
+
+                imported_dl_links = imported_dl._build_odxlinks()
+                for link_id, obj in imported_dl_links.items():
+                    # the imported objects shall behave as if they
+                    # were defined by the importing layer. IOW, they
+                    # must be visible in the same document fragments.
+                    link_id = OdxLinkId(link_id.local_id, self.odx_id.doc_fragments)
+                    imported_links[link_id] = obj
+
+            odxlinks = copy(odxlinks)
+            odxlinks.update(imported_links)
+
+            self.diag_layer_raw._resolve_odxlinks(odxlinks)
+            return
 
         self.diag_layer_raw._resolve_odxlinks(odxlinks)
 
