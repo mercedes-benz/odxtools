@@ -128,7 +128,7 @@ class Database:
         # let the diaglayers sort out the inherited objects and the
         # short name references
         for dlc in self.diag_layer_containers:
-            dlc._finalize_init(self._odxlinks)
+            dlc._finalize_init(self._odxlinks, self._ecu_shared_datas)
 
     @property
     def odxlinks(self) -> OdxLinkDatabase:
