@@ -10,7 +10,7 @@ from ..decodestate import DecodeState
 from ..dopbase import DopBase
 from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
-from ..exceptions import odxassert, odxrequire
+from ..exceptions import odxassert, odxrequire, odxraise
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..odxtypes import ParameterValue
 from ..physicaltype import PhysicalType
@@ -69,10 +69,7 @@ class ParameterWithDOP(Parameter):
             if snref_shortname := ddds.all_data_object_properties.get(self.dop_snref):
                 self._dop = odxrequire(snref_shortname)
             else:
-                # TODO: In section 7.3.2.5 "Importing and referencing of cobjects",
-                # the ability to cross-reference shortnames using "dop_snref" is
-                # odefined.
-                ...
+                odxraise(f"{self.dop_snref} in not found in {diag_layer.short_name}")
 
     @property
     def dop(self) -> DopBase:
