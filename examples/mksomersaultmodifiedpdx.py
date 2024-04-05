@@ -31,23 +31,6 @@ def find_named_object(item_list: List[T], name: str) -> T:
     raise KeyError(str(name))
 
 
-argparser = argparse.ArgumentParser(
-    description="\n".join([
-        "Creates a simple sample PDX file for a modified 'somersault' ECU from scratch.", "",
-        "The modified PDX file is primarily intended to be used a demo for the ",
-        "'compare' command line tool."
-    ]),
-    formatter_class=argparse.RawTextHelpFormatter,
-)
-
-argparser.add_argument(
-    "output_pdx_file",
-    metavar="OUTPUT_PDX_FILE",
-    help="Path to the where the resulting .pdx file is written",
-)
-
-args = argparser.parse_args()
-
 FLIC_FLAC_SID = 0xBE
 
 db = somersaultecu.database
@@ -226,5 +209,23 @@ dlc.ecu_variants.append(DiagLayer(diag_layer_raw=somersault_young_dlr))
 # for something else later...)
 db.refresh()
 
-# write the result
-odxtools.write_pdx_file(args.output_pdx_file, db)
+if __name__ == "__main__":
+    argparser = argparse.ArgumentParser(
+        description="\n".join([
+            "Creates a simple sample PDX file for a modified 'somersault' ECU from scratch.", "",
+            "The modified PDX file is primarily intended to be used a demo for the ",
+            "'compare' command line tool."
+        ]),
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+
+    argparser.add_argument(
+        "output_pdx_file",
+        metavar="OUTPUT_PDX_FILE",
+        help="Path to the where the resulting .pdx file is written",
+    )
+
+    args = argparser.parse_args()
+
+    # write the result
+    odxtools.write_pdx_file(args.output_pdx_file, db)
