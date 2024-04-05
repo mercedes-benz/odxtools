@@ -78,7 +78,8 @@ class DiagLayer:
 
         self.diag_layer_raw._resolve_odxlinks(odxlinks)
 
-    def _finalize_init(self, odxlinks: OdxLinkDatabase) -> None:
+    def _finalize_init(self, odxlinks: OdxLinkDatabase,
+            ecu_shared_datas: NamedItemList['DiagLayer']) -> None:
         """This method deals with everything inheritance related and
         -- after the final set of objects covered by the diagnostic
         layer is determined -- resolves any short name references in
@@ -209,6 +210,8 @@ class DiagLayer:
             unit_spec=unit_spec,
             sdgs=ddds_sdgs,
         )
+
+        self._add_import_ref(ecu_shared_datas)
 
         #####
         # compute the communication parameters applicable to the
@@ -590,6 +593,27 @@ class DiagLayer:
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+
+    def _add_import_ref(self, ecu_shared_datas) ->  None:
+        if imp_refs := self.import_refs:
+            for imp in imp_refs:
+                doc_name = next(iter(imp.ref_docs)).doc_name
+                doc_type = next(iter(imp.ref_docs)).doc_type
+                # Delete the “DLC_” name prefix
+                if doc_type == 'CONTAINER':
+                    doc_name = doc_name[4:]
+                if doc_name in ecu_shared_datas:
+                    share_ddds = (ecu_shared_datas[doc_name]
+                        .diag_layer_raw.diag_data_dictionary_spec)
+                    if hasattr(share_ddds, 'all_data_object_properties'):
+                        share_ddds_all_properties = share_ddds.all_data_object_properties
+                    # diag_data_dictionary_spec
+                    if ddds_all_properties := (self.diag_layer_raw.diag_data_dictionary_spec
+                        .all_data_object_properties):
+                        ddds_all_properties.append_list(share_ddds_all_properties)
+                else:
+                    odxraise(f"The imports-refs method used in {self.short_name} is error,"
+                             f"file {doc_name} is undefined")
 
     #####
     # </value inheritance mechanism helpers>
