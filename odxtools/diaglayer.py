@@ -111,10 +111,14 @@ class DiagLayer:
                     link_id = OdxLinkId(link_id.local_id, self.odx_id.doc_fragments)
                     imported_links[link_id] = obj
 
-            odxlinks = copy(odxlinks)
-            odxlinks.update(imported_links)
+            # We need to copy the odxlink database here since this
+            # function must not modify its argument because the
+            # imported references only apply within this specific
+            # diagnostic layer
+            extended_odxlinks = copy(odxlinks)
+            extended_odxlinks.update(imported_links)
 
-            self.diag_layer_raw._resolve_odxlinks(odxlinks)
+            self.diag_layer_raw._resolve_odxlinks(extended_odxlinks)
             return
 
         self.diag_layer_raw._resolve_odxlinks(odxlinks)
