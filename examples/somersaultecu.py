@@ -767,7 +767,7 @@ somersault_positive_responses = {
                     long_name=None,
                     semantic=None,
                     description=None,
-                    request_byte_position=3,
+                    request_byte_position=0,
                     byte_position=1,
                     byte_length=1,
                     bit_position=None,
@@ -2426,12 +2426,3 @@ database._comparam_subsets = NamedItemList(comparam_subsets)
 
 # Create ID mapping and resolve references
 database.refresh()
-
-# delete all variables except "database"
-for name in dir():
-    if name not in (
-            "database",
-            "SID",
-    ):
-        del globals()[name]
-del globals()["name"]
