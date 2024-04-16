@@ -21,6 +21,7 @@ from .parameters.parameter import Parameter
 from .parameters.parameterwithdop import ParameterWithDOP
 from .parameters.physicalconstantparameter import PhysicalConstantParameter
 from .parameters.tablekeyparameter import TableKeyParameter
+from .parameters.tablestructparameter import TableStructParameter
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -316,4 +317,7 @@ class BasicStructure(ComplexDop):
         super()._resolve_snrefs(diag_layer)
 
         for param in self.parameters:
-            param._resolve_snrefs(diag_layer)
+            if isinstance(param, TableStructParameter):
+                param._table_struct_resolve_snrefs(diag_layer, param_list=self.parameters)
+            else:
+                param._resolve_snrefs(diag_layer)

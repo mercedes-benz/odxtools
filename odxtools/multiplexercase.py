@@ -60,7 +60,7 @@ class MultiplexerCase(NamedElement):
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         raise RuntimeError("Calling MultiplexerCase._resolve_odxlinks() is not allowed. "
-                           "Use ._mux_case_resolve_odxlinks()().")
+                           "Use ._mux_case_resolve_odxlinks().")
 
     def _mux_case_resolve_odxlinks(self, odxlinks: OdxLinkDatabase, *,
                                    key_physical_type: DataType) -> None:

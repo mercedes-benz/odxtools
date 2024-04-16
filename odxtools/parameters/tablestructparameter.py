@@ -1,14 +1,13 @@
 # SPDX-License-Identifier: MIT
-import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
-from typing_extensions import override
+from typing_extensions import override, final
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, EncodeError, OdxWarning, odxraise, odxrequire
+from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
@@ -61,15 +60,31 @@ class TableStructParameter(Parameter):
             self._table_key = odxlinks.resolve(self.table_key_ref, TableKeyParameter)
 
     @override
+    @final
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        raise RuntimeError(f"Calling TableStructParameter._resolve_snref() is not allowed. "
+                           f"Use ._table_struct_resolve_snrefs() instead.")
+
+    def _table_struct_resolve_snrefs(self, diag_layer: "DiagLayer", *,
+                                     param_list: List[Parameter]) -> None:
         super()._resolve_snrefs(diag_layer)
 
         if self.table_key_snref is not None:
-            warnings.warn(
-                "Table keys cannot yet be defined using SNREFs"
-                " in TableStructParameters.",
-                OdxWarning,
-                stacklevel=1)
+            tk_candidates = [p for p in param_list if p.short_name == self.table_key_snref]
+            if len(tk_candidates) > 1:
+                odxraise(f"Short name reference '{self.table_key_snref}' could "
+                         f"not be uniquely resolved.")
+            elif len(tk_candidates) == 0:
+                odxraise(f"Short name reference '{self.table_key_snref}' could "
+                         f"not be resolved.")
+                return
+
+            tk = tk_candidates[0]
+            if not isinstance(tk, TableKeyParameter):
+                odxraise(f"Table struct '{self.short_name}' references non-TableKey parameter "
+                         f"`{self.table_key_snref}' as its table key.")
+
+            self._table_key = tk
 
     @property
     def table_key(self) -> TableKeyParameter:
