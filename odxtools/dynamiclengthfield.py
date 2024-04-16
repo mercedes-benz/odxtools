@@ -67,8 +67,8 @@ class DynamicLengthField(Field):
         # hack to emplace the length specifier at the correct location
         tmp = encode_state.coded_message
         encode_state.coded_message = bytearray()
-        encode_state.emplace_atomic_value(field_len, self.short_name + ".num_items",
-                                          det_num_items.byte_position)
+        encode_state.cursor_byte_position = det_num_items.byte_position
+        encode_state.emplace_atomic_value(field_len, self.short_name + ".num_items")
         result = encode_state.coded_message
         encode_state.coded_message = tmp
 

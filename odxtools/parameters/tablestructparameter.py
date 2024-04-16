@@ -150,7 +150,10 @@ class TableStructParameter(Parameter):
             inner_encode_state = EncodeState(
                 coded_message=bytearray(b''),
                 parameter_values=tr_value,
-                triggering_request=encode_state.triggering_request)
+                triggering_request=encode_state.triggering_request,
+                cursor_byte_position=0,
+                cursor_bit_position=0,
+                origin_byte_position=0)
 
             return tr.structure.convert_physical_to_bytes(
                 tr_value, inner_encode_state, bit_position=bit_position)
