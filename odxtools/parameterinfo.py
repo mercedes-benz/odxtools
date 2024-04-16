@@ -16,6 +16,7 @@ from .multiplexer import Multiplexer
 from .odxtypes import DataType
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.matchingrequestparameter import MatchingRequestParameter
+from .parameters.nrcconstparameter import NrcConstParameter
 from .parameters.parameter import Parameter
 from .parameters.parameterwithdop import ParameterWithDOP
 from .parameters.reservedparameter import ReservedParameter
@@ -34,6 +35,9 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
             continue
         elif isinstance(param, MatchingRequestParameter):
             of.write(f"{q}{param.short_name}{q}: <matches request>\n")
+            continue
+        elif isinstance(param, NrcConstParameter):
+            of.write(f"{q}{param.short_name}{q}: NRC_const; choices = {param.coded_values}\n")
             continue
         elif isinstance(param, ReservedParameter):
             of.write(f"{q}{param.short_name}{q}: <reserved>\n")

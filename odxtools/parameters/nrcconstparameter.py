@@ -88,7 +88,7 @@ class NrcConstParameter(Parameter):
     @property
     @override
     def is_settable(self) -> bool:
-        return False
+        return True
 
     @override
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
