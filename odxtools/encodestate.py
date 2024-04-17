@@ -19,15 +19,15 @@ class EncodeState:
     #: The absolute position in bytes from the beginning of the PDU to
     #: which relative positions refer to, e.g., the beginning of the
     #: structure.
-    origin_byte_position: int
+    origin_byte_position: int = 0
 
     #: The absolute position in bytes from the beginning of the PDU
     #: where the next object ought to be placed into the PDU
-    cursor_byte_position: int
+    cursor_byte_position: int = 0
 
     #: The bit position [0-7] where the next object ought to be
     #: placed into the PDU
-    cursor_bit_position: int
+    cursor_bit_position: int = 0
 
     #: If encoding a response: request that triggered the response
     triggering_request: Optional[bytes] = None

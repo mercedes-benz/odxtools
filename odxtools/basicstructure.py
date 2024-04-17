@@ -76,12 +76,7 @@ class BasicStructure(ComplexDop):
     def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:
         prefix = b''
         encode_state = EncodeState(
-            bytearray(prefix),
-            parameter_values={},
-            triggering_request=request_prefix,
-            cursor_byte_position=0,
-            cursor_bit_position=0,
-            origin_byte_position=0)
+            bytearray(prefix), parameter_values={}, triggering_request=request_prefix)
         for param in self.parameters:
             if isinstance(param, (CodedConstParameter, NrcConstParameter, MatchingRequestParameter,
                                   PhysicalConstantParameter)):
@@ -143,10 +138,7 @@ class BasicStructure(ComplexDop):
             bytearray(),
             dict(param_value),
             triggering_request=triggering_coded_request,
-            is_end_of_pdu=False,
-            cursor_byte_position=0,
-            cursor_bit_position=0,
-            origin_byte_position=0)
+            is_end_of_pdu=False)
 
         for param in self.parameters:
             if param == self.parameters[-1]:

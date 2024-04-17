@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
-from typing_extensions import override, final
+from typing_extensions import final, override
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -150,10 +150,7 @@ class TableStructParameter(Parameter):
             inner_encode_state = EncodeState(
                 coded_message=bytearray(b''),
                 parameter_values=tr_value,
-                triggering_request=encode_state.triggering_request,
-                cursor_byte_position=0,
-                cursor_bit_position=0,
-                origin_byte_position=0)
+                triggering_request=encode_state.triggering_request)
 
             return tr.structure.convert_physical_to_bytes(
                 tr_value, inner_encode_state, bit_position=bit_position)
