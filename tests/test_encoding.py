@@ -287,10 +287,7 @@ class TestEncodeRequest(unittest.TestCase):
             parameters=NamedItemList([param1, param2, param3]),
             byte_size=None,
         )
-
-        with self.assertRaises(EncodeError):
-            req.encode()  # Object '<STANDARD-LENGTH-TYPE>' overlaps with another parameter
-
+        self.assertEqual(req.encode(), bytearray([0x12, 0x34, 0x56]))
         self.assertEqual(req.get_static_bit_length(), 24)
 
     def _create_request(self, parameters: List[Parameter]) -> Request:

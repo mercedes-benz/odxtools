@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
+import warnings
 from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
-from .exceptions import EncodeError, odxraise
+from .exceptions import OdxWarning
 
 
 @dataclass
@@ -62,9 +63,10 @@ class EncodeState:
             # the value to be inserted is bitwise "disjoint" from the
             # value which is already in the PDU...
             if self.coded_message[pos + i] & new_data[i] != 0:
-                odxraise(
+                warnings.warn(
                     f"Object '{param_name}' overlaps with another parameter (bits are already set)",
-                    EncodeError,
+                    OdxWarning,
+                    stacklevel=1,
                 )
             self.coded_message[pos + i] |= new_data[i]
 
