@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
-from typing_extensions import override, final
+from typing_extensions import final, override
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState

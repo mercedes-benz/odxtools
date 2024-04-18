@@ -317,9 +317,11 @@ class TestEnDecode(unittest.TestCase):
 
         with patch("sys.stdout", stdout):
             neg_response.print_free_parameters_info()
-            expected_output = (
-                "forward_soberness_check: uint\nnum_flips: uint\nsault_time: uint\nflips_successfully_done: uint\n"
-            )
+            expected_output = ("forward_soberness_check: uint\n"
+                               "num_flips: uint\n"
+                               "sault_time: uint\n"
+                               "reason: NRC_const; choices = [0, 1, 2]\n"
+                               "flips_successfully_done: uint\n")
             actual_output = stdout.getvalue()
             self.assertEqual(actual_output, expected_output)
 

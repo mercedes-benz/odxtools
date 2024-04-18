@@ -215,13 +215,9 @@ class DiagService(DiagComm):
             coding_object=coding_object,
             param_dict=param_dict)
 
-    def encode_request(self, **params: ParameterValue) -> bytes:
+    def encode_request(self, **kwargs: ParameterValue) -> bytes:
         """
-        Composes an UDS request as list of bytes for this service.
-        Parameters:
-        ----------
-        params: dict
-            Parameters of the RPC as mapping from SHORT-NAME of the parameter to the physical value
+        Composes an UDS request an array of bytes for this service.
         """
         # make sure that all parameters which are required for
         # encoding are specified (parameters which have a default are
@@ -230,31 +226,31 @@ class DiagService(DiagComm):
             return b''
 
         missing_params = {x.short_name
-                          for x in self.request.required_parameters}.difference(params.keys())
+                          for x in self.request.required_parameters}.difference(kwargs.keys())
         odxassert(
             len(missing_params) == 0, f"The parameters {missing_params} are required but missing!")
 
         # make sure that no unknown parameters are specified
         rq_all_param_names = {x.short_name for x in self.request.parameters}
         odxassert(
-            set(params.keys()).issubset(rq_all_param_names),
-            f"Unknown parameters specified for encoding: {params.keys()}, "
+            set(kwargs.keys()).issubset(rq_all_param_names),
+            f"Unknown parameters specified for encoding: {kwargs.keys()}, "
             f"known parameters are: {rq_all_param_names}")
-        return self.request.encode(coded_request=None, **params)
+        return self.request.encode(coded_request=None, **kwargs)
 
     def encode_positive_response(self,
                                  coded_request: bytes,
                                  response_index: int = 0,
-                                 **params: ParameterValue) -> bytes:
+                                 **kwargs: ParameterValue) -> bytes:
         # TODO: Should the user decide the positive response or what are the differences?
-        return self.positive_responses[response_index].encode(coded_request, **params)
+        return self.positive_responses[response_index].encode(coded_request, **kwargs)
 
     def encode_negative_response(self,
                                  coded_request: bytes,
                                  response_index: int = 0,
-                                 **params: ParameterValue) -> bytes:
-        return self.negative_responses[response_index].encode(coded_request, **params)
+                                 **kwargs: ParameterValue) -> bytes:
+        return self.negative_responses[response_index].encode(coded_request, **kwargs)
 
-    def __call__(self, **params: ParameterValue) -> bytes:
+    def __call__(self, **kwargs: ParameterValue) -> bytes:
         """Encode a request."""
-        return self.encode_request(**params)
+        return self.encode_request(**kwargs)

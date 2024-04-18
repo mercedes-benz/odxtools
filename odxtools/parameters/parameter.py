@@ -179,6 +179,7 @@ class Parameter(NamedElement):
         else:
             byte_position = len(msg_blob)
 
-        encode_state.emplace_atomic_value(param_blob, self.short_name, byte_position)
+        encode_state.cursor_byte_position = byte_position
+        encode_state.emplace_atomic_value(param_blob, self.short_name)
 
         return encode_state.coded_message
