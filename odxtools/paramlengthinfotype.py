@@ -2,10 +2,12 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, cast
 
+from typing_extensions import override
+
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
-from .exceptions import odxraise
+from .exceptions import EncodeError, odxraise
 from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType, DataType
 
@@ -43,46 +45,56 @@ class ParamLengthInfoType(DiagCodedType):
     def length_key(self) -> "LengthKeyParameter":
         return self._length_key
 
-    def convert_internal_to_bytes(self, internal_value: AtomicOdxType, encode_state: EncodeState,
-                                  bit_position: int) -> bytes:
-        bit_length = encode_state.parameter_values.get(self.length_key.short_name, None)
+    @override
+    def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:
+        bit_length = encode_state.length_keys.get(self.length_key.short_name)
 
         if bit_length is None:
+            # the length key is implicit, i.e., we need to set the
+            # value for the length key in the encode_state based on
+            # the value passed here.
             if self.base_data_type in [
                     DataType.A_BYTEFIELD,
                     DataType.A_ASCIISTRING,
                     DataType.A_UTF8STRING,
             ]:
-                bit_length = 8 * len(internal_value)  # type: ignore[arg-type]
-            if self.base_data_type in [DataType.A_UNICODE2STRING]:
-                bit_length = 16 * len(internal_value)  # type: ignore[arg-type]
-
-            if self.base_data_type in [DataType.A_INT32, DataType.A_UINT32]:
+                bit_length = 8 * len(cast(str, internal_value))
+            elif self.base_data_type in [DataType.A_UNICODE2STRING]:
+                bit_length = 16 * len(cast(str, internal_value))
+            elif self.base_data_type in [DataType.A_INT32, DataType.A_UINT32]:
                 bit_length = int(internal_value).bit_length()
                 if self.base_data_type == DataType.A_INT32:
                     bit_length += 1
                 # Round up
                 bit_length = ((bit_length + 7) // 8) * 8
+            elif self.base_data_type == DataType.A_FLOAT32:
+                bit_length = 32
+            elif self.base_data_type == DataType.A_FLOAT64:
+                bit_length = 64
+            else:
+                odxraise(
+                    f"Cannot determine size of an object of type "
+                    f"{self.base_data_type.value}", EncodeError)
+                return
 
-            encode_state.parameter_values[self.length_key.short_name] = bit_length
+            encode_state.length_keys[self.length_key.short_name] = bit_length
 
-        if bit_length is None:
-            odxraise()
-
-        return self._encode_internal_value(
-            internal_value,
-            bit_position=bit_position,
+        raw_data = self._encode_internal_value(
+            internal_value=internal_value,
+            bit_position=encode_state.cursor_bit_position,
             bit_length=bit_length,
             base_data_type=self.base_data_type,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
+
+        encode_state.emplace_atomic_value(raw_data, "<PARAM-LENGTH-INFO-TYPE>")
 
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         # First, we need to find a length key with matching ID.
         if self.length_key.short_name not in decode_state.length_keys:
             odxraise(f"Unspecified mandatory length key parameter "
                      f"{self.length_key.short_name}")
-            decode_state.cursor_bit_position = None
+            decode_state.cursor_bit_position = 0
             return cast(None, AtomicOdxType)
 
         bit_length = decode_state.length_keys[self.length_key.short_name]
@@ -91,10 +103,8 @@ class ParamLengthInfoType(DiagCodedType):
             bit_length = 0
 
         # Extract the internal value and return.
-        value = decode_state.extract_atomic_value(
+        return decode_state.extract_atomic_value(
             bit_length,
             self.base_data_type,
             self.is_highlow_byte_order,
         )
-
-        return value

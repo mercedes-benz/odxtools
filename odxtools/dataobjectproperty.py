@@ -133,8 +133,22 @@ class DataObjectProperty(DopBase):
                 f" is not a valid.")
 
         internal_val = self.convert_physical_to_internal(physical_value)
-        return self.diag_coded_type.convert_internal_to_bytes(
-            internal_val, encode_state, bit_position=bit_position)
+
+        tmp_state = EncodeState(
+            bytearray(),
+            encode_state.parameter_values,
+            triggering_request=encode_state.triggering_request,
+            is_end_of_pdu=encode_state.is_end_of_pdu,
+            cursor_byte_position=0,
+            cursor_bit_position=bit_position,
+            origin_byte_position=0)
+
+        self.diag_coded_type.encode_into_pdu(internal_val, tmp_state)
+
+        encode_state.length_keys.update(tmp_state.length_keys)
+        encode_state.table_keys.update(tmp_state.table_keys)
+
+        return tmp_state.coded_message
 
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         """

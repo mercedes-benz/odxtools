@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Optional
+
+from typing_extensions import override
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
-from .exceptions import odxassert, odxraise
+from .exceptions import EncodeError, odxassert, odxraise
 from .odxtypes import AtomicOdxType, DataType
 
 
@@ -42,29 +44,36 @@ class LeadingLengthInfoType(DiagCodedType):
         # DCT is dynamic!
         return None
 
-    def convert_internal_to_bytes(self, internal_value: Any, encode_state: EncodeState,
-                                  bit_position: int) -> bytes:
+    @override
+    def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:
+
+        if not isinstance(internal_value, (str, bytes)):
+            odxraise(
+                f"LEADING-LENGTH-INFO types can only be used for strings and byte fields, "
+                f"not {type(internal_value).__name__}", EncodeError)
+            return
 
         byte_length = self._minimal_byte_length_of(internal_value)
 
         length_bytes = self._encode_internal_value(
-            byte_length,
-            bit_position=bit_position,
+            internal_value=byte_length,
+            bit_position=encode_state.cursor_bit_position,
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
         value_bytes = self._encode_internal_value(
-            internal_value,
+            internal_value=internal_value,
             bit_position=0,
             bit_length=8 * byte_length,
             base_data_type=self.base_data_type,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-        return length_bytes + value_bytes
+        encode_state.emplace_atomic_value(length_bytes + value_bytes, "<LEADING-LENGTH-INFO-TYPE>")
 
+    @override
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
 
         # Extract length of the parameter value

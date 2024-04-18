@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from typing_extensions import override
+
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
@@ -51,8 +53,9 @@ class MinMaxLengthType(DiagCodedType):
                 termination_sequence = bytes([0xFF, 0xFF])
         return termination_sequence
 
-    def convert_internal_to_bytes(self, internal_value: AtomicOdxType, encode_state: EncodeState,
-                                  bit_position: int) -> bytes:
+    @override
+    def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:
+
         if not isinstance(internal_value, (bytes, str)):
             odxraise("MinMaxLengthType is currently only implemented for strings and byte arrays",
                      EncodeError)
@@ -64,7 +67,7 @@ class MinMaxLengthType(DiagCodedType):
 
         value_bytes = bytearray(
             self._encode_internal_value(
-                internal_value,
+                internal_value=internal_value,
                 bit_position=0,
                 bit_length=8 * data_length,
                 base_data_type=self.base_data_type,
@@ -74,7 +77,10 @@ class MinMaxLengthType(DiagCodedType):
         # TODO: ensure that the termination delimiter is not
         # encountered within the encoded value.
 
-        odxassert(self.termination != "END-OF-PDU" or encode_state.is_end_of_pdu)
+        odxassert(
+            self.termination != "END-OF-PDU" or encode_state.is_end_of_pdu,
+            "Encountered a MIN-MAX-LENGTH type with END-OF-PDU termination "
+            "which is not at the end of the PDU")
         if encode_state.is_end_of_pdu or len(value_bytes) == self.max_length:
             # All termination types may be ended by the end of the PDU
             # or once reaching the maximum length. In this case, we
@@ -90,15 +96,19 @@ class MinMaxLengthType(DiagCodedType):
             value_bytes.extend(termination_sequence)
 
         if len(value_bytes) < self.min_length:
-            raise EncodeError(f"Encoded value for MinMaxLengthType "
-                              f"must be at least {self.min_length} bytes long. "
-                              f"(Is: {len(value_bytes)} bytes.)")
+            odxraise(
+                f"Encoded value for MinMaxLengthType "
+                f"must be at least {self.min_length} bytes long. "
+                f"(Is: {len(value_bytes)} bytes.)", EncodeError)
+            return
         elif self.max_length is not None and len(value_bytes) > self.max_length:
-            raise EncodeError(f"Encoded value for MinMaxLengthType "
-                              f"must not be longer than {self.max_length} bytes. "
-                              f"(Is: {len(value_bytes)} bytes.)")
+            odxraise(
+                f"Encoded value for MinMaxLengthType "
+                f"must not be longer than {self.max_length} bytes. "
+                f"(Is: {len(value_bytes)} bytes.)", EncodeError)
+            return
 
-        return value_bytes
+        encode_state.emplace_atomic_value(value_bytes, "<MIN-MAX-LENGTH-TYPE>")
 
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         odxassert(decode_state.cursor_bit_position == 0,

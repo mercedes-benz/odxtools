@@ -14,7 +14,7 @@ from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.encodestate import EncodeState
-from odxtools.exceptions import DecodeError, EncodeError, odxrequire
+from odxtools.exceptions import DecodeError, EncodeError, OdxError, odxrequire
 from odxtools.leadinglengthinfotype import LeadingLengthInfoType
 from odxtools.minmaxlengthtype import MinMaxLengthType
 from odxtools.nameditemlist import NamedItemList
@@ -71,61 +71,60 @@ class TestLeadingLengthInfoType(unittest.TestCase):
 
     def test_encode_leading_length_info_type_bytefield(self) -> None:
         dct = LeadingLengthInfoType(
-            base_data_type=DataType.A_UTF8STRING,
-            bit_length=6,
+            base_data_type=DataType.A_BYTEFIELD,
+            bit_length=5,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(bytearray([]), {})
-        byte_val = dct.convert_internal_to_bytes("4V", state, bit_position=1)
-        self.assertEqual(byte_val, bytes([0x4, 0x34, 0x56]))
+        state = EncodeState(bytearray(), parameter_values={}, cursor_bit_position=3)
+        dct.encode_into_pdu(bytes([0x3]), state)
+        self.assertEqual(state.coded_message.hex(), "0803")
 
+    def test_decode_leading_length_info_type_bytefield2(self) -> None:
         dct = LeadingLengthInfoType(
             base_data_type=DataType.A_BYTEFIELD,
             bit_length=5,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(bytearray([]), {})
-        internal = dct.convert_internal_to_bytes(bytes([0x3]), state, bit_position=1)
-        self.assertEqual(internal, bytes([0x2, 0x3]))
 
-    def test_decode_leading_length_info_type_bytefield2(self) -> None:
-        dct = LeadingLengthInfoType(
-            base_data_type=DataType.A_BYTEFIELD,
-            bit_length=8,
-            base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-        )
-        state = EncodeState(bytearray([0x12, 0x34]), {})
-        byte_val = dct.convert_internal_to_bytes(bytes([0x0]), state, bit_position=0)
-        # Right now `bytes([0x1, 0x0])` is the encoded value.
-        # However, since bytes() is shorter and would be decoded
-        # to the same value this may be changed...
-        self.assertIn(byte_val, [b'', bytes([0x1, 0x0])])
+        state = EncodeState(
+            bytearray.fromhex("0000ff00"), parameter_values={}, cursor_bit_position=3)
+        dct.encode_into_pdu(bytes([0xcc]), state)
+        self.assertEqual(state.coded_message.hex(), "08ccff00")
+        self.assertEqual(state.cursor_byte_position, 2)
+        self.assertEqual(state.cursor_bit_position, 0)
 
     def test_decode_leading_length_info_type_unicode2string(self) -> None:
+        # big endian
         dct = LeadingLengthInfoType(
             base_data_type=DataType.A_UNICODE2STRING,
-            bit_length=8,
+            bit_length=7,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = DecodeState(bytes([0x12, 0x4, 0x00, 0x61, 0x00, 0x39]), cursor_byte_position=1)
+        state = DecodeState(
+            bytes([0x12, 0x8, 0x00, 0x61, 0x00, 0x39, 0xff, 0x00]),
+            cursor_byte_position=1,
+            cursor_bit_position=1)
         internal_value = dct.decode_from_pdu(state)
         self.assertEqual(internal_value, "a9")
         self.assertEqual(state.cursor_byte_position, 6)
+        self.assertEqual(state.cursor_bit_position, 0)
 
+        # little endian
         dct = LeadingLengthInfoType(
             base_data_type=DataType.A_UNICODE2STRING,
             bit_length=8,
             base_type_encoding=None,
             is_highlow_byte_order_raw=False,
         )
-        state = DecodeState(bytes([0x12, 0x4, 0x61, 0x00, 0x39, 0x00]), cursor_byte_position=1)
+        state = DecodeState(
+            bytes([0x12, 0x4, 0x61, 0x00, 0x39, 0x00, 0xff, 0x00]), cursor_byte_position=1)
         internal_value = dct.decode_from_pdu(state)
         self.assertEqual(internal_value, "a9")
         self.assertEqual(state.cursor_byte_position, 6)
+        self.assertEqual(state.cursor_bit_position, 0)
 
     def test_encode_leading_length_info_type_unicode2string(self) -> None:
         dct = LeadingLengthInfoType(
@@ -134,9 +133,9 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(coded_message=bytearray([0x12]), parameter_values={})
-        byte_val = dct.convert_internal_to_bytes("a9", state, bit_position=0)
-        self.assertEqual(byte_val, bytes([0x4, 0x00, 0x61, 0x00, 0x39]))
+        state = EncodeState(coded_message=bytearray(), parameter_values={})
+        dct.encode_into_pdu("a9", state)
+        self.assertEqual(state.coded_message, bytes([0x4, 0x00, 0x61, 0x00, 0x39]))
 
         dct = LeadingLengthInfoType(
             base_data_type=DataType.A_UNICODE2STRING,
@@ -144,8 +143,14 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_type_encoding=None,
             is_highlow_byte_order_raw=False,
         )
-        byte_val = dct.convert_internal_to_bytes("a9", state, bit_position=0)
-        self.assertEqual(byte_val, bytes([0x4, 0x61, 0x00, 0x39, 0x00]))
+        state = EncodeState(
+            coded_message=bytearray(),
+            parameter_values={},
+            cursor_byte_position=0,
+            cursor_bit_position=0,
+            origin_byte_position=0)
+        dct.encode_into_pdu("a9", state)
+        self.assertEqual(state.coded_message, bytes([0x4, 0x61, 0x00, 0x39, 0x00]))
 
     def test_end_to_end(self) -> None:
         # diag coded types
@@ -407,9 +412,10 @@ class TestParamLengthInfoType(unittest.TestCase):
         odxlinks = OdxLinkDatabase()
         odxlinks.update({length_key_id: length_key})
         dct._resolve_odxlinks(odxlinks)
-        state = EncodeState(bytearray([0x10]), {length_key.short_name: 40})
-        byte_val = dct.convert_internal_to_bytes(0x12345, state, bit_position=0)
-        self.assertEqual(byte_val.hex(), "0000012345")
+        state = EncodeState(
+            coded_message=bytearray([0xcc]), parameter_values={}, cursor_byte_position=2)
+        dct.encode_into_pdu(0x12345, state)
+        self.assertEqual(state.coded_message.hex(), "cc00012345")
 
     def test_end_to_end(self) -> None:
         # diag coded types
@@ -604,11 +610,13 @@ class TestParamLengthInfoType(unittest.TestCase):
             },
         )
 
-        self.assertEqual(
-            request.encode(lengthOfCertificateClient=24, certificateClient=0x123456), coded_request)
+        # explicit defined length key
+        encoded = request.encode(lengthOfCertificateClient=24, certificateClient=0x123456)
+        self.assertEqual(encoded, coded_request)
 
         # Automatic bit length calculation
-        self.assertEqual(request.encode(certificateClient=0x123456), coded_request)
+        encoded = request.encode(certificateClient=0x123456)
+        self.assertEqual(encoded, coded_request)
 
 
 class TestMinMaxLengthType(unittest.TestCase):
@@ -681,9 +689,10 @@ class TestMinMaxLengthType(unittest.TestCase):
             termination="HEX-FF",
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(bytearray([0x12]), parameter_values={}, is_end_of_pdu=False)
-        byte_val = dct.convert_internal_to_bytes(bytes([0x34, 0x56]), state, bit_position=0)
-        self.assertEqual(byte_val, bytes([0x34, 0x56, 0xFF]))
+        state = EncodeState(
+            coded_message=bytearray([0x00]), parameter_values={}, is_end_of_pdu=False)
+        dct.encode_into_pdu(bytes([0x34, 0x56]), state)
+        self.assertEqual(state.coded_message, bytes([0x34, 0x56, 0xFF]))
 
     def test_encode_min_max_length_type_zero(self) -> None:
         dct = MinMaxLengthType(
@@ -694,9 +703,10 @@ class TestMinMaxLengthType(unittest.TestCase):
             termination="ZERO",
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(bytearray([0x12]), parameter_values={}, is_end_of_pdu=False)
-        byte_val = dct.convert_internal_to_bytes("Hi", state, bit_position=0)
-        self.assertEqual(byte_val, bytes([0x48, 0x69, 0x0]))
+        state = EncodeState(
+            coded_message=bytearray([0x00]), parameter_values={}, is_end_of_pdu=False)
+        dct.encode_into_pdu("Hi", state)
+        self.assertEqual(state.coded_message, bytes([0x48, 0x69, 0x0]))
 
     def test_encode_min_max_length_type_end_of_pdu(self) -> None:
         """If the parameter is at the end of the PDU, no termination char is added."""
@@ -709,20 +719,42 @@ class TestMinMaxLengthType(unittest.TestCase):
                 termination=termination,
                 is_highlow_byte_order_raw=None,
             )
-            state = EncodeState(bytearray([0x12]), parameter_values={}, is_end_of_pdu=True)
-            byte_val = dct.convert_internal_to_bytes(
-                bytes([0x34, 0x56, 0x78, 0x9A]), state, bit_position=0)
-            self.assertEqual(byte_val, bytes([0x34, 0x56, 0x78, 0x9A]))
+            state = EncodeState(coded_message=bytearray(), parameter_values={}, is_end_of_pdu=True)
+            dct.encode_into_pdu(bytes([0x34, 0x56, 0x78, 0x9A]), state)
+            self.assertEqual(state.coded_message.hex(), "3456789a")
 
-        dct = MinMaxLengthType(
-            base_data_type=DataType.A_BYTEFIELD,
-            base_type_encoding=None,
-            min_length=2,
-            max_length=5,
-            termination="END-OF-PDU",
-            is_highlow_byte_order_raw=None,
-        )
-        state = EncodeState(bytearray([0x12]), parameter_values={}, is_end_of_pdu=False)
+            if termination == "END-OF-PDU":
+                state = EncodeState(
+                    coded_message=bytearray(), parameter_values={}, is_end_of_pdu=False)
+                self.assertRaises(OdxError, dct.encode_into_pdu, bytes([0x34, 0x56, 0x78, 0x9A]),
+                                  state)
+            else:
+                state = EncodeState(
+                    coded_message=bytearray(), parameter_values={}, is_end_of_pdu=False)
+                dct.encode_into_pdu(bytes([0x34, 0x56, 0x78, 0x9A]), state)
+                self.assertTrue(state.coded_message.hex().startswith("3456789a"))
+
+    def test_encode_min_max_length_type_min_length(self) -> None:
+        """If the internal value is smaller than min length, an EncodeError must be raised."""
+        for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
+            dct = MinMaxLengthType(
+                base_data_type=DataType.A_BYTEFIELD,
+                base_type_encoding=None,
+                min_length=2,
+                max_length=3,
+                termination=termination,
+                is_highlow_byte_order_raw=None,
+            )
+            state = EncodeState(
+                coded_message=bytearray([0x00]), parameter_values={}, is_end_of_pdu=True)
+            dct.encode_into_pdu(bytes([0x34, 0x56]), state)
+            self.assertTrue(state.coded_message.hex().startswith("3456"))
+            self.assertRaises(
+                EncodeError,
+                dct.encode_into_pdu,
+                bytes([0x34]),
+                state,
+            )
 
     def test_encode_min_max_length_type_max_length(self) -> None:
         """If the internal value is larger than max length, an EncodeError must be raised."""
@@ -735,16 +767,15 @@ class TestMinMaxLengthType(unittest.TestCase):
                 termination=termination,
                 is_highlow_byte_order_raw=None,
             )
-            state = EncodeState(bytearray([0x12]), parameter_values={}, is_end_of_pdu=True)
-            byte_val = dct.convert_internal_to_bytes(
-                bytes([0x34, 0x56, 0x78]), state, bit_position=0)
-            self.assertEqual(byte_val, bytes([0x34, 0x56, 0x78]))
+            state = EncodeState(
+                coded_message=bytearray([0x00]), parameter_values={}, is_end_of_pdu=True)
+            dct.encode_into_pdu(bytes([0x34, 0x56, 0x78]), state)
+            self.assertEqual(state.coded_message, bytes([0x34, 0x56, 0x78]))
             self.assertRaises(
                 EncodeError,
-                dct.convert_internal_to_bytes,
+                dct.encode_into_pdu,
                 bytes([0x34, 0x56, 0x78, 0x9A]),
                 state,
-                bit_position=0,
             )
 
     def test_end_to_end(self) -> None:

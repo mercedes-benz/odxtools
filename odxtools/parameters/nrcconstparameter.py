@@ -103,9 +103,18 @@ class NrcConstParameter(Parameter):
             # I think it does not matter ...
             coded_value = self.coded_values[0]
 
-        bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return self.diag_coded_type.convert_internal_to_bytes(
-            coded_value, encode_state, bit_position=bit_position_int)
+        tmp_state = EncodeState(
+            bytearray(),
+            encode_state.parameter_values,
+            triggering_request=encode_state.triggering_request,
+            is_end_of_pdu=False,
+            cursor_byte_position=0,
+            cursor_bit_position=0,
+            origin_byte_position=0)
+        encode_state.cursor_bit_position = self.bit_position or 0
+        self.diag_coded_type.encode_into_pdu(coded_value, encode_state=tmp_state)
+
+        return tmp_state.coded_message
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:

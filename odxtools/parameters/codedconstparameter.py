@@ -86,9 +86,19 @@ class CodedConstParameter(Parameter):
                 encode_state.parameter_values[self.short_name] != self.coded_value):
             raise TypeError(f"The parameter '{self.short_name}' is constant {self._coded_value_str}"
                             " and thus can not be changed.")
-        bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return self.diag_coded_type.convert_internal_to_bytes(
-            self.coded_value, encode_state=encode_state, bit_position=bit_position_int)
+
+        tmp_state = EncodeState(
+            bytearray(),
+            encode_state.parameter_values,
+            triggering_request=encode_state.triggering_request,
+            is_end_of_pdu=False,
+            cursor_byte_position=0,
+            cursor_bit_position=0,
+            origin_byte_position=0)
+        encode_state.cursor_bit_position = self.bit_position or 0
+        self.diag_coded_type.encode_into_pdu(self.coded_value, encode_state=tmp_state)
+
+        return tmp_state.coded_message
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:

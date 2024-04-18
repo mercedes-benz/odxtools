@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from typing_extensions import override
+
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
@@ -46,16 +48,18 @@ class StandardLengthType(DiagCodedType):
     def get_static_bit_length(self) -> Optional[int]:
         return self.bit_length
 
-    def convert_internal_to_bytes(self, internal_value: AtomicOdxType, encode_state: EncodeState,
-                                  bit_position: int) -> bytes:
-        return self._encode_internal_value(
-            self.__apply_mask(internal_value),
-            bit_position,
-            self.bit_length,
-            self.base_data_type,
+    @override
+    def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:
+        raw_data = self._encode_internal_value(
+            internal_value=self.__apply_mask(internal_value),
+            bit_position=encode_state.cursor_bit_position,
+            bit_length=self.bit_length,
+            base_data_type=self.base_data_type,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
+        encode_state.emplace_atomic_value(raw_data, "<STANDARD-LENGTH-TYPE>")
 
+    @override
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         internal_value = decode_state.extract_atomic_value(
             self.bit_length,
