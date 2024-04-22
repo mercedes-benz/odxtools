@@ -78,7 +78,9 @@ class LengthKeyParameter(ParameterWithDOP):
 
     @override
     def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        physical_value = encode_state.parameter_values.get(self.short_name, 0)
+        physical_value = encode_state.length_keys.get(self.short_name)
+        if physical_value is None:
+            physical_value = encode_state.parameter_values.get(self.short_name, 0)
 
         bit_pos = self.bit_position or 0
         dop = odxrequire(super().dop,

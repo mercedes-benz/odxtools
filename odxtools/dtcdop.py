@@ -147,9 +147,21 @@ class DtcDop(DopBase):
                               f" DiagnosticTroubleCode but got {physical_value!r}.")
 
         internal_trouble_code = self.compu_method.convert_physical_to_internal(trouble_code)
+        tmp_state = EncodeState(
+            bytearray(),
+            encode_state.parameter_values,
+            triggering_request=encode_state.triggering_request,
+            is_end_of_pdu=False,
+            cursor_byte_position=0,
+            cursor_bit_position=0,
+            origin_byte_position=0)
+        encode_state.cursor_bit_position = encode_state.cursor_bit_position
+        self.diag_coded_type.encode_into_pdu(internal_trouble_code, encode_state=tmp_state)
 
-        return self.diag_coded_type.convert_internal_to_bytes(
-            internal_trouble_code, encode_state=encode_state, bit_position=bit_position)
+        encode_state.length_keys.update(tmp_state.length_keys)
+        encode_state.table_keys.update(tmp_state.table_keys)
+
+        return tmp_state.coded_message
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()

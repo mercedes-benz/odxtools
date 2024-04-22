@@ -58,13 +58,14 @@ class DiagCodedType(abc.ABC):
 
     @staticmethod
     def _encode_internal_value(
+        *,
         internal_value: AtomicOdxType,
         bit_position: int,
         bit_length: int,
         base_data_type: DataType,
         is_highlow_byte_order: bool,
     ) -> bytes:
-        """Convert the internal_value to bytes."""
+        """Convert the internal_value to bytes and emplace this into the PDU"""
         # Check that bytes and strings actually fit into the bit length
         if base_data_type == DataType.A_BYTEFIELD:
             if isinstance(internal_value, bytearray):
@@ -114,8 +115,9 @@ class DiagCodedType(abc.ABC):
             if (base_data_type.value in [
                     DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32, DataType.A_FLOAT64
             ] and base_data_type.value != 0):
-                raise EncodeError(
-                    f"The number {repr(internal_value)} cannot be encoded into {bit_length} bits.")
+                odxraise(
+                    f"The number {repr(internal_value)} cannot be encoded into {bit_length} bits.",
+                    EncodeError)
             return b''
 
         char = ODX_TYPE_TO_FORMAT_LETTER[base_data_type]
@@ -160,11 +162,10 @@ class DiagCodedType(abc.ABC):
             odxassert(
                 byte_length % 2 == 0, f"The bit length of A_UNICODE2STRING must"
                 f" be a multiple of 16 but is {8*byte_length}")
+
         return byte_length
 
-    @abc.abstractmethod
-    def convert_internal_to_bytes(self, internal_value: AtomicOdxType, encode_state: EncodeState,
-                                  bit_position: int) -> bytes:
+    def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:
         """Encode the internal value.
 
         Parameters
@@ -177,9 +178,9 @@ class DiagCodedType(abc.ABC):
             mapping from ID (of the length key) to bit length
             (only needed for ParamLengthInfoType)
         """
-        pass
+        raise NotImplementedError(
+            f".encode_into_pdu() is not implemented by the class {type(self).__name__}")
 
-    @abc.abstractmethod
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         """Decode the parameter value from the coded message.
 
@@ -195,4 +196,5 @@ class DiagCodedType(abc.ABC):
         int
             the next byte position after the extracted parameter
         """
-        pass
+        raise NotImplementedError(
+            f".decode_from_pdu() is not implemented by the class {type(self).__name__}")
