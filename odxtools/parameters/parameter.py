@@ -117,12 +117,35 @@ class Parameter(NamedElement):
         """
         raise NotImplementedError(".is_settable is not implemented by the concrete parameter class")
 
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        """Get the coded value of the parameter given the encode state.
-        Note that this method is called by `encode_into_pdu`.
+    @final
+    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+                        encode_state: EncodeState) -> None:
+        """Convert a physical value into its encoded form and place it into the PDU
+
+        Also, adapt the `encode_state` so that it points to where the next
+        parameter is located (if the parameter does not explicitly specify a
+        position)
         """
+
+        orig_cursor = encode_state.cursor_byte_position
+        if self.byte_position is not None:
+            encode_state.cursor_byte_position = encode_state.origin_byte_position + self.byte_position
+
+        encode_state.cursor_bit_position = self.bit_position or 0
+
+        self._encode_positioned_into_pdu(physical_value, encode_state)
+
+        encode_state.cursor_byte_position = max(encode_state.cursor_byte_position, orig_cursor)
+        encode_state.cursor_bit_position = 0
+
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
+        """Method which actually encodes the parameter
+
+        Its location is managed by `Parameter`."""
         raise NotImplementedError(
-            ".get_coded_value_as_bytes() is not implemented by the concrete parameter class")
+            f"Required method '_encode_positioned_into_pdu()' not implemented by "
+            f"child class {type(self).__name__}")
 
     @final
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
@@ -144,42 +167,5 @@ class Parameter(NamedElement):
 
         Its location is managed by `Parameter`."""
         raise NotImplementedError(
-            "Required method '_decode_positioned_from_pdu()' not implemented by child class")
-
-    def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
-        """Encode the value of a parameter into a binary blob and return it
-
-        If the byte position of the parameter is not defined,
-        the byte code is appended to the blob.
-
-        Technical note for subclasses: The default implementation
-        tries to compute the coded value via
-        `self.get_coded_value_as_bytes(encoded_state)` and inserts it
-        into the PDU. Thus it usually suffices to overwrite
-        `get_coded_value_as_bytes()` instead of `encode_into_pdu()`.
-
-        Parameters:
-        ----------
-        encode_state: EncodeState, i.e. a named tuple with attributes
-            * coded_message: bytes, the message encoded so far
-            * parameter_values: List[ParameterValuePairs]
-            * triggering_coded_request: bytes
-
-        Returns:
-        -------
-        bytes
-            the message's blob after adding the encoded parameter into it
-
-        """
-        msg_blob = encode_state.coded_message
-        param_blob = self.get_coded_value_as_bytes(encode_state)
-
-        if self.byte_position is not None:
-            byte_position = self.byte_position
-        else:
-            byte_position = len(msg_blob)
-
-        encode_state.cursor_byte_position = byte_position
-        encode_state.emplace_atomic_value(param_blob, self.short_name)
-
-        return encode_state.coded_message
+            f"Required method '_decode_positioned_from_pdu()' not implemented by "
+            f"child class {type(self).__name__}")

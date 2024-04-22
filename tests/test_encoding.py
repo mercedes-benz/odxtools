@@ -173,7 +173,7 @@ class TestEncodeRequest(unittest.TestCase):
         param1._resolve_snrefs(cast(DiagLayer, None))
 
         # Missing mandatory parameter.
-        with self.assertRaises(TypeError):
+        with self.assertRaises(EncodeError):
             req.encode()
 
         self.assertEqual(
@@ -223,7 +223,9 @@ class TestEncodeRequest(unittest.TestCase):
             parameters=NamedItemList([param1, param2]),
             byte_size=None,
         )
-        self.assertEqual(resp.encode(), bytearray([0x12, 0x34]))
+
+        with self.assertRaises(EncodeError):
+            resp.encode()  # "No value for required parameter param2 specified"
         self.assertEqual(resp.encode(param2=0xAB), bytearray([0x12, 0xAB]))
         self.assertRaises(EncodeError, resp.encode, param2=0xEF)
 
@@ -287,7 +289,7 @@ class TestEncodeRequest(unittest.TestCase):
             parameters=NamedItemList([param1, param2, param3]),
             byte_size=None,
         )
-        self.assertEqual(req.encode(), bytearray([0x33, 0x75, 0x56]))
+        self.assertEqual(req.encode(), bytearray([0x12, 0x34, 0x56]))
         self.assertEqual(req.get_static_bit_length(), 24)
 
     def _create_request(self, parameters: List[Parameter]) -> Request:

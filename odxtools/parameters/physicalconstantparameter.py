@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -8,7 +8,7 @@ from typing_extensions import override
 from ..dataobjectproperty import DataObjectProperty
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, odxraise, odxrequire
+from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
@@ -74,17 +74,19 @@ class PhysicalConstantParameter(ParameterWithDOP):
         return False
 
     @override
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        dop = odxrequire(self.dop, "Reference to DOP is not resolved")
-        if (self.short_name in encode_state.parameter_values and
-                encode_state.parameter_values[self.short_name] != self.physical_constant_value):
-            raise TypeError(
-                f"The parameter '{self.short_name}' is constant {self.physical_constant_value!r}"
-                f" and thus can not be changed.")
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
+        if physical_value is not None and physical_value != self.physical_constant_value:
+            odxraise(
+                f"Value for constant parameter `{self.short_name}` name can "
+                f"only be specified as {self.physical_constant_value!r} (is: {physical_value!r})",
+                EncodeError)
 
-        bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return dop.convert_physical_to_bytes(
-            self.physical_constant_value, encode_state, bit_position=bit_position_int)
+        raw_data = self.dop.convert_physical_to_bytes(
+            physical_value=odxrequire(self.physical_constant_value),
+            encode_state=encode_state,
+            bit_position=encode_state.cursor_bit_position)
+        encode_state.emplace_atomic_value(raw_data, self.short_name)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
@@ -99,4 +101,5 @@ class PhysicalConstantParameter(ParameterWithDOP):
                 f"{self.physical_constant_value!r} but got {phys_val!r} "
                 f"at byte position {decode_state.cursor_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.", DecodeError)
+
         return phys_val

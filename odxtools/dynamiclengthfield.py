@@ -60,30 +60,38 @@ class DynamicLengthField(Field):
                 f"Expected a list of values for dynamic length field {self.short_name}, "
                 f"got {type(physical_value)}", EncodeError)
 
+        tmp_state = EncodeState(
+            coded_message=bytearray(),
+            parameter_values={},
+            triggering_request=encode_state.triggering_request,
+            origin_byte_position=0,
+            cursor_byte_position=0,
+            cursor_bit_position=0)
+
         det_num_items = self.determine_number_of_items
-        field_len = det_num_items.dop.convert_physical_to_bytes(
-            len(physical_value), encode_state, det_num_items.bit_position or 0)
+        field_len_bytes = det_num_items.dop.convert_physical_to_bytes(
+            len(physical_value), tmp_state, det_num_items.bit_position or 0)
 
         # hack to emplace the length specifier at the correct location
-        tmp = encode_state.coded_message
-        encode_state.coded_message = bytearray()
-        encode_state.cursor_byte_position = det_num_items.byte_position
-        encode_state.emplace_atomic_value(field_len, self.short_name + ".num_items")
-        result = encode_state.coded_message
-        encode_state.coded_message = tmp
+        tmp_state.cursor_byte_position = det_num_items.byte_position
+        tmp_state.cursor_bit_position = det_num_items.bit_position or 0
+        tmp_state.emplace_atomic_value(field_len_bytes, self.short_name + ".num_items")
 
         # if required, add padding between the length specifier and
         # the first item
-        if len(result) < self.offset:
-            result.extend([0] * (self.offset - len(result)))
-        elif len(result) > self.offset:
+        if len(tmp_state.coded_message) < self.offset:
+            tmp_state.coded_message += b'\00' * (self.offset - len(tmp_state.coded_message))
+            tmp_state.cursor_byte_position = self.offset
+        elif len(field_len_bytes) > self.offset:
             odxraise(f"The length specifier of field {self.short_name} overlaps "
                      f"with the first item!")
+            tmp_state.cursor_byte_position = self.offset
 
-        for value in physical_value:
-            result += self.structure.convert_physical_to_bytes(value, encode_state)
+        for i, value in enumerate(physical_value):
+            tmp_bytes = self.structure.convert_physical_to_bytes(value, tmp_state)
+            tmp_state.emplace_atomic_value(tmp_bytes, f"{self.short_name}{i}")
 
-        return result
+        return tmp_state.coded_message
 
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
 

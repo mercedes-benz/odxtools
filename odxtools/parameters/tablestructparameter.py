@@ -101,71 +101,84 @@ class TableStructParameter(Parameter):
         return True
 
     @override
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        physical_value = encode_state.parameter_values.get(self.short_name)
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
 
-        if not isinstance(physical_value, tuple) or \
+        if not isinstance(physical_value, (tuple, list)) or \
            len(physical_value) != 2 or \
            not isinstance(physical_value[0], str):
-            raise EncodeError(f"The physical value of TableStructParameter 'self.short_name' "
-                              f"must be a tuple with  the short name of the selected table "
-                              f"row as the first element and the physical value for the "
-                              f"row's structure or DOP as the second.")
+            odxraise(
+                f"The physical value of TableStructParameter 'self.short_name' "
+                f"must be a tuple containing the short name of the selected table "
+                f"row as the first element and the physical value for the "
+                f"row's structure or DOP as the second.", EncodeError)
 
         tr_short_name = physical_value[0]
 
         # make sure that the same table row is selected for all
         # TABLE-STRUCT parameters that are using the same key
         tk_short_name = self.table_key.short_name
-        tk_value = encode_state.parameter_values.get(tk_short_name)
+        tk_value = encode_state.table_keys.get(tk_short_name)
         if tk_value is None:
             # no value for the key has been set yet. Set it to the
             # value which we are using right now
-            encode_state.parameter_values[tk_short_name] = tr_short_name
+            encode_state.table_keys[tk_short_name] = tr_short_name
         elif tk_value != tr_short_name:
-            raise EncodeError(f"Cannot determine a unique value for table key '{tk_short_name}':  "
-                              f"Requested are '{tk_value}' and '{tr_short_name}'")
+            odxraise(
+                f"Cannot determine a unique value for table key '{tk_short_name}':  "
+                f"Requested are '{tk_value}' and '{tr_short_name}'", EncodeError)
+            return
 
         # deal with the static case (i.e., the table row is selected
         # by the table key object itself)
-        if self.table_key.table_row is not None and \
-           self.table_key.table_row.short_name != tr_short_name:
-            raise EncodeError(f"The selected table row for the {self.short_name} "
-                              f"parameter must be '{self.table_key.table_row.short_name}' "
-                              f"(is: '{tr_short_name}')")
+        if self.table_key.table_row is not None:
+            if tr_short_name is not None and self.table_key.table_row.short_name != tr_short_name:
+                odxraise(
+                    f"The selected table row for the {self.short_name} "
+                    f"parameter must be '{self.table_key.table_row.short_name}' "
+                    f"instead of '{tr_short_name}'", EncodeError)
+                return
+
+            tr_short_name = self.table_key.table_row.short_name
 
         # encode the user specified value using the structure (or DOP)
         # of the selected table row
         table = self.table_key.table
         candidate_trs = [tr for tr in table.table_rows if tr.short_name == tr_short_name]
-        if len(candidate_trs) != 1:
-            raise EncodeError(f"Could not uniquely resolve a table row named "
-                              f"'{tr_short_name}' in table '{table.short_name}' ")
+        if len(candidate_trs) == 0:
+            odxraise(
+                f"Could not find a table row named "
+                f"'{tr_short_name}' in table '{table.short_name}'", EncodeError)
+            return
+        elif len(candidate_trs) > 1:
+            odxraise(
+                f"Found multiple table rows named "
+                f"'{tr_short_name}' in table '{table.short_name}'", EncodeError)
+
         tr = candidate_trs[0]
         tr_value = physical_value[1]
 
-        bit_position = self.bit_position or 0
         if tr.structure is not None:
             # the selected table row references a structure
-            inner_encode_state = EncodeState(
-                coded_message=bytearray(b''),
-                parameter_values=tr_value,
-                triggering_request=encode_state.triggering_request)
-
-            return tr.structure.convert_physical_to_bytes(
-                tr_value, inner_encode_state, bit_position=bit_position)
+            raw_data = tr.structure.convert_physical_to_bytes(
+                physical_value=tr_value,
+                encode_state=encode_state,
+                bit_position=encode_state.cursor_bit_position)
+            encode_state.emplace_atomic_value(raw_data, self.short_name)
+            return
 
         # if the table row does not reference a structure, it must
         # point to a DOP!
         if tr.dop is None:
-            odxraise()
+            odxraise(f"Neither a structure nor a DOP has been defined for table row"
+                     f"'{tr.short_name}'")
+            return
 
-        return tr.dop.convert_physical_to_bytes(
-            tr_value, encode_state=encode_state, bit_position=bit_position)
-
-    @override
-    def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
-        return super().encode_into_pdu(encode_state)
+        raw_data = tr.dop.convert_physical_to_bytes(
+            physical_value=tr_value,
+            encode_state=encode_state,
+            bit_position=encode_state.cursor_bit_position)
+        encode_state.emplace_atomic_value(raw_data, self.short_name)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

@@ -10,9 +10,9 @@ from ..createanydiagcodedtype import create_any_diag_coded_type_from_et
 from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, odxrequire
+from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
-from ..odxtypes import AtomicOdxType, DataType
+from ..odxtypes import AtomicOdxType, DataType, ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 
@@ -81,30 +81,23 @@ class CodedConstParameter(Parameter):
         return False
 
     @override
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        if (self.short_name in encode_state.parameter_values and
-                encode_state.parameter_values[self.short_name] != self.coded_value):
-            raise TypeError(f"The parameter '{self.short_name}' is constant {self._coded_value_str}"
-                            " and thus can not be changed.")
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
+        if physical_value is not None and physical_value != self.coded_value:
+            odxraise(
+                f"Value for constant parameter `{self.short_name}` name can "
+                f"only be specified as {self.coded_value!r} (is: {physical_value!r})", EncodeError)
 
-        tmp_state = EncodeState(
-            bytearray(),
-            encode_state.parameter_values,
-            triggering_request=encode_state.triggering_request,
-            is_end_of_pdu=False,
-            cursor_byte_position=0,
-            cursor_bit_position=0,
-            origin_byte_position=0)
-        encode_state.cursor_bit_position = self.bit_position or 0
-        self.diag_coded_type.encode_into_pdu(self.coded_value, encode_state=tmp_state)
+        internal_value = self.coded_value
 
-        return tmp_state.coded_message
+        self.diag_coded_type.encode_into_pdu(
+            internal_value=internal_value, encode_state=encode_state)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         coded_val = self.diag_coded_type.decode_from_pdu(decode_state)
 
-        # Check if the coded value in the message is correct.
+        # Check if the coded value contained by the message is correct.
         if self.coded_value != coded_val:
             warnings.warn(
                 f"Coded constant parameter does not match! "

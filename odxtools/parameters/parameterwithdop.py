@@ -91,12 +91,13 @@ class ParameterWithDOP(Parameter):
             return None
 
     @override
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        dop = odxrequire(self.dop, "Reference to DOP is not resolved")
-        physical_value = encode_state.parameter_values[self.short_name]
-        bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return dop.convert_physical_to_bytes(
-            physical_value, encode_state, bit_position=bit_position_int)
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
+        raw_data = self.dop.convert_physical_to_bytes(
+            physical_value=odxrequire(physical_value),
+            encode_state=encode_state,
+            bit_position=encode_state.cursor_bit_position)
+        encode_state.emplace_atomic_value(raw_data, self.short_name)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

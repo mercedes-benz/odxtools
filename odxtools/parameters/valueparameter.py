@@ -7,9 +7,9 @@ from typing_extensions import override
 
 from ..dataobjectproperty import DataObjectProperty
 from ..encodestate import EncodeState
-from ..exceptions import odxraise, odxrequire
+from ..exceptions import EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
-from ..odxtypes import AtomicOdxType
+from ..odxtypes import AtomicOdxType, ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
@@ -77,16 +77,18 @@ class ValueParameter(ParameterWithDOP):
         return True
 
     @override
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        physical_value = encode_state.parameter_values.get(self.short_name,
-                                                           self.physical_default_value)
-        if physical_value is None:
-            raise TypeError(f"A value for parameter '{self.short_name}' must be specified"
-                            f" as the parameter does not exhibit a default.")
-        dop = odxrequire(
-            self.dop,
-            f"Param {self.short_name} does not have a DOP. Maybe resolving references failed?")
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
 
-        bit_position_int = self.bit_position if self.bit_position is not None else 0
-        return dop.convert_physical_to_bytes(
-            physical_value, encode_state=encode_state, bit_position=bit_position_int)
+        if physical_value is None:
+            physical_value = self._physical_default_value
+        if physical_value is None:
+            odxraise(
+                f"A value for parameter '{self.short_name}' must be specified"
+                f" because the parameter does not exhibit a default.", EncodeError)
+
+        raw_data = self.dop.convert_physical_to_bytes(
+            physical_value=odxrequire(physical_value),
+            encode_state=encode_state,
+            bit_position=encode_state.cursor_bit_position)
+        encode_state.emplace_atomic_value(raw_data, self.short_name)
