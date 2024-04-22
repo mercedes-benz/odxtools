@@ -179,12 +179,6 @@ class BasicStructure(ComplexDop):
             if len(encode_state.coded_message) < self.byte_size:
                 # Padding bytes needed
                 encode_state.coded_message = encode_state.coded_message.ljust(self.byte_size, b"\0")
-            elif len(encode_state.coded_message) > self.byte_size:
-                odxraise(
-                    f"Encoded structure {self.short_name} is too large: "
-                    f"{len(encode_state.coded_message)} instead of {self.byte_size} "
-                    f"bytes", EncodeError)
-                return
 
         # encode the length- and table keys. This cannot be done above
         # because we allow these to be defined implicitly (i.e. they
