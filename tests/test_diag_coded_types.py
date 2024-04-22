@@ -416,6 +416,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             coded_message=bytearray([0xcc]), parameter_values={}, cursor_byte_position=2)
         dct.encode_into_pdu(0x12345, state)
         self.assertEqual(state.coded_message.hex(), "cc00012345")
+        self.assertEqual(state.length_keys.get("length_key"), 24)
 
     def test_end_to_end(self) -> None:
         # diag coded types
