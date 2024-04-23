@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 from .exceptions import OdxWarning
 
@@ -13,9 +13,6 @@ class EncodeState:
 
     #: payload that has been constructed so far
     coded_message: bytearray
-
-    #: a mapping from short name to value for each parameter
-    parameter_values: Dict[str, Any]
 
     #: The absolute position in bytes from the beginning of the PDU to
     #: which relative positions refer to, e.g., the beginning of the

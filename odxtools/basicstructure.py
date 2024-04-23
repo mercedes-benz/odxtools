@@ -74,8 +74,7 @@ class BasicStructure(ComplexDop):
         return byte_length * 8
 
     def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:
-        encode_state = EncodeState(
-            coded_message=bytearray(), parameter_values={}, triggering_request=request_prefix)
+        encode_state = EncodeState(coded_message=bytearray(), triggering_request=request_prefix)
 
         for param in self.parameters:
             if (isinstance(param, MatchingRequestParameter) and param.request_byte_position < len(request_prefix)) or \
