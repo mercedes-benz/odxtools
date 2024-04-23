@@ -72,7 +72,7 @@ class StaticField(Field):
                 encode_state.cursor_byte_position = pos_before + self.item_byte_size
             elif pos_after - pos_before < self.item_byte_size:
                 # add some padding bytes
-                encode_state.emplace_atomic_value(
+                encode_state.emplace_bytes(
                     b'\x00' * (self.item_byte_size - (pos_after - pos_before)), "<PADDING>")
 
     @override

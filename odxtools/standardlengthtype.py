@@ -57,7 +57,7 @@ class StandardLengthType(DiagCodedType):
             base_data_type=self.base_data_type,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
-        encode_state.emplace_atomic_value(raw_data, "<STANDARD-LENGTH-TYPE>")
+        encode_state.emplace_bytes(raw_data, "<STANDARD-LENGTH-TYPE>")
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:

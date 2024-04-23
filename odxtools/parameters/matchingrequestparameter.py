@@ -71,8 +71,8 @@ class MatchingRequestParameter(Parameter):
                 f"bytes, need at least {rq_pos + rq_len} bytes", EncodeError)
             return
 
-        encode_state.emplace_atomic_value(encode_state.triggering_request[rq_pos:rq_pos + rq_len],
-                                          self.short_name)
+        encode_state.emplace_bytes(encode_state.triggering_request[rq_pos:rq_pos + rq_len],
+                                   self.short_name)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

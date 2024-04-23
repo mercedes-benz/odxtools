@@ -185,7 +185,7 @@ class TableKeyParameter(Parameter):
                      EncodeError)
             return
 
-        encode_state.emplace_atomic_value(bytes([0] * (size // 8)), self.short_name)
+        encode_state.emplace_bytes(bytes([0] * (size // 8)), self.short_name)
 
         encode_state.cursor_byte_position = max(orig_pos, encode_state.cursor_byte_position)
         encode_state.cursor_bit_position = 0

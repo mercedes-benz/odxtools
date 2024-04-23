@@ -208,7 +208,7 @@ class BasicStructure(ComplexDop):
                 # position directly after the structure and let
                 # EncodeState add the padding as needed.
                 encode_state.cursor_byte_position = encode_state.origin_byte_position + self.byte_size
-                encode_state.emplace_atomic_value(b'', "<PADDING>")
+                encode_state.emplace_bytes(b'', "<PADDING>")
 
         # encode the length- and table keys. This cannot be done above
         # because we allow these to be defined implicitly (i.e. they

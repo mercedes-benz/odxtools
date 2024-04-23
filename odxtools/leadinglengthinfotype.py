@@ -71,7 +71,7 @@ class LeadingLengthInfoType(DiagCodedType):
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-        encode_state.emplace_atomic_value(length_bytes + value_bytes, "<LEADING-LENGTH-INFO-TYPE>")
+        encode_state.emplace_bytes(length_bytes + value_bytes, "<LEADING-LENGTH-INFO-TYPE>")
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:

@@ -53,7 +53,7 @@ class ReservedParameter(Parameter):
                                     encode_state: EncodeState) -> None:
         raw_data = (0).to_bytes((encode_state.cursor_bit_position + self.bit_length + 7) // 8,
                                 "big")
-        encode_state.emplace_atomic_value(raw_data, self.short_name)
+        encode_state.emplace_bytes(raw_data, self.short_name)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

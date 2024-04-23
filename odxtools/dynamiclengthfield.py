@@ -82,7 +82,7 @@ class DynamicLengthField(Field):
 
         # ensure the correct message size if the field is empty
         if len(physical_value) == 0:
-            encode_state.emplace_atomic_value(b"", "<padding>")
+            encode_state.emplace_bytes(b"", "<padding>")
 
         # move cursor and origin positions
         encode_state.origin_byte_position = orig_origin
