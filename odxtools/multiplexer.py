@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree
 
+from typing_extensions import override
+
 from .complexdop import ComplexDop
 from .decodestate import DecodeState
 from .encodestate import EncodeState
@@ -34,6 +36,7 @@ class Multiplexer(ComplexDop):
     is_visible_raw: Optional[bool]
 
     @staticmethod
+    @override
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Multiplexer":
         """Reads a Multiplexer from Diag Layer."""
         base_obj = ComplexDop.from_et(et_element, doc_frags)
@@ -74,43 +77,56 @@ class Multiplexer(ComplexDop):
             odxraise("Upper and lower bounds of limits must compareable")
         return lower_limit, upper_limit
 
-    def convert_physical_to_bytes(self,
-                                  physical_value: ParameterValue,
-                                  encode_state: EncodeState,
-                                  bit_position: int = 0) -> bytes:
+    @override
+    def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:
 
-        if bit_position != 0:
-            raise EncodeError("Multiplexer must be aligned, i.e. bit_position=0, but "
-                              f"{self.short_name} was passed the bit position {bit_position}")
+        if encode_state.cursor_bit_position != 0:
+            raise EncodeError(f"Multiplexer must be aligned, i.e. bit_position=0, but "
+                              f"{self.short_name} was passed the bit position "
+                              f"{encode_state.cursor_bit_position}")
 
         if not isinstance(physical_value, dict) or len(physical_value) != 1:
             raise EncodeError("""Multiplexer should be defined as a dict
             with only one key equal to the desired case""")
 
+        orig_origin = encode_state.origin_byte_position
+        orig_cursor = encode_state.cursor_byte_position
+
+        encode_state.origin_byte_position = encode_state.cursor_byte_position
+
         case_name, case_value = next(iter(physical_value.items()))
-        case_pos = self.byte_position
 
         for mux_case in self.cases or []:
             if mux_case.short_name == case_name:
-                if mux_case._structure:
-                    case_bytes = mux_case._structure.convert_physical_to_bytes(
-                        case_value, encode_state, 0)
-                else:
-                    case_bytes = b''
-
                 key_value, _ = self._get_case_limits(mux_case)
-                key_bytes = self.switch_key.dop.convert_physical_to_bytes(
-                    key_value, encode_state, bit_position=self.switch_key.bit_position or 0)
 
-                mux_len = max(len(key_bytes), len(case_bytes) + case_pos)
-                mux_bytes = bytearray(mux_len)
-                mux_bytes[:len(key_bytes)] = key_bytes
-                mux_bytes[case_pos:case_pos + len(case_bytes)] = case_bytes
+                if self.switch_key.byte_position is not None:
+                    encode_state.cursor_byte_position = encode_state.origin_byte_position + self.switch_key.byte_position
+                encode_state.cursor_bit_position = self.switch_key.bit_position or 0
 
-                return bytes(mux_bytes)
+                self.switch_key.dop.encode_into_pdu(
+                    physical_value=key_value, encode_state=encode_state)
+
+                if self.byte_position is not None:
+                    encode_state.cursor_byte_position = encode_state.origin_byte_position + self.byte_position
+                encode_state.cursor_bit_position = 0
+
+                if mux_case._structure is None:
+                    odxraise(f"Multiplexer case '{mux_case.short_name}' does not "
+                             f"reference a structure.")
+                    return
+
+                mux_case.structure.encode_into_pdu(
+                    physical_value=key_value, encode_state=encode_state)
+
+                encode_state.origin_byte_position = orig_origin
+                encode_state.cursor_byte_position = max(orig_cursor,
+                                                        encode_state.cursor_byte_position)
+                return
 
         raise EncodeError(f"The case {case_name} is not found in Multiplexer {self.short_name}")
 
+    @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
 
         # multiplexers are structures and thus the origin position
@@ -152,6 +168,7 @@ class Multiplexer(ComplexDop):
 
         return mux_value
 
+    @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
 
@@ -161,6 +178,7 @@ class Multiplexer(ComplexDop):
 
         return odxlinks
 
+    @override
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         super()._resolve_odxlinks(odxlinks)
 
@@ -172,6 +190,7 @@ class Multiplexer(ComplexDop):
             mux_case._mux_case_resolve_odxlinks(
                 odxlinks, key_physical_type=self.switch_key.dop.physical_type.base_data_type)
 
+    @override
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         super()._resolve_snrefs(diag_layer)
 

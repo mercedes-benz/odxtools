@@ -112,16 +112,9 @@ class LengthKeyParameter(ParameterWithDOP):
             pos = encode_state.origin_byte_position + self.byte_position
         encode_state.key_pos[self.short_name] = pos
         encode_state.cursor_byte_position = pos
+        encode_state.cursor_bit_position = self.bit_position or 0
 
-        bit_pos = self.bit_position or 0
-        bit_size = self.dop.get_static_bit_length()
-        if bit_size is None:
-            odxraise("The DOP of length key {self.short_name} must exhibit a fixed size.",
-                     EncodeError)
-            return
-
-        raw_data = b'\x00' * ((bit_pos + bit_size + 7) // 8)
-        encode_state.emplace_atomic_value(raw_data, self.short_name)
+        self.dop.encode_into_pdu(encode_state=encode_state, physical_value=0)
 
         encode_state.cursor_byte_position = max(encode_state.cursor_byte_position, orig_cursor)
         encode_state.cursor_bit_position = 0
@@ -139,11 +132,7 @@ class LengthKeyParameter(ParameterWithDOP):
         encode_state.cursor_byte_position = encode_state.key_pos[self.short_name]
         encode_state.cursor_bit_position = self.bit_position or 0
 
-        raw_data = self.dop.convert_physical_to_bytes(
-            physical_value=odxrequire(physical_value),
-            encode_state=encode_state,
-            bit_position=encode_state.cursor_bit_position)
-        encode_state.emplace_atomic_value(raw_data, self.short_name)
+        self.dop.encode_into_pdu(encode_state=encode_state, physical_value=physical_value)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

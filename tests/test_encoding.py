@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 import unittest
-from typing import Any, Dict, List, cast
+from typing import List, cast
 
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.limit import Limit
@@ -305,55 +305,98 @@ class TestEncodeRequest(unittest.TestCase):
         )
 
     def test_bit_mask(self) -> None:
-        unit_kwargs: Dict[str, Any] = {
-            "base_data_type": DataType.A_UINT32,
-            "base_type_encoding": None,
-            "is_highlow_byte_order_raw": None,
-            "is_condensed_raw": None,
-            "bit_length": 16,
-        }
-        inner = StandardLengthType(bit_mask=0x0ff0, **unit_kwargs)
-        outer = StandardLengthType(bit_mask=0xf00f, **unit_kwargs)
-        dop_id = OdxLinkId('dop', [])
-        dop_kwargs: Dict[str, Any] = {
-            "compu_method": IdenticalCompuMethod(DataType.A_UINT32, DataType.A_UINT32),
-            "description": None,
-            "admin_data": None,
-            "long_name": None,
-            "odx_id": dop_id,
-            "physical_type": PhysicalType(DataType.A_UINT32, None, None),
-            "sdgs": [],
-            "short_name": 'dop',
-            "unit_ref": None,
-            "internal_constr": None,
-            "physical_constr": None,
-        }
-        param_kwargs: Dict[str, Any] = {
-            "long_name": None,
-            "description": None,
-            "byte_position": 0,
-            "bit_position": None,
-            "dop_ref": OdxLinkRef.from_id(dop_id),
-            "dop_snref": None,
-            "semantic": None,
-            "sdgs": [],
-            "physical_default_value_raw": None,
-        }
+        inner_dct = StandardLengthType(
+            bit_mask=0x0ff0,
+            base_data_type=DataType.A_UINT32,
+            base_type_encoding=None,
+            is_highlow_byte_order_raw=None,
+            is_condensed_raw=None,
+            bit_length=16)
+        outer_dct = StandardLengthType(
+            bit_mask=0xf00f,
+            base_data_type=DataType.A_UINT32,
+            base_type_encoding=None,
+            is_highlow_byte_order_raw=None,
+            is_condensed_raw=None,
+            bit_length=16)
+
+        physical_type = PhysicalType(
+            base_data_type=DataType.A_UINT32, display_radix=None, precision=None)
+        compu_method = IdenticalCompuMethod(
+            internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32)
+
+        inner_dop = DataObjectProperty(
+            odx_id=OdxLinkId('dop.inner', doc_frags),
+            short_name="inner_dop",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            diag_coded_type=inner_dct,
+            physical_type=physical_type,
+            compu_method=compu_method,
+            unit_ref=None,
+            internal_constr=None,
+            physical_constr=None)
+
+        outer_dop = DataObjectProperty(
+            odx_id=OdxLinkId('dop.outer', doc_frags),
+            short_name="outer_dop",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            diag_coded_type=outer_dct,
+            physical_type=physical_type,
+            compu_method=compu_method,
+            unit_ref=None,
+            internal_constr=None,
+            physical_constr=None)
+
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(inner_dop._build_odxlinks())
+        odxlinks.update(outer_dop._build_odxlinks())
+        odxlinks.update(inner_dct._build_odxlinks())
+        odxlinks.update(outer_dct._build_odxlinks())
 
         # Inner
-        inner_param = ValueParameter(short_name="inner", **param_kwargs)
-        inner_param._dop = DataObjectProperty(diag_coded_type=inner, **dop_kwargs)
+        inner_param = ValueParameter(
+            short_name="inner_param",
+            long_name=None,
+            description=None,
+            byte_position=0,
+            bit_position=None,
+            dop_ref=OdxLinkRef.from_id(inner_dop.odx_id),
+            dop_snref=None,
+            semantic=None,
+            sdgs=[],
+            physical_default_value_raw=None)
+        inner_param._resolve_odxlinks(odxlinks)
         inner_param._resolve_snrefs(cast(DiagLayer, None))
 
         # Outer
-        outer_param = ValueParameter(short_name="outer", **param_kwargs)
-        outer_param._dop = DataObjectProperty(diag_coded_type=outer, **dop_kwargs)
+        outer_param = ValueParameter(
+            short_name="outer_param",
+            long_name=None,
+            description=None,
+            byte_position=0,
+            bit_position=None,
+            dop_ref=OdxLinkRef.from_id(outer_dop.odx_id),
+            dop_snref=None,
+            semantic=None,
+            sdgs=[],
+            physical_default_value_raw=None)
+        outer_param._resolve_odxlinks(odxlinks)
         outer_param._resolve_snrefs(cast(DiagLayer, None))
 
         req = self._create_request([inner_param, outer_param])
 
-        assert req.encode(None, inner=0x1111, outer=0x2222).hex() == "2112"
-        assert req.decode(bytes.fromhex('1234')) == {"inner": 0x0230, "outer": 0x1004}
+        self.assertEqual(req.encode(inner_param=0x1111, outer_param=0x2222).hex(), "2112")
+        self.assertEqual(
+            req.decode(bytes.fromhex('1234')), {
+                "inner_param": 0x0230,
+                "outer_param": 0x1004
+            })
 
 
 if __name__ == "__main__":

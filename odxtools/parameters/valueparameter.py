@@ -87,8 +87,4 @@ class ValueParameter(ParameterWithDOP):
                 f"A value for parameter '{self.short_name}' must be specified"
                 f" because the parameter does not exhibit a default.", EncodeError)
 
-        raw_data = self.dop.convert_physical_to_bytes(
-            physical_value=odxrequire(physical_value),
-            encode_state=encode_state,
-            bit_position=encode_state.cursor_bit_position)
-        encode_state.emplace_atomic_value(raw_data, self.short_name)
+        self.dop.encode_into_pdu(physical_value, encode_state=encode_state)

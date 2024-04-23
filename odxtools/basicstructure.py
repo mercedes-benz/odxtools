@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
+from typing_extensions import override
+
 from .complexdop import ComplexDop
 from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
@@ -55,23 +57,21 @@ class BasicStructure(ComplexDop):
             return 8 * self.byte_size
 
         cursor = 0
-        length = 0
+        byte_length = 0
         for param in self.parameters:
             param_bit_length = param.get_static_bit_length()
             if param_bit_length is None:
                 # We were not able to calculate a static bit length
                 return None
             elif param.byte_position is not None:
-                bit_pos = param.bit_position or 0
-                byte_pos = param.byte_position or 0
-                cursor = byte_pos * 8 + bit_pos
+                cursor = param.byte_position
 
-            cursor += param_bit_length
-            length = max(length, cursor)
+            cursor += ((param.bit_position or 0) + param_bit_length + 7) // 8
+            byte_length = max(byte_length, cursor)
 
         # Round up to account for padding bits (all structures are
         # byte aligned)
-        return ((length + 7) // 8) * 8
+        return byte_length * 8
 
     def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:
         encode_state = EncodeState(
@@ -117,86 +117,6 @@ class BasicStructure(ComplexDop):
 
         print(parameter_info(self.free_parameters), end="")
 
-    def convert_physical_to_internal(self,
-                                     param_value: ParameterValue,
-                                     triggering_coded_request: Optional[bytes],
-                                     is_end_of_pdu: bool = True) -> bytes:
-
-        encode_state = EncodeState(
-            bytearray(),
-            parameter_values=cast(Dict[str, ParameterValue], param_value),
-            triggering_request=triggering_coded_request,
-            is_end_of_pdu=False)
-
-        if not isinstance(param_value, dict):
-            odxraise(
-                f"Expected a dictionary for the values of structure {self.short_name}, "
-                f"got {type(param_value).__name__}", EncodeError)
-        elif encode_state.cursor_bit_position != 0:
-            odxraise(
-                f"Structures must be byte aligned, but "
-                f"{self.short_name} requested to be at bit position "
-                f"{encode_state.cursor_bit_position}", EncodeError)
-            encode_state.bit_position = 0
-
-        # in strict mode, ensure that no values for unknown parameters are specified.
-        if strict_mode:
-            param_names = {param.short_name for param in self.parameters}
-            for param_value_name in param_value:
-                if param_value_name not in param_names:
-                    odxraise(f"Value for unknown parameter '{param_value_name}' specified "
-                             f"for structure {self.short_name}")
-
-        for param in self.parameters:
-            if id(param) == id(self.parameters[-1]):
-                # The last parameter of the structure is at the end of
-                # the PDU if the structure itself is at the end of the
-                # PDU. TODO: This assumes that the last parameter
-                # specified in the ODX is located last in the PDU...
-                encode_state.is_end_of_pdu = is_end_of_pdu
-
-            if isinstance(param, (LengthKeyParameter, TableKeyParameter)):
-                # At this point, we encode a placeholder value for length-
-                # and table keys, since these can be specified
-                # implicitly (i.e., by means of parameters that use
-                # these keys). To avoid getting an "overlapping
-                # parameter" warning, we must encode a value of zero
-                # into the PDU here and add the real value of the
-                # parameter in a post-processing step.
-                param.encode_placeholder_into_pdu(
-                    physical_value=param_value.get(param.short_name), encode_state=encode_state)
-
-                continue
-
-            if param.is_required and param.short_name not in param_value:
-                odxraise(f"No value for required parameter {param.short_name} specified",
-                         EncodeError)
-
-            param.encode_into_pdu(
-                physical_value=param_value.get(param.short_name), encode_state=encode_state)
-
-        if self.byte_size is not None:
-            if len(encode_state.coded_message) < self.byte_size:
-                # Padding bytes needed
-                encode_state.coded_message = encode_state.coded_message.ljust(self.byte_size, b"\0")
-
-        # encode the length- and table keys. This cannot be done above
-        # because we allow these to be defined implicitly (i.e. they
-        # are defined by their respective users)
-        for param in self.parameters:
-            if not isinstance(param, (LengthKeyParameter, TableKeyParameter)):
-                # the current parameter is neither a length- nor a table key
-                continue
-
-            # Encode the value of the key parameter into the message
-            param.encode_value_into_pdu(encode_state=encode_state)
-
-        # Assert that length is as expected
-        self._validate_coded_message_size(encode_state.cursor_byte_position -
-                                          encode_state.origin_byte_position)
-
-        return encode_state.coded_message
-
     def _validate_coded_message_size(self, coded_byte_len: int) -> None:
 
         if self.byte_size is not None:
@@ -224,23 +144,92 @@ class BasicStructure(ComplexDop):
                 OdxWarning,
                 stacklevel=1)
 
-    def convert_physical_to_bytes(self,
-                                  physical_value: ParameterValue,
-                                  encode_state: EncodeState,
-                                  bit_position: int = 0) -> bytes:
+    @override
+    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+                        encode_state: EncodeState) -> None:
         if not isinstance(physical_value, dict):
-            raise EncodeError(
+            odxraise(
                 f"Expected a dictionary for the values of structure {self.short_name}, "
-                f"got {type(physical_value)}")
-        if bit_position != 0:
-            raise EncodeError("Structures must be aligned, i.e. bit_position=0, but "
-                              f"{self.short_name} was passed the bit position {bit_position}")
-        return self.convert_physical_to_internal(
-            physical_value,
-            triggering_coded_request=encode_state.triggering_request,
-            is_end_of_pdu=encode_state.is_end_of_pdu,
-        )
+                f"got {type(physical_value).__name__}", EncodeError)
+        elif encode_state.cursor_bit_position != 0:
+            odxraise(
+                f"Structures must be byte aligned, but "
+                f"{self.short_name} requested to be at bit position "
+                f"{encode_state.cursor_bit_position}", EncodeError)
+            encode_state.bit_position = 0
 
+        orig_cursor = encode_state.cursor_byte_position
+        orig_origin = encode_state.origin_byte_position
+        encode_state.origin_byte_position = encode_state.cursor_byte_position
+
+        orig_is_end_of_pdu = encode_state.is_end_of_pdu
+        encode_state.is_end_of_pdu = False
+
+        # in strict mode, ensure that no values for unknown parameters are specified.
+        if strict_mode:
+            param_names = {param.short_name for param in self.parameters}
+            for param_value_name in physical_value:
+                if param_value_name not in param_names:
+                    odxraise(f"Value for unknown parameter '{param_value_name}' specified "
+                             f"for structure {self.short_name}")
+
+        for param in self.parameters:
+            if id(param) == id(self.parameters[-1]):
+                # The last parameter of the structure is at the end of
+                # the PDU if the structure itself is at the end of the
+                # PDU. TODO: This assumes that the last parameter
+                # specified in the ODX is located last in the PDU...
+                encode_state.is_end_of_pdu = orig_is_end_of_pdu
+
+            if isinstance(param, (LengthKeyParameter, TableKeyParameter)):
+                # At this point, we encode a placeholder value for length-
+                # and table keys, since these can be specified
+                # implicitly (i.e., by means of parameters that use
+                # these keys). To avoid getting an "overlapping
+                # parameter" warning, we must encode a value of zero
+                # into the PDU here and add the real value of the
+                # parameter in a post-processing step.
+                param.encode_placeholder_into_pdu(
+                    physical_value=physical_value.get(param.short_name), encode_state=encode_state)
+
+                continue
+
+            if param.is_required and param.short_name not in physical_value:
+                odxraise(f"No value for required parameter {param.short_name} specified",
+                         EncodeError)
+
+            param.encode_into_pdu(
+                physical_value=physical_value.get(param.short_name), encode_state=encode_state)
+
+        encode_state.is_end_of_pdu = False
+        if self.byte_size is not None:
+            actual_len = encode_state.cursor_byte_position - encode_state.origin_byte_position
+            if actual_len < self.byte_size:
+                # Padding bytes needed. We add an empty object at the
+                # position directly after the structure and let
+                # EncodeState add the padding as needed.
+                encode_state.cursor_byte_position = encode_state.origin_byte_position + self.byte_size
+                encode_state.emplace_atomic_value(b'', "<PADDING>")
+
+        # encode the length- and table keys. This cannot be done above
+        # because we allow these to be defined implicitly (i.e. they
+        # are defined by their respective users)
+        for param in self.parameters:
+            if not isinstance(param, (LengthKeyParameter, TableKeyParameter)):
+                # the current parameter is neither a length- nor a table key
+                continue
+
+            # Encode the value of the key parameter into the message
+            param.encode_value_into_pdu(encode_state=encode_state)
+
+        # Assert that length is as expected
+        self._validate_coded_message_size(encode_state.cursor_byte_position -
+                                          encode_state.origin_byte_position)
+
+        encode_state.origin_byte_position = orig_origin
+        encode_state.cursor_byte_position = max(orig_cursor, encode_state.cursor_byte_position)
+
+    @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         # move the origin since positions specified by sub-parameters of
         # structures are relative to the beginning of the structure object.
@@ -268,8 +257,15 @@ class BasicStructure(ComplexDop):
         kwargs: dict
             Parameters of the RPC as mapping from SHORT-NAME of the parameter to the value
         """
-        return self.convert_physical_to_internal(
-            kwargs, triggering_coded_request=coded_request, is_end_of_pdu=True)
+        encode_state = EncodeState(
+            coded_message=bytearray(),
+            parameter_values=kwargs,
+            triggering_request=coded_request,
+            is_end_of_pdu=True)
+
+        self.encode_into_pdu(physical_value=kwargs, encode_state=encode_state)
+
+        return encode_state.coded_message
 
     def decode(self, message: bytes) -> ParameterValueDict:
         decode_state = DecodeState(coded_message=message)

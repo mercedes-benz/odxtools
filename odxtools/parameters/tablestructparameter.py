@@ -160,11 +160,7 @@ class TableStructParameter(Parameter):
 
         if tr.structure is not None:
             # the selected table row references a structure
-            raw_data = tr.structure.convert_physical_to_bytes(
-                physical_value=tr_value,
-                encode_state=encode_state,
-                bit_position=encode_state.cursor_bit_position)
-            encode_state.emplace_atomic_value(raw_data, self.short_name)
+            tr.structure.encode_into_pdu(tr_value, encode_state)
             return
 
         # if the table row does not reference a structure, it must
@@ -174,11 +170,7 @@ class TableStructParameter(Parameter):
                      f"'{tr.short_name}'")
             return
 
-        raw_data = tr.dop.convert_physical_to_bytes(
-            physical_value=tr_value,
-            encode_state=encode_state,
-            bit_position=encode_state.cursor_bit_position)
-        encode_state.emplace_atomic_value(raw_data, self.short_name)
+        tr.dop.encode_into_pdu(tr_value, encode_state)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

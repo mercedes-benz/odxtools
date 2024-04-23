@@ -165,29 +165,29 @@ class TableKeyParameter(Parameter):
 
             encode_state.table_keys[self.short_name] = physical_value
 
-        orig_cursor = encode_state.cursor_byte_position
+        orig_pos = encode_state.cursor_byte_position
         pos = encode_state.cursor_byte_position
         if self.byte_position is not None:
             pos = encode_state.origin_byte_position + self.byte_position
         encode_state.key_pos[self.short_name] = pos
         encode_state.cursor_byte_position = pos
+        encode_state.cursor_bit_position = self.bit_position or 0
 
         key_dop = self.table.key_dop
         if key_dop is None:
             odxraise(f"No KEY-DOP specified for table {self.table.short_name}")
             return
 
-        bit_pos = self.bit_position or 0
-        bit_size = key_dop.get_static_bit_length()
-        if bit_size is None:
+        size = key_dop.get_static_bit_length()
+
+        if size is None:
             odxraise("The DOP of table key {self.short_name} must exhibit a fixed size.",
                      EncodeError)
             return
 
-        raw_data = b'\x00' * ((bit_pos + bit_size + 7) // 8)
-        encode_state.emplace_atomic_value(raw_data, self.short_name)
+        encode_state.emplace_atomic_value(bytes([0] * (size // 8)), self.short_name)
 
-        encode_state.cursor_byte_position = max(orig_cursor, encode_state.cursor_byte_position)
+        encode_state.cursor_byte_position = max(orig_pos, encode_state.cursor_byte_position)
         encode_state.cursor_bit_position = 0
 
     def encode_value_into_pdu(self, encode_state: EncodeState) -> None:
@@ -219,12 +219,7 @@ class TableKeyParameter(Parameter):
         encode_state.cursor_byte_position = encode_state.key_pos[self.short_name]
         encode_state.cursor_bit_position = self.bit_position or 0
 
-        raw_key = key_dop.convert_physical_to_bytes(
-            physical_value=odxrequire(tr.key),
-            encode_state=encode_state,
-            bit_position=encode_state.cursor_bit_position)
-
-        encode_state.emplace_atomic_value(raw_key, self.short_name)
+        key_dop.encode_into_pdu(encode_state=encode_state, physical_value=odxrequire(tr.key))
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

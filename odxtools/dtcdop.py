@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
 from xml.etree import ElementTree
 
+from typing_extensions import override
+
 from .compumethods.compumethod import CompuMethod
 from .compumethods.createanycompumethod import create_any_compu_method_from_et
 from .createanydiagcodedtype import create_any_diag_coded_type_from_et
@@ -12,7 +14,7 @@ from .diagcodedtype import DiagCodedType
 from .diagnostictroublecode import DiagnosticTroubleCode
 from .dopbase import DopBase
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, odxassert, odxrequire
+from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValue, odxstr_to_bool
@@ -87,17 +89,20 @@ class DtcDop(DopBase):
     def linked_dtc_dops(self) -> NamedItemList["DtcDop"]:
         return self._linked_dtc_dops
 
+    @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
 
         int_trouble_code = self.diag_coded_type.decode_from_pdu(decode_state)
 
-        if self.compu_method.is_valid_internal_value(int_trouble_code):
-            trouble_code = self.compu_method.convert_internal_to_physical(int_trouble_code)
-        else:
+        if not self.compu_method.is_valid_internal_value(int_trouble_code):
             # TODO: How to prevent this?
-            raise DecodeError(
+            odxraise(
                 f"DTC-DOP {self.short_name} could not convert the coded value "
-                f" {repr(int_trouble_code)} to physical type {self.physical_type.base_data_type}.")
+                f" {repr(int_trouble_code)} to physical type {self.physical_type.base_data_type}.",
+                DecodeError)
+            return
+
+        trouble_code = self.compu_method.convert_internal_to_physical(int_trouble_code)
 
         assert isinstance(trouble_code, int)
 
@@ -110,10 +115,12 @@ class DtcDop(DopBase):
             return dtcs[0]
 
         # the DTC was not specified. This probably means that the
-        # diagnostic description file is incomplete. We do not bail
-        # out but we cannot provide an interpretation for it out of the
-        # box...
-        dtc = DiagnosticTroubleCode(
+        # diagnostic description file is incomplete.
+        odxraise(
+            f"Encountered DTC 0x{trouble_code:06x} which has not been defined "
+            f"by the database", DecodeError)
+
+        return DiagnosticTroubleCode(
             trouble_code=trouble_code,
             odx_id=cast(OdxLinkId, None),
             short_name=f'DTC_{trouble_code:06x}',
@@ -126,12 +133,9 @@ class DtcDop(DopBase):
             sdgs=[],
         )
 
-        return dtc
-
-    def convert_physical_to_bytes(self,
-                                  physical_value: ParameterValue,
-                                  encode_state: EncodeState,
-                                  bit_position: int = 0) -> bytes:
+    @override
+    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+                        encode_state: EncodeState) -> None:
         if isinstance(physical_value, DiagnosticTroubleCode):
             trouble_code = physical_value.trouble_code
         elif isinstance(physical_value, int):
@@ -147,21 +151,7 @@ class DtcDop(DopBase):
                               f" DiagnosticTroubleCode but got {physical_value!r}.")
 
         internal_trouble_code = self.compu_method.convert_physical_to_internal(trouble_code)
-        tmp_state = EncodeState(
-            bytearray(),
-            encode_state.parameter_values,
-            triggering_request=encode_state.triggering_request,
-            is_end_of_pdu=False,
-            cursor_byte_position=0,
-            cursor_bit_position=0,
-            origin_byte_position=0)
-        encode_state.cursor_bit_position = encode_state.cursor_bit_position
-        self.diag_coded_type.encode_into_pdu(internal_trouble_code, encode_state=tmp_state)
-
-        encode_state.length_keys.update(tmp_state.length_keys)
-        encode_state.table_keys.update(tmp_state.table_keys)
-
-        return tmp_state.coded_message
+        self.diag_coded_type.encode_into_pdu(internal_trouble_code, encode_state)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
