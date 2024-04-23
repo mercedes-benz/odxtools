@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -46,7 +46,8 @@ class SystemParameter(ParameterWithDOP):
         raise NotImplementedError("SystemParameter.is_settable is not implemented yet.")
 
     @override
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
         raise NotImplementedError("Encoding a SystemParameter is not implemented yet.")
 
     @override

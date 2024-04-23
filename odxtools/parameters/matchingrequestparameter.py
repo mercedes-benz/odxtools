@@ -7,7 +7,7 @@ from typing_extensions import override
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import EncodeError, odxrequire
+from ..exceptions import EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment
 from ..odxtypes import DataType, ParameterValue
 from ..utils import dataclass_fields_asdict
@@ -52,19 +52,31 @@ class MatchingRequestParameter(Parameter):
         return False
 
     @override
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        if not encode_state.triggering_request:
-            raise EncodeError(f"Parameter '{self.short_name}' is of matching request type,"
-                              " but no original request has been specified.")
-        return encode_state.triggering_request[self
-                                               .request_byte_position:self.request_byte_position +
-                                               self.byte_length]
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
+        if encode_state.triggering_request is None:
+            odxraise(
+                f"Parameter '{self.short_name}' is of matching request type,"
+                f" but no original request has been specified.", EncodeError)
+            return
+
+        rq_pos = self.request_byte_position
+        rq_len = self.byte_length
+
+        if len(encode_state.triggering_request) < rq_pos + rq_len:
+            odxraise(
+                f"Specified triggering request 0x{encode_state.triggering_request.hex()} "
+                f"is not long enough to encode matching request parameter "
+                f"'{self.short_name}': Have {len(encode_state.triggering_request)} "
+                f"bytes, need at least {rq_pos + rq_len} bytes", EncodeError)
+            return
+
+        encode_state.emplace_atomic_value(encode_state.triggering_request[rq_pos:rq_pos + rq_len],
+                                          self.short_name)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-        result = decode_state.extract_atomic_value(
+        return decode_state.extract_atomic_value(
             bit_length=self.byte_length * 8,
             base_data_type=DataType.A_UINT32,
             is_highlow_byte_order=False)
-
-        return result

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
-from typing_extensions import override
+from typing_extensions import final, override
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -133,46 +133,98 @@ class TableKeyParameter(Parameter):
         return True
 
     @override
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        tr_short_name = encode_state.parameter_values.get(self.short_name)
+    @final
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
+        # if you get this exception, you ought to use
+        # `.encode_placeholder_into_pdu()` followed by (after the
+        # value of the table key has been determined)
+        # `.encode_value_into_pdu()`.
+        raise RuntimeError("_encode_positioned_into_pdu() cannot be called for table keys.")
 
-        if tr_short_name is None:
-            # the table key has not been defined explicitly yet, but
-            # it is most likely implicitly defined by the associated
-            # TABLE-STRUCT parameters. Use all-zeros as a standin for
-            # the real data...
+    def encode_placeholder_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
+
+        if physical_value is not None:
             key_dop = self.table.key_dop
             if key_dop is None:
-                raise EncodeError(f"Table '{self.table.short_name}' does not define "
-                                  f"a KEY-DOP, but is used in TABLE-KEY parameter "
-                                  f"'{self.short_name}'")
+                odxraise(
+                    f"Table '{self.table.short_name}' does not define "
+                    f"a KEY-DOP, but is used by TABLE-KEY parameter "
+                    f"'{self.short_name}'", EncodeError)
+                return
 
-            byte_len = (odxrequire(key_dop.get_static_bit_length()) + 7) // 8
-            if self.bit_position is not None and self.bit_position > 0:
-                byte_len += 1
+            if not isinstance(physical_value, str):
+                odxraise(f"Invalid type for for table key '{self.short_name}' specified. "
+                         f"(expect name of table row.)")
 
-            return bytes([0] * byte_len)
+            tkv = encode_state.table_keys.get(self.short_name)
+            if tkv is not None and tkv != physical_value:
+                odxraise(f"Got conflicting values for table key {self.short_name}: "
+                         f"{tkv} and {physical_value!r}")
 
-        # the table key is known. We need to encode the associated DOP
-        # into the PDU.
-        tr_candidates = [x for x in self.table.table_rows if x.short_name == tr_short_name]
-        if len(tr_candidates) == 0:
-            raise EncodeError(f"No table row with short name '{tr_short_name}' found")
-        elif len(tr_candidates) > 1:
-            raise EncodeError(f"Multiple rows exhibiting short name '{tr_short_name}'")
-        tr = tr_candidates[0]
+            encode_state.table_keys[self.short_name] = physical_value
+
+        orig_cursor = encode_state.cursor_byte_position
+        pos = encode_state.cursor_byte_position
+        if self.byte_position is not None:
+            pos = encode_state.origin_byte_position + self.byte_position
+        encode_state.key_pos[self.short_name] = pos
+        encode_state.cursor_byte_position = pos
 
         key_dop = self.table.key_dop
         if key_dop is None:
-            raise EncodeError(f"Table '{self.table.short_name}' does not define "
-                              f"a KEY-DOP, but is used in TABLE-KEY parameter "
-                              f"'{self.short_name}'")
-        bit_position = 0 if self.bit_position is None else self.bit_position
-        return key_dop.convert_physical_to_bytes(tr.key, encode_state, bit_position=bit_position)
+            odxraise(f"No KEY-DOP specified for table {self.table.short_name}")
+            return
 
-    @override
-    def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
-        return super().encode_into_pdu(encode_state)
+        bit_pos = self.bit_position or 0
+        bit_size = key_dop.get_static_bit_length()
+        if bit_size is None:
+            odxraise("The DOP of table key {self.short_name} must exhibit a fixed size.",
+                     EncodeError)
+            return
+
+        raw_data = b'\x00' * ((bit_pos + bit_size + 7) // 8)
+        encode_state.emplace_atomic_value(raw_data, self.short_name)
+
+        encode_state.cursor_byte_position = max(orig_cursor, encode_state.cursor_byte_position)
+        encode_state.cursor_bit_position = 0
+
+    def encode_value_into_pdu(self, encode_state: EncodeState) -> None:
+
+        key_dop = self.table.key_dop
+        if key_dop is None:
+            odxraise(
+                f"Table '{self.table.short_name}' does not define "
+                f"a KEY-DOP, but is used by TABLE-KEY parameter "
+                f"'{self.short_name}'", EncodeError)
+            return
+
+        if self.short_name not in encode_state.table_keys:
+            odxraise(f"Table key {self.short_name} has not been defined before "
+                     f"it is required.", EncodeError)
+            return
+        else:
+            tr_short_name = encode_state.table_keys[self.short_name]
+
+        # We need to encode the table key using the associated DOP into the PDU.
+        tr_candidates = [x for x in self.table.table_rows if x.short_name == tr_short_name]
+        if len(tr_candidates) == 0:
+            odxraise(f"No table row with short name '{tr_short_name}' found", EncodeError)
+            return
+        elif len(tr_candidates) > 1:
+            odxraise(f"Multiple rows exhibiting short name '{tr_short_name}'", EncodeError)
+        tr = tr_candidates[0]
+
+        encode_state.cursor_byte_position = encode_state.key_pos[self.short_name]
+        encode_state.cursor_bit_position = self.bit_position or 0
+
+        raw_key = key_dop.convert_physical_to_bytes(
+            physical_value=odxrequire(tr.key),
+            encode_state=encode_state,
+            bit_position=encode_state.cursor_bit_position)
+
+        encode_state.emplace_atomic_value(raw_key, self.short_name)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

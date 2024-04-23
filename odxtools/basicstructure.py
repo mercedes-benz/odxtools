@@ -74,13 +74,13 @@ class BasicStructure(ComplexDop):
         return ((length + 7) // 8) * 8
 
     def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:
-        prefix = b''
         encode_state = EncodeState(
-            bytearray(prefix), parameter_values={}, triggering_request=request_prefix)
+            coded_message=bytearray(), parameter_values={}, triggering_request=request_prefix)
+
         for param in self.parameters:
-            if isinstance(param, (CodedConstParameter, NrcConstParameter, MatchingRequestParameter,
-                                  PhysicalConstantParameter)):
-                encode_state.coded_message = bytearray(param.encode_into_pdu(encode_state))
+            if (isinstance(param, MatchingRequestParameter) and param.request_byte_position < len(request_prefix)) or \
+                isinstance(param, (CodedConstParameter, NrcConstParameter, PhysicalConstantParameter)):
+                param.encode_into_pdu(physical_value=None, encode_state=encode_state)
             else:
                 break
         return encode_state.coded_message
@@ -122,52 +122,63 @@ class BasicStructure(ComplexDop):
                                      triggering_coded_request: Optional[bytes],
                                      is_end_of_pdu: bool = True) -> bytes:
 
-        if not isinstance(param_value, dict):
-            raise EncodeError(
-                f"Expected a dictionary for the values of structure {self.short_name}, "
-                f"got {type(param_value)}")
-
-        # in strict mode, ensure that no values for unknown parameters are specified.
-        if strict_mode:
-            param_names = [param.short_name for param in self.parameters]
-            for param_key in param_value:
-                if param_key not in param_names:
-                    odxraise(f"Value for unknown parameter '{param_key}' specified")
-
         encode_state = EncodeState(
             bytearray(),
-            dict(param_value),
+            parameter_values=cast(Dict[str, ParameterValue], param_value),
             triggering_request=triggering_coded_request,
             is_end_of_pdu=False)
 
+        if not isinstance(param_value, dict):
+            odxraise(
+                f"Expected a dictionary for the values of structure {self.short_name}, "
+                f"got {type(param_value).__name__}", EncodeError)
+        elif encode_state.cursor_bit_position != 0:
+            odxraise(
+                f"Structures must be byte aligned, but "
+                f"{self.short_name} requested to be at bit position "
+                f"{encode_state.cursor_bit_position}", EncodeError)
+            encode_state.bit_position = 0
+
+        # in strict mode, ensure that no values for unknown parameters are specified.
+        if strict_mode:
+            param_names = {param.short_name for param in self.parameters}
+            for param_value_name in param_value:
+                if param_value_name not in param_names:
+                    odxraise(f"Value for unknown parameter '{param_value_name}' specified "
+                             f"for structure {self.short_name}")
+
         for param in self.parameters:
-            if param == self.parameters[-1]:
-                # The last parameter is at the end of the PDU if the
-                # structure itself is at the end of the PDU. TODO:
-                # This assumes that the last parameter specified in
-                # the ODX is located last in the PDU...
+            if id(param) == id(self.parameters[-1]):
+                # The last parameter of the structure is at the end of
+                # the PDU if the structure itself is at the end of the
+                # PDU. TODO: This assumes that the last parameter
+                # specified in the ODX is located last in the PDU...
                 encode_state.is_end_of_pdu = is_end_of_pdu
 
-            if isinstance(
-                    param,
-                (LengthKeyParameter, TableKeyParameter)) and param.short_name in param_value:
-                # This is a hack to always encode a dummy value for
-                # length- and table keys. since these can be specified
+            if isinstance(param, (LengthKeyParameter, TableKeyParameter)):
+                # At this point, we encode a placeholder value for length-
+                # and table keys, since these can be specified
                 # implicitly (i.e., by means of parameters that use
-                # these keys), to avoid getting an "overlapping
+                # these keys). To avoid getting an "overlapping
                 # parameter" warning, we must encode a value of zero
                 # into the PDU here and add the real value of the
-                # parameter in a post processing step.
-                tmp = encode_state.parameter_values.pop(param.short_name)
-                encode_state.coded_message = bytearray(param.encode_into_pdu(encode_state))
-                encode_state.parameter_values[param.short_name] = tmp
+                # parameter in a post-processing step.
+                param.encode_placeholder_into_pdu(
+                    physical_value=param_value.get(param.short_name), encode_state=encode_state)
+
                 continue
 
-            encode_state.coded_message = bytearray(param.encode_into_pdu(encode_state))
+            if param.is_required and param.short_name not in param_value:
+                odxraise(f"No value for required parameter {param.short_name} specified",
+                         EncodeError)
 
-        if self.byte_size is not None and len(encode_state.coded_message) < self.byte_size:
-            # Padding bytes needed
-            encode_state.coded_message = encode_state.coded_message.ljust(self.byte_size, b"\0")
+            param.encode_into_pdu(
+                physical_value=param_value.get(param.short_name), encode_state=encode_state)
+
+        if self.byte_size is not None:
+            if len(encode_state.coded_message) < self.byte_size:
+                # Padding bytes needed
+                encode_state.coded_message = encode_state.coded_message.ljust(self.byte_size, b"\0")
 
         # encode the length- and table keys. This cannot be done above
         # because we allow these to be defined implicitly (i.e. they
@@ -177,22 +188,25 @@ class BasicStructure(ComplexDop):
                 # the current parameter is neither a length- nor a table key
                 continue
 
-            # Encode the key parameter into the message
-            encode_state.coded_message = bytearray(param.encode_into_pdu(encode_state))
+            # Encode the value of the key parameter into the message
+            param.encode_value_into_pdu(encode_state=encode_state)
 
         # Assert that length is as expected
-        self._validate_coded_message(encode_state.coded_message)
+        self._validate_coded_message_size(encode_state.cursor_byte_position -
+                                          encode_state.origin_byte_position)
 
-        return bytearray(encode_state.coded_message)
+        return encode_state.coded_message
 
-    def _validate_coded_message(self, coded_message: bytes) -> None:
+    def _validate_coded_message_size(self, coded_byte_len: int) -> None:
 
         if self.byte_size is not None:
             # We definitely broke something if we didn't respect the explicit byte_size
-            odxassert(
-                len(coded_message) == self.byte_size,
-                "Verification of coded message {coded_message.hex()} failed: Incorrect size.")
-            # No need to check further
+            if self.byte_size != coded_byte_len:
+                warnings.warn(
+                    "Verification of coded message failed: Incorrect size.",
+                    OdxWarning,
+                    stacklevel=1)
+
             return
 
         bit_length = self.get_static_bit_length()
@@ -201,12 +215,12 @@ class BasicStructure(ComplexDop):
             # Nothing to check
             return
 
-        if len(coded_message) * 8 != bit_length:
+        if coded_byte_len * 8 != bit_length:
             # We may have broke something
             # but it could be that bit_length was mis calculated and not the actual bytes are wrong
             # Could happen with overlapping parameters and parameters with gaps
             warnings.warn(
-                f"Verification of coded message '{coded_message.hex()}' possibly failed: Size may be incorrect.",
+                "Verification of coded message possibly failed: Size may be incorrect.",
                 OdxWarning,
                 stacklevel=1)
 

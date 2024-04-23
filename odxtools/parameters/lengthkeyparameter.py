@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
-from typing_extensions import override
+from typing_extensions import final, override
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import odxraise, odxrequire
+from ..exceptions import EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
@@ -77,19 +77,73 @@ class LengthKeyParameter(ParameterWithDOP):
         return True
 
     @override
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        physical_value = encode_state.length_keys.get(self.short_name)
-        if physical_value is None:
-            physical_value = encode_state.parameter_values.get(self.short_name, 0)
+    @final
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
+        # if you get this exception, you ought to use
+        # `.encode_placeholder_into_pdu()` followed by (after the
+        # value of the length key has been determined)
+        # `.encode_value_into_pdu()`.
+        raise RuntimeError("_encode_positioned_into_pdu() cannot be called for length keys.")
+
+    def encode_placeholder_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
+
+        if physical_value is not None:
+            if not self.dop.is_valid_physical_value(physical_value):
+                odxraise(f"Invalid explicitly specified physical value '{physical_value!r}' "
+                         f"for length key '{self.short_name}'.")
+
+            lkv = encode_state.length_keys.get(self.short_name)
+            if lkv is not None and lkv != physical_value:
+                odxraise(f"Got conflicting values for length key {self.short_name}: "
+                         f"{lkv} and {physical_value!r}")
+
+            if not isinstance(physical_value, int):
+                odxraise(
+                    f"Value of length key {self.short_name} is of type {type(physical_value).__name__} "
+                    f"instead of int")
+
+            encode_state.length_keys[self.short_name] = physical_value
+
+        orig_cursor = encode_state.cursor_byte_position
+        pos = encode_state.cursor_byte_position
+        if self.byte_position is not None:
+            pos = encode_state.origin_byte_position + self.byte_position
+        encode_state.key_pos[self.short_name] = pos
+        encode_state.cursor_byte_position = pos
 
         bit_pos = self.bit_position or 0
-        dop = odxrequire(super().dop,
-                         f"A DOP is required for length key parameter {self.short_name}")
-        return dop.convert_physical_to_bytes(physical_value, encode_state, bit_position=bit_pos)
+        bit_size = self.dop.get_static_bit_length()
+        if bit_size is None:
+            odxraise("The DOP of length key {self.short_name} must exhibit a fixed size.",
+                     EncodeError)
+            return
 
-    @override
-    def encode_into_pdu(self, encode_state: EncodeState) -> bytes:
-        return super().encode_into_pdu(encode_state)
+        raw_data = b'\x00' * ((bit_pos + bit_size + 7) // 8)
+        encode_state.emplace_atomic_value(raw_data, self.short_name)
+
+        encode_state.cursor_byte_position = max(encode_state.cursor_byte_position, orig_cursor)
+        encode_state.cursor_bit_position = 0
+
+    def encode_value_into_pdu(self, encode_state: EncodeState) -> None:
+
+        if self.short_name not in encode_state.length_keys:
+            odxraise(
+                f"Length key {self.short_name} has not been defined before "
+                f"it is required.", EncodeError)
+            return
+        else:
+            physical_value = encode_state.length_keys[self.short_name]
+
+        encode_state.cursor_byte_position = encode_state.key_pos[self.short_name]
+        encode_state.cursor_bit_position = self.bit_position or 0
+
+        raw_data = self.dop.convert_physical_to_bytes(
+            physical_value=odxrequire(physical_value),
+            encode_state=encode_state,
+            bit_position=encode_state.cursor_bit_position)
+        encode_state.emplace_atomic_value(raw_data, self.short_name)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

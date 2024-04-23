@@ -165,7 +165,9 @@ class TestEnDecode(unittest.TestCase):
         with self.assertRaises(OdxError) as eo:
             request.encode(forward_soberness_check=0x12, num_flips=5, grass_level="what grass?")
 
-        self.assertEqual(str(eo.exception), "Value for unknown parameter 'grass_level' specified")
+        self.assertEqual(
+            str(eo.exception),
+            "Value for unknown parameter 'grass_level' specified for structure do_forward_flips")
 
     def test_decode_request(self) -> None:
         messages = odxdb.ecus.somersault_assiduous.decode(bytes([0x03, 0x45]))

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -41,9 +41,10 @@ class DynamicParameter(Parameter):
         raise NotImplementedError(".is_settable for a DynamicParameter")
 
     @override
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        raise NotImplementedError("Encoding a DynamicParameter is not implemented yet.")
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
+        raise NotImplementedError("Encoding DynamicParameter is not implemented yet.")
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-        raise NotImplementedError("Decoding a DynamicParameter is not implemented yet.")
+        raise NotImplementedError("Decoding DynamicParameter is not implemented yet.")

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -10,9 +10,9 @@ from ..createanydiagcodedtype import create_any_diag_coded_type_from_et
 from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
-from ..exceptions import DecodeError, EncodeError, odxrequire
+from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
-from ..odxtypes import AtomicOdxType, DataType
+from ..odxtypes import AtomicOdxType, DataType, ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 
@@ -83,7 +83,7 @@ class NrcConstParameter(Parameter):
     @property
     @override
     def is_required(self) -> bool:
-        return False
+        return len(self.coded_values) > 1
 
     @property
     @override
@@ -91,30 +91,26 @@ class NrcConstParameter(Parameter):
         return True
 
     @override
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
-        if self.short_name in encode_state.parameter_values:
-            if encode_state.parameter_values[self.short_name] not in self.coded_values:
-                raise EncodeError(f"The parameter '{self.short_name}' must have"
-                                  f" one of the constant values {self.coded_values}")
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
+        coded_value: ParameterValue
+        if physical_value is not None:
+            if physical_value not in self.coded_values:
+                odxraise(
+                    f"The value of parameter '{self.short_name}' must "
+                    f" be one of {self.coded_values} (is: {physical_value!r})", EncodeError)
+                coded_value = self.coded_values[0]
             else:
-                coded_value = encode_state.parameter_values[self.short_name]
+                coded_value = physical_value
         else:
-            # If the user does not select one, just select any.
-            # I think it does not matter ...
+            # If the user does not select a value, just select
+            # any. (This branch should only be taken if there is only
+            # one possible coded value because if there are more,
+            # specifying a parameter value is mandatory,
+            # cf. the `.is_required` property.)
             coded_value = self.coded_values[0]
 
-        tmp_state = EncodeState(
-            bytearray(),
-            encode_state.parameter_values,
-            triggering_request=encode_state.triggering_request,
-            is_end_of_pdu=False,
-            cursor_byte_position=0,
-            cursor_bit_position=0,
-            origin_byte_position=0)
-        encode_state.cursor_bit_position = self.bit_position or 0
-        self.diag_coded_type.encode_into_pdu(coded_value, encode_state=tmp_state)
-
-        return tmp_state.coded_message
+        self.diag_coded_type.encode_into_pdu(cast(AtomicOdxType, coded_value), encode_state)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:

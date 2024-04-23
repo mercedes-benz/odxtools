@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -59,7 +59,8 @@ class TableEntryParameter(Parameter):
         raise NotImplementedError("TableEntryParameter.is_settable is not implemented yet.")
 
     @override
-    def get_coded_value_as_bytes(self, encode_state: EncodeState) -> bytes:
+    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+                                    encode_state: EncodeState) -> None:
         raise NotImplementedError("Encoding a TableEntryParameter is not implemented yet.")
 
     @property
