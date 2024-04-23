@@ -82,11 +82,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
                 f"only be specified as {self.physical_constant_value!r} (is: {physical_value!r})",
                 EncodeError)
 
-        raw_data = self.dop.convert_physical_to_bytes(
-            physical_value=odxrequire(self.physical_constant_value),
-            encode_state=encode_state,
-            bit_position=encode_state.cursor_bit_position)
-        encode_state.emplace_atomic_value(raw_data, self.short_name)
+        self.dop.encode_into_pdu(self.physical_constant_value, encode_state)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

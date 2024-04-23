@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from typing import List, Optional
 from xml.etree import ElementTree
 
+from typing_extensions import override
+
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import EncodeError, odxassert, odxraise
@@ -39,26 +41,22 @@ class EndOfPduField(Field):
 
         return eopf
 
-    def convert_physical_to_bytes(
-        self,
-        physical_value: ParameterValue,
-        encode_state: EncodeState,
-        bit_position: int = 0,
-    ) -> bytes:
+    @override
+    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+                        encode_state: EncodeState) -> None:
+        odxassert(not encode_state.cursor_bit_position,
+                  "No bit position can be specified for end-of-pdu fields!")
 
-        odxassert(
-            bit_position == 0, "End of PDU field must be byte aligned. "
-            "Is there an error in reading the .odx?", EncodeError)
         if not isinstance(physical_value, list):
             odxraise(
-                f"Expected a list of values for end-of-pdu field {self.short_name}, "
-                f"got {type(physical_value)}", EncodeError)
+                f"Invalid type {type(physical_value).__name__} of physical "
+                f"value for end-of-pdu field, expected a list", EncodeError)
+            return
 
-        coded_message = b''
         for value in physical_value:
-            coded_message += self.structure.convert_physical_to_bytes(value, encode_state)
-        return coded_message
+            self.structure.encode_into_pdu(value, encode_state)
 
+    @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         odxassert(not decode_state.cursor_bit_position,
                   "No bit position can be specified for end-of-pdu fields!")

@@ -48,36 +48,32 @@ class StaticField(Field):
         super()._resolve_snrefs(diag_layer)
 
     @override
-    def convert_physical_to_bytes(
-        self,
-        physical_value: ParameterValue,
-        encode_state: EncodeState,
-        bit_position: int = 0,
-    ) -> bytes:
+    def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:
+
         if not isinstance(physical_value,
                           (tuple, list)) or len(physical_value) != self.fixed_number_of_items:
             odxraise(f"Value for static field '{self.short_name}' "
                      f"must be a list of size {self.fixed_number_of_items}")
 
-        result = bytearray()
         for val in physical_value:
             if not isinstance(val, dict):
                 odxraise(f"The individual parameter values for static field '{self.short_name}' "
                          f"must be dictionaries for structure '{self.structure.short_name}'")
 
-            data = self.structure.convert_physical_to_bytes(val, encode_state)
+            pos_before = encode_state.cursor_byte_position
+            self.structure.encode_into_pdu(val, encode_state)
+            pos_after = encode_state.cursor_byte_position
 
-            if len(data) > self.item_byte_size:
-                odxraise(f"Insufficient item byte size for static field {self.short_name}: "
-                         f"Is {self.item_byte_size} bytes, but need at least {len(data)} bytes")
-                data = data[:self.item_byte_size]
-            elif len(data) < self.item_byte_size:
+            if pos_after - pos_before > self.item_byte_size:
+                odxraise(
+                    f"Insufficient item byte size for static field {self.short_name}: "
+                    f"Is {self.item_byte_size} bytes, but need at least {pos_after - pos_before} bytes"
+                )
+                encode_state.cursor_byte_position = pos_before + self.item_byte_size
+            elif pos_after - pos_before < self.item_byte_size:
                 # add some padding bytes
-                data = data.ljust(self.item_byte_size, b'\x00')
-
-            result += data
-
-        return result
+                encode_state.emplace_atomic_value(
+                    b'\x00' * (self.item_byte_size - (pos_after - pos_before)), "<PADDING>")
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

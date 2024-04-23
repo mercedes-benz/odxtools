@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List
 from xml.etree import ElementTree
 
+from typing_extensions import override
+
 from .decodestate import DecodeState
 from .determinenumberofitems import DetermineNumberOfItems
 from .encodestate import EncodeState
@@ -47,52 +49,46 @@ class DynamicLengthField(Field):
         super()._resolve_snrefs(diag_layer)
         self.determine_number_of_items._resolve_snrefs(diag_layer)
 
-    def convert_physical_to_bytes(
-        self,
-        physical_value: ParameterValue,
-        encode_state: EncodeState,
-        bit_position: int = 0,
-    ) -> bytes:
+    @override
+    def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:
 
-        odxassert(bit_position == 0, "No bit position can be specified for dynamic length fields!")
+        odxassert(encode_state.cursor_bit_position == 0,
+                  "No bit position can be specified for dynamic length fields!")
+
         if not isinstance(physical_value, list):
             odxraise(
                 f"Expected a list of values for dynamic length field {self.short_name}, "
                 f"got {type(physical_value)}", EncodeError)
 
-        tmp_state = EncodeState(
-            coded_message=bytearray(),
-            parameter_values={},
-            triggering_request=encode_state.triggering_request,
-            origin_byte_position=0,
-            cursor_byte_position=0,
-            cursor_bit_position=0)
+        # move the origin to the cursor position
+        orig_cursor = encode_state.cursor_byte_position
+        orig_origin = encode_state.origin_byte_position
+        encode_state.origin_byte_position = encode_state.cursor_byte_position
 
         det_num_items = self.determine_number_of_items
-        field_len_bytes = det_num_items.dop.convert_physical_to_bytes(
-            len(physical_value), tmp_state, det_num_items.bit_position or 0)
+        encode_state.cursor_bit_position = self.determine_number_of_items.bit_position or 0
+        encode_state.cursor_byte_position = encode_state.origin_byte_position + det_num_items.byte_position
+        det_num_items.dop.encode_into_pdu(len(physical_value), encode_state)
 
-        # hack to emplace the length specifier at the correct location
-        tmp_state.cursor_byte_position = det_num_items.byte_position
-        tmp_state.cursor_bit_position = det_num_items.bit_position or 0
-        tmp_state.emplace_atomic_value(field_len_bytes, self.short_name + ".num_items")
-
-        # if required, add padding between the length specifier and
-        # the first item
-        if len(tmp_state.coded_message) < self.offset:
-            tmp_state.coded_message += b'\00' * (self.offset - len(tmp_state.coded_message))
-            tmp_state.cursor_byte_position = self.offset
-        elif len(field_len_bytes) > self.offset:
+        if encode_state.cursor_byte_position - encode_state.origin_byte_position > self.offset:
             odxraise(f"The length specifier of field {self.short_name} overlaps "
-                     f"with the first item!")
-            tmp_state.cursor_byte_position = self.offset
+                     f"with its first item!")
 
-        for i, value in enumerate(physical_value):
-            tmp_bytes = self.structure.convert_physical_to_bytes(value, tmp_state)
-            tmp_state.emplace_atomic_value(tmp_bytes, f"{self.short_name}{i}")
+        encode_state.cursor_byte_position = encode_state.origin_byte_position + self.offset
+        encode_state.cursor_bit_position = 0
 
-        return tmp_state.coded_message
+        for value in physical_value:
+            self.structure.encode_into_pdu(value, encode_state)
 
+        # ensure the correct message size if the field is empty
+        if len(physical_value) == 0:
+            encode_state.emplace_atomic_value(b"", "<padding>")
+
+        # move cursor and origin positions
+        encode_state.origin_byte_position = orig_origin
+        encode_state.cursor_byte_position = max(orig_cursor, encode_state.cursor_byte_position)
+
+    @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
 
         odxassert(decode_state.cursor_bit_position == 0,

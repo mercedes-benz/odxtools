@@ -1,13 +1,15 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
+
+from typing_extensions import override
 
 from .complexdop import ComplexDop
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .environmentdata import EnvironmentData
-from .exceptions import DecodeError, EncodeError, odxrequire
+from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValue
 from .utils import dataclass_fields_asdict
@@ -86,23 +88,21 @@ class EnvironmentDataDescription(ComplexDop):
             for ed in self.env_datas:
                 ed._resolve_snrefs(diag_layer)
 
-    def convert_physical_to_bytes(self,
-                                  physical_value: ParameterValue,
-                                  encode_state: EncodeState,
-                                  bit_position: int = 0) -> bytes:
-        """Convert the physical value into bytes.
+    @override
+    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+                        encode_state: EncodeState) -> None:
+        """Convert a physical value into bytes and emplace them into a PDU.
 
         Since environmental data is supposed to never appear on the
         wire, this method just raises an EncodeError exception.
         """
-        raise EncodeError("EnvironmentDataDescription DOPs cannot be encoded or decoded")
+        odxraise("EnvironmentDataDescription DOPs cannot be encoded or decoded")
 
-    def convert_bytes_to_physical(self,
-                                  decode_state: DecodeState,
-                                  bit_position: int = 0) -> Tuple[ParameterValue, int]:
-        """Extract the bytes from the PDU and convert them to the physical value.
+    @override
+    def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
+        """Extract the bytes from a PDU and convert them to a physical value.
 
         Since environmental data is supposed to never appear on the
         wire, this method just raises an DecodeError exception.
         """
-        raise DecodeError("EnvironmentDataDescription DOPs cannot be encoded or decoded")
+        odxraise("EnvironmentDataDescription DOPs cannot be encoded or decoded")

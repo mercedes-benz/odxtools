@@ -120,10 +120,7 @@ class DataObjectProperty(DopBase):
 
         return self.compu_method.convert_physical_to_internal(physical_value)
 
-    def convert_physical_to_bytes(self,
-                                  physical_value: Any,
-                                  encode_state: EncodeState,
-                                  bit_position: int = 0) -> bytes:
+    def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:
         """
         Convert a physical representation of a parameter to a string bytes that can be send over the wire
         """
@@ -133,22 +130,7 @@ class DataObjectProperty(DopBase):
                 f" is not a valid.")
 
         internal_val = self.convert_physical_to_internal(physical_value)
-
-        tmp_state = EncodeState(
-            bytearray(),
-            encode_state.parameter_values,
-            triggering_request=encode_state.triggering_request,
-            is_end_of_pdu=encode_state.is_end_of_pdu,
-            cursor_byte_position=0,
-            cursor_bit_position=bit_position,
-            origin_byte_position=0)
-
-        self.diag_coded_type.encode_into_pdu(internal_val, tmp_state)
-
-        encode_state.length_keys.update(tmp_state.length_keys)
-        encode_state.table_keys.update(tmp_state.table_keys)
-
-        return tmp_state.coded_message
+        self.diag_coded_type.encode_into_pdu(internal_val, encode_state)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         """

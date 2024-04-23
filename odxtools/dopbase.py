@@ -21,7 +21,8 @@ if TYPE_CHECKING:
 class DopBase(IdentifiableElement):
     """Base class for all DOPs.
 
-    Any class that a parameter can reference via a DOP-REF should inherit from this class.
+    Any class that a parameter can reference via a DOP-REF should
+    inherit from this class.
     """
 
     admin_data: Optional[AdminData]
@@ -60,15 +61,11 @@ class DopBase(IdentifiableElement):
         return None
 
     def is_valid_physical_value(self, physical_value: ParameterValue) -> bool:
-        """Determine if a phyical value can be handled by the DOP
-        """
+        """Determine if a phyical value can be handled by the DOP"""
         raise NotImplementedError
 
-    def convert_physical_to_bytes(self,
-                                  physical_value: ParameterValue,
-                                  encode_state: EncodeState,
-                                  bit_position: int = 0) -> bytes:
-        """Convert the physical value into bytes."""
+    def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:
+        """Convert the physical value to bytes and emplace them into a PDU."""
         raise NotImplementedError
 
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

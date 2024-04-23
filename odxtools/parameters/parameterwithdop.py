@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -12,7 +12,7 @@ from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
 from ..exceptions import odxassert, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from ..odxtypes import ParameterValue
+from ..odxtypes import AtomicOdxType, ParameterValue
 from ..physicaltype import PhysicalType
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter
@@ -93,11 +93,7 @@ class ParameterWithDOP(Parameter):
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
                                     encode_state: EncodeState) -> None:
-        raw_data = self.dop.convert_physical_to_bytes(
-            physical_value=odxrequire(physical_value),
-            encode_state=encode_state,
-            bit_position=encode_state.cursor_bit_position)
-        encode_state.emplace_atomic_value(raw_data, self.short_name)
+        self.dop.encode_into_pdu(cast(AtomicOdxType, physical_value), encode_state)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
