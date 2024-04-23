@@ -4,7 +4,9 @@ from typing import List
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
+from .encodestate import EncodeState
 from .odxlink import OdxDocFragment
+from .odxtypes import ParameterValue
 from .utils import dataclass_fields_asdict
 
 
@@ -20,3 +22,14 @@ class Request(BasicStructure):
         kwargs = dataclass_fields_asdict(BasicStructure.from_et(et_element, doc_frags))
 
         return Request(**kwargs)
+
+    def encode(self, **kwargs: ParameterValue) -> bytes:
+        encode_state = EncodeState(
+            coded_message=bytearray(),
+            parameter_values=kwargs,
+            triggering_request=None,
+            is_end_of_pdu=True)
+
+        self.encode_into_pdu(physical_value=kwargs, encode_state=encode_state)
+
+        return encode_state.coded_message

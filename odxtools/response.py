@@ -5,10 +5,10 @@ from typing import List, Optional, cast
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
+from .encodestate import EncodeState
 from .exceptions import odxraise
 from .odxlink import OdxDocFragment
 from .odxtypes import ParameterValue
-from .parameters.matchingrequestparameter import MatchingRequestParameter
 from .utils import dataclass_fields_asdict
 
 
@@ -38,17 +38,13 @@ class Response(BasicStructure):
 
         return Response(response_type=response_type, **kwargs)
 
-    def encode(self, coded_request: Optional[bytes] = None, **params: ParameterValue) -> bytes:
-        if coded_request is not None:
-            # Extract MATCHING-REQUEST-PARAMs from the coded
-            # request. TODO: this should be done by
-            # MatchingRequestParam itself!
-            for param in self.parameters:
-                if isinstance(param, MatchingRequestParameter):
-                    byte_pos = param.request_byte_position
-                    byte_length = param.byte_length
+    def encode(self, coded_request: Optional[bytes] = None, **kwargs: ParameterValue) -> bytes:
+        encode_state = EncodeState(
+            coded_message=bytearray(),
+            parameter_values=kwargs,
+            triggering_request=coded_request,
+            is_end_of_pdu=True)
 
-                    val = coded_request[byte_pos:byte_pos + byte_length]
-                    params[param.short_name] = val
+        self.encode_into_pdu(physical_value=kwargs, encode_state=encode_state)
 
-        return super().encode(coded_request=coded_request, **params)
+        return encode_state.coded_message

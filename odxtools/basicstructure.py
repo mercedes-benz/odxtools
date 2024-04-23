@@ -247,26 +247,6 @@ class BasicStructure(ComplexDop):
 
         return result
 
-    def encode(self, coded_request: Optional[bytes] = None, **kwargs: ParameterValue) -> bytes:
-        """
-        Composes an UDS message as bytes for this service.
-        Parameters:
-        ----------
-        coded_request: bytes
-            coded request (only needed when encoding a response)
-        kwargs: dict
-            Parameters of the RPC as mapping from SHORT-NAME of the parameter to the value
-        """
-        encode_state = EncodeState(
-            coded_message=bytearray(),
-            parameter_values=kwargs,
-            triggering_request=coded_request,
-            is_end_of_pdu=True)
-
-        self.encode_into_pdu(physical_value=kwargs, encode_state=encode_state)
-
-        return encode_state.coded_message
-
     def decode(self, message: bytes) -> ParameterValueDict:
         decode_state = DecodeState(coded_message=message)
         param_values = self.decode_from_pdu(decode_state)
