@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional
+from typing import Dict, Optional
 
 from .exceptions import OdxWarning
 
@@ -13,9 +13,6 @@ class EncodeState:
 
     #: payload that has been constructed so far
     coded_message: bytearray
-
-    #: a mapping from short name to value for each parameter
-    parameter_values: Dict[str, Any]
 
     #: The absolute position in bytes from the beginning of the PDU to
     #: which relative positions refer to, e.g., the beginning of the
@@ -50,7 +47,7 @@ class EncodeState:
     #: (needed for MinMaxLengthType, EndOfPduField, etc.)
     is_end_of_pdu: bool = True
 
-    def emplace_atomic_value(self, new_data: bytes, param_name: str) -> None:
+    def emplace_bytes(self, new_data: bytes, param_name: Optional[str] = None) -> None:
         pos = self.cursor_byte_position
 
         # Make blob longer if necessary
@@ -63,6 +60,7 @@ class EncodeState:
             # the value to be inserted is bitwise "disjoint" from the
             # value which is already in the PDU...
             if self.coded_message[pos + i] & new_data[i] != 0:
+                param_name = "<UNKNOWN>" if param_name is None else param_name
                 warnings.warn(
                     f"Object '{param_name}' overlaps with another parameter (bits are already set)",
                     OdxWarning,

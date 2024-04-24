@@ -74,8 +74,7 @@ class BasicStructure(ComplexDop):
         return byte_length * 8
 
     def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:
-        encode_state = EncodeState(
-            coded_message=bytearray(), parameter_values={}, triggering_request=request_prefix)
+        encode_state = EncodeState(coded_message=bytearray(), triggering_request=request_prefix)
 
         for param in self.parameters:
             if (isinstance(param, MatchingRequestParameter) and param.request_byte_position < len(request_prefix)) or \
@@ -209,7 +208,7 @@ class BasicStructure(ComplexDop):
                 # position directly after the structure and let
                 # EncodeState add the padding as needed.
                 encode_state.cursor_byte_position = encode_state.origin_byte_position + self.byte_size
-                encode_state.emplace_atomic_value(b'', "<PADDING>")
+                encode_state.emplace_bytes(b'', "<PADDING>")
 
         # encode the length- and table keys. This cannot be done above
         # because we allow these to be defined implicitly (i.e. they
@@ -246,26 +245,6 @@ class BasicStructure(ComplexDop):
         decode_state.origin_byte_position = orig_origin
 
         return result
-
-    def encode(self, coded_request: Optional[bytes] = None, **kwargs: ParameterValue) -> bytes:
-        """
-        Composes an UDS message as bytes for this service.
-        Parameters:
-        ----------
-        coded_request: bytes
-            coded request (only needed when encoding a response)
-        kwargs: dict
-            Parameters of the RPC as mapping from SHORT-NAME of the parameter to the value
-        """
-        encode_state = EncodeState(
-            coded_message=bytearray(),
-            parameter_values=kwargs,
-            triggering_request=coded_request,
-            is_end_of_pdu=True)
-
-        self.encode_into_pdu(physical_value=kwargs, encode_state=encode_state)
-
-        return encode_state.coded_message
 
     def decode(self, message: bytes) -> ParameterValueDict:
         decode_state = DecodeState(coded_message=message)

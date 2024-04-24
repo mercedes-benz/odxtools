@@ -236,7 +236,7 @@ class DiagService(DiagComm):
             set(kwargs.keys()).issubset(rq_all_param_names),
             f"Unknown parameters specified for encoding: {kwargs.keys()}, "
             f"known parameters are: {rq_all_param_names}")
-        return self.request.encode(coded_request=None, **kwargs)
+        return self.request.encode(**kwargs)
 
     def encode_positive_response(self,
                                  coded_request: bytes,

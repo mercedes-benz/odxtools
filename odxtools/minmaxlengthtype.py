@@ -108,7 +108,7 @@ class MinMaxLengthType(DiagCodedType):
                 f"(Is: {len(value_bytes)} bytes.)", EncodeError)
             return
 
-        encode_state.emplace_atomic_value(value_bytes, "<MIN-MAX-LENGTH-TYPE>")
+        encode_state.emplace_bytes(value_bytes, "<MIN-MAX-LENGTH-TYPE>")
 
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         odxassert(decode_state.cursor_bit_position == 0,

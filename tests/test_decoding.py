@@ -2042,7 +2042,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
         actual_param_dict = request.decode(expected_coded_message)
         self.assertEqual(dict(actual_param_dict), expected_param_dict)
 
-        actual_coded_message = request.encode(None, **expected_param_dict)
+        actual_coded_message = request.encode(**expected_param_dict)
         self.assertEqual(actual_coded_message, expected_coded_message)
 
         self.assertRaises(DecodeError, request.decode, bytes([0x12, 0x34]))
