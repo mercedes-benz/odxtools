@@ -34,8 +34,7 @@ class StandardLengthType(DiagCodedType):
         if self.bit_mask is None:
             return internal_value
         if self.is_condensed_raw is True:
-            odxraise("Serialization of condensed bit mask is not supported",
-                     NotImplementedError)
+            odxraise("Serialization of condensed bit mask is not supported", NotImplementedError)
             return
         if isinstance(internal_value, int):
             return internal_value & self.bit_mask
@@ -52,14 +51,12 @@ class StandardLengthType(DiagCodedType):
 
     @override
     def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:
-        raw_data = self._encode_internal_value(
+        encode_state.emplace_atomic_value(
             internal_value=self.__apply_mask(internal_value),
-            bit_position=encode_state.cursor_bit_position,
             bit_length=self.bit_length,
             base_data_type=self.base_data_type,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
-        encode_state.emplace_bytes(raw_data, "<STANDARD-LENGTH-TYPE>")
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:

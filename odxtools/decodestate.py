@@ -15,18 +15,6 @@ except ImportError:
 if TYPE_CHECKING:
     from .tablerow import TableRow
 
-# format specifiers for the data type using the bitstruct module
-ODX_TYPE_TO_FORMAT_LETTER = {
-    DataType.A_INT32: "s",
-    DataType.A_UINT32: "u",
-    DataType.A_FLOAT32: "f",
-    DataType.A_FLOAT64: "f",
-    DataType.A_BYTEFIELD: "r",
-    DataType.A_UNICODE2STRING: "r",  # UTF-16 strings must be converted explicitly
-    DataType.A_ASCIISTRING: "r",
-    DataType.A_UTF8STRING: "r",
-}
-
 
 @dataclass
 class DecodeState:
@@ -94,7 +82,7 @@ class DecodeState:
 
         padding = (8 - (bit_length + self.cursor_bit_position) % 8) % 8
         internal_value, = bitstruct.unpack_from(
-            f"{ODX_TYPE_TO_FORMAT_LETTER[base_data_type]}{bit_length}",
+            f"{base_data_type.bitstruct_format_letter}{bit_length}",
             extracted_bytes,
             offset=padding)
 

@@ -55,23 +55,19 @@ class LeadingLengthInfoType(DiagCodedType):
 
         byte_length = self._minimal_byte_length_of(internal_value)
 
-        length_bytes = self._encode_internal_value(
+        encode_state.emplace_atomic_value(
             internal_value=byte_length,
-            bit_position=encode_state.cursor_bit_position,
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
-        value_bytes = self._encode_internal_value(
+        encode_state.emplace_atomic_value(
             internal_value=internal_value,
-            bit_position=0,
             bit_length=8 * byte_length,
             base_data_type=self.base_data_type,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
-
-        encode_state.emplace_bytes(length_bytes + value_bytes, "<LEADING-LENGTH-INFO-TYPE>")
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:

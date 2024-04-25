@@ -72,8 +72,8 @@ class StaticField(Field):
                 encode_state.cursor_byte_position = pos_before + self.item_byte_size
             elif pos_after - pos_before < self.item_byte_size:
                 # add some padding bytes
-                encode_state.emplace_bytes(
-                    b'\x00' * (self.item_byte_size - (pos_after - pos_before)), "<PADDING>")
+                encode_state.emplace_bytes(b'\x00' * (self.item_byte_size -
+                                                      (pos_after - pos_before)))
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
