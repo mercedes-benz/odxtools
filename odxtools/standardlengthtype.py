@@ -34,7 +34,9 @@ class StandardLengthType(DiagCodedType):
         if self.bit_mask is None:
             return internal_value
         if self.is_condensed_raw is True:
-            raise NotImplementedError("Serialization of condensed bit mask is not supported")
+            odxraise("Serialization of condensed bit mask is not supported",
+                     NotImplementedError)
+            return
         if isinstance(internal_value, int):
             return internal_value & self.bit_mask
         if isinstance(internal_value, bytes):
