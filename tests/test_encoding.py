@@ -190,6 +190,23 @@ class TestEncodeRequest(unittest.TestCase):
             is_highlow_byte_order_raw=None,
             is_condensed_raw=None,
         )
+        dop = DataObjectProperty(
+            odx_id=OdxLinkId("dop.id", doc_frags),
+            short_name="dop_sn",
+            long_name="example dop",
+            description=None,
+            admin_data=None,
+            diag_coded_type=diag_coded_type,
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            compu_method=IdenticalCompuMethod(
+                internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
+            unit_ref=None,
+            sdgs=[],
+            internal_constr=None,
+            physical_constr=None,
+        )
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(dop._build_odxlinks())
         param1 = CodedConstParameter(
             short_name="param1",
             long_name=None,
@@ -212,6 +229,19 @@ class TestEncodeRequest(unittest.TestCase):
             bit_position=None,
             sdgs=[],
         )
+        param3 = ValueParameter(
+            short_name="param3",
+            long_name=None,
+            description=None,
+            semantic=None,
+            dop_ref=OdxLinkRef.from_id(dop.odx_id),
+            dop_snref=None,
+            physical_default_value_raw=None,
+            byte_position=1,
+            bit_position=None,
+            sdgs=[],
+        )
+        param3._resolve_odxlinks(odxlinks)
         resp = Response(
             odx_id=OdxLinkId("response_id", doc_frags),
             short_name="response_sn",
@@ -220,13 +250,13 @@ class TestEncodeRequest(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             response_type=ResponseType.POSITIVE,
-            parameters=NamedItemList([param1, param2]),
+            parameters=NamedItemList([param1, param2, param3]),
             byte_size=None,
         )
 
         with self.assertRaises(EncodeError):
-            resp.encode()  # "No value for required parameter param2 specified"
-        self.assertEqual(resp.encode(param2=0xAB), bytearray([0x12, 0xAB]))
+            resp.encode()  # "No value for required parameter param3 specified"
+        self.assertEqual(resp.encode(param3=0xAB), bytearray([0x12, 0xAB]))
         self.assertRaises(EncodeError, resp.encode, param2=0xEF)
 
     def test_encode_overlapping(self) -> None:
