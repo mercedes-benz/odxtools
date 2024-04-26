@@ -18,7 +18,7 @@ class EncodeState:
     """
 
     #: payload that has been constructed so far
-    coded_message: bytearray
+    coded_message: bytearray = field(default_factory=bytearray)
 
     #: the bits of the payload that are used
     used_mask: bytearray = field(default_factory=bytearray)
