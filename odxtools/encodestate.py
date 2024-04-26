@@ -212,11 +212,12 @@ class EncodeState:
             for i in range(len(new_data)):
                 if self.used_mask[pos + i] & obj_used_mask[i] != 0:
                     warnings.warn(
-                        "Overlapping objects detected",
+                        f"Overlapping objects detected at position {pos + i}",
                         OdxWarning,
                         stacklevel=1,
                     )
-                self.coded_message[pos + i] |= new_data[i]
+                self.coded_message[pos + i] &= ~obj_used_mask[i]
+                self.coded_message[pos + i] |= new_data[i] & obj_used_mask[i]
                 self.used_mask[pos + i] |= obj_used_mask[i]
 
         self.cursor_byte_position += len(new_data)
