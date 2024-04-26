@@ -57,6 +57,7 @@ class LeadingLengthInfoType(DiagCodedType):
 
         encode_state.emplace_atomic_value(
             internal_value=byte_length,
+            used_mask=None,
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,
             is_highlow_byte_order=self.is_highlow_byte_order,
@@ -64,6 +65,7 @@ class LeadingLengthInfoType(DiagCodedType):
 
         encode_state.emplace_atomic_value(
             internal_value=internal_value,
+            used_mask=None,
             bit_length=8 * byte_length,
             base_data_type=self.base_data_type,
             is_highlow_byte_order=self.is_highlow_byte_order,
