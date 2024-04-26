@@ -22,13 +22,19 @@ if TYPE_CHECKING:
 
 @dataclass
 class NrcConstParameter(Parameter):
-    """A param of type NRC-CONST defines a set of values to be matched.
+    """A param of type NRC-CONST defines a set of values to be matched for a negative response to apply.
 
-    An NRC-CONST can only be used in a negative response.
-    Its encoding behaviour is similar to a VALUE parameter with a TEXTTABLE.
-    However, an NRC-CONST is used for matching a response (similar to a CODED-CONST).
+    The behaviour of NRC-CONST parameters is similar to CODED-CONST
+    parameters in that they allow to specify which coding objects
+    apply to a binary string, but in contrast to CODED-CONST
+    parameters they allow to specify multiple values. Thus, the value
+    of a CODED-CONST parameter is usually set using an overlapping
+    VALUE parameter. Since NRC-CONST parameters can only be specified
+    for negative responses, they can thus be regarded as a multiplexer
+    mechanism that is specific to negative responses.
 
     See ASAM MCD-2 D (ODX), p. 77-79.
+
     """
 
     diag_coded_type: DiagCodedType
@@ -83,12 +89,12 @@ class NrcConstParameter(Parameter):
     @property
     @override
     def is_required(self) -> bool:
-        return len(self.coded_values) > 1
+        return False
 
     @property
     @override
     def is_settable(self) -> bool:
-        return True
+        return False
 
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
@@ -103,12 +109,20 @@ class NrcConstParameter(Parameter):
             else:
                 coded_value = physical_value
         else:
-            # If the user does not select a value, just select
-            # any. (This branch should only be taken if there is only
-            # one possible coded value because if there are more,
-            # specifying a parameter value is mandatory,
-            # cf. the `.is_required` property.)
-            coded_value = self.coded_values[0]
+            # If the user did not select a value, the value of the
+            # this parameter is set by another parameter which
+            # overlaps with it. We thus just move the cursor.
+            bit_pos = encode_state.cursor_bit_position
+            bit_len = self.diag_coded_type.get_static_bit_length()
+
+            if bit_len is None:
+                odxraise("The diag coded type of NRC-CONST parameters must "
+                         "exhibit a static size")
+                return
+
+            encode_state.cursor_byte_position += (bit_pos + bit_len + 7) // 8
+            encode_state.cursor_bit_position = 0
+            return
 
         self.diag_coded_type.encode_into_pdu(cast(AtomicOdxType, coded_value), encode_state)
 

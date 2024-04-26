@@ -79,15 +79,12 @@ class ParamLengthInfoType(DiagCodedType):
 
             encode_state.length_keys[self.length_key.short_name] = bit_length
 
-        raw_data = self._encode_internal_value(
+        encode_state.emplace_atomic_value(
             internal_value=internal_value,
-            bit_position=encode_state.cursor_bit_position,
             bit_length=bit_length,
             base_data_type=self.base_data_type,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
-
-        encode_state.emplace_bytes(raw_data, "<PARAM-LENGTH-INFO-TYPE>")
 
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         # First, we need to find a length key with matching ID.

@@ -322,10 +322,9 @@ class TestEnDecode(unittest.TestCase):
             expected_output = ("forward_soberness_check: uint\n"
                                "num_flips: uint\n"
                                "sault_time: uint\n"
-                               "reason: NRC_const; choices = [0, 1, 2]\n"
                                "flips_successfully_done: uint\n")
             actual_output = stdout.getvalue()
-            self.assertEqual(actual_output, expected_output)
+            self.assertEqual(expected_output, actual_output)
 
     def test_decode_response(self) -> None:
         ecu = odxdb.ecus.somersault_lazy
