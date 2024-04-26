@@ -55,6 +55,12 @@ class LeadingLengthInfoType(DiagCodedType):
 
         byte_length = self._minimal_byte_length_of(internal_value)
 
+        used_mask = None
+        bit_pos = encode_state.cursor_bit_position
+        if encode_state.cursor_bit_position != 0 or (bit_pos + self.bit_length) % 8 != 0:
+            used_mask = (1 << self.bit_length) - 1
+            used_mask <<= bit_pos
+
         encode_state.emplace_atomic_value(
             internal_value=byte_length,
             used_mask=None,

@@ -39,8 +39,7 @@ class Response(BasicStructure):
         return Response(response_type=response_type, **kwargs)
 
     def encode(self, coded_request: Optional[bytes] = None, **kwargs: ParameterValue) -> bytes:
-        encode_state = EncodeState(
-            coded_message=bytearray(), triggering_request=coded_request, is_end_of_pdu=True)
+        encode_state = EncodeState(triggering_request=coded_request, is_end_of_pdu=True)
 
         self.encode_into_pdu(physical_value=kwargs, encode_state=encode_state)
 

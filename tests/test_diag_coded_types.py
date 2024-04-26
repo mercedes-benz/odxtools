@@ -88,7 +88,10 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             is_highlow_byte_order_raw=None,
         )
 
-        state = EncodeState(bytearray.fromhex("0000ff00"), cursor_bit_position=3)
+        state = EncodeState(
+            coded_message=bytearray.fromhex("0000ff00"),
+            used_mask=bytearray.fromhex("0700ffff"),
+            cursor_bit_position=3)
         dct.encode_into_pdu(bytes([0xcc]), state)
         self.assertEqual(state.coded_message.hex(), "08ccff00")
         self.assertEqual(state.cursor_byte_position, 2)
@@ -687,7 +690,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             termination="HEX-FF",
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(coded_message=bytearray([0x00]), is_end_of_pdu=False)
+        state = EncodeState(is_end_of_pdu=False)
         dct.encode_into_pdu(bytes([0x34, 0x56]), state)
         self.assertEqual(state.coded_message, bytes([0x34, 0x56, 0xFF]))
 
@@ -700,7 +703,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             termination="ZERO",
             is_highlow_byte_order_raw=None,
         )
-        state = EncodeState(coded_message=bytearray([0x00]), is_end_of_pdu=False)
+        state = EncodeState(is_end_of_pdu=False)
         dct.encode_into_pdu("Hi", state)
         self.assertEqual(state.coded_message, bytes([0x48, 0x69, 0x0]))
 
@@ -739,7 +742,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 termination=termination,
                 is_highlow_byte_order_raw=None,
             )
-            state = EncodeState(coded_message=bytearray([0x00]), is_end_of_pdu=True)
+            state = EncodeState(is_end_of_pdu=True)
             dct.encode_into_pdu(bytes([0x34, 0x56]), state)
             self.assertTrue(state.coded_message.hex().startswith("3456"))
             self.assertRaises(
@@ -760,7 +763,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 termination=termination,
                 is_highlow_byte_order_raw=None,
             )
-            state = EncodeState(coded_message=bytearray([0x00]), is_end_of_pdu=True)
+            state = EncodeState(is_end_of_pdu=True)
             dct.encode_into_pdu(bytes([0x34, 0x56, 0x78]), state)
             self.assertEqual(state.coded_message, bytes([0x34, 0x56, 0x78]))
             self.assertRaises(

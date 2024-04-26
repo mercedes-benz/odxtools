@@ -114,7 +114,10 @@ class LengthKeyParameter(ParameterWithDOP):
         encode_state.cursor_byte_position = pos
         encode_state.cursor_bit_position = self.bit_position or 0
 
-        self.dop.encode_into_pdu(encode_state=encode_state, physical_value=0)
+        # emplace a value of zero into the encode state, but pretend the bits not to be used
+        n = odxrequire(self.dop.get_static_bit_length()) + encode_state.cursor_bit_position
+        tmp_val = b'\x00' * ((n + 7) // 8)
+        encode_state.emplace_bytes(tmp_val, obj_used_mask=tmp_val)
 
         encode_state.cursor_byte_position = max(encode_state.cursor_byte_position, orig_cursor)
         encode_state.cursor_bit_position = 0
