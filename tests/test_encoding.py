@@ -319,7 +319,7 @@ class TestEncodeRequest(unittest.TestCase):
             parameters=NamedItemList([param1, param2, param3]),
             byte_size=None,
         )
-        self.assertEqual(req.encode(), bytearray([0x12, 0x34, 0x56]))
+        self.assertEqual(req.encode().hex(), "123456")
         self.assertEqual(req.get_static_bit_length(), 24)
 
     def _create_request(self, parameters: List[Parameter]) -> Request:
@@ -336,12 +336,12 @@ class TestEncodeRequest(unittest.TestCase):
 
     def test_bit_mask(self) -> None:
         inner_dct = StandardLengthType(
-            bit_mask=0x0ff0,
+            bit_mask=0x3fc,
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             is_highlow_byte_order_raw=None,
             is_condensed_raw=None,
-            bit_length=16)
+            bit_length=14)
         outer_dct = StandardLengthType(
             bit_mask=0xf00f,
             base_data_type=DataType.A_UINT32,
@@ -395,7 +395,7 @@ class TestEncodeRequest(unittest.TestCase):
             long_name=None,
             description=None,
             byte_position=0,
-            bit_position=None,
+            bit_position=2,
             dop_ref=OdxLinkRef.from_id(inner_dop.odx_id),
             dop_snref=None,
             semantic=None,
@@ -421,11 +421,13 @@ class TestEncodeRequest(unittest.TestCase):
 
         req = self._create_request([inner_param, outer_param])
 
-        self.assertEqual(req.encode(inner_param=0x1111, outer_param=0x2222).hex(), "2112")
+        # the bit shifts here stem from the fact that we placed the
+        # inner parameter at bit position 2...
+        self.assertEqual(req.encode(inner_param=0x1234 >> 2, outer_param=0x4568).hex(), "4238")
         self.assertEqual(
-            req.decode(bytes.fromhex('1234')), {
-                "inner_param": 0x0230,
-                "outer_param": 0x1004
+            req.decode(bytes.fromhex('abcd')), {
+                "inner_param": (0xbc << 2),
+                "outer_param": 0xa00d
             })
 
 

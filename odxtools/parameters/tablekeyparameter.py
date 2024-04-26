@@ -178,14 +178,16 @@ class TableKeyParameter(Parameter):
             odxraise(f"No KEY-DOP specified for table {self.table.short_name}")
             return
 
-        size = key_dop.get_static_bit_length()
-
-        if size is None:
+        sz = key_dop.get_static_bit_length()
+        if sz is None:
             odxraise("The DOP of table key {self.short_name} must exhibit a fixed size.",
                      EncodeError)
             return
 
-        encode_state.emplace_bytes(bytes([0] * (size // 8)), self.short_name)
+        # emplace a value of zero into the encode state, but pretend the bits not to be used
+        n = sz + encode_state.cursor_bit_position
+        tmp_val = b'\x00' * ((n + 7) // 8)
+        encode_state.emplace_bytes(tmp_val, obj_used_mask=tmp_val)
 
         encode_state.cursor_byte_position = max(orig_pos, encode_state.cursor_byte_position)
         encode_state.cursor_bit_position = 0

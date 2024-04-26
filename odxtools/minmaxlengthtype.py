@@ -68,6 +68,7 @@ class MinMaxLengthType(DiagCodedType):
         orig_cursor = encode_state.cursor_byte_position
         encode_state.emplace_atomic_value(
             internal_value=internal_value,
+            used_mask=None,
             bit_length=8 * data_length,
             base_data_type=self.base_data_type,
             is_highlow_byte_order=self.is_highlow_byte_order,

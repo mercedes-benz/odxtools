@@ -32,6 +32,7 @@ from odxtools.diagservice import DiagService
 from odxtools.docrevision import DocRevision
 from odxtools.environmentdata import EnvironmentData
 from odxtools.environmentdatadescription import EnvironmentDataDescription
+from odxtools.exceptions import odxrequire
 from odxtools.functionalclass import FunctionalClass
 from odxtools.modification import Modification
 from odxtools.multiplexer import Multiplexer
@@ -669,21 +670,22 @@ somersault_positive_responses = {
                     long_name=None,
                     semantic=None,
                     description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint16"],
+                    diag_coded_type=somersault_diagcodedtypes["uint8"],
                     byte_position=0,
                     coded_value=uds.positive_response_id(
                         SID.TesterPresent.value),  # type: ignore[attr-defined]
                     bit_position=None,
                     sdgs=[],
                 ),
-                CodedConstParameter(
+                ValueParameter(
                     short_name="status",
                     long_name=None,
                     semantic=None,
                     description=None,
-                    diag_coded_type=somersault_diagcodedtypes["uint8"],
+                    dop_ref=OdxLinkRef("somersault.DOP.uint8", doc_frags),
+                    dop_snref=None,
+                    physical_default_value_raw="0",
                     byte_position=1,
-                    coded_value=0x00,
                     bit_position=None,
                     sdgs=[],
                 ),
@@ -940,6 +942,17 @@ somersault_positive_responses = {
             byte_size=None,
         ),
 }
+
+# this is a hack to get around a catch-22: we need to specify the
+# value of a positive response to the tester present parameter to
+# specify ISO_15765_3.CP_TesterPresentMessage communication parameter,
+# but we need the comparam for the raw diaglayer which we need for
+# retrieving the DOP of the "status" parameter in order to convert the
+# raw physical default value.
+param = somersault_positive_responses["tester_ok"].parameters.status
+assert isinstance(param, ValueParameter)
+param._dop = somersault_dops["uint8"]
+param._physical_default_value = int(odxrequire(param.physical_default_value_raw))
 
 # negative responses
 somersault_negative_responses = {

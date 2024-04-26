@@ -129,8 +129,8 @@ class DataObjectProperty(DopBase):
                 f"The value {repr(physical_value)} of type {type(physical_value).__name__}"
                 f" is not a valid.")
 
-        internal_val = self.convert_physical_to_internal(physical_value)
-        self.diag_coded_type.encode_into_pdu(internal_val, encode_state)
+        internal_value = self.convert_physical_to_internal(physical_value)
+        self.diag_coded_type.encode_into_pdu(internal_value, encode_state)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         """

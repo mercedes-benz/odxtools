@@ -81,6 +81,7 @@ class ParamLengthInfoType(DiagCodedType):
 
         encode_state.emplace_atomic_value(
             internal_value=internal_value,
+            used_mask=None,
             bit_length=bit_length,
             base_data_type=self.base_data_type,
             is_highlow_byte_order=self.is_highlow_byte_order,

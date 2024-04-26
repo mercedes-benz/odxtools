@@ -24,8 +24,7 @@ class Request(BasicStructure):
         return Request(**kwargs)
 
     def encode(self, **kwargs: ParameterValue) -> bytes:
-        encode_state = EncodeState(
-            coded_message=bytearray(), triggering_request=None, is_end_of_pdu=True)
+        encode_state = EncodeState(is_end_of_pdu=True)
 
         self.encode_into_pdu(physical_value=kwargs, encode_state=encode_state)
 
