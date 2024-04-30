@@ -10,7 +10,7 @@ from ..decodestate import DecodeState
 from ..dopbase import DopBase
 from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
-from ..exceptions import odxassert, odxrequire
+from ..exceptions import odxassert, odxrequire, odxraise
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..odxtypes import AtomicOdxType, ParameterValue
 from ..physicaltype import PhysicalType
@@ -66,7 +66,10 @@ class ParameterWithDOP(Parameter):
 
         if self.dop_snref:
             ddds = diag_layer.diag_data_dictionary_spec
-            self._dop = odxrequire(ddds.all_data_object_properties.get(self.dop_snref))
+            if snref_shortname := ddds.all_data_object_properties.get(self.dop_snref):
+                self._dop = odxrequire(snref_shortname)
+            else:
+                odxraise(f"{self.dop_snref} in not found in {diag_layer.short_name}")
 
     @property
     def dop(self) -> DopBase:

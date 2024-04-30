@@ -124,17 +124,18 @@ class DiagLayerContainer(IdentifiableElement):
         for ecu_variant in self.ecu_variants:
             ecu_variant._resolve_odxlinks(odxlinks)
 
-    def _finalize_init(self, odxlinks: OdxLinkDatabase) -> None:
+    def _finalize_init(self, odxlinks: OdxLinkDatabase,
+            ecu_shared_datas: NamedItemList[DiagLayer]) -> None:
         for ecu_shared_data in self.ecu_shared_datas:
-            ecu_shared_data._finalize_init(odxlinks)
+            ecu_shared_data._finalize_init(odxlinks, ecu_shared_datas)
         for protocol in self.protocols:
-            protocol._finalize_init(odxlinks)
+            protocol._finalize_init(odxlinks, ecu_shared_datas)
         for functional_group in self.functional_groups:
-            functional_group._finalize_init(odxlinks)
+            functional_group._finalize_init(odxlinks, ecu_shared_datas)
         for base_variant in self.base_variants:
-            base_variant._finalize_init(odxlinks)
+            base_variant._finalize_init(odxlinks, ecu_shared_datas)
         for ecu_variant in self.ecu_variants:
-            ecu_variant._finalize_init(odxlinks)
+            ecu_variant._finalize_init(odxlinks, ecu_shared_datas)
 
     @property
     def diag_layers(self) -> NamedItemList[DiagLayer]:

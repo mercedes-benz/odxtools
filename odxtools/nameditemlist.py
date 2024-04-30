@@ -56,6 +56,19 @@ class ItemAttributeList(List[T]):
 
         super().append(item)
 
+    def append_list(self, item_list) -> None:
+        """
+        An instance of a itemAttributeList class,add another instance
+
+        \return The name under which item is accessible
+        """
+        if item_list:
+            for item in item_list:
+                item_name = self._get_item_key(item)
+                if item_name not in self._item_dict:
+                    self._item_dict[item_name] = item
+                    super().append(item)
+
     def _add_attribute_item(self, item: T) -> None:
         item_name = self._get_item_key(item)
 
@@ -152,6 +165,9 @@ class ItemAttributeList(List[T]):
             raise AttributeError(f"ItemAttributeList does not contain an item named '{key}'")
 
         return self._item_dict[key]
+
+    def __contains__(self, key) -> bool:
+        return key in self._item_dict
 
     def get(self, key: Union[int, str], default: Optional[T] = None) -> Optional[T]:
         if isinstance(key, int):

@@ -92,6 +92,9 @@ class Database:
 
     def refresh(self) -> None:
         # Create wrapper objects
+        self._ecu_shared_datas = NamedItemList(chain(*[dlc.ecu_shared_datas
+            for dlc in self.diag_layer_containers if dlc.ecu_shared_datas]))
+
         self._diag_layers = NamedItemList(
             chain(*[dlc.diag_layers for dlc in self.diag_layer_containers]))
 
@@ -125,12 +128,19 @@ class Database:
         # let the diaglayers sort out the inherited objects and the
         # short name references
         for dlc in self.diag_layer_containers:
-            dlc._finalize_init(self._odxlinks)
+            dlc._finalize_init(self._odxlinks, self._ecu_shared_datas)
 
     @property
     def odxlinks(self) -> OdxLinkDatabase:
         """A map from odx_id to object"""
         return self._odxlinks
+
+    @property
+    def ecu_shared_datas(self) -> OdxLinkDatabase:
+        """
+        All ecu_shared_datas defined by this database
+        """
+        return self._ecu_shared_datas
 
     @property
     def protocols(self) -> NamedItemList[DiagLayer]:
