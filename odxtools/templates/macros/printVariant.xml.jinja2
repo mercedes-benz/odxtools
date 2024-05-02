@@ -11,6 +11,7 @@
 {%- import('macros/printEndOfPdu.xml.jinja2') as peopdu %}
 {%- import('macros/printStaticField.xml.jinja2') as psf %}
 {%- import('macros/printDynamicLengthField.xml.jinja2') as pdlf %}
+{%- import('macros/printDynamicEndmarkerField.xml.jinja2') as pdemf %}
 {%- import('macros/printMux.xml.jinja2') as pm %}
 {%- import('macros/printEnvData.xml.jinja2') as ped %}
 {%- import('macros/printEnvDataDesc.xml.jinja2') as pedd %}
@@ -81,6 +82,13 @@
      {{ pdlf.printDynamicLengthField(dlf)|indent(3) }}
      {%- endfor %}
    </DYNAMIC-LENGTH-FIELDS>
+   {%- endif %}
+   {%- if ddds.dynamic_endmarker_fields %}
+   <DYNAMIC-ENDMARKER-FIELDS>
+     {%- for demf in ddds.dynamic_endmarker_fields %}
+     {{ pdemf.printDynamicEndmarkerField(demf)|indent(3) }}
+     {%- endfor %}
+   </DYNAMIC-ENDMARKER-FIELDS>
    {%- endif %}
    {%- if ddds.end_of_pdu_fields %}
    <END-OF-PDU-FIELDS>
