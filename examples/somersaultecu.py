@@ -2098,6 +2098,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
     static_fields=NamedItemList(),
     end_of_pdu_fields=NamedItemList(),
     dynamic_length_fields=NamedItemList(),
+    dynamic_endmarker_fields=NamedItemList(),
     sdgs=[],
 )
 
@@ -2361,6 +2362,7 @@ somersault_assiduous_diaglayer_raw = DiagLayerRaw(
         structures=NamedItemList(),
         end_of_pdu_fields=NamedItemList(),
         dynamic_length_fields=NamedItemList(),
+        dynamic_endmarker_fields=NamedItemList(),
         tables=NamedItemList(),
         env_data_descs=NamedItemList(),
         env_datas=NamedItemList(),
