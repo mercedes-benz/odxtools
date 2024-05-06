@@ -11,12 +11,12 @@ from .element import IdentifiableElement
 from .exceptions import odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
 from .specialdatagroup import SpecialDataGroup
 from .state import State
 from .statetransition import StateTransition
-from .utils import dataclass_fields_asdict, resolve_snref
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer

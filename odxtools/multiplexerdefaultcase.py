@@ -6,8 +6,8 @@ from xml.etree import ElementTree
 from .basicstructure import BasicStructure
 from .element import NamedElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .utils import dataclass_fields_asdict, resolve_snref
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer

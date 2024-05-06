@@ -11,10 +11,10 @@ from ..dopbase import DopBase
 from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
 from ..exceptions import odxassert, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from ..odxtypes import AtomicOdxType, ParameterValue
 from ..physicaltype import PhysicalType
-from ..utils import dataclass_fields_asdict, resolve_snref
+from ..utils import dataclass_fields_asdict
 from .parameter import Parameter
 
 if TYPE_CHECKING:

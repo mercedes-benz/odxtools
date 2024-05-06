@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Type, TypeVar, overload
+from typing import Any, Dict, Iterable, List, Optional, Type, TypeVar, overload
 from xml.etree import ElementTree
 
-from .exceptions import OdxWarning, odxassert
+from .exceptions import OdxWarning, odxassert, odxraise
+from .nameditemlist import OdxNamed, TNamed
 
 
 @dataclass(frozen=True)
@@ -270,3 +271,34 @@ class OdxLinkDatabase:
                     self._db[doc_frag] = {}
 
                 self._db[doc_frag][odx_id] = obj
+
+
+@overload
+def resolve_snref(target_short_name: str,
+                  items: Iterable[OdxNamed],
+                  expected_type: None = None) -> Any:
+    """Resolve a short name reference given a sequence of candidate objects"""
+    ...
+
+
+@overload
+def resolve_snref(target_short_name: str, items: Iterable[OdxNamed],
+                  expected_type: Type[TNamed]) -> TNamed:
+    ...
+
+
+def resolve_snref(target_short_name: str,
+                  items: Iterable[OdxNamed],
+                  expected_type: Any = None) -> Any:
+    candidates = [x for x in items if x.short_name == target_short_name]
+
+    if not candidates:
+        odxraise(f"Cannot resolve short name reference to '{target_short_name}'")
+        return None
+    elif len(candidates) > 1:
+        odxraise(f"Cannot uniquely resolve short name reference to '{target_short_name}'")
+    elif expected_type is not None and not isinstance(candidates[0], expected_type):
+        odxraise(f"Reference '{target_short_name}' points to a {type(candidates[0]).__name__}"
+                 f"object while expecting {expected_type.__name__}")
+
+    return candidates[0]

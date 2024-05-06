@@ -6,9 +6,9 @@ from .basicstructure import BasicStructure
 from .complexdop import ComplexDop
 from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxassert, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
-from .utils import dataclass_fields_asdict, resolve_snref
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer

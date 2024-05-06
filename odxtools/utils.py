@@ -1,11 +1,8 @@
 # SPDX-License-Identifier: MIT
 import dataclasses
 import re
-from typing import Any, Dict, Iterable, Optional, Type, overload
+from typing import Any, Dict, Optional
 from xml.etree import ElementTree
-
-from .exceptions import odxraise
-from .nameditemlist import OdxNamed, TNamed
 
 
 def create_description_from_et(et_element: Optional[ElementTree.Element],) -> Optional[str]:
@@ -63,34 +60,3 @@ def is_short_name_path(test_val: str) -> bool:
     See also: ISO 22901 section 7.3.13.3
     """
     return _short_name_path_pattern.fullmatch(test_val) is not None
-
-
-@overload
-def resolve_snref(target_short_name: str,
-                  items: Iterable[OdxNamed],
-                  expected_type: None = None) -> Any:
-    """Properly resolve a short name reference"""
-    ...
-
-
-@overload
-def resolve_snref(target_short_name: str, items: Iterable[OdxNamed],
-                  expected_type: Type[TNamed]) -> TNamed:
-    ...
-
-
-def resolve_snref(target_short_name: str,
-                  items: Iterable[OdxNamed],
-                  expected_type: Any = None) -> Any:
-    candidates = [x for x in items if x.short_name == target_short_name]
-
-    if not candidates:
-        odxraise(f"Cannot resolve short name reference to '{target_short_name}'")
-        return None
-    elif len(candidates) > 1:
-        odxraise(f"Cannot uniquely resolve short name reference to '{target_short_name}'")
-    elif expected_type is not None and not isinstance(candidates[0], expected_type):
-        odxraise(f"Reference '{target_short_name}' points to a {type(candidates[0]).__name__}"
-                 f"object while expecting {expected_type.__name__}")
-
-    return candidates[0]

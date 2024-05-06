@@ -8,9 +8,9 @@ from typing_extensions import final, override
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from ..odxtypes import ParameterValue
-from ..utils import dataclass_fields_asdict, resolve_snref
+from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:

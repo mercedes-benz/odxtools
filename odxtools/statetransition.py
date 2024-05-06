@@ -5,9 +5,9 @@ from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, resolve_snref
 from .state import State
-from .utils import dataclass_fields_asdict, resolve_snref
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer

@@ -19,7 +19,7 @@ from .element import IdentifiableElement
 from .exceptions import odxassert, odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .parentref import ParentRef
 from .protstack import ProtStack
 from .request import Request
@@ -27,7 +27,7 @@ from .response import Response
 from .singleecujob import SingleEcuJob
 from .specialdatagroup import SpecialDataGroup
 from .statechart import StateChart
-from .utils import dataclass_fields_asdict, resolve_snref
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
