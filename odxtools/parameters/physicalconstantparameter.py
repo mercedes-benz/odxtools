@@ -12,7 +12,7 @@ from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
-from .parameter import ParameterType
+from .parameter import Parameter, ParameterType
 from .parameterwithdop import ParameterWithDOP
 
 if TYPE_CHECKING:
@@ -50,8 +50,9 @@ class PhysicalConstantParameter(ParameterWithDOP):
         super()._resolve_odxlinks(odxlinks)
 
     @override
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        super()._resolve_snrefs(diag_layer)
+    def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
+                                  param_list: List[Parameter]) -> None:
+        super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
 
         dop = odxrequire(self.dop)
         if not isinstance(dop, DataObjectProperty):

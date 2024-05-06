@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
-from typing_extensions import final, override
+from typing_extensions import override
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
@@ -60,14 +60,9 @@ class TableStructParameter(Parameter):
             self._table_key = odxlinks.resolve(self.table_key_ref, TableKeyParameter)
 
     @override
-    @final
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        raise RuntimeError(f"Calling TableStructParameter._resolve_snref() is not allowed. "
-                           f"Use ._table_struct_resolve_snrefs() instead.")
-
-    def _table_struct_resolve_snrefs(self, diag_layer: "DiagLayer", *,
-                                     param_list: List[Parameter]) -> None:
-        super()._resolve_snrefs(diag_layer)
+    def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
+                                  param_list: List[Parameter]) -> None:
+        super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
 
         if self.table_key_snref is not None:
             tk_candidates = [p for p in param_list if p.short_name == self.table_key_snref]

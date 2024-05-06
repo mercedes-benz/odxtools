@@ -1870,8 +1870,9 @@ class TestDecodingAndEncoding(unittest.TestCase):
         self.parameter_termination_end_of_pdu._resolve_odxlinks(odxlinks)
         self.parameter_sid._resolve_odxlinks(odxlinks)
 
-        self.parameter_termination_end_of_pdu._resolve_snrefs(None)  # type: ignore[arg-type]
-        self.parameter_sid._resolve_snrefs(None)  # type: ignore[arg-type]
+        self.parameter_termination_end_of_pdu._parameter_resolve_snrefs(
+            cast(DiagLayer, None), param_list=[])
+        self.parameter_sid._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
 
     def test_min_max_length_type_end_of_pdu(self) -> None:
         req_param1 = self.parameter_sid
@@ -1939,8 +1940,8 @@ class TestDecodingAndEncoding(unittest.TestCase):
 
         req_param1._resolve_odxlinks(odxlinks)
         req_param2._resolve_odxlinks(odxlinks)
-        req_param1._resolve_snrefs(cast(DiagLayer, None))
-        req_param2._resolve_snrefs(cast(DiagLayer, None))
+        req_param1._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
+        req_param2._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
 
         expected_coded_message = bytes([0x12, 0x34])
         expected_param_dict = {
@@ -2033,8 +2034,8 @@ class TestDecodingAndEncoding(unittest.TestCase):
         req_param1._resolve_odxlinks(odxlinks)
         req_param2._resolve_odxlinks(odxlinks)
 
-        req_param1._resolve_snrefs(cast(DiagLayer, None))
-        req_param2._resolve_snrefs(cast(DiagLayer, None))
+        req_param1._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
+        req_param2._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
 
         expected_coded_message = bytes([0x12, 0x0])
         expected_param_dict = {"SID": 0x12, "physical_constant_parameter": offset}

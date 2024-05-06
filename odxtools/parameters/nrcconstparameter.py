@@ -75,8 +75,9 @@ class NrcConstParameter(Parameter):
         super()._resolve_odxlinks(odxlinks)
 
     @override
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        super()._resolve_snrefs(diag_layer)
+    def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
+                                  param_list: List[Parameter]) -> None:
+        super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
 
     @override
     def get_static_bit_length(self) -> Optional[int]:

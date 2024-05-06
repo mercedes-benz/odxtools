@@ -61,8 +61,9 @@ class ParameterWithDOP(Parameter):
             self._dop = odxlinks.resolve_lenient(self.dop_ref)
 
     @override
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        super()._resolve_snrefs(diag_layer)
+    def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
+                                  param_list: List[Parameter]) -> None:
+        super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
 
         if self.dop_snref:
             ddds = diag_layer.diag_data_dictionary_spec

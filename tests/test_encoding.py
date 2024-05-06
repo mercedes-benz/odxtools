@@ -170,7 +170,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
 
         param1._resolve_odxlinks(odxlinks)
-        param1._resolve_snrefs(cast(DiagLayer, None))
+        param1._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=req.parameters)
 
         # Missing mandatory parameter.
         with self.assertRaises(EncodeError):
@@ -402,7 +402,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
             physical_default_value_raw=None)
         inner_param._resolve_odxlinks(odxlinks)
-        inner_param._resolve_snrefs(cast(DiagLayer, None))
+        inner_param._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
 
         # Outer
         outer_param = ValueParameter(
@@ -417,7 +417,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
             physical_default_value_raw=None)
         outer_param._resolve_odxlinks(odxlinks)
-        outer_param._resolve_snrefs(cast(DiagLayer, None))
+        outer_param._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
 
         req = self._create_request([inner_param, outer_param])
 

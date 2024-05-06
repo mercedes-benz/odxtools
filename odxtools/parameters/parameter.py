@@ -82,7 +82,13 @@ class Parameter(NamedElement):
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
+    @final
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+        raise RuntimeError("Calling _resolve_snrefs() is not allowed for parameters. "
+                           "Use _parameter_resolve_snrefs() instead.")
+
+    def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
+                                  param_list: List["Parameter"]) -> None:
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)
 
