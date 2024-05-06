@@ -10,7 +10,7 @@ from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..odxtypes import ParameterValue
-from ..utils import dataclass_fields_asdict
+from ..utils import dataclass_fields_asdict, resolve_snref
 from .parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
@@ -99,15 +99,14 @@ class TableKeyParameter(Parameter):
         super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
 
         if self.table_snref is not None:
-            ddd_spec = diag_layer.diag_data_dictionary_spec
-            self._table = ddd_spec.tables[self.table_snref]
+            tables = diag_layer.diag_data_dictionary_spec.tables
+            self._table = resolve_snref(self.table_snref, tables, Table)
         if self.table_row_snref is not None:
             # make sure that we know the table to which the table row
             # SNREF is relative to.
-            table = odxrequire(
-                self._table, "If a table-row short name reference is defined, a "
-                "table must also be specified.")
-            self._table_row = table.table_rows[self.table_row_snref]
+            table = odxrequire(self._table,
+                               "If a table-row is referenced, a table must also be referenced.")
+            self._table_row = resolve_snref(self.table_row_snref, table.table_rows, TableRow)
 
     @property
     def table(self) -> "Table":

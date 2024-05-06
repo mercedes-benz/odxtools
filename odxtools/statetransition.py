@@ -7,7 +7,7 @@ from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .state import State
-from .utils import dataclass_fields_asdict
+from .utils import dataclass_fields_asdict, resolve_snref
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -55,10 +55,5 @@ class StateTransition(IdentifiableElement):
     # chart. To mitigate this a bit, the non-standard parameters are
     # keyword-only...
     def _resolve_snrefs(self, diag_layer: "DiagLayer", *, states: Iterable[State]) -> None:
-        self._source_state: State
-        self._target_state: State
-        for st in states:
-            if st.short_name == self.source_snref:
-                self._source_state = st
-            if st.short_name == self.target_snref:
-                self._target_state = st
+        self._source_state = resolve_snref(self.source_snref, states, State)
+        self._target_state = resolve_snref(self.target_snref, states, State)

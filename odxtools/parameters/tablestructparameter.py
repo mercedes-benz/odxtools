@@ -10,7 +10,7 @@ from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..odxtypes import ParameterValue
-from ..utils import dataclass_fields_asdict
+from ..utils import dataclass_fields_asdict, resolve_snref
 from .parameter import Parameter, ParameterType
 from .tablekeyparameter import TableKeyParameter
 
@@ -65,21 +65,7 @@ class TableStructParameter(Parameter):
         super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
 
         if self.table_key_snref is not None:
-            tk_candidates = [p for p in param_list if p.short_name == self.table_key_snref]
-            if len(tk_candidates) > 1:
-                odxraise(f"Short name reference '{self.table_key_snref}' could "
-                         f"not be uniquely resolved.")
-            elif len(tk_candidates) == 0:
-                odxraise(f"Short name reference '{self.table_key_snref}' could "
-                         f"not be resolved.")
-                return
-
-            tk = tk_candidates[0]
-            if not isinstance(tk, TableKeyParameter):
-                odxraise(f"Table struct '{self.short_name}' references non-TableKey parameter "
-                         f"`{self.table_key_snref}' as its table key.")
-
-            self._table_key = tk
+            self._table_key = resolve_snref(self.table_key_snref, param_list, TableKeyParameter)
 
     @property
     def table_key(self) -> TableKeyParameter:

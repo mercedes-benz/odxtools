@@ -14,7 +14,7 @@ from ..exceptions import odxassert, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..odxtypes import AtomicOdxType, ParameterValue
 from ..physicaltype import PhysicalType
-from ..utils import dataclass_fields_asdict
+from ..utils import dataclass_fields_asdict, resolve_snref
 from .parameter import Parameter
 
 if TYPE_CHECKING:
@@ -66,8 +66,8 @@ class ParameterWithDOP(Parameter):
         super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
 
         if self.dop_snref:
-            ddds = diag_layer.diag_data_dictionary_spec
-            self._dop = odxrequire(ddds.all_data_object_properties.get(self.dop_snref))
+            all_dops = diag_layer.diag_data_dictionary_spec.all_data_object_properties
+            self._dop = resolve_snref(self.dop_snref, all_dops, DopBase)
 
     @property
     def dop(self) -> DopBase:

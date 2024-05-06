@@ -32,8 +32,8 @@ class MatchingParameter:
                 doc_frags: List[OdxDocFragment]) -> "MatchingParameter":
 
         expected_value = odxrequire(et_element.findtext("EXPECTED-VALUE"))
-        diag_com_snref_el = odxrequire(et_element.find("DIAG-COMM-SNREF"))
-        diag_comm_snref = odxrequire(diag_com_snref_el.get("SHORT-NAME"))
+        diag_comm_snref_el = odxrequire(et_element.find("DIAG-COMM-SNREF"))
+        diag_comm_snref = odxrequire(diag_comm_snref_el.get("SHORT-NAME"))
         out_param_snref_el = et_element.find("OUT-PARAM-IF-SNREF")
         out_param_snpathref_el = et_element.find("OUT-PARAM-IF-SNPATHREF")
         out_param_if = None

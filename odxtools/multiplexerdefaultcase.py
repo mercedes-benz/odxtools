@@ -7,7 +7,7 @@ from .basicstructure import BasicStructure
 from .element import NamedElement
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .utils import dataclass_fields_asdict
+from .utils import dataclass_fields_asdict, resolve_snref
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -20,7 +20,7 @@ class MultiplexerDefaultCase(NamedElement):
     structure_snref: Optional[str]
 
     def __post_init__(self) -> None:
-        self._structure: Optional[BasicStructure] = None
+        self._structure: BasicStructure
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -46,4 +46,8 @@ class MultiplexerDefaultCase(NamedElement):
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         if self.structure_snref:
             ddds = diag_layer.diag_data_dictionary_spec
-            self._structure = odxrequire(ddds.structures.get(self.structure_snref))
+            self._structure = resolve_snref(self.structure_snref, ddds.structures, BasicStructure)
+
+    @property
+    def structure(self) -> BasicStructure:
+        return self._structure

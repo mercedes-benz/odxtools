@@ -8,7 +8,7 @@ from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from .odxtypes import odxstr_to_bool
-from .utils import dataclass_fields_asdict
+from .utils import dataclass_fields_asdict, resolve_snref
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -84,8 +84,9 @@ class Field(ComplexDop):
         """Recursively resolve any short-name references"""
         if self.structure_snref is not None:
             structures = diag_layer.diag_data_dictionary_spec.structures
-            self._structure = odxrequire(structures.get(self.structure_snref))
+            self._structure = resolve_snref(self.structure_snref, structures, BasicStructure)
 
         if self.env_data_desc_snref is not None:
             env_data_descs = diag_layer.diag_data_dictionary_spec.env_data_descs
-            self._env_data_desc = odxrequire(env_data_descs.get(self.env_data_desc_snref))
+            self._env_data_desc = resolve_snref(self.env_data_desc_snref, env_data_descs,
+                                                EnvironmentDataDescription)

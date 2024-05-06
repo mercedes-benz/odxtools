@@ -16,7 +16,7 @@ from .odxtypes import odxstr_to_bool
 from .specialdatagroup import SpecialDataGroup
 from .state import State
 from .statetransition import StateTransition
-from .utils import dataclass_fields_asdict
+from .utils import dataclass_fields_asdict, resolve_snref
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -211,5 +211,13 @@ class DiagComm(IdentifiableElement):
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)
 
-        self._protocols = NamedItemList(
-            [diag_layer.protocols[prot_snref] for prot_snref in self.protocol_snrefs])
+        if TYPE_CHECKING:
+            self._protocols = NamedItemList([
+                resolve_snref(prot_snref, diag_layer.protocols, DiagLayer)
+                for prot_snref in self.protocol_snrefs
+            ])
+        else:
+            self._protocols = NamedItemList([
+                resolve_snref(prot_snref, diag_layer.protocols)
+                for prot_snref in self.protocol_snrefs
+            ])
