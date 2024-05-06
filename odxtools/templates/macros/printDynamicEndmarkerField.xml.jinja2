@@ -1,0 +1,16 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+
+{%- macro printStaticField(demf) -%}
+<DYNAMIC-ENDMARKER-FIELD ID="{{demf.odx_id.local_id}}">
+ {{ peid.printElementIdSubtags(demf)|indent(1) }}
+ <BASIC-STRUCTURE-REF ID-REF="{{demf.structure_ref.ref_id}}" />
+ <DYN-END-DOP-REF ID-REF="{{demf.dyn_end_dop_ref.ref_id}}">
+   <TERMINATION-VALUE>{{demf.dyn_end_dop_ref.termination_value_raw}}</TERMINATION-VALUE>
+ </DYN-END-DOP-REF>
+</DYNAMIC-ENDMARKER-FIELD>
+{%- endmacro -%}

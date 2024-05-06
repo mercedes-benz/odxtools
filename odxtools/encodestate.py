@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass, field
-from typing import Dict, Optional
+from typing import Dict, Optional, SupportsBytes
 
 from .exceptions import EncodeError, OdxWarning, odxassert, odxraise
 from .odxtypes import AtomicOdxType, DataType
@@ -83,13 +83,13 @@ class EncodeState:
 
         # Check that bytes and strings actually fit into the bit length
         if base_data_type == DataType.A_BYTEFIELD:
-            if not isinstance(internal_value, bytes):
+            if not isinstance(internal_value, (bytes, bytearray, SupportsBytes)):
                 odxraise()
             if 8 * len(internal_value) > bit_length:
                 raise EncodeError(f"The bytefield {internal_value.hex()} is too large "
                                   f"({len(internal_value)} bytes)."
                                   f" The maximum length is {bit_length//8}.")
-            raw_value = internal_value
+            raw_value = bytes(internal_value)
         elif base_data_type == DataType.A_ASCIISTRING:
             if not isinstance(internal_value, str):
                 odxraise()

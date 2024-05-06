@@ -216,6 +216,10 @@ class DiagLayer:
             lambda ddd_spec: ddd_spec.end_of_pdu_fields,
             lambda parent_ref: parent_ref.not_inherited_dops,
         )
+        dynamic_endmarker_fields = self._compute_available_ddd_spec_items(
+            lambda ddd_spec: ddd_spec.dynamic_endmarker_fields,
+            lambda parent_ref: parent_ref.not_inherited_dops,
+        )
         dynamic_length_fields = self._compute_available_ddd_spec_items(
             lambda ddd_spec: ddd_spec.dynamic_length_fields,
             lambda parent_ref: parent_ref.not_inherited_dops,
@@ -246,6 +250,7 @@ class DiagLayer:
             structures=structures,
             static_fields=NamedItemList(),
             end_of_pdu_fields=end_of_pdu_fields,
+            dynamic_endmarker_fields=dynamic_endmarker_fields,
             dynamic_length_fields=dynamic_length_fields,
             tables=tables,
             env_data_descs=env_data_descs,

@@ -10,6 +10,7 @@ from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
 from .dopbase import DopBase
 from .dtcdop import DtcDop
+from .dynamicendmarkerfield import DynamicEndmarkerField
 from .dynamiclengthfield import DynamicLengthField
 from .endofpdufield import EndOfPduField
 from .environmentdata import EnvironmentData
@@ -37,7 +38,7 @@ class DiagDataDictionarySpec:
     structures: NamedItemList[BasicStructure]
     static_fields: NamedItemList[StaticField]
     dynamic_length_fields: NamedItemList[DynamicLengthField]
-    #dynamic_endmarker_fields: NamedItemList[DynamicEndmarkerField]
+    dynamic_endmarker_fields: NamedItemList[DynamicEndmarkerField]
     end_of_pdu_fields: NamedItemList[EndOfPduField]
     muxs: NamedItemList[Multiplexer]
     env_datas: NamedItemList[EnvironmentData]
@@ -54,7 +55,7 @@ class DiagDataDictionarySpec:
                 self.structures,
                 self.static_fields,
                 self.dynamic_length_fields,
-                #self.dynamic_endmarker_fields,
+                self.dynamic_endmarker_fields,
                 self.end_of_pdu_fields,
                 self.muxs,
                 self.env_datas,
@@ -99,11 +100,10 @@ class DiagDataDictionarySpec:
             for dl_element in et_element.iterfind("DYNAMIC-LENGTH-FIELDS/DYNAMIC-LENGTH-FIELD")
         ]
 
-        # TODO: dynamic endmarker fields
-        #dynamic_endmarker_fields = [
-        #    DynamicEndmarkerField.from_et(dl_element, doc_frags)
-        #    for dl_element in et_element.iterfind("DYNAMIC-ENDMARKER-FIELDS/DYNAMIC-ENDMARKER-FIELD")
-        #]
+        dynamic_endmarker_fields = [
+            DynamicEndmarkerField.from_et(dl_element, doc_frags) for dl_element in
+            et_element.iterfind("DYNAMIC-ENDMARKER-FIELDS/DYNAMIC-ENDMARKER-FIELD")
+        ]
 
         end_of_pdu_fields = [
             EndOfPduField.from_et(eofp_element, doc_frags)
@@ -145,7 +145,7 @@ class DiagDataDictionarySpec:
             structures=NamedItemList(structures),
             static_fields=NamedItemList(static_fields),
             dynamic_length_fields=NamedItemList(dynamic_length_fields),
-            #dynamic_endmarker_fields=NamedItemList(dynamic_endmarker_fields),
+            dynamic_endmarker_fields=NamedItemList(dynamic_endmarker_fields),
             end_of_pdu_fields=NamedItemList(end_of_pdu_fields),
             muxs=NamedItemList(muxs),
             env_datas=NamedItemList(env_datas),
@@ -172,8 +172,8 @@ class DiagDataDictionarySpec:
             odxlinks.update(static_field._build_odxlinks())
         for dynamic_length_field in self.dynamic_length_fields:
             odxlinks.update(dynamic_length_field._build_odxlinks())
-        #for dynamic_endmarker_field in self.dynamic_endmarker_fields:
-        #    odxlinks.update(dynamic_endmarker_field._build_odxlinks())
+        for dynamic_endmarker_field in self.dynamic_endmarker_fields:
+            odxlinks.update(dynamic_endmarker_field._build_odxlinks())
         for end_of_pdu_field in self.end_of_pdu_fields:
             odxlinks.update(end_of_pdu_field._build_odxlinks())
         for mux in self.muxs:
@@ -204,8 +204,8 @@ class DiagDataDictionarySpec:
             static_field._resolve_odxlinks(odxlinks)
         for dynamic_length_field in self.dynamic_length_fields:
             dynamic_length_field._resolve_odxlinks(odxlinks)
-        #for dynamic_endmarker_field in self.dynamic_endmarker_fields:
-        #    dynamic_endmarker_field._resolve_odxlinks(odxlinks)
+        for dynamic_endmarker_field in self.dynamic_endmarker_fields:
+            dynamic_endmarker_field._resolve_odxlinks(odxlinks)
         for end_of_pdu_field in self.end_of_pdu_fields:
             end_of_pdu_field._resolve_odxlinks(odxlinks)
         for mux in self.muxs:
@@ -234,8 +234,8 @@ class DiagDataDictionarySpec:
             static_field._resolve_snrefs(diag_layer)
         for dynamic_length_field in self.dynamic_length_fields:
             dynamic_length_field._resolve_snrefs(diag_layer)
-        #for dynamic_endmarker_field in self.dynamic_endmarker_fields:
-        #    dynamic_endmarker_field._resolve_snrefs(diag_layer)
+        for dynamic_endmarker_field in self.dynamic_endmarker_fields:
+            dynamic_endmarker_field._resolve_snrefs(diag_layer)
         for end_of_pdu_field in self.end_of_pdu_fields:
             end_of_pdu_field._resolve_snrefs(diag_layer)
         for mux in self.muxs:

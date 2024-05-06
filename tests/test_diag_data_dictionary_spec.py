@@ -284,6 +284,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             static_fields=NamedItemList(),
             end_of_pdu_fields=NamedItemList(),
             dynamic_length_fields=NamedItemList(),
+            dynamic_endmarker_fields=NamedItemList(),
             unit_spec=None,
             sdgs=[],
         )
