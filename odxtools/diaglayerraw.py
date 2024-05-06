@@ -19,7 +19,7 @@ from .element import IdentifiableElement
 from .exceptions import odxassert, odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .parentref import ParentRef
 from .protstack import ProtStack
 from .request import Request
@@ -281,8 +281,8 @@ class DiagLayerRaw(IdentifiableElement):
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         self._prot_stack: Optional[ProtStack] = None
         if self.prot_stack_snref is not None:
-            self._prot_stack = odxrequire(
-                odxrequire(self.comparam_spec).prot_stacks.get(self.prot_stack_snref))
+            self._prot_stack = resolve_snref(self.prot_stack_snref,
+                                             odxrequire(self.comparam_spec).prot_stacks, ProtStack)
 
         # do short-name reference resolution
         if self.admin_data is not None:
@@ -292,8 +292,8 @@ class DiagLayerRaw(IdentifiableElement):
 
         for company_data in self.company_datas:
             company_data._resolve_snrefs(diag_layer)
-        for functional_classe in self.functional_classes:
-            functional_classe._resolve_snrefs(diag_layer)
+        for functional_class in self.functional_classes:
+            functional_class._resolve_snrefs(diag_layer)
         for diag_comm in self.diag_comms:
             if isinstance(diag_comm, OdxLinkRef):
                 continue

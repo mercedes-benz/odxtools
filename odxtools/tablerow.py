@@ -9,7 +9,7 @@ from .dataobjectproperty import DataObjectProperty
 from .dtcdop import DtcDop
 from .element import IdentifiableElement
 from .exceptions import odxassert, odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import AtomicOdxType
 from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
@@ -128,9 +128,11 @@ class TableRow(IdentifiableElement):
         ddd_spec = diag_layer.diag_data_dictionary_spec
 
         if self.structure_snref is not None:
-            self._structure = odxrequire(ddd_spec.structures.get(self.structure_snref))
+            self._structure = resolve_snref(self.structure_snref, ddd_spec.structures,
+                                            BasicStructure)
         if self.dop_snref is not None:
-            self._dop = odxrequire(ddd_spec.data_object_props.get(self.dop_snref))
+            self._dop = resolve_snref(self.dop_snref, ddd_spec.data_object_props,
+                                      DataObjectProperty)
 
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)

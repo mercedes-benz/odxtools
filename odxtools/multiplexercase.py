@@ -7,7 +7,7 @@ from .basicstructure import BasicStructure
 from .compumethods.limit import Limit
 from .element import NamedElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import AtomicOdxType, DataType
 from .utils import dataclass_fields_asdict
 
@@ -73,7 +73,7 @@ class MultiplexerCase(NamedElement):
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         if self.structure_snref:
             ddds = diag_layer.diag_data_dictionary_spec
-            self._structure = odxrequire(ddds.structures.get(self.structure_snref))
+            self._structure = resolve_snref(self.structure_snref, ddds.structures, BasicStructure)
 
     def applies(self, value: AtomicOdxType) -> bool:
         return self.lower_limit.complies_to_lower(value) \

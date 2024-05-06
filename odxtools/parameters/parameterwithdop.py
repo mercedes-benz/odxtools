@@ -11,7 +11,7 @@ from ..dopbase import DopBase
 from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
 from ..exceptions import odxassert, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from ..odxtypes import AtomicOdxType, ParameterValue
 from ..physicaltype import PhysicalType
 from ..utils import dataclass_fields_asdict
@@ -61,12 +61,13 @@ class ParameterWithDOP(Parameter):
             self._dop = odxlinks.resolve_lenient(self.dop_ref)
 
     @override
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        super()._resolve_snrefs(diag_layer)
+    def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
+                                  param_list: List[Parameter]) -> None:
+        super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
 
         if self.dop_snref:
-            ddds = diag_layer.diag_data_dictionary_spec
-            self._dop = odxrequire(ddds.all_data_object_properties.get(self.dop_snref))
+            all_dops = diag_layer.diag_data_dictionary_spec.all_data_object_properties
+            self._dop = resolve_snref(self.dop_snref, all_dops, DopBase)
 
     @property
     def dop(self) -> DopBase:

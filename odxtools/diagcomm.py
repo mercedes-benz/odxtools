@@ -11,7 +11,7 @@ from .element import IdentifiableElement
 from .exceptions import odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
 from .specialdatagroup import SpecialDataGroup
 from .state import State
@@ -211,5 +211,13 @@ class DiagComm(IdentifiableElement):
         for sdg in self.sdgs:
             sdg._resolve_snrefs(diag_layer)
 
-        self._protocols = NamedItemList(
-            [diag_layer.protocols[prot_snref] for prot_snref in self.protocol_snrefs])
+        if TYPE_CHECKING:
+            self._protocols = NamedItemList([
+                resolve_snref(prot_snref, diag_layer.protocols, DiagLayer)
+                for prot_snref in self.protocol_snrefs
+            ])
+        else:
+            self._protocols = NamedItemList([
+                resolve_snref(prot_snref, diag_layer.protocols)
+                for prot_snref in self.protocol_snrefs
+            ])
