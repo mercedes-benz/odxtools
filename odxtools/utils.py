@@ -1,13 +1,11 @@
 # SPDX-License-Identifier: MIT
 import dataclasses
 import re
-from typing import Any, Dict, Iterable, Optional, Type, TypeVar, overload
+from typing import Any, Dict, Iterable, Optional, Type, overload
 from xml.etree import ElementTree
 
 from .exceptions import odxraise
-from .nameditemlist import OdxNamed
-
-T = TypeVar("T")
+from .nameditemlist import OdxNamed, TNamed
 
 
 def create_description_from_et(et_element: Optional[ElementTree.Element],) -> Optional[str]:
@@ -76,7 +74,8 @@ def resolve_snref(target_short_name: str,
 
 
 @overload
-def resolve_snref(target_short_name: str, items: Iterable[OdxNamed], expected_type: Type[T]) -> T:
+def resolve_snref(target_short_name: str, items: Iterable[OdxNamed],
+                  expected_type: Type[TNamed]) -> TNamed:
     ...
 
 
