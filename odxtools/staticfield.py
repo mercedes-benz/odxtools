@@ -88,6 +88,10 @@ class StaticField(Field):
         odxassert(decode_state.cursor_bit_position == 0,
                   "No bit position can be specified for static length fields!")
 
+        orig_origin = decode_state.origin_byte_position
+        orig_cursor = decode_state.cursor_byte_position
+        decode_state.origin_byte_position = decode_state.cursor_byte_position
+
         result: List[ParameterValue] = []
         for _ in range(self.fixed_number_of_items):
             orig_cursor = decode_state.cursor_byte_position
@@ -100,5 +104,8 @@ class StaticField(Field):
             result.append(self.structure.decode_from_pdu(decode_state))
 
             decode_state.cursor_byte_position = orig_cursor + self.item_byte_size
+
+        decode_state.origin_byte_position = orig_origin
+        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
 
         return result

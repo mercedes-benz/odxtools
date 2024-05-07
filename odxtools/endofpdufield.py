@@ -71,6 +71,10 @@ class EndOfPduField(Field):
         odxassert(not decode_state.cursor_bit_position,
                   "No bit position can be specified for end-of-pdu fields!")
 
+        orig_origin = decode_state.origin_byte_position
+        orig_cursor = decode_state.cursor_byte_position
+        decode_state.origin_byte_position = decode_state.cursor_byte_position
+
         result: List[ParameterValue] = []
         while decode_state.cursor_byte_position < len(decode_state.coded_message):
             # ATTENTION: the ODX specification is very misleading
@@ -78,5 +82,8 @@ class EndOfPduField(Field):
             # the PDU, but it means that DOP of the items that are
             # repeated are identical, not their values
             result.append(self.structure.decode_from_pdu(decode_state))
+
+        decode_state.origin_byte_position = orig_origin
+        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
 
         return result
