@@ -47,7 +47,7 @@ class EndOfPduField(Field):
         odxassert(not encode_state.cursor_bit_position,
                   "No bit position can be specified for end-of-pdu fields!")
 
-        if not isinstance(physical_value, list):
+        if not isinstance(physical_value, (tuple, list)):
             odxraise(
                 f"Invalid type {type(physical_value).__name__} of physical "
                 f"value for end-of-pdu field, expected a list", EncodeError)

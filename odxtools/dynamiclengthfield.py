@@ -55,7 +55,7 @@ class DynamicLengthField(Field):
         odxassert(encode_state.cursor_bit_position == 0,
                   "No bit position can be specified for dynamic length fields!")
 
-        if not isinstance(physical_value, list):
+        if not isinstance(physical_value, (tuple, list)):
             odxraise(
                 f"Expected a list of values for dynamic length field {self.short_name}, "
                 f"got {type(physical_value)}", EncodeError)
