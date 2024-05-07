@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Sequence
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -65,7 +65,7 @@ class DynamicEndmarkerField(Field):
 
         odxassert(encode_state.cursor_bit_position == 0,
                   "No bit position can be specified for dynamic endmarker fields!")
-        if not isinstance(physical_value, (tuple, list)):
+        if not isinstance(physical_value, Sequence):
             odxraise(
                 f"Expected a sequence of values for dynamic endmarker field {self.short_name}, "
                 f"got {type(physical_value).__name__}", EncodeError)

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Sequence
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -51,7 +51,7 @@ class StaticField(Field):
     def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:
 
         if not isinstance(physical_value,
-                          (tuple, list)) or len(physical_value) != self.fixed_number_of_items:
+                          Sequence) or len(physical_value) != self.fixed_number_of_items:
             odxraise(f"Value for static field '{self.short_name}' "
                      f"must be a list of size {self.fixed_number_of_items}")
 

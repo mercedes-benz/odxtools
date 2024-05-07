@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Sequence
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -55,7 +55,7 @@ class DynamicLengthField(Field):
         odxassert(encode_state.cursor_bit_position == 0,
                   "No bit position can be specified for dynamic length fields!")
 
-        if not isinstance(physical_value, (tuple, list)):
+        if not isinstance(physical_value, Sequence):
             odxraise(
                 f"Expected a list of values for dynamic length field {self.short_name}, "
                 f"got {type(physical_value)}", EncodeError)

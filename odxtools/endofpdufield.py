@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Sequence
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -49,7 +49,7 @@ class EndOfPduField(Field):
         odxassert(encode_state.is_end_of_pdu,
                   "End-of-pdu fields can only be located at the end of PDUs!")
 
-        if not isinstance(physical_value, (tuple, list)):
+        if not isinstance(physical_value, Sequence):
             odxraise(
                 f"Invalid type {type(physical_value).__name__} of physical "
                 f"value for end-of-pdu field, expected a list", EncodeError)
