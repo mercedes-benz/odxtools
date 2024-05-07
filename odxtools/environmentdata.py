@@ -11,7 +11,14 @@ from .utils import dataclass_fields_asdict
 
 @dataclass
 class EnvironmentData(BasicStructure):
-    """This class represents Environment Data that describes the circumstances in which the error occurred."""
+    """This class represents Environment Data that describes the
+    circumstances in which the error occurred.
+
+    This is one of the many multiplexer mechanisms specified by the
+    ODX standard, because an environment data parameter must only be
+    used if a DTC parameter has a certain set of values. (In this
+    sense, it is quite similar to NRC-CONST parameters.)
+    """
 
     all_value: Optional[bool]
     dtc_values: List[int]

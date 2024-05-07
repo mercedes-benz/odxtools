@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Sequence
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -46,20 +46,34 @@ class EndOfPduField(Field):
                         encode_state: EncodeState) -> None:
         odxassert(not encode_state.cursor_bit_position,
                   "No bit position can be specified for end-of-pdu fields!")
+        odxassert(encode_state.is_end_of_pdu,
+                  "End-of-pdu fields can only be located at the end of PDUs!")
 
-        if not isinstance(physical_value, list):
+        if not isinstance(physical_value, Sequence):
             odxraise(
                 f"Invalid type {type(physical_value).__name__} of physical "
                 f"value for end-of-pdu field, expected a list", EncodeError)
             return
 
-        for value in physical_value:
+        orig_is_end_of_pdu = encode_state.is_end_of_pdu
+        encode_state.is_end_of_pdu = False
+
+        for i, value in enumerate(physical_value):
+            if i == len(physical_value) - 1:
+                encode_state.is_end_of_pdu = orig_is_end_of_pdu
+
             self.structure.encode_into_pdu(value, encode_state)
+
+        encode_state.is_end_of_pdu = orig_is_end_of_pdu
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         odxassert(not decode_state.cursor_bit_position,
                   "No bit position can be specified for end-of-pdu fields!")
+
+        orig_origin = decode_state.origin_byte_position
+        orig_cursor = decode_state.cursor_byte_position
+        decode_state.origin_byte_position = decode_state.cursor_byte_position
 
         result: List[ParameterValue] = []
         while decode_state.cursor_byte_position < len(decode_state.coded_message):
@@ -68,5 +82,8 @@ class EndOfPduField(Field):
             # the PDU, but it means that DOP of the items that are
             # repeated are identical, not their values
             result.append(self.structure.decode_from_pdu(decode_state))
+
+        decode_state.origin_byte_position = orig_origin
+        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
 
         return result

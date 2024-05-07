@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Sequence
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -51,14 +51,19 @@ class StaticField(Field):
     def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:
 
         if not isinstance(physical_value,
-                          (tuple, list)) or len(physical_value) != self.fixed_number_of_items:
+                          Sequence) or len(physical_value) != self.fixed_number_of_items:
             odxraise(f"Value for static field '{self.short_name}' "
                      f"must be a list of size {self.fixed_number_of_items}")
 
-        for val in physical_value:
+        orig_is_end_of_pdu = encode_state.is_end_of_pdu
+        encode_state.is_end_of_pdu = False
+        for i, val in enumerate(physical_value):
             if not isinstance(val, dict):
                 odxraise(f"The individual parameter values for static field '{self.short_name}' "
                          f"must be dictionaries for structure '{self.structure.short_name}'")
+
+            if i == len(physical_value) - 1:
+                encode_state.is_end_of_pdu = orig_is_end_of_pdu
 
             pos_before = encode_state.cursor_byte_position
             self.structure.encode_into_pdu(val, encode_state)
@@ -75,11 +80,17 @@ class StaticField(Field):
                 encode_state.emplace_bytes(b'\x00' * (self.item_byte_size -
                                                       (pos_after - pos_before)))
 
+        encode_state.is_end_of_pdu = orig_is_end_of_pdu
+
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
 
         odxassert(decode_state.cursor_bit_position == 0,
                   "No bit position can be specified for static length fields!")
+
+        orig_origin = decode_state.origin_byte_position
+        orig_cursor = decode_state.cursor_byte_position
+        decode_state.origin_byte_position = decode_state.cursor_byte_position
 
         result: List[ParameterValue] = []
         for _ in range(self.fixed_number_of_items):
@@ -93,5 +104,8 @@ class StaticField(Field):
             result.append(self.structure.decode_from_pdu(decode_state))
 
             decode_state.cursor_byte_position = orig_cursor + self.item_byte_size
+
+        decode_state.origin_byte_position = orig_origin
+        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
 
         return result

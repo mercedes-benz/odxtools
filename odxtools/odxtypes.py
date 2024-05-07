@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Tuple, Type, Union, overload
+from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, Optional, Tuple, Type, Union,
+                    overload)
 from xml.etree import ElementTree
 
 from .exceptions import odxassert, odxraise, odxrequire
@@ -28,7 +29,7 @@ ParameterDict = Dict[str, Union["Parameter", "ParameterDict"]]
 # multiple items, so this can be a list of objects.
 TableStructParameterValue = Tuple[str, "ParameterValue"]
 ParameterValue = Union[AtomicOdxType, "ParameterValueDict", TableStructParameterValue,
-                       List["ParameterValue"], "DiagnosticTroubleCode"]
+                       Iterable["ParameterValue"], "DiagnosticTroubleCode"]
 ParameterValueDict = Dict[str, ParameterValue]
 
 

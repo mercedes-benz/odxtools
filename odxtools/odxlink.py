@@ -211,8 +211,10 @@ class OdxLinkDatabase:
 
                 return obj
 
-        raise KeyError(f"ODXLINK reference {ref} could not be resolved for any "
-                       f"of the document fragments {ref.ref_docs}")
+        odxraise(
+            f"ODXLINK reference {ref} could not be resolved for any "
+            f"of the document fragments {ref.ref_docs}", KeyError)
+        return None
 
     @overload
     def resolve_lenient(self, ref: OdxLinkRef, expected_type: None = None) -> Any:

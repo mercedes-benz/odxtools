@@ -43,7 +43,7 @@ class ParameterWithDOP(Parameter):
     def __post_init__(self) -> None:
         odxassert(self.dop_snref is not None or self.dop_ref is not None,
                   f"Param {self.short_name} without a DOP-(SN)REF should not exist!")
-        self._dop: Optional[DopBase] = None
+        self._dop: DopBase
 
     @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -55,10 +55,7 @@ class ParameterWithDOP(Parameter):
 
         if self.dop_ref is not None:
             odxassert(self.dop_snref is None)
-            # TODO: do not do lenient resolves here. The problem is
-            # that currently not all kinds of DOPs are internalized
-            # (e.g., static and dynamic fields)
-            self._dop = odxlinks.resolve_lenient(self.dop_ref)
+            self._dop = odxlinks.resolve(self.dop_ref)
 
     @override
     def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
@@ -71,11 +68,9 @@ class ParameterWithDOP(Parameter):
 
     @property
     def dop(self) -> DopBase:
-        """may be a DataObjectProperty, a Structure or None"""
+        """This is usually a DataObjectProperty or a Structure object"""
 
-        return odxrequire(
-            self._dop, "Specifying a data object property is mandatory but it "
-            "could not be resolved")
+        return self._dop
 
     @override
     def get_static_bit_length(self) -> Optional[int]:

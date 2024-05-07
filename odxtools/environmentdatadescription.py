@@ -20,8 +20,14 @@ if TYPE_CHECKING:
 
 @dataclass
 class EnvironmentDataDescription(ComplexDop):
-    """This class represents Environment Data Description, which is a complex DOP
-    that is used to define the interpretation of environment data."""
+    """This class represents environment data descriptions
+
+    An environment data description provides a list of all environment
+    data objects that are potentially applicable to decode a given
+    response. (If a given environment data object is applicable
+    depends on the value of the DtcDOP that is associated with it.)
+
+    """
 
     # in ODX 2.0.0, ENV-DATAS seems to be a mandatory
     # sub-element of ENV-DATA-DESC, in ODX 2.2 it is not

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Sequence
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -55,7 +55,7 @@ class DynamicLengthField(Field):
         odxassert(encode_state.cursor_bit_position == 0,
                   "No bit position can be specified for dynamic length fields!")
 
-        if not isinstance(physical_value, list):
+        if not isinstance(physical_value, Sequence):
             odxraise(
                 f"Expected a list of values for dynamic length field {self.short_name}, "
                 f"got {type(physical_value)}", EncodeError)
@@ -77,8 +77,14 @@ class DynamicLengthField(Field):
         encode_state.cursor_byte_position = encode_state.origin_byte_position + self.offset
         encode_state.cursor_bit_position = 0
 
-        for value in physical_value:
+        orig_is_end_of_pdu = encode_state.is_end_of_pdu
+        encode_state.is_end_of_pdu = False
+        for i, value in enumerate(physical_value):
+            if i == len(physical_value) - 1:
+                encode_state.is_end_of_pdu = orig_is_end_of_pdu
+
             self.structure.encode_into_pdu(value, encode_state)
+        encode_state.is_end_of_pdu = orig_is_end_of_pdu
 
         # ensure the correct message size if the field is empty
         if len(physical_value) == 0:
