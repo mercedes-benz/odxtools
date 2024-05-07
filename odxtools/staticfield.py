@@ -55,10 +55,15 @@ class StaticField(Field):
             odxraise(f"Value for static field '{self.short_name}' "
                      f"must be a list of size {self.fixed_number_of_items}")
 
-        for val in physical_value:
+        orig_is_end_of_pdu = encode_state.is_end_of_pdu
+        encode_state.is_end_of_pdu = False
+        for i, val in enumerate(physical_value):
             if not isinstance(val, dict):
                 odxraise(f"The individual parameter values for static field '{self.short_name}' "
                          f"must be dictionaries for structure '{self.structure.short_name}'")
+
+            if i == len(physical_value) - 1:
+                encode_state.is_end_of_pdu = orig_is_end_of_pdu
 
             pos_before = encode_state.cursor_byte_position
             self.structure.encode_into_pdu(val, encode_state)
@@ -74,6 +79,8 @@ class StaticField(Field):
                 # add some padding bytes
                 encode_state.emplace_bytes(b'\x00' * (self.item_byte_size -
                                                       (pos_after - pos_before)))
+
+        encode_state.is_end_of_pdu = orig_is_end_of_pdu
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

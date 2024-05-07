@@ -46,6 +46,8 @@ class EndOfPduField(Field):
                         encode_state: EncodeState) -> None:
         odxassert(not encode_state.cursor_bit_position,
                   "No bit position can be specified for end-of-pdu fields!")
+        odxassert(encode_state.is_end_of_pdu,
+                  "End-of-pdu fields can only be located at the end of PDUs!")
 
         if not isinstance(physical_value, (tuple, list)):
             odxraise(
@@ -53,8 +55,16 @@ class EndOfPduField(Field):
                 f"value for end-of-pdu field, expected a list", EncodeError)
             return
 
-        for value in physical_value:
+        orig_is_end_of_pdu = encode_state.is_end_of_pdu
+        encode_state.is_end_of_pdu = False
+
+        for i, value in enumerate(physical_value):
+            if i == len(physical_value) - 1:
+                encode_state.is_end_of_pdu = orig_is_end_of_pdu
+
             self.structure.encode_into_pdu(value, encode_state)
+
+        encode_state.is_end_of_pdu = orig_is_end_of_pdu
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

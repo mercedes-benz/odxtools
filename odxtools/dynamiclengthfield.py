@@ -77,8 +77,14 @@ class DynamicLengthField(Field):
         encode_state.cursor_byte_position = encode_state.origin_byte_position + self.offset
         encode_state.cursor_bit_position = 0
 
-        for value in physical_value:
+        orig_is_end_of_pdu = encode_state.is_end_of_pdu
+        encode_state.is_end_of_pdu = False
+        for i, value in enumerate(physical_value):
+            if i == len(physical_value) - 1:
+                encode_state.is_end_of_pdu = orig_is_end_of_pdu
+
             self.structure.encode_into_pdu(value, encode_state)
+        encode_state.is_end_of_pdu = orig_is_end_of_pdu
 
         # ensure the correct message size if the field is empty
         if len(physical_value) == 0:
