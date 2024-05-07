@@ -15,6 +15,7 @@ from .admindata import AdminData
 from .companydata import CompanyData
 from .comparaminstance import ComparamInstance
 from .comparamspec import ComparamSpec
+from .comparamsubset import ComparamSubset
 from .diagcomm import DiagComm
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayerraw import DiagLayerRaw
@@ -356,7 +357,7 @@ class DiagLayer:
         return self.diag_layer_raw.prot_stack_snref
 
     @property
-    def comparam_spec(self) -> Optional[ComparamSpec]:
+    def comparam_spec(self) -> Optional[Union[ComparamSpec, ComparamSubset]]:
         return self.diag_layer_raw.comparam_spec
 
     @property
