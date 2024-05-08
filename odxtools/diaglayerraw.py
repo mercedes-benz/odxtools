@@ -9,6 +9,7 @@ from .admindata import AdminData
 from .companydata import CompanyData
 from .comparaminstance import ComparamInstance
 from .comparamspec import ComparamSpec
+from .comparamsubset import ComparamSubset
 from .createsdgs import create_sdgs_from_et
 from .diagcomm import DiagComm
 from .diagdatadictionaryspec import DiagDataDictionarySpec
@@ -243,7 +244,10 @@ class DiagLayerRaw(IdentifiableElement):
         """Recursively resolve all references."""
 
         if self.comparam_spec_ref is not None:
-            self._comparam_spec = odxlinks.resolve(self.comparam_spec_ref, ComparamSpec)
+            spec = odxlinks.resolve(self.comparam_spec_ref)
+            if not isinstance(spec, (ComparamSubset, ComparamSpec)):
+                odxraise(f"Type {type(spec).__name__} is not allowed for comparam specs")
+            self._comparam_spec = spec
 
         # do ODXLINK reference resolution
         if self.admin_data is not None:
@@ -281,8 +285,10 @@ class DiagLayerRaw(IdentifiableElement):
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         self._prot_stack: Optional[ProtStack] = None
         if self.prot_stack_snref is not None:
-            self._prot_stack = resolve_snref(self.prot_stack_snref,
-                                             odxrequire(self.comparam_spec).prot_stacks, ProtStack)
+            cp_spec = self.comparam_spec
+            if isinstance(cp_spec, ComparamSpec):
+                self._prot_stack = resolve_snref(self.prot_stack_snref, cp_spec.prot_stacks,
+                                                 ProtStack)
 
         # do short-name reference resolution
         if self.admin_data is not None:
@@ -318,7 +324,7 @@ class DiagLayerRaw(IdentifiableElement):
             comparam._resolve_snrefs(diag_layer)
 
     @property
-    def comparam_spec(self) -> Optional[ComparamSpec]:
+    def comparam_spec(self) -> Optional[Union[ComparamSpec, ComparamSubset]]:
         return self._comparam_spec
 
     @property
