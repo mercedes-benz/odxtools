@@ -1,14 +1,17 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
+from xml.etree import ElementTree
 
 from typing_extensions import override
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
-from .exceptions import EncodeError, odxassert, odxraise
+from .exceptions import EncodeError, odxassert, odxraise, odxrequire
+from .odxlink import OdxDocFragment
 from .odxtypes import AtomicOdxType, DataType
+from .utils import dataclass_fields_asdict
 
 
 @dataclass
@@ -19,6 +22,16 @@ class LeadingLengthInfoType(DiagCodedType):
     #: field, i.e., this is NOT the length of the LeadingLengthInfoType
     #: object.
     bit_length: int
+
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "LeadingLengthInfoType":
+        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
+
+        bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))
+
+        return LeadingLengthInfoType(bit_length=bit_length, **kwargs)
 
     def __post_init__(self) -> None:
         odxassert(self.bit_length > 0,

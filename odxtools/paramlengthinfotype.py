@@ -1,15 +1,17 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, cast
+from typing import TYPE_CHECKING, Any, Dict, List, cast
+from xml.etree import ElementTree
 
 from typing_extensions import override
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
-from .exceptions import EncodeError, odxraise
-from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .exceptions import EncodeError, odxraise, odxrequire
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType, DataType
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -20,6 +22,17 @@ if TYPE_CHECKING:
 class ParamLengthInfoType(DiagCodedType):
 
     length_key_ref: OdxLinkRef
+
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "ParamLengthInfoType":
+        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
+
+        length_key_ref = odxrequire(
+            OdxLinkRef.from_et(et_element.find("LENGTH-KEY-REF"), doc_frags))
+
+        return ParamLengthInfoType(length_key_ref=length_key_ref, **kwargs)
 
     @property
     def dct_type(self) -> DctType:

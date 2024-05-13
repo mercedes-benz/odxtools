@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Literal, Optional
+from typing import List, Literal, Optional
+from xml.etree import ElementTree
 
 from typing_extensions import override
 
@@ -8,7 +9,9 @@ from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import odxassert, odxraise, odxrequire
-from .odxtypes import AtomicOdxType, DataType
+from .odxlink import OdxDocFragment
+from .odxtypes import AtomicOdxType, DataType, odxstr_to_bool
+from .utils import dataclass_fields_asdict
 
 
 @dataclass
@@ -17,6 +20,28 @@ class StandardLengthType(DiagCodedType):
     bit_length: int
     bit_mask: Optional[int]
     is_condensed_raw: Optional[bool]
+
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "StandardLengthType":
+        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
+
+        bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))
+        bit_mask = None
+        if (bit_mask_str := et_element.findtext("BIT-MASK")) is not None:
+            # The XSD uses the type xsd:hexBinary
+            # xsd:hexBinary allows for leading/trailing whitespace, empty strings, and it only allows an even
+            # number of hex digits, while some of the examples shown in the  ODX specification exhibit an
+            # odd number of hex digits.
+            # This causes a validation paradox, so we try to be flexible
+            bit_mask_str = bit_mask_str.strip()
+            if len(bit_mask_str):
+                bit_mask = int(bit_mask_str, 16)
+        is_condensed_raw = odxstr_to_bool(et_element.get("IS-CONDENSED"))
+
+        return StandardLengthType(
+            bit_length=bit_length, bit_mask=bit_mask, is_condensed_raw=is_condensed_raw, **kwargs)
 
     @property
     def dct_type(self) -> DctType:

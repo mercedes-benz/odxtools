@@ -1,13 +1,13 @@
 # SPDX-License-Identifier: MIT
-import abc
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union, cast
+from xml.etree import ElementTree
 
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .exceptions import odxassert, odxraise
-from .odxlink import OdxLinkDatabase, OdxLinkId
-from .odxtypes import AtomicOdxType, DataType
+from .exceptions import odxassert, odxraise, odxrequire
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxtypes import AtomicOdxType, DataType, odxstr_to_bool
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -22,11 +22,29 @@ DctType = Literal[
 
 
 @dataclass
-class DiagCodedType(abc.ABC):
+class DiagCodedType:
 
     base_data_type: DataType
     base_type_encoding: Optional[str]
     is_highlow_byte_order_raw: Optional[bool]
+
+    @staticmethod
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "DiagCodedType":
+        base_data_type_str = odxrequire(et_element.get("BASE-DATA-TYPE"))
+        try:
+            base_data_type = DataType(base_data_type_str)
+        except ValueError:
+            odxraise(f"Unknown base data type {base_data_type_str}")
+            base_data_type = cast(DataType, None)
+
+        base_type_encoding = et_element.get("BASE-TYPE-ENCODING")
+        is_highlow_byte_order_raw = odxstr_to_bool(et_element.get("IS-HIGHLOW-BYTE-ORDER"))
+
+        return DiagCodedType(
+            base_data_type=base_data_type,
+            base_type_encoding=base_type_encoding,
+            is_highlow_byte_order_raw=is_highlow_byte_order_raw)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:  # noqa: B027
         return {}
@@ -43,9 +61,10 @@ class DiagCodedType(abc.ABC):
         return None
 
     @property
-    @abc.abstractmethod
     def dct_type(self) -> DctType:
-        pass
+        odxraise(f"Class {type(self).__name__} does not override required method "
+                 f"dct_type()", NotImplementedError)
+        return "STANDARD-LENGTH-TYPE"
 
     @property
     def is_highlow_byte_order(self) -> bool:
