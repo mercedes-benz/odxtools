@@ -64,7 +64,7 @@ class DiagCodedType:
     def dct_type(self) -> DctType:
         odxraise(f"Class {type(self).__name__} does not override required method "
                  f"dct_type()", NotImplementedError)
-        return "STANDARD-LENGTH-TYPE"
+        return cast(DctType, None)
 
     @property
     def is_highlow_byte_order(self) -> bool:
