@@ -1,14 +1,17 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Optional
+from typing import List, Optional
+from xml.etree import ElementTree
 
 from typing_extensions import override
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, odxassert, odxraise
+from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
+from .odxlink import OdxDocFragment
 from .odxtypes import AtomicOdxType, DataType
+from .utils import dataclass_fields_asdict
 
 
 @dataclass
@@ -16,6 +19,21 @@ class MinMaxLengthType(DiagCodedType):
     min_length: int
     max_length: Optional[int]
     termination: str
+
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "MinMaxLengthType":
+        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
+
+        min_length = int(odxrequire(et_element.findtext("MIN-LENGTH")))
+        max_length = None
+        if et_element.find("MAX-LENGTH") is not None:
+            max_length = int(odxrequire(et_element.findtext("MAX-LENGTH")))
+        termination = odxrequire(et_element.get("TERMINATION"))
+
+        return MinMaxLengthType(
+            min_length=min_length, max_length=max_length, termination=termination, **kwargs)
 
     def __post_init__(self) -> None:
         odxassert(self.max_length is None or self.min_length <= self.max_length)
