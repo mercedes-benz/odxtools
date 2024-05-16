@@ -7,7 +7,6 @@ from .admindata import AdminData
 from .companydata import CompanyData
 from .comparam import Comparam
 from .complexcomparam import ComplexComparam
-from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
 from .element import IdentifiableElement
 from .exceptions import odxrequire
@@ -64,7 +63,9 @@ class ComparamSubset(IdentifiableElement):
         else:
             unit_spec = None
 
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         return ComparamSubset(
             category=category,

@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .admindata import AdminData
-from .createsdgs import create_sdgs_from_et
 from .decodestate import DecodeState
 from .element import IdentifiableElement
 from .encodestate import EncodeState
@@ -37,7 +36,9 @@ class DopBase(IdentifiableElement):
         if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:
             admin_data = AdminData.from_et(admin_data_elem, doc_frags)
 
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         return DopBase(admin_data=admin_data, sdgs=sdgs, **kwargs)
 

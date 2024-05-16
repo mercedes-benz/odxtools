@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .companydata import CompanyData
-from .createsdgs import create_sdgs_from_et
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .specialdatagroup import SpecialDataGroup
@@ -37,7 +36,9 @@ class CompanyDocInfo:
             OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), doc_frags))
         team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), doc_frags)
         doc_label = et_element.findtext("DOC-LABEL")
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         return CompanyDocInfo(
             company_data_ref=company_data_ref,

@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Union
 from xml.etree import ElementTree
 
-from .createsdgs import create_sdgs_from_et
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .physicaldimension import PhysicalDimension
@@ -49,7 +48,9 @@ class UnitSpec:
             PhysicalDimension.from_et(el, doc_frags)
             for el in et_element.iterfind("PHYSICAL-DIMENSIONS/PHYSICAL-DIMENSION")
         ]
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         return UnitSpec(
             unit_groups=unit_groups,

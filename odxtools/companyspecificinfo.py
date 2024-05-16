@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List
 from xml.etree import ElementTree
 
-from .createsdgs import create_sdgs_from_et
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .relateddoc import RelatedDoc
 from .specialdatagroup import SpecialDataGroup
@@ -25,7 +24,9 @@ class CompanySpecificInfo:
             for rd in et_element.iterfind("RELATED-DOCS/RELATED-DOC")
         ]
 
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         return CompanySpecificInfo(related_docs=related_docs, sdgs=sdgs)
 

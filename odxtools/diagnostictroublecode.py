@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
-from .createsdgs import create_sdgs_from_et
 from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
@@ -43,7 +42,9 @@ class DiagnosticTroubleCode(IdentifiableElement):
             level = None
 
         is_temporary_raw = odxstr_to_bool(et_element.get("IS-TEMPORARY"))
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         return DiagnosticTroubleCode(
             trouble_code=int(odxrequire(et_element.findtext("TROUBLE-CODE"))),

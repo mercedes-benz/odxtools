@@ -5,7 +5,6 @@ from xml.etree import ElementTree
 
 from typing_extensions import final, override
 
-from ..createsdgs import create_sdgs_from_et
 from ..decodestate import DecodeState
 from ..element import NamedElement
 from ..encodestate import EncodeState
@@ -55,7 +54,9 @@ class Parameter(NamedElement):
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
 
         semantic = et_element.get("SEMANTIC")
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         byte_position_str = et_element.findtext("BYTE-POSITION")
         bit_position_str = et_element.findtext("BIT-POSITION")

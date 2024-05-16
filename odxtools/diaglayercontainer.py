@@ -6,7 +6,6 @@ from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .companydata import CompanyData
-from .createsdgs import create_sdgs_from_et
 from .diaglayer import DiagLayer
 from .element import IdentifiableElement
 from .exceptions import odxrequire
@@ -71,7 +70,9 @@ class DiagLayerContainer(IdentifiableElement):
             DiagLayer.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")
         ])
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         return DiagLayerContainer(
             admin_data=admin_data,

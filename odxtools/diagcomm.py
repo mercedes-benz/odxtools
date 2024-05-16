@@ -6,7 +6,6 @@ from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .audience import Audience
-from .createsdgs import create_sdgs_from_et
 from .element import IdentifiableElement
 from .exceptions import odxraise, odxrequire
 from .functionalclass import FunctionalClass
@@ -76,7 +75,9 @@ class DiagComm(IdentifiableElement):
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         functional_class_refs = [
             odxrequire(OdxLinkRef.from_et(el, doc_frags))

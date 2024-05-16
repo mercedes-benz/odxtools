@@ -10,7 +10,6 @@ from .companydata import CompanyData
 from .comparaminstance import ComparamInstance
 from .comparamspec import ComparamSpec
 from .comparamsubset import ComparamSubset
-from .createsdgs import create_sdgs_from_et
 from .diagcomm import DiagComm
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayertype import DiagLayerType
@@ -153,7 +152,9 @@ class DiagLayerRaw(IdentifiableElement):
             for el in et_element.iterfind("ADDITIONAL-AUDIENCES/ADDITIONAL-AUDIENCE")
         ]
 
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         parent_refs = [
             ParentRef.from_et(pr_el, doc_frags)
