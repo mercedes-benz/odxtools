@@ -7,6 +7,11 @@ from xml.etree import ElementTree
 import jinja2
 
 import odxtools
+from odxtools.compumethods.compuconst import CompuConst
+from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
+from odxtools.compumethods.compumethod import CompuCategory
+from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
+from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.createanycompumethod import create_any_compu_method_from_et
 from odxtools.compumethods.limit import IntervalType, Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
@@ -43,16 +48,31 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.jinja_env = _get_jinja_environment()
 
         self.linear_compumethod = LinearCompuMethod(
-            offset=0,
-            factor=1,
-            denominator=3600,
+            category=CompuCategory.LINEAR,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=None,
+                        upper_limit=None,
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            numerators=[0, 1],
+                            denominators=[3600],
+                        ),
+                        internal_type=DataType.A_INT32,
+                        physical_type=DataType.A_INT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32,
-            internal_lower_limit=None,
-            internal_upper_limit=None,
         )
 
-        self.linear_compumethod_odx = f"""
+        self.linear_compumethod_xml = f"""
         <COMPU-METHOD>
             <CATEGORY>LINEAR</CATEGORY>
             <COMPU-INTERNAL-TO-PHYS>
@@ -60,11 +80,11 @@ class TestLinearCompuMethod(unittest.TestCase):
                     <COMPU-SCALE>
                         <COMPU-RATIONAL-COEFFS>
                             <COMPU-NUMERATOR>
-                                <V>{self.linear_compumethod.offset}</V>
-                                <V>{self.linear_compumethod.factor}</V>
+                                <V>{self.linear_compumethod.segment.offset}</V>
+                                <V>{self.linear_compumethod.segment.factor}</V>
                             </COMPU-NUMERATOR>
                             <COMPU-DENOMINATOR>
-                                <V>{self.linear_compumethod.denominator}</V>
+                                <V>{self.linear_compumethod.segment.denominator}</V>
                             </COMPU-DENOMINATOR>
                         </COMPU-RATIONAL-COEFFS>
                     </COMPU-SCALE>
@@ -77,7 +97,7 @@ class TestLinearCompuMethod(unittest.TestCase):
         """Test parsing of linear compumethod"""
         expected = self.linear_compumethod
 
-        et_element = ElementTree.fromstring(self.linear_compumethod_odx)
+        et_element = ElementTree.fromstring(self.linear_compumethod_xml)
         actual = create_any_compu_method_from_et(
             et_element,
             doc_frags,
@@ -87,53 +107,83 @@ class TestLinearCompuMethod(unittest.TestCase):
         assert isinstance(actual, LinearCompuMethod)
         self.assertEqual(expected.physical_type, actual.physical_type)
         self.assertEqual(expected.internal_type, actual.internal_type)
-        self.assertEqual(expected.offset, actual.offset)
-        self.assertEqual(expected.factor, actual.factor)
-        self.assertEqual(expected.denominator, actual.denominator)
+        self.assertEqual(expected.segment.offset, actual.segment.offset)
+        self.assertEqual(expected.segment.factor, actual.segment.factor)
+        self.assertEqual(expected.segment.denominator, actual.segment.denominator)
 
     def test_write_odx(self) -> None:
         self.maxDiff = None
-        dlc_tpl = self.jinja_env.get_template("macros/printDOP.xml.jinja2")
+        dlc_tpl = self.jinja_env.get_template("macros/printCompuMethod.xml.jinja2")
         module = dlc_tpl.make_module()
 
-        out = module.printCompuMethod(self.linear_compumethod)  # type: ignore[attr-defined]
+        actual_xml = module.printCompuMethod(self.linear_compumethod)  # type: ignore[attr-defined]
 
-        expected_odx = self.linear_compumethod_odx
+        expected_xml = self.linear_compumethod_xml
 
         # We ignore spaces
         def remove_spaces(string: str) -> str:
             return "".join(string.split())
 
-        self.assertEqual(remove_spaces(out), remove_spaces(expected_odx))
+        self.assertEqual(remove_spaces(actual_xml), remove_spaces(expected_xml))
 
     def test_linear_compu_method_type_denom_not_one(self) -> None:
         compu_method = LinearCompuMethod(
-            offset=0,
-            factor=1,
-            denominator=3600,
+            category=CompuCategory.LINEAR,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="0",
+                            value_type=DataType.A_INT32,
+                            interval_type=IntervalType.INFINITE),
+                        upper_limit=Limit(
+                            value_raw="0",
+                            value_type=DataType.A_INT32,
+                            interval_type=IntervalType.INFINITE),
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            numerators=[0, 1],
+                            denominators=[3600],
+                        ),
+                        internal_type=DataType.A_INT32,
+                        physical_type=DataType.A_INT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
-            physical_type=DataType.A_INT32,
-            internal_lower_limit=Limit(
-                value_raw="0", value_type=DataType.A_INT32, interval_type=IntervalType.INFINITE),
-            internal_upper_limit=Limit(
-                value_raw="0", value_type=DataType.A_INT32, interval_type=IntervalType.INFINITE),
-        )
-        self.assertEqual(compu_method.convert_physical_to_internal(2), 7200)
+            physical_type=DataType.A_INT32)
 
+        self.assertEqual(compu_method.convert_physical_to_internal(2), 7200)
         self.assertEqual(compu_method.convert_internal_to_physical(7200), 2)
 
     def test_linear_compu_method_type_int_int(self) -> None:
         compu_method = LinearCompuMethod(
-            offset=1,
-            factor=3,
-            denominator=1,
+            category=CompuCategory.LINEAR,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=None,
+                        upper_limit=None,
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            numerators=[1, 3],
+                            denominators=[1],
+                        ),
+                        internal_type=DataType.A_INT32,
+                        physical_type=DataType.A_INT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
-            physical_type=DataType.A_INT32,
-            internal_lower_limit=Limit(
-                value_raw="0", value_type=DataType.A_INT32, interval_type=IntervalType.INFINITE),
-            internal_upper_limit=Limit(
-                value_raw="0", value_type=DataType.A_INT32, interval_type=IntervalType.INFINITE),
-        )
+            physical_type=DataType.A_INT32)
 
         self.assertEqual(compu_method.convert_internal_to_physical(4), 13)
         self.assertEqual(compu_method.convert_internal_to_physical(0), 1)
@@ -145,16 +195,29 @@ class TestLinearCompuMethod(unittest.TestCase):
 
     def test_linear_compu_method_type_int_float(self) -> None:
         compu_method = LinearCompuMethod(
-            offset=1,
-            factor=3,
-            denominator=1,
+            category=CompuCategory.LINEAR,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=None,
+                        upper_limit=None,
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            numerators=[1, 3],
+                            denominators=[1],
+                        ),
+                        internal_type=DataType.A_INT32,
+                        physical_type=DataType.A_FLOAT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
-            physical_type=DataType.A_FLOAT32,
-            internal_lower_limit=Limit(
-                value_raw="0", value_type=DataType.A_INT32, interval_type=IntervalType.INFINITE),
-            internal_upper_limit=Limit(
-                value_raw="0", value_type=DataType.A_INT32, interval_type=IntervalType.INFINITE),
-        )
+            physical_type=DataType.A_FLOAT32)
+
         self.assertTrue(compu_method.is_valid_internal_value(123))
         self.assertFalse(compu_method.is_valid_internal_value("123"))
         self.assertFalse(compu_method.is_valid_internal_value(1.2345))
@@ -165,16 +228,28 @@ class TestLinearCompuMethod(unittest.TestCase):
 
     def test_linear_compu_method_type_float_int(self) -> None:
         compu_method = LinearCompuMethod(
-            offset=1,
-            factor=3,
-            denominator=1,
+            category=CompuCategory.LINEAR,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=None,
+                        upper_limit=None,
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            numerators=[1, 3],
+                            denominators=[1],
+                        ),
+                        internal_type=DataType.A_INT32,
+                        physical_type=DataType.A_INT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=None,
             internal_type=DataType.A_FLOAT32,
-            physical_type=DataType.A_INT32,
-            internal_lower_limit=Limit(
-                value_raw=None, value_type=DataType.A_FLOAT32, interval_type=IntervalType.INFINITE),
-            internal_upper_limit=Limit(
-                value_raw=None, value_type=DataType.A_FLOAT32, interval_type=IntervalType.INFINITE),
-        )
+            physical_type=DataType.A_INT32)
         self.assertTrue(compu_method.is_valid_internal_value(1.2345))
         self.assertTrue(compu_method.is_valid_internal_value(123))
         self.assertFalse(compu_method.is_valid_internal_value("123"))
@@ -184,36 +259,58 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertFalse(compu_method.is_valid_physical_value(1.2345))
 
     def test_linear_compu_method_type_string(self) -> None:
-        self.assertRaises(
-            OdxError,
-            LinearCompuMethod,
-            offset=1,
-            factor=3,
-            denominator=1,
-            internal_type=DataType.A_ASCIISTRING,
-            physical_type=DataType.A_UNICODE2STRING,
-            internal_lower_limit=Limit(
-                value_raw="0",
-                value_type=DataType.A_ASCIISTRING,
-                interval_type=IntervalType.INFINITE),
-            internal_upper_limit=Limit(
-                value_raw="0",
-                value_type=DataType.A_ASCIISTRING,
-                interval_type=IntervalType.INFINITE),
-        )
+        with self.assertRaises(OdxError):
+            LinearCompuMethod(
+                category=CompuCategory.LINEAR,
+                compu_internal_to_phys=CompuInternalToPhys(
+                    compu_scales=[
+                        CompuScale(
+                            short_label=None,
+                            description=None,
+                            lower_limit=None,
+                            upper_limit=None,
+                            compu_inverse_value=None,
+                            compu_const=None,
+                            compu_rational_coeffs=CompuRationalCoeffs(
+                                numerators=[1, 3],
+                                denominators=[1],
+                            ),
+                            internal_type=DataType.A_INT32,
+                            physical_type=DataType.A_INT32),
+                    ],
+                    prog_code=None,
+                    compu_default_value=None),
+                compu_phys_to_internal=None,
+                internal_type=DataType.A_ASCIISTRING,
+                physical_type=DataType.A_UNICODE2STRING)
 
     def test_linear_compu_method_limits(self) -> None:
         compu_method = LinearCompuMethod(
-            offset=1,
-            factor=5,
-            denominator=1,
+            category=CompuCategory.LINEAR,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="2", value_type=DataType.A_INT32, interval_type=None),
+                        upper_limit=Limit(
+                            value_raw="15", value_type=DataType.A_INT32, interval_type=None),
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            numerators=[1, 5],
+                            denominators=[1],
+                        ),
+                        internal_type=DataType.A_INT32,
+                        physical_type=DataType.A_INT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
-            physical_type=DataType.A_INT32,
-            internal_lower_limit=Limit(
-                value_raw="2", value_type=DataType.A_INT32, interval_type=None),
-            internal_upper_limit=Limit(
-                value_raw="15", value_type=DataType.A_INT32, interval_type=None),
-        )
+            physical_type=DataType.A_INT32)
+
         self.assertFalse(compu_method.is_valid_internal_value(-3))
         self.assertFalse(compu_method.is_valid_internal_value(1))
         self.assertFalse(compu_method.is_valid_internal_value(16))
@@ -235,44 +332,60 @@ class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_physical_limits(self) -> None:
         # Define decoding function: f: (2, 15] -> [-74, -14], f(x) = -5*x + 1
         compu_method = LinearCompuMethod(
-            offset=1,
-            factor=-5,
-            denominator=1,
+            category=CompuCategory.LINEAR,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="2",
+                            value_type=DataType.A_INT32,
+                            interval_type=IntervalType.OPEN),
+                        upper_limit=Limit(
+                            value_raw="15", value_type=DataType.A_INT32, interval_type=None),
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            numerators=[1, -5],
+                            denominators=[1],
+                        ),
+                        internal_type=DataType.A_INT32,
+                        physical_type=DataType.A_INT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
-            physical_type=DataType.A_INT32,
-            internal_lower_limit=Limit(
-                value_raw="2", value_type=DataType.A_INT32, interval_type=IntervalType.OPEN),
-            internal_upper_limit=Limit(
-                value_raw="15", value_type=DataType.A_INT32, interval_type=None),
-        )
+            physical_type=DataType.A_INT32)
 
-        assert compu_method.internal_lower_limit is not None
-        assert compu_method.internal_upper_limit is not None
-        assert compu_method.physical_lower_limit is not None
-        assert compu_method.physical_upper_limit is not None
+        assert compu_method.segment.internal_lower_limit is not None
+        assert compu_method.segment.internal_upper_limit is not None
+        assert compu_method.segment.physical_lower_limit is not None
+        assert compu_method.segment.physical_upper_limit is not None
 
         self.assertEqual(
-            compu_method.internal_lower_limit,
+            compu_method.segment.internal_lower_limit,
             Limit(value_raw="2", value_type=DataType.A_INT32, interval_type=IntervalType.OPEN))
-        self.assertEqual(compu_method.internal_upper_limit,
+        self.assertEqual(compu_method.segment.internal_upper_limit,
                          Limit(value_raw="15", value_type=DataType.A_INT32, interval_type=None))
-        self.assertEqual(compu_method.internal_upper_limit.interval_type, None)
+        self.assertEqual(compu_method.segment.internal_upper_limit.interval_type, None)
 
-        self.assertEqual(compu_method.physical_lower_limit,
+        self.assertEqual(compu_method.segment.physical_lower_limit,
                          Limit(value_raw="-74", value_type=DataType.A_INT32, interval_type=None))
         self.assertEqual(
-            compu_method.physical_upper_limit,
+            compu_method.segment.physical_upper_limit,
             Limit(value_raw="-9", value_type=DataType.A_INT32, interval_type=IntervalType.OPEN))
 
-        self.assertFalse(compu_method.internal_lower_limit.complies_to_lower(2))
-        self.assertTrue(compu_method.internal_lower_limit.complies_to_lower(3))
-        self.assertTrue(compu_method.internal_upper_limit.complies_to_upper(15))
-        self.assertFalse(compu_method.internal_upper_limit.complies_to_upper(16))
+        self.assertFalse(compu_method.segment.internal_lower_limit.complies_to_lower(2))
+        self.assertTrue(compu_method.segment.internal_lower_limit.complies_to_lower(3))
+        self.assertTrue(compu_method.segment.internal_upper_limit.complies_to_upper(15))
+        self.assertFalse(compu_method.segment.internal_upper_limit.complies_to_upper(16))
 
-        self.assertFalse(compu_method.physical_lower_limit.complies_to_lower(-75))
-        self.assertTrue(compu_method.physical_lower_limit.complies_to_lower(-74))
-        self.assertTrue(compu_method.physical_upper_limit.complies_to_upper(-10))
-        self.assertFalse(compu_method.physical_upper_limit.complies_to_upper(-9))
+        self.assertFalse(compu_method.segment.physical_lower_limit.complies_to_lower(-75))
+        self.assertTrue(compu_method.segment.physical_lower_limit.complies_to_lower(-74))
+        self.assertTrue(compu_method.segment.physical_upper_limit.complies_to_upper(-10))
+        self.assertFalse(compu_method.segment.physical_upper_limit.complies_to_upper(-9))
 
         self.assertTrue(compu_method.is_valid_internal_value(3))
         self.assertTrue(compu_method.is_valid_internal_value(15))
@@ -308,34 +421,72 @@ class TestTabIntpCompuMethod(unittest.TestCase):
 
         self.jinja_env = _get_jinja_environment()
 
-        self.compumethod = TabIntpCompuMethod(
+        self.tab_intp_compumethod = TabIntpCompuMethod(
+            category=CompuCategory.TAB_INTP,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="0", value_type=DataType.A_INT32, interval_type=None),
+                        upper_limit=None,
+                        compu_inverse_value=None,
+                        compu_const=CompuConst(v="-1", vt=None, data_type=DataType.A_INT32),
+                        compu_rational_coeffs=None,
+                        internal_type=DataType.A_INT32,
+                        physical_type=DataType.A_INT32),
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="10", value_type=DataType.A_INT32, interval_type=None),
+                        upper_limit=None,
+                        compu_inverse_value=None,
+                        compu_const=CompuConst(v="1", vt=None, data_type=DataType.A_INT32),
+                        compu_rational_coeffs=None,
+                        internal_type=DataType.A_INT32,
+                        physical_type=DataType.A_INT32),
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="30", value_type=DataType.A_INT32, interval_type=None),
+                        upper_limit=None,
+                        compu_inverse_value=None,
+                        compu_const=CompuConst(v="2", vt=None, data_type=DataType.A_INT32),
+                        compu_rational_coeffs=None,
+                        internal_type=DataType.A_INT32,
+                        physical_type=DataType.A_INT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_FLOAT32,
-            internal_points=[0, 10, 30],
-            physical_points=[-1, 1, 2],
         )
 
-        self.compumethod_odx = f"""
+        self.tab_intp_compumethod_xml = f"""
         <COMPU-METHOD>
             <CATEGORY>TAB-INTP</CATEGORY>
             <COMPU-INTERNAL-TO-PHYS>
                 <COMPU-SCALES>
                     <COMPU-SCALE>
-                        <LOWER-LIMIT>{self.compumethod.internal_points[0]}</LOWER-LIMIT>
+                        <LOWER-LIMIT>{self.tab_intp_compumethod.internal_points[0]}</LOWER-LIMIT>
                         <COMPU-CONST>
-                            <V>{self.compumethod.physical_points[0]}</V>
+                            <V>{self.tab_intp_compumethod.physical_points[0]}</V>
                         </COMPU-CONST>
                     </COMPU-SCALE>
                     <COMPU-SCALE>
-                        <LOWER-LIMIT>{self.compumethod.internal_points[1]}</LOWER-LIMIT>
+                        <LOWER-LIMIT>{self.tab_intp_compumethod.internal_points[1]}</LOWER-LIMIT>
                         <COMPU-CONST>
-                            <V>{self.compumethod.physical_points[1]}</V>
+                            <V>{self.tab_intp_compumethod.physical_points[1]}</V>
                         </COMPU-CONST>
                     </COMPU-SCALE>
                     <COMPU-SCALE>
-                        <LOWER-LIMIT>{self.compumethod.internal_points[2]}</LOWER-LIMIT>
+                        <LOWER-LIMIT>{self.tab_intp_compumethod.internal_points[2]}</LOWER-LIMIT>
                         <COMPU-CONST>
-                            <V>{self.compumethod.physical_points[2]}</V>
+                            <V>{self.tab_intp_compumethod.physical_points[2]}</V>
                         </COMPU-CONST>
                     </COMPU-SCALE>
                 </COMPU-SCALES>
@@ -344,7 +495,7 @@ class TestTabIntpCompuMethod(unittest.TestCase):
         """
 
     def test_tabintp_convert_type_int_float(self) -> None:
-        method = self.compumethod
+        method = self.tab_intp_compumethod
 
         for internal, physical in [
             (0, -1),
@@ -367,9 +518,9 @@ class TestTabIntpCompuMethod(unittest.TestCase):
         self.assertRaises(EncodeError, method.convert_physical_to_internal, 2.1)
 
     def test_read_odx(self) -> None:
-        expected = self.compumethod
+        expected = self.tab_intp_compumethod
 
-        et_element = ElementTree.fromstring(self.compumethod_odx)
+        et_element = ElementTree.fromstring(self.tab_intp_compumethod_xml)
         actual = create_any_compu_method_from_et(
             et_element,
             doc_frags,
@@ -384,18 +535,19 @@ class TestTabIntpCompuMethod(unittest.TestCase):
         self.assertEqual(expected.physical_points, actual.physical_points)
 
     def test_write_odx(self) -> None:
-        dlc_tpl = self.jinja_env.get_template("macros/printDOP.xml.jinja2")
+        dlc_tpl = self.jinja_env.get_template("macros/printCompuMethod.xml.jinja2")
         module = dlc_tpl.make_module()
 
-        out = module.printCompuMethod(self.compumethod)  # type: ignore[attr-defined]
+        actual_xml = module.printCompuMethod(  # type: ignore[attr-defined]
+            self.tab_intp_compumethod)
 
-        expected_odx = self.compumethod_odx
+        expected_xml = self.tab_intp_compumethod_xml
 
         # We ignore spaces
         def remove_spaces(string: str) -> str:
             return "".join(string.split())
 
-        self.assertEqual(remove_spaces(out), remove_spaces(expected_odx))
+        self.assertEqual(remove_spaces(actual_xml), remove_spaces(expected_xml))
 
 
 if __name__ == "__main__":

@@ -2,8 +2,11 @@
 import unittest
 from typing import List, cast
 
+from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
+from odxtools.compumethods.compumethod import CompuCategory
+from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
+from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
-from odxtools.compumethods.limit import Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diaglayer import DiagLayer
@@ -123,14 +126,28 @@ class TestEncodeRequest(unittest.TestCase):
         )
         # This CompuMethod represents the linear function: decode(x) = 2*x + 8 and encode(x) = (x-8)/2
         compu_method = LinearCompuMethod(
-            offset=8,
-            factor=2,
-            denominator=1,
+            category=CompuCategory.LINEAR,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=None,
+                        upper_limit=None,
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            numerators=[8, 2],
+                            denominators=[1],
+                        ),
+                        internal_type=DataType.A_INT32,
+                        physical_type=DataType.A_INT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=None,
             internal_type=DataType.A_UINT32,
-            physical_type=DataType.A_UINT32,
-            internal_lower_limit=Limit(
-                value_raw="0", value_type=DataType.A_UINT32, interval_type=None),
-            internal_upper_limit=None)
+            physical_type=DataType.A_UINT32)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),
             short_name="dop_sn",
@@ -199,7 +216,11 @@ class TestEncodeRequest(unittest.TestCase):
             diag_coded_type=diag_coded_type,
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=IdenticalCompuMethod(
-                internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
+                category=CompuCategory.IDENTICAL,
+                compu_internal_to_phys=None,
+                compu_phys_to_internal=None,
+                internal_type=DataType.A_UINT32,
+                physical_type=DataType.A_UINT32),
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
@@ -353,7 +374,11 @@ class TestEncodeRequest(unittest.TestCase):
         physical_type = PhysicalType(
             base_data_type=DataType.A_UINT32, display_radix=None, precision=None)
         compu_method = IdenticalCompuMethod(
-            internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32)
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_UINT32,
+            physical_type=DataType.A_UINT32)
 
         inner_dop = DataObjectProperty(
             odx_id=OdxLinkId('dop.inner', doc_frags),

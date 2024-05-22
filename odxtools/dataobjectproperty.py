@@ -10,7 +10,7 @@ from .decodestate import DecodeState
 from .diagcodedtype import DiagCodedType
 from .dopbase import DopBase
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, odxassert, odxrequire
+from .exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from .internalconstr import InternalConstr
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType, ParameterValue
@@ -110,16 +110,6 @@ class DataObjectProperty(DopBase):
     def get_static_bit_length(self) -> Optional[int]:
         return self.diag_coded_type.get_static_bit_length()
 
-    def convert_physical_to_internal(self, physical_value: Any) -> Any:
-        """
-        Convert a physical representation of a parameter to its internal counterpart
-        """
-        odxassert(
-            self.physical_type.base_data_type.isinstance(physical_value),
-            f"Expected {self.physical_type.base_data_type.value}, got {type(physical_value)}")
-
-        return self.compu_method.convert_physical_to_internal(physical_value)
-
     def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:
         """
         Convert a physical representation of a parameter to a string bytes that can be send over the wire
@@ -129,7 +119,10 @@ class DataObjectProperty(DopBase):
                 f"The value {repr(physical_value)} of type {type(physical_value).__name__}"
                 f" is not a valid.")
 
-        internal_value = self.convert_physical_to_internal(physical_value)
+        if not isinstance(physical_value, (int, float, str, bytes, bytearray)):
+            odxraise(f"Invalid type '{type(physical_value).__name__}' for physical value. "
+                     f"(Expect atomic type!)")
+        internal_value = self.compu_method.convert_physical_to_internal(physical_value)
         self.diag_coded_type.encode_into_pdu(internal_value, encode_state)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

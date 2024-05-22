@@ -6,6 +6,8 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printAdminData.xml.jinja2') as pad %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printCompuMethod.xml.jinja2') as pcm %}
+
 
 {%- macro printDiagCodedType(dct) -%}
 <DIAG-CODED-TYPE {{-make_xml_attrib("BASE-DATA-TYPE", dct.base_data_type.value)}}
@@ -30,7 +32,6 @@
 </DIAG-CODED-TYPE>
 {%- endmacro -%}
 
-
 {%- macro printPhysicalType(physical_type) %}
 {%- if physical_type.display_radix is not none %}
 <PHYSICAL-TYPE BASE-DATA-TYPE="{{physical_type.base_data_type.value}}" DISPLAY-RADIX="{{physical_type.display_radix.name}}" />
@@ -43,27 +44,6 @@
 {%- endif %}
 {%- endmacro -%}
 
-{%- macro printLimit(tag_name, limit_obj) -%}
-{%- if limit_obj is not none %}
-<{{tag_name}}
-{%- if limit_obj.interval_type is not none %}
-  {{- make_xml_attrib("INTERVAL-TYPE", limit_obj.interval_type.value) }}
-  {%- endif %}
-{%- if limit_obj.value_raw is none %}
-  {#- #}/>
-{%- else %}
-  {#- #}>
-  {%- if hasattr(limit_obj._value, 'hex') -%}
-  {#- bytes or bytarray limit #}
-  {{- limit_obj._value.hex().upper() }}
-  {%- else -%}
-  {{- limit_obj._value }}
-  {%- endif -%}
-</{{tag_name}}>
-{%- endif -%}
-{%- endif -%}
-{%- endmacro -%}
-
 {%- macro printScaleConstr(sc) %}
 <SCALE-CONSTR VALIDITY="{{sc.validity.value}}">
   {%- if sc.short_label is not none %}
@@ -74,8 +54,8 @@
     {{sc.description}}
   </DESC>
   {%- endif %}
-  {{printLimit("LOWER-LIMIT", sc.lower_limit) }}
-  {{printLimit("UPPER-LIMIT", sc.upper_limit) }}
+  {{pcm.printLimit("LOWER-LIMIT", sc.lower_limit) }}
+  {{pcm.printLimit("UPPER-LIMIT", sc.upper_limit) }}
 </SCALE-CONSTR>
 {%- endmacro -%}
 
@@ -85,8 +65,8 @@
 {%- else %}
 <INTERNAL-CONSTR>
 {%- endif %}
-  {{printLimit("LOWER-LIMIT", ic.lower_limit) }}
-  {{printLimit("UPPER-LIMIT", ic.upper_limit) }}
+  {{pcm.printLimit("LOWER-LIMIT", ic.lower_limit) }}
+  {{pcm.printLimit("UPPER-LIMIT", ic.upper_limit) }}
   {%- if ic.scale_constrs %}
   <SCALE-CONSTRS>
   {%- for sc in ic.scale_constrs %}
@@ -101,104 +81,6 @@
 {%- endif %}
 {%- endmacro -%}
 
-{%- macro printCompuMethod(cm) -%}
-<COMPU-METHOD>
- <CATEGORY>{{cm.category}}</CATEGORY>
- {%- if cm.category == "TEXTTABLE" %}
- <COMPU-INTERNAL-TO-PHYS>
-  <COMPU-SCALES>
-  {%- for cs in cm.internal_to_phys %}
-   <COMPU-SCALE>
-   {%- if cs.short_label and cs.short_label.strip() %}
-    <SHORT-LABEL>{{cs.short_label|e}}</SHORT-LABEL>
-   {%- endif %}
-   {%- if cs.description and cs.description.strip() %}
-    <DESC>
-    {{cs.description}}
-    </DESC>
-   {%- endif %}
-   {{printLimit("LOWER-LIMIT", cs.lower_limit) }}
-   {{printLimit("UPPER-LIMIT", cs.upper_limit) }}
-   {%- if cs.compu_inverse_value is not none %}
-    <COMPU-INVERSE-VALUE>
-     <V>{{cs.compu_inverse_value}}</V>
-    </COMPU-INVERSE-VALUE>
-   {%- endif %}
-    <COMPU-CONST>
-     <VT>{{cs.compu_const | e}}</VT>
-    </COMPU-CONST>
-   </COMPU-SCALE>
-  {%- endfor %}
-  </COMPU-SCALES>
-  {%- if cm.compu_default_value is not none %}
-  <COMPU-DEFAULT-VALUE>
-    <VT>{{cm.compu_default_value.compu_const}}</VT>
-    {%- if cm.compu_default_value.compu_inverse_value is not none %}
-    <COMPU-INVERSE-VALUE>
-     <V>{{cm.compu_default_value.compu_inverse_value}}</V>
-    </COMPU-INVERSE-VALUE>
-    {%- endif %}
-  </COMPU-DEFAULT-VALUE>
-  {%- endif %}
- </COMPU-INTERNAL-TO-PHYS>
- {%- elif cm.category == "LINEAR" %}
- <COMPU-INTERNAL-TO-PHYS>
-		<COMPU-SCALES>
-			<COMPU-SCALE>
-     {{printLimit("LOWER-LIMIT", cm.internal_lower_limit) }}
-     {{printLimit("UPPER-LIMIT", cm.internal_upper_limit) }}
-				<COMPU-RATIONAL-COEFFS>
-					<COMPU-NUMERATOR>
-						<V>{{cm.offset}}</V>
-						<V>{{cm.factor}}</V>
-					</COMPU-NUMERATOR>
-   {%- if cm.denominator != 1 %}
-					<COMPU-DENOMINATOR>
-							<V>{{cm.denominator}}</V>
-					</COMPU-DENOMINATOR>
-   {%- endif %}
-				</COMPU-RATIONAL-COEFFS>
-			</COMPU-SCALE>
-		</COMPU-SCALES>
-	</COMPU-INTERNAL-TO-PHYS>
- {%- elif cm.category == "SCALE-LINEAR" %}
- <COMPU-INTERNAL-TO-PHYS>
-		<COMPU-SCALES>
-  {%- for lm in cm.linear_methods %}
- 		<COMPU-SCALE>
-    {{printLimit("LOWER-LIMIT", lm.internal_lower_limit) }}
-    {{printLimit("UPPER-LIMIT", lm.internal_upper_limit) }}
-				<COMPU-RATIONAL-COEFFS>
-					<COMPU-NUMERATOR>
-							<V>{{lm.offset}}</V>
-							<V>{{lm.factor}}</V>
-					</COMPU-NUMERATOR>
-   {%- if lm.denominator != 1 %}
-					<COMPU-DENOMINATOR>
-							<V>{{lm.denominator}}</V>
-					</COMPU-DENOMINATOR>
-   {%- endif %}
-				</COMPU-RATIONAL-COEFFS>
-			</COMPU-SCALE>
-  {%- endfor %}
-		</COMPU-SCALES>
- </COMPU-INTERNAL-TO-PHYS>
- {%- elif cm.category == "TAB-INTP" %}
- <COMPU-INTERNAL-TO-PHYS>
-  <COMPU-SCALES>
-  {%- for idx in range( cm.internal_points | length ) %}
-  <COMPU-SCALE>
-    <LOWER-LIMIT>{{ cm.internal_points[idx] }}</LOWER-LIMIT>
-    <COMPU-CONST>
-     <V>{{ cm.physical_points[idx] }}</V>
-    </COMPU-CONST>
-   </COMPU-SCALE>
-  {%- endfor %}
-  </COMPU-SCALES>
- </COMPU-INTERNAL-TO-PHYS>
- {%- endif %}
-</COMPU-METHOD>
-{%- endmacro -%}
 
 {%- macro printDopBaseAttribs(dop) %}
 {{- make_xml_attrib("ID", dop.odx_id.local_id) }}
@@ -225,7 +107,7 @@
 {%- macro printDataObjectProp(dop) %}
 <DATA-OBJECT-PROP {{- printDopBaseAttribs(dop) }}>
  {{- printDopBaseSubtags(dop) }}
- {{- printCompuMethod(dop.compu_method)|indent(1) }}
+ {{- pcm.printCompuMethod(dop.compu_method)|indent(1) }}
  {{- printDiagCodedType(dop.diag_coded_type)|indent(1) }}
  {{- printPhysicalType(dop.physical_type)|indent(1) }}
  {%- if dop.internal_constr %}
@@ -246,7 +128,7 @@
  {{- printDopBaseSubtags(dop)|indent(1) }}
  {{- printDiagCodedType(dop.diag_coded_type)|indent(1) }}
  {{- printPhysicalType(dop.physical_type)|indent(1) }}
- {{- printCompuMethod(dop.compu_method)|indent(1) }}
+ {{- pcm.printCompuMethod(dop.compu_method)|indent(1) }}
  <DTCS>
  {%- for dtc in dop.dtcs_raw %}
  {%- if hasattr(dtc, "ref_id") %}

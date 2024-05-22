@@ -128,7 +128,7 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
 
         if isinstance(cm, TexttableCompuMethod):
             of.write(f": enum; choices:\n")
-            for scale in cm.internal_to_phys:
+            for scale in odxrequire(cm.compu_internal_to_phys).compu_scales:
                 val_str = ""
                 if scale.lower_limit is not None:
                     val_str = f"({repr(scale.lower_limit.value)})"
@@ -166,8 +166,8 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
             else:
                 of.write(f": <unknown type>")
 
-            ll = cm.physical_lower_limit
-            ul = cm.physical_upper_limit
+            ll = cm.segment.physical_lower_limit
+            ul = cm.segment.physical_upper_limit
             if ll is None or ll.interval_type == IntervalType.INFINITE:
                 ll_str = "(-inf"
             else:

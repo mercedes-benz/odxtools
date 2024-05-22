@@ -10,8 +10,12 @@ import jinja2
 import odxtools
 from odxtools.additionalaudience import AdditionalAudience
 from odxtools.audience import Audience
+from odxtools.compumethods.compuconst import CompuConst
+from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
+from odxtools.compumethods.compumethod import CompuCategory
+from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
-from odxtools.compumethods.limit import IntervalType, Limit
+from odxtools.compumethods.limit import Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.compumethods.texttablecompumethod import TexttableCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
@@ -85,33 +89,40 @@ class TestSingleEcuJob(unittest.TestCase):
                 physical_type=PhysicalType(
                     DataType.A_UNICODE2STRING, display_radix=None, precision=None),
                 compu_method=TexttableCompuMethod(
+                    category=CompuCategory.TEXTTABLE,
+                    compu_phys_to_internal=None,
                     physical_type=DataType.A_UNICODE2STRING,
-                    compu_default_value=None,
-                    internal_to_phys=[
-                        CompuScale(
-                            "yes",
-                            lower_limit=Limit(
-                                value_raw="0", value_type=DataType.A_INT32, interval_type=None),
-                            compu_const="Yes!",
-                            description=None,
-                            compu_inverse_value=None,
-                            upper_limit=None,
-                            compu_rational_coeffs=None,
-                            internal_type=DataType.A_INT32,
-                            physical_type=DataType.A_UNICODE2STRING,
-                        ),
-                        CompuScale(
-                            "no",
-                            lower_limit=Limit(
-                                value_raw="1", value_type=DataType.A_INT32, interval_type=None),
-                            compu_const="No!",
-                            description=None,
-                            compu_inverse_value=None,
-                            upper_limit=None,
-                            compu_rational_coeffs=None,
-                            internal_type=DataType.A_INT32,
-                            physical_type=DataType.A_UNICODE2STRING),
-                    ],
+                    compu_internal_to_phys=CompuInternalToPhys(
+                        compu_scales=[
+                            CompuScale(
+                                "yes",
+                                lower_limit=Limit(
+                                    value_raw="0", value_type=DataType.A_INT32, interval_type=None),
+                                compu_const=CompuConst(
+                                    v=None, vt="Yes!", data_type=DataType.A_UTF8STRING),
+                                description=None,
+                                compu_inverse_value=None,
+                                upper_limit=None,
+                                compu_rational_coeffs=None,
+                                internal_type=DataType.A_INT32,
+                                physical_type=DataType.A_UNICODE2STRING,
+                            ),
+                            CompuScale(
+                                "no",
+                                lower_limit=Limit(
+                                    value_raw="1", value_type=DataType.A_INT32, interval_type=None),
+                                compu_const=CompuConst(
+                                    v=None, vt="No!", data_type=DataType.A_UTF8STRING),
+                                description=None,
+                                compu_inverse_value=None,
+                                upper_limit=None,
+                                compu_rational_coeffs=None,
+                                internal_type=DataType.A_INT32,
+                                physical_type=DataType.A_UNICODE2STRING),
+                        ],
+                        prog_code=None,
+                        compu_default_value=None,
+                    ),
                     internal_type=DataType.A_UINT32,
                 ),
                 unit_ref=None,
@@ -136,20 +147,28 @@ class TestSingleEcuJob(unittest.TestCase):
                 physical_type=PhysicalType(
                     DataType.A_UNICODE2STRING, display_radix=None, precision=None),
                 compu_method=LinearCompuMethod(
-                    offset=1,
-                    factor=-1,
-                    denominator=1,
+                    category=CompuCategory.LINEAR,
+                    compu_internal_to_phys=CompuInternalToPhys(
+                        compu_scales=[
+                            CompuScale(
+                                short_label=None,
+                                description=None,
+                                lower_limit=None,
+                                upper_limit=None,
+                                compu_inverse_value=None,
+                                compu_const=None,
+                                compu_rational_coeffs=CompuRationalCoeffs(
+                                    numerators=[1, -1],
+                                    denominators=[1],
+                                ),
+                                internal_type=DataType.A_INT32,
+                                physical_type=DataType.A_INT32),
+                        ],
+                        prog_code=None,
+                        compu_default_value=None),
+                    compu_phys_to_internal=None,
                     internal_type=DataType.A_UINT32,
-                    physical_type=DataType.A_UINT32,
-                    internal_lower_limit=Limit(
-                        value_raw="0",
-                        value_type=DataType.A_INT32,
-                        interval_type=IntervalType.INFINITE),
-                    internal_upper_limit=Limit(
-                        value_raw="0",
-                        value_type=DataType.A_INT32,
-                        interval_type=IntervalType.INFINITE),
-                ),
+                    physical_type=DataType.A_UINT32),
                 unit_ref=None,
                 sdgs=[],
                 internal_constr=None,
@@ -172,19 +191,28 @@ class TestSingleEcuJob(unittest.TestCase):
                 physical_type=PhysicalType(
                     DataType.A_UNICODE2STRING, display_radix=None, precision=None),
                 compu_method=LinearCompuMethod(
-                    offset=1,
-                    factor=-1,
-                    denominator=1,
+                    category=CompuCategory.LINEAR,
+                    compu_internal_to_phys=CompuInternalToPhys(
+                        compu_scales=[
+                            CompuScale(
+                                short_label=None,
+                                description=None,
+                                lower_limit=None,
+                                upper_limit=None,
+                                compu_inverse_value=None,
+                                compu_const=None,
+                                compu_rational_coeffs=CompuRationalCoeffs(
+                                    numerators=[1, -1],
+                                    denominators=[1],
+                                ),
+                                internal_type=DataType.A_INT32,
+                                physical_type=DataType.A_INT32),
+                        ],
+                        prog_code=None,
+                        compu_default_value=None),
+                    compu_phys_to_internal=None,
                     internal_type=DataType.A_UINT32,
                     physical_type=DataType.A_UINT32,
-                    internal_lower_limit=Limit(
-                        value_raw="0",
-                        value_type=DataType.A_INT32,
-                        interval_type=IntervalType.INFINITE),
-                    internal_upper_limit=Limit(
-                        value_raw="0",
-                        value_type=DataType.A_INT32,
-                        interval_type=IntervalType.INFINITE),
                 ),
                 unit_ref=None,
                 sdgs=[],
