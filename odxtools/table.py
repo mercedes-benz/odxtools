@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
 from .admindata import AdminData
-from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
 from .element import IdentifiableElement
 from .exceptions import odxassert
@@ -50,7 +49,9 @@ class Table(IdentifiableElement):
             elif sub_elem.tag == "TABLE-ROW-REF":
                 table_rows_raw.append(OdxLinkRef.from_et(sub_elem, doc_frags))
 
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         return Table(
             semantic=semantic,

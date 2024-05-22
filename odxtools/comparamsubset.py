@@ -7,8 +7,6 @@ from .admindata import AdminData
 from .companydata import CompanyData
 from .comparam import Comparam
 from .complexcomparam import ComplexComparam
-from .createcompanydatas import create_company_datas_from_et
-from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
 from .element import IdentifiableElement
 from .exceptions import odxrequire
@@ -45,7 +43,10 @@ class ComparamSubset(IdentifiableElement):
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
+        company_datas = NamedItemList([
+            CompanyData.from_et(cde, doc_frags)
+            for cde in et_element.iterfind("COMPANY-DATAS/COMPANY-DATA")
+        ])
 
         data_object_props = NamedItemList([
             DataObjectProperty.from_et(el, doc_frags)
@@ -62,7 +63,9 @@ class ComparamSubset(IdentifiableElement):
         else:
             unit_spec = None
 
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         return ComparamSubset(
             category=category,

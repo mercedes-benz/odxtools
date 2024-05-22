@@ -5,8 +5,6 @@ from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .companydata import CompanyData
-from .createcompanydatas import create_company_datas_from_et
-from .createsdgs import create_sdgs_from_et
 from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
@@ -34,8 +32,13 @@ class ComparamSpec(IdentifiableElement):
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        company_datas = NamedItemList([
+            CompanyData.from_et(cde, doc_frags)
+            for cde in et_element.iterfind("COMPANY-DATAS/COMPANY-DATA")
+        ])
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
         prot_stacks = NamedItemList([
             ProtStack.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("PROT-STACKS/PROT-STACK")

@@ -6,8 +6,6 @@ from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .companydata import CompanyData
-from .createcompanydatas import create_company_datas_from_et
-from .createsdgs import create_sdgs_from_et
 from .diaglayer import DiagLayer
 from .element import IdentifiableElement
 from .exceptions import odxrequire
@@ -48,7 +46,10 @@ class DiagLayerContainer(IdentifiableElement):
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        company_datas = create_company_datas_from_et(et_element.find("COMPANY-DATAS"), doc_frags)
+        company_datas = NamedItemList([
+            CompanyData.from_et(cde, doc_frags)
+            for cde in et_element.iterfind("COMPANY-DATAS/COMPANY-DATA")
+        ])
         ecu_shared_datas = NamedItemList([
             DiagLayer.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")
@@ -69,7 +70,9 @@ class DiagLayerContainer(IdentifiableElement):
             DiagLayer.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")
         ])
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         return DiagLayerContainer(
             admin_data=admin_data,

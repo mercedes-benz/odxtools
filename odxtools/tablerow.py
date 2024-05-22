@@ -4,7 +4,6 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
-from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
 from .dtcdop import DtcDop
 from .element import IdentifiableElement
@@ -70,7 +69,9 @@ class TableRow(IdentifiableElement):
         dop_snref: Optional[str] = None
         if (dop_snref_elem := et_element.find("DATA-OBJECT-PROP-SNREF")) is not None:
             dop_snref = dop_snref_elem.attrib["SHORT-NAME"]
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         return TableRow(
             table_ref=table_ref,

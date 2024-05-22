@@ -6,7 +6,6 @@ from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .basicstructure import BasicStructure
-from .createsdgs import create_sdgs_from_et
 from .dataobjectproperty import DataObjectProperty
 from .dopbase import DopBase
 from .dtcdop import DtcDop
@@ -135,7 +134,9 @@ class DiagDataDictionarySpec:
             for table_element in et_element.iterfind("TABLES/TABLE")
         ]
 
-        sdgs = create_sdgs_from_et(et_element.find("SDGS"), doc_frags)
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
 
         return DiagDataDictionarySpec(
             admin_data=admin_data,
