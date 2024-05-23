@@ -16,7 +16,9 @@ from odxtools.companydocinfo import CompanyDocInfo
 from odxtools.companyspecificinfo import CompanySpecificInfo
 from odxtools.comparaminstance import ComparamInstance
 from odxtools.comparamsubset import ComparamSubset
-from odxtools.compumethods.compumethod import CompuMethod
+from odxtools.compumethods.compuconst import CompuConst
+from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
+from odxtools.compumethods.compumethod import CompuCategory, CompuMethod
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.limit import Limit
@@ -412,49 +414,55 @@ somersault_unit_groups = {
 # computation methods
 somersault_compumethods: Dict[str, CompuMethod] = {
     "uint_passthrough":
-        IdenticalCompuMethod(internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
+        IdenticalCompuMethod(
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_UINT32,
+            physical_type=DataType.A_UINT32),
     "float_passthrough":
-        IdenticalCompuMethod(internal_type=DataType.A_FLOAT32, physical_type=DataType.A_FLOAT32),
+        IdenticalCompuMethod(
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_FLOAT32,
+            physical_type=DataType.A_FLOAT32),
     "boolean":
         TexttableCompuMethod(
+            category=CompuCategory.TEXTTABLE,
+            compu_phys_to_internal=None,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_default_value=None,
+                prog_code=None,
+                compu_scales=[
+                    CompuScale(
+                        compu_const=CompuConst(v=None, vt="false", data_type=DataType.A_UTF8STRING),
+                        lower_limit=Limit(
+                            value_raw="0", value_type=DataType.A_UINT32, interval_type=None),
+                        upper_limit=Limit(
+                            value_raw="0", value_type=DataType.A_UINT32, interval_type=None),
+                        short_label=None,
+                        description=None,
+                        internal_type=DataType.A_UINT32,
+                        physical_type=DataType.A_UNICODE2STRING,
+                        compu_inverse_value=None,
+                        compu_rational_coeffs=None),
+                    CompuScale(
+                        compu_const=CompuConst(v=None, vt="true", data_type=DataType.A_UTF8STRING),
+                        lower_limit=Limit(
+                            value_raw="1", value_type=DataType.A_UINT32, interval_type=None),
+                        upper_limit=Limit(
+                            value_raw="1", value_type=DataType.A_UINT32, interval_type=None),
+                        short_label=None,
+                        description=None,
+                        internal_type=DataType.A_UINT32,
+                        physical_type=DataType.A_UNICODE2STRING,
+                        compu_inverse_value=None,
+                        compu_rational_coeffs=None),
+                ],
+            ),
             internal_type=DataType.A_UINT32,
             physical_type=DataType.A_UNICODE2STRING,
-            compu_default_value=CompuScale(
-                compu_const="undefined",
-                lower_limit=None,
-                upper_limit=None,
-                short_label=None,
-                description=None,
-                internal_type=DataType.A_UINT32,
-                physical_type=DataType.A_UNICODE2STRING,
-                compu_inverse_value=None,
-                compu_rational_coeffs=None),
-            internal_to_phys=[
-                CompuScale(
-                    compu_const="false",
-                    lower_limit=Limit(
-                        value_raw="0", value_type=DataType.A_UINT32, interval_type=None),
-                    upper_limit=Limit(
-                        value_raw="0", value_type=DataType.A_UINT32, interval_type=None),
-                    short_label=None,
-                    description=None,
-                    internal_type=DataType.A_UINT32,
-                    physical_type=DataType.A_UNICODE2STRING,
-                    compu_inverse_value=None,
-                    compu_rational_coeffs=None),
-                CompuScale(
-                    compu_const="true",
-                    lower_limit=Limit(
-                        value_raw="1", value_type=DataType.A_UINT32, interval_type=None),
-                    upper_limit=Limit(
-                        value_raw="1", value_type=DataType.A_UINT32, interval_type=None),
-                    short_label=None,
-                    description=None,
-                    internal_type=DataType.A_UINT32,
-                    physical_type=DataType.A_UNICODE2STRING,
-                    compu_inverse_value=None,
-                    compu_rational_coeffs=None),
-            ],
         ),
 }
 

@@ -60,8 +60,8 @@ class TestDataObjectProperty(unittest.TestCase):
 
     def test_convert_physical_to_internal(self) -> None:
         self.dop = odxdb.odxlinks.resolve(OdxLinkRef("somersault.DOP.boolean", container_doc_frags))
-        self.assertEqual(self.dop.convert_physical_to_internal("false"), 0)
-        self.assertEqual(self.dop.convert_physical_to_internal("true"), 1)
+        self.assertEqual(self.dop.compu_method.convert_physical_to_internal("false"), 0)
+        self.assertEqual(self.dop.compu_method.convert_physical_to_internal("true"), 1)
 
 
 class TestComposeUDS(unittest.TestCase):

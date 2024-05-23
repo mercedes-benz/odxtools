@@ -2,6 +2,7 @@
 import unittest
 
 from examples import somersaultecu
+from odxtools.compumethods.compumethod import CompuCategory
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.limit import Limit
 from odxtools.dataobjectproperty import DataObjectProperty
@@ -41,7 +42,11 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             is_condensed_raw=None,
         )
         ident_compu_method = IdenticalCompuMethod(
-            internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32)
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_UINT32,
+            physical_type=DataType.A_UINT32)
 
         dtc_dop = DtcDop(
             odx_id=OdxLinkId("DOP.dtc_dop", doc_frags),

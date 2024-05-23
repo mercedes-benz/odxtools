@@ -1,0 +1,156 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+
+{%- macro printLimit(tag_name, limit_obj) -%}
+{%- if limit_obj is not none %}
+<{{tag_name}}
+{%- if limit_obj.interval_type is not none %}
+  {{- make_xml_attrib("INTERVAL-TYPE", limit_obj.interval_type.value) }}
+  {%- endif %}
+{%- if limit_obj.value_raw is none %}
+  {#- #}/>
+{%- else %}
+  {#- #}>
+  {%- if hasattr(limit_obj._value, 'hex') -%}
+  {#- bytes or bytarray limit #}
+  {{- limit_obj._value.hex().upper() }}
+  {%- else -%}
+  {{- limit_obj._value }}
+  {%- endif -%}
+</{{tag_name}}>
+{%- endif -%}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro printCompuInverseValue(civ) -%}
+<COMPU-INVERSE-VALUE>
+  {%- if civ.v is not none %}
+  <V>{{civ.v}}</V>
+  {%- endif %}
+  {%- if civ.vt is not none %}
+  <VT>{{civ.vt | e}}</VT>
+  {%- endif %}
+</COMPU-INVERSE-VALUE>
+{%- endmacro -%}
+
+{%- macro printCompuDefaultValue(cdv) -%}
+<COMPU-DEFAULT-VALUE>
+  {%- if cdv.v is not none %}
+  <V>{{cdv.v}}</V>
+  {%- endif %}
+  {%- if cdv.vt is not none %}
+  <VT>{{cdv.vt | e}}</VT>
+  {%- endif %}
+  {%- if cdv.compu_inverse_value is not none %}
+  {{printCompuInverseValue(cdv.compu_inverse_value)}}
+  {%- endif %}
+</COMPU-DEFAULT-VALUE>
+{%- endmacro -%}
+
+{%- macro printCompuScale(cs) -%}
+<COMPU-SCALE>
+  {%- if cs.short_label is not none %}
+  <SHORT-LABEL>{{cs.short_label|e}}</SHORT-LABEL>
+  {%- endif %}
+  {%- if cs.description and cs.description.strip() %}
+  <DESC>
+    {{cs.description}}
+  </DESC>
+  {%- endif %}
+  {{-printLimit("LOWER-LIMIT", cs.lower_limit)|indent(2, first=True) }}
+  {{-printLimit("UPPER-LIMIT", cs.upper_limit)|indent(2, first=True) }}
+  {%- if cs.compu_inverse_value is not none %}
+  {{printCompuInverseValue(cs.compu_inverse_value)}}
+  {%- endif %}
+  {%- if cs.compu_const is not none %}
+  <COMPU-CONST>
+    {%- if cs.compu_const.v is not none %}
+    <V>{{cs.compu_const.v}}</V>
+    {%- endif %}
+    {%- if cs.compu_const.vt is not none %}
+    <VT>{{cs.compu_const.vt | e}}</VT>
+    {%- endif %}
+  </COMPU-CONST>
+  {%- endif %}
+  {%- set crc = cs.compu_rational_coeffs %}
+  {%- if crc is not none %}
+  <COMPU-RATIONAL-COEFFS>
+    <COMPU-NUMERATOR>
+      {%- for v in crc.numerators %}
+      <V>{{v}}</V>
+      {%- endfor %}
+    </COMPU-NUMERATOR>
+    {%- if crc.denominators %}
+    <COMPU-DENOMINATOR>
+      {%- for v in crc.denominators %}
+      <V>{{v}}</V>
+      {%- endfor %}
+    </COMPU-DENOMINATOR>
+    {%- endif %}
+  </COMPU-RATIONAL-COEFFS>
+  {%- endif %}
+</COMPU-SCALE>
+{%- endmacro -%}
+
+{%- macro printProgCode(pc) -%}
+<PROG-CODE>
+  <CODE-FILE>{{pc.code_file}}</CODE-FILE>
+  <SYNTAX>{{pc.syntax}}</SYNTAX>
+  {%- if pc.encryption is not none %}
+  <ENCRYPTION>{{pc.encryption}}</ENCRYPTION>
+  {%- endif %}
+  {%- if pc.entry_point is not none %}
+  <ENTRY-POINT>{{pc.entry_point}}</ENTRY-POINT>
+  {%- endif %}
+  {%- if pc.library_refs %}
+  <LIBRARY-REFS>
+    {%- for libref in pc.library_refs %}
+    <LIBRARY-REF ID-REF="{{libref.ref_id}}" />
+    {%- endfor %}
+  </LIBRARY-REFS>
+  {%- endif %}
+</PROG-CODE>
+{%- endmacro -%}
+
+{%- macro printCompuMethod(cm) -%}
+<COMPU-METHOD>
+ <CATEGORY>{{cm.category.value}}</CATEGORY>
+ {%- if cm.compu_internal_to_phys is not none %}
+ <COMPU-INTERNAL-TO-PHYS>
+  <COMPU-SCALES>
+    {%- for cs in cm.compu_internal_to_phys.compu_scales %}
+    {{ printCompuScale(cs) | indent(3) }}
+    {%- endfor %}
+  </COMPU-SCALES>
+  {%- if cm.compu_internal_to_phys.prog_code is not none %}
+  {{ printProgCode(cm.compu_internal_to_phys.prog_code) | indent(3) }}
+  {%- endif %}
+  {%- if cm.compu_internal_to_phys.compu_default_value is not none %}
+  {{ printCompuDefaultValue(cm.compu_internal_to_phys.compu_default_value) | indent(3) }}
+  {%- endif %}
+ </COMPU-INTERNAL-TO-PHYS>
+ {%- endif %}
+ {%- if cm.compu_phys_to_internal is not none %}
+ <COMPU-PHYS-TO-INTERNAL>
+  <COMPU-SCALES>
+    {%- for cs in cm.compu_phys_to_internal.compu_scales %}
+    {{ printCompuScale(cs) | indent(3) }}
+    {%- endfor %}
+  </COMPU-SCALES>
+  {%- if cm.compu_phys_to_internal.prog_code is not none %}
+  {{ printProgCode(cm.compu_phys_to_internal.prog_code) | indent(3) }}
+  {%- endif %}
+  {%- if cm.compu_phys_to_internal.compu_default_value is not none %}
+  {{ printCompuDefaultValue(cm.compu_phys_to_internal.compu_default_value) | indent(3) }}
+  {%- endif %}
+ </COMPU-PHYS-TO-INTERNAL>
+ {%- endif %}
+</COMPU-METHOD>
+{%- endmacro -%}

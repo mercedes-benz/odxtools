@@ -2,6 +2,7 @@
 import unittest
 from xml.etree import ElementTree
 
+from odxtools.compumethods.compumethod import CompuCategory
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
@@ -116,7 +117,11 @@ class TestUnitSpec(unittest.TestCase):
             diag_coded_type=dct,
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=IdenticalCompuMethod(
-                internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
+                category=CompuCategory.IDENTICAL,
+                compu_internal_to_phys=None,
+                compu_phys_to_internal=None,
+                internal_type=DataType.A_UINT32,
+                physical_type=DataType.A_UINT32),
             unit_ref=OdxLinkRef.from_id(unit.odx_id),
             sdgs=[],
             internal_constr=None,

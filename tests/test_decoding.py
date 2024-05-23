@@ -2,8 +2,11 @@
 import unittest
 from typing import cast
 
+from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
+from odxtools.compumethods.compumethod import CompuCategory
+from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
+from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
-from odxtools.compumethods.limit import IntervalType, Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.determinenumberofitems import DetermineNumberOfItems
@@ -534,7 +537,11 @@ class TestDecoding(unittest.TestCase):
         )
 
         compu_method = IdenticalCompuMethod(
-            internal_type=DataType.A_INT32, physical_type=DataType.A_INT32)
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_INT32,
+            physical_type=DataType.A_INT32)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.odx_id", doc_frags),
             short_name="dop_sn",
@@ -721,7 +728,11 @@ class TestDecoding(unittest.TestCase):
         )
 
         compu_method = IdenticalCompuMethod(
-            internal_type=DataType.A_INT32, physical_type=DataType.A_INT32)
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_INT32,
+            physical_type=DataType.A_INT32)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("static_field.dop.id", doc_frags),
             short_name="static_field_dop_sn",
@@ -952,9 +963,17 @@ class TestDecoding(unittest.TestCase):
         )
 
         compu_method = IdenticalCompuMethod(
-            internal_type=DataType.A_INT32, physical_type=DataType.A_INT32)
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_INT32,
+            physical_type=DataType.A_INT32)
         compu_method_bytefield = IdenticalCompuMethod(
-            internal_type=DataType.A_BYTEFIELD, physical_type=DataType.A_BYTEFIELD)
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_BYTEFIELD,
+            physical_type=DataType.A_BYTEFIELD)
 
         dop = DataObjectProperty(
             odx_id=OdxLinkId("demf.dop.id", doc_frags),
@@ -1302,7 +1321,11 @@ class TestDecoding(unittest.TestCase):
         )
 
         compu_method = IdenticalCompuMethod(
-            internal_type=DataType.A_INT32, physical_type=DataType.A_INT32)
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_INT32,
+            physical_type=DataType.A_INT32)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dlf.dop.id", doc_frags),
             short_name="dlf_dop_sn",
@@ -1530,7 +1553,11 @@ class TestDecoding(unittest.TestCase):
         )
 
         compu_method = IdenticalCompuMethod(
-            internal_type=DataType.A_INT32, physical_type=DataType.A_INT32)
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_INT32,
+            physical_type=DataType.A_INT32)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),
             short_name="dop_sn",
@@ -1729,15 +1756,28 @@ class TestDecoding(unittest.TestCase):
 
     def test_decode_request_linear_compu_method(self) -> None:
         compu_method = LinearCompuMethod(
-            offset=1,
-            factor=5,
-            denominator=1,
+            category=CompuCategory.LINEAR,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=None,
+                        upper_limit=None,
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            numerators=[1, 5],
+                            denominators=[1],
+                        ),
+                        internal_type=DataType.A_INT32,
+                        physical_type=DataType.A_INT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32,
-            internal_lower_limit=Limit(
-                value_raw=None, value_type=DataType.A_INT32, interval_type=IntervalType.INFINITE),
-            internal_upper_limit=Limit(
-                value_raw=None, value_type=DataType.A_INT32, interval_type=IntervalType.INFINITE),
         )
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
@@ -2080,7 +2120,11 @@ class TestDecoding(unittest.TestCase):
             is_highlow_byte_order_raw=None,
         )
         compu_method = IdenticalCompuMethod(
-            internal_type=DataType.A_INT32, physical_type=DataType.A_INT32)
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_INT32,
+            physical_type=DataType.A_INT32)
 
         dtc1 = DiagnosticTroubleCode(
             odx_id=OdxLinkId("dtcID1", doc_frags),
@@ -2192,7 +2236,11 @@ class TestDecodingAndEncoding(unittest.TestCase):
             ),
             physical_type=PhysicalType(DataType.A_BYTEFIELD, display_radix=None, precision=None),
             compu_method=IdenticalCompuMethod(
-                internal_type=DataType.A_BYTEFIELD, physical_type=DataType.A_BYTEFIELD),
+                category=CompuCategory.IDENTICAL,
+                compu_internal_to_phys=None,
+                compu_phys_to_internal=None,
+                internal_type=DataType.A_BYTEFIELD,
+                physical_type=DataType.A_BYTEFIELD),
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
@@ -2342,19 +2390,28 @@ class TestDecodingAndEncoding(unittest.TestCase):
             diag_coded_type=diag_coded_type,
             physical_type=PhysicalType(DataType.A_INT32, display_radix=None, precision=None),
             compu_method=LinearCompuMethod(
-                offset=offset,
-                factor=1,
-                denominator=1,
-                internal_type=DataType.A_UINT32,
+                category=CompuCategory.LINEAR,
+                compu_internal_to_phys=CompuInternalToPhys(
+                    compu_scales=[
+                        CompuScale(
+                            short_label=None,
+                            description=None,
+                            lower_limit=None,
+                            upper_limit=None,
+                            compu_inverse_value=None,
+                            compu_const=None,
+                            compu_rational_coeffs=CompuRationalCoeffs(
+                                numerators=[offset, 1],
+                                denominators=[1],
+                            ),
+                            internal_type=DataType.A_INT32,
+                            physical_type=DataType.A_INT32),
+                    ],
+                    prog_code=None,
+                    compu_default_value=None),
+                compu_phys_to_internal=None,
+                internal_type=DataType.A_INT32,
                 physical_type=DataType.A_INT32,
-                internal_lower_limit=Limit(
-                    value_raw=None,
-                    value_type=DataType.A_UINT32,
-                    interval_type=IntervalType.INFINITE),
-                internal_upper_limit=Limit(
-                    value_raw=None,
-                    value_type=DataType.A_UINT32,
-                    interval_type=IntervalType.INFINITE),
             ),
             unit_ref=None,
             sdgs=[],

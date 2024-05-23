@@ -4,6 +4,7 @@
 -#}
 
 {%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printCompuMethod.xml.jinja2') as pcm %}
 {%- import('macros/printDOP.xml.jinja2') as pdop %}
 
 {%- macro printMux(mux) %}
@@ -41,8 +42,8 @@
       {%- if case.structure_snref is not none %}
       <STRUCTURE-SNREF SHORT_NAME="{{case.structure_snref}}"/>
       {%- endif %}
-      {{ pdop.printLimit("LOWER-LIMIT", case.lower_limit) }}
-      {{ pdop.printLimit("UPPER-LIMIT", case.upper_limit) }}
+      {{ pcm.printLimit("LOWER-LIMIT", case.lower_limit) }}
+      {{ pcm.printLimit("UPPER-LIMIT", case.upper_limit) }}
     </CASE>
     {%- endfor %}
   </CASES>

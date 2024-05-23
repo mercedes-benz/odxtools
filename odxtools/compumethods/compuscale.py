@@ -6,6 +6,8 @@ from xml.etree import ElementTree
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import create_description_from_et
+from .compuconst import CompuConst
+from .compuinversevalue import CompuInverseValue
 from .compurationalcoeffs import CompuRationalCoeffs
 from .limit import Limit
 
@@ -13,33 +15,14 @@ from .limit import Limit
 @dataclass
 class CompuScale:
     """A COMPU-SCALE represents one value range of a COMPU-METHOD.
-
-    Example:
-
-    For a TEXTTABLE compu method a compu scale within COMPU-INTERNAL-TO-PHYS
-    can be defined with
-    ```
-    scale = CompuScale(
-        short_label="example_label", # optional: provide a label
-        description="<p>fancy description</p>", # optional: provide a description
-        lower_limit=Limit(0), # required: lower limit
-        upper_limit=Limit(3), # required: upper limit
-        compu_inverse_value=2, # required if lower_limit != upper_limit
-        compu_const="true", # required: physical value to be shown to the user
-    )
-    ```
-
-    Almost all attributes are optional but there are compu-method-specific restrictions.
-    E.g., lower_limit must always be defined unless the COMPU-METHOD is of CATEGORY LINEAR or RAT-FUNC.
-    Either `compu_const` or `compu_rational_coeffs` must be defined but never both.
     """
 
     short_label: Optional[str]
     description: Optional[str]
     lower_limit: Optional[Limit]
     upper_limit: Optional[Limit]
-    compu_inverse_value: Optional[AtomicOdxType]
-    compu_const: Optional[AtomicOdxType]
+    compu_inverse_value: Optional[CompuInverseValue]
+    compu_const: Optional[CompuConst]
     compu_rational_coeffs: Optional[CompuRationalCoeffs]
 
     # the following two attributes are not specified for COMPU-SCALE
@@ -59,8 +42,14 @@ class CompuScale:
         upper_limit = Limit.limit_from_et(
             et_element.find("UPPER-LIMIT"), doc_frags, value_type=internal_type)
 
-        compu_inverse_value = internal_type.create_from_et(et_element.find("COMPU-INVERSE-VALUE"))
-        compu_const = physical_type.create_from_et(et_element.find("COMPU-CONST"))
+        compu_inverse_value = None
+        if (cive := et_element.find("COMPU-INVERSE-VALUE")) is not None:
+            compu_inverse_value = CompuInverseValue.compuvalue_from_et(
+                cive, data_type=internal_type)
+
+        compu_const = None
+        if (cce := et_element.find("COMPU-CONST")) is not None:
+            compu_const = CompuConst.compuvalue_from_et(cce, data_type=physical_type)
 
         compu_rational_coeffs: Optional[CompuRationalCoeffs] = None
         if (crc_elem := et_element.find("COMPU-RATIONAL-COEFFS")) is not None:

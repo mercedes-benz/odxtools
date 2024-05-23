@@ -3,8 +3,11 @@ import unittest
 from xml.etree import ElementTree
 
 import odxtools.uds as uds
+from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
+from odxtools.compumethods.compumethod import CompuCategory
+from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
+from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
-from odxtools.compumethods.limit import IntervalType, Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.createanydiagcodedtype import create_any_diag_coded_type_from_et
 from odxtools.dataobjectproperty import DataObjectProperty
@@ -178,10 +181,18 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         compumethods = {
             "uint_passthrough":
                 IdenticalCompuMethod(
-                    internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
+                    category=CompuCategory.IDENTICAL,
+                    compu_internal_to_phys=None,
+                    compu_phys_to_internal=None,
+                    internal_type=DataType.A_UINT32,
+                    physical_type=DataType.A_UINT32),
             "bytes_passthrough":
                 IdenticalCompuMethod(
-                    internal_type=DataType.A_BYTEFIELD, physical_type=DataType.A_BYTEFIELD),
+                    category=CompuCategory.IDENTICAL,
+                    compu_internal_to_phys=None,
+                    compu_phys_to_internal=None,
+                    internal_type=DataType.A_BYTEFIELD,
+                    physical_type=DataType.A_BYTEFIELD),
         }
 
         # data object properties
@@ -444,20 +455,35 @@ class TestParamLengthInfoType(unittest.TestCase):
         compumethods = {
             "uint_passthrough":
                 IdenticalCompuMethod(
-                    internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
+                    category=CompuCategory.IDENTICAL,
+                    compu_internal_to_phys=None,
+                    compu_phys_to_internal=None,
+                    internal_type=DataType.A_UINT32,
+                    physical_type=DataType.A_UINT32),
             "multiply_with_8":
                 LinearCompuMethod(
-                    offset=0,
-                    factor=8,
-                    denominator=1,
+                    category=CompuCategory.LINEAR,
+                    compu_internal_to_phys=CompuInternalToPhys(
+                        compu_scales=[
+                            CompuScale(
+                                short_label=None,
+                                description=None,
+                                lower_limit=None,
+                                upper_limit=None,
+                                compu_inverse_value=None,
+                                compu_const=None,
+                                compu_rational_coeffs=CompuRationalCoeffs(
+                                    numerators=[0, 8],
+                                    denominators=[1],
+                                ),
+                                internal_type=DataType.A_INT32,
+                                physical_type=DataType.A_INT32),
+                        ],
+                        prog_code=None,
+                        compu_default_value=None),
+                    compu_phys_to_internal=None,
                     internal_type=DataType.A_UINT32,
                     physical_type=DataType.A_UINT32,
-                    internal_lower_limit=Limit(
-                        value_raw="0", value_type=DataType.A_UINT32, interval_type=None),
-                    internal_upper_limit=Limit(
-                        value_raw=None,
-                        value_type=DataType.A_UINT32,
-                        interval_type=IntervalType.INFINITE),
                 ),
         }
 
@@ -802,10 +828,18 @@ class TestMinMaxLengthType(unittest.TestCase):
         compumethods = {
             "uint_passthrough":
                 IdenticalCompuMethod(
-                    internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32),
+                    category=CompuCategory.IDENTICAL,
+                    compu_internal_to_phys=None,
+                    compu_phys_to_internal=None,
+                    internal_type=DataType.A_UINT32,
+                    physical_type=DataType.A_UINT32),
             "bytes_passthrough":
                 IdenticalCompuMethod(
-                    internal_type=DataType.A_BYTEFIELD, physical_type=DataType.A_BYTEFIELD),
+                    category=CompuCategory.IDENTICAL,
+                    compu_internal_to_phys=None,
+                    compu_phys_to_internal=None,
+                    internal_type=DataType.A_BYTEFIELD,
+                    physical_type=DataType.A_BYTEFIELD),
         }
 
         # data object properties
