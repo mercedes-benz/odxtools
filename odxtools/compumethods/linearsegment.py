@@ -27,6 +27,8 @@ class LinearSegment:
     internal_lower_limit: Optional[Limit]
     internal_upper_limit: Optional[Limit]
 
+    inverse_value: Union[int, float]  # value used as inverse if factor is 0
+
     internal_type: DataType
     physical_type: DataType
 
@@ -42,6 +44,15 @@ class LinearSegment:
         if len(coeffs.denominators) > 0:
             denominator = coeffs.denominators[0]
 
+        inverse_value: Union[int, float] = 0
+        if scale.compu_inverse_value is not None:
+            if abs(factor) < 1e-10:
+                odxraise(f"COMPU-INVERSE-VALUE for non-zero slope ({factor}) defined")
+            x = odxrequire(scale.compu_inverse_value).value
+            if not isinstance(x, (int, float)):
+                odxraise(f"Non-numeric COMPU-INVERSE-VALUE specified ({x!r})")
+            inverse_value = x
+
         internal_lower_limit = scale.lower_limit
         internal_upper_limit = scale.upper_limit
 
@@ -51,6 +62,7 @@ class LinearSegment:
             denominator=denominator,
             internal_lower_limit=internal_lower_limit,
             internal_upper_limit=internal_upper_limit,
+            inverse_value=inverse_value,
             internal_type=internal_type,
             physical_type=physical_type)
 
@@ -84,6 +96,10 @@ class LinearSegment:
         if not isinstance(physical_value, (int, float)):
             odxraise(f"Physical values of linear compumethods must "
                      f"either be int or float (is: {type(physical_value).__name__})")
+
+        if abs(self.factor) < 1e-10:
+            # "If factor = 0 then COMPU-INVERSE-VALUE shall be specified.
+            return self.inverse_value
 
         result = (physical_value * self.denominator - self.offset) / self.factor
 
