@@ -14,7 +14,7 @@ class CompuConst:
     data_type: DataType
 
     @staticmethod
-    def compuconst_from_et(et_element: ElementTree.Element, *, data_type: DataType) -> "CompuConst":
+    def compuvalue_from_et(et_element: ElementTree.Element, *, data_type: DataType) -> "CompuConst":
 
         v = et_element.findtext("V")
         vt = et_element.findtext("VT")

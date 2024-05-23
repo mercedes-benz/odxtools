@@ -32,7 +32,8 @@ class CompuInternalToPhys:
 
         compu_default_value = None
         if (cdve := et_element.find("COMPU-DEFAULT-VALUE")) is not None:
-            compu_default_value = CompuDefaultValue.from_et(cdve, doc_frags)
+            compu_default_value = CompuDefaultValue.compuvalue_from_et(
+                cdve, data_type=physical_type)
 
         return CompuInternalToPhys(
             compu_scales=compu_scales, prog_code=prog_code, compu_default_value=compu_default_value)

@@ -7,6 +7,7 @@ from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import create_description_from_et
 from .compuconst import CompuConst
+from .compuinversevalue import CompuInverseValue
 from .compurationalcoeffs import CompuRationalCoeffs
 from .limit import Limit
 
@@ -20,7 +21,7 @@ class CompuScale:
     description: Optional[str]
     lower_limit: Optional[Limit]
     upper_limit: Optional[Limit]
-    compu_inverse_value: Optional[CompuConst]
+    compu_inverse_value: Optional[CompuInverseValue]
     compu_const: Optional[CompuConst]
     compu_rational_coeffs: Optional[CompuRationalCoeffs]
 
@@ -43,11 +44,12 @@ class CompuScale:
 
         compu_inverse_value = None
         if (cive := et_element.find("COMPU-INVERSE-VALUE")) is not None:
-            compu_inverse_value = CompuConst.compuconst_from_et(cive, data_type=internal_type)
+            compu_inverse_value = CompuInverseValue.compuvalue_from_et(
+                cive, data_type=internal_type)
 
         compu_const = None
         if (cce := et_element.find("COMPU-CONST")) is not None:
-            compu_const = CompuConst.compuconst_from_et(cce, data_type=physical_type)
+            compu_const = CompuConst.compuvalue_from_et(cce, data_type=physical_type)
 
         compu_rational_coeffs: Optional[CompuRationalCoeffs] = None
         if (crc_elem := et_element.find("COMPU-RATIONAL-COEFFS")) is not None:
