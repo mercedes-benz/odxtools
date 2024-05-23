@@ -13,7 +13,8 @@ from .limit import IntervalType, Limit
 
 @dataclass
 class TabIntpCompuMethod(CompuMethod):
-    """A compu method of type Tab Interpolated is used for linear interpolation.
+    """A table-based interpolated compu method provides a continuous
+    transfer function based on piecewise linear interpolation.
 
     A `TabIntpCompuMethod` is defined by a set of points. Each point
     is an (internal, physical) value pair.  When converting from
