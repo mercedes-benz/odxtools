@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import List, Union, cast
 from xml.etree import ElementTree
 
-from ..exceptions import odxassert, odxraise
+from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import dataclass_fields_asdict
@@ -67,10 +67,10 @@ class ScaleLinearCompuMethod(CompuMethod):
             seg for seg in self._segments if seg.physical_applies(physical_value)
         ]
         if not applicable_segments:
-            odxraise(r"No applicable segment for value {physical_value} found")
+            odxraise(r"No applicable segment for value {physical_value} found", EncodeError)
             return cast(int, None)
         elif len(applicable_segments):
-            odxraise(r"Multiple applicable segments for value {physical_value} found")
+            odxraise(r"Multiple applicable segments for value {physical_value} found", EncodeError)
 
         seg = applicable_segments[0]
         return seg.convert_physical_to_internal(physical_value)
@@ -80,10 +80,10 @@ class ScaleLinearCompuMethod(CompuMethod):
             seg for seg in self._segments if seg.internal_applies(internal_value)
         ]
         if not applicable_segments:
-            odxraise(r"No applicable segment for value {internal_value} found")
+            odxraise(r"No applicable segment for value {internal_value} found", DecodeError)
             return cast(int, None)
         elif len(applicable_segments):
-            odxraise(r"Multiple applicable segments for value {internal_value} found")
+            odxraise(r"Multiple applicable segments for value {internal_value} found", DecodeError)
 
         seg = applicable_segments[0]
         return seg.convert_internal_to_physical(internal_value)

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import List, cast
 from xml.etree import ElementTree
 
-from ..exceptions import odxassert, odxraise
+from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import dataclass_fields_asdict
@@ -74,11 +74,15 @@ class LinearCompuMethod(CompuMethod):
             scale, internal_type=self.internal_type, physical_type=self.physical_type)
 
     def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> AtomicOdxType:
-        odxassert(self._segment.internal_applies(internal_value))
+        if not self._segment.internal_applies(internal_value):
+            odxraise(r"Cannot decode internal value {internal_value}", DecodeError)
+
         return self._segment.convert_internal_to_physical(internal_value)
 
     def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> AtomicOdxType:
-        odxassert(self._segment.physical_applies(physical_value))
+        if not self._segment.physical_applies(physical_value):
+            odxraise(r"Cannot decode physical value {physical_value}", EncodeError)
+
         return self._segment.convert_physical_to_internal(physical_value)
 
     def is_valid_physical_value(self, physical_value: AtomicOdxType) -> bool:
