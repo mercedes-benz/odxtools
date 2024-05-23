@@ -106,9 +106,9 @@ class TabIntpCompuMethod(CompuMethod):
             value_type=self.internal_type,
             interval_type=IntervalType.CLOSED)
 
-        self.__assert_validity__()
+        self.__assert_validity()
 
-    def __assert_validity__(self) -> None:
+    def __assert_validity(self) -> None:
         odxassert(len(self.internal_points) == len(self.physical_points))
 
         odxassert(
@@ -128,10 +128,10 @@ class TabIntpCompuMethod(CompuMethod):
             ], "Physical data type of TAB-INTP compumethod must be one of"
             " [A_INT32, A_UINT32, A_FLOAT32, A_FLOAT64]")
 
-    def __piecewise_linear_interpolate__(self, x: Union[int, float],
-                                         range_samples: List[Union[int, float]],
-                                         domain_samples: List[Union[int,
-                                                                    float]]) -> Union[float, None]:
+    def __piecewise_linear_interpolate(self, x: Union[int, float],
+                                       range_samples: List[Union[int, float]],
+                                       domain_samples: List[Union[int,
+                                                                  float]]) -> Union[float, None]:
         for i in range(0, len(range_samples) - 1):
             if (x0 := range_samples[i]) <= x and x <= (x1 := range_samples[i + 1]):
                 y0 = domain_samples[i]
@@ -149,8 +149,8 @@ class TabIntpCompuMethod(CompuMethod):
         odxassert(
             isinstance(physical_value, (int, float)),
             "Only integers and floats can be piecewise linearly interpolated", EncodeError)
-        result = self.__piecewise_linear_interpolate__(physical_value, self._physical_points,
-                                                       self._internal_points)
+        result = self.__piecewise_linear_interpolate(physical_value, self._physical_points,
+                                                     self._internal_points)
 
         if result is None:
             odxraise(
@@ -172,8 +172,8 @@ class TabIntpCompuMethod(CompuMethod):
             isinstance(internal_value, (int, float)),
             "Only integers and floats can be piecewise linearly interpolated", DecodeError)
 
-        result = self.__piecewise_linear_interpolate__(internal_value, self._internal_points,
-                                                       self._physical_points)
+        result = self.__piecewise_linear_interpolate(internal_value, self._internal_points,
+                                                     self._physical_points)
 
         if result is None:
             odxraise(

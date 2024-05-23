@@ -63,7 +63,7 @@ class LinearSegment:
         return self._physical_upper_limit
 
     def __post_init__(self) -> None:
-        self.__compute_physical_limits__()
+        self.__compute_physical_limits()
 
     def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> Union[float, int]:
         if not isinstance(internal_value, (int, float)):
@@ -95,7 +95,7 @@ class LinearSegment:
 
         return result
 
-    def __compute_physical_limits__(self) -> None:
+    def __compute_physical_limits(self) -> None:
         """Computes the physical limits and stores them in the properties
         self._physical_lower_limit and self._physical_upper_limit.
         This method is called by `__post_init__()`.
