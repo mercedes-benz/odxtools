@@ -11,7 +11,7 @@ from tabulate import tabulate  # TODO: switch to rich tables
 from ..database import Database
 from ..diaglayer import DiagLayer
 from ..diagservice import DiagService
-from ..load_file import load_file
+from ..loadfile import load_file
 from ..odxtypes import AtomicOdxType
 from ..parameters.codedconstparameter import CodedConstParameter
 from ..parameters.nrcconstparameter import NrcConstParameter

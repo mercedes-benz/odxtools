@@ -4,7 +4,7 @@ from io import StringIO
 from unittest.mock import patch
 
 from odxtools.exceptions import OdxError, odxrequire
-from odxtools.load_pdx_file import load_pdx_file
+from odxtools.loadfile import load_pdx_file
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
 
 odxdb = load_pdx_file("./examples/somersault.pdx")

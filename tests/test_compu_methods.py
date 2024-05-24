@@ -19,8 +19,8 @@ from odxtools.compumethods.tabintpcompumethod import TabIntpCompuMethod
 from odxtools.exceptions import DecodeError, EncodeError, OdxError
 from odxtools.odxlink import OdxDocFragment
 from odxtools.odxtypes import DataType
-from odxtools.write_pdx_file import (get_parent_container_name, jinja2_odxraise_helper,
-                                     make_bool_xml_attrib, make_xml_attrib)
+from odxtools.writepdxfile import (get_parent_container_name, jinja2_odxraise_helper,
+                                   make_bool_xml_attrib, make_xml_attrib)
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
