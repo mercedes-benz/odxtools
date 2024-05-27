@@ -6,7 +6,7 @@ from typing import List
 import odxtools
 import odxtools.exceptions
 from odxtools.exceptions import OdxError
-from odxtools.load_pdx_file import load_pdx_file
+from odxtools.loadfile import load_pdx_file
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxLinkRef
 

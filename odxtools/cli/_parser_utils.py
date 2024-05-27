@@ -5,7 +5,7 @@ import argparse
 from typing import Any, Protocol, runtime_checkable
 
 from ..database import Database
-from ..load_file import load_file as _load_file
+from ..loadfile import load_file as _load_file
 
 
 @runtime_checkable

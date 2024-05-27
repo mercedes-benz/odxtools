@@ -34,7 +34,7 @@ from odxtools.physicaltype import PhysicalType
 from odxtools.progcode import ProgCode
 from odxtools.singleecujob import SingleEcuJob
 from odxtools.standardlengthtype import StandardLengthType
-from odxtools.write_pdx_file import jinja2_odxraise_helper, make_bool_xml_attrib, make_xml_attrib
+from odxtools.writepdxfile import jinja2_odxraise_helper, make_bool_xml_attrib, make_xml_attrib
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
 
