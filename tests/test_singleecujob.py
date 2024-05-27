@@ -19,6 +19,7 @@ from odxtools.compumethods.limit import Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.compumethods.texttablecompumethod import TexttableCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
+from odxtools.description import Description
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
@@ -239,7 +240,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 semantic="DATA",
                 short_name="outputParam",
                 long_name="The Output Param",
-                description="<p>The one and only output of this job.</p>",
+                description=Description.from_string("<p>The one and only output of this job.</p>"),
                 dop_base_ref=OdxLinkRef.from_id(self.context.outputDOP.odx_id),
             )
         ])
@@ -247,7 +248,7 @@ class TestSingleEcuJob(unittest.TestCase):
             NegOutputParam(
                 short_name="NegativeOutputParam",
                 long_name=None,
-                description="<p>The one and only output of this job.</p>",
+                description=Description.from_string("<p>The one and only output of this job.</p>"),
                 dop_base_ref=OdxLinkRef.from_id(self.context.negOutputDOP.odx_id),
             )
         ])
@@ -376,6 +377,7 @@ class TestSingleEcuJob(unittest.TestCase):
         expected = self.singleecujob_odx.replace(" ", "")
 
         # Assert equality of outputted string
+        self.maxDiff = None
         self.assertEqual(expected, actual)
 
         # Assert equality of objects

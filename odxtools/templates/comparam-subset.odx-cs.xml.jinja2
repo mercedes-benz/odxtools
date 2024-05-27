@@ -11,6 +11,7 @@
 {%- import('macros/printDOP.xml.jinja2') as pdop %}
 {%- import('macros/printUnitSpec.xml.jinja2') as pus %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printDescription.xml.jinja2') as pd %}
 {#- -#}
 
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -22,11 +23,7 @@
    {%- if comparam_subset.long_name is not none %}
    <LONG-NAME>{{comparam_subset.long_name|e}}</LONG-NAME>
    {%- endif %}
-   {%- if comparam_subset.description and comparam_subset.description.strip() %}
-   <DESC>
-     {{comparam_subset.description}}
-   </DESC>
-   {%- endif %}
+   {{pd.printDescription(comparam_subset.description)}}
    {%- if comparam_subset.admin_data is not none %}
    {{- pad.printAdminData(comparam_subset.admin_data) | indent(3) }}
    {%- endif %}

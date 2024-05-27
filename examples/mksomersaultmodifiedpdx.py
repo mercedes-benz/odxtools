@@ -11,6 +11,7 @@ from typing import List, TypeVar
 import odxtools
 import odxtools.uds as uds
 from examples import somersaultecu
+from odxtools.description import Description
 from odxtools.diaglayer import DiagLayer
 from odxtools.diagservice import DiagService
 from odxtools.nameditemlist import NamedItemList
@@ -80,13 +81,13 @@ somersault_young_dlr.short_name = "somersault_young"
 somersault_young_dlr.odx_id = OdxLinkId("ECU.somersault_young",
                                         somersault_young_dlr.odx_id.doc_fragments)
 somersault_young_dlr.description = \
-"""<p>A young version of the somersault ECU
+Description.from_string("""<p>A young version of the somersault ECU
 
 It is as grumpy as the lazy variant, but it is more agile, so it can do flic-flacs.
 
 On the flipside, it is unwilling to take any instructions, so no
 operational parameters can be set. Finally, it is unwilling to compete
-(i.e. it does not time its somersaults).</p>"""
+(i.e. it does not time its somersaults).</p>""")
 
 # remove the "sault_time" parameter from the positive response of the
 # "do_forward_flips" service.

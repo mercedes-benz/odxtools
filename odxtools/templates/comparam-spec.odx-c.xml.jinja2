@@ -8,6 +8,7 @@
 {%- import('macros/printAdminData.xml.jinja2') as pad -%}
 {%- import('macros/printCompanyData.xml.jinja2') as pcd -%}
 {%- import('macros/printProtStack.xml.jinja2') as pps %}
+{%- import('macros/printDescription.xml.jinja2') as pd %}
 {#- -#}
 
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -18,11 +19,7 @@
    {%- if comparam_spec.long_name is not none %}
    <LONG-NAME>{{comparam_spec.long_name|e}}</LONG-NAME>
    {%- endif %}
-   {%- if comparam_spec.description and comparam_spec.description.strip() %}
-   <DESC>
-     {{comparam_spec.description}}
-   </DESC>
-   {%- endif %}
+   {{pd.printDescription(comparam_spec.description)}}
    {%- if comparam_spec.admin_data is not none %}
    {{- pad.printAdminData(comparam_spec.admin_data) | indent(3) }}
    {%- endif %}

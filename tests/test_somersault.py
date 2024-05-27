@@ -3,6 +3,7 @@ import unittest
 from io import StringIO
 from unittest.mock import patch
 
+from odxtools.description import Description
 from odxtools.exceptions import OdxError, odxrequire
 from odxtools.loadfile import load_pdx_file
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
@@ -67,7 +68,8 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(cd.odx_id.local_id, "CD.Suncus")
         self.assertEqual(cd.short_name, "Suncus")
         self.assertEqual(cd.long_name, "Circus of the sun")
-        self.assertEqual(cd.description, "<p>Prestigious group of performers</p>")
+        self.assertEqual(cd.description,
+                         Description.from_string("<p>Prestigious group of performers</p>"))
         self.assertEqual(cd.roles, ["circus", "gym"])
 
         self.assertEqual([x.short_name for x in cd.team_members], ["Doggy", "Horsey"])
@@ -76,7 +78,8 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(doggy.odx_id.local_id, "TM.Doggy")
         self.assertEqual(doggy.short_name, "Doggy")
         self.assertEqual(doggy.long_name, "Doggy the dog")
-        self.assertEqual(doggy.description, "<p>Dog is man's best friend</p>")
+        self.assertEqual(doggy.description,
+                         Description.from_string("<p>Dog is man's best friend</p>"))
         self.assertEqual(doggy.roles, ["gymnast", "tracker"])
         self.assertEqual(doggy.department, "sniffers")
         self.assertEqual(doggy.address, "Some road")
@@ -91,13 +94,13 @@ class TestDatabase(unittest.TestCase):
 
         rd = odxrequire(cd.company_specific_info).related_docs[0]
 
-        self.assertEqual(rd.description, "<p>We are the best!</p>")
+        self.assertEqual(rd.description, Description.from_string("<p>We are the best!</p>"))
         self.assertTrue(rd.xdoc is not None)
 
         xdoc = odxrequire(rd.xdoc)
         self.assertEqual(xdoc.short_name, "best")
         self.assertEqual(xdoc.long_name, "suncus is the best")
-        self.assertEqual(xdoc.description, "<p>great propaganda...</p>")
+        self.assertEqual(xdoc.description, Description.from_string("<p>great propaganda...</p>"))
         self.assertEqual(xdoc.number, "1")
         self.assertEqual(xdoc.state, "published")
         self.assertEqual(xdoc.date, "2015-01-15T20:15:20+05:00")

@@ -5,10 +5,10 @@ from typing import List, Optional
 from xml.etree import ElementTree
 
 from .compumethods.limit import Limit
+from .description import Description
 from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment
 from .odxtypes import DataType
-from .utils import create_description_from_et
 
 
 class ValidType(Enum):
@@ -24,7 +24,7 @@ class ScaleConstr:
     """
 
     short_label: Optional[str]
-    description: Optional[str]
+    description: Optional[Description]
     lower_limit: Optional[Limit]
     upper_limit: Optional[Limit]
     validity: ValidType
@@ -34,7 +34,7 @@ class ScaleConstr:
     def scale_constr_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
                              value_type: DataType) -> "ScaleConstr":
         short_label = et_element.findtext("SHORT-LABEL")
-        description = create_description_from_et(et_element.find("DESC"))
+        description = Description.from_et(et_element.find("DESC"), doc_frags)
 
         lower_limit = Limit.limit_from_et(
             et_element.find("LOWER-LIMIT"), doc_frags, value_type=value_type)

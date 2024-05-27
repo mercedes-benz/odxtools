@@ -2,16 +2,17 @@ from dataclasses import dataclass
 from typing import List, Optional
 from xml.etree import ElementTree
 
+from .description import Description
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkId
-from .utils import create_description_from_et, dataclass_fields_asdict
+from .utils import dataclass_fields_asdict
 
 
 @dataclass
 class NamedElement:
     short_name: str
     long_name: Optional[str]
-    description: Optional[str]
+    description: Optional[Description]
 
     @staticmethod
     def from_et(
@@ -22,7 +23,7 @@ class NamedElement:
         return NamedElement(
             short_name=odxrequire(et_element.findtext("SHORT-NAME")),
             long_name=et_element.findtext("LONG-NAME"),
-            description=create_description_from_et(et_element.find("DESC")),
+            description=Description.from_et(et_element.find("DESC"), doc_frags),
         )
 
 

@@ -3,6 +3,7 @@
  # SPDX-License-Identifier: MIT
 -#}
 {%- import('macros/printComparam.xml.jinja2') as pcp %}
+{%- import('macros/printDescription.xml.jinja2') as pd %}
 {#- -#}
 
 {%- macro printComparamRef(cp) %}
@@ -11,27 +12,19 @@
               DOCTYPE="COMPARAM-SUBSET">
   {%- if cp.value is string %}
   <SIMPLE-VALUE>{{cp.value}}</SIMPLE-VALUE>
-  {%- if cp.description %}
-  <DESC>{{cp.description}}</DESC>
-  {%- endif %}
+  {{ pd.printDescription(cp.description) }}
   {%- elif cp.value is iterable %}
   {%- if hasattr(cp.value, "hex") %}
   {#- the value has a hex() method. assume that is a bytes or bytestring #}
   <SIMPLE-VALUE>{{cp.value.hex().upper()}}</SIMPLE-VALUE>
-  {%- if cp.description %}
-  <DESC>{{cp.description}}</DESC>
-  {%- endif %}
+  {{ pd.printDescription(cp.description) }}
   {%- else %}
   {{ pcp.printComplexValue(cp.value)|indent(1) }}
-  {%- if cp.description %}
-  <DESC>{{cp.description}}</DESC>
-  {%- endif %}
+  {{ pd.printDescription(cp.description) }}
   {%- endif %}
   {%- else %}
   <SIMPLE-VALUE>{{cp.value}}</SIMPLE-VALUE>
-  {%- if cp.description %}
-  <DESC>{{cp.description}}</DESC>
-  {%- endif %}
+  {{ pd.printDescription(cp.description) }}
   {%- endif %}
   {%- if cp.prot_stack_snref is not none %}
   <PROT-STACK-SNREF SHORT-NAME="{{cp.prot_stack_snref}}"/>

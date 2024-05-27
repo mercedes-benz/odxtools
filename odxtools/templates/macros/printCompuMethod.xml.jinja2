@@ -6,6 +6,7 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printAdminData.xml.jinja2') as pad %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printDescription.xml.jinja2') as pd %}
 
 
 {%- macro printLimit(tag_name, limit_obj) -%}
@@ -59,13 +60,9 @@
   {%- if cs.short_label is not none %}
   <SHORT-LABEL>{{cs.short_label|e}}</SHORT-LABEL>
   {%- endif %}
-  {%- if cs.description and cs.description.strip() %}
-  <DESC>
-    {{cs.description}}
-  </DESC>
-  {%- endif %}
-  {{-printLimit("LOWER-LIMIT", cs.lower_limit)|indent(2, first=True) }}
-  {{-printLimit("UPPER-LIMIT", cs.upper_limit)|indent(2, first=True) }}
+  {{- pd.printDescription(cs.description)|indent(2, first=True) }}
+  {{- printLimit("LOWER-LIMIT", cs.lower_limit)|indent(2, first=True) }}
+  {{- printLimit("UPPER-LIMIT", cs.upper_limit)|indent(2, first=True) }}
   {%- if cs.compu_inverse_value is not none %}
   {{printCompuInverseValue(cs.compu_inverse_value)}}
   {%- endif %}
