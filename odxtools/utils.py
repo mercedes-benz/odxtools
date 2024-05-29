@@ -1,32 +1,7 @@
 # SPDX-License-Identifier: MIT
 import dataclasses
 import re
-from typing import Any, Dict, Optional
-from xml.etree import ElementTree
-
-
-def create_description_from_et(et_element: Optional[ElementTree.Element],) -> Optional[str]:
-    """Read a description tag.
-
-    The description is located underneath the DESC tag of an an ODX
-    element."""
-
-    if et_element is None:
-        return None
-
-    if et_element.tag != "DESC":
-        raise TypeError(f"Attempted to extract an ODX description from a "
-                        f"'{et_element.tag}' XML node. (Must be a 'DESC' node!)")
-
-    # Extract the contents of the tag as a XHTML string.
-    raw_string = et_element.text or ""
-    for e in et_element:
-        raw_string += ElementTree.tostring(e, encoding="unicode")
-
-    # remove white spaces at the beginning and at the end of lines
-    stripped_lines = [x.strip() for x in raw_string.split("\n")]
-
-    return "\n".join(stripped_lines).strip()
+from typing import Any, Dict
 
 
 def dataclass_fields_asdict(obj: Any) -> Dict[str, Any]:

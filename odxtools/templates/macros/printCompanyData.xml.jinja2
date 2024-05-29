@@ -5,6 +5,7 @@
 
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printDescription.xml.jinja2') as pd %}
 
 {%- macro printCompanyData(company_data) %}
 <COMPANY-DATA ID="{{company_data.odx_id.local_id}}">
@@ -81,11 +82,7 @@
      {%- endif %}
     </XDOC>
     {%- endif %}
-    {%- if rd.description is not none %}
-    <DESC>
-{{rd.description}}
-    </DESC>
-    {%- endif %}
+    {{pd.printDescription(rd.description)}}
    </RELATED-DOC>
   {%- endfor %}
   </RELATED-DOCS>

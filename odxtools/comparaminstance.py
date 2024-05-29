@@ -7,9 +7,9 @@ from xml.etree import ElementTree
 from .basecomparam import BaseComparam
 from .comparam import Comparam
 from .complexcomparam import ComplexComparam, ComplexValue, create_complex_value_from_et
+from .description import Description
 from .exceptions import OdxWarning, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .utils import create_description_from_et
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -23,7 +23,7 @@ class ComparamInstance:
     Be aware that the ODX specification calls this class COMPARAM-REF!
     """
     value: Union[str, ComplexValue]
-    description: Optional[str]
+    description: Optional[Description]
     protocol_snref: Optional[str]
     prot_stack_snref: Optional[str]
     spec_ref: OdxLinkRef
@@ -44,7 +44,7 @@ class ComparamInstance:
         else:
             value = create_complex_value_from_et(odxrequire(et_element.find("COMPLEX-VALUE")))
 
-        description = create_description_from_et(et_element.find("DESC"))
+        description = Description.from_et(et_element.find("DESC"), doc_frags)
 
         prot_stack_snref = None
         if (psnref_elem := et_element.find("PROT-STACK-SNREF")) is not None:

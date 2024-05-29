@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from typing import List, Optional
 from xml.etree import ElementTree
 
+from ..description import Description
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
-from ..utils import create_description_from_et
 from .compuconst import CompuConst
 from .compuinversevalue import CompuInverseValue
 from .compurationalcoeffs import CompuRationalCoeffs
@@ -18,7 +18,7 @@ class CompuScale:
     """
 
     short_label: Optional[str]
-    description: Optional[str]
+    description: Optional[Description]
     lower_limit: Optional[Limit]
     upper_limit: Optional[Limit]
     compu_inverse_value: Optional[CompuInverseValue]
@@ -35,7 +35,7 @@ class CompuScale:
     def compuscale_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
                            internal_type: DataType, physical_type: DataType) -> "CompuScale":
         short_label = et_element.findtext("SHORT-LABEL")
-        description = create_description_from_et(et_element.find("DESC"))
+        description = Description.from_et(et_element.find("DESC"), doc_frags)
 
         lower_limit = Limit.limit_from_et(
             et_element.find("LOWER-LIMIT"), doc_frags, value_type=internal_type)

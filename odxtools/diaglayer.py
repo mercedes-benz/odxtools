@@ -16,6 +16,7 @@ from .companydata import CompanyData
 from .comparaminstance import ComparamInstance
 from .comparamspec import ComparamSpec
 from .comparamsubset import ComparamSubset
+from .description import Description
 from .diagcomm import DiagComm
 from .diagdatadictionaryspec import DiagDataDictionarySpec
 from .diaglayerraw import DiagLayerRaw
@@ -309,7 +310,7 @@ class DiagLayer:
         return self.diag_layer_raw.long_name
 
     @property
-    def description(self) -> Optional[str]:
+    def description(self) -> Optional[Description]:
         return self.diag_layer_raw.description
 
     @property

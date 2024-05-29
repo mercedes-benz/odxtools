@@ -5,6 +5,7 @@
 
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printDescription.xml.jinja2') as pd %}
 
 {%- macro printTable(table) %}
 <TABLE ID="{{table.odx_id.local_id}}"
@@ -21,9 +22,7 @@
   {%- if table_row.long_name %}
   <LONG-NAME>{{table_row.long_name|e}}</LONG-NAME>
   {%- endif %}
-  {%- if table_row.description %}
-  <DESC>{{table_row.description}}</DESC>
-  {%- endif %}
+  {{ pd.printDescription(table_row.description) }}
   <KEY>{{table_row.key|e}}</KEY>
   {%- if table_row.dop_ref %}
   <DATA-OBJECT-PROP-REF ID-REF="{{ table_row.dop_ref.ref_id }}" />

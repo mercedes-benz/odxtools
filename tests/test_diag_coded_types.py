@@ -12,6 +12,7 @@ from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.createanydiagcodedtype import create_any_diag_coded_type_from_et
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.decodestate import DecodeState
+from odxtools.description import Description
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
@@ -238,7 +239,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                 ValueParameter(
                     short_name="certificateClient",
                     long_name=None,
-                    description="The certificate to verify.",
+                    description=Description.from_string("The certificate to verify."),
                     semantic=None,
                     byte_position=1,
                     bit_position=None,
@@ -546,7 +547,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                 LengthKeyParameter(
                     short_name="lengthOfCertificateClient",
                     long_name=None,
-                    description="Length parameter for certificateClient.",
+                    description=Description.from_string("Length parameter for certificateClient."),
                     semantic=None,
                     # LengthKeyParams have an ID to be referenced by a ParamLengthInfoType (which is a diag coded type)
                     odx_id=OdxLinkId("param.dummy_length_key", doc_frags),
@@ -560,7 +561,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                 ValueParameter(
                     short_name="certificateClient",
                     long_name=None,
-                    description="The certificate to verify.",
+                    description=Description.from_string("The certificate to verify."),
                     semantic=None,
                     byte_position=2,
                     bit_position=None,
@@ -885,7 +886,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 ValueParameter(
                     short_name="certificateClient",
                     long_name=None,
-                    description=("The certificate to verify."),
+                    description=Description.from_string("The certificate to verify."),
                     semantic=None,
                     byte_position=1,
                     bit_position=None,

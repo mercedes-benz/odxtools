@@ -25,6 +25,7 @@ from odxtools.compumethods.limit import Limit
 from odxtools.compumethods.texttablecompumethod import TexttableCompuMethod
 from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
+from odxtools.description import Description
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayercontainer import DiagLayerContainer
@@ -107,7 +108,7 @@ somersault_team_members = {
             odx_id=OdxLinkId("TM.Doggy", doc_frags),
             short_name="Doggy",
             long_name="Doggy the dog",
-            description="<p>Dog is man's best friend</p>",
+            description=Description.from_string("<p>Dog is man's best friend</p>"),
             roles=["gymnast", "tracker"],
             department="sniffers",
             address="Some road",
@@ -122,7 +123,7 @@ somersault_team_members = {
             odx_id=OdxLinkId("TM.Horsey", doc_frags),
             short_name="Horsey",
             long_name="Horsey the horse",
-            description="<p>Trustworthy worker</p>",
+            description=Description.from_string("<p>Trustworthy worker</p>"),
             roles=["gymnast"],
             department="haulers",
             address="Some road",
@@ -155,7 +156,7 @@ somersault_company_datas = {
             odx_id=OdxLinkId("CD.Suncus", doc_frags),
             short_name="Suncus",
             long_name="Circus of the sun",
-            description="<p>Prestigious group of performers</p>",
+            description=Description.from_string("<p>Prestigious group of performers</p>"),
             roles=["circus", "gym"],
             team_members=NamedItemList([
                 somersault_team_members["doggy"],
@@ -164,11 +165,11 @@ somersault_company_datas = {
             company_specific_info=CompanySpecificInfo(
                 related_docs=[
                     RelatedDoc(
-                        description="<p>We are the best!</p>",
+                        description=Description.from_string("<p>We are the best!</p>"),
                         xdoc=XDoc(
                             short_name="best",
                             long_name="suncus is the best",
-                            description="<p>great propaganda...</p>",
+                            description=Description.from_string("<p>great propaganda...</p>"),
                             number="1",
                             state="published",
                             date="2015-01-15T20:15:20+05:00",
@@ -362,7 +363,7 @@ somersault_units = {
             short_name="second",
             display_name="s",
             long_name="Second",
-            description="<p>SI unit for the time</p>",
+            description=Description.from_string("<p>SI unit for the time</p>"),
             factor_si_to_unit=1,
             offset_si_to_unit=0,
             physical_dimension_ref=OdxLinkRef.from_id(
@@ -407,7 +408,7 @@ somersault_unit_groups = {
                 OdxLinkRef.from_id(somersault_units["minute"].odx_id),
             ],
             long_name="Duration",
-            description="<p>Units for measuring a duration</p>",
+            description=Description.from_string("<p>Units for measuring a duration</p>"),
         ),
 }
 
@@ -1183,7 +1184,8 @@ somersault_tables = {
             odx_id=last_flip_details_table_id,
             short_name="last_flip_details",
             long_name="Flip Details",
-            description="<p>The details the last successfully executed request</p>",
+            description=Description.from_string(
+                "<p>The details the last successfully executed request</p>"),
             semantic="DETAILS",
             admin_data=None,
             key_label="key",
@@ -1198,7 +1200,7 @@ somersault_tables = {
                     key_raw="0",
                     structure_ref=None,
                     structure_snref=None,
-                    description="<p>We have not done any flips yet!</p>",
+                    description=Description.from_string("<p>We have not done any flips yet!</p>"),
                     semantic="DETAILS-KEY",
                     dop_ref=OdxLinkRef.from_id(somersault_dops["soberness_check"].odx_id),
                     dop_snref=None,
@@ -1214,7 +1216,8 @@ somersault_tables = {
                     structure_ref=OdxLinkRef.from_id(
                         somersault_positive_responses["forward_flips_grudgingly_done"].odx_id),
                     structure_snref=None,
-                    description="<p>The the last forward flip was grudgingly done</p>",
+                    description=Description.from_string(
+                        "<p>The the last forward flip was grudgingly done</p>"),
                     semantic="DETAILS-KEY",
                     dop_ref=None,
                     dop_snref=None,
@@ -1791,7 +1794,7 @@ somersault_services = {
             odx_id=OdxLinkId("somersault.service.do_forward_flips", doc_frags),
             short_name="do_forward_flips",
             long_name=None,
-            description="<p>Do a forward flip.</p>",
+            description=Description.from_string("<p>Do a forward flip.</p>"),
             admin_data=None,
             protocol_snrefs=[],
             related_diag_comm_refs=[],
@@ -1933,7 +1936,7 @@ somersault_single_ecu_jobs = {
             odx_id=OdxLinkId("somersault.service.compulsory_program", doc_frags),
             short_name="compulsory_program",
             long_name="Compulsory Program",
-            description="<p>Do several fancy moves.</p>",
+            description=Description.from_string("<p>Do several fancy moves.</p>"),
             admin_data=None,
             semantic=None,
             functional_class_refs=[],
@@ -2116,7 +2119,7 @@ somersault_diaglayer_raw = DiagLayerRaw(
     odx_id=OdxLinkId("somersault", doc_frags),
     short_name="somersault",
     long_name="Somersault base variant",
-    description="<p>Base variant of the somersault ECU &amp; cetera</p>",
+    description=Description.from_string("<p>Base variant of the somersault ECU &amp; cetera</p>"),
     admin_data=None,
     company_datas=NamedItemList(),
     functional_classes=NamedItemList(somersault_functional_classes.values()),
@@ -2147,7 +2150,8 @@ somersault_lazy_diaglayer_raw = DiagLayerRaw(
     odx_id=OdxLinkId("somersault_lazy", doc_frags),
     short_name="somersault_lazy",
     long_name="Somersault lazy ECU",
-    description="<p>Sloppy variant of the somersault ECU (lazy &lt; assiduous)</p>",
+    description=Description.from_string(
+        "<p>Sloppy variant of the somersault ECU (lazy &lt; assiduous)</p>"),
     admin_data=None,
     company_datas=NamedItemList(),
     functional_classes=NamedItemList(),
@@ -2358,7 +2362,8 @@ somersault_assiduous_diaglayer_raw = DiagLayerRaw(
     odx_id=OdxLinkId("somersault_assiduous", doc_frags),
     short_name="somersault_assiduous",
     long_name="Somersault assiduous ECU",
-    description="<p>Hard-working variant of the somersault ECU (lazy &lt; assiduous)</p>",
+    description=Description.from_string(
+        "<p>Hard-working variant of the somersault ECU (lazy &lt; assiduous)</p>"),
     admin_data=None,
     company_datas=NamedItemList(),
     functional_classes=NamedItemList(),
@@ -2414,7 +2419,8 @@ somersault_dlc = DiagLayerContainer(
     odx_id=OdxLinkId("DLC.somersault", doc_frags),
     short_name=dlc_short_name,
     long_name="Collect all saults in the summer",
-    description="<p>This contains ECUs which do somersaults &amp; cetera</p>",
+    description=Description.from_string(
+        "<p>This contains ECUs which do somersaults &amp; cetera</p>"),
     admin_data=somersault_admin_data,
     company_datas=NamedItemList([
         somersault_company_datas["suncus"],

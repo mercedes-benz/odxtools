@@ -7,6 +7,7 @@
 {%- import('macros/printAdminData.xml.jinja2') as pad %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 {%- import('macros/printCompuMethod.xml.jinja2') as pcm %}
+{%- import('macros/printDescription.xml.jinja2') as pd %}
 
 
 {%- macro printDiagCodedType(dct) -%}
@@ -49,11 +50,7 @@
   {%- if sc.short_label is not none %}
   <SHORT-LABEL>{{sc.short_label|e}}</SHORT-LABEL>
   {%- endif %}
-  {%- if sc.description and sc.description.strip() %}
-  <DESC>
-    {{sc.description}}
-  </DESC>
-  {%- endif %}
+  {{pd.printDescription(sc.description)}}
   {{pcm.printLimit("LOWER-LIMIT", sc.lower_limit) }}
   {{pcm.printLimit("UPPER-LIMIT", sc.upper_limit) }}
 </SCALE-CONSTR>
@@ -80,7 +77,6 @@
 </INTERNAL-CONSTR>
 {%- endif %}
 {%- endmacro -%}
-
 
 {%- macro printDopBaseAttribs(dop) %}
 {{- make_xml_attrib("ID", dop.odx_id.local_id) }}

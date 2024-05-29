@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 import markdownify
 from tabulate import tabulate  # TODO: switch to rich tables
 
+from ..description import Description
 from ..diaglayer import DiagLayer
 from ..diagservice import DiagService
 from ..parameters.codedconstparameter import CodedConstParameter
@@ -17,9 +18,9 @@ from ..parameters.valueparameter import ValueParameter
 from ..singleecujob import SingleEcuJob
 
 
-def format_desc(desc: str, indent: int = 0) -> str:
+def format_desc(description: Description, indent: int = 0) -> str:
     # Collapse whitespaces
-    desc = re.sub(r"\s+", " ", desc)
+    desc = re.sub(r"\s+", " ", str(description))
     # Covert XHTML to Markdown
     desc = markdownify.markdownify(desc)
     # Collapse blank lines

@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
+from .description import Description
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
-from .utils import create_description_from_et
 from .xdoc import XDoc
 
 if TYPE_CHECKING:
@@ -13,12 +13,12 @@ if TYPE_CHECKING:
 
 @dataclass
 class RelatedDoc:
-    description: Optional[str]
+    description: Optional[Description]
     xdoc: Optional[XDoc]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "RelatedDoc":
-        description = create_description_from_et(et_element.find("DESC"))
+        description = Description.from_et(et_element.find("DESC"), doc_frags)
 
         xdoc: Optional[XDoc] = None
         if (xdoc_elem := et_element.find("XDOC")) is not None:
