@@ -30,6 +30,7 @@ from odxtools.odxtypes import DataType, ParameterValueDict
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.matchingrequestparameter import MatchingRequestParameter
 from odxtools.parameters.physicalconstantparameter import PhysicalConstantParameter
+from odxtools.parameters.reservedparameter import ReservedParameter
 from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaltype import PhysicalType
 from odxtools.request import Request
@@ -1091,6 +1092,16 @@ class TestDecoding(unittest.TestCase):
             bit_position=None,
             sdgs=[],
         )
+        req_demf_endmarker_param = ReservedParameter(
+            short_name="demf_endmarker",
+            long_name=None,
+            description=None,
+            semantic=None,
+            bit_length=24,
+            byte_position=None,
+            bit_position=None,
+            sdgs=[],
+        )
         req_param3 = CodedConstParameter(
             short_name="demf_post_param",
             long_name=None,
@@ -1110,7 +1121,8 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            parameters=NamedItemList([req_param1, req_param2, req_param3]),
+            parameters=NamedItemList([req_param1, req_param2, req_demf_endmarker_param,
+                                      req_param3]),
             byte_size=None,
         )
 
@@ -1248,6 +1260,7 @@ class TestDecoding(unittest.TestCase):
                         "struct_param_2": 5
                     },
                 ],
+                "demf_endmarker": 0xffffff,
                 "demf_post_param": 0xcc,
             },
         )
