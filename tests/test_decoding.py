@@ -393,8 +393,8 @@ class TestDecoding(unittest.TestCase):
             description=None,
             semantic=None,
             diag_coded_type=diag_coded_type,
-            coded_value=0x56,
-            byte_position=2,
+            coded_value=0x78,
+            byte_position=3,
             bit_position=None,
             sdgs=[],
         )
@@ -415,7 +415,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             semantic=None,
             diag_coded_type=diag_coded_type,
-            coded_value=0x78,
+            coded_value=0x56,
             byte_position=None,
             bit_position=None,
             sdgs=[],
@@ -507,9 +507,9 @@ class TestDecoding(unittest.TestCase):
             coding_object=req,
             param_dict={
                 "SID": 0x12,
-                "coded_const_parameter_2": 0x56,
+                "coded_const_parameter_2": 0x78,
                 "coded_const_parameter_3": 0x34,
-                "coded_const_parameter_4": 0x78,
+                "coded_const_parameter_4": 0x56,
             },
         )
         decoded_message = diag_layer.decode(coded_message)[0]

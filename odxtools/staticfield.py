@@ -89,7 +89,6 @@ class StaticField(Field):
                   "No bit position can be specified for static length fields!")
 
         orig_origin = decode_state.origin_byte_position
-        orig_cursor = decode_state.cursor_byte_position
         decode_state.origin_byte_position = decode_state.cursor_byte_position
 
         result: List[ParameterValue] = []
@@ -106,6 +105,5 @@ class StaticField(Field):
             decode_state.cursor_byte_position = orig_cursor + self.item_byte_size
 
         decode_state.origin_byte_position = orig_origin
-        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
 
         return result

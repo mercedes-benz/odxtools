@@ -165,7 +165,6 @@ class TableKeyParameter(Parameter):
 
             encode_state.table_keys[self.short_name] = physical_value
 
-        orig_pos = encode_state.cursor_byte_position
         pos = encode_state.cursor_byte_position
         if self.byte_position is not None:
             pos = encode_state.origin_byte_position + self.byte_position
@@ -189,7 +188,6 @@ class TableKeyParameter(Parameter):
         tmp_val = b'\x00' * ((n + 7) // 8)
         encode_state.emplace_bytes(tmp_val, obj_used_mask=tmp_val)
 
-        encode_state.cursor_byte_position = max(orig_pos, encode_state.cursor_byte_position)
         encode_state.cursor_bit_position = 0
 
     def encode_value_into_pdu(self, encode_state: EncodeState) -> None:

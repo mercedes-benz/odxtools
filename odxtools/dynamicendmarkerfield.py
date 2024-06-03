@@ -100,7 +100,6 @@ class DynamicEndmarkerField(Field):
                   "No bit position can be specified for dynamic endmarker fields!")
 
         orig_origin = decode_state.origin_byte_position
-        orig_cursor = decode_state.cursor_byte_position
         decode_state.origin_byte_position = decode_state.cursor_byte_position
 
         result: List[ParameterValue] = []
@@ -131,6 +130,5 @@ class DynamicEndmarkerField(Field):
             result.append(self.structure.decode_from_pdu(decode_state))
 
         decode_state.origin_byte_position = orig_origin
-        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
 
         return result

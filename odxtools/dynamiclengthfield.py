@@ -61,7 +61,6 @@ class DynamicLengthField(Field):
                 f"got {type(physical_value)}", EncodeError)
 
         # move the origin to the cursor position
-        orig_cursor = encode_state.cursor_byte_position
         orig_origin = encode_state.origin_byte_position
         encode_state.origin_byte_position = encode_state.cursor_byte_position
 
@@ -92,7 +91,6 @@ class DynamicLengthField(Field):
 
         # move cursor and origin positions
         encode_state.origin_byte_position = orig_origin
-        encode_state.cursor_byte_position = max(orig_cursor, encode_state.cursor_byte_position)
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
@@ -101,7 +99,6 @@ class DynamicLengthField(Field):
                   "No bit position can be specified for dynamic length fields!")
 
         orig_origin = decode_state.origin_byte_position
-        orig_cursor = decode_state.cursor_byte_position
 
         det_num_items = self.determine_number_of_items
         decode_state.origin_byte_position = decode_state.cursor_byte_position
@@ -125,6 +122,5 @@ class DynamicLengthField(Field):
             result.append(self.structure.decode_from_pdu(decode_state))
 
         decode_state.origin_byte_position = orig_origin
-        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
 
         return result

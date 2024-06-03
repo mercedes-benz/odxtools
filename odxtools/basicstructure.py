@@ -10,7 +10,7 @@ from .complexdop import ComplexDop
 from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, OdxWarning, odxassert, odxraise, strict_mode
+from .exceptions import EncodeError, OdxWarning, odxassert, odxraise, strict_mode
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterDict, ParameterValue, ParameterValueDict
@@ -156,7 +156,6 @@ class BasicStructure(ComplexDop):
                 f"{encode_state.cursor_bit_position}", EncodeError)
             encode_state.bit_position = 0
 
-        orig_cursor = encode_state.cursor_byte_position
         orig_origin = encode_state.origin_byte_position
         encode_state.origin_byte_position = encode_state.cursor_byte_position
 
@@ -227,7 +226,6 @@ class BasicStructure(ComplexDop):
                                           encode_state.origin_byte_position)
 
         encode_state.origin_byte_position = orig_origin
-        encode_state.cursor_byte_position = max(orig_cursor, encode_state.cursor_byte_position)
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
@@ -250,13 +248,6 @@ class BasicStructure(ComplexDop):
     def decode(self, message: bytes) -> ParameterValueDict:
         decode_state = DecodeState(coded_message=message)
         param_values = self.decode_from_pdu(decode_state)
-
-        if len(message) != decode_state.cursor_byte_position:
-            odxraise(
-                f"The message {message.hex()} probably could not be completely parsed:"
-                f" Expected length of {decode_state.cursor_byte_position} but got {len(message)}.",
-                DecodeError)
-            return {}
 
         if not isinstance(param_values, dict):
             odxraise("Decoding structures must result in a dictionary")

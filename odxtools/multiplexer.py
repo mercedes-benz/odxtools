@@ -90,7 +90,6 @@ class Multiplexer(ComplexDop):
             with only one key equal to the desired case""")
 
         orig_origin = encode_state.origin_byte_position
-        orig_cursor = encode_state.cursor_byte_position
 
         encode_state.origin_byte_position = encode_state.cursor_byte_position
 
@@ -120,8 +119,6 @@ class Multiplexer(ComplexDop):
                     physical_value=key_value, encode_state=encode_state)
 
                 encode_state.origin_byte_position = orig_origin
-                encode_state.cursor_byte_position = max(orig_cursor,
-                                                        encode_state.cursor_byte_position)
                 return
 
         raise EncodeError(f"The case {case_name} is not found in Multiplexer {self.short_name}")
@@ -132,7 +129,6 @@ class Multiplexer(ComplexDop):
         # multiplexers are structures and thus the origin position
         # must be moved to the start of the multiplexer
         orig_origin = decode_state.origin_byte_position
-        orig_cursor = decode_state.cursor_byte_position
         if self.byte_position is not None:
             decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
         decode_state.origin_byte_position = decode_state.cursor_byte_position
@@ -164,7 +160,6 @@ class Multiplexer(ComplexDop):
 
         # go back to the original origin
         decode_state.origin_byte_position = orig_origin
-        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
 
         return mux_value
 
