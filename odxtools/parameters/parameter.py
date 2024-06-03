@@ -127,14 +127,15 @@ class Parameter(NamedElement):
     @final
     def encode_into_pdu(self, physical_value: Optional[ParameterValue],
                         encode_state: EncodeState) -> None:
-        """Convert a physical value into its encoded form and place it into the PDU
+        """Convert a physical value into its encoded form and place it
+        into the PDU
 
-        Also, adapt the `encode_state` so that it points to where the next
-        parameter is located (if the parameter does not explicitly specify a
-        position)
+        Also, adapt the `encode_state` so that it points to where the
+        next parameter is located (if the next parameter does not
+        explicitly specify a position)
+
         """
 
-        orig_cursor = encode_state.cursor_byte_position
         if self.byte_position is not None:
             encode_state.cursor_byte_position = encode_state.origin_byte_position + self.byte_position
 
@@ -142,7 +143,6 @@ class Parameter(NamedElement):
 
         self._encode_positioned_into_pdu(physical_value, encode_state)
 
-        encode_state.cursor_byte_position = max(encode_state.cursor_byte_position, orig_cursor)
         encode_state.cursor_bit_position = 0
 
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
@@ -156,7 +156,15 @@ class Parameter(NamedElement):
 
     @final
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-        orig_cursor = decode_state.cursor_byte_position
+        """Retrieve the raw data for the parameter from the PDU and
+        convert it to its physical interpretation
+
+        Also, adapt the `encode_state` so that it points to where the
+        next parameter is located (if the next parameter does not
+        explicitly specify a position)
+
+        """
+
         if self.byte_position is not None:
             decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
 
@@ -164,7 +172,6 @@ class Parameter(NamedElement):
 
         result = self._decode_positioned_from_pdu(decode_state)
 
-        decode_state.cursor_byte_position = max(decode_state.cursor_byte_position, orig_cursor)
         decode_state.cursor_bit_position = 0
 
         return result

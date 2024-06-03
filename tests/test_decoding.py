@@ -30,6 +30,7 @@ from odxtools.odxtypes import DataType, ParameterValueDict
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.matchingrequestparameter import MatchingRequestParameter
 from odxtools.parameters.physicalconstantparameter import PhysicalConstantParameter
+from odxtools.parameters.reservedparameter import ReservedParameter
 from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaltype import PhysicalType
 from odxtools.request import Request
@@ -392,8 +393,8 @@ class TestDecoding(unittest.TestCase):
             description=None,
             semantic=None,
             diag_coded_type=diag_coded_type,
-            coded_value=0x56,
-            byte_position=2,
+            coded_value=0x78,
+            byte_position=3,
             bit_position=None,
             sdgs=[],
         )
@@ -414,7 +415,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             semantic=None,
             diag_coded_type=diag_coded_type,
-            coded_value=0x78,
+            coded_value=0x56,
             byte_position=None,
             bit_position=None,
             sdgs=[],
@@ -506,9 +507,9 @@ class TestDecoding(unittest.TestCase):
             coding_object=req,
             param_dict={
                 "SID": 0x12,
-                "coded_const_parameter_2": 0x56,
+                "coded_const_parameter_2": 0x78,
                 "coded_const_parameter_3": 0x34,
-                "coded_const_parameter_4": 0x78,
+                "coded_const_parameter_4": 0x56,
             },
         )
         decoded_message = diag_layer.decode(coded_message)[0]
@@ -1091,6 +1092,16 @@ class TestDecoding(unittest.TestCase):
             bit_position=None,
             sdgs=[],
         )
+        req_demf_endmarker_param = ReservedParameter(
+            short_name="demf_endmarker",
+            long_name=None,
+            description=None,
+            semantic=None,
+            bit_length=24,
+            byte_position=None,
+            bit_position=None,
+            sdgs=[],
+        )
         req_param3 = CodedConstParameter(
             short_name="demf_post_param",
             long_name=None,
@@ -1110,7 +1121,8 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            parameters=NamedItemList([req_param1, req_param2, req_param3]),
+            parameters=NamedItemList([req_param1, req_param2, req_demf_endmarker_param,
+                                      req_param3]),
             byte_size=None,
         )
 
@@ -1248,6 +1260,7 @@ class TestDecoding(unittest.TestCase):
                         "struct_param_2": 5
                     },
                 ],
+                "demf_endmarker": 0xffffff,
                 "demf_post_param": 0xcc,
             },
         )

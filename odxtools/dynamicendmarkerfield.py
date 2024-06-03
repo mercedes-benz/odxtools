@@ -81,8 +81,17 @@ class DynamicEndmarkerField(Field):
         encode_state.is_end_of_pdu = orig_is_end_of_pdu
 
         if not encode_state.is_end_of_pdu:
-            # only add an endmarker if we are not at the end of the PDU
+            # only add an endmarker if we are not at the end of the
+            # PDU. note that since section 7.3.6.10.5 of the MCD-2
+            # specification states that the data used by the endmarker
+            # ought to be considered to be not consumed (why?!), we
+            # need to keep the cursor where it is before adding the
+            # endmarker. (we still consider its bits to be used
+            # "used", in order to produce a warning if it is attempted
+            # to be overridden.)
+            tmp_cursor = encode_state.cursor_byte_position
             self.dyn_end_dop.encode_into_pdu(self.termination_value, encode_state)
+            encode_state.cursor_byte_position = tmp_cursor
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
@@ -91,7 +100,6 @@ class DynamicEndmarkerField(Field):
                   "No bit position can be specified for dynamic endmarker fields!")
 
         orig_origin = decode_state.origin_byte_position
-        orig_cursor = decode_state.cursor_byte_position
         decode_state.origin_byte_position = decode_state.cursor_byte_position
 
         result: List[ParameterValue] = []
@@ -106,6 +114,14 @@ class DynamicEndmarkerField(Field):
             try:
                 tv_candidate = self.dyn_end_dop.decode_from_pdu(decode_state)
                 if tv_candidate == self.termination_value:
+                    # note that section 7.3.6.10.5 of the MCD-2
+                    # specification states that the bytes occupied by
+                    # the endmarker ought to be considered to be not
+                    # consumed (why?!), i.e., we need to keep the
+                    # cursor where it is before adding the
+                    # endmarker. (we still consider its to be used
+                    # "used", though.)
+                    decode_state.cursor_byte_position = tmp_cursor
                     break
             except DecodeError:
                 pass
@@ -114,6 +130,5 @@ class DynamicEndmarkerField(Field):
             result.append(self.structure.decode_from_pdu(decode_state))
 
         decode_state.origin_byte_position = orig_origin
-        decode_state.cursor_byte_position = max(orig_cursor, decode_state.cursor_byte_position)
 
         return result

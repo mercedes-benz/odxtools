@@ -51,9 +51,9 @@ class ReservedParameter(Parameter):
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
                                     encode_state: EncodeState) -> None:
-        raw_data = (0).to_bytes((encode_state.cursor_bit_position + self.bit_length + 7) // 8,
-                                "big")
-        encode_state.emplace_bytes(raw_data, self.short_name)
+        encode_state.cursor_byte_position += (encode_state.cursor_bit_position + self.bit_length +
+                                              7) // 8
+        encode_state.emplace_bytes(b'', self.short_name)
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
