@@ -605,6 +605,21 @@ somersault_dops = {
             internal_constr=None,
             physical_constr=None,
         ),
+    "uint16":
+        DataObjectProperty(
+            odx_id=OdxLinkId("somersault.DOP.uint16", doc_frags),
+            short_name="uint16",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            diag_coded_type=somersault_diagcodedtypes["uint16"],
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            compu_method=somersault_compumethods["uint_passthrough"],
+            unit_ref=None,
+            sdgs=[],
+            internal_constr=None,
+            physical_constr=None,
+        ),
     "float":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.float", doc_frags),
