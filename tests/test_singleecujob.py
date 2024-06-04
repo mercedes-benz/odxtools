@@ -18,6 +18,7 @@ from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.limit import Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.compumethods.texttablecompumethod import TexttableCompuMethod
+from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.description import Description
 from odxtools.diaglayer import DiagLayer
@@ -465,8 +466,12 @@ class TestSingleEcuJob(unittest.TestCase):
             self.context.negOutputDOP.odx_id: self.context.negOutputDOP,
         })
 
+        db = Database()
+        db.add_auxiliary_file("abc.jar",
+                              b"this is supposed to be a JAR archive, but it isn't (HARR)")
+
         dl._resolve_odxlinks(odxlinks)
-        dl._finalize_init(odxlinks)
+        dl._finalize_init(db, odxlinks)
 
         self.assertEqual(self.context.extensiveTask,
                          self.singleecujob_object.functional_classes.extensiveTask)

@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MIT
 import re
 import warnings
-from copy import copy
+from copy import copy, deepcopy
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar, Union, cast
+from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar,
+                    Union, cast)
 from xml.etree import ElementTree
 
 from deprecation import deprecated
@@ -39,6 +40,9 @@ from .statechart import StateChart
 from .table import Table
 from .unitgroup import UnitGroup
 from .unitspec import UnitSpec
+
+if TYPE_CHECKING:
+    from .database import Database
 
 TNamed = TypeVar("TNamed", bound=OdxNamed)
 
@@ -125,7 +129,22 @@ class DiagLayer:
 
         self.diag_layer_raw._resolve_odxlinks(odxlinks)
 
-    def _finalize_init(self, odxlinks: OdxLinkDatabase) -> None:
+    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+        """Create a deep copy of the diagnostic layer
+
+        Note that the copied diagnostic layer is not fully
+        initialized, so `_finalize_init()` should to be called on it
+        before it can be used normally.
+        """
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+
+        result.diag_layer_raw = deepcopy(self.diag_layer_raw, memo)
+
+        return result
+
+    def _finalize_init(self, database: "Database", odxlinks: OdxLinkDatabase) -> None:
         """This method deals with everything inheritance related and
         -- after the final set of objects covered by the diagnostic
         layer is determined -- resolves any short name references in
@@ -140,6 +159,8 @@ class DiagLayer:
         inherited objects in derived layers, but that would lead to
         excessive memory consumption for large databases...
         """
+
+        self._database = database
 
         #####
         # fill in all applicable objects that use value inheritance
@@ -285,6 +306,10 @@ class DiagLayer:
     @cached_property
     def service_groups(self) -> ServiceBinner:
         return ServiceBinner(self.services)
+
+    @property
+    def database(self) -> "Database":
+        return self._database
 
     #####
     # </convenience functionality>

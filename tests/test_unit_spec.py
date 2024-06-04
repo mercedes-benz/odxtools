@@ -4,6 +4,7 @@ from xml.etree import ElementTree
 
 from odxtools.compumethods.compumethod import CompuCategory
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
+from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
@@ -210,8 +211,9 @@ class TestUnitSpec(unittest.TestCase):
         dl = DiagLayer(diag_layer_raw=dl_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(dl._build_odxlinks())
+        db = Database()
         dl._resolve_odxlinks(odxlinks)
-        dl._finalize_init(odxlinks)
+        dl._finalize_init(db, odxlinks)
 
         param = dl.requests[0].parameters[1]
         assert isinstance(param, ValueParameter)
