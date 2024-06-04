@@ -20,6 +20,10 @@ class ProgCode:
     entrypoint: Optional[str]
     library_refs: List[OdxLinkRef]
 
+    @property
+    def code(self) -> bytes:
+        return self._code
+
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
         code_file = odxrequire(et_element.findtext("CODE-FILE"))
@@ -52,4 +56,9 @@ class ProgCode:
         pass
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        pass
+        db = diag_layer._database
+
+        self._code = odxrequire(
+            db.auxiliary_files.get(self.code_file),
+            f"Reference to auxiliary file '{self.code_file}' "
+            f"could not be resolved")
