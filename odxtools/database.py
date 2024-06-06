@@ -69,7 +69,7 @@ class Database:
             odxraise(f"Different ODX versions used for the same database (ODX {model_version} "
                      f"and ODX {self.model_version}")
 
-            self.model_version = model_version
+        self.model_version = model_version
 
         dlc = root.find("DIAG-LAYER-CONTAINER")
         if dlc is not None:
