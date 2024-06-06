@@ -37,16 +37,14 @@ class Database:
     def add_pdx_file(self, pdx_file_name: str) -> None:
         pdx_zip = ZipFile(pdx_file_name)
 
-        names = list(pdx_zip.namelist())
-        names.sort()
-        for zip_member in names:
+        for zip_member in pdx_zip.namelist():
             # The name of ODX files can end with .odx, .odx-d,
             # .odx-c, .odx-cs, .odx-e, .odx-f, .odx-fd, .odx-m,
             # .odx-v .  We could test for all that, or just make
             # sure that the file's suffix starts with .odx
             p = Path(zip_member)
             if p.suffix.lower().startswith(".odx"):
-                root = ElementTree.fromstring(pdx_zip.read(zip_member))
+                root = ElementTree.parse(pdx_zip.open(zip_member)).getroot()
                 self._process_xml_tree(root)
             elif p.name.lower() != "index.xml":
                 self.add_auxiliary_file(zip_member, pdx_zip.read(zip_member))
