@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 import pathlib
 from enum import IntEnum
+from io import BytesIO
 from itertools import chain
 from typing import Any, Dict
 from xml.etree import ElementTree
@@ -2467,10 +2468,11 @@ for odx_cs_filename in (
 database = Database()
 database._diag_layer_containers = NamedItemList([somersault_dlc])
 database._comparam_subsets = NamedItemList(comparam_subsets)
-database.add_auxiliary_file("jobs.py", b"""
+database.add_auxiliary_file("jobs.py",
+                            BytesIO(b"""
 def compulsory_program():
   print("Hello, World")
-""")
+"""))
 
 # Create ID mapping and resolve references
 database.refresh()

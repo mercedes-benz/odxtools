@@ -118,7 +118,7 @@ def write_pdx_file(
                     out_file.write(open(in_file_name, "rb").read())
 
         # write the auxiliary files
-        for output_file_name, data in database.auxiliary_files.items():
+        for output_file_name, data_file in database.auxiliary_files.items():
             file_cdate = datetime.datetime.fromtimestamp(time.time())
             creation_date = file_cdate.strftime("%Y-%m-%dT%H:%M:%S")
 
@@ -137,7 +137,7 @@ def write_pdx_file(
             zf_name = os.path.basename(output_file_name)
             with zf.open(zf_name, "w") as out_file:
                 file_index.append((zf_name, creation_date, mime_type))
-                out_file.write(data)
+                out_file.write(data_file.read())
 
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
         jinja_env.globals["hasattr"] = hasattr
