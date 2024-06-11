@@ -160,6 +160,9 @@ class DiagLayer:
         excessive memory consumption for large databases...
         """
 
+        # this attribute may be removed later. it is currently
+        # required to properly deal with auxiliary files within the
+        # diagnostic layer.
         self._database = database
 
         #####
@@ -306,10 +309,6 @@ class DiagLayer:
     @cached_property
     def service_groups(self) -> ServiceBinner:
         return ServiceBinner(self.services)
-
-    @property
-    def database(self) -> "Database":
-        return self._database
 
     #####
     # </convenience functionality>
