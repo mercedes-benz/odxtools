@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from itertools import chain
 from pathlib import Path
-from typing import List, Optional, OrderedDict
+from typing import IO, List, Optional, OrderedDict
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
@@ -27,7 +27,7 @@ class Database:
                  pdx_zip: Optional[ZipFile] = None,
                  odx_d_file_name: Optional[str] = None) -> None:
         self.model_version: Optional[Version] = None
-        self.auxiliary_files: OrderedDict[str, bytes] = OrderedDict()
+        self.auxiliary_files: OrderedDict[str, IO[bytes]] = OrderedDict()
 
         # create an empty database object
         self._diag_layer_containers = NamedItemList[DiagLayerContainer]()
@@ -37,28 +37,28 @@ class Database:
     def add_pdx_file(self, pdx_file_name: str) -> None:
         pdx_zip = ZipFile(pdx_file_name)
 
-        names = list(pdx_zip.namelist())
-        names.sort()
-        for zip_member in names:
+        for zip_member in pdx_zip.namelist():
             # The name of ODX files can end with .odx, .odx-d,
             # .odx-c, .odx-cs, .odx-e, .odx-f, .odx-fd, .odx-m,
             # .odx-v .  We could test for all that, or just make
             # sure that the file's suffix starts with .odx
             p = Path(zip_member)
             if p.suffix.lower().startswith(".odx"):
-                root = ElementTree.fromstring(pdx_zip.read(zip_member))
+                root = ElementTree.parse(pdx_zip.open(zip_member)).getroot()
                 self._process_xml_tree(root)
             elif p.name.lower() != "index.xml":
-                self.add_auxiliary_file(zip_member, pdx_zip.read(zip_member))
+                self.add_auxiliary_file(zip_member, pdx_zip.open(zip_member))
 
     def add_odx_file(self, odx_file_name: str) -> None:
         self._process_xml_tree(ElementTree.parse(odx_file_name).getroot())
 
-    def add_auxiliary_file(self, aux_file_name: str, aux_file_data: Optional[bytes] = None) -> None:
-        if aux_file_data is None:
-            aux_file_data = open(aux_file_name, "rb").read()
+    def add_auxiliary_file(self,
+                           aux_file_name: str,
+                           aux_file_obj: Optional[IO[bytes]] = None) -> None:
+        if aux_file_obj is None:
+            aux_file_obj = open(aux_file_name, "rb")
 
-        self.auxiliary_files[aux_file_name] = aux_file_data
+        self.auxiliary_files[aux_file_name] = aux_file_obj
 
     def _process_xml_tree(self, root: ElementTree.Element) -> None:
         dlcs: List[DiagLayerContainer] = []
@@ -71,7 +71,7 @@ class Database:
             odxraise(f"Different ODX versions used for the same database (ODX {model_version} "
                      f"and ODX {self.model_version}")
 
-            self.model_version = model_version
+        self.model_version = model_version
 
         dlc = root.find("DIAG-LAYER-CONTAINER")
         if dlc is not None:

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: MIT
 import pathlib
 from enum import IntEnum
+from io import BytesIO
 from itertools import chain
 from typing import Any, Dict
 from xml.etree import ElementTree
@@ -1962,10 +1963,10 @@ somersault_single_ecu_jobs = {
             diagnostic_class=None,
             prog_codes=[
                 ProgCode(
-                    code_file="jobs.jar",
+                    code_file="jobs.py",
                     encryption=None,
-                    syntax="JAR",
-                    entrypoint="com.supervisor.jobs.CompulsoryProgram",
+                    syntax="PYTHON3",
+                    entrypoint="compulsory_program",
                     revision="1.23.4",
                     library_refs=[],
                 ),
@@ -2467,6 +2468,11 @@ for odx_cs_filename in (
 database = Database()
 database._diag_layer_containers = NamedItemList([somersault_dlc])
 database._comparam_subsets = NamedItemList(comparam_subsets)
+database.add_auxiliary_file("jobs.py",
+                            BytesIO(b"""
+def compulsory_program():
+  print("Hello, World")
+"""))
 
 # Create ID mapping and resolve references
 database.refresh()

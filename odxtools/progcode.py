@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
-from .exceptions import odxrequire
+from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 
 if TYPE_CHECKING:
@@ -19,6 +19,10 @@ class ProgCode:
     encryption: Optional[str]
     entrypoint: Optional[str]
     library_refs: List[OdxLinkRef]
+
+    @property
+    def code(self) -> bytes:
+        return self._code
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
@@ -52,4 +56,15 @@ class ProgCode:
         pass
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        pass
+        db = diag_layer._database
+
+        aux_file = db.auxiliary_files.get(self.code_file)
+
+        if aux_file is None:
+            odxraise(f"Reference to auxiliary file '{self.code_file}' "
+                     f"could not be resolved")
+            self._code: bytes = cast(bytes, None)
+            return
+
+        self._code = aux_file.read()
+        aux_file.seek(0)

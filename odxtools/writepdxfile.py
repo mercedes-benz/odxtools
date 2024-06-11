@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: MIT
 import datetime
 import inspect
+import mimetypes
 import os
 import time
 import zipfile
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import jinja2
 
@@ -60,16 +61,12 @@ __templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templat
 def write_pdx_file(
     output_file_name: str,
     database: Database,
-    auxiliary_content_specifiers: Optional[List[Tuple[str, bytes]]] = None,
     templates_dir: str = __templates_dir,
 ) -> bool:
     """
     Write an internalized database to a PDX file.
     """
     global odxdatabase
-
-    if auxiliary_content_specifiers is None:
-        auxiliary_content_specifiers = []
 
     odxdatabase = database
 
@@ -96,11 +93,17 @@ def write_pdx_file(
                     # are written based on the database)
                     continue
 
-                template_file_mime_type = "text/plain"
+                template_file_mime_type = None
                 if template_file_name.endswith(".odx-cs"):
                     template_file_mime_type = "application/x-asam.odx.odx-cs"
                 elif template_file_name.endswith(".odx-d"):
                     template_file_mime_type = "application/x-asam.odx.odx-d"
+
+                guessed_mime_type, guessed_encoding = mimetypes.guess_type(template_file_name)
+                if template_file_mime_type is None and guessed_mime_type is not None:
+                    template_file_mime_type = guessed_mime_type
+                else:
+                    template_file_mime_type = "application/octet-stream"
 
                 in_path = [root]
                 in_path.append(template_file_name)
@@ -115,20 +118,26 @@ def write_pdx_file(
                     out_file.write(open(in_file_name, "rb").read())
 
         # write the auxiliary files
-        for output_file_name, data in auxiliary_content_specifiers:
+        for output_file_name, data_file in database.auxiliary_files.items():
             file_cdate = datetime.datetime.fromtimestamp(time.time())
             creation_date = file_cdate.strftime("%Y-%m-%dT%H:%M:%S")
 
-            mime_type = "text/plain"
+            mime_type = None
             if output_file_name.endswith(".odx-cs"):
                 mime_type = "application/x-asam.odx.odx-cs"
             elif output_file_name.endswith(".odx-d"):
                 mime_type = "application/x-asam.odx.odx-d"
 
+            guessed_mime_type, guessed_encoding = mimetypes.guess_type(output_file_name)
+            if mime_type is None and guessed_mime_type is not None:
+                mime_type = guessed_mime_type
+            else:
+                mime_type = "application/octet-stream"
+
             zf_name = os.path.basename(output_file_name)
             with zf.open(zf_name, "w") as out_file:
                 file_index.append((zf_name, creation_date, mime_type))
-                out_file.write(data)
+                out_file.write(data_file.read())
 
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
         jinja_env.globals["hasattr"] = hasattr
@@ -187,7 +196,7 @@ def write_pdx_file(
 
         # write the index.xml file
         vars["file_index"] = file_index
-        index_tpl = jinja_env.get_template("index.xml.xml.jinja2")
+        index_tpl = jinja_env.get_template("index.xml.jinja2")
         text = index_tpl.render(**vars)
         zf.writestr("index.xml", text)
 

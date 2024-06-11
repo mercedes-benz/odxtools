@@ -2,6 +2,7 @@
 import inspect
 import os
 import unittest
+from io import BytesIO
 from typing import NamedTuple, cast
 from xml.etree import ElementTree
 
@@ -468,7 +469,7 @@ class TestSingleEcuJob(unittest.TestCase):
 
         db = Database()
         db.add_auxiliary_file("abc.jar",
-                              b"this is supposed to be a JAR archive, but it isn't (HARR)")
+                              BytesIO(b"this is supposed to be a JAR archive, but it isn't (HARR)"))
 
         dl._resolve_odxlinks(odxlinks)
         dl._finalize_init(db, odxlinks)

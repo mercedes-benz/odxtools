@@ -58,7 +58,7 @@ def load_directory(dir_name: Union[str, Path]) -> Database:
         elif p.suffix.lower().startswith(".odx"):
             db.add_odx_file(str(p))
         elif p.name.lower() != "index.xml":
-            db.add_auxiliary_file(p.name, open(str(p), "rb").read())
+            db.add_auxiliary_file(p.name, open(str(p), "rb"))
 
     db.refresh()
     return db

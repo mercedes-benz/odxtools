@@ -3,6 +3,8 @@ import unittest
 from io import StringIO
 from unittest.mock import patch
 
+from packaging.version import Version
+
 from odxtools.description import Description
 from odxtools.exceptions import OdxError, odxrequire
 from odxtools.loadfile import load_pdx_file
@@ -14,6 +16,7 @@ odxdb = load_pdx_file("./examples/somersault.pdx")
 class TestDatabase(unittest.TestCase):
 
     def test_db_structure(self) -> None:
+        self.assertEqual(odxdb.model_version, Version("2.2.0"))
         self.assertEqual([x.short_name for x in odxdb.diag_layer_containers], ["somersault"])
 
         self.assertEqual(
