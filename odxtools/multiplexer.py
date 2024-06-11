@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -14,10 +14,8 @@ from .multiplexerdefaultcase import MultiplexerDefaultCase
 from .multiplexerswitchkey import MultiplexerSwitchKey
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import AtomicOdxType, ParameterValue, odxstr_to_bool
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -186,12 +184,12 @@ class Multiplexer(ComplexDop):
                 odxlinks, key_physical_type=self.switch_key.dop.physical_type.base_data_type)
 
     @override
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        super()._resolve_snrefs(diag_layer)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        super()._resolve_snrefs(context)
 
-        self.switch_key._resolve_snrefs(diag_layer)
+        self.switch_key._resolve_snrefs(context)
         if self.default_case is not None:
-            self.default_case._resolve_snrefs(diag_layer)
+            self.default_case._resolve_snrefs(context)
 
         for mux_case in self.cases:
-            mux_case._resolve_snrefs(diag_layer)
+            mux_case._resolve_snrefs(context)

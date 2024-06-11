@@ -1,14 +1,12 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import Any, Dict, List
 from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .relateddoc import RelatedDoc
+from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -45,9 +43,9 @@ class CompanySpecificInfo:
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         for rd in self.related_docs:
-            rd._resolve_snrefs(diag_layer)
+            rd._resolve_snrefs(context)
 
         for sdg in self.sdgs:
-            sdg._resolve_snrefs(diag_layer)
+            sdg._resolve_snrefs(context)

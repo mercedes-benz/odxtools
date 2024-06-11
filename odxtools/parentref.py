@@ -6,6 +6,7 @@ from xml.etree import ElementTree
 
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -78,7 +79,7 @@ class ParentRef:
         else:
             self._layer = odxlinks.resolve(self.layer_ref)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
 
     def __deepcopy__(self, memo: Dict[int, Any]) -> Any:

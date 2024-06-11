@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 import unittest
-from typing import List, cast
+from typing import List
 
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
 from odxtools.compumethods.compumethod import CompuCategory
@@ -9,7 +9,6 @@ from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.dataobjectproperty import DataObjectProperty
-from odxtools.diaglayer import DiagLayer
 from odxtools.exceptions import EncodeError
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -21,6 +20,7 @@ from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaltype import PhysicalType
 from odxtools.request import Request
 from odxtools.response import Response, ResponseType
+from odxtools.snrefcontext import SnRefContext
 from odxtools.standardlengthtype import StandardLengthType
 
 doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
@@ -186,8 +186,9 @@ class TestEncodeRequest(unittest.TestCase):
             byte_size=None,
         )
 
+        snref_ctx = SnRefContext(parameters=req.parameters)
         param1._resolve_odxlinks(odxlinks)
-        param1._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=req.parameters)
+        param1._resolve_snrefs(snref_ctx)
 
         # Missing mandatory parameter.
         with self.assertRaises(EncodeError):
@@ -426,8 +427,9 @@ class TestEncodeRequest(unittest.TestCase):
             semantic=None,
             sdgs=[],
             physical_default_value_raw=None)
+        snref_ctx = SnRefContext(parameters=[])
         inner_param._resolve_odxlinks(odxlinks)
-        inner_param._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
+        inner_param._resolve_snrefs(snref_ctx)
 
         # Outer
         outer_param = ValueParameter(
@@ -442,7 +444,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
             physical_default_value_raw=None)
         outer_param._resolve_odxlinks(odxlinks)
-        outer_param._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
+        outer_param._resolve_snrefs(snref_ctx)
 
         req = self._create_request([inner_param, outer_param])
 

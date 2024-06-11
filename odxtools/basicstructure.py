@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -23,10 +23,8 @@ from .parameters.parameter import Parameter
 from .parameters.parameterwithdop import ParameterWithDOP
 from .parameters.physicalconstantparameter import PhysicalConstantParameter
 from .parameters.tablekeyparameter import TableKeyParameter
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -292,9 +290,13 @@ class BasicStructure(ComplexDop):
         for param in self.parameters:
             param._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         """Recursively resolve any references (odxlinks or sn-refs)"""
-        super()._resolve_snrefs(diag_layer)
+        context.parameters = self.parameters
+
+        super()._resolve_snrefs(context)
 
         for param in self.parameters:
-            param._parameter_resolve_snrefs(diag_layer, param_list=self.parameters)
+            param._resolve_snrefs(context)
+
+        context.parameters = None

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import Any, Dict, List
 from xml.etree import ElementTree
 
 from .diagcomm import DiagComm
@@ -10,10 +10,8 @@ from .negoutputparam import NegOutputParam
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .outputparam import OutputParam
 from .progcode import ProgCode
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -88,14 +86,18 @@ class SingleEcuJob(DiagComm):
         for neg_output_param in self.neg_output_params:
             neg_output_param._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        super()._resolve_snrefs(diag_layer)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        context.single_ecu_job = self
+
+        super()._resolve_snrefs(context)
 
         for prog_code in self.prog_codes:
-            prog_code._resolve_snrefs(diag_layer)
+            prog_code._resolve_snrefs(context)
         for input_param in self.input_params:
-            input_param._resolve_snrefs(diag_layer)
+            input_param._resolve_snrefs(context)
         for output_param in self.output_params:
-            output_param._resolve_snrefs(diag_layer)
+            output_param._resolve_snrefs(context)
         for neg_output_param in self.neg_output_params:
-            neg_output_param._resolve_snrefs(diag_layer)
+            neg_output_param._resolve_snrefs(context)
+
+        context.single_ecu_job = None

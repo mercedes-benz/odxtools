@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -14,11 +14,9 @@ from ..exceptions import odxassert, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from ..odxtypes import AtomicOdxType, ParameterValue
 from ..physicaltype import PhysicalType
+from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter
-
-if TYPE_CHECKING:
-    from ..diaglayer import DiagLayer
 
 
 @dataclass
@@ -58,12 +56,12 @@ class ParameterWithDOP(Parameter):
             self._dop = odxlinks.resolve(self.dop_ref)
 
     @override
-    def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
-                                  param_list: List[Parameter]) -> None:
-        super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        super()._resolve_snrefs(context)
 
         if self.dop_snref:
-            all_dops = diag_layer.diag_data_dictionary_spec.all_data_object_properties
+            all_dops = odxrequire(
+                context.diag_layer).diag_data_dictionary_spec.all_data_object_properties
             self._dop = resolve_snref(self.dop_snref, all_dops, DopBase)
 
     @property

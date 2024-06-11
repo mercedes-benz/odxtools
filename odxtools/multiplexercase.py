@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
@@ -9,10 +9,8 @@ from .element import NamedElement
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import AtomicOdxType, DataType
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -70,9 +68,9 @@ class MultiplexerCase(NamedElement):
         self.lower_limit.set_value_type(key_physical_type)
         self.upper_limit.set_value_type(key_physical_type)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         if self.structure_snref:
-            ddds = diag_layer.diag_data_dictionary_spec
+            ddds = odxrequire(context.diag_layer).diag_data_dictionary_spec
             self._structure = resolve_snref(self.structure_snref, ddds.structures, BasicStructure)
 
     def applies(self, value: AtomicOdxType) -> bool:

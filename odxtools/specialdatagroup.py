@@ -1,14 +1,12 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .snrefcontext import SnRefContext
 from .specialdata import SpecialData
 from .specialdatagroupcaption import SpecialDataGroupCaption
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -72,11 +70,11 @@ class SpecialDataGroup:
         for val in self.values:
             val._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         # resolve the SNREFs of the caption, but only if the caption
         # was specified by value, not by reference
         if self.sdg_caption is not None and self.sdg_caption_ref is None:
-            self.sdg_caption._resolve_snrefs(diag_layer)
+            self.sdg_caption._resolve_snrefs(context)
 
         for val in self.values:
-            val._resolve_snrefs(diag_layer)
+            val._resolve_snrefs(context)

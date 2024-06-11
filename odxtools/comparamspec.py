@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -10,11 +10,9 @@ from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .protstack import ProtStack
+from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -83,15 +81,15 @@ class ComparamSpec(IdentifiableElement):
         for ps in self.prot_stacks:
             ps._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         if self.admin_data is not None:
-            self.admin_data._resolve_snrefs(diag_layer)
+            self.admin_data._resolve_snrefs(context)
 
         for cd in self.company_datas:
-            cd._resolve_snrefs(diag_layer)
+            cd._resolve_snrefs(context)
 
         for sdg in self.sdgs:
-            sdg._resolve_snrefs(diag_layer)
+            sdg._resolve_snrefs(context)
 
         for ps in self.prot_stacks:
-            ps._resolve_snrefs(diag_layer)
+            ps._resolve_snrefs(context)

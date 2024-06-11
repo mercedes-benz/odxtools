@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 import unittest
-from typing import cast
 
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
 from odxtools.compumethods.compumethod import CompuCategory
@@ -36,6 +35,7 @@ from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaltype import PhysicalType
 from odxtools.request import Request
 from odxtools.response import Response, ResponseType
+from odxtools.snrefcontext import SnRefContext
 from odxtools.standardlengthtype import StandardLengthType
 from odxtools.staticfield import StaticField
 from odxtools.structure import Structure
@@ -2307,9 +2307,9 @@ class TestDecodingAndEncoding(unittest.TestCase):
         self.parameter_termination_end_of_pdu._resolve_odxlinks(odxlinks)
         self.parameter_sid._resolve_odxlinks(odxlinks)
 
-        self.parameter_termination_end_of_pdu._parameter_resolve_snrefs(
-            cast(DiagLayer, None), param_list=[])
-        self.parameter_sid._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
+        snref_ctx = SnRefContext()
+        self.parameter_termination_end_of_pdu._resolve_snrefs(snref_ctx)
+        self.parameter_sid._resolve_snrefs(snref_ctx)
 
     def test_min_max_length_type_end_of_pdu(self) -> None:
         req_param1 = self.parameter_sid
@@ -2377,8 +2377,9 @@ class TestDecodingAndEncoding(unittest.TestCase):
 
         req_param1._resolve_odxlinks(odxlinks)
         req_param2._resolve_odxlinks(odxlinks)
-        req_param1._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
-        req_param2._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
+        snref_ctx = SnRefContext()
+        req_param1._resolve_snrefs(snref_ctx)
+        req_param2._resolve_snrefs(snref_ctx)
 
         expected_coded_message = bytes([0x12, 0x34])
         expected_param_dict = {
@@ -2480,8 +2481,9 @@ class TestDecodingAndEncoding(unittest.TestCase):
         req_param1._resolve_odxlinks(odxlinks)
         req_param2._resolve_odxlinks(odxlinks)
 
-        req_param1._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
-        req_param2._parameter_resolve_snrefs(cast(DiagLayer, None), param_list=[])
+        snref_ctx = SnRefContext()
+        req_param1._resolve_snrefs(snref_ctx)
+        req_param2._resolve_snrefs(snref_ctx)
 
         expected_coded_message = bytes([0x12, 0x0])
         expected_param_dict = {"SID": 0x12, "physical_constant_parameter": offset}

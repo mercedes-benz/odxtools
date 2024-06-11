@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -11,13 +11,10 @@ from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..odxlink import OdxDocFragment, OdxLinkId
 from ..odxtypes import AtomicOdxType, DataType, ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
-
-if TYPE_CHECKING:
-    from ..diaglayer import DiagLayer
 
 
 @dataclass
@@ -53,15 +50,6 @@ class CodedConstParameter(Parameter):
         result.update(self.diag_coded_type._build_odxlinks())
 
         return result
-
-    @override
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        super()._resolve_odxlinks(odxlinks)
-
-    @override
-    def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
-                                  param_list: List[Parameter]) -> None:
-        super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
 
     @override
     def get_static_bit_length(self) -> Optional[int]:

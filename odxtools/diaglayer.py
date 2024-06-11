@@ -35,6 +35,7 @@ from .request import Request
 from .response import Response
 from .servicebinner import ServiceBinner
 from .singleecujob import SingleEcuJob
+from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .statechart import StateChart
 from .table import Table
@@ -301,7 +302,10 @@ class DiagLayer:
         # by the spec (So far, I haven't found any definitive
         # statement...)
         #####
-        self.diag_layer_raw._resolve_snrefs(self)
+        context = SnRefContext(database=database)
+        context.diag_layer = self
+        self.diag_layer_raw._resolve_snrefs(context)
+        #context.diag_layer = None
 
     #####
     # <convenience functionality>

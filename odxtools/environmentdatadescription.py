@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -12,10 +12,8 @@ from .environmentdata import EnvironmentData
 from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValue
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -87,12 +85,12 @@ class EnvironmentDataDescription(ComplexDop):
             for ed in self.env_datas:
                 ed._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         # ODX 2.0 specifies environment data objects here, ODX 2.2
         # uses references
         if self.env_data_refs:
             for ed in self.env_datas:
-                ed._resolve_snrefs(diag_layer)
+                ed._resolve_snrefs(context)
 
     @override
     def encode_into_pdu(self, physical_value: Optional[ParameterValue],
