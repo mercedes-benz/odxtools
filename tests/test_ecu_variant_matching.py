@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 
 import pytest
 
+from odxtools.database import Database
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
@@ -221,8 +222,9 @@ def ecu_variant_1(
     )
     result = DiagLayer(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
+    db = Database()
     result._resolve_odxlinks(odxlinks)
-    result._finalize_init(odxlinks)
+    result._finalize_init(db, odxlinks)
     return result
 
 
@@ -259,8 +261,9 @@ def ecu_variant_2(
     )
     result = DiagLayer(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
+    db = Database()
     result._resolve_odxlinks(odxlinks)
-    result._finalize_init(odxlinks)
+    result._finalize_init(db, odxlinks)
     return result
 
 
@@ -298,8 +301,9 @@ def ecu_variant_3(
     )
     result = DiagLayer(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
+    db = Database()
     result._resolve_odxlinks(odxlinks)
-    result._finalize_init(odxlinks)
+    result._finalize_init(db, odxlinks)
     return result
 
 

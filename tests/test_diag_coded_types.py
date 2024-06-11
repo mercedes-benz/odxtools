@@ -10,6 +10,7 @@ from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.createanydiagcodedtype import create_any_diag_coded_type_from_et
+from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.decodestate import DecodeState
 from odxtools.description import Description
@@ -297,8 +298,9 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         # Test decoding.
         coded_request = bytes([
@@ -619,8 +621,9 @@ class TestParamLengthInfoType(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         # Test decoding.
         coded_request = bytes([
@@ -955,8 +958,9 @@ class TestMinMaxLengthType(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         # Test decoding.
         coded_request = bytes([

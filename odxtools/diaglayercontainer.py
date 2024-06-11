@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from itertools import chain
-from typing import Any, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -13,6 +13,9 @@ from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
+
+if TYPE_CHECKING:
+    from .database import Database
 
 
 @dataclass
@@ -127,17 +130,17 @@ class DiagLayerContainer(IdentifiableElement):
         for ecu_variant in self.ecu_variants:
             ecu_variant._resolve_odxlinks(odxlinks)
 
-    def _finalize_init(self, odxlinks: OdxLinkDatabase) -> None:
+    def _finalize_init(self, database: "Database", odxlinks: OdxLinkDatabase) -> None:
         for ecu_shared_data in self.ecu_shared_datas:
-            ecu_shared_data._finalize_init(odxlinks)
+            ecu_shared_data._finalize_init(database, odxlinks)
         for protocol in self.protocols:
-            protocol._finalize_init(odxlinks)
+            protocol._finalize_init(database, odxlinks)
         for functional_group in self.functional_groups:
-            functional_group._finalize_init(odxlinks)
+            functional_group._finalize_init(database, odxlinks)
         for base_variant in self.base_variants:
-            base_variant._finalize_init(odxlinks)
+            base_variant._finalize_init(database, odxlinks)
         for ecu_variant in self.ecu_variants:
-            ecu_variant._finalize_init(odxlinks)
+            ecu_variant._finalize_init(database, odxlinks)
 
     @property
     def diag_layers(self) -> NamedItemList[DiagLayer]:

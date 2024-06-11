@@ -8,6 +8,7 @@ from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
+from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.determinenumberofitems import DetermineNumberOfItems
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
@@ -224,8 +225,9 @@ class TestIdentifyingService(unittest.TestCase):
             prot_stack_snref=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         self.assertEqual(
             diag_layer._prefix_tree,
@@ -344,8 +346,9 @@ class TestDecoding(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         coded_message = bytes([0x7D, 0xAB])
         expected_message = Message(
@@ -486,8 +489,9 @@ class TestDecoding(unittest.TestCase):
             prot_stack_snref=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         self.assertDictEqual(diag_layer._prefix_tree,
                              {0x12: {
@@ -695,8 +699,9 @@ class TestDecoding(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         coded_message = bytes([0x12, 0x34])
         expected_message = Message(
@@ -902,8 +907,9 @@ class TestDecoding(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         expected_message = Message(
             coded_message=bytes([0x12, 0x34, 0x56, 0x00, 0x78, 0x9a, 0x00]),
@@ -1235,8 +1241,9 @@ class TestDecoding(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         ######
         ## test with endmarker termination
@@ -1508,8 +1515,9 @@ class TestDecoding(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         expected_message = Message(
             coded_message=bytes([0x12, 0x00, 0x18, 0x00, 0x34, 0x44, 0x54]),
@@ -1738,8 +1746,9 @@ class TestDecoding(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         coded_message = bytes([0x12, 0x34, 0x54])
         expected_message = Message(
@@ -1917,8 +1926,9 @@ class TestDecoding(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         coded_message = bytes([0x7D, 0x12])
         # The physical value of the second parameter is decode(0x12) = decode(18) = 5 * 18 + 1 = 91
@@ -2102,8 +2112,9 @@ class TestDecoding(unittest.TestCase):
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(diag_layer._build_odxlinks())
+        db = Database()
         diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
 
         for sid, message in [(0x34, pos_response), (0x56, neg_response)]:
             coded_message = bytes([sid, 0xAB])

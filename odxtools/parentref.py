@@ -1,10 +1,12 @@
 # SPDX-License-Identifier: MIT
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Dict, List
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayer import DiagLayer
@@ -78,3 +80,14 @@ class ParentRef:
 
     def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
         pass
+
+    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+        cls = self.__class__
+        result = cls.__new__(cls)
+        memo[id(self)] = result
+
+        fields = dataclass_fields_asdict(self)
+        for name, value in fields.items():
+            setattr(result, name, deepcopy(value))
+
+        return result
