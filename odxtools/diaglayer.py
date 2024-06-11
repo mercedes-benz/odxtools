@@ -305,7 +305,7 @@ class DiagLayer:
         context = SnRefContext(database=database)
         context.diag_layer = self
         self.diag_layer_raw._resolve_snrefs(context)
-        #context.diag_layer = None
+        context.diag_layer = None
 
     #####
     # <convenience functionality>
