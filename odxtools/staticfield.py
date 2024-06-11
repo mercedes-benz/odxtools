@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Sequence
+from typing import Any, Dict, List, Sequence
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -11,10 +11,8 @@ from .exceptions import odxassert, odxraise, odxrequire
 from .field import Field
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -44,8 +42,8 @@ class StaticField(Field):
         super()._resolve_odxlinks(odxlinks)
 
     @override
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        super()._resolve_snrefs(diag_layer)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        super()._resolve_snrefs(context)
 
     @override
     def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:

@@ -1,18 +1,16 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import Any, Dict, List
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, resolve_snref
+from .snrefcontext import SnRefContext
 from .state import State
 from .statetransition import StateTransition
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -68,7 +66,9 @@ class StateChart(IdentifiableElement):
         for st in self.states:
             st._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        context.state_chart = self
+
         # For now, we assume that the start state short name reference
         # points to a local state of the state chart. TODO: The XSD
         # allows to define state charts without any states, yet the
@@ -78,11 +78,9 @@ class StateChart(IdentifiableElement):
         self._start_state = resolve_snref(self.start_state_snref, self.states, State)
 
         for st in self.states:
-            st._resolve_snrefs(diag_layer)
+            st._resolve_snrefs(context)
 
         for strans in self.state_transitions:
-            # note that the signature of the state transition's
-            # _resolve_snrefs() method is non-standard as the
-            # namespace of these SNREFs is the state chart, not the
-            # whole diag layer...
-            strans._resolve_snrefs(diag_layer, states=self.states)
+            strans._resolve_snrefs(context)
+
+        context.state_chart = None

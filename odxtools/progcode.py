@@ -1,13 +1,11 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
+from .snrefcontext import SnRefContext
 
 
 @dataclass
@@ -55,10 +53,8 @@ class ProgCode:
         #       Once they are internalized, resolve the `library_refs` references here.
         pass
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        db = diag_layer._database
-
-        aux_file = db.auxiliary_files.get(self.code_file)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        aux_file = odxrequire(context.database).auxiliary_files.get(self.code_file)
 
         if aux_file is None:
             odxraise(f"Reference to auxiliary file '{self.code_file}' "

@@ -1,14 +1,12 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import Any, Dict, List
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -29,5 +27,5 @@ class State(IdentifiableElement):
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         pass
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass

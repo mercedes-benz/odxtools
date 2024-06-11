@@ -1,18 +1,16 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from .element import NamedElement
 from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .snrefcontext import SnRefContext
 from .unit import Unit
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 class UnitGroupCategory(Enum):
@@ -57,7 +55,7 @@ class UnitGroup(NamedElement):
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._units = NamedItemList[Unit]([odxlinks.resolve(ref) for ref in self.unit_refs])
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
 
     @property

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional, Union, cast
+from typing import Any, Dict, List, Literal, Optional, Union, cast
 from xml.etree import ElementTree
 
 from .decodestate import DecodeState
@@ -8,9 +8,7 @@ from .encodestate import EncodeState
 from .exceptions import odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import AtomicOdxType, DataType, odxstr_to_bool
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
+from .snrefcontext import SnRefContext
 
 # Allowed diag-coded types
 DctType = Literal[
@@ -53,7 +51,7 @@ class DiagCodedType:
         """Recursively resolve any odxlinks references"""
         pass
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:  # noqa: B027
+    def _resolve_snrefs(self, context: SnRefContext) -> None:  # noqa: B027
         """Recursively resolve any short-name references"""
         pass
 

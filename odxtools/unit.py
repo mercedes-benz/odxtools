@@ -1,16 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .physicaldimension import PhysicalDimension
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -104,5 +102,5 @@ class Unit(IdentifiableElement):
                 f"The physical_dimension_ref must be resolved to a PhysicalDimension."
                 f" {self.physical_dimension_ref} referenced {self._physical_dimension}")
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass

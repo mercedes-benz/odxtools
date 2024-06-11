@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -9,11 +9,9 @@ from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue
+from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -54,9 +52,9 @@ class DopBase(IdentifiableElement):
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         for sdg in self.sdgs:
-            sdg._resolve_snrefs(diag_layer)
+            sdg._resolve_snrefs(context)
 
     def get_static_bit_length(self) -> Optional[int]:
         return None

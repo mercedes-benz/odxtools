@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -9,12 +9,10 @@ from .element import IdentifiableElement
 from .exceptions import odxassert
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .tablerow import TableRow
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -100,7 +98,7 @@ class Table(IdentifiableElement):
 
         self._table_rows = NamedItemList(table_rows)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         for table_row_wrapper in self.table_rows_raw:
             if isinstance(table_row_wrapper, TableRow):
-                table_row_wrapper._resolve_snrefs(diag_layer)
+                table_row_wrapper._resolve_snrefs(context)

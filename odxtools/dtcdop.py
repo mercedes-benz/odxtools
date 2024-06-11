@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
-# from dataclasses import dataclass, field
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -19,10 +18,8 @@ from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValue, odxstr_to_bool
 from .physicaltype import PhysicalType
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -177,9 +174,9 @@ class DtcDop(DopBase):
         linked_dtc_dops = [odxlinks.resolve(x, DtcDop) for x in self.linked_dtc_dop_refs]
         self._linked_dtc_dops = NamedItemList(linked_dtc_dops)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        super()._resolve_snrefs(diag_layer)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        super()._resolve_snrefs(context)
 
         for dtc_proxy in self.dtcs_raw:
             if isinstance(dtc_proxy, DiagnosticTroubleCode):
-                dtc_proxy._resolve_snrefs(diag_layer)
+                dtc_proxy._resolve_snrefs(context)

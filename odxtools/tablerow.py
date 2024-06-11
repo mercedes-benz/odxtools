@@ -10,11 +10,11 @@ from .element import IdentifiableElement
 from .exceptions import odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import AtomicOdxType
+from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
     from .table import Table
 
 
@@ -108,7 +108,7 @@ class TableRow(IdentifiableElement):
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         # convert the raw key into the proper internal
         # representation. note that we cannot do this earlier because
         # the table's ODXLINKs must be resolved and the order of
@@ -126,7 +126,7 @@ class TableRow(IdentifiableElement):
         else:
             self._key = key_dop.physical_type.base_data_type.from_string(self.key_raw)
 
-        ddd_spec = diag_layer.diag_data_dictionary_spec
+        ddd_spec = odxrequire(context.diag_layer).diag_data_dictionary_spec
 
         if self.structure_snref is not None:
             self._structure = resolve_snref(self.structure_snref, ddd_spec.structures,
@@ -136,7 +136,7 @@ class TableRow(IdentifiableElement):
                                       DataObjectProperty)
 
         for sdg in self.sdgs:
-            sdg._resolve_snrefs(diag_layer)
+            sdg._resolve_snrefs(context)
 
     @property
     def table(self) -> "Table":

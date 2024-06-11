@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -10,12 +10,10 @@ from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from ..odxtypes import ParameterValue
+from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 from .tablekeyparameter import TableKeyParameter
-
-if TYPE_CHECKING:
-    from ..diaglayer import DiagLayer
 
 
 @dataclass
@@ -60,12 +58,12 @@ class TableStructParameter(Parameter):
             self._table_key = odxlinks.resolve(self.table_key_ref, TableKeyParameter)
 
     @override
-    def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
-                                  param_list: List[Parameter]) -> None:
-        super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        super()._resolve_snrefs(context)
 
         if self.table_key_snref is not None:
-            self._table_key = resolve_snref(self.table_key_snref, param_list, TableKeyParameter)
+            self._table_key = resolve_snref(self.table_key_snref, odxrequire(context.parameters),
+                                            TableKeyParameter)
 
     @property
     def table_key(self) -> TableKeyParameter:

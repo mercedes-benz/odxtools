@@ -11,10 +11,10 @@ from .encodestate import EncodeState
 from .exceptions import EncodeError, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType, DataType
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
     from .parameters.lengthkeyparameter import LengthKeyParameter
 
 
@@ -50,9 +50,9 @@ class ParamLengthInfoType(DiagCodedType):
         else:
             self._length_key = odxlinks.resolve(self.length_key_ref)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         """Recursively resolve any short-name references"""
-        super()._resolve_snrefs(diag_layer)
+        super()._resolve_snrefs(context)
 
     @property
     def length_key(self) -> "LengthKeyParameter":

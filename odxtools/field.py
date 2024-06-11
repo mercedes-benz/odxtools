@@ -1,5 +1,6 @@
+# SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Optional
+from typing import List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
@@ -8,10 +9,8 @@ from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxassert, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -80,13 +79,14 @@ class Field(ComplexDop):
             self._env_data_desc = odxlinks.resolve(self.env_data_desc_ref,
                                                    EnvironmentDataDescription)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         """Recursively resolve any short-name references"""
+        ddd_spec = odxrequire(context.diag_layer).diag_data_dictionary_spec
+
         if self.structure_snref is not None:
-            structures = diag_layer.diag_data_dictionary_spec.structures
-            self._structure = resolve_snref(self.structure_snref, structures, BasicStructure)
+            self._structure = resolve_snref(self.structure_snref, ddd_spec.structures,
+                                            BasicStructure)
 
         if self.env_data_desc_snref is not None:
-            env_data_descs = diag_layer.diag_data_dictionary_spec.env_data_descs
-            self._env_data_desc = resolve_snref(self.env_data_desc_snref, env_data_descs,
+            self._env_data_desc = resolve_snref(self.env_data_desc_snref, ddd_spec.env_data_descs,
                                                 EnvironmentDataDescription)

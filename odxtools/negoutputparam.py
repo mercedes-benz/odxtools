@@ -1,16 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .dopbase import DopBase
 from .element import NamedElement
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -35,7 +33,7 @@ class NegOutputParam(NamedElement):
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._dop = odxlinks.resolve(self.dop_base_ref)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
 
     @property

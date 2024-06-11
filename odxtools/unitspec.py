@@ -1,17 +1,15 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import Any, Dict, List, Union
 from xml.etree import ElementTree
 
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .physicaldimension import PhysicalDimension
+from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .unit import Unit
 from .unitgroup import UnitGroup
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -77,10 +75,10 @@ class UnitSpec:
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         for unit in self.units:
-            unit._resolve_snrefs(diag_layer)
+            unit._resolve_snrefs(context)
         for group in self.unit_groups:
-            group._resolve_snrefs(diag_layer)
+            group._resolve_snrefs(context)
         for sdg in self.sdgs:
-            sdg._resolve_snrefs(diag_layer)
+            sdg._resolve_snrefs(context)

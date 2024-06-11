@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import final, override
@@ -8,14 +8,11 @@ from typing_extensions import final, override
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..odxlink import OdxDocFragment, OdxLinkId
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
-from .parameter import Parameter, ParameterType
+from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
-
-if TYPE_CHECKING:
-    from ..diaglayer import DiagLayer
 
 
 @dataclass
@@ -54,15 +51,6 @@ class LengthKeyParameter(ParameterWithDOP):
         result[self.odx_id] = self
 
         return result
-
-    @override
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        super()._resolve_odxlinks(odxlinks)
-
-    @override
-    def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
-                                  param_list: List[Parameter]) -> None:
-        super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
 
     @property
     @override

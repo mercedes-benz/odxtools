@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
 from .basecomparam import BaseComparam
@@ -10,9 +10,7 @@ from .complexcomparam import ComplexComparam, ComplexValue, create_complex_value
 from .description import Description
 from .exceptions import OdxWarning, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
+from .snrefcontext import SnRefContext
 
 
 @dataclass
@@ -68,7 +66,7 @@ class ComparamInstance:
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._spec = odxlinks.resolve(self.spec_ref, BaseComparam)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
 
     @property

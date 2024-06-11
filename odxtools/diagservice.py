@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 from xml.etree import ElementTree
 
 from .comparaminstance import ComparamInstance
@@ -14,10 +14,8 @@ from .odxtypes import ParameterValue, odxstr_to_bool
 from .parameters.parameter import Parameter
 from .request import Request
 from .response import Response
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 class Addressing(Enum):
@@ -175,15 +173,19 @@ class DiagService(DiagComm):
         self._negative_responses = NamedItemList[Response](
             [odxlinks.resolve(x, Response) for x in self.neg_response_refs])
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        super()._resolve_snrefs(diag_layer)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        context.diag_service = self
+
+        super()._resolve_snrefs(context)
 
         for cpr in self.comparam_refs:
-            cpr._resolve_snrefs(diag_layer)
+            cpr._resolve_snrefs(context)
 
         # comparams named list is lazy loaded
         # since ComparamInstance short_name is only valid after resolution
         self._comparams = NamedItemList(self.comparam_refs)
+
+        context.diag_service = None
 
     def decode_message(self, raw_message: bytes) -> Message:
         request_prefix = b''

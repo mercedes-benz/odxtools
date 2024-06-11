@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Sequence
+from typing import Any, Dict, List, Sequence
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -12,10 +12,8 @@ from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequir
 from .field import Field
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -45,9 +43,9 @@ class DynamicLengthField(Field):
         super()._resolve_odxlinks(odxlinks)
         self.determine_number_of_items._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        super()._resolve_snrefs(diag_layer)
-        self.determine_number_of_items._resolve_snrefs(diag_layer)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        super()._resolve_snrefs(context)
+        self.determine_number_of_items._resolve_snrefs(context)
 
     @override
     def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:

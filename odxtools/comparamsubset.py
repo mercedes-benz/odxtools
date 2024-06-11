@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -12,12 +12,10 @@ from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .unitspec import UnitSpec
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -130,25 +128,25 @@ class ComparamSubset(IdentifiableElement):
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         for dop in self.data_object_props:
-            dop._resolve_snrefs(diag_layer)
+            dop._resolve_snrefs(context)
 
         for comparam in self.comparams:
-            comparam._resolve_snrefs(diag_layer)
+            comparam._resolve_snrefs(context)
 
         for ccomparam in self.complex_comparams:
-            ccomparam._resolve_snrefs(diag_layer)
+            ccomparam._resolve_snrefs(context)
 
         if self.unit_spec:
-            self.unit_spec._resolve_snrefs(diag_layer)
+            self.unit_spec._resolve_snrefs(context)
 
         if self.admin_data is not None:
-            self.admin_data._resolve_snrefs(diag_layer)
+            self.admin_data._resolve_snrefs(context)
 
         if self.company_datas is not None:
             for cd in self.company_datas:
-                cd._resolve_snrefs(diag_layer)
+                cd._resolve_snrefs(context)
 
         for sdg in self.sdgs:
-            sdg._resolve_snrefs(diag_layer)
+            sdg._resolve_snrefs(context)

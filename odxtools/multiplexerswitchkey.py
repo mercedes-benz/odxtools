@@ -1,13 +1,12 @@
+# SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .dataobjectproperty import DataObjectProperty
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
+from .snrefcontext import SnRefContext
 
 
 @dataclass
@@ -39,7 +38,7 @@ class MultiplexerSwitchKey:
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._dop = odxlinks.resolve(self.dop_ref, DataObjectProperty)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
 
     @property

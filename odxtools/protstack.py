@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import Any, Dict, List
 from xml.etree import ElementTree
 
 from .comparamsubset import ComparamSubset
@@ -8,10 +8,8 @@ from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -47,7 +45,7 @@ class ProtStack(IdentifiableElement):
         self._comparam_subsets = NamedItemList[ComparamSubset](
             [odxlinks.resolve(x, ComparamSubset) for x in self.comparam_subset_refs])
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
 
     @property

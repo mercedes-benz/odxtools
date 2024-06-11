@@ -1,16 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .companyrevisioninfo import CompanyRevisionInfo
 from .exceptions import odxrequire
 from .modification import Modification
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .snrefcontext import SnRefContext
 from .teammember import TeamMember
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -75,9 +73,9 @@ class DocRevision:
         for mod in self.modifications:
             mod._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         for cri in self.company_revision_infos:
-            cri._resolve_snrefs(diag_layer)
+            cri._resolve_snrefs(context)
 
         for mod in self.modifications:
-            mod._resolve_snrefs(diag_layer)
+            mod._resolve_snrefs(context)

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from copy import copy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Union, cast
+from typing import Any, Dict, List, Optional, Union, cast
 from xml.etree import ElementTree
 
 from .additionalaudience import AdditionalAudience
@@ -25,12 +25,10 @@ from .protstack import ProtStack
 from .request import Request
 from .response import Response
 from .singleecujob import SingleEcuJob
+from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .statechart import StateChart
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -283,7 +281,7 @@ class DiagLayerRaw(IdentifiableElement):
         for comparam in self.comparams:
             comparam._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         self._prot_stack: Optional[ProtStack] = None
         if self.prot_stack_snref is not None:
             cp_spec = self.comparam_spec
@@ -293,36 +291,36 @@ class DiagLayerRaw(IdentifiableElement):
 
         # do short-name reference resolution
         if self.admin_data is not None:
-            self.admin_data._resolve_snrefs(diag_layer)
+            self.admin_data._resolve_snrefs(context)
         if self.diag_data_dictionary_spec is not None:
-            self.diag_data_dictionary_spec._resolve_snrefs(diag_layer)
+            self.diag_data_dictionary_spec._resolve_snrefs(context)
 
         for company_data in self.company_datas:
-            company_data._resolve_snrefs(diag_layer)
+            company_data._resolve_snrefs(context)
         for functional_class in self.functional_classes:
-            functional_class._resolve_snrefs(diag_layer)
+            functional_class._resolve_snrefs(context)
         for diag_comm in self.diag_comms:
             if isinstance(diag_comm, OdxLinkRef):
                 continue
-            diag_comm._resolve_snrefs(diag_layer)
+            diag_comm._resolve_snrefs(context)
         for request in self.requests:
-            request._resolve_snrefs(diag_layer)
+            request._resolve_snrefs(context)
         for positive_response in self.positive_responses:
-            positive_response._resolve_snrefs(diag_layer)
+            positive_response._resolve_snrefs(context)
         for negative_response in self.negative_responses:
-            negative_response._resolve_snrefs(diag_layer)
+            negative_response._resolve_snrefs(context)
         for global_negative_response in self.global_negative_responses:
-            global_negative_response._resolve_snrefs(diag_layer)
+            global_negative_response._resolve_snrefs(context)
         for state_chart in self.state_charts:
-            state_chart._resolve_snrefs(diag_layer)
+            state_chart._resolve_snrefs(context)
         for additional_audience in self.additional_audiences:
-            additional_audience._resolve_snrefs(diag_layer)
+            additional_audience._resolve_snrefs(context)
         for sdg in self.sdgs:
-            sdg._resolve_snrefs(diag_layer)
+            sdg._resolve_snrefs(context)
         for parent_ref in self.parent_refs:
-            parent_ref._resolve_snrefs(diag_layer)
+            parent_ref._resolve_snrefs(context)
         for comparam in self.comparams:
-            comparam._resolve_snrefs(diag_layer)
+            comparam._resolve_snrefs(context)
 
     @property
     def comparam_spec(self) -> Optional[Union[ComparamSpec, ComparamSubset]]:

@@ -10,11 +10,11 @@ from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from ..odxtypes import ParameterValue
+from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 
 if TYPE_CHECKING:
-    from ..diaglayer import DiagLayer
     from ..table import Table
     from ..tablerow import TableRow
 
@@ -94,12 +94,11 @@ class TableKeyParameter(Parameter):
             self._table = self._table_row.table
 
     @override
-    def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
-                                  param_list: List[Parameter]) -> None:
-        super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        super()._resolve_snrefs(context)
 
         if self.table_snref is not None:
-            tables = diag_layer.diag_data_dictionary_spec.tables
+            tables = odxrequire(context.diag_layer).diag_data_dictionary_spec.tables
             self._table = resolve_snref(self.table_snref, tables, Table)
         if self.table_row_snref is not None:
             # make sure that we know the table to which the table row

@@ -12,6 +12,7 @@ from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
+from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .state import State
 from .statetransition import StateTransition
@@ -202,22 +203,24 @@ class DiagComm(IdentifiableElement):
         self._state_transitions = NamedItemList(
             [odxlinks.resolve(stt_ref, StateTransition) for stt_ref in self.state_transition_refs])
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         if self.admin_data:
-            self.admin_data._resolve_snrefs(diag_layer)
+            self.admin_data._resolve_snrefs(context)
 
         if self.audience:
-            self.audience._resolve_snrefs(diag_layer)
+            self.audience._resolve_snrefs(context)
 
         for sdg in self.sdgs:
-            sdg._resolve_snrefs(diag_layer)
+            sdg._resolve_snrefs(context)
 
         if TYPE_CHECKING:
+            diag_layer = odxrequire(context.diag_layer)
             self._protocols = NamedItemList([
                 resolve_snref(prot_snref, diag_layer.protocols, DiagLayer)
                 for prot_snref in self.protocol_snrefs
             ])
         else:
+            diag_layer = odxrequire(context.diag_layer)
             self._protocols = NamedItemList([
                 resolve_snref(prot_snref, diag_layer.protocols)
                 for prot_snref in self.protocol_snrefs

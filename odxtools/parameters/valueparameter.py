@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -10,12 +10,10 @@ from ..encodestate import EncodeState
 from ..exceptions import EncodeError, odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType, ParameterValue
+from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
-from .parameter import Parameter, ParameterType
+from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
-
-if TYPE_CHECKING:
-    from ..diaglayer import DiagLayer
 
 
 @dataclass
@@ -50,9 +48,8 @@ class ValueParameter(ParameterWithDOP):
         super()._resolve_odxlinks(odxlinks)
 
     @override
-    def _parameter_resolve_snrefs(self, diag_layer: "DiagLayer", *,
-                                  param_list: List[Parameter]) -> None:
-        super()._parameter_resolve_snrefs(diag_layer, param_list=param_list)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        super()._resolve_snrefs(context)
 
         if self.physical_default_value_raw is not None:
             dop = odxrequire(self.dop)

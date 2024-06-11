@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from .compumethods.compumethod import CompuMethod
@@ -15,11 +15,9 @@ from .internalconstr import InternalConstr
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType, ParameterValue
 from .physicaltype import PhysicalType
+from .snrefcontext import SnRefContext
 from .unit import Unit
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -98,10 +96,10 @@ class DataObjectProperty(DopBase):
         if self.unit_ref:
             self._unit = odxlinks.resolve(self.unit_ref, Unit)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
-        super()._resolve_snrefs(diag_layer)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        super()._resolve_snrefs(context)
 
-        self.diag_coded_type._resolve_snrefs(diag_layer)
+        self.diag_coded_type._resolve_snrefs(context)
 
     @property
     def unit(self) -> Optional[Unit]:

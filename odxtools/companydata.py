@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .companyspecificinfo import CompanySpecificInfo
@@ -8,11 +8,9 @@ from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .snrefcontext import SnRefContext
 from .teammember import TeamMember
 from .utils import dataclass_fields_asdict
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -64,9 +62,9 @@ class CompanyData(IdentifiableElement):
         if self.company_specific_info:
             self.company_specific_info._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         for tm in self.team_members:
-            tm._resolve_snrefs(diag_layer)
+            tm._resolve_snrefs(context)
 
         if self.company_specific_info:
-            self.company_specific_info._resolve_snrefs(diag_layer)
+            self.company_specific_info._resolve_snrefs(context)

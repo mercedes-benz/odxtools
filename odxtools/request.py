@@ -7,6 +7,7 @@ from .basicstructure import BasicStructure
 from .encodestate import EncodeState
 from .odxlink import OdxDocFragment
 from .odxtypes import ParameterValue
+from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
@@ -29,3 +30,10 @@ class Request(BasicStructure):
         self.encode_into_pdu(physical_value=kwargs, encode_state=encode_state)
 
         return encode_state.coded_message
+
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        context.request = self
+
+        super()._resolve_snrefs(context)
+
+        context.request = None

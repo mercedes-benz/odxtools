@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -18,14 +18,12 @@ from .exceptions import odxraise
 from .multiplexer import Multiplexer
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .staticfield import StaticField
 from .structure import Structure
 from .table import Table
 from .unitspec import UnitSpec
-
-if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
 
 
 @dataclass
@@ -220,35 +218,35 @@ class DiagDataDictionarySpec:
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
-    def _resolve_snrefs(self, diag_layer: "DiagLayer") -> None:
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
         if self.admin_data is not None:
-            self.admin_data._resolve_snrefs(diag_layer)
+            self.admin_data._resolve_snrefs(context)
         for dtc_dop in self.dtc_dops:
-            dtc_dop._resolve_snrefs(diag_layer)
+            dtc_dop._resolve_snrefs(context)
         for env_data_desc in self.env_data_descs:
-            env_data_desc._resolve_snrefs(diag_layer)
+            env_data_desc._resolve_snrefs(context)
         for data_object_prop in self.data_object_props:
-            data_object_prop._resolve_snrefs(diag_layer)
+            data_object_prop._resolve_snrefs(context)
         for structure in self.structures:
-            structure._resolve_snrefs(diag_layer)
+            structure._resolve_snrefs(context)
         for static_field in self.static_fields:
-            static_field._resolve_snrefs(diag_layer)
+            static_field._resolve_snrefs(context)
         for dynamic_length_field in self.dynamic_length_fields:
-            dynamic_length_field._resolve_snrefs(diag_layer)
+            dynamic_length_field._resolve_snrefs(context)
         for dynamic_endmarker_field in self.dynamic_endmarker_fields:
-            dynamic_endmarker_field._resolve_snrefs(diag_layer)
+            dynamic_endmarker_field._resolve_snrefs(context)
         for end_of_pdu_field in self.end_of_pdu_fields:
-            end_of_pdu_field._resolve_snrefs(diag_layer)
+            end_of_pdu_field._resolve_snrefs(context)
         for mux in self.muxs:
-            mux._resolve_snrefs(diag_layer)
+            mux._resolve_snrefs(context)
         for env_data in self.env_datas:
-            env_data._resolve_snrefs(diag_layer)
+            env_data._resolve_snrefs(context)
         if self.unit_spec is not None:
-            self.unit_spec._resolve_snrefs(diag_layer)
+            self.unit_spec._resolve_snrefs(context)
         for table in self.tables:
-            table._resolve_snrefs(diag_layer)
+            table._resolve_snrefs(context)
         for sdg in self.sdgs:
-            sdg._resolve_snrefs(diag_layer)
+            sdg._resolve_snrefs(context)
 
     @property
     def all_data_object_properties(self) -> NamedItemList[DopBase]:
