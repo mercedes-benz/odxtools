@@ -9,11 +9,29 @@ class OdxError(Exception):
 
 
 class EncodeError(Warning, OdxError):
-    """Encoding of a message to raw data failed."""
+    """Encoding of a message to raw data failed"""
+
+
+class EncodeMismatch(EncodeError):
+    """Encoding failed because some parameters exhibit an incorrect value
+
+    This is can happen if NRC-CONST or environment data descriptions
+    are present.
+
+    """
 
 
 class DecodeError(Warning, OdxError):
     """Decoding raw data failed."""
+
+
+class DecodeMismatch(DecodeError):
+    """Decoding failed because some parameters exhibit an incorrect value
+
+    This is can happen if NRC-CONST or environment data descriptions
+    are present.
+
+    """
 
 
 class OdxWarning(Warning):
