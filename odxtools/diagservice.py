@@ -181,8 +181,9 @@ class DiagService(DiagComm):
         for cpr in self.comparam_refs:
             cpr._resolve_snrefs(context)
 
-        # comparams named list is lazy loaded
-        # since ComparamInstance short_name is only valid after resolution
+        # The named item list of communication parameters is created
+        # here because ComparamInstance.short_name is only valid after
+        # reference resolution
         self._comparams = NamedItemList(self.comparam_refs)
 
         context.diag_service = None
