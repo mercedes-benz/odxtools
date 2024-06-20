@@ -40,7 +40,7 @@ def odxraise(message: Optional[str] = None, error_type: Type[Exception] = OdxErr
         else:
             raise error_type(message)
     elif message is not None:
-        logger.warn(message)
+        logger.warning(message)
 
 
 def odxassert(condition: bool,

@@ -53,6 +53,7 @@ class ReservedParameter(Parameter):
                                     encode_state: EncodeState) -> None:
         encode_state.cursor_byte_position += (encode_state.cursor_bit_position + self.bit_length +
                                               7) // 8
+        encode_state.cursor_bit_position = 0
         encode_state.emplace_bytes(b'', self.short_name)
 
     @override
