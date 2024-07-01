@@ -18,7 +18,6 @@ from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.createanyparameter import create_any_parameter_from_et
 from .parameters.lengthkeyparameter import LengthKeyParameter
 from .parameters.matchingrequestparameter import MatchingRequestParameter
-from .parameters.nrcconstparameter import NrcConstParameter
 from .parameters.parameter import Parameter
 from .parameters.parameterwithdop import ParameterWithDOP
 from .parameters.physicalconstantparameter import PhysicalConstantParameter
@@ -75,7 +74,7 @@ class BasicStructure(ComplexDop):
 
         for param in self.parameters:
             if (isinstance(param, MatchingRequestParameter) and param.request_byte_position < len(request_prefix)) or \
-                isinstance(param, (CodedConstParameter, NrcConstParameter, PhysicalConstantParameter)):
+                isinstance(param, (CodedConstParameter, PhysicalConstantParameter)):
                 param.encode_into_pdu(physical_value=None, encode_state=encode_state)
             else:
                 break

@@ -8,7 +8,13 @@ from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
+from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
+from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
+from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayerraw import DiagLayerRaw
+from odxtools.diaglayertype import DiagLayerType
+from odxtools.diagservice import DiagService
 from odxtools.exceptions import EncodeError
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -227,8 +233,6 @@ class TestEncodeRequest(unittest.TestCase):
             internal_constr=None,
             physical_constr=None,
         )
-        odxlinks = OdxLinkDatabase()
-        odxlinks.update(dop._build_odxlinks())
         param1 = CodedConstParameter(
             short_name="param1",
             long_name=None,
@@ -263,7 +267,6 @@ class TestEncodeRequest(unittest.TestCase):
             bit_position=None,
             sdgs=[],
         )
-        param3._resolve_odxlinks(odxlinks)
         resp = Response(
             odx_id=OdxLinkId("response_id", doc_frags),
             short_name="response_sn",
@@ -276,10 +279,111 @@ class TestEncodeRequest(unittest.TestCase):
             byte_size=None,
         )
 
+        req = Request(
+            odx_id=OdxLinkId("request_id", doc_frags),
+            short_name="request_sn",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            parameters=NamedItemList([
+                CodedConstParameter(
+                    short_name="req_param1",
+                    long_name=None,
+                    description=None,
+                    semantic=None,
+                    diag_coded_type=diag_coded_type,
+                    coded_value=0xB0,
+                    byte_position=0,
+                    bit_position=None,
+                    sdgs=[],
+                )
+            ]),
+            byte_size=None,
+        )
+
+        service = DiagService(
+            odx_id=OdxLinkId("service_id", doc_frags),
+            short_name="service_sn",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            semantic=None,
+            audience=None,
+            comparam_refs=[],
+            is_cyclic_raw=None,
+            is_multiple_raw=None,
+            addressing_raw=None,
+            transmission_mode_raw=None,
+            functional_class_refs=[],
+            pre_condition_state_refs=[],
+            state_transition_refs=[],
+            protocol_snrefs=[],
+            related_diag_comm_refs=[],
+            diagnostic_class=None,
+            is_mandatory_raw=None,
+            is_executable_raw=None,
+            is_final_raw=None,
+            request_ref=OdxLinkRef.from_id(req.odx_id),
+            pos_response_refs=[],
+            neg_response_refs=[OdxLinkRef.from_id(resp.odx_id)],
+            sdgs=[],
+        )
+
+        diag_layer_raw = DiagLayerRaw(
+            variant_type=DiagLayerType.BASE_VARIANT,
+            odx_id=OdxLinkId("dl_id", doc_frags),
+            short_name="dl_sn",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            company_datas=NamedItemList(),
+            functional_classes=NamedItemList(),
+            diag_data_dictionary_spec=DiagDataDictionarySpec(
+                admin_data=None,
+                dtc_dops=NamedItemList(),
+                data_object_props=NamedItemList([dop]),
+                structures=NamedItemList(),
+                static_fields=NamedItemList(),
+                end_of_pdu_fields=NamedItemList(),
+                dynamic_length_fields=NamedItemList(),
+                dynamic_endmarker_fields=NamedItemList(),
+                tables=NamedItemList(),
+                env_data_descs=NamedItemList(),
+                env_datas=NamedItemList(),
+                muxs=NamedItemList(),
+                unit_spec=None,
+                sdgs=[]),
+            diag_comms=[service],
+            requests=NamedItemList([req]),
+            positive_responses=NamedItemList(),
+            negative_responses=NamedItemList([resp]),
+            global_negative_responses=NamedItemList(),
+            additional_audiences=NamedItemList(),
+            import_refs=[],
+            state_charts=NamedItemList(),
+            sdgs=[],
+            parent_refs=[],
+            comparams=[],
+            ecu_variant_patterns=[],
+            comparam_spec_ref=None,
+            prot_stack_snref=None,
+        )
+
+        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        db = Database()
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(diag_layer._build_odxlinks())
+        diag_layer._resolve_odxlinks(odxlinks)
+        diag_layer._finalize_init(db, odxlinks)
+
         with self.assertRaises(EncodeError):
             resp.encode()  # "No value for required parameter param3 specified"
-        self.assertEqual(resp.encode(param3=0xAB), bytearray([0x12, 0xAB]))
-        self.assertRaises(EncodeError, resp.encode, param2=0xEF)
+        self.assertEqual(resp.encode(param3=0xAB).hex(), "12ab")
+        with self.assertRaises(EncodeError):
+            # Should raise an EncodeError because the value of
+            # NRC-CONST parameters cannot be directly specified
+            resp.encode(param2=0xEF, param3=0xAB)
 
     def test_encode_overlapping(self) -> None:
         uint24 = StandardLengthType(

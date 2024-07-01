@@ -6,7 +6,7 @@ from xml.etree import ElementTree
 
 from .comparaminstance import ComparamInstance
 from .diagcomm import DiagComm
-from .exceptions import DecodeError, odxassert, odxraise, odxrequire
+from .exceptions import DecodeError, DecodeMismatch, odxassert, odxraise, odxrequire
 from .message import Message
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -42,7 +42,7 @@ class DiagService(DiagComm):
     pos_response_refs: List[OdxLinkRef]
     neg_response_refs: List[OdxLinkRef]
 
-    # TODO: pos_response_suppressable: Optional[PosResponseSuppressable]
+    # TODO: pos_response_suppressable: Optional[PosResponseSuppressable] # (sic!)
 
     is_cyclic_raw: Optional[bool]
     is_multiple_raw: Optional[bool]
@@ -181,8 +181,9 @@ class DiagService(DiagComm):
         for cpr in self.comparam_refs:
             cpr._resolve_snrefs(context)
 
-        # comparams named list is lazy loaded
-        # since ComparamInstance short_name is only valid after resolution
+        # The named item list of communication parameters is created
+        # here because ComparamInstance.short_name is only valid after
+        # reference resolution
         self._comparams = NamedItemList(self.comparam_refs)
 
         context.diag_service = None
@@ -202,24 +203,36 @@ class DiagService(DiagComm):
             if len(raw_message) >= len(prefix) and prefix == raw_message[:len(prefix)]:
                 coding_objects.append(candidate_coding_object)
 
-        if len(coding_objects) != 1:
-            raise DecodeError(
-                f"The service {self.short_name} cannot decode the message {raw_message.hex()}")
-        coding_object = coding_objects[0]
-        param_dict = coding_object.decode(raw_message)
-        if not isinstance(param_dict, dict):
-            # if this happens, this is probably due to a bug in
-            # coding_object.decode()
-            raise RuntimeError(f"Expected a set of decoded parameters, got {type(param_dict)}")
-        return Message(
-            coded_message=raw_message,
-            service=self,
-            coding_object=coding_object,
-            param_dict=param_dict)
+        result_list: List[Message] = []
+        for coding_object in coding_objects:
+            try:
+                result_list.append(
+                    Message(
+                        coded_message=raw_message,
+                        service=self,
+                        coding_object=coding_object,
+                        param_dict=coding_object.decode(raw_message)))
+            except DecodeMismatch:
+                # An NRC-CONST or environment data parameter
+                # encountered a non-matching value -> coding object
+                # does not apply
+                pass
+
+        if len(result_list) < 1:
+            odxraise(f"The service {self.short_name} cannot decode the message {raw_message.hex()}",
+                     DecodeError)
+            return Message(
+                coded_message=raw_message, service=self, coding_object=None, param_dict={})
+        elif len(result_list) > 1:
+            odxraise(
+                f"The service {self.short_name} cannot uniquely decode the message {raw_message.hex()}",
+                DecodeError)
+
+        return result_list[0]
 
     def encode_request(self, **kwargs: ParameterValue) -> bytes:
-        """
-        Composes an UDS request an array of bytes for this service.
+        """Prepare an array of bytes ready to be send over the wire
+        for the request of this service.
         """
         # make sure that all parameters which are required for
         # encoding are specified (parameters which have a default are
