@@ -65,7 +65,7 @@ jobs:
 
       - name: Lint code quality (ruff)
         run: |
-          ruff .
+          ruff check .
 
   test:
     strategy:
