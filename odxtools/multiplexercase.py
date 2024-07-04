@@ -23,7 +23,7 @@ class MultiplexerCase(NamedElement):
     upper_limit: Limit
 
     def __post_init__(self) -> None:
-        self._structure: BasicStructure
+        self._structure: Optional[BasicStructure]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -78,5 +78,5 @@ class MultiplexerCase(NamedElement):
             and self.upper_limit.complies_to_upper(value)
 
     @property
-    def structure(self) -> BasicStructure:
+    def structure(self) -> Optional[BasicStructure]:
         return self._structure

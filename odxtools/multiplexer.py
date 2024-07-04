@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -8,7 +8,7 @@ from typing_extensions import override
 from .complexdop import ComplexDop
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, odxraise, odxrequire
+from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from .multiplexercase import MultiplexerCase
 from .multiplexerdefaultcase import MultiplexerDefaultCase
 from .multiplexerswitchkey import MultiplexerSwitchKey
@@ -79,87 +79,122 @@ class Multiplexer(ComplexDop):
     def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:
 
         if encode_state.cursor_bit_position != 0:
-            raise EncodeError(f"Multiplexer must be aligned, i.e. bit_position=0, but "
+            raise EncodeError(f"Multiplexer parameters must be aligned, i.e. bit_position=0, but "
                               f"{self.short_name} was passed the bit position "
                               f"{encode_state.cursor_bit_position}")
 
-        if not isinstance(physical_value, dict) or len(physical_value) != 1:
-            raise EncodeError("""Multiplexer should be defined as a dict
-            with only one key equal to the desired case""")
-
         orig_origin = encode_state.origin_byte_position
-
         encode_state.origin_byte_position = encode_state.cursor_byte_position
 
-        case_name, case_value = next(iter(physical_value.items()))
+        if isinstance(physical_value, (list, tuple)) and len(physical_value) == 2:
+            case_spec, case_value = physical_value
+        elif isinstance(physical_value, dict) and len(physical_value) == 1:
+            case_spec, case_value = next(iter(physical_value.items()))
+        else:
+            raise EncodeError(
+                f"Values of multiplexer parameters must be defined as a "
+                f"(case_name, content_value) tuple instead of as '{physical_value!r}'")
 
-        for mux_case in self.cases or []:
-            if mux_case.short_name == case_name:
-                key_value, _ = self._get_case_limits(mux_case)
+        mux_case: Union[MultiplexerCase, MultiplexerDefaultCase]
+        if isinstance(case_spec, str):
+            applicable_cases = [x for x in self.cases if x.short_name == case_spec]
+            if len(applicable_cases) == 0:
+                raise EncodeError(
+                    f"Multiplexer {self.short_name} does not know any case called {case_spec}")
 
-                if self.switch_key.byte_position is not None:
-                    encode_state.cursor_byte_position = encode_state.origin_byte_position + self.switch_key.byte_position
-                encode_state.cursor_bit_position = self.switch_key.bit_position or 0
+            odxassert(len(applicable_cases) == 1)
+            mux_case = applicable_cases[0]
+            key_value, _ = self._get_case_limits(mux_case)
+        elif isinstance(case_spec, int):
+            applicable_cases = []
+            for x in self.cases:
+                lower, upper = self._get_case_limits(x)
+                if lower <= case_spec and case_value <= upper:  # type: ignore[operator]
+                    applicable_cases.append(x)
 
-                self.switch_key.dop.encode_into_pdu(
-                    physical_value=key_value, encode_state=encode_state)
+            if len(applicable_cases) == 0:
+                if self.default_case is None:
+                    raise EncodeError(
+                        f"Multiplexer {self.short_name} does not know any case called {case_spec}")
+                mux_case = self.default_case
+                key_value = case_spec
+            else:
+                mux_case = applicable_cases[0]
+                key_value = case_spec
+        elif isinstance(case_spec, MultiplexerCase):
+            mux_case = case_spec
+            key_value, _ = self._get_case_limits(mux_case)
+        elif case_spec is None:
+            if self.default_case is None:
+                raise EncodeError(f"Multiplexer {self.short_name} does not define a default case")
+            key_value = 0
+        else:
+            raise EncodeError(f"Illegal case specification '{case_spec}' for "
+                              f"multiplexer {self.short_name}")
 
-                if self.byte_position is not None:
-                    encode_state.cursor_byte_position = encode_state.origin_byte_position + self.byte_position
-                encode_state.cursor_bit_position = 0
+        # the byte position of the switch key is relative to
+        # the multiplexer's position
+        encode_state.cursor_byte_position = encode_state.origin_byte_position + self.switch_key.byte_position
+        encode_state.cursor_bit_position = self.switch_key.bit_position or 0
+        self.switch_key.dop.encode_into_pdu(physical_value=key_value, encode_state=encode_state)
+        encode_state.cursor_bit_position = 0
 
-                if mux_case._structure is None:
-                    odxraise(f"Multiplexer case '{mux_case.short_name}' does not "
-                             f"reference a structure.")
-                    return
+        if mux_case.structure is not None:
+            # the byte position of the content is specified by the
+            # BYTE-POSITION attribute of the multiplexer
+            encode_state.cursor_byte_position = encode_state.origin_byte_position + self.byte_position
+            mux_case.structure.encode_into_pdu(physical_value=case_value, encode_state=encode_state)
 
-                mux_case.structure.encode_into_pdu(
-                    physical_value=key_value, encode_state=encode_state)
-
-                encode_state.origin_byte_position = orig_origin
-                return
-
-        raise EncodeError(f"The case {case_name} is not found in Multiplexer {self.short_name}")
+        encode_state.origin_byte_position = orig_origin
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-
-        # multiplexers are structures and thus the origin position
-        # must be moved to the start of the multiplexer
         orig_origin = decode_state.origin_byte_position
-        if self.byte_position is not None:
-            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
         decode_state.origin_byte_position = decode_state.cursor_byte_position
 
+        # Decode the switch key. Its BYTE-POSITION is relative to the
+        # that of the multiplexer.
+        if self.switch_key.byte_position is not None:
+            decode_state.cursor_byte_position = decode_state.origin_byte_position + self.switch_key.byte_position
+        decode_state.cursor_bit_position = self.switch_key.bit_position or 0
         key_value = self.switch_key.dop.decode_from_pdu(decode_state)
+        decode_state.cursor_bit_position = 0
 
         if not isinstance(key_value, int):
             odxraise(f"Multiplexer keys must be integers (is '{type(key_value).__name__}'"
                      f" for multiplexer '{self.short_name}')")
 
+        # "If a matching CASE is found, the referenced STRUCTURE is
+        # analyzed at the BYTE-POSITION (child element of MUX)
+        # relatively to the byte position of the MUX."
+        decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
+
         case_value: Optional[ParameterValue] = None
-        mux_case = None
-        for mux_case in self.cases or []:
+        applicable_case: Optional[Union[MultiplexerCase, MultiplexerDefaultCase]] = None
+        for mux_case in self.cases:
             lower, upper = self._get_case_limits(mux_case)
             if lower <= key_value and key_value <= upper:  # type: ignore[operator]
-                if mux_case._structure:
-                    case_value = mux_case._structure.decode_from_pdu(decode_state)
+                applicable_case = mux_case
                 break
 
-        if case_value is None and self.default_case is not None:
-            if self.default_case._structure:
-                case_value = self.default_case._structure.decode_from_pdu(decode_state)
+        if applicable_case is None:
+            applicable_case = self.default_case
 
-        if mux_case is None or case_value is None:
-            odxraise(f"Failed to find a matching case in {self.short_name} for value {key_value!r}",
-                     DecodeError)
+        if applicable_case is None:
+            odxraise(
+                f"Cannot find an applicable case for value {key_value} in "
+                f"multiplexer {self.short_name}", DecodeError)
+            decode_state.origin_byte_position = orig_origin
+            return (None, None)
 
-        mux_value = (mux_case.short_name, case_value)
+        if applicable_case.structure is not None:
+            case_value = applicable_case.structure.decode_from_pdu(decode_state)
 
-        # go back to the original origin
+        result = (mux_case.short_name, case_value)
+
         decode_state.origin_byte_position = orig_origin
 
-        return mux_value
+        return result
 
     @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

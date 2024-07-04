@@ -18,12 +18,12 @@ class MultiplexerDefaultCase(NamedElement):
     structure_snref: Optional[str]
 
     def __post_init__(self) -> None:
-        self._structure: BasicStructure
+        self._structure: Optional[BasicStructure]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "MultiplexerDefaultCase":
-        """Reads a Default Case for a Multiplexer."""
+        """Reads a default case for a multiplexer."""
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
 
         structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
@@ -47,5 +47,5 @@ class MultiplexerDefaultCase(NamedElement):
             self._structure = resolve_snref(self.structure_snref, ddds.structures, BasicStructure)
 
     @property
-    def structure(self) -> BasicStructure:
+    def structure(self) -> Optional[BasicStructure]:
         return self._structure

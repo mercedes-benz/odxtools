@@ -108,8 +108,8 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
             of.write(f"multiplexer; choices:\n")
             for mux_case in dop.cases:
                 of.write(f"  ({repr(mux_case.short_name)}, {{\n")
-                of.write(
-                    textwrap.indent(parameter_info(mux_case.structure.parameters, True), "    "))
+                if (struc := mux_case.structure) is not None:
+                    of.write(textwrap.indent(parameter_info(struc.parameters, True), "    "))
                 of.write(f"   }})\n")
             continue
 
