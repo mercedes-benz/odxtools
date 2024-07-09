@@ -26,7 +26,6 @@ class OdxDocFragment:
         return self.doc_name == other.doc_name
 
     def __hash__(self) -> int:
-        # only the document name is relevant for the hash value
         return hash(self.doc_name) + hash(self.doc_type)
 
 
@@ -59,10 +58,12 @@ class OdxLinkId:
         if not isinstance(other, OdxLinkId):
             return False
 
-        # we do take the document fragment into consideration here, because
-        # document fragments are handled using separate sub-databases,
-        # i.e. the same OdxId object can be put into all of them.
-        return self.local_id == other.local_id
+        # if the local ID is different, the whole id is different
+        if self.local_id != other.local_id:
+            return False
+
+        # the document fragments must be identical for the IDs to be identical
+        return self.doc_fragments == other.doc_fragments
 
     def __str__(self) -> str:
         return f"OdxLinkId('{self.local_id}')"
@@ -147,19 +148,6 @@ class OdxLinkRef:
     def __str__(self) -> str:
         return f"OdxLinkRef('{self.ref_id}')"
 
-    def __contains__(self, odx_id: OdxLinkId) -> bool:
-        """
-        Returns true iff a given OdxLinkId object is referenced.
-        """
-
-        # we must reference at to at least of the ID's document
-        # fragments
-        if not any(ref_doc in odx_id.doc_fragments for ref_doc in self.ref_docs):
-            return False
-
-        # the local ID of the reference and the object ID must match
-        return odx_id.local_id == self.ref_id
-
 
 T = TypeVar("T")
 
@@ -172,7 +160,7 @@ class OdxLinkDatabase:
     """
 
     def __init__(self) -> None:
-        self._db: Dict[OdxDocFragment, Dict[OdxLinkId, Any]] = {}
+        self._db: Dict[OdxDocFragment, Dict[str, Any]] = {}
 
     @overload
     def resolve(self, ref: OdxLinkRef, expected_type: None = None) -> Any:
@@ -189,7 +177,6 @@ class OdxLinkDatabase:
         If the database does not contain any object which is referred to, a
         KeyError exception is raised.
         """
-        odx_id = OdxLinkId(ref.ref_id, ref.ref_docs)
         for ref_frag in reversed(ref.ref_docs):
             doc_frag_db = self._db.get(ref_frag)
             if doc_frag_db is None:
@@ -204,8 +191,9 @@ class OdxLinkDatabase:
                 )
                 continue
 
-            obj = doc_frag_db.get(odx_id)
-            if obj is not None:
+            # locate an object exhibiting with the referenced local ID
+            # in the ID database for the document fragment
+            if (obj := doc_frag_db.get(ref.ref_id)) is not None:
                 if expected_type is not None:
                     odxassert(isinstance(obj, expected_type))
 
@@ -234,7 +222,6 @@ class OdxLinkDatabase:
         is returned.
         """
 
-        odx_id = OdxLinkId(ref.ref_id, ref.ref_docs)
         for ref_frag in reversed(ref.ref_docs):
             doc_frag_db = self._db.get(ref_frag)
             if doc_frag_db is None:
@@ -249,8 +236,7 @@ class OdxLinkDatabase:
                 )
                 continue
 
-            obj = doc_frag_db.get(odx_id)
-            if obj is not None:
+            if (obj := doc_frag_db.get(ref.ref_id)) is not None:
                 if expected_type is not None:
                     odxassert(isinstance(obj, expected_type))
 
@@ -272,7 +258,7 @@ class OdxLinkDatabase:
                 if doc_frag not in self._db:
                     self._db[doc_frag] = {}
 
-                self._db[doc_frag][odx_id] = obj
+                self._db[doc_frag][odx_id.local_id] = obj
 
 
 @overload
