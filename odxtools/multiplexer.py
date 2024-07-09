@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Union, cast, Tuple
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -108,8 +108,8 @@ class Multiplexer(ComplexDop):
         elif isinstance(case_spec, int):
             applicable_cases = []
             for x in self.cases:
-                lower, upper = self._get_case_limits(x)
-                if lower <= case_spec and case_value <= upper:  # type: ignore[operator]
+                lower, upper = cast(Tuple[int, int], self._get_case_limits(x))
+                if lower <= case_spec and case_spec <= upper:
                     applicable_cases.append(x)
 
             if len(applicable_cases) == 0:
@@ -190,7 +190,7 @@ class Multiplexer(ComplexDop):
         if applicable_case.structure is not None:
             case_value = applicable_case.structure.decode_from_pdu(decode_state)
 
-        result = (mux_case.short_name, case_value)
+        result = (applicable_case.short_name, case_value)
 
         decode_state.origin_byte_position = orig_origin
 
