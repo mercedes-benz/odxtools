@@ -161,11 +161,6 @@ class DiagLayer:
         excessive memory consumption for large databases...
         """
 
-        # this attribute may be removed later. it is currently
-        # required to properly deal with auxiliary files within the
-        # diagnostic layer.
-        self._database = database
-
         #####
         # fill in all applicable objects that use value inheritance
         #####
