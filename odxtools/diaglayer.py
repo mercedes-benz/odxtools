@@ -161,11 +161,6 @@ class DiagLayer:
         excessive memory consumption for large databases...
         """
 
-        # this attribute may be removed later. it is currently
-        # required to properly deal with auxiliary files within the
-        # diagnostic layer.
-        self._database = database
-
         #####
         # fill in all applicable objects that use value inheritance
         #####
@@ -1200,16 +1195,19 @@ class DiagLayer:
         for service in candidate_services:
             try:
                 decoded_messages.append(service.decode_message(message))
-            except DecodeError:
+            except DecodeError as e:
                 # check if the message can be decoded as a global
                 # negative response for the service
+                gnr_found = False
                 for gnr in self.global_negative_responses:
                     try:
                         decoded_gnr = gnr.decode(message)
+                        gnr_found = True
                         if not isinstance(decoded_gnr, dict):
-                            raise DecodeError(f"Expected the decoded value of a global "
-                                              f"negative response to be a dictionary, "
-                                              f"got {type(decoded_gnr)} for {self.short_name}")
+                            odxraise(
+                                f"Expected the decoded value of a global "
+                                f"negative response to be a dictionary, "
+                                f"got {type(decoded_gnr)} for {self.short_name}", DecodeError)
 
                         decoded_messages.append(
                             Message(
@@ -1219,6 +1217,9 @@ class DiagLayer:
                                 param_dict=decoded_gnr))
                     except DecodeError:
                         pass
+
+                if not gnr_found:
+                    raise e
 
         if len(decoded_messages) == 0:
             raise DecodeError(

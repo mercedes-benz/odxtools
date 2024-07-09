@@ -147,7 +147,19 @@ class DtcDop(DopBase):
             raise EncodeError(f"The DTC-DOP {self.short_name} expected a"
                               f" DiagnosticTroubleCode but got {physical_value!r}.")
 
-        internal_trouble_code = self.compu_method.convert_physical_to_internal(trouble_code)
+        internal_trouble_code = int(self.compu_method.convert_physical_to_internal(trouble_code))
+
+        found = False
+        for dtc in self.dtcs:
+            if internal_trouble_code == dtc.trouble_code:
+                found = True
+                break
+
+        if not found:
+            odxraise(
+                f"Unknown diagnostic trouble code {physical_value!r} "
+                f"(0x{internal_trouble_code: 06x}) specified", EncodeError)
+
         self.diag_coded_type.encode_into_pdu(internal_trouble_code, encode_state)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
