@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union, cast, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -169,7 +169,6 @@ class Multiplexer(ComplexDop):
         # relatively to the byte position of the MUX."
         decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
 
-        case_value: Optional[ParameterValue] = None
         applicable_case: Optional[Union[MultiplexerCase, MultiplexerDefaultCase]] = None
         for mux_case in self.cases:
             lower, upper = self._get_case_limits(mux_case)
@@ -189,6 +188,8 @@ class Multiplexer(ComplexDop):
 
         if applicable_case.structure is not None:
             case_value = applicable_case.structure.decode_from_pdu(decode_state)
+        else:
+            case_value = {}
 
         result = (applicable_case.short_name, case_value)
 

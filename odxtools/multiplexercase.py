@@ -62,6 +62,7 @@ class MultiplexerCase(NamedElement):
 
     def _mux_case_resolve_odxlinks(self, odxlinks: OdxLinkDatabase, *,
                                    key_physical_type: DataType) -> None:
+        self._structure = None
         if self.structure_ref:
             self._structure = odxlinks.resolve(self.structure_ref)
 

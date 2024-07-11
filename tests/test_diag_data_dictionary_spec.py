@@ -279,54 +279,6 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             byte_size=None,
         )
 
-        mux_default_case_struct = Structure(
-            odx_id=OdxLinkId("ddds_test.mux.default_case.struct", doc_frags),
-            short_name="mux_default_case_struct",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
-            parameters=NamedItemList([
-                ValueParameter(
-                    short_name="audience_min_size",
-                    long_name=None,
-                    description=None,
-                    semantic=None,
-                    dop_ref=OdxLinkRef.from_id(dop_1.odx_id),
-                    dop_snref=None,
-                    physical_default_value_raw=None,
-                    byte_position=None,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                ValueParameter(
-                    short_name="audience_max_size",
-                    long_name=None,
-                    description=None,
-                    semantic=None,
-                    dop_ref=OdxLinkRef.from_id(dop_1.odx_id),
-                    dop_snref=None,
-                    physical_default_value_raw=None,
-                    byte_position=None,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                ValueParameter(
-                    short_name="min_light_level",
-                    long_name=None,
-                    description=None,
-                    semantic=None,
-                    dop_ref=OdxLinkRef.from_id(dop_1.odx_id),
-                    dop_snref=None,
-                    physical_default_value_raw=None,
-                    byte_position=None,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-            ]),
-            byte_size=None,
-        )
-
         mux = Multiplexer(
             odx_id=OdxLinkId("test_ddds.multiplexer.flip_precondition", doc_frags),
             short_name="flip_precondition",
@@ -344,7 +296,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                 short_name="default_case",
                 long_name="Preconditions for Other Actions",
                 description=None,
-                structure_ref=OdxLinkRef.from_id(mux_default_case_struct.odx_id),
+                structure_ref=None,
                 structure_snref=None,
             ),
             cases=[
@@ -382,7 +334,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             env_data_descs=NamedItemList([env_data_desc]),
             env_datas=NamedItemList([env_data]),
             muxs=NamedItemList([mux]),
-            structures=NamedItemList([mux_case1_struct, mux_case2_struct, mux_default_case_struct]),
+            structures=NamedItemList([mux_case1_struct, mux_case2_struct]),
             static_fields=NamedItemList(),
             end_of_pdu_fields=NamedItemList(),
             dynamic_length_fields=NamedItemList(),
@@ -408,7 +360,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         self.assertEqual(ddds.env_datas[0], env_data)
         self.assertEqual(ddds.muxs[0], mux)
 
-        self.assertEqual(len(ddds.structures), 3)
+        self.assertEqual(len(ddds.structures), 2)
         self.assertEqual(len(ddds.end_of_pdu_fields), 0)
 
         ddds = ecu.diag_data_dictionary_spec
@@ -450,23 +402,13 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
 
         # default case
         encode_state = EncodeState(coded_message=bytearray.fromhex("ffee"), cursor_byte_position=2)
-        mux.encode_into_pdu([
-            100, {
-                "audience_min_size": 3,
-                "audience_max_size": 10,
-                "min_light_level": 250
-            }
-        ], encode_state)
-        self.assertEqual(encode_state.coded_message.hex(), "ffee64030afa")
+        mux.encode_into_pdu([100, {}], encode_state)
+        self.assertEqual(encode_state.coded_message.hex(), "ffee64")
 
         decode_state = DecodeState(
             coded_message=copy(encode_state.coded_message), cursor_byte_position=2)
         decoded = mux.decode_from_pdu(decode_state)
-        self.assertEqual(decoded, ("default_case", {
-            "audience_min_size": 3,
-            "audience_max_size": 10,
-            "min_light_level": 250
-        }))
+        self.assertEqual(decoded, ("default_case", {}))
 
 
 if __name__ == "__main__":

@@ -38,6 +38,7 @@ class MultiplexerDefaultCase(NamedElement):
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        self._structure = None
         if self.structure_ref is not None:
             self._structure = odxlinks.resolve(self.structure_ref)
 

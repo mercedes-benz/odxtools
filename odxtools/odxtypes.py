@@ -28,7 +28,7 @@ ParameterDict = Dict[str, Union["Parameter", "ParameterDict"]]
 # sub-parameters, so this is a recursive type, and fields encompass
 # multiple items, so this can be a list of objects.
 TableStructParameterValue = Tuple[str, "ParameterValue"]
-ParameterValue = Union[None, AtomicOdxType, "ParameterValueDict", TableStructParameterValue,
+ParameterValue = Union[AtomicOdxType, "ParameterValueDict", TableStructParameterValue,
                        Iterable["ParameterValue"], "DiagnosticTroubleCode"]
 ParameterValueDict = Dict[str, ParameterValue]
 
