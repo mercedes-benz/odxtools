@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from itertools import chain
 from pathlib import Path
-from typing import IO, List, Optional, OrderedDict
+from typing import IO, Any, Dict, List, Optional, OrderedDict
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
@@ -13,7 +13,7 @@ from .diaglayer import DiagLayer
 from .diaglayercontainer import DiagLayerContainer
 from .exceptions import odxraise
 from .nameditemlist import NamedItemList
-from .odxlink import OdxLinkDatabase
+from .odxlink import OdxLinkDatabase, OdxLinkId
 
 
 class Database:
@@ -108,15 +108,7 @@ class Database:
 
         # Build odxlinks
         self._odxlinks = OdxLinkDatabase()
-
-        for subset in self.comparam_subsets:
-            self._odxlinks.update(subset._build_odxlinks())
-
-        for spec in self.comparam_specs:
-            self._odxlinks.update(spec._build_odxlinks())
-
-        for dlc in self.diag_layer_containers:
-            self._odxlinks.update(dlc._build_odxlinks())
+        self._odxlinks.update(self._build_odxlinks())
 
         # Resolve ODXLINK references
         for subset in self.comparam_subsets:
@@ -132,6 +124,20 @@ class Database:
         # short name references
         for dlc in self.diag_layer_containers:
             dlc._finalize_init(self, self._odxlinks)
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result: Dict[OdxLinkId, Any] = {}
+
+        for subset in self.comparam_subsets:
+            result.update(subset._build_odxlinks())
+
+        for spec in self.comparam_specs:
+            result.update(spec._build_odxlinks())
+
+        for dlc in self.diag_layer_containers:
+            result.update(dlc._build_odxlinks())
+
+        return result
 
     @property
     def odxlinks(self) -> OdxLinkDatabase:

@@ -3,13 +3,13 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
-from .basicstructure import BasicStructure
 from .compumethods.limit import Limit
 from .element import NamedElement
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import AtomicOdxType, DataType
 from .snrefcontext import SnRefContext
+from .structure import Structure
 from .utils import dataclass_fields_asdict
 
 
@@ -23,7 +23,7 @@ class MultiplexerCase(NamedElement):
     upper_limit: Limit
 
     def __post_init__(self) -> None:
-        self._structure: BasicStructure
+        self._structure: Optional[Structure]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -62,8 +62,9 @@ class MultiplexerCase(NamedElement):
 
     def _mux_case_resolve_odxlinks(self, odxlinks: OdxLinkDatabase, *,
                                    key_physical_type: DataType) -> None:
+        self._structure = None
         if self.structure_ref:
-            self._structure = odxlinks.resolve(self.structure_ref)
+            self._structure = odxlinks.resolve(self.structure_ref, Structure)
 
         self.lower_limit.set_value_type(key_physical_type)
         self.upper_limit.set_value_type(key_physical_type)
@@ -71,12 +72,12 @@ class MultiplexerCase(NamedElement):
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         if self.structure_snref:
             ddds = odxrequire(context.diag_layer).diag_data_dictionary_spec
-            self._structure = resolve_snref(self.structure_snref, ddds.structures, BasicStructure)
+            self._structure = resolve_snref(self.structure_snref, ddds.structures, Structure)
 
     def applies(self, value: AtomicOdxType) -> bool:
         return self.lower_limit.complies_to_lower(value) \
             and self.upper_limit.complies_to_upper(value)
 
     @property
-    def structure(self) -> BasicStructure:
+    def structure(self) -> Optional[Structure]:
         return self._structure
