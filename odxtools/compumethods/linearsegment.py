@@ -46,8 +46,6 @@ class LinearSegment:
 
         inverse_value: Union[int, float] = 0
         if scale.compu_inverse_value is not None:
-            if abs(factor) < 1e-10:
-                odxraise(f"COMPU-INVERSE-VALUE for non-zero slope ({factor}) defined")
             x = odxrequire(scale.compu_inverse_value).value
             if not isinstance(x, (int, float)):
                 odxraise(f"Non-numeric COMPU-INVERSE-VALUE specified ({x!r})")
