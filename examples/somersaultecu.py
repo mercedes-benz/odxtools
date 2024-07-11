@@ -39,10 +39,6 @@ from odxtools.environmentdatadescription import EnvironmentDataDescription
 from odxtools.exceptions import odxrequire
 from odxtools.functionalclass import FunctionalClass
 from odxtools.modification import Modification
-from odxtools.multiplexer import Multiplexer
-from odxtools.multiplexercase import MultiplexerCase
-from odxtools.multiplexerdefaultcase import MultiplexerDefaultCase
-from odxtools.multiplexerswitchkey import MultiplexerSwitchKey
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
@@ -1274,57 +1270,6 @@ somersault_tables = {
         )
 }
 
-# muxs
-somersault_muxs = {
-    "flip_preference":
-        Multiplexer(
-            odx_id=OdxLinkId("somersault.multiplexer.flip_preference", doc_frags),
-            short_name="flip_preference",
-            long_name="Flip Preference",
-            description=None,
-            admin_data=None,
-            sdgs=[],
-            byte_position=0,
-            switch_key=MultiplexerSwitchKey(
-                byte_position=0,
-                bit_position=0,
-                dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-            ),
-            default_case=MultiplexerDefaultCase(
-                short_name="default_case",
-                long_name="Default Case",
-                description=None,
-                structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-                structure_snref=None,
-            ),
-            cases=[
-                MultiplexerCase(
-                    short_name="forward_flip",
-                    long_name="Forward Flip",
-                    description=None,
-                    lower_limit=Limit(
-                        value_raw="1", value_type=DataType.A_INT32, interval_type=None),
-                    upper_limit=Limit(
-                        value_raw="3", value_type=DataType.A_INT32, interval_type=None),
-                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-                    structure_snref=None,
-                ),
-                MultiplexerCase(
-                    short_name="backward_flip",
-                    long_name="Backward Flip",
-                    description=None,
-                    lower_limit=Limit(
-                        value_raw="1", value_type=DataType.A_INT32, interval_type=None),
-                    upper_limit=Limit(
-                        value_raw="3", value_type=DataType.A_INT32, interval_type=None),
-                    structure_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-                    structure_snref=None,
-                ),
-            ],
-            is_visible_raw=None,
-        )
-}
-
 # env-data
 somersault_env_datas = {
     "flip_env_data":
@@ -2117,7 +2062,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
         sdgs=[],
     ),
     tables=NamedItemList(somersault_tables.values()),
-    muxs=NamedItemList(somersault_muxs.values()),
+    muxs=NamedItemList(),
     env_datas=NamedItemList(somersault_env_datas.values()),
     env_data_descs=NamedItemList(somersault_env_data_descs.values()),
     dtc_dops=NamedItemList(),

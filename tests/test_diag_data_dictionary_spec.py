@@ -370,7 +370,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         local_dops = {
             "num_flips", "soberness_check", "dizzyness_level", "happiness_level", "duration",
             "temperature", "error_code", "boolean", "uint8", "uint16", "float",
-            "flip_env_data_desc", "flip_env_data", "flip_preference"
+            "flip_env_data_desc", "flip_env_data"
         }
         self.assertEqual(local_dops - all_dops, set())
 
