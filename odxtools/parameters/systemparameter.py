@@ -26,7 +26,7 @@ class SystemParameter(ParameterWithDOP):
 
         kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
 
-        sysparam = odxrequire(et_element.findtext("SYSPARAM"))
+        sysparam = odxrequire(et_element.get("SYSPARAM"))
 
         return SystemParameter(sysparam=sysparam, **kwargs)
 
