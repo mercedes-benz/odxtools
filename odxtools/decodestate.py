@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Dict, cast
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, cast
 
 import odxtools.exceptions as exceptions
 
 from .exceptions import DecodeError
-from .odxtypes import AtomicOdxType, DataType
+from .odxtypes import AtomicOdxType, DataType, ParameterValue
 
 try:
     import bitstruct.c as bitstruct
@@ -13,6 +13,7 @@ except ImportError:
     import bitstruct
 
 if TYPE_CHECKING:
+    from .parameters.parameter import Parameter
     from .tablerow import TableRow
 
 
@@ -45,6 +46,11 @@ class DecodeState:
 
     #: values of the table key parameters decoded so far
     table_keys: Dict[str, "TableRow"] = field(default_factory=dict)
+
+    #: List of parameters that have been decoded so far. The journal
+    #: is used by some types of parameters which depend on the values of
+    #: other parameters; i.e., environment data description parameters
+    journal: List[Tuple["Parameter", Optional[ParameterValue]]] = field(default_factory=list)
 
     def extract_atomic_value(
         self,

@@ -130,22 +130,35 @@ class DtcDop(DopBase):
             sdgs=[],
         )
 
+    def numerical_trouble_code(self, dtc_value: ParameterValue) -> int:
+        if isinstance(dtc_value, DiagnosticTroubleCode):
+            return dtc_value.trouble_code
+        elif isinstance(dtc_value, int):
+            # assume that physical value is the trouble_code
+            return dtc_value
+        elif isinstance(dtc_value, str):
+            # assume that physical value is the short_name
+            dtcs = [dtc for dtc in self.dtcs if dtc.short_name == dtc_value]
+            if len(dtcs) != 1:
+                odxraise(f"No DTC named {dtc_value} found for DTC-DOP "
+                         f"{self.short_name}.", EncodeError)
+                return cast(int, None)
+
+            return dtcs[0].trouble_code
+        else:
+            odxraise(
+                f"The DTC-DOP {self.short_name} expected a"
+                f" diagnostic trouble code but got {type(dtc_value).__name__}", EncodeError)
+            return cast(int, None)
+
     @override
     def encode_into_pdu(self, physical_value: Optional[ParameterValue],
                         encode_state: EncodeState) -> None:
-        if isinstance(physical_value, DiagnosticTroubleCode):
-            trouble_code = physical_value.trouble_code
-        elif isinstance(physical_value, int):
-            # assume that physical value is the trouble_code
-            trouble_code = physical_value
-        elif isinstance(physical_value, str):
-            # assume that physical value is the short_name
-            dtcs = [dtc for dtc in self.dtcs if dtc.short_name == physical_value]
-            odxassert(len(dtcs) == 1)
-            trouble_code = dtcs[0].trouble_code
-        else:
-            raise EncodeError(f"The DTC-DOP {self.short_name} expected a"
-                              f" DiagnosticTroubleCode but got {physical_value!r}.")
+        if physical_value is None:
+            odxraise(f"No DTC specified", EncodeError)
+            return
+
+        trouble_code = self.numerical_trouble_code(physical_value)
 
         internal_trouble_code = int(self.compu_method.convert_physical_to_internal(trouble_code))
 

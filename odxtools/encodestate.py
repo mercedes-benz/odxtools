@@ -1,15 +1,18 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass, field
-from typing import Dict, Optional, SupportsBytes
+from typing import TYPE_CHECKING, Dict, List, Optional, SupportsBytes, Tuple
 
 from .exceptions import EncodeError, OdxWarning, odxassert, odxraise
-from .odxtypes import AtomicOdxType, DataType
+from .odxtypes import AtomicOdxType, DataType, ParameterValue
 
 try:
     import bitstruct.c as bitstruct
 except ImportError:
     import bitstruct
+
+if TYPE_CHECKING:
+    from .parameters.parameter import Parameter
 
 
 @dataclass
@@ -55,6 +58,15 @@ class EncodeState:
     #: Flag whether we are currently the last parameter of the PDU
     #: (needed for MinMaxLengthType, EndOfPduField, etc.)
     is_end_of_pdu: bool = True
+
+    #: list of parameters that have been encoded so far. The journal
+    #: is used by some types of parameters which depend on the values of
+    #: other parameters; e.g., environment data description parameters
+    journal: List[Tuple["Parameter", Optional[ParameterValue]]] = field(default_factory=list)
+
+    #: If this is True, specifying unknown parameters for encoding
+    #: will raise an OdxError exception in strict mode.
+    allow_unknown_parameters = False
 
     def __post_init__(self) -> None:
         # if a coded message has been specified, but no used_mask, we
