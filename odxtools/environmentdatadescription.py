@@ -142,7 +142,7 @@ class EnvironmentDataDescription(ComplexDop):
             odxraise()
             return
 
-        numerical_dtc = dtc_dop.numerical_trouble_code(dtc_param_value)
+        numerical_dtc = dtc_dop.convert_to_numerical_trouble_code(dtc_param_value)
 
         # deal with the "all value" environment data. This holds
         # parameters that are common to all DTCs. Be aware that the
@@ -203,7 +203,7 @@ class EnvironmentDataDescription(ComplexDop):
             odxraise()
             return
 
-        numerical_dtc = dtc_dop.numerical_trouble_code(dtc_param_value)
+        numerical_dtc = dtc_dop.convert_to_numerical_trouble_code(dtc_param_value)
 
         result: ParameterValueDict = {}
 

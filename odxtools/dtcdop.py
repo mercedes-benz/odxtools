@@ -130,7 +130,7 @@ class DtcDop(DopBase):
             sdgs=[],
         )
 
-    def numerical_trouble_code(self, dtc_value: ParameterValue) -> int:
+    def convert_to_numerical_trouble_code(self, dtc_value: ParameterValue) -> int:
         if isinstance(dtc_value, DiagnosticTroubleCode):
             return dtc_value.trouble_code
         elif isinstance(dtc_value, int):
@@ -158,7 +158,7 @@ class DtcDop(DopBase):
             odxraise(f"No DTC specified", EncodeError)
             return
 
-        trouble_code = self.numerical_trouble_code(physical_value)
+        trouble_code = self.convert_to_numerical_trouble_code(physical_value)
 
         internal_trouble_code = int(self.compu_method.convert_physical_to_internal(trouble_code))
 
