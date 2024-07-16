@@ -44,8 +44,8 @@ class EnvironmentDataDescription(ComplexDop):
         # because the relevant list of parameters depends on the
         # concrete codec object processed, whilst an environment data
         # description object can be featured in an arbitrary number of
-        # responses. TODO: resolve the parameter reference in the
-        # encode() and decode() methods.
+        # responses. Instead, lookup of the appropriate parameter is
+        # done within the encode and decode methods.
         odxraise("The parameter of ENV-DATA-DESC objects cannot be resolved "
                  "because it depends on the context")
         return cast(None, Parameter)
