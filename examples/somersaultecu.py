@@ -34,8 +34,6 @@ from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
 from odxtools.diagservice import DiagService
 from odxtools.docrevision import DocRevision
-from odxtools.environmentdata import EnvironmentData
-from odxtools.environmentdatadescription import EnvironmentDataDescription
 from odxtools.exceptions import odxrequire
 from odxtools.functionalclass import FunctionalClass
 from odxtools.modification import Modification
@@ -45,7 +43,6 @@ from odxtools.odxtypes import DataType
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.matchingrequestparameter import MatchingRequestParameter
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
-from odxtools.parameters.physicalconstantparameter import PhysicalConstantParameter
 from odxtools.parameters.tablekeyparameter import TableKeyParameter
 from odxtools.parameters.tablestructparameter import TableStructParameter
 from odxtools.parameters.valueparameter import ValueParameter
@@ -1270,65 +1267,6 @@ somersault_tables = {
         )
 }
 
-# env-data
-somersault_env_datas = {
-    "flip_env_data":
-        EnvironmentData(
-            odx_id=OdxLinkId("somersault.env_data.flip_env_data", doc_frags),
-            short_name="flip_env_data",
-            long_name="Flip Env Data",
-            description=None,
-            admin_data=None,
-            sdgs=[],
-            byte_size=None,
-            dtc_values=[],
-            parameters=NamedItemList([
-                ValueParameter(
-                    short_name="flip_speed",
-                    long_name="Flip Speed",
-                    description=None,
-                    physical_default_value_raw=None,
-                    byte_position=0,
-                    semantic="DATA",
-                    dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-                    dop_snref=None,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-                PhysicalConstantParameter(
-                    short_name="flip_direction",
-                    long_name="Flip Direction",
-                    description=None,
-                    byte_position=1,
-                    semantic="DATA",
-                    physical_constant_value_raw="1",
-                    dop_ref=OdxLinkRef.from_id(somersault_dops["num_flips"].odx_id),
-                    dop_snref=None,
-                    bit_position=None,
-                    sdgs=[],
-                ),
-            ]),
-            all_value=True,
-        )
-}
-
-# env-data-desc
-somersault_env_data_descs = {
-    "flip_env_data_desc":
-        EnvironmentDataDescription(
-            odx_id=OdxLinkId("somersault.env_data_desc.flip_env_data_desc", doc_frags),
-            short_name="flip_env_data_desc",
-            long_name="Flip Env Data Desc",
-            description=None,
-            admin_data=None,
-            param_snref="flip_speed",
-            param_snpathref=None,
-            env_datas=[],
-            env_data_refs=[OdxLinkRef("somersault.env_data.flip_env_data", doc_frags)],
-            sdgs=[],
-        )
-}
-
 # requests
 somersault_requests = {
     "start_session":
@@ -2063,8 +2001,8 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
     ),
     tables=NamedItemList(somersault_tables.values()),
     muxs=NamedItemList(),
-    env_datas=NamedItemList(somersault_env_datas.values()),
-    env_data_descs=NamedItemList(somersault_env_data_descs.values()),
+    env_datas=NamedItemList(),
+    env_data_descs=NamedItemList(),
     dtc_dops=NamedItemList(),
     structures=NamedItemList(),
     static_fields=NamedItemList(),
@@ -2338,8 +2276,8 @@ somersault_assiduous_diaglayer_raw = DiagLayerRaw(
         dynamic_length_fields=NamedItemList(),
         dynamic_endmarker_fields=NamedItemList(),
         tables=NamedItemList(),
-        env_data_descs=NamedItemList(),
         env_datas=NamedItemList(),
+        env_data_descs=NamedItemList(),
         muxs=NamedItemList(),
         unit_spec=None,
         sdgs=[],

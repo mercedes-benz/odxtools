@@ -10,11 +10,16 @@ from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
+from odxtools.description import Description
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayerraw import DiagLayerRaw
 from odxtools.diaglayertype import DiagLayerType
+from odxtools.diagnostictroublecode import DiagnosticTroubleCode
 from odxtools.diagservice import DiagService
+from odxtools.dtcdop import DtcDop
+from odxtools.environmentdata import EnvironmentData
+from odxtools.environmentdatadescription import EnvironmentDataDescription
 from odxtools.exceptions import EncodeError
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -23,7 +28,7 @@ from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
 from odxtools.parameters.parameter import Parameter
 from odxtools.parameters.valueparameter import ValueParameter
-from odxtools.physicaltype import PhysicalType
+from odxtools.physicaltype import PhysicalType, Radix
 from odxtools.request import Request
 from odxtools.response import Response, ResponseType
 from odxtools.snrefcontext import SnRefContext
@@ -384,6 +389,268 @@ class TestEncodeRequest(unittest.TestCase):
             # Should raise an EncodeError because the value of
             # NRC-CONST parameters cannot be directly specified
             resp.encode(param2=0xEF, param3=0xAB)
+
+    def test_encode_env_data_desc(self) -> None:
+        dct = StandardLengthType(
+            base_data_type=DataType.A_UINT32,
+            base_type_encoding=None,
+            bit_length=8,
+            bit_mask=None,
+            is_highlow_byte_order_raw=None,
+            is_condensed_raw=None,
+        )
+        dop = DataObjectProperty(
+            odx_id=OdxLinkId("dop.id", doc_frags),
+            short_name="dop_sn",
+            long_name="example dop",
+            description=None,
+            admin_data=None,
+            diag_coded_type=dct,
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            compu_method=IdenticalCompuMethod(
+                category=CompuCategory.IDENTICAL,
+                compu_internal_to_phys=None,
+                compu_phys_to_internal=None,
+                internal_type=DataType.A_UINT32,
+                physical_type=DataType.A_UINT32),
+            unit_ref=None,
+            sdgs=[],
+            internal_constr=None,
+            physical_constr=None,
+        )
+
+        dtc_dct = StandardLengthType(
+            base_data_type=DataType.A_UINT32,
+            base_type_encoding=None,
+            bit_length=24,
+            bit_mask=None,
+            is_highlow_byte_order_raw=None,
+            is_condensed_raw=None,
+        )
+        dtc_dop = DtcDop(
+            odx_id=OdxLinkId("dtcdop.id", doc_frags),
+            short_name="dtcdop_sn",
+            long_name=None,
+            description=Description(
+                "DOP containing all possible diagnostic trouble codes",
+                external_docs=[],
+                text_identifier=None),
+            admin_data=None,
+            sdgs=[],
+            diag_coded_type=dtc_dct,
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=Radix.HEX, precision=None),
+            compu_method=IdenticalCompuMethod(
+                category=CompuCategory.IDENTICAL,
+                compu_internal_to_phys=None,
+                compu_phys_to_internal=None,
+                internal_type=DataType.A_UINT32,
+                physical_type=DataType.A_UINT32),
+            dtcs_raw=[
+                DiagnosticTroubleCode(
+                    odx_id=OdxLinkId("DTCs.first_trouble", doc_frags),
+                    short_name="first_trouble",
+                    long_name=None,
+                    description=None,
+                    trouble_code=0x112233,
+                    text="The first trouble is the deepest",
+                    display_trouble_code="Z123",
+                    level=None,
+                    is_temporary_raw=None,
+                    sdgs=[]),
+                DiagnosticTroubleCode(
+                    odx_id=OdxLinkId("DTCs.follow_up_trouble", doc_frags),
+                    short_name="follow_up_trouble",
+                    long_name=None,
+                    description=None,
+                    trouble_code=0x445566,
+                    text=None,
+                    display_trouble_code="Y456",
+                    level=None,
+                    is_temporary_raw=None,
+                    sdgs=[]),
+                DiagnosticTroubleCode(
+                    odx_id=OdxLinkId("DTCs.screwed_up_hard", doc_frags),
+                    short_name="screwed_up_hard",
+                    long_name=None,
+                    description=None,
+                    trouble_code=0xf00de5,
+                    text=None,
+                    display_trouble_code="SCREW",
+                    level=None,
+                    is_temporary_raw=None,
+                    sdgs=[]),
+            ],
+            linked_dtc_dop_refs=[],
+            is_visible_raw=None,
+        )
+
+        env_data_desc = EnvironmentDataDescription(
+            odx_id=OdxLinkId("DTCs.trouble_explanation", doc_frags),
+            short_name="trouble_explanation",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            param_snref="DTC",
+            param_snpathref=None,
+            env_datas=[
+                EnvironmentData(
+                    odx_id=OdxLinkId("DTCs.trouble_explanation.boiler_plate", doc_frags),
+                    short_name="boiler_plate",
+                    long_name=None,
+                    description=None,
+                    admin_data=None,
+                    sdgs=[],
+                    byte_size=None,
+                    all_value=True,
+                    dtc_values=[],
+                    parameters=NamedItemList([
+                        CodedConstParameter(
+                            short_name="blabla_boiler",
+                            long_name=None,
+                            description=None,
+                            semantic=None,
+                            diag_coded_type=dct,
+                            coded_value=0xee,
+                            byte_position=0,
+                            bit_position=None,
+                            sdgs=[],
+                        )
+                    ])),
+                EnvironmentData(
+                    odx_id=OdxLinkId("DTCs.trouble_explanation.reason_for_1", doc_frags),
+                    short_name="reason_for_1",
+                    long_name=None,
+                    description=None,
+                    admin_data=None,
+                    sdgs=[],
+                    byte_size=None,
+                    all_value=None,
+                    dtc_values=[0x112233],
+                    parameters=NamedItemList([
+                        CodedConstParameter(
+                            short_name="blabla_1",
+                            long_name=None,
+                            description=None,
+                            semantic=None,
+                            diag_coded_type=dct,
+                            coded_value=0x01,
+                            byte_position=None,
+                            bit_position=None,
+                            sdgs=[],
+                        )
+                    ])),
+                EnvironmentData(
+                    odx_id=OdxLinkId("DTCs.trouble_explanation.reason_for_2", doc_frags),
+                    short_name="reason_for_2",
+                    long_name=None,
+                    description=None,
+                    admin_data=None,
+                    sdgs=[],
+                    byte_size=None,
+                    all_value=None,
+                    dtc_values=[0x445566],
+                    parameters=NamedItemList([
+                        CodedConstParameter(
+                            short_name="blabla_3",
+                            long_name=None,
+                            description=None,
+                            semantic=None,
+                            diag_coded_type=dct,
+                            coded_value=0x03,
+                            byte_position=1,
+                            bit_position=None,
+                            sdgs=[],
+                        ),
+                        CodedConstParameter(
+                            short_name="blabla_2",
+                            long_name=None,
+                            description=None,
+                            semantic=None,
+                            diag_coded_type=dct,
+                            coded_value=0x02,
+                            byte_position=0,
+                            bit_position=None,
+                            sdgs=[],
+                        ),
+                    ])),
+            ],
+            env_data_refs=[],
+        )
+
+        param1 = ValueParameter(
+            short_name="DTC",
+            long_name=None,
+            description=None,
+            semantic=None,
+            dop_ref=OdxLinkRef.from_id(dtc_dop.odx_id),
+            dop_snref=None,
+            physical_default_value_raw=None,
+            byte_position=None,
+            bit_position=None,
+            sdgs=[],
+        )
+        param2 = ValueParameter(
+            short_name="dtc_info",
+            long_name=None,
+            description=Description(
+                "Supplemental info why the error happened", external_docs=[], text_identifier=None),
+            semantic=None,
+            dop_ref=OdxLinkRef.from_id(env_data_desc.odx_id),
+            dop_snref=None,
+            physical_default_value_raw=None,
+            byte_position=None,
+            bit_position=None,
+            sdgs=[],
+        )
+
+        resp = Response(
+            odx_id=OdxLinkId("DTCs.report_dtc.answer", doc_frags),
+            short_name="report_dtc_answer",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            parameters=NamedItemList([param1, param2]),
+            byte_size=None,
+            response_type=ResponseType.POSITIVE,
+        )
+
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(dop._build_odxlinks())
+        odxlinks.update(dtc_dop._build_odxlinks())
+        odxlinks.update(env_data_desc._build_odxlinks())
+        odxlinks.update(resp._build_odxlinks())
+
+        dop._resolve_odxlinks(odxlinks)
+        dtc_dop._resolve_odxlinks(odxlinks)
+        env_data_desc._resolve_odxlinks(odxlinks)
+        resp._resolve_odxlinks(odxlinks)
+
+        snref_ctx = SnRefContext()
+
+        dop._resolve_snrefs(snref_ctx)
+        dtc_dop._resolve_snrefs(snref_ctx)
+        env_data_desc._resolve_snrefs(snref_ctx)
+        resp._resolve_snrefs(snref_ctx)
+
+        # test environment data for DCT 0x112233
+        raw_data = resp.encode(DTC=0x112233, dtc_info={})
+        self.assertEqual(raw_data.hex(), "112233ee01")
+
+        # test environment data for DCT 0x445566
+        raw_data = resp.encode(DTC=0x445566, dtc_info={})
+        self.assertEqual(raw_data.hex(), "445566ee0203")
+
+        # test for a DCT without any special environment data (just
+        # the all-data boiler plate)
+        raw_data = resp.encode(DTC=0xf00de5, dtc_info={})
+        self.assertEqual(raw_data.hex(), "f00de5ee")
+
+        # test an unspecified DCT (raises EncodeError)
+        with self.assertRaises(EncodeError):
+            raw_data = resp.encode(DTC=0x00c007, dtc_info={})
 
     def test_encode_overlapping(self) -> None:
         uint24 = StandardLengthType(

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
@@ -17,7 +17,7 @@ class DiagnosticTroubleCode(IdentifiableElement):
     trouble_code: int
     text: Optional[str]
     display_trouble_code: Optional[str]
-    level: Union[int, None]
+    level: Optional[int]
     is_temporary_raw: Optional[bool]
     sdgs: List[SpecialDataGroup]
 

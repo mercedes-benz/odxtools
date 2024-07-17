@@ -1,17 +1,19 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
 
 from .complexdop import ComplexDop
 from .decodestate import DecodeState
+from .dtcdop import DtcDop
 from .encodestate import EncodeState
 from .environmentdata import EnvironmentData
 from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import ParameterValue
+from .odxtypes import ParameterValue, ParameterValueDict
+from .parameters.parameter import Parameter
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -27,16 +29,26 @@ class EnvironmentDataDescription(ComplexDop):
 
     """
 
+    param_snref: Optional[str]
+    param_snpathref: Optional[str]
+
     # in ODX 2.0.0, ENV-DATAS seems to be a mandatory
     # sub-element of ENV-DATA-DESC, in ODX 2.2 it is not
     # present
     env_datas: List[EnvironmentData]
     env_data_refs: List[OdxLinkRef]
-    param_snref: Optional[str]
-    param_snpathref: Optional[str]
 
-    def __post_init__(self) -> None:
-        self.bit_length = None
+    @property
+    def param(self) -> Parameter:
+        # the parameter referenced via SNREF cannot be resolved here
+        # because the relevant list of parameters depends on the
+        # concrete codec object processed, whilst an environment data
+        # description object can be featured in an arbitrary number of
+        # responses. Instead, lookup of the appropriate parameter is
+        # done within the encode and decode methods.
+        odxraise("The parameter of ENV-DATA-DESC objects cannot be resolved "
+                 "because it depends on the context")
+        return cast(None, Parameter)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -96,17 +108,125 @@ class EnvironmentDataDescription(ComplexDop):
     def encode_into_pdu(self, physical_value: Optional[ParameterValue],
                         encode_state: EncodeState) -> None:
         """Convert a physical value into bytes and emplace them into a PDU.
-
-        Since environmental data is supposed to never appear on the
-        wire, this method just raises an EncodeError exception.
         """
-        odxraise("EnvironmentDataDescription DOPs cannot be encoded or decoded")
+
+        # retrieve the relevant DTC parameter which must be located in
+        # front of the environment data description.
+        if self.param_snref is None:
+            odxraise("Specifying the DTC parameter for environment data "
+                     "descriptions via SNPATHREF is not supported yet")
+            return None
+
+        dtc_param: Optional[Parameter] = None
+        dtc_dop: Optional[DtcDop] = None
+        dtc_param_value: Optional[ParameterValue] = None
+        for prev_param, prev_param_value in reversed(encode_state.journal):
+            if prev_param.short_name == self.param_snref:
+                dtc_param = prev_param
+                prev_dop = getattr(prev_param, "dop", None)
+                if not isinstance(prev_dop, DtcDop):
+                    odxraise(f"The DOP of the parameter referenced by environment data "
+                             f"descriptions must be a DTC-DOP (is '{type(prev_dop).__name__}')")
+                    return
+                dtc_dop = prev_dop
+                dtc_param_value = prev_param_value
+                break
+
+        if dtc_param is None:
+            odxraise("Environment data description parameters are only allowed following "
+                     "the referenced value parameter.")
+            return
+
+        if dtc_param_value is None or dtc_dop is None:
+            # this should never happen
+            odxraise()
+            return
+
+        numerical_dtc = dtc_dop.convert_to_numerical_trouble_code(dtc_param_value)
+
+        # deal with the "all value" environment data. This holds
+        # parameters that are common to all DTCs. Be aware that the
+        # specification mandates that there is at most one such
+        # environment data object
+        for env_data in self.env_datas:
+            if env_data.all_value:
+                tmp = encode_state.allow_unknown_parameters
+                encode_state.allow_unknown_parameters = True
+                env_data.encode_into_pdu(physical_value, encode_state)
+                encode_state.allow_unknown_parameters = tmp
+                break
+
+        # find the environment data corresponding to the given trouble
+        # code
+        for env_data in self.env_datas:
+            if numerical_dtc in env_data.dtc_values:
+                tmp = encode_state.allow_unknown_parameters
+                encode_state.allow_unknown_parameters = True
+                env_data.encode_into_pdu(physical_value, encode_state)
+                encode_state.allow_unknown_parameters = tmp
+                break
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         """Extract the bytes from a PDU and convert them to a physical value.
-
-        Since environmental data is supposed to never appear on the
-        wire, this method just raises an DecodeError exception.
         """
-        odxraise("EnvironmentDataDescription DOPs cannot be encoded or decoded")
+
+        # retrieve the relevant DTC parameter which must be located in
+        # front of the environment data description.
+        if self.param_snref is None:
+            odxraise("Specifying the DTC parameter for environment data "
+                     "descriptions via SNPATHREF is not supported yet")
+            return None
+
+        dtc_param: Optional[Parameter] = None
+        dtc_dop: Optional[DtcDop] = None
+        dtc_param_value: Optional[ParameterValue] = None
+        for prev_param, prev_param_value in reversed(decode_state.journal):
+            if prev_param.short_name == self.param_snref:
+                dtc_param = prev_param
+                prev_dop = getattr(prev_param, "dop", None)
+                if not isinstance(prev_dop, DtcDop):
+                    odxraise(f"The DOP of the parameter referenced by environment data "
+                             f"descriptions must be a DTC-DOP (is '{type(prev_dop).__name__}')")
+                    return
+                dtc_dop = prev_dop
+                dtc_param_value = prev_param_value
+                break
+
+        if dtc_param is None:
+            odxraise("Environment data description parameters are only allowed following "
+                     "the referenced value parameter.")
+            return
+
+        if dtc_param_value is None or dtc_dop is None:
+            # this should never happen
+            odxraise()
+            return
+
+        numerical_dtc = dtc_dop.convert_to_numerical_trouble_code(dtc_param_value)
+
+        result: ParameterValueDict = {}
+
+        # deal with the "all value" environment data. This holds
+        # parameters that are common to all DTCs. Be aware that the
+        # specification mandates that there is at most one such
+        # environment data object
+        for env_data in self.env_datas:
+            if env_data.all_value:
+                tmp = env_data.decode_from_pdu(decode_state)
+                if not isinstance(tmp, dict):
+                    odxraise()
+                result.update(tmp)
+                break
+
+        # find the environment data corresponding to the given trouble
+        # code
+        for env_data in self.env_datas:
+            if numerical_dtc in env_data.dtc_values:
+                tmp = env_data.decode_from_pdu(decode_state)
+                if not isinstance(tmp, dict):
+                    odxraise()
+                result.update(tmp)
+                break
+
+        return result

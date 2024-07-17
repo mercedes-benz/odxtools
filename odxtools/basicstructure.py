@@ -10,7 +10,7 @@ from .complexdop import ComplexDop
 from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .exceptions import EncodeError, OdxWarning, odxassert, odxraise, strict_mode
+from .exceptions import EncodeError, OdxWarning, odxassert, odxraise
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterDict, ParameterValue, ParameterValueDict
@@ -78,6 +78,7 @@ class BasicStructure(ComplexDop):
                 param.encode_into_pdu(physical_value=None, encode_state=encode_state)
             else:
                 break
+
         return encode_state.coded_message
 
     @property
@@ -159,8 +160,8 @@ class BasicStructure(ComplexDop):
         orig_is_end_of_pdu = encode_state.is_end_of_pdu
         encode_state.is_end_of_pdu = False
 
-        # in strict mode, ensure that no values for unknown parameters are specified.
-        if strict_mode:
+        # ensure that no values for unknown parameters are specified.
+        if not encode_state.allow_unknown_parameters:
             param_names = {param.short_name for param in self.parameters}
             for param_value_name in physical_value:
                 if param_value_name not in param_names:
@@ -192,8 +193,10 @@ class BasicStructure(ComplexDop):
                 odxraise(f"No value for required parameter {param.short_name} specified",
                          EncodeError)
 
-            param.encode_into_pdu(
-                physical_value=physical_value.get(param.short_name), encode_state=encode_state)
+            param_phys_value = physical_value.get(param.short_name)
+            param.encode_into_pdu(physical_value=param_phys_value, encode_state=encode_state)
+
+            encode_state.journal.append((param, param_phys_value))
 
         encode_state.is_end_of_pdu = False
         if self.byte_size is not None:
@@ -235,6 +238,7 @@ class BasicStructure(ComplexDop):
         for param in self.parameters:
             value = param.decode_from_pdu(decode_state)
 
+            decode_state.journal.append((param, value))
             result[param.short_name] = value
 
         # decoding of the structure finished. go back the original origin.
