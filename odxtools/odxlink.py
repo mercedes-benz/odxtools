@@ -125,6 +125,7 @@ class OdxLinkRef:
 
         id_ref = et.attrib.get("ID-REF")
         if id_ref is None:
+            odxraise(f"Tag {et.tag} is not a ODXLINK reference")
             return None
 
         doc_ref = et.attrib.get("DOCREF")
@@ -158,9 +159,9 @@ T = TypeVar("T")
 
 class OdxLinkDatabase:
     """
-    A database holding all objects which ehibit OdxLinkIds
+    A database holding all objects which exhibit OdxLinkIds
 
-    This can resolve references to such.
+    This can resolve ODXLINK references.
     """
 
     def __init__(self) -> None:
@@ -186,7 +187,7 @@ class OdxLinkDatabase:
             if doc_frag_db is None:
                 # No object featured by the database uses the document
                 # fragment mentioned by the reference. This should not
-                # happen for correct databases...
+                # happen for correct ODX databases...
                 warnings.warn(
                     f"Warning: Unknown document fragment {ref_frag} "
                     f"when resolving reference {ref}",
