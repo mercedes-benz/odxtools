@@ -18,14 +18,7 @@
 {%- if limit_obj.value_raw is none %}
   {#- #}/>
 {%- else %}
-  {#- #}>
-  {%- if hasattr(limit_obj._value, 'hex') -%}
-  {#- bytes or bytarray limit #}
-  {{- limit_obj._value.hex().upper() }}
-  {%- else -%}
-  {{- limit_obj._value }}
-  {%- endif -%}
-</{{tag_name}}>
+  {#- #}>{{- limit_obj.value_raw }}</{{tag_name}}>
 {%- endif -%}
 {%- endif -%}
 {%- endmacro -%}
