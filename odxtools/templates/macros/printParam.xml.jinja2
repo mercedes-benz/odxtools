@@ -45,7 +45,7 @@
  </CODED-VALUES>
 {%- endif %}
 {%- if param.physical_default_value_raw %}
- <PHYSICAL-DEFAULT-VALUE>{{param.physical_default_value_raw}}</PHYSICAL-DEFAULT-VALUE>
+ <PHYSICAL-DEFAULT-VALUE>{{param.physical_default_value_raw | e}}</PHYSICAL-DEFAULT-VALUE>
 {%- endif %}
 {%- if param.dop_ref %}
  <DOP-REF ID-REF="{{param.dop_ref.ref_id}}"/>
