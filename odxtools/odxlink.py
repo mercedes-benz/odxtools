@@ -26,7 +26,11 @@ class OdxDocFragment:
         return self.doc_name == other.doc_name
 
     def __hash__(self) -> int:
-        return hash(self.doc_name) + hash(self.doc_type)
+        return hash(self.doc_name)
+
+    def __equals__(self, other: "OdxDocFragment") -> bool:
+        return self.doc_name == other.doc_name and (self.doc_type is None and other.doc_type is None
+                                                    or self.doc_type == other.doc_type)
 
 
 @dataclass(frozen=True)
