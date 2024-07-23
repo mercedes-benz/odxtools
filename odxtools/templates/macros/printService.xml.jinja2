@@ -4,6 +4,7 @@
 -#}
 
 {%- import('macros/printDiagComm.xml.jinja2') as pdc %}
+{%- import('macros/printComparamRef.xml.jinja2') as pcom %}
 
 {%- macro printService(service) -%}
 <DIAG-SERVICE {{pdc.printDiagCommAttribs(service) | indent(1) }}
@@ -18,8 +19,8 @@
   {{pdc.printDiagCommSubtags(service) | indent(1, first=True) }}
   {%- if service.comparam_refs %}
   <COMPARAM-REFS>
-    {%- for ref in service.comparam_refs %}
-    <COMPARAM-REF ID-REF="{{ref.ref_id}}" />
+    {%- for cpref in service.comparam_refs %}
+    {{ pcom.printComparamRef(cpref)|indent(4) }}
     {%- endfor %}
   </COMPARAM-REFS>
   {%- endif%}
