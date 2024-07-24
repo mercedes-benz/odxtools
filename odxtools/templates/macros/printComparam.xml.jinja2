@@ -44,7 +44,9 @@
          {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}{#- #}
           CPUSAGE="{{cp.cpusage.value}}">
   {{ peid.printElementIdSubtags(cp)|indent(1) }}
+  {%- if cp.physical_default_value is not none %}
   <PHYSICAL-DEFAULT-VALUE>{{cp.physical_default_value | e}}</PHYSICAL-DEFAULT-VALUE>
+  {%- endif %}
  <DATA-OBJECT-PROP-REF ID-REF="{{cp.dop_ref.ref_id}}" />
 </COMPARAM>
 {%- endmacro %}
@@ -61,7 +63,7 @@
  {%- for sub_cp in cp.subparams %}
  {{- printAnyComparam(sub_cp) | indent(1, first=True) }}
  {%- endfor %}
- {%- if  cp.physical_default_value is not none %}
+ {%- if cp.physical_default_value is not none %}
  {{ printComplexValue(cp.physical_default_value, "COMPLEX-PHYSICAL-DEFAULT-VALUE") | indent(1) }}
  {%- endif %}
 </COMPLEX-COMPARAM>
