@@ -9,7 +9,7 @@
 
 {%- macro printMatchingParameter(mp) -%}
 <MATCHING-PARAMETER>
-  <EXPECTED-VALUE>{{mp.expected_value}}</EXPECTED-VALUE>
+  <EXPECTED-VALUE>{{mp.expected_value | e}}</EXPECTED-VALUE>
   <DIAG-COMM-SNREF SHORT-NAME="{{mp.diag_comm_snref}}" />
   {#- TODO: OUT-PARAM-IF-SNPATHREF #}
   <OUT-PARAM-IF-SNREF SHORT-NAME="{{mp.out_param_if}}" />
