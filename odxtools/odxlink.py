@@ -4,33 +4,14 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Type, TypeVar, overload
 from xml.etree import ElementTree
 
-from .exceptions import OdxWarning, odxassert, odxraise
+from .exceptions import OdxWarning, odxassert, odxraise, odxrequire
 from .nameditemlist import OdxNamed, TNamed
 
 
 @dataclass(frozen=True)
 class OdxDocFragment:
     doc_name: str
-    doc_type: Optional[str]
-
-    def __eq__(self, other: Any) -> bool:
-        if other is None:
-            # if the other document fragment is not specified, we
-            # treat it as a wildcard...
-            return True
-
-        if not isinstance(other, OdxDocFragment):
-            return False
-
-        # the ODX spec says that the doctype can be ignored...
-        return self.doc_name == other.doc_name
-
-    def __hash__(self) -> int:
-        return hash(self.doc_name)
-
-    def __equals__(self, other: "OdxDocFragment") -> bool:
-        return self.doc_name == other.doc_name and (self.doc_type is None and other.doc_type is None
-                                                    or self.doc_type == other.doc_type)
+    doc_type: str
 
 
 @dataclass(frozen=True)
@@ -139,7 +120,7 @@ class OdxLinkRef:
         # reference, use it, else use the document fragment containing
         # the reference.
         if doc_ref is not None:
-            doc_frags = [OdxDocFragment(doc_ref, doc_type)]
+            doc_frags = [OdxDocFragment(doc_ref, odxrequire(doc_type))]
         else:
             doc_frags = source_doc_frags
 
