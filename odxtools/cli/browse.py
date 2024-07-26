@@ -112,7 +112,8 @@ def prompt_single_parameter_value(parameter: Parameter) -> Optional[AtomicOdxTyp
 
 def encode_message_interactively(sub_service: Union[Request, Response],
                                  ask_user_confirmation: bool = False) -> None:
-    if not sys.__stdin__.isatty() or not sys.__stdout__.isatty():
+    if sys.__stdin__ is None or sys.__stdout__ is None or not sys.__stdin__.isatty(
+    ) or not sys.__stdout__.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
     param_dict = sub_service.parameter_dict()
 
@@ -260,7 +261,8 @@ def encode_message_from_string_values(
 
 
 def browse(odxdb: Database) -> None:
-    if not sys.__stdin__.isatty() or not sys.__stdout__.isatty():
+    if sys.__stdin__ is None or sys.__stdout__ is None or not sys.__stdin__.isatty(
+    ) or not sys.__stdout__.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
     dl_names = [dl.short_name for dl in odxdb.diag_layers]
     while True:

@@ -32,7 +32,7 @@ class ComparamInstance:
         spec_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
 
         # ODX standard v2.0.0 defined only VALUE. ODX v2.0.1 decided
-        # to break things and change it to choice between SIMPLE-VALUE
+        # to break things and change it to a choice between SIMPLE-VALUE
         # and COMPLEX-VALUE
         value: Union[str, List[Union[str, ComplexValue]]]
         if et_element.find("VALUE") is not None:

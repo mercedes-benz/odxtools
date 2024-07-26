@@ -35,8 +35,6 @@
 {%- endif %}
 {%- if param.coded_value is defined %}
  <CODED-VALUE>{{param.coded_value}}</CODED-VALUE>
-{%- elif param.physical_constant_value_raw is defined %}
- <PHYS-CONSTANT-VALUE>{{param.physical_constant_value_raw}}</PHYS-CONSTANT-VALUE>
 {%- elif param.coded_values is defined %}
  <CODED-VALUES>
  {%- for coded_value in param.coded_values %}
@@ -44,8 +42,11 @@
  {%- endfor %}
  </CODED-VALUES>
 {%- endif %}
-{%- if param.physical_default_value_raw %}
- <PHYSICAL-DEFAULT-VALUE>{{param.physical_default_value_raw}}</PHYSICAL-DEFAULT-VALUE>
+{%- if param.physical_constant_value_raw is defined %}
+ <PHYS-CONSTANT-VALUE>{{param.physical_constant_value_raw}}</PHYS-CONSTANT-VALUE>
+{%- endif %}
+{%- if param.physical_default_value_raw is defined and param.physical_default_value_raw is not none %}
+ <PHYSICAL-DEFAULT-VALUE>{{param.physical_default_value_raw | e}}</PHYSICAL-DEFAULT-VALUE>
 {%- endif %}
 {%- if param.dop_ref %}
  <DOP-REF ID-REF="{{param.dop_ref.ref_id}}"/>
@@ -53,10 +54,8 @@
  <DOP-SNREF SN="{{param.dop_snref}}"/>
 {%- elif param.diag_coded_type is defined %}
  {{pdop.printDiagCodedType(param.diag_coded_type)|indent(2)}}
-{%- elif param.parameter_type != "MATCHING-REQUEST-PARAM" %}
- {%- if param.bit_length is defined and param.bit_length is not none %}
-  <BIT-LENGTH>{{param.bit_length}}</BIT-LENGTH>
- {%- endif %}
+{%- elif param.bit_length is defined and param.bit_length is not none %}
+ <BIT-LENGTH>{{param.bit_length}}</BIT-LENGTH>
 {%- endif %}
 {%- if param.parameter_type == "TABLE-KEY" %}
  {%- if param.table_ref %}

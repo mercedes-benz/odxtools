@@ -65,8 +65,8 @@
 <INPUT-PARAM {{-make_xml_attrib("OID", param.oid)}}
              {{-make_xml_attrib("SEMANTIC", param.semantic)}}>
  {{ peid.printElementIdSubtags(param)|indent(1) }}
-{%- if param.physical_default_value %}
- <PHYSICAL-DEFAULT-VALUE>{{param.physical_default_value}}</PHYSICAL-DEFAULT-VALUE>
+{%- if param.physical_default_value is not none %}
+ <PHYSICAL-DEFAULT-VALUE>{{param.physical_default_value | e}}</PHYSICAL-DEFAULT-VALUE>
 {%- endif %}
  <DOP-BASE-REF ID-REF="{{param.dop_base_ref.ref_id}}" />
 </INPUT-PARAM>

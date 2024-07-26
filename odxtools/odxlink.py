@@ -4,29 +4,14 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, List, Optional, Type, TypeVar, overload
 from xml.etree import ElementTree
 
-from .exceptions import OdxWarning, odxassert, odxraise
+from .exceptions import OdxWarning, odxassert, odxraise, odxrequire
 from .nameditemlist import OdxNamed, TNamed
 
 
 @dataclass(frozen=True)
 class OdxDocFragment:
     doc_name: str
-    doc_type: Optional[str]
-
-    def __eq__(self, other: Any) -> bool:
-        if other is None:
-            # if the other document fragment is not specified, we
-            # treat it as a wildcard...
-            return True
-
-        if not isinstance(other, OdxDocFragment):
-            return False
-
-        # the ODX spec says that the doctype can be ignored...
-        return self.doc_name == other.doc_name
-
-    def __hash__(self) -> int:
-        return hash(self.doc_name) + hash(self.doc_type)
+    doc_type: str
 
 
 @dataclass(frozen=True)
@@ -121,6 +106,7 @@ class OdxLinkRef:
 
         id_ref = et.attrib.get("ID-REF")
         if id_ref is None:
+            odxraise(f"Tag {et.tag} is not a ODXLINK reference")
             return None
 
         doc_ref = et.attrib.get("DOCREF")
@@ -134,7 +120,7 @@ class OdxLinkRef:
         # reference, use it, else use the document fragment containing
         # the reference.
         if doc_ref is not None:
-            doc_frags = [OdxDocFragment(doc_ref, doc_type)]
+            doc_frags = [OdxDocFragment(doc_ref, odxrequire(doc_type))]
         else:
             doc_frags = source_doc_frags
 
@@ -154,9 +140,9 @@ T = TypeVar("T")
 
 class OdxLinkDatabase:
     """
-    A database holding all objects which ehibit OdxLinkIds
+    A database holding all objects which exhibit OdxLinkIds
 
-    This can resolve references to such.
+    This can resolve ODXLINK references.
     """
 
     def __init__(self) -> None:
@@ -182,7 +168,7 @@ class OdxLinkDatabase:
             if doc_frag_db is None:
                 # No object featured by the database uses the document
                 # fragment mentioned by the reference. This should not
-                # happen for correct databases...
+                # happen for correct ODX databases...
                 warnings.warn(
                     f"Warning: Unknown document fragment {ref_frag} "
                     f"when resolving reference {ref}",
