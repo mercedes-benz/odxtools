@@ -224,6 +224,9 @@ class TestIdentifyingService(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         db = Database()
@@ -343,6 +346,9 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
@@ -531,6 +537,9 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
 
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
@@ -680,6 +689,9 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         db = Database()
@@ -888,6 +900,9 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
@@ -1096,6 +1111,9 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
@@ -1430,6 +1448,9 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
@@ -1704,6 +1725,9 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
@@ -1935,6 +1959,9 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
@@ -2115,6 +2142,9 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
@@ -2301,6 +2331,9 @@ class TestDecoding(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()

@@ -1,0 +1,48 @@
+{#- -*- mode: sgml; tab-width: 2; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- macro printDynDefinedSpec(dd_spec) -%}
+<DYN-DEFINED-SPEC>
+{%- if dd_spec.dyn_id_def_mode_infos %}
+<DYN-ID-DEF-MODE-INFOS>
+  {%- for diddmi in dd_spec.dyn_id_def_mode_infos %}
+  <DYN-ID-DEF-MODE-INFO>
+    <DEF-MODE>{{ diddmi.def_mode }}</DEF-MODE>
+    {%- if diddmi.clear_dyn_def_message_ref is not none %}
+    <CLEAR-DYN-DEF-MESSAGE-REF ID-REF="{{diddmi.clear_dyn_def_message_ref.ref_id}}" />
+    {%- endif %}
+    {%- if diddmi.clear_dyn_def_message_snref is not none %}
+    <CLEAR-DYN-DEF-MESSAGE-SNREF SHORT-NAME="{{diddmi.clear_dyn_def_message_snref}}" />
+    {%- endif %}
+    {%- if diddmi.read_dyn_def_message_ref is not none %}
+    <READ-DYN-DEF-MESSAGE-REF ID-REF="{{diddmi.read_dyn_def_message_ref.ref_id}}" />
+    {%- endif %}
+    {%- if diddmi.read_dyn_def_message_snref is not none %}
+    <READ-DYN-DEF-MESSAGE-SNREF SHORT-NAME="{{diddmi.read_dyn_def_message_snref}}" />
+    {%- endif %}
+    {%- if diddmi.supported_dyn_ids %}
+    <SUPPORTED-DYN-IDS>
+      {%- for dynid in diddmi.supported_dyn_ids %}
+      <SUPPORTED-DYN-ID>{{ dynid.hex() }}</SUPPORTED-DYN-ID>
+      {%- endfor %}
+    </SUPPORTED-DYN-IDS>
+    {%- endif %}
+    {%- if diddmi.selection_table_refs %}
+    <SELECTION-TABLE-REFS>
+      {%- for seltref in diddmi.selection_table_refs %}
+        {%- if hasattr(seltref, "ref_id") %}
+	<SELECTION-TABLE-REF ID-REF="{{ seltref.ref_id }}" />
+        {%- else %}
+	<SELECTION-TABLE-SNREF SHORT-NAME="{{ seltref }}" />
+        {%- endif %}
+      {%- endfor %}
+    </SELECTION-TABLE-REFS>
+    {%- endif %}
+  </DYN-ID-DEF-MODE-INFO>
+  {%- endfor %}
+</DYN-ID-DEF-MODE-INFOS>
+{%- endif %}
+</DYN-DEFINED-SPEC>
+{%- endmacro -%}

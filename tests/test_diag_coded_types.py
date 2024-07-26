@@ -294,6 +294,9 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
@@ -617,6 +620,9 @@ class TestParamLengthInfoType(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
@@ -954,6 +960,9 @@ class TestMinMaxLengthType(unittest.TestCase):
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,
+            diag_variables_raw=[],
+            variable_groups=NamedItemList(),
+            dyn_defined_spec=None,
         )
         diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
         odxlinks = OdxLinkDatabase()
