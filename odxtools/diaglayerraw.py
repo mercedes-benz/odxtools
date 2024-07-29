@@ -194,7 +194,8 @@ class DiagLayerRaw(IdentifiableElement):
                 elif dv_proxy_elem.tag == "DIAG-VARIABLE":
                     dv_proxy = DiagVariable.from_et(dv_proxy_elem, doc_frags)
                 else:
-                    odxraise()
+                    odxraise("DIAG-VARIABLES tags may only contain "
+                             "DIAG-VARIABLE and DIAG-VARIABLE-REF subtags")
 
                 diag_variables_raw.append(dv_proxy)
 

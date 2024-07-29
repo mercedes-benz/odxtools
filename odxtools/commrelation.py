@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+import warnings
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional
@@ -7,7 +8,7 @@ from xml.etree import ElementTree
 from .description import Description
 from .diagcomm import DiagComm
 from .diagservice import DiagService
-from .exceptions import odxraise, odxrequire
+from .exceptions import OdxWarning, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .parameters.parameter import Parameter
 from .snrefcontext import SnRefContext
@@ -27,9 +28,9 @@ class CommRelation:
     diag_comm_ref: Optional[OdxLinkRef]
     diag_comm_snref: Optional[str]
     in_param_if_snref: Optional[str]
-    in_param_if_snpathref: Optional[str]
+    #in_param_if_snpathref: Optional[str] # TODO
     out_param_if_snref: Optional[str]
-    out_param_if_snpathref: Optional[str]
+    #out_param_if_snpathref: Optional[str] # TODO
     value_type_raw: Optional[CommRelationValueType]
 
     @property
@@ -65,17 +66,15 @@ class CommRelation:
         if (in_param_if_snref_elem := et_element.find("IN-PARAM-IF-SNREF")) is not None:
             in_param_if_snref = odxrequire(in_param_if_snref_elem.get("SHORT-NAME"))
 
-        in_param_if_snpathref = None
-        if (in_param_if_snpathref_elem := et_element.find("IN-PARAM-IF-SNPATHREF")) is not None:
-            in_param_if_snpathref = odxrequire(in_param_if_snpathref_elem.get("SHORT-NAME-PATH"))
+        if et_element.find("IN-PARAM-IF-SNPATHREF") is not None:
+            warnings.warn("SNPATHREFs are not supported by odxtools yet", OdxWarning, stacklevel=1)
 
         out_param_if_snref = None
         if (out_param_if_snref_elem := et_element.find("OUT-PARAM-IF-SNREF")) is not None:
             out_param_if_snref = odxrequire(out_param_if_snref_elem.get("SHORT-NAME"))
 
-        out_param_if_snpathref = None
-        if (out_param_if_snpathref_elem := et_element.find("OUT-PARAM-IF-SNPATHREF")) is not None:
-            out_param_if_snpathref = odxrequire(out_param_if_snpathref_elem.get("SHORT-NAME-PATH"))
+        if et_element.find("OUT-PARAM-IF-SNPATHREF") is not None:
+            warnings.warn("SNPATHREFs are not supported by odxtools yet", OdxWarning, stacklevel=1)
 
         value_type_raw = None
         if (value_type_str := et_element.get("VALUE-TYPE")) is not None:
@@ -90,9 +89,7 @@ class CommRelation:
             diag_comm_ref=diag_comm_ref,
             diag_comm_snref=diag_comm_snref,
             in_param_if_snref=in_param_if_snref,
-            in_param_if_snpathref=in_param_if_snpathref,
             out_param_if_snref=out_param_if_snref,
-            out_param_if_snpathref=out_param_if_snpathref,
             value_type_raw=value_type_raw)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -117,17 +114,9 @@ class CommRelation:
         if self.in_param_if_snref is not None:
             self._in_param_if = resolve_snref(self.in_param_if_snref,
                                               odxrequire(service.request).parameters, Parameter)
-        elif self.in_param_if_snpathref is not None:
-            odxraise("Resolving SNPATHREFS", NotImplementedError)
-        else:
-            odxraise(f"No IN-PARAM-IF referenced")
 
         self._out_param_if = None
         if self.out_param_if_snref is not None:
             self._out_param_if = resolve_snref(self.out_param_if_snref,
                                                odxrequire(service.positive_responses[0]).parameters,
                                                Parameter)
-        elif self.out_param_if_snpathref is not None:
-            odxraise("Resolving SNPATHREFS", NotImplementedError)
-        else:
-            odxraise(f"No OUT-PARAM-IF referenced")

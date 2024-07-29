@@ -13,7 +13,6 @@ from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .swvariable import SwVariable
-from .tablerow import TableRow
 from .utils import dataclass_fields_asdict
 from .variablegroup import VariableGroup
 
@@ -27,17 +26,13 @@ class DiagVariable(IdentifiableElement):
     variable_group_ref: OdxLinkRef
     sw_variables: List[SwVariable]
     comm_relations: List[CommRelation]
-    #snref_to_tablerow: Optional[SnrefToTableRow]
+    #snref_to_tablerow: Optional[SnrefToTableRow] # TODO
     sdgs: List[SpecialDataGroup]
     is_read_before_write_raw: Optional[bool]
 
     @property
     def variable_group(self) -> VariableGroup:
         return self._variable_group
-
-    @property
-    def table_row(self) -> Optional[TableRow]:
-        raise NotImplementedError
 
     @property
     def is_read_before_write(self) -> bool:
