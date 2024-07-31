@@ -1,0 +1,66 @@
+{#- -*- mode: sgml; tab-width: 2; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+{%- import('macros/printDescription.xml.jinja2') as pd %}
+
+{%- macro printDiagVariable(diag_var) -%}
+<DIAG-VARIABLE>
+  {{ peid.printElementIdSubtags(diag_variable)|indent(2) }}
+  {%- if diag_variable.admin_data is not none %}
+  {{ pad.printAdminData(diag_variable.admin_data)|indent(2) }}
+  {%- endif %}
+  <VARIABLE-GROUP-REF ID-REF="{{ diag_var.ref_id }}" />
+  {%- if diag_variable.sw_variables %}
+  <SW-VARIABLES>
+    {%- for sw_var in diag_variable.sw_variables %}
+    <SW-VARIABLE>
+      {{ peid.printElementIdSubtags(sw_var)|indent(6) }}
+      {%- if sw_var.origin is not none %}
+      <ORIGIN>{{ sw_var.origin }}</ORIGIN>
+      {%- endif %}
+    </SW-VARIABLE>
+    {%- endfor %}
+  </SW-VARIABLES>
+  {%- endif %}
+  {%- if diag_variable.comm_relations %}
+  <COMM-RELATIONS>
+    {%- for comm_relation in diag_variable.comm_relations %}
+    <COMM-RELATION>
+      {{ pd.printDescription(comm_relation.description) }}
+      <RELATION-TYPE>{{comm_relation.relation_type}}</RELATION-TYPE>
+      {%- if comm_relation.diag_comm_ref is not none %}
+      <DIAG-COMM-REF ID-REF="{{comm_relation.diag_comm_ref.ref_id}}" />
+      {%- endif %}
+      {%- if comm_relation.diag_comm_snref is not none %}
+      <DIAG-COMM-SNREF SHORT-NAME="{{comm_relation.diag_comm_snref}}" />
+      {%- endif %}
+      {%- if comm_relation.in_param_if_ref is not none %}
+      <IN-PARAM-IF-REF ID-REF="{{comm_relation.in_param_if_ref.ref_id}}" />
+      {%- endif %}
+      {%- if comm_relation.in_param_if_snref is not none %}
+      <IN-PARAM-IF-SNREF SHORT-NAME="{{comm_relation.in_param_if_snref}}" />
+      {%- endif %}
+      {%- if comm_relation.out_param_if_ref is not none %}
+      <OUT-PARAM-IF-REF ID-REF="{{comm_relation.out_param_if_ref.ref_id}}" />
+      {%- endif %}
+      {%- if comm_relation.out_param_if_snref is not none %}
+      <OUT-PARAM-IF-SNREF SHORT-NAME="{{comm_relation.out_param_if_snref}}" />
+      {%- endif %}
+      {%- if comm_relation.value_type_raw is not none %}
+      <VALUE-TYPE>{{comm_relation.value_type_raw.value}}</VALUE-TYPE>
+      {%- endif %}
+    <COMM-RELATION>
+    {%- endfor %}
+  </COMM-RELATIONS>
+  {%- endif %}
+</DIAG-VARIABLE>
+{%- endmacro -%}
+
+{%- macro printVariableGroup(var_group) -%}
+<VARIABLE-GROUP>
+  {{ peid.printElementIdSubtags(diag_variable)|indent(2) }}
+</VARIABLE-GROUP>
+{%- endmacro -%}

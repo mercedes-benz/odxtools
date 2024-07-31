@@ -219,6 +219,9 @@ def ecu_variant_1(
         ecu_variant_patterns=[ecu_variant_pattern1],
         comparam_spec_ref=None,
         prot_stack_snref=None,
+        diag_variables_raw=[],
+        variable_groups=NamedItemList(),
+        dyn_defined_spec=None,
     )
     result = DiagLayer(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
@@ -258,6 +261,9 @@ def ecu_variant_2(
         ecu_variant_patterns=[ecu_variant_pattern2],
         comparam_spec_ref=None,
         prot_stack_snref=None,
+        diag_variables_raw=[],
+        variable_groups=NamedItemList(),
+        dyn_defined_spec=None,
     )
     result = DiagLayer(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
@@ -298,6 +304,9 @@ def ecu_variant_3(
         ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
         comparam_spec_ref=None,
         prot_stack_snref=None,
+        diag_variables_raw=[],
+        variable_groups=NamedItemList(),
+        dyn_defined_spec=None,
     )
     result = DiagLayer(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
