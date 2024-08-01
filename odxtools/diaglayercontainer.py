@@ -6,7 +6,12 @@ from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .companydata import CompanyData
-from .diaglayer import DiagLayer
+from .diaglayers.basevariant import BaseVariant
+from .diaglayers.diaglayer import DiagLayer
+from .diaglayers.ecushareddata import EcuSharedData
+from .diaglayers.ecuvariant import EcuVariant
+from .diaglayers.functionalgroup import FunctionalGroup
+from .diaglayers.protocol import Protocol
 from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
@@ -22,12 +27,19 @@ if TYPE_CHECKING:
 class DiagLayerContainer(IdentifiableElement):
     admin_data: Optional[AdminData]
     company_datas: NamedItemList[CompanyData]
-    ecu_shared_datas: NamedItemList[DiagLayer]
-    protocols: NamedItemList[DiagLayer]
-    functional_groups: NamedItemList[DiagLayer]
-    base_variants: NamedItemList[DiagLayer]
-    ecu_variants: NamedItemList[DiagLayer]
+    ecu_shared_datas: NamedItemList[EcuSharedData]
+    protocols: NamedItemList[Protocol]
+    functional_groups: NamedItemList[FunctionalGroup]
+    base_variants: NamedItemList[BaseVariant]
+    ecu_variants: NamedItemList[EcuVariant]
     sdgs: List[SpecialDataGroup]
+
+    @property
+    def ecus(self) -> NamedItemList[EcuVariant]:
+        """ECU variants defined in the container
+
+        This property is an alias for `.ecu_variants`"""
+        return self.ecu_variants
 
     def __post_init__(self) -> None:
         self._diag_layers = NamedItemList[DiagLayer](chain(
@@ -54,23 +66,23 @@ class DiagLayerContainer(IdentifiableElement):
             for cde in et_element.iterfind("COMPANY-DATAS/COMPANY-DATA")
         ])
         ecu_shared_datas = NamedItemList([
-            DiagLayer.from_et(dl_element, doc_frags)
+            EcuSharedData.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")
         ])
         protocols = NamedItemList([
-            DiagLayer.from_et(dl_element, doc_frags)
+            Protocol.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("PROTOCOLS/PROTOCOL")
         ])
         functional_groups = NamedItemList([
-            DiagLayer.from_et(dl_element, doc_frags)
+            FunctionalGroup.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("FUNCTIONAL-GROUPS/FUNCTIONAL-GROUP")
         ])
         base_variants = NamedItemList([
-            DiagLayer.from_et(dl_element, doc_frags)
+            BaseVariant.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("BASE-VARIANTS/BASE-VARIANT")
         ])
         ecu_variants = NamedItemList([
-            DiagLayer.from_et(dl_element, doc_frags)
+            EcuVariant.from_et(dl_element, doc_frags)
             for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")
         ])
         sdgs = [

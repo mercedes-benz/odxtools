@@ -1,0 +1,30 @@
+{#- -*- mode: sgml; tab-width: 2; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printHierarchyElement.xml.jinja2') as phe %}
+{%- import('macros/printComparamRef.xml.jinja2') as pcom %}
+{%- import('macros/printParentRef.xml.jinja2') as pparref %}
+
+{%- macro printProtocol(protocol) -%}
+<PROTOCOL {{- phe.printHierarchyElementAttribs(protocol) -}}>
+  {{ phe.printHierarchyElementSubtags(protocol) | indent(2) }}
+  {%- set dlr = protocol.protocol_raw %}
+
+  {%- set cps_docfrag = dlr.comparam_spec_ref.ref_docs[-1] %}
+  <COMPARAM-SPEC-REF ID-REF="{{dlr.comparam_spec_ref.ref_id}}" DOCREF="{{cps_docfrag.doc_name}}" DOCTYPE="{{cps_docfrag.doc_type}}" />
+
+  {%- if dlr.prot_stack_snref is not none %}
+  <PROT-STACK-SNREF SHORT-NAME="{{ dlr.prot_stack_snref }}" />
+  {%- endif %}
+
+  {%- if dlr.parent_refs %}
+  <PARENT-REFS>
+    {%- for parent in dlr.parent_refs -%}
+    {{ pparref.printParentRef(parent)|indent(4) }}
+    {%- endfor %}
+  </PARENT-REFS>
+  {%- endif %}
+</PROTOCOL>
+{%- endmacro %}

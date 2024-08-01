@@ -1,0 +1,206 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printDOP.xml.jinja2') as pdop %}
+{%- import('macros/printTable.xml.jinja2') as pt %}
+{%- import('macros/printFunctionalClass.xml.jinja2') as pfc %}
+{%- import('macros/printStructure.xml.jinja2') as pst %}
+{%- import('macros/printEndOfPdu.xml.jinja2') as peopdu %}
+{%- import('macros/printStaticField.xml.jinja2') as psf %}
+{%- import('macros/printDynamicLengthField.xml.jinja2') as pdlf %}
+{%- import('macros/printDynamicEndmarkerField.xml.jinja2') as pdemf %}
+{%- import('macros/printMux.xml.jinja2') as pm %}
+{%- import('macros/printEnvData.xml.jinja2') as ped %}
+{%- import('macros/printEnvDataDesc.xml.jinja2') as pedd %}
+{%- import('macros/printUnitSpec.xml.jinja2') as punit %}
+{%- import('macros/printService.xml.jinja2') as ps %}
+{%- import('macros/printSingleEcuJob.xml.jinja2') as psej %}
+{%- import('macros/printRequest.xml.jinja2') as prq %}
+{%- import('macros/printResponse.xml.jinja2') as presp %}
+{%- import('macros/printStateChart.xml.jinja2') as psc %}
+{%- import('macros/printAudience.xml.jinja2') as paud %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printEcuVariantPattern.xml.jinja2') as pvpat %}
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+
+{%- macro printDiagLayerAttribs(dl) -%}
+{#- #} ID="{{dl.diag_layer_raw.odx_id.local_id}}"{# -#}
+{%- endmacro -%}
+
+{%- macro printDiagLayerSubtags(dl) -%}
+{%- set dlr = dl.diag_layer_raw %}
+{{ peid.printElementIdSubtags(dlr)|indent(1) }}
+{%- if dlr.admin_data is not none %}
+{{ pad.printAdminData(dlr.admin_data) }}
+{%- endif %}
+{%- if dlr.company_datas %}
+<COMPANY-DATAS>
+{%- for cd in dlr.company_datas %}
+{{ pcd.printCompanyData(cd) }}
+{%- endfor %}
+</COMPANY-DATAS>
+{%- endif %}
+{%- if dlr.functional_classes %}
+<FUNCT-CLASSS>
+  {%- for fc in dlr.functional_classes %}
+  {{ pfc.printFunctionalClass(fc)|indent(3) }}
+  {%- endfor%}
+</FUNCT-CLASSS>
+{%- endif %}
+{%- if dlr.diag_data_dictionary_spec is not none %}
+{%- set ddds = dlr.diag_data_dictionary_spec  %}
+<DIAG-DATA-DICTIONARY-SPEC>
+  {%- if ddds.dtc_dops  %}
+  <DTC-DOPS>
+    {%- for dop in ddds.dtc_dops -%}
+    {{ pdop.printDtcDop(dop)|indent(3) }}
+    {%- endfor %}
+  </DTC-DOPS>
+  {%- endif %}
+  {%- if ddds.env_data_descs  %}
+  <ENV-DATA-DESCS>
+    {%- for env_data_desc in ddds.env_data_descs -%}
+    {{ pedd.printEnvDataDesc(env_data_desc)|indent(3) }}
+    {%- endfor %}
+  </ENV-DATA-DESCS>
+  {%- endif %}
+  {%- if ddds.data_object_props %}
+  <DATA-OBJECT-PROPS>
+    {%- for dop in ddds.data_object_props %}
+    {{- pdop.printDataObjectProp(dop)|indent(3) }}
+    {%- endfor %}
+  </DATA-OBJECT-PROPS>
+  {%- endif %}
+  {%- if ddds.structures %}
+  <STRUCTURES>
+    {%- for st in ddds.structures %}
+    {{ pst.printStructure(st)|indent(3) }}
+    {%- endfor %}
+  </STRUCTURES>
+  {%- endif %}
+  {%- if ddds.static_fields %}
+  <STATIC-FIELDS>
+    {%- for sf in ddds.static_fields %}
+    {{ psf.printStaticField(sf)|indent(3) }}
+    {%- endfor %}
+  </STATIC-FIELDS>
+  {%- endif %}
+  {%- if ddds.dynamic_length_fields %}
+  <DYNAMIC-LENGTH-FIELDS>
+    {%- for dlf in ddds.dynamic_length_fields %}
+    {{ pdlf.printDynamicLengthField(dlf)|indent(3) }}
+    {%- endfor %}
+  </DYNAMIC-LENGTH-FIELDS>
+  {%- endif %}
+  {%- if ddds.dynamic_endmarker_fields %}
+  <DYNAMIC-ENDMARKER-FIELDS>
+    {%- for demf in ddds.dynamic_endmarker_fields %}
+    {{ pdemf.printDynamicEndmarkerField(demf)|indent(3) }}
+    {%- endfor %}
+  </DYNAMIC-ENDMARKER-FIELDS>
+  {%- endif %}
+  {%- if ddds.end_of_pdu_fields %}
+  <END-OF-PDU-FIELDS>
+    {%- for eopdu in ddds.end_of_pdu_fields %}
+    {{ peopdu.printEndOfPdu(eopdu)|indent(3) }}
+    {%- endfor %}
+  </END-OF-PDU-FIELDS>
+  {%- endif %}
+  {%- if ddds.muxs %}
+  <MUXS>
+    {%- for mux in ddds.muxs %}
+    {{ pm.printMux(mux)|indent(3) }}
+    {%- endfor %}
+  </MUXS>
+  {%- endif %}
+  {%- if ddds.env_datas %}
+  <ENV-DATAS>
+    {%- for env_data in ddds.env_datas %}
+    {{ ped.printEnvData(env_data)|indent(3) }}
+    {%- endfor %}
+  </ENV-DATAS>
+  {%- endif %}
+  {%- if ddds.unit_spec %}
+  {{ punit.printUnitSpec(ddds.unit_spec)|indent(2) }}
+  {%- endif %}
+  {%- if ddds.tables  %}
+  <TABLES>
+    {%- for table in ddds.tables -%}
+    {{ pt.printTable(table)|indent(3) }}
+    {%- endfor %}
+  </TABLES>
+  {{- psd.printSpecialDataGroups(ddds.sdgs)|indent(2, first=True) }}
+  {%- endif %}
+</DIAG-DATA-DICTIONARY-SPEC>
+{%- endif %}
+{%- if dlr.diag_comms_raw %}
+<DIAG-COMMS>
+  {%- for dc in dlr.diag_comms_raw %}
+
+  {#- use some serious duck typing to determine the kind of diag-comm
+  #- object. this would not be necessary if something like
+  #- isinstance() was available in jinja...
+  #}
+
+  {%- if hasattr(dc, "ref_id") %}
+  {#- -> reference to a diag-comm object #}
+  <DIAG-COMM-REF ID-REF="{{dc.ref_id}}" />
+  {%- elif hasattr(dc, "request") %}
+  {#- -> service #}
+  {{ ps.printService(dc)|indent(2) }}
+  {%- elif hasattr(dc, "prog_codes") %}
+  {#- -> single-ECU job #}
+  {{ psej.printSingleEcuJob(dc)|indent(2) }}
+  {%- else %}
+  <!-- Error: database contains an unrecognized DIAG-COMM. -->
+  {%- endif %}
+  {%- endfor %}
+</DIAG-COMMS>
+{%- endif %}
+{%- if dlr.requests %}
+<REQUESTS>
+  {%- for req in dlr.requests %}
+  {{ prq.printRequest(req)|indent(2) }}
+  {%- endfor %}
+</REQUESTS>
+{%- endif %}
+{%- if dlr.positive_responses %}
+<POS-RESPONSES>
+  {%- for resp in dlr.positive_responses %}
+  {{ presp.printResponse(resp, "POS-RESPONSE")|indent(2) }}
+  {%- endfor %}
+</POS-RESPONSES>
+{%- endif %}
+{%- if dlr.negative_responses %}
+<NEG-RESPONSES>
+  {%- for resp in dlr.negative_responses %}
+  {{ presp.printResponse(resp, "NEG-RESPONSE")|indent(2) }}
+  {%- endfor %}
+</NEG-RESPONSES>
+{%- endif %}
+{%- if dlr.global_negative_responses %}
+<GLOBAL-NEG-RESPONSES>
+  {%- for resp in dlr.global_negative_responses %}
+  {{ presp.printResponse(resp, "GLOBAL-NEG-RESPONSE")|indent(2) }}
+  {%- endfor %}
+</GLOBAL-NEG-RESPONSES>
+{%- endif %}
+{%- if dlr.state_charts %}
+<STATE-CHARTS>
+  {%- for sc in dlr.state_charts %}
+  {{ psc.printStateChart(sc) }}
+  {%- endfor %}
+</STATE-CHARTS>
+{%- endif %}
+{%- if dlr.additional_audiences %}
+<ADDITIONAL-AUDIENCES>
+  {%- for audience in dlr.additional_audiences %}
+  {{ paud.printAdditionalAudience(audience)|indent(2) }}
+  {%- endfor %}
+</ADDITIONAL-AUDIENCES>
+{%- endif %}
+{{- psd.printSpecialDataGroups(dlr.sdgs)|indent(0, first=True) }}
+{%- endmacro -%}

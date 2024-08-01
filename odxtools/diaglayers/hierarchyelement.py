@@ -1,149 +1,94 @@
 # SPDX-License-Identifier: MIT
 import re
 import warnings
-from copy import copy, deepcopy
+from copy import deepcopy
 from dataclasses import dataclass
 from functools import cached_property
-from itertools import chain
 from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar,
                     Union, cast)
 from xml.etree import ElementTree
 
 from deprecation import deprecated
 
-from .additionalaudience import AdditionalAudience
-from .admindata import AdminData
-from .companydata import CompanyData
-from .comparaminstance import ComparamInstance
-from .comparamspec import ComparamSpec
-from .comparamsubset import ComparamSubset
-from .description import Description
-from .diagcomm import DiagComm
-from .diagdatadictionaryspec import DiagDataDictionarySpec
-from .diaglayerraw import DiagLayerRaw
-from .diaglayertype import DiagLayerType
-from .diagservice import DiagService
-from .ecuvariantpattern import EcuVariantPattern
-from .exceptions import DecodeError, OdxWarning, odxassert, odxraise
-from .functionalclass import FunctionalClass
-from .message import Message
-from .nameditemlist import NamedItemList, OdxNamed
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .parentref import ParentRef
-from .protstack import ProtStack
-from .request import Request
-from .response import Response
-from .servicebinner import ServiceBinner
-from .singleecujob import SingleEcuJob
-from .snrefcontext import SnRefContext
-from .specialdatagroup import SpecialDataGroup
-from .statechart import StateChart
-from .table import Table
-from .unitgroup import UnitGroup
-from .unitspec import UnitSpec
+from ..additionalaudience import AdditionalAudience
+from ..admindata import AdminData
+from ..comparaminstance import ComparamInstance
+from ..diagcomm import DiagComm
+from ..diagdatadictionaryspec import DiagDataDictionarySpec
+from ..diagservice import DiagService
+from ..exceptions import OdxWarning, odxassert, odxraise
+from ..functionalclass import FunctionalClass
+from ..nameditemlist import NamedItemList, OdxNamed
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..parentref import ParentRef
+from ..response import Response
+from ..singleecujob import SingleEcuJob
+from ..snrefcontext import SnRefContext
+from ..specialdatagroup import SpecialDataGroup
+from ..statechart import StateChart
+from ..unitgroup import UnitGroup
+from ..unitspec import UnitSpec
+from .diaglayer import DiagLayer
+from .hierarchyelementraw import HierarchyElementRaw
 
 if TYPE_CHECKING:
     from .database import Database
+    from .protocol import Protocol
 
 TNamed = TypeVar("TNamed", bound=OdxNamed)
 
-PrefixTree = Dict[int, Union[List[DiagService], "PrefixTree"]]
-
 
 @dataclass
-class DiagLayer:
-    """This class represents a "logical view" upon a diagnostic layer
-    according to the ODX standard.
-
-    i.e. it handles the value inheritance, communication parameters,
-    encoding/decoding of data, etc.
+class HierarchyElement(DiagLayer):
+    """This is the base class for diagnostic layers that may be involved in value inheritance
     """
 
-    diag_layer_raw: DiagLayerRaw
+    @property
+    def hierarchy_element_raw(self) -> HierarchyElementRaw:
+        return cast(HierarchyElementRaw, self.diag_layer_raw)
+
+    @staticmethod
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "HierarchyElement":
+        hierarchy_element_raw = HierarchyElementRaw.from_et(et_element, doc_frags)
+
+        return HierarchyElement(diag_layer_raw=hierarchy_element_raw)
 
     def __post_init__(self) -> None:
         self._global_negative_responses: NamedItemList[Response]
 
-    @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayer":
-        diag_layer_raw = DiagLayerRaw.from_et(et_element, doc_frags)
-
-        # Create DiagLayer
-        return DiagLayer(diag_layer_raw=diag_layer_raw)
+        odxassert(
+            isinstance(self.diag_layer_raw, HierarchyElementRaw),
+            "The raw diagnostic layer passed to HierarchyElement "
+            "must be a HierarchyElementRaw")
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
-        result = self.diag_layer_raw._build_odxlinks()
-
-        # we want to get the full diag layer, not just the raw layer
-        # when referencing...
-        result[self.odx_id] = self
+        result = super()._build_odxlinks()
 
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        """Recursively resolve all references."""
+        super()._resolve_odxlinks(odxlinks)
 
-        # deal with the import references: these basically extend the
-        # pool of objects that are referenceable without having to
-        # explicitly specify the DOCREF attribute in the
-        # reference. This mechanism can thus be seen as a kind of
-        # "poor man's inheritance".
-        if self.import_refs:
-            imported_links: Dict[OdxLinkId, Any] = {}
-            for import_ref in self.import_refs:
-                imported_dl = odxlinks.resolve(import_ref, DiagLayer)
-
-                odxassert(
-                    imported_dl.variant_type == DiagLayerType.ECU_SHARED_DATA,
-                    f"Tried to import references from diagnostic layer "
-                    f"'{imported_dl.short_name}' of type {imported_dl.variant_type.value}. "
-                    f"Only ECU-SHARED-DATA layers may be referenced using the "
-                    f"IMPORT-REF mechanism")
-
-                # TODO: ensure that the imported diagnostic layer has
-                # not been referenced in any PARENT-REF of the current
-                # layer or any of its parents.
-
-                # TODO: detect and complain about cyclic IMPORT-REFs
-
-                # TODO (?): detect conflicts with locally-defined
-                # objects
-
-                imported_dl_links = imported_dl._build_odxlinks()
-                for link_id, obj in imported_dl_links.items():
-                    # the imported objects shall behave as if they
-                    # were defined by the importing layer. IOW, they
-                    # must be visible in the same document fragments.
-                    link_id = OdxLinkId(link_id.local_id, self.odx_id.doc_fragments)
-                    imported_links[link_id] = obj
-
-            # We need to copy the odxlink database here since this
-            # function must not modify its argument because the
-            # imported references only apply within this specific
-            # diagnostic layer
-            extended_odxlinks = copy(odxlinks)
-            extended_odxlinks.update(imported_links)
-
-            self.diag_layer_raw._resolve_odxlinks(extended_odxlinks)
-            return
-
-        self.diag_layer_raw._resolve_odxlinks(odxlinks)
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        super()._resolve_snrefs(context)
 
     def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
-        """Create a deep copy of the diagnostic layer
+        """Create a deep copy of the hierarchy element
 
         Note that the copied diagnostic layer is not fully
         initialized, so `_finalize_init()` should to be called on it
         before it can be used normally.
         """
-        cls = self.__class__
-        result = cls.__new__(cls)
-        memo[id(self)] = result
 
-        result.diag_layer_raw = deepcopy(self.diag_layer_raw, memo)
+        new_he = super().__deepcopy__(memo)
 
-        return result
+        # note that the self.hierarchy_element_raw object is *not*
+        # copied at this place because the attribute points to the
+        # same object as self.diag_layer_raw.
+        new_he.hierarchy_element_raw = deepcopy(self.hierarchy_element_raw)
+
+        return new_he
 
     def _finalize_init(self, database: "Database", odxlinks: OdxLinkDatabase) -> None:
         """This method deals with everything inheritance related and
@@ -165,27 +110,7 @@ class DiagLayer:
         # fill in all applicable objects that use value inheritance
         #####
 
-        # diagnostic communication objects with the ODXLINKs resolved
-        diag_comms = self._compute_available_diag_comms(odxlinks)
-        self._diag_comms = NamedItemList(diag_comms)
-
-        # filter the diag comms for services and single-ECU jobs
-        diag_services = [dc for dc in diag_comms if isinstance(dc, DiagService)]
-        single_ecu_jobs = [dc for dc in diag_comms if isinstance(dc, SingleEcuJob)]
-        self._diag_services = NamedItemList(diag_services)
-        self._single_ecu_jobs = NamedItemList(single_ecu_jobs)
-
-        global_negative_responses = self._compute_available_global_neg_responses(odxlinks)
-        self._global_negative_responses = NamedItemList(global_negative_responses)
-
-        functional_classes = self._compute_available_functional_classes()
-        self._functional_classes = NamedItemList(functional_classes)
-
-        additional_audiences = self._compute_available_additional_audiences()
-        self._additional_audiences = NamedItemList(additional_audiences)
-
-        state_charts = self._compute_available_state_charts()
-        self._state_charts = NamedItemList(state_charts)
+        self._compute_value_inheritance(odxlinks)
 
         ############
         # create a new unit_spec object. This is necessary because
@@ -234,6 +159,10 @@ class DiagLayer:
             lambda ddd_spec: ddd_spec.dtc_dops,
             lambda parent_ref: parent_ref.not_inherited_dops,
         )
+        static_fields = self._compute_available_ddd_spec_items(
+            lambda ddd_spec: ddd_spec.static_fields,
+            lambda parent_ref: parent_ref.not_inherited_dops,
+        )
         end_of_pdu_fields = self._compute_available_ddd_spec_items(
             lambda ddd_spec: ddd_spec.end_of_pdu_fields,
             lambda parent_ref: parent_ref.not_inherited_dops,
@@ -256,21 +185,22 @@ class DiagLayer:
             lambda ddd_spec: ddd_spec.muxs, lambda parent_ref: parent_ref.not_inherited_dops)
         tables = self._compute_available_ddd_spec_items(
             lambda ddd_spec: ddd_spec.tables, lambda parent_ref: parent_ref.not_inherited_tables)
-        ddds_sdgs: List[SpecialDataGroup]
+
+        ddds_admin_data: Optional[AdminData] = None
+        ddds_sdgs: List[SpecialDataGroup] = []
         if self.diag_layer_raw.diag_data_dictionary_spec:
+            ddds_admin_data = self.diag_layer_raw.diag_data_dictionary_spec.admin_data
             ddds_sdgs = self.diag_layer_raw.diag_data_dictionary_spec.sdgs
-        else:
-            ddds_sdgs = []
 
         # create a DiagDataDictionarySpec which includes all the
         # inherited objects. To me, this seems rather inelegant, but
         # hey, it's described like this in the standard.
         self._diag_data_dictionary_spec = DiagDataDictionarySpec(
-            admin_data=None,
+            admin_data=ddds_admin_data,
             data_object_props=dops,
             dtc_dops=dtc_dops,
             structures=structures,
-            static_fields=NamedItemList(),
+            static_fields=static_fields,
             end_of_pdu_fields=end_of_pdu_fields,
             dynamic_endmarker_fields=dynamic_endmarker_fields,
             dynamic_length_fields=dynamic_length_fields,
@@ -299,175 +229,38 @@ class DiagLayer:
         #####
         context = SnRefContext(database=database)
         context.diag_layer = self
-        self.diag_layer_raw._resolve_snrefs(context)
+        self._resolve_snrefs(context)
         context.diag_layer = None
-
-    #####
-    # <convenience functionality>
-    #####
-    @cached_property
-    def service_groups(self) -> ServiceBinner:
-        return ServiceBinner(self.services)
-
-    #####
-    # </convenience functionality>
-    #####
-
-    #####
-    # <properties forwarded to the "raw" diag layer>
-    #####
-    @property
-    def variant_type(self) -> DiagLayerType:
-        return self.diag_layer_raw.variant_type
-
-    @property
-    def odx_id(self) -> OdxLinkId:
-        return self.diag_layer_raw.odx_id
-
-    @property
-    def short_name(self) -> str:
-        return self.diag_layer_raw.short_name
-
-    @property
-    def long_name(self) -> Optional[str]:
-        return self.diag_layer_raw.long_name
-
-    @property
-    def description(self) -> Optional[Description]:
-        return self.diag_layer_raw.description
-
-    @property
-    def admin_data(self) -> Optional[AdminData]:
-        return self.diag_layer_raw.admin_data
-
-    @property
-    def company_datas(self) -> NamedItemList[CompanyData]:
-        return self.diag_layer_raw.company_datas
-
-    @property
-    def requests(self) -> NamedItemList[Request]:
-        return self.diag_layer_raw.requests
-
-    @property
-    def positive_responses(self) -> NamedItemList[Response]:
-        return self.diag_layer_raw.positive_responses
-
-    @property
-    def negative_responses(self) -> NamedItemList[Response]:
-        return self.diag_layer_raw.negative_responses
-
-    @property
-    def import_refs(self) -> List[OdxLinkRef]:
-        return self.diag_layer_raw.import_refs
-
-    @property
-    def sdgs(self) -> List[SpecialDataGroup]:
-        return self.diag_layer_raw.sdgs
-
-    @property
-    def parent_refs(self) -> List[ParentRef]:
-        return self.diag_layer_raw.parent_refs
-
-    @property
-    def ecu_variant_patterns(self) -> List[EcuVariantPattern]:
-        return self.diag_layer_raw.ecu_variant_patterns
-
-    @property
-    def comparam_spec_ref(self) -> Optional[OdxLinkRef]:
-        return self.diag_layer_raw.comparam_spec_ref
-
-    @property
-    def prot_stack_snref(self) -> Optional[str]:
-        return self.diag_layer_raw.prot_stack_snref
-
-    @property
-    def comparam_spec(self) -> Optional[Union[ComparamSpec, ComparamSubset]]:
-        return self.diag_layer_raw.comparam_spec
-
-    @property
-    def prot_stack(self) -> Optional[ProtStack]:
-        return self.diag_layer_raw.prot_stack
-
-    #####
-    # </properties forwarded to the "raw" diag layer>
-    #####
-
-    #######
-    # <stuff subject to value inheritance>
-    #######
-    @property
-    def diag_comms(self) -> NamedItemList[DiagComm]:
-        """All diagnostic communication primitives applicable to this DiagLayer
-
-        Diagnostic communication primitives are diagnostic services as
-        well as single-ECU jobs. This list has all references
-        resolved.
-        """
-        return self._diag_comms
-
-    @property
-    def services(self) -> NamedItemList[DiagService]:
-        """This property is an alias for `.diag_services`"""
-        return self._diag_services
-
-    @property
-    def diag_services(self) -> NamedItemList[DiagService]:
-        """All diagnostic services applicable to this DiagLayer
-
-        This is a subset of all diagnostic communication
-        primitives. All references are resolved in the list returned.
-        """
-        return self._diag_services
-
-    @property
-    def single_ecu_jobs(self) -> NamedItemList[SingleEcuJob]:
-        """All single-ECU jobs applicable to this DiagLayer
-
-        This is a subset of all diagnostic communication
-        primitives. All references are resolved in the list returned.
-        """
-        return self._single_ecu_jobs
-
-    @property
-    def global_negative_responses(self) -> NamedItemList[Response]:
-        """All global negative responses applicable to this DiagLayer"""
-        return self._global_negative_responses
-
-    @property
-    @deprecated(details="use diag_data_dictionary_spec.tables")  # type: ignore[misc]
-    def tables(self) -> NamedItemList[Table]:
-        return self.diag_data_dictionary_spec.tables
-
-    @property
-    def functional_classes(self) -> NamedItemList[FunctionalClass]:
-        """All functional classes applicable to this DiagLayer"""
-        return self._functional_classes
-
-    @property
-    def state_charts(self) -> NamedItemList[StateChart]:
-        """All state charts applicable to this DiagLayer"""
-        return self._state_charts
-
-    @property
-    def additional_audiences(self) -> NamedItemList[AdditionalAudience]:
-        """All audiences applicable to this DiagLayer"""
-        return self._additional_audiences
-
-    @property
-    def diag_data_dictionary_spec(self) -> DiagDataDictionarySpec:
-        """The DiagDataDictionarySpec applicable to this DiagLayer"""
-        return self._diag_data_dictionary_spec
-
-    #######
-    # </stuff subject to value inheritance>
-    #######
 
     #####
     # <value inheritance mechanism helpers>
     #####
+    def _compute_value_inheritance(self, odxlinks: OdxLinkDatabase) -> None:
+        # diagnostic communication objects with the ODXLINKs resolved
+        diag_comms = self._compute_available_diag_comms(odxlinks)
+        self._diag_comms = NamedItemList[DiagComm](diag_comms)
+
+        # filter the diag comms for services and single-ECU jobs
+        diag_services = [dc for dc in diag_comms if isinstance(dc, DiagService)]
+        single_ecu_jobs = [dc for dc in diag_comms if isinstance(dc, SingleEcuJob)]
+        self._diag_services = NamedItemList(diag_services)
+        self._single_ecu_jobs = NamedItemList(single_ecu_jobs)
+
+        global_negative_responses = self._compute_available_global_neg_responses(odxlinks)
+        self._global_negative_responses = NamedItemList(global_negative_responses)
+
+        functional_classes = self._compute_available_functional_classes()
+        self._functional_classes = NamedItemList(functional_classes)
+
+        additional_audiences = self._compute_available_additional_audiences()
+        self._additional_audiences = NamedItemList(additional_audiences)
+
+        state_charts = self._compute_available_state_charts()
+        self._state_charts = NamedItemList(state_charts)
+
     def _get_parent_refs_sorted_by_priority(self, reverse: bool = False) -> Iterable[ParentRef]:
         return sorted(
-            self.diag_layer_raw.parent_refs,
+            getattr(self.diag_layer_raw, "parent_refs", []),
             key=lambda pr: pr.layer.variant_type.inheritance_priority,
             reverse=reverse)
 
@@ -561,41 +354,6 @@ class DiagLayer:
 
         return [x[0] for x in result_dict.values()]
 
-    def _get_local_diag_comms(self, odxlinks: OdxLinkDatabase) -> Iterable[DiagComm]:
-        """Return the list of locally defined diagnostic communications.
-
-        This is not completely trivial as it requires to resolving the
-        references specified in the <DIAG-COMMS> XML tag.
-        """
-        result_dict: Dict[str, DiagComm] = {}
-
-        # TODO (?): add objects from the import-refs
-
-        for dc_proxy in self.diag_layer_raw.diag_comms:
-            if isinstance(dc_proxy, OdxLinkRef):
-                dc = odxlinks.resolve(dc_proxy)
-            else:
-                dc = dc_proxy
-
-            odxassert(isinstance(dc, DiagComm))
-            odxassert(
-                dc.short_name not in result_dict,
-                f"Multiple definitions of DIAG-COMM '{dc.short_name}' in "
-                f"layer '{self.short_name}'")
-            result_dict[dc.short_name] = dc
-
-        return result_dict.values()
-
-    def _get_local_unit_groups(self) -> Iterable[UnitGroup]:
-        if self.diag_layer_raw.diag_data_dictionary_spec is None:
-            return []
-
-        unit_spec = self.diag_layer_raw.diag_data_dictionary_spec.unit_spec
-        if unit_spec is None:
-            return []
-
-        return unit_spec.unit_groups
-
     def _compute_available_diag_comms(self, odxlinks: OdxLinkDatabase) -> Iterable[DiagComm]:
 
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[DiagComm]:
@@ -675,6 +433,70 @@ class DiagLayer:
     # </value inheritance mechanism helpers>
     #####
 
+    #######
+    # <properties subject to value inheritance>
+    #######
+    @property
+    def diag_data_dictionary_spec(self) -> Optional[DiagDataDictionarySpec]:
+        return self._diag_data_dictionary_spec
+
+    @property
+    def diag_comms(self) -> NamedItemList[DiagComm]:
+        """All diagnostic communication primitives applicable to this DiagLayer
+
+        Diagnostic communication primitives are diagnostic services as
+        well as single-ECU jobs. This list has all references
+        resolved.
+        """
+        return self._diag_comms
+
+    @property
+    def services(self) -> NamedItemList[DiagService]:
+        """This property is an alias for `.diag_services`"""
+        return self._diag_services
+
+    @property
+    def diag_services(self) -> NamedItemList[DiagService]:
+        """All diagnostic services applicable to this DiagLayer
+
+        This is a subset of all diagnostic communication
+        primitives. All references are resolved in the list returned.
+        """
+        return self._diag_services
+
+    @property
+    def single_ecu_jobs(self) -> NamedItemList[SingleEcuJob]:
+        """All single-ECU jobs applicable to this DiagLayer
+
+        This is a subset of all diagnostic communication
+        primitives. All references are resolved in the list returned.
+        """
+        return self._single_ecu_jobs
+
+    @property
+    def global_negative_responses(self) -> NamedItemList[Response]:
+        """All global negative responses applicable to this DiagLayer"""
+        return self._global_negative_responses
+
+    @property
+    def functional_classes(self) -> NamedItemList[FunctionalClass]:
+        """All functional classes applicable to this DiagLayer"""
+        return self._functional_classes
+
+    @property
+    def state_charts(self) -> NamedItemList[StateChart]:
+        """All state charts applicable to this DiagLayer"""
+        return self._state_charts
+
+    @property
+    def additional_audiences(self) -> NamedItemList[AdditionalAudience]:
+        """All audiences applicable to this DiagLayer"""
+        return self._additional_audiences
+
+    #######
+    # </properties subject to value inheritance>
+    #######
+
     #####
     # <communication parameter handling>
     #####
@@ -708,11 +530,14 @@ class DiagLayer:
         # parameters. First fetch the communication parameters from
         # low priority parents, then update with increasing priority.
         for parent_ref in self._get_parent_refs_sorted_by_priority():
-            for cp in parent_ref.layer._compute_available_commmunication_parameters():
+            parent_layer = parent_ref.layer
+            if not isinstance(parent_layer, HierarchyElement):
+                continue
+            for cp in parent_layer._compute_available_commmunication_parameters():
                 com_params_dict[(cp.spec_ref.ref_id, cp.protocol_snref)] = cp
 
         # finally, handle the locally defined communication parameters
-        for cp in self.diag_layer_raw.comparam_refs:
+        for cp in getattr(self.hierarchy_element_raw, "comparam_refs", []):
             com_params_dict[(cp.spec_ref.ref_id, cp.protocol_snref)] = cp
 
         return list(com_params_dict.values())
@@ -728,19 +553,22 @@ class DiagLayer:
         return self._comparam_refs
 
     @cached_property
-    def protocols(self) -> NamedItemList["DiagLayer"]:
+    def protocols(self) -> NamedItemList["Protocol"]:
         """Return the set of all protocols which are applicable to the diagnostic layer
 
-        Note that protocols are *not* explicitly inherited objects,
-        but the parent diagnostic layers of variant type "PROTOCOL".
-        """
-        result_dict: Dict[str, DiagLayer] = {}
+        Note that protocols are *not* explicitly defined by the XML,
+        but they are the parent layers of variant type "PROTOCOL".
 
-        for parent_ref in self._get_parent_refs_sorted_by_priority():
-            for prot in parent_ref.layer.protocols:
+        """
+        from .protocol import Protocol
+
+        result_dict: Dict[str, Protocol] = {}
+
+        for parent_ref in getattr(self, "parent_refs", []):
+            for prot in getattr(parent_ref.layer, "protocols", []):
                 result_dict[prot.short_name] = prot
 
-        if self.diag_layer_raw.variant_type == DiagLayerType.PROTOCOL:
+        if isinstance(self, Protocol):
             result_dict[self.diag_layer_raw.short_name] = self
 
         return NamedItemList(result_dict.values())
@@ -749,14 +577,16 @@ class DiagLayer:
         self,
         cp_short_name: str,
         *,
-        protocol: Optional[Union[str, "DiagLayer"]] = None,
+        protocol: Optional[Union[str, "Protocol"]] = None,
     ) -> Optional[ComparamInstance]:
         """Find a specific communication parameter according to some criteria.
 
         Setting a given parameter to `None` means "don't care"."""
 
+        from .protocol import Protocol
+
         protocol_name: Optional[str]
-        if isinstance(protocol, DiagLayer):
+        if isinstance(protocol, Protocol):
             protocol_name = protocol.short_name
         else:
             protocol_name = protocol
@@ -780,7 +610,7 @@ class DiagLayer:
 
     def get_max_can_payload_size(self,
                                  protocol: Optional[Union[str,
-                                                          "DiagLayer"]] = None) -> Optional[int]:
+                                                          "Protocol"]] = None) -> Optional[int]:
         """Return the maximum size of a CAN frame payload that can be
         transmitted in bytes.
 
@@ -810,13 +640,13 @@ class DiagLayer:
         # unexpected format of parameter value
         return 8
 
-    def uses_can(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> bool:
+    def uses_can(self, protocol: Optional[Union[str, "Protocol"]] = None) -> bool:
         """
         Check if CAN ought to be used as the link layer protocol.
         """
         return self.get_can_receive_id(protocol=protocol) is not None
 
-    def uses_can_fd(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> bool:
+    def uses_can_fd(self, protocol: Optional[Union[str, "Protocol"]] = None) -> bool:
         """Check if CAN-FD ought to be used.
 
         If the ECU is not using CAN-FD for the specified protocol, `False`
@@ -835,7 +665,7 @@ class DiagLayer:
 
         return "CANFD" in com_param.value
 
-    def get_can_baudrate(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> Optional[int]:
+    def get_can_baudrate(self, protocol: Optional[Union[str, "Protocol"]] = None) -> Optional[int]:
         """Baudrate of the CAN bus which is used by the ECU [bits/s]
 
         If the ECU is not using CAN for the specified protocol, None
@@ -853,7 +683,7 @@ class DiagLayer:
         return int(val)
 
     def get_can_fd_baudrate(self,
-                            protocol: Optional[Union[str, "DiagLayer"]] = None) -> Optional[int]:
+                            protocol: Optional[Union[str, "Protocol"]] = None) -> Optional[int]:
         """Data baudrate of the CAN bus which is used by the ECU [bits/s]
 
         If the ECU is not using CAN-FD for the specified protocol,
@@ -873,7 +703,7 @@ class DiagLayer:
         return int(val)
 
     def get_can_receive_id(self,
-                           protocol: Optional[Union[str, "DiagLayer"]] = None) -> Optional[int]:
+                           protocol: Optional[Union[str, "Protocol"]] = None) -> Optional[int]:
         """CAN ID to which the ECU listens for diagnostic messages"""
         com_param = self.get_comparam("CP_UniqueRespIdTable", protocol=protocol)
         if com_param is None:
@@ -896,7 +726,7 @@ class DiagLayer:
     def get_receive_id(self) -> Optional[int]:
         return self.get_can_receive_id()
 
-    def get_can_send_id(self, protocol: Optional[Union[str, "DiagLayer"]] = None) -> Optional[int]:
+    def get_can_send_id(self, protocol: Optional[Union[str, "Protocol"]] = None) -> Optional[int]:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
 
         # this hopefully resolves to the 'CP_UniqueRespIdTable'
@@ -926,7 +756,7 @@ class DiagLayer:
         return self.get_can_send_id()
 
     def get_can_func_req_id(self,
-                            protocol: Optional[Union[str, "DiagLayer"]] = None) -> Optional[int]:
+                            protocol: Optional[Union[str, "Protocol"]] = None) -> Optional[int]:
         """CAN Functional Request Id."""
         com_param = self.get_comparam("CP_CanFuncReqId", protocol=protocol)
         if com_param is None:
@@ -940,8 +770,8 @@ class DiagLayer:
         return int(result)
 
     def get_doip_logical_ecu_address(self,
-                                     protocol: Optional[Union[str, "DiagLayer"]] = None
-                                    ) -> Optional[int]:
+                                     protocol: Optional[Union[str,
+                                                              "Protocol"]] = None) -> Optional[int]:
         """Return the address of the ECU when using functional addressing.
 
         The parameter protocol is used to distinguish between
@@ -972,7 +802,7 @@ class DiagLayer:
         return int(ecu_addr)
 
     def get_doip_logical_gateway_address(self,
-                                         protocol: Optional[Union[str, "DiagLayer"]] = None
+                                         protocol: Optional[Union[str, "Protocol"]] = None
                                         ) -> Optional[int]:
         """The logical gateway address for the diagnosis over IP transport protocol"""
 
@@ -990,7 +820,7 @@ class DiagLayer:
         return int(result)
 
     def get_doip_logical_tester_address(self,
-                                        protocol: Optional[Union[str, "DiagLayer"]] = None
+                                        protocol: Optional[Union[str, "Protocol"]] = None
                                        ) -> Optional[int]:
         """DoIp logical gateway address"""
 
@@ -1008,7 +838,7 @@ class DiagLayer:
         return int(result)
 
     def get_doip_logical_functional_address(self,
-                                            protocol: Optional[Union[str, "DiagLayer"]] = None
+                                            protocol: Optional[Union[str, "Protocol"]] = None
                                            ) -> Optional[int]:
         """The logical functional DoIP address of the ECU."""
 
@@ -1029,7 +859,7 @@ class DiagLayer:
         return int(result)
 
     def get_doip_routing_activation_timeout(self,
-                                            protocol: Optional[Union[str, "DiagLayer"]] = None
+                                            protocol: Optional[Union[str, "Protocol"]] = None
                                            ) -> Optional[float]:
         """The timout for the DoIP routing activation request in seconds"""
 
@@ -1047,7 +877,7 @@ class DiagLayer:
         return float(result) / 1e6
 
     def get_doip_routing_activation_type(self,
-                                         protocol: Optional[Union[str, "DiagLayer"]] = None
+                                         protocol: Optional[Union[str, "Protocol"]] = None
                                         ) -> Optional[int]:
         """The DoIP routing activation type
 
@@ -1074,7 +904,7 @@ class DiagLayer:
 
     def get_tester_present_time(self,
                                 protocol: Optional[Union[str,
-                                                         "DiagLayer"]] = None) -> Optional[float]:
+                                                         "Protocol"]] = None) -> Optional[float]:
         """Timeout on inactivity in seconds.
 
         This is defined by the communication parameter "CP_TesterPresentTime".
@@ -1100,151 +930,4 @@ class DiagLayer:
 
     #####
     # </communication parameter handling>
-    #####
-
-    #####
-    # <PDU decoding>
-    #####
-
-    @cached_property
-    def _prefix_tree(self) -> PrefixTree:
-        """Constructs the coded prefix tree of the services.
-
-        Each leaf node is a list of `DiagService`s.  (This is because
-        navigating from a service to the request/ responses is easier
-        than finding the service for a given request/response object.)
-
-        Example:
-        Let there be four services with corresponding requests:
-        * Request 1 has the coded constant prefix `12 34`.
-        * Request 2 has the coded constant prefix `12 34`.
-        * Request 3 has the coded constant prefix `12 56`.
-        * Request 4 has the coded constant prefix `12 56 00`.
-
-        Then, the constructed prefix tree is the dict
-        ```
-        {0x12: {0x34: {-1: [<Service 1>, <Service 2>]},
-                0x56: {-1: [<Service 3>],
-                       0x0: {-1: [<Service 4>]}
-                       }}}
-        ```
-        Note, that the inner `-1` are constant to distinguish them
-        from possible service IDs.
-
-        Also note, that it is actually allowed that
-        (a) SIDs for different services are the same like for service 1 and 2 (thus each leaf node is a list) and
-        (b) one SID is the prefix of another SID like for service 3 and 4 (thus the constant `-1` key).
-
-        """
-        prefix_tree: PrefixTree = {}
-        for s in self.services:
-            # Compute prefixes for the service's request and all
-            # possible responses. We need to consider the global
-            # negative responses here, because they might contain
-            # MATCHING-REQUEST parameters. If these global responses
-            # do not contain such parameters, this will potentially
-            # result in an enormous amount of decoded messages for
-            # global negative responses. (I.e., one for each
-            # service. This can be avoided by specifying the
-            # corresponding request for `decode_response()`.)
-            request_prefix = b''
-            if s.request is not None:
-                request_prefix = s.request.coded_const_prefix()
-            prefixes = [request_prefix]
-            prefixes += [
-                x.coded_const_prefix(request_prefix=request_prefix) for x in chain(
-                    s.positive_responses, s.negative_responses, self.global_negative_responses)
-            ]
-            for coded_prefix in prefixes:
-                self._extend_prefix_tree(prefix_tree, coded_prefix, s)
-
-        return prefix_tree
-
-    @staticmethod
-    def _extend_prefix_tree(prefix_tree: PrefixTree, coded_prefix: bytes,
-                            service: DiagService) -> None:
-
-        # make sure that tree has an entry for the given prefix
-        sub_tree = prefix_tree
-        for b in coded_prefix:
-            if b not in sub_tree:
-                sub_tree[b] = {}
-            sub_tree = cast(PrefixTree, sub_tree[b])
-
-        # Store the object as in the prefix tree. This is done by
-        # assigning the list of possible objects to the key -1 of the
-        # dictionary (this is quite hacky...)
-        if sub_tree.get(-1) is None:
-            sub_tree[-1] = [service]
-        else:
-            cast(List[DiagService], sub_tree[-1]).append(service)
-
-    def _find_services_for_uds(self, message: bytes) -> List[DiagService]:
-        prefix_tree = self._prefix_tree
-
-        # Find matching service(s) in prefix tree
-        possible_services: List[DiagService] = []
-        for b in message:
-            if b in prefix_tree:
-                odxassert(isinstance(prefix_tree[b], dict))
-                prefix_tree = cast(PrefixTree, prefix_tree[b])
-            else:
-                break
-            if -1 in prefix_tree:
-                possible_services += cast(List[DiagService], prefix_tree[-1])
-        return possible_services
-
-    def _decode(self, message: bytes, candidate_services: Iterable[DiagService]) -> List[Message]:
-        decoded_messages: List[Message] = []
-
-        for service in candidate_services:
-            try:
-                decoded_messages.append(service.decode_message(message))
-            except DecodeError as e:
-                # check if the message can be decoded as a global
-                # negative response for the service
-                gnr_found = False
-                for gnr in self.global_negative_responses:
-                    try:
-                        decoded_gnr = gnr.decode(message)
-                        gnr_found = True
-                        if not isinstance(decoded_gnr, dict):
-                            odxraise(
-                                f"Expected the decoded value of a global "
-                                f"negative response to be a dictionary, "
-                                f"got {type(decoded_gnr)} for {self.short_name}", DecodeError)
-
-                        decoded_messages.append(
-                            Message(
-                                coded_message=message,
-                                service=service,
-                                coding_object=gnr,
-                                param_dict=decoded_gnr))
-                    except DecodeError:
-                        pass
-
-                if not gnr_found:
-                    raise e
-
-        if len(decoded_messages) == 0:
-            raise DecodeError(
-                f"None of the services {[x.short_name for x in candidate_services]} could parse {message.hex()}."
-            )
-
-        return decoded_messages
-
-    def decode(self, message: bytes) -> List[Message]:
-        candidate_services = self._find_services_for_uds(message)
-
-        return self._decode(message, candidate_services)
-
-    def decode_response(self, response: bytes, request: bytes) -> List[Message]:
-        candidate_services = self._find_services_for_uds(request)
-        if candidate_services is None:
-            raise DecodeError(f"Couldn't find corresponding service for request {request.hex()}.")
-
-        return self._decode(response, candidate_services)
-
-    #####
-    # </PDU decoding>
     #####

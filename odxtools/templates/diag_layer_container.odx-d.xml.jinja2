@@ -2,10 +2,15 @@
  #
  # SPDX-License-Identifier: MIT
 -#}
-{%- import('macros/printVariant.xml.jinja2') as pv -%}
 {%- import('macros/printAdminData.xml.jinja2') as pad -%}
 {%- import('macros/printCompanyData.xml.jinja2') as pcd -%}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printEcuSharedData.xml.jinja2') as pecusd -%}
+{%- import('macros/printProtocol.xml.jinja2') as pprot %}
+{%- import('macros/printFunctionalGroup.xml.jinja2') as pfuncgroup %}
+{%- import('macros/printEcuSharedData.xml.jinja2') as pecusd %}
+{%- import('macros/printBaseVariant.xml.jinja2') as pbv %}
+{%- import('macros/printEcuVariant.xml.jinja2') as pecuv %}
 {#- -#}
 
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
@@ -35,35 +40,35 @@
 {%- if dlc.protocols %}
   <PROTOCOLS>
  {%- for dl in dlc.protocols %}
-   {{pv.printVariant(dl)|indent(3)}}
+   {{pprot.printProtocol(dl)|indent(3)}}
  {%- endfor %}
   </PROTOCOLS>
 {%- endif %}
 {%- if dlc.functional_groups %}
   <FUNCTIONAL-GROUPS>
  {%- for dl in dlc.functional_groups %}
-  {{pv.printVariant(dl)|indent(3)}}
+  {{pfuncgroup.printFunctionalGroup(dl)|indent(3)}}
  {%- endfor %}
   </FUNCTIONAL-GROUPS>
 {%- endif %}
 {%- if dlc.ecu_shared_datas %}
   <ECU-SHARED-DATAS>
  {%- for dl in dlc.ecu_shared_datas %}
-  {{pv.printVariant(dl)|indent(3)}}
+  {{pecusd.printEcuSharedData(dl)|indent(3)}}
  {%- endfor %}
   </ECU-SHARED-DATAS>
 {%- endif %}
 {%- if dlc.base_variants %}
   <BASE-VARIANTS>
  {%- for dl in dlc.base_variants %}
-  {{pv.printVariant(dl)|indent(3)}}
+  {{pbv.printBaseVariant(dl)|indent(3)}}
  {%- endfor %}
   </BASE-VARIANTS>
 {%- endif %}
 {%- if  dlc.ecu_variants %}
   <ECU-VARIANTS>
  {%- for dl in dlc.ecu_variants %}
-  {{pv.printVariant(dl)|indent(3)}}
+  {{pecuv.printEcuVariant(dl)|indent(3)}}
  {%- endfor %}
   </ECU-VARIANTS>
 {%- endif %}

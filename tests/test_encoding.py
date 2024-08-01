@@ -12,9 +12,9 @@ from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.description import Description
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayerraw import DiagLayerRaw
-from odxtools.diaglayertype import DiagLayerType
+from odxtools.diaglayers.diaglayertype import DiagLayerType
+from odxtools.diaglayers.ecuvariant import EcuVariant
+from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
 from odxtools.diagnostictroublecode import DiagnosticTroubleCode
 from odxtools.diagservice import DiagService
 from odxtools.dtcdop import DtcDop
@@ -335,8 +335,8 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
         )
 
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -371,19 +371,17 @@ class TestEncodeRequest(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
 
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         db = Database()
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        odxlinks.update(ecu_variant._build_odxlinks())
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         with self.assertRaises(EncodeError):
             resp.encode()  # "No value for required parameter param3 specified"

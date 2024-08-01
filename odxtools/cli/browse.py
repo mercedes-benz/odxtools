@@ -12,6 +12,7 @@ from ..dataobjectproperty import DataObjectProperty
 from ..diaglayer import DiagLayer
 from ..diagservice import DiagService
 from ..exceptions import odxraise, odxrequire
+from ..hierarchyelement import HierarchyElement
 from ..odxtypes import AtomicOdxType, DataType, ParameterValueDict
 from ..parameters.matchingrequestparameter import MatchingRequestParameter
 from ..parameters.parameter import Parameter
@@ -283,19 +284,20 @@ def browse(odxdb: Database) -> None:
         print(f"{type(answer.get('variant'))=}")
         assert isinstance(variant, DiagLayer)
 
-        if (rx_id := variant.get_receive_id()) is not None:
-            recv_id = hex(rx_id)
-        else:
-            recv_id = "None"
+        if isinstance(variant, HierarchyElement):
+            if (rx_id := variant.get_receive_id()) is not None:
+                recv_id = hex(rx_id)
+            else:
+                recv_id = "None"
 
-        if (tx_id := variant.get_send_id()) is not None:
-            send_id = hex(tx_id)
-        else:
-            send_id = "None"
+            if (tx_id := variant.get_send_id()) is not None:
+                send_id = hex(tx_id)
+            else:
+                send_id = "None"
 
-        print(
-            f"{variant.variant_type.value} '{variant.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
-        )
+            print(
+                f"{variant.variant_type.value} '{variant.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
+            )
 
         while True:
             services: List[DiagService] = [

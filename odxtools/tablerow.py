@@ -126,7 +126,7 @@ class TableRow(IdentifiableElement):
         else:
             self._key = key_dop.physical_type.base_data_type.from_string(self.key_raw)
 
-        ddd_spec = odxrequire(context.diag_layer).diag_data_dictionary_spec
+        ddd_spec = odxrequire(odxrequire(context.diag_layer).diag_data_dictionary_spec)
 
         if self.structure_snref is not None:
             self._structure = resolve_snref(self.structure_snref, ddd_spec.structures,

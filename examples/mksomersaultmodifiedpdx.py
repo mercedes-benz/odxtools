@@ -12,7 +12,8 @@ import odxtools
 import odxtools.uds as uds
 from examples import somersaultecu
 from odxtools.description import Description
-from odxtools.diaglayer import DiagLayer
+from odxtools.diaglayers.diaglayer import DiagLayer
+from odxtools.diaglayers.ecuvariant import EcuVariant
 from odxtools.diagservice import DiagService
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxLinkId, OdxLinkRef
@@ -75,7 +76,7 @@ param.bit_position = 4
 # add a new "somersault_young" variant which can do flic-flacs and
 # does not take any instructions
 somersault_lazy = dlc.ecu_variants.somersault_lazy
-somersault_young_dlr = deepcopy(somersault_lazy.diag_layer_raw)
+somersault_young_dlr = deepcopy(somersault_lazy.ecu_variant_raw)
 somersault_young_dlr.short_name = "somersault_young"
 somersault_young_dlr.odx_id = OdxLinkId("ECU.somersault_young",
                                         somersault_young_dlr.odx_id.doc_fragments)
@@ -204,7 +205,7 @@ ss_young_diag_comms_raw.append(flic_flac_service)
 # change the list of the ECU's diag comms
 somersault_young_dlr.diag_comms_raw = ss_young_diag_comms_raw
 
-dlc.ecu_variants.append(DiagLayer(diag_layer_raw=somersault_young_dlr))
+dlc.ecu_variants.append(EcuVariant(diag_layer_raw=somersault_young_dlr))
 
 # make the database consistent. Note: For just writing to disk this is
 # not necessary (but it is useful if the database is going to be used

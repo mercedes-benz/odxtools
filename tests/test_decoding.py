@@ -11,9 +11,9 @@ from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.determinenumberofitems import DetermineNumberOfItems
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayerraw import DiagLayerRaw
-from odxtools.diaglayertype import DiagLayerType
+from odxtools.diaglayers.diaglayertype import DiagLayerType
+from odxtools.diaglayers.ecuvariant import EcuVariant
+from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
 from odxtools.diagnostictroublecode import DiagnosticTroubleCode
 from odxtools.diagservice import DiagService
 from odxtools.dtcdop import DtcDop
@@ -200,8 +200,8 @@ class TestIdentifyingService(unittest.TestCase):
             sdgs=[],
         )
 
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -222,19 +222,17 @@ class TestIdentifyingService(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         self.assertEqual(
-            diag_layer._prefix_tree,
+            ecu_variant._prefix_tree,
             {0x7D: {
                 0xAB: {
                     -1: [service]
@@ -322,8 +320,8 @@ class TestDecoding(unittest.TestCase):
             neg_response_refs=[],
             sdgs=[],
         )
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -344,18 +342,16 @@ class TestDecoding(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
+        odxlinks.update(ecu_variant._build_odxlinks())
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         coded_message = bytes([0x7D, 0xAB])
         expected_message = Message(
@@ -367,7 +363,7 @@ class TestDecoding(unittest.TestCase):
                 "coded_const_parameter_2": 0xAB
             },
         )
-        decoded_message = diag_layer.decode(coded_message)[0]
+        decoded_message = ecu_variant.decode(coded_message)[0]
 
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
@@ -499,8 +495,8 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
         )
 
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -535,19 +531,16 @@ class TestDecoding(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         db = Database()
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        odxlinks.update(ecu_variant._build_odxlinks())
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         decoded = resp.decode(bytes.fromhex("12ab"))
         self.assertEqual(decoded, {'param1': 0x12, 'param2': 0xab, 'param3': 0xab})
@@ -558,7 +551,7 @@ class TestDecoding(unittest.TestCase):
         with self.assertRaises(DecodeMismatch):
             decoded = resp.decode(bytes.fromhex("12bc"))
 
-        decoded_list = diag_layer.decode_response(bytes.fromhex("12ab"), bytes.fromhex("B0"))
+        decoded_list = ecu_variant.decode_response(bytes.fromhex("12ab"), bytes.fromhex("B0"))
         self.assertEqual(len(decoded_list), 1)
         self.assertEqual(decoded_list[0].param_dict, {
             'param1': 0x12,
@@ -567,7 +560,7 @@ class TestDecoding(unittest.TestCase):
         })
 
         with self.assertRaises(DecodeError):
-            decoded_list = diag_layer.decode_response(bytes.fromhex("12bc"), bytes.fromhex("B0"))
+            decoded_list = ecu_variant.decode_response(bytes.fromhex("12bc"), bytes.fromhex("B0"))
 
     def test_decode_request_coded_const_undefined_byte_position(self) -> None:
         """Test decoding of parameter
@@ -665,8 +658,8 @@ class TestDecoding(unittest.TestCase):
             neg_response_refs=[],
             sdgs=[],
         )
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -687,18 +680,16 @@ class TestDecoding(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
-        self.assertDictEqual(diag_layer._prefix_tree,
+        self.assertDictEqual(ecu_variant._prefix_tree,
                              {0x12: {
                                  0x34: {
                                      0x56: {
@@ -721,7 +712,7 @@ class TestDecoding(unittest.TestCase):
                 "coded_const_parameter_4": 0x56,
             },
         )
-        decoded_message = diag_layer.decode(coded_message)[0]
+        decoded_message = ecu_variant.decode(coded_message)[0]
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
@@ -862,8 +853,8 @@ class TestDecoding(unittest.TestCase):
             neg_response_refs=[],
             sdgs=[],
         )
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -898,18 +889,16 @@ class TestDecoding(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
+        odxlinks.update(ecu_variant._build_odxlinks())
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         coded_message = bytes([0x12, 0x34])
         expected_message = Message(
@@ -924,7 +913,7 @@ class TestDecoding(unittest.TestCase):
                 },
             },
         )
-        decoded_message = diag_layer.decode(coded_message)[0]
+        decoded_message = ecu_variant.decode(coded_message)[0]
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
@@ -1073,8 +1062,8 @@ class TestDecoding(unittest.TestCase):
             neg_response_refs=[],
             sdgs=[],
         )
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl.id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -1109,18 +1098,16 @@ class TestDecoding(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
+        odxlinks.update(ecu_variant._build_odxlinks())
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         expected_message = Message(
             coded_message=bytes([0x12, 0x34, 0x56, 0x00, 0x78, 0x9a, 0x00]),
@@ -1143,11 +1130,12 @@ class TestDecoding(unittest.TestCase):
         )
 
         # test encoding
-        encoded_message = diag_layer.services.static_field_service_sn(**expected_message.param_dict)
+        encoded_message = ecu_variant.services.static_field_service_sn(
+            **expected_message.param_dict)
         self.assertEqual(encoded_message, expected_message.coded_message)
 
         # test decoding
-        decoded_message = diag_layer.decode(expected_message.coded_message)[0]
+        decoded_message = ecu_variant.decode(expected_message.coded_message)[0]
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
@@ -1410,8 +1398,8 @@ class TestDecoding(unittest.TestCase):
             neg_response_refs=[],
             sdgs=[],
         )
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl.id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -1446,18 +1434,16 @@ class TestDecoding(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
+        odxlinks.update(ecu_variant._build_odxlinks())
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         ######
         ## test with endmarker termination
@@ -1487,11 +1473,11 @@ class TestDecoding(unittest.TestCase):
         )
 
         # test encoding
-        encoded_message = diag_layer.services.demf_service_sn(**expected_message.param_dict)
+        encoded_message = ecu_variant.services.demf_service_sn(**expected_message.param_dict)
         self.assertEqual(encoded_message, expected_message.coded_message)
 
         # test decoding
-        decoded_message = diag_layer.decode(expected_message.coded_message)[0]
+        decoded_message = ecu_variant.decode(expected_message.coded_message)[0]
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
@@ -1524,12 +1510,12 @@ class TestDecoding(unittest.TestCase):
         )
 
         # test encoding
-        encoded_message = diag_layer.services.demf_service_eopdu_sn(
+        encoded_message = ecu_variant.services.demf_service_eopdu_sn(
             **expected_message_eopdu.param_dict)
         self.assertEqual(encoded_message, expected_message_eopdu.coded_message)
 
         # test decoding
-        decoded_message = diag_layer.decode(expected_message_eopdu.coded_message)[0]
+        decoded_message = ecu_variant.decode(expected_message_eopdu.coded_message)[0]
         self.assertEqual(expected_message_eopdu.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message_eopdu.service, decoded_message.service)
         self.assertEqual(expected_message_eopdu.coding_object, decoded_message.coding_object)
@@ -1687,8 +1673,8 @@ class TestDecoding(unittest.TestCase):
             neg_response_refs=[],
             sdgs=[],
         )
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl.id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -1723,18 +1709,16 @@ class TestDecoding(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
+        odxlinks.update(ecu_variant._build_odxlinks())
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         expected_message = Message(
             coded_message=bytes([0x12, 0x00, 0x18, 0x00, 0x34, 0x44, 0x54]),
@@ -1761,11 +1745,11 @@ class TestDecoding(unittest.TestCase):
         )
 
         # test encoding
-        encoded_message = diag_layer.services.dlf_service_sn(**expected_message.param_dict)
+        encoded_message = ecu_variant.services.dlf_service_sn(**expected_message.param_dict)
         self.assertEqual(encoded_message, expected_message.coded_message)
 
         # test decoding
-        decoded_message = diag_layer.decode(expected_message.coded_message)[0]
+        decoded_message = ecu_variant.decode(expected_message.coded_message)[0]
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
@@ -1921,8 +1905,8 @@ class TestDecoding(unittest.TestCase):
             neg_response_refs=[],
             sdgs=[],
         )
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -1957,18 +1941,16 @@ class TestDecoding(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
+        odxlinks.update(ecu_variant._build_odxlinks())
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         coded_message = bytes([0x12, 0x34, 0x54])
         expected_message = Message(
@@ -1990,7 +1972,7 @@ class TestDecoding(unittest.TestCase):
                 ],
             },
         )
-        decoded_message = diag_layer.decode(coded_message)[0]
+        decoded_message = ecu_variant.decode(coded_message)[0]
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
@@ -2104,8 +2086,8 @@ class TestDecoding(unittest.TestCase):
             neg_response_refs=[],
             sdgs=[],
         )
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -2140,18 +2122,16 @@ class TestDecoding(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
+        odxlinks.update(ecu_variant._build_odxlinks())
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         coded_message = bytes([0x7D, 0x12])
         # The physical value of the second parameter is decode(0x12) = decode(18) = 5 * 18 + 1 = 91
@@ -2164,7 +2144,7 @@ class TestDecoding(unittest.TestCase):
                 "value_parameter_2": 91
             },
         )
-        decoded_message = diag_layer.decode(coded_message)[0]
+        decoded_message = ecu_variant.decode(coded_message)[0]
         self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
         self.assertEqual(expected_message.service, decoded_message.service)
         self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
@@ -2307,8 +2287,8 @@ class TestDecoding(unittest.TestCase):
             neg_response_refs=[OdxLinkRef.from_id(neg_response.odx_id)],
             sdgs=[],
         )
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -2329,18 +2309,16 @@ class TestDecoding(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
+        odxlinks.update(ecu_variant._build_odxlinks())
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         for sid, message in [(0x34, pos_response), (0x56, neg_response)]:
             coded_message = bytes([sid, 0xAB])
@@ -2353,7 +2331,7 @@ class TestDecoding(unittest.TestCase):
                     "matching_req_param": 0xAB
                 },
             )
-            decoded_message = diag_layer.decode(coded_message)[0]
+            decoded_message = ecu_variant.decode(coded_message)[0]
             self.assertEqual(expected_message.coded_message, decoded_message.coded_message)
             self.assertEqual(expected_message.service, decoded_message.service)
             self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
