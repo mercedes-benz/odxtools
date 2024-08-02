@@ -1877,7 +1877,7 @@ somersault_comparams = [
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_11898_2_DWCAN.CP_Baudrate", cp_dwcan_doc_frags),
         value="500000",
-        protocol_snref="MyProtocol",
+        protocol_snref="somersault_protocol",
         prot_stack_snref=None,
         description=None,
     ),
@@ -1906,7 +1906,7 @@ somersault_comparams = [
             # CP_ECULayerShortName
             "Somersault",
         ],
-        protocol_snref="MyProtocol",
+        protocol_snref="somersault_protocol",
         prot_stack_snref=None,
         description=None,
     ),
@@ -1914,7 +1914,7 @@ somersault_comparams = [
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_RC21CompletionTimeout", cp_iso15765_3_doc_frags),
         value="1000000",
-        protocol_snref="MyProtocol",
+        protocol_snref="somersault_protocol",
         prot_stack_snref=None,
         description=None,
     ),
@@ -1925,7 +1925,7 @@ somersault_comparams = [
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentMessage", cp_iso15765_3_doc_frags),
         value=f"{tester_present_value.hex()}",
-        protocol_snref="MyProtocol",
+        protocol_snref="somersault_protocol",
         prot_stack_snref=None,
         description=None,
     ),
@@ -1933,7 +1933,7 @@ somersault_comparams = [
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentReqRsp", cp_iso15765_3_doc_frags),
         value="Response expected",
-        protocol_snref="MyProtocol",
+        protocol_snref="somersault_protocol",
         prot_stack_snref=None,
         description=None,
     ),
@@ -1941,7 +1941,7 @@ somersault_comparams = [
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentExpPosResp", cp_iso15765_3_doc_frags),
         value=f"{tester_pr_value.hex()}",
-        protocol_snref="MyProtocol",
+        protocol_snref="somersault_protocol",
         prot_stack_snref=None,
         description=None,
     ),
@@ -1949,7 +1949,7 @@ somersault_comparams = [
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentExpNegResp", cp_iso15765_3_doc_frags),
         value=f"{tester_nr_value.hex()}",
-        protocol_snref="MyProtocol",
+        protocol_snref="somersault_protocol",
         prot_stack_snref=None,
         description=None,
     ),
@@ -1957,7 +1957,7 @@ somersault_comparams = [
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentSendType", cp_iso15765_3_doc_frags),
         value="On idle",
-        protocol_snref="MyProtocol",
+        protocol_snref="somersault_protocol",
         prot_stack_snref=None,
         description=None,
     ),
@@ -1966,7 +1966,7 @@ somersault_comparams = [
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentAddrMode", cp_iso15765_3_doc_frags),
         value="Physical",
-        protocol_snref="MyProtocol",
+        protocol_snref="somersault_protocol",
         prot_stack_snref=None,
         description=None,
     ),
@@ -1974,7 +1974,7 @@ somersault_comparams = [
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentReqRsp", cp_iso15765_3_doc_frags),
         value="Response expected",
-        protocol_snref="MyProtocol",
+        protocol_snref="somersault_protocol",
         prot_stack_snref=None,
         description=None,
     ),
@@ -1985,7 +1985,7 @@ somersault_comparams = [
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_2.CP_BlockSize", cp_iso15765_2_doc_frags),
         value="4",
-        protocol_snref="MyProtocol",
+        protocol_snref="somersault_protocol",
         prot_stack_snref=None,
         description=None,
     ),
@@ -2013,8 +2013,40 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
     sdgs=[],
 )
 
-# diagnostics layer
-somersault_diaglayer_raw = DiagLayerRaw(
+# diagnostics layer for the protocol
+somersault_protocol_raw = DiagLayerRaw(
+    variant_type=DiagLayerType.PROTOCOL,
+    odx_id=OdxLinkId("somersault.protocol", doc_frags),
+    short_name="somersault_protocol",
+    long_name="Somersault protocol info",
+    description=Description.from_string(
+        "<p>Protocol information of the somersault ECUs &amp; cetera</p>"),
+    admin_data=None,
+    company_datas=NamedItemList(),
+    functional_classes=NamedItemList(),
+    diag_data_dictionary_spec=None,
+    diag_comms=[],
+    requests=NamedItemList(),
+    positive_responses=NamedItemList(),
+    negative_responses=NamedItemList(),
+    global_negative_responses=NamedItemList(),
+    import_refs=[],
+    state_charts=NamedItemList(),
+    additional_audiences=NamedItemList(),
+    sdgs=[],
+    parent_refs=[],
+    comparam_spec_ref=OdxLinkRef("CPS_ISO_15765_3_on_ISO_15765_2",
+                                 [OdxDocFragment("ISO_15765_3_on_ISO_15765_2", "COMPARAM-SPEC")]),
+    comparams=somersault_comparams,
+    prot_stack_snref=None,
+    ecu_variant_patterns=[],
+    diag_variables_raw=[],
+    variable_groups=NamedItemList(),
+    dyn_defined_spec=None)
+somersault_protocol = DiagLayer(diag_layer_raw=somersault_protocol_raw)
+
+# diagnostics layer for the base variant
+somersault_base_variant_raw = DiagLayerRaw(
     variant_type=DiagLayerType.BASE_VARIANT,
     odx_id=OdxLinkId("somersault", doc_frags),
     short_name="somersault",
@@ -2033,16 +2065,24 @@ somersault_diaglayer_raw = DiagLayerRaw(
     state_charts=NamedItemList(),
     additional_audiences=NamedItemList(somersault_additional_audiences.values()),
     sdgs=[],
-    parent_refs=[],
-    comparams=somersault_comparams,
+    parent_refs=[
+        ParentRef(
+            layer_ref=OdxLinkRef.from_id(somersault_protocol.odx_id),
+            not_inherited_diag_comms=[],
+            not_inherited_dops=[],
+            not_inherited_variables=[],
+            not_inherited_tables=[],
+            not_inherited_global_neg_responses=[],
+        )
+    ],
+    comparams=[],
     ecu_variant_patterns=[],
     comparam_spec_ref=None,
     prot_stack_snref=None,
     diag_variables_raw=[],
     variable_groups=NamedItemList(),
-    dyn_defined_spec=None,
-)
-somersault_diaglayer = DiagLayer(diag_layer_raw=somersault_diaglayer_raw)
+    dyn_defined_spec=None)
+somersault_base_variant = DiagLayer(diag_layer_raw=somersault_base_variant_raw)
 
 ##################
 # Lazy variant of Somersault ECU: this one is lazy and cuts corners
@@ -2070,7 +2110,7 @@ somersault_lazy_diaglayer_raw = DiagLayerRaw(
     sdgs=[],
     parent_refs=[
         ParentRef(
-            layer_ref=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
+            layer_ref=OdxLinkRef.from_id(somersault_base_variant.odx_id),
             # this variant does not do backflips
             not_inherited_diag_comms=[
                 somersault_requests["backward_flips"].short_name,
@@ -2300,7 +2340,7 @@ somersault_assiduous_diaglayer_raw = DiagLayerRaw(
     sdgs=[],
     parent_refs=[
         ParentRef(
-            layer_ref=OdxLinkRef.from_id(somersault_diaglayer.odx_id),
+            layer_ref=OdxLinkRef.from_id(somersault_base_variant.odx_id),
             # this variant does everything which the base variant does
             not_inherited_diag_comms=[],
             not_inherited_dops=[],
@@ -2335,10 +2375,10 @@ somersault_dlc = DiagLayerContainer(
         somersault_company_datas["suncus"],
         somersault_company_datas["acme"],
     ]),
-    base_variants=NamedItemList([somersault_diaglayer]),
+    base_variants=NamedItemList([somersault_base_variant]),
     ecu_variants=NamedItemList([somersault_lazy_diaglayer, somersault_assiduous_diaglayer]),
     ecu_shared_datas=NamedItemList(),
-    protocols=NamedItemList(),
+    protocols=NamedItemList([somersault_protocol]),
     functional_groups=NamedItemList(),
     sdgs=[],
 )
