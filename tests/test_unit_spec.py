@@ -158,7 +158,7 @@ class TestUnitSpec(unittest.TestCase):
                 muxs=NamedItemList(),
                 sdgs=[],
             ),
-            diag_comms=[],
+            diag_comms_raw=[],
             requests=NamedItemList([
                 Request(
                     odx_id=OdxLinkId("rq_id", doc_frags),
@@ -203,7 +203,7 @@ class TestUnitSpec(unittest.TestCase):
             additional_audiences=NamedItemList(),
             sdgs=[],
             parent_refs=[],
-            comparams=[],
+            comparam_refs=[],
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,

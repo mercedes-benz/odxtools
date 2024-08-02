@@ -91,7 +91,7 @@ class ServiceBinner:
         """
         result = StringIO()
         result.write("[ ")
-        result.write(", ".join([f"0x{x}" for x in self._service_groups if x is not None]))
+        result.write(", ".join([f"0x{x:x}" for x in self._service_groups if x is not None]))
         result.write(" ]")
 
         return result.getvalue()

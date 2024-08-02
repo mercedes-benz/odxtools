@@ -43,15 +43,15 @@ somersault_dlr = dlc.base_variants.somersault.diag_layer_raw
 
 # rename the "session_start" and "session_stop" services to
 # "start_session" and "stop_session"
-start_service = find_named_object(somersault_dlr.diag_comms, "session_start")
+start_service = find_named_object(somersault_dlr.diag_comms_raw, "session_start")
 assert isinstance(start_service, DiagService)
 start_service.short_name = "start_session"
 
-stop_service = find_named_object(somersault_dlr.diag_comms, "session_stop")
+stop_service = find_named_object(somersault_dlr.diag_comms_raw, "session_stop")
 assert isinstance(stop_service, DiagService)
 stop_service.short_name = "stop_session"
 
-tester_present_service = find_named_object(somersault_dlr.diag_comms, "tester_present")
+tester_present_service = find_named_object(somersault_dlr.diag_comms_raw, "tester_present")
 assert isinstance(tester_present_service, DiagService)
 tester_present_pr = tester_present_service.positive_responses[0]
 param = tester_present_pr.parameters.status
@@ -92,7 +92,7 @@ somersault_young = DiagLayer(diag_layer_raw=somersault_young_dlr)
 # remove the "sault_time" parameter from the positive response of the
 # "do_forward_flips" service.
 do_forward_flips_service = deepcopy(somersault_lazy.services.do_forward_flips)
-somersault_young_dlr.diag_comms.append(do_forward_flips_service)
+somersault_young_dlr.diag_comms_raw.append(do_forward_flips_service)
 pr = do_forward_flips_service.positive_responses[0]
 new_params = [x for x in pr.parameters if getattr(x, "short_name", None) != "sault_time"]
 pr.parameters = NamedItemList(new_params)
@@ -193,16 +193,16 @@ flic_flac_service = DiagService(
 
 # create a new list of diagnostic communications that does not include
 # the "set_operation_params" and "compulsory_program" services
-ss_young_diag_comms = [
-    x for x in somersault_young_dlr.diag_comms
+ss_young_diag_comms_raw = [
+    x for x in somersault_young_dlr.diag_comms_raw
     if getattr(x, "short_name", None) not in ("set_operation_params", "compulsory_program")
 ]
 
 # append the flic-flac service
-ss_young_diag_comms.append(flic_flac_service)
+ss_young_diag_comms_raw.append(flic_flac_service)
 
 # change the list of the ECU's diag comms
-somersault_young_dlr.diag_comms = ss_young_diag_comms
+somersault_young_dlr.diag_comms_raw = ss_young_diag_comms_raw
 
 dlc.ecu_variants.append(DiagLayer(diag_layer_raw=somersault_young_dlr))
 

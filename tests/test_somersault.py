@@ -20,8 +20,9 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual([x.short_name for x in odxdb.diag_layer_containers], ["somersault"])
 
         self.assertEqual(
-            [x.short_name for x in odxdb.diag_layers],
-            ["somersault", "somersault_lazy", "somersault_assiduous"],
+            {x.short_name
+             for x in odxdb.diag_layers},
+            {"somersault", "somersault_assiduous", "somersault_lazy", "somersault_protocol"},
         )
 
         self.assertEqual([x.short_name for x in odxdb.ecus],

@@ -126,9 +126,9 @@
  {%- endif %}
  </DIAG-DATA-DICTIONARY-SPEC>
 {%- endif %}
-{%- if dlr.diag_comms %}
+{%- if dlr.diag_comms_raw %}
  <DIAG-COMMS>
-   {%- for dc in dlr.diag_comms %}
+   {%- for dc in dlr.diag_comms_raw %}
 
    {#- use some serious duck typing to determine the kind of diag-comm
     #- object. this would not be necessary if something like
@@ -193,9 +193,9 @@
  </ADDITIONAL-AUDIENCES>
 {%- endif %}
 {{- psd.printSpecialDataGroups(dlr.sdgs)|indent(1, first=True) }}
-{%- if dlr.comparams %}
+{%- if dlr.comparam_refs %}
  <COMPARAM-REFS>
- {%- for cp in dlr.comparams -%}
+ {%- for cp in dlr.comparam_refs -%}
  {{ pcom.printComparamRef(cp)|indent(2) }}
  {%- endfor %}
  </COMPARAM-REFS>

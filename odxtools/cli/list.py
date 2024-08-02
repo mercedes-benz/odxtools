@@ -57,7 +57,7 @@ def print_summary(odxdb: Database,
         all_services: List[DiagComm] = sorted(dl.services, key=lambda x: x.short_name)
 
         data_object_properties = dl.diag_data_dictionary_spec.data_object_props
-        comparams = dl.comparams
+        comparam_refs = dl.comparam_refs
 
         for proto in dl.protocols:
             if (can_rx_id := dl.get_can_receive_id(proto.short_name)) is not None:
@@ -103,12 +103,12 @@ def print_summary(odxdb: Database,
                     data_object_properties, key=lambda x: (type(x).__name__, x.short_name)):
                 rich.print("  " + str(dop.short_name).replace("\n", "\n  "))
 
-        if print_comparams and len(comparams) > 0:
+        if print_comparams and len(comparam_refs) > 0:
             rich.print("\n")
             rich.print(
                 f"The communication parameters of the {dl.variant_type.value} '{dl.short_name}' are: "
             )
-            for com_param in comparams:
+            for com_param in comparam_refs:
                 rich.print(f"  {com_param.short_name}: {com_param.value}")
 
 

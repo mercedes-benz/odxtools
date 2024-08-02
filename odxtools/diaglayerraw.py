@@ -47,7 +47,7 @@ class DiagLayerRaw(IdentifiableElement):
     company_datas: NamedItemList[CompanyData]
     functional_classes: NamedItemList[FunctionalClass]
     diag_data_dictionary_spec: Optional[DiagDataDictionarySpec]
-    diag_comms: List[Union[OdxLinkRef, DiagComm]]
+    diag_comms_raw: List[Union[OdxLinkRef, DiagComm]]
     requests: NamedItemList[Request]
     positive_responses: NamedItemList[Response]
     negative_responses: NamedItemList[Response]
@@ -62,7 +62,7 @@ class DiagLayerRaw(IdentifiableElement):
     # these attributes are only defined for some kinds of diag layers!
     # TODO: make a proper class hierarchy!
     parent_refs: List[ParentRef]
-    comparams: List[ComparamInstance]
+    comparam_refs: List[ComparamInstance]
     ecu_variant_patterns: List[EcuVariantPattern]
     comparam_spec_ref: Optional[OdxLinkRef]
     prot_stack_snref: Optional[str]
@@ -70,6 +70,23 @@ class DiagLayerRaw(IdentifiableElement):
     variable_groups: NamedItemList[VariableGroup]
     dyn_defined_spec: Optional[DynDefinedSpec]
     # base_variant_patterns: List[EcuVariantPattern] # TODO
+
+    @property
+    def diag_comms(self) -> NamedItemList[DiagComm]:
+        return self._diag_comms
+
+    @property
+    def diag_services(self) -> NamedItemList[DiagService]:
+        return self._diag_services
+
+    @property
+    def services(self) -> NamedItemList[DiagService]:
+        """This property is an alias for `.diag_services`"""
+        return self._diag_services
+
+    @property
+    def single_ecu_jobs(self) -> NamedItemList[SingleEcuJob]:
+        return self._single_ecu_jobs
 
     @property
     def diag_variables(self) -> NamedItemList[DiagVariable]:
@@ -108,7 +125,7 @@ class DiagLayerRaw(IdentifiableElement):
         if (ddds_elem := et_element.find("DIAG-DATA-DICTIONARY-SPEC")) is not None:
             diag_data_dictionary_spec = DiagDataDictionarySpec.from_et(ddds_elem, doc_frags)
 
-        diag_comms: List[Union[OdxLinkRef, DiagComm]] = []
+        diag_comms_raw: List[Union[OdxLinkRef, DiagComm]] = []
         if (dc_elems := et_element.find("DIAG-COMMS")) is not None:
             for dc_proxy_elem in dc_elems:
                 dc: Union[OdxLinkRef, DiagComm]
@@ -120,7 +137,7 @@ class DiagLayerRaw(IdentifiableElement):
                     odxassert(dc_proxy_elem.tag == "SINGLE-ECU-JOB")
                     dc = SingleEcuJob.from_et(dc_proxy_elem, doc_frags)
 
-                diag_comms.append(dc)
+                diag_comms_raw.append(dc)
 
         requests = NamedItemList([
             Request.from_et(rq_elem, doc_frags)
@@ -166,7 +183,7 @@ class DiagLayerRaw(IdentifiableElement):
             for pr_el in et_element.iterfind("PARENT-REFS/PARENT-REF")
         ]
 
-        comparams = [
+        comparam_refs = [
             ComparamInstance.from_et(el, doc_frags)
             for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")
         ]
@@ -215,7 +232,7 @@ class DiagLayerRaw(IdentifiableElement):
             company_datas=NamedItemList(company_datas),
             functional_classes=NamedItemList(functional_classes),
             diag_data_dictionary_spec=diag_data_dictionary_spec,
-            diag_comms=diag_comms,
+            diag_comms_raw=diag_comms_raw,
             requests=requests,
             positive_responses=positive_responses,
             negative_responses=negative_responses,
@@ -225,7 +242,7 @@ class DiagLayerRaw(IdentifiableElement):
             additional_audiences=NamedItemList(additional_audiences),
             sdgs=sdgs,
             parent_refs=parent_refs,
-            comparams=comparams,
+            comparam_refs=comparam_refs,
             ecu_variant_patterns=ecu_variant_patterns,
             comparam_spec_ref=comparam_spec_ref,
             prot_stack_snref=prot_stack_snref,
@@ -247,10 +264,10 @@ class DiagLayerRaw(IdentifiableElement):
             odxlinks.update(company_data._build_odxlinks())
         for functional_class in self.functional_classes:
             odxlinks.update(functional_class._build_odxlinks())
-        for diag_comm in self.diag_comms:
-            if isinstance(diag_comm, OdxLinkRef):
+        for dc_proxy in self.diag_comms_raw:
+            if isinstance(dc_proxy, OdxLinkRef):
                 continue
-            odxlinks.update(diag_comm._build_odxlinks())
+            odxlinks.update(dc_proxy._build_odxlinks())
         for request in self.requests:
             odxlinks.update(request._build_odxlinks())
         for positive_response in self.positive_responses:
@@ -267,7 +284,7 @@ class DiagLayerRaw(IdentifiableElement):
             odxlinks.update(sdg._build_odxlinks())
         for parent_ref in self.parent_refs:
             odxlinks.update(parent_ref._build_odxlinks())
-        for comparam in self.comparams:
+        for comparam in self.comparam_refs:
             odxlinks.update(comparam._build_odxlinks())
         for dv_proxy in self.diag_variables_raw:
             if not isinstance(dv_proxy, OdxLinkRef):
@@ -296,10 +313,28 @@ class DiagLayerRaw(IdentifiableElement):
             company_data._resolve_odxlinks(odxlinks)
         for functional_class in self.functional_classes:
             functional_class._resolve_odxlinks(odxlinks)
-        for diag_comm in self.diag_comms:
-            if isinstance(diag_comm, OdxLinkRef):
-                continue
-            diag_comm._resolve_odxlinks(odxlinks)
+
+        # resolve references to diagnostic communication objects and
+        # separate them into services and single-ecu jobs
+        self._diag_comms = NamedItemList[DiagComm]()
+        self._diag_services = NamedItemList[DiagService]()
+        self._single_ecu_jobs = NamedItemList[SingleEcuJob]()
+        for dc_proxy in self.diag_comms_raw:
+            if isinstance(dc_proxy, OdxLinkRef):
+                dc = odxlinks.resolve(dc_proxy, DiagComm)
+            else:
+                dc = dc_proxy
+                dc._resolve_odxlinks(odxlinks)
+
+            self._diag_comms.append(dc)
+
+            if isinstance(dc, DiagService):
+                self._diag_services.append(dc)
+            elif isinstance(dc, SingleEcuJob):
+                self._single_ecu_jobs.append(dc)
+            else:
+                odxraise()
+
         for request in self.requests:
             request._resolve_odxlinks(odxlinks)
         for positive_response in self.positive_responses:
@@ -316,7 +351,7 @@ class DiagLayerRaw(IdentifiableElement):
             sdg._resolve_odxlinks(odxlinks)
         for parent_ref in self.parent_refs:
             parent_ref._resolve_odxlinks(odxlinks)
-        for comparam in self.comparams:
+        for comparam in self.comparam_refs:
             comparam._resolve_odxlinks(odxlinks)
 
         self._diag_variables: NamedItemList[DiagVariable] = NamedItemList()
@@ -350,10 +385,10 @@ class DiagLayerRaw(IdentifiableElement):
             company_data._resolve_snrefs(context)
         for functional_class in self.functional_classes:
             functional_class._resolve_snrefs(context)
-        for diag_comm in self.diag_comms:
-            if isinstance(diag_comm, OdxLinkRef):
+        for dc_proxy in self.diag_comms_raw:
+            if isinstance(dc_proxy, OdxLinkRef):
                 continue
-            diag_comm._resolve_snrefs(context)
+            dc_proxy._resolve_snrefs(context)
         for request in self.requests:
             request._resolve_snrefs(context)
         for positive_response in self.positive_responses:
@@ -370,7 +405,7 @@ class DiagLayerRaw(IdentifiableElement):
             sdg._resolve_snrefs(context)
         for parent_ref in self.parent_refs:
             parent_ref._resolve_snrefs(context)
-        for comparam in self.comparams:
+        for comparam in self.comparam_refs:
             comparam._resolve_snrefs(context)
 
         for dv_proxy in self.diag_variables_raw:
