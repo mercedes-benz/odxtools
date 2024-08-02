@@ -6,14 +6,14 @@ from xml.etree import ElementTree
 
 from typing_extensions import override
 
-from ..diagvariable import DiagVariable
+from ..diagvariable import DiagVariable, HasDiagVariables
 from ..dyndefinedspec import DynDefinedSpec
 from ..ecuvariantpattern import EcuVariantPattern
 from ..exceptions import odxassert
 from ..nameditemlist import NamedItemList
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from ..parentref import ParentRef
-from ..variablegroup import VariableGroup
+from ..variablegroup import HasVariableGroups, VariableGroup
 from .diaglayer import DiagLayer
 from .ecuvariantraw import EcuVariantRaw
 from .hierarchyelement import HierarchyElement
@@ -97,10 +97,10 @@ class EcuVariant(HierarchyElement):
                                           odxlinks: OdxLinkDatabase) -> Iterable[DiagVariable]:
 
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[DiagVariable]:
-            if not hasattr(dl.diag_layer_raw, "diag_variables"):
+            if not isinstance(dl.diag_layer_raw, HasDiagVariables):
                 return []
 
-            return dl.diag_layer_raw.diag_variables  # type: ignore[no-any-return]
+            return dl.diag_layer_raw.diag_variables
 
         def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
             return parent_ref.not_inherited_variables
@@ -111,10 +111,10 @@ class EcuVariant(HierarchyElement):
                                            odxlinks: OdxLinkDatabase) -> Iterable[VariableGroup]:
 
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[VariableGroup]:
-            if not hasattr(dl.diag_layer_raw, "variable_groups"):
+            if not isinstance(dl.diag_layer_raw, HasVariableGroups):
                 return []
 
-            return dl.diag_layer_raw.variable_groups  # type: ignore[no-any-return]
+            return dl.diag_layer_raw.variable_groups
 
         def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
             return []

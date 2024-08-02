@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
+import typing
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, runtime_checkable
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -15,6 +16,14 @@ from .specialdatagroup import SpecialDataGroup
 from .swvariable import SwVariable
 from .utils import dataclass_fields_asdict
 from .variablegroup import VariableGroup
+
+
+@runtime_checkable
+class HasDiagVariables(typing.Protocol):
+
+    @property
+    def diag_variables(self) -> "NamedItemList[DiagVariable]":
+        ...
 
 
 @dataclass
