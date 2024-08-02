@@ -193,9 +193,9 @@
  </ADDITIONAL-AUDIENCES>
 {%- endif %}
 {{- psd.printSpecialDataGroups(dlr.sdgs)|indent(1, first=True) }}
-{%- if dlr.comparams %}
+{%- if dlr.comparam_refs %}
  <COMPARAM-REFS>
- {%- for cp in dlr.comparams -%}
+ {%- for cp in dlr.comparam_refs -%}
  {{ pcom.printComparamRef(cp)|indent(2) }}
  {%- endfor %}
  </COMPARAM-REFS>

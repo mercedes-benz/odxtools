@@ -289,7 +289,7 @@ class DiagLayer:
         # scheme, cf the docstring of
         # _compute_available_commmunication_parameters().
         #####
-        self._comparams = NamedItemList(self._compute_available_commmunication_parameters())
+        self._comparam_refs = NamedItemList(self._compute_available_commmunication_parameters())
 
         #####
         # resolve all SNREFs. TODO: We allow SNREFS to objects that
@@ -712,20 +712,20 @@ class DiagLayer:
                 com_params_dict[(cp.spec_ref.ref_id, cp.protocol_snref)] = cp
 
         # finally, handle the locally defined communication parameters
-        for cp in self.diag_layer_raw.comparams:
+        for cp in self.diag_layer_raw.comparam_refs:
             com_params_dict[(cp.spec_ref.ref_id, cp.protocol_snref)] = cp
 
         return list(com_params_dict.values())
 
     @property
-    def comparams(self) -> NamedItemList[ComparamInstance]:
+    def comparam_refs(self) -> NamedItemList[ComparamInstance]:
         """All communication parameters applicable to this DiagLayer
 
         Note that, although communication parameters use inheritance,
         it is *not* the "value inheritance" scheme used by e.g. DOPs,
         tables, state charts, ...
         """
-        return self._comparams
+        return self._comparam_refs
 
     @cached_property
     def protocols(self) -> NamedItemList["DiagLayer"]:
@@ -762,7 +762,7 @@ class DiagLayer:
             protocol_name = protocol
 
         # determine the set of applicable communication parameters
-        cps = [cp for cp in self.comparams if cp.short_name == cp_short_name]
+        cps = [cp for cp in self.comparam_refs if cp.short_name == cp_short_name]
         if protocol_name is not None:
             cps = [cp for cp in cps if cp.protocol_snref in (None, protocol_name)]
 

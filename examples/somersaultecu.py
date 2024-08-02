@@ -1869,7 +1869,7 @@ somersault_single_ecu_jobs = {
 tester_present_value = somersault_requests["tester_present"].encode()
 tester_pr_value = somersault_positive_responses["tester_ok"].encode()
 tester_nr_value = somersault_negative_responses["tester_nok"].encode()
-somersault_comparams = [
+somersault_comparam_refs = [
     ###
     # basic parameters
     ###
@@ -2037,7 +2037,7 @@ somersault_protocol_raw = DiagLayerRaw(
     parent_refs=[],
     comparam_spec_ref=OdxLinkRef("CPS_ISO_15765_3_on_ISO_15765_2",
                                  [OdxDocFragment("ISO_15765_3_on_ISO_15765_2", "COMPARAM-SPEC")]),
-    comparams=somersault_comparams,
+    comparam_refs=somersault_comparam_refs,
     prot_stack_snref=None,
     ecu_variant_patterns=[],
     diag_variables_raw=[],
@@ -2075,7 +2075,7 @@ somersault_base_variant_raw = DiagLayerRaw(
             not_inherited_global_neg_responses=[],
         )
     ],
-    comparams=[],
+    comparam_refs=[],
     ecu_variant_patterns=[],
     comparam_spec_ref=None,
     prot_stack_snref=None,
@@ -2122,7 +2122,7 @@ somersault_lazy_diaglayer_raw = DiagLayerRaw(
             not_inherited_global_neg_responses=[],
         )
     ],
-    comparams=somersault_comparams,
+    comparam_refs=somersault_comparam_refs,
     ecu_variant_patterns=[],
     comparam_spec_ref=None,
     prot_stack_snref=None,
@@ -2349,7 +2349,7 @@ somersault_assiduous_diaglayer_raw = DiagLayerRaw(
             not_inherited_global_neg_responses=[],
         )
     ],
-    comparams=somersault_comparams,
+    comparam_refs=somersault_comparam_refs,
     ecu_variant_patterns=[],
     comparam_spec_ref=None,
     prot_stack_snref=None,

@@ -448,7 +448,7 @@ class TestSingleEcuJob(unittest.TestCase):
             state_charts=NamedItemList(),
             sdgs=[],
             parent_refs=[],
-            comparams=[],
+            comparam_refs=[],
             ecu_variant_patterns=[],
             comparam_spec_ref=None,
             prot_stack_snref=None,

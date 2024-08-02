@@ -62,7 +62,7 @@ class DiagLayerRaw(IdentifiableElement):
     # these attributes are only defined for some kinds of diag layers!
     # TODO: make a proper class hierarchy!
     parent_refs: List[ParentRef]
-    comparams: List[ComparamInstance]
+    comparam_refs: List[ComparamInstance]
     ecu_variant_patterns: List[EcuVariantPattern]
     comparam_spec_ref: Optional[OdxLinkRef]
     prot_stack_snref: Optional[str]
@@ -183,7 +183,7 @@ class DiagLayerRaw(IdentifiableElement):
             for pr_el in et_element.iterfind("PARENT-REFS/PARENT-REF")
         ]
 
-        comparams = [
+        comparam_refs = [
             ComparamInstance.from_et(el, doc_frags)
             for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")
         ]
@@ -242,7 +242,7 @@ class DiagLayerRaw(IdentifiableElement):
             additional_audiences=NamedItemList(additional_audiences),
             sdgs=sdgs,
             parent_refs=parent_refs,
-            comparams=comparams,
+            comparam_refs=comparam_refs,
             ecu_variant_patterns=ecu_variant_patterns,
             comparam_spec_ref=comparam_spec_ref,
             prot_stack_snref=prot_stack_snref,
@@ -284,7 +284,7 @@ class DiagLayerRaw(IdentifiableElement):
             odxlinks.update(sdg._build_odxlinks())
         for parent_ref in self.parent_refs:
             odxlinks.update(parent_ref._build_odxlinks())
-        for comparam in self.comparams:
+        for comparam in self.comparam_refs:
             odxlinks.update(comparam._build_odxlinks())
         for dv_proxy in self.diag_variables_raw:
             if not isinstance(dv_proxy, OdxLinkRef):
@@ -351,7 +351,7 @@ class DiagLayerRaw(IdentifiableElement):
             sdg._resolve_odxlinks(odxlinks)
         for parent_ref in self.parent_refs:
             parent_ref._resolve_odxlinks(odxlinks)
-        for comparam in self.comparams:
+        for comparam in self.comparam_refs:
             comparam._resolve_odxlinks(odxlinks)
 
         self._diag_variables: NamedItemList[DiagVariable] = NamedItemList()
@@ -405,7 +405,7 @@ class DiagLayerRaw(IdentifiableElement):
             sdg._resolve_snrefs(context)
         for parent_ref in self.parent_refs:
             parent_ref._resolve_snrefs(context)
-        for comparam in self.comparams:
+        for comparam in self.comparam_refs:
             comparam._resolve_snrefs(context)
 
         for dv_proxy in self.diag_variables_raw:

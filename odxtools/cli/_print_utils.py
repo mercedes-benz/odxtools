@@ -235,7 +235,7 @@ def print_dl_metrics(variants: List[DiagLayer], print_fn: Callable[..., Any] = p
     type = []
     num_services = []
     num_dops = []
-    num_comparams = []
+    num_comparam_refs = []
     for variant in variants:
         assert isinstance(variant, DiagLayer)
         all_services: List[Union[DiagService, SingleEcuJob]] = sorted(
@@ -244,13 +244,13 @@ def print_dl_metrics(variants: List[DiagLayer], print_fn: Callable[..., Any] = p
         type.append(variant.variant_type.value)
         num_services.append(len(all_services))
         num_dops.append(len(variant.diag_data_dictionary_spec.data_object_props))
-        num_comparams.append(len(variant.comparams))
+        num_comparam_refs.append(len(variant.comparam_refs))
 
     table = {
         'Name': name,
         'Variant Type': type,
         'Number of Services': num_services,
         'Number of DOPs': num_dops,
-        'Number of communication parameters': num_comparams
+        'Number of communication parameters': num_comparam_refs
     }
     print_fn(tabulate(table, headers='keys', tablefmt='presto'))
