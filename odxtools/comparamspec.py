@@ -51,8 +51,7 @@ class ComparamSpec(IdentifiableElement):
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks: Dict[OdxLinkId, Any] = {}
-        if self.odx_id is not None:
-            odxlinks[self.odx_id] = self
+        odxlinks[self.odx_id] = self
 
         if self.admin_data is not None:
             odxlinks.update(self.admin_data._build_odxlinks())
