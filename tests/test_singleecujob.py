@@ -438,7 +438,7 @@ class TestSingleEcuJob(unittest.TestCase):
             company_datas=NamedItemList(),
             functional_classes=NamedItemList([self.context.extensiveTask]),
             diag_data_dictionary_spec=None,
-            diag_comms=[self.singleecujob_object],
+            diag_comms_raw=[self.singleecujob_object],
             requests=NamedItemList(),
             positive_responses=NamedItemList(),
             negative_responses=NamedItemList(),

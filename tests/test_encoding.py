@@ -359,7 +359,7 @@ class TestEncodeRequest(unittest.TestCase):
                 muxs=NamedItemList(),
                 unit_spec=None,
                 sdgs=[]),
-            diag_comms=[service],
+            diag_comms_raw=[service],
             requests=NamedItemList([req]),
             positive_responses=NamedItemList(),
             negative_responses=NamedItemList([resp]),

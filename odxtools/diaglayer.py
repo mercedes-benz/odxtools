@@ -170,9 +170,9 @@ class DiagLayer:
         self._diag_comms = NamedItemList(diag_comms)
 
         # filter the diag comms for services and single-ECU jobs
-        services = [dc for dc in diag_comms if isinstance(dc, DiagService)]
+        diag_services = [dc for dc in diag_comms if isinstance(dc, DiagService)]
         single_ecu_jobs = [dc for dc in diag_comms if isinstance(dc, SingleEcuJob)]
-        self._services = NamedItemList(services)
+        self._diag_services = NamedItemList(diag_services)
         self._single_ecu_jobs = NamedItemList(single_ecu_jobs)
 
         global_negative_responses = self._compute_available_global_neg_responses(odxlinks)
@@ -407,12 +407,17 @@ class DiagLayer:
 
     @property
     def services(self) -> NamedItemList[DiagService]:
+        """This property is an alias for `.diag_services`"""
+        return self._diag_services
+
+    @property
+    def diag_services(self) -> NamedItemList[DiagService]:
         """All diagnostic services applicable to this DiagLayer
 
         This is a subset of all diagnostic communication
         primitives. All references are resolved in the list returned.
         """
-        return self._services
+        return self._diag_services
 
     @property
     def single_ecu_jobs(self) -> NamedItemList[SingleEcuJob]:

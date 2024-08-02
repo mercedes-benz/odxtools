@@ -126,9 +126,9 @@
  {%- endif %}
  </DIAG-DATA-DICTIONARY-SPEC>
 {%- endif %}
-{%- if dlr.diag_comms %}
+{%- if dlr.diag_comms_raw %}
  <DIAG-COMMS>
-   {%- for dc in dlr.diag_comms %}
+   {%- for dc in dlr.diag_comms_raw %}
 
    {#- use some serious duck typing to determine the kind of diag-comm
     #- object. this would not be necessary if something like

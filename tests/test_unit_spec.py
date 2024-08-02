@@ -158,7 +158,7 @@ class TestUnitSpec(unittest.TestCase):
                 muxs=NamedItemList(),
                 sdgs=[],
             ),
-            diag_comms=[],
+            diag_comms_raw=[],
             requests=NamedItemList([
                 Request(
                     odx_id=OdxLinkId("rq_id", doc_frags),
