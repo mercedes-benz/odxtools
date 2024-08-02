@@ -16,6 +16,7 @@ from odxtools.companydata import CompanyData
 from odxtools.companydocinfo import CompanyDocInfo
 from odxtools.companyspecificinfo import CompanySpecificInfo
 from odxtools.comparaminstance import ComparamInstance
+from odxtools.comparamspec import ComparamSpec
 from odxtools.comparamsubset import ComparamSubset
 from odxtools.compumethods.compuconst import CompuConst
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
@@ -2350,16 +2351,25 @@ for odx_cs_filename in (
         "ISO_11898_3_DWFTCAN.odx-cs",
         "ISO_15765_2.odx-cs",
         "ISO_15765_3_CPSS.odx-cs",
+        "SAE_J2411_SWCAN_CPSS.odx-cs",
 ):
     odx_cs_root = ElementTree.parse(odx_cs_dir / odx_cs_filename).getroot()
     subset = odx_cs_root.find("COMPARAM-SUBSET")
     if subset is not None:
         comparam_subsets.append(ComparamSubset.from_et(subset, []))
 
+comparam_specs = []
+for odx_c_filename in ("UDSOnCAN_CPS.odx-c",):
+    odx_c_root = ElementTree.parse(odx_cs_dir / odx_c_filename).getroot()
+    subset = odx_c_root.find("COMPARAM-SPEC")
+    if subset is not None:
+        comparam_specs.append(ComparamSpec.from_et(subset, []))
+
 # create a database object
 database = Database()
 database._diag_layer_containers = NamedItemList([somersault_dlc])
 database._comparam_subsets = NamedItemList(comparam_subsets)
+database._comparam_specs = NamedItemList(comparam_specs)
 database.add_auxiliary_file("jobs.py",
                             BytesIO(b"""
 def compulsory_program():
