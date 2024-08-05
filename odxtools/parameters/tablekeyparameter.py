@@ -99,13 +99,20 @@ class TableKeyParameter(Parameter):
 
         if self.table_snref is not None:
             tables = odxrequire(context.diag_layer).diag_data_dictionary_spec.tables
-            self._table = resolve_snref(self.table_snref, tables, Table)
+            if TYPE_CHECKING:
+                self._table = resolve_snref(self.table_snref, tables, Table)
+            else:
+                self._table = resolve_snref(self.table_snref, tables)
         if self.table_row_snref is not None:
             # make sure that we know the table to which the table row
             # SNREF is relative to.
-            table = odxrequire(self._table,
-                               "If a table-row is referenced, a table must also be referenced.")
-            self._table_row = resolve_snref(self.table_row_snref, table.table_rows, TableRow)
+            table = odxrequire(
+                self._table, "If a table row is referenced via short name, a table must "
+                "be referenced as well")
+            if TYPE_CHECKING:
+                self._table_row = resolve_snref(self.table_row_snref, table.table_rows, TableRow)
+            else:
+                self._table_row = resolve_snref(self.table_row_snref, table.table_rows)
 
     @property
     def table(self) -> "Table":
