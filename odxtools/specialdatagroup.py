@@ -51,7 +51,7 @@ class SpecialDataGroup:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
 
-        if self.sdg_caption is not None:
+        if self.sdg_caption_ref is None and self.sdg_caption is not None:
             result.update(self.sdg_caption._build_odxlinks())
 
         for val in self.values:
