@@ -11,6 +11,8 @@ from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.determinenumberofitems import DetermineNumberOfItems
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
+from odxtools.diaglayers.basevariant import BaseVariant
+from odxtools.diaglayers.basevariantraw import BaseVariantRaw
 from odxtools.diaglayers.diaglayertype import DiagLayerType
 from odxtools.diaglayers.ecuvariant import EcuVariant
 from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
@@ -495,8 +497,8 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
         )
 
-        ecu_variant_raw = EcuVariantRaw(
-            variant_type=DiagLayerType.ECU_VARIANT,
+        base_variant_raw = BaseVariantRaw(
+            variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             long_name=None,
@@ -530,12 +532,11 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
             parent_refs=[],
             comparam_refs=[],
-            ecu_variant_patterns=[],
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
+        ecu_variant = BaseVariant(diag_layer_raw=base_variant_raw)
         db = Database()
         odxlinks = OdxLinkDatabase()
         odxlinks.update(ecu_variant._build_odxlinks())
