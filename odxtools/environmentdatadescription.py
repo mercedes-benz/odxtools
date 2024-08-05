@@ -83,8 +83,9 @@ class EnvironmentDataDescription(ComplexDop):
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {self.odx_id: self}
 
-        for ed in self.env_datas:
-            odxlinks.update(ed._build_odxlinks())
+        if not self.env_data_refs:
+            for ed in self.env_datas:
+                odxlinks.update(ed._build_odxlinks())
 
         return odxlinks
 
