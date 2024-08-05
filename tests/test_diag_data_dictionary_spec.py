@@ -14,7 +14,6 @@ from odxtools.dtcdop import DtcDop
 from odxtools.encodestate import EncodeState
 from odxtools.environmentdata import EnvironmentData
 from odxtools.environmentdatadescription import EnvironmentDataDescription
-from odxtools.exceptions import odxrequire
 from odxtools.multiplexer import Multiplexer
 from odxtools.multiplexercase import MultiplexerCase
 from odxtools.multiplexerdefaultcase import MultiplexerDefaultCase
@@ -364,7 +363,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         self.assertEqual(len(ddds.structures), 2)
         self.assertEqual(len(ddds.end_of_pdu_fields), 0)
 
-        ddds = odxrequire(ecu.diag_data_dictionary_spec)
+        ddds = ecu.diag_data_dictionary_spec
 
         # make sure that all locally defined DOPs are present in the finalized ECU
         all_dops = {x.short_name for x in ddds.all_data_object_properties}

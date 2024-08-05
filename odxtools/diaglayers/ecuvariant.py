@@ -64,6 +64,8 @@ class EcuVariant(HierarchyElement):
         return EcuVariant(diag_layer_raw=ecu_variant_raw)
 
     def __post_init__(self) -> None:
+        super().__post_init__()
+
         odxassert(
             isinstance(self.diag_layer_raw, EcuVariantRaw),
             "The raw diagnostic layer passed to EcuVariant "

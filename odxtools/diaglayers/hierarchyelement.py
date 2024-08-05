@@ -55,6 +55,8 @@ class HierarchyElement(DiagLayer):
         return HierarchyElement(diag_layer_raw=hierarchy_element_raw)
 
     def __post_init__(self) -> None:
+        super().__post_init__()
+
         self._global_negative_responses: NamedItemList[Response]
 
         odxassert(
@@ -437,7 +439,7 @@ class HierarchyElement(DiagLayer):
     # <properties subject to value inheritance>
     #######
     @property
-    def diag_data_dictionary_spec(self) -> Optional[DiagDataDictionarySpec]:
+    def diag_data_dictionary_spec(self) -> DiagDataDictionarySpec:
         return self._diag_data_dictionary_spec
 
     @property

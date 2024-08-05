@@ -39,6 +39,8 @@ class Protocol(HierarchyElement):
         return Protocol(diag_layer_raw=protocol_raw)
 
     def __post_init__(self) -> None:
+        super().__post_init__()
+
         odxassert(
             isinstance(self.diag_layer_raw, ProtocolRaw),
             "The raw diagnostic layer passed to Protocol "

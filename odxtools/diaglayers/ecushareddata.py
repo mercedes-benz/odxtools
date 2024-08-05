@@ -46,6 +46,8 @@ class EcuSharedData(DiagLayer):
         return EcuSharedData(diag_layer_raw=ecu_shared_data_raw)
 
     def __post_init__(self) -> None:
+        super().__post_init__()
+
         odxassert(
             isinstance(self.diag_layer_raw, EcuSharedDataRaw),
             "The raw diagnostic layer passed to EcuSharedData "

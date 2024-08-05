@@ -68,6 +68,8 @@ class BaseVariant(HierarchyElement):
         return BaseVariant(diag_layer_raw=base_variant_raw)
 
     def __post_init__(self) -> None:
+        super().__post_init__()
+
         odxassert(
             isinstance(self.diag_layer_raw, BaseVariantRaw),
             "The raw diagnostic layer passed to BaseVariant "

@@ -48,6 +48,28 @@ class DiagLayer:
         # Create DiagLayer
         return DiagLayer(diag_layer_raw=diag_layer_raw)
 
+    def __post_init__(self) -> None:
+        if self.diag_layer_raw.diag_data_dictionary_spec is None:
+            # create an empry DiagDataDictionarySpec object if the raw
+            # layer does not define a DDDS...
+            self._diag_data_dictionary_spec = DiagDataDictionarySpec(
+                admin_data=None,
+                data_object_props=NamedItemList(),
+                dtc_dops=NamedItemList(),
+                structures=NamedItemList(),
+                static_fields=NamedItemList(),
+                end_of_pdu_fields=NamedItemList(),
+                dynamic_endmarker_fields=NamedItemList(),
+                dynamic_length_fields=NamedItemList(),
+                tables=NamedItemList(),
+                env_data_descs=NamedItemList(),
+                env_datas=NamedItemList(),
+                muxs=NamedItemList(),
+                unit_spec=None,
+                sdgs=[])
+        else:
+            self._diag_data_dictionary_spec = self.diag_layer_raw.diag_data_dictionary_spec
+
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
         result = self.diag_layer_raw._build_odxlinks()
@@ -242,9 +264,9 @@ class DiagLayer:
         return self.diag_layer_raw.sdgs
 
     @property
-    def diag_data_dictionary_spec(self) -> Optional[DiagDataDictionarySpec]:
+    def diag_data_dictionary_spec(self) -> DiagDataDictionarySpec:
         """The DiagDataDictionarySpec applicable to this DiagLayer"""
-        return self.diag_layer_raw.diag_data_dictionary_spec
+        return self._diag_data_dictionary_spec
 
     #####
     # </properties forwarded to the "raw" diag layer>

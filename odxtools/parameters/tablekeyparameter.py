@@ -98,7 +98,7 @@ class TableKeyParameter(Parameter):
         super()._resolve_snrefs(context)
 
         if self.table_snref is not None:
-            tables = odxrequire(odxrequire(context.diag_layer).diag_data_dictionary_spec).tables
+            tables = odxrequire(context.diag_layer).diag_data_dictionary_spec.tables
             if TYPE_CHECKING:
                 self._table = resolve_snref(self.table_snref, tables, Table)
             else:

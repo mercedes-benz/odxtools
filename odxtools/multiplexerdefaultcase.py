@@ -44,7 +44,7 @@ class MultiplexerDefaultCase(NamedElement):
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         if self.structure_snref:
-            ddds = odxrequire(odxrequire(context.diag_layer).diag_data_dictionary_spec)
+            ddds = odxrequire(context.diag_layer).diag_data_dictionary_spec
             self._structure = resolve_snref(self.structure_snref, ddds.structures, Structure)
 
     @property

@@ -60,7 +60,7 @@ class ParameterWithDOP(Parameter):
         super()._resolve_snrefs(context)
 
         if self.dop_snref:
-            ddds = odxrequire(odxrequire(context.diag_layer).diag_data_dictionary_spec)
+            ddds = odxrequire(context.diag_layer).diag_data_dictionary_spec
             self._dop = resolve_snref(self.dop_snref, ddds.all_data_object_properties, DopBase)
 
     @property

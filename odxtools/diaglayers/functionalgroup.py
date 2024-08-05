@@ -50,6 +50,8 @@ class FunctionalGroup(HierarchyElement):
         return FunctionalGroup(diag_layer_raw=functional_group_raw)
 
     def __post_init__(self) -> None:
+        super().__post_init__()
+
         odxassert(
             isinstance(self.diag_layer_raw, FunctionalGroupRaw),
             "The raw diagnostic layer passed to FunctionalGroup "

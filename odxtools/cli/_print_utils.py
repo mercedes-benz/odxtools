@@ -243,10 +243,8 @@ def print_dl_metrics(variants: List[DiagLayer], print_fn: Callable[..., Any] = p
         name.append(variant.short_name)
         type.append(variant.variant_type.value)
         num_services.append(len(all_services))
-        if (ddds := variant.diag_data_dictionary_spec) is not None:
-            num_dops.append(len(ddds.data_object_props))
-        else:
-            num_dops.append(0)
+        ddds = variant.diag_data_dictionary_spec
+        num_dops.append(len(ddds.data_object_props))
         num_comparam_refs.append(len(getattr(variant, "comparams_refs", [])))
 
     table = {
