@@ -1,0 +1,30 @@
+{#- -*- mode: sgml; tab-width: 2; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printDiagLayer.xml.jinja2') as pdl %}
+
+{%- macro printEcuSharedData(ecu_shared_data) -%}
+<ECU-SHARED-DATA {{- pdl.printDiagLayerAttribs(ecu_shared_data) -}}>
+  {{ pdl.printDiagLayerSubtags(ecu_shared_data) | indent(2) }}
+  {%- set dlr = ecu_shared_data.ecu_shared_data_raw %}
+
+  {%- if dlr.diag_variables %}
+  <DIAG-VARIABLES>
+    {%- for dv in dlr.diag_variables -%}
+    {{ pdv.printDiagVariable(dv)|indent(4) }}
+    {%- endfor -%}
+  </DIAG-VARIABLES>
+  {%- endif %}
+
+  {%- if dlr.variable_groups %}
+  <VARIABLE-GROUPS>
+    {%- for vg in dlr.variable_groups -%}
+    {{ pdv.printVariableGroup(vg)|indent(4) }}
+    {%- endfor -%}
+  </VARIABLE-GROUPS>
+  {%- endif %}
+
+</ECU-SHARED-DATA>
+{%- endmacro %}

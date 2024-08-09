@@ -4,9 +4,14 @@ from typing import Callable, List, Optional
 
 import rich
 
+from ..comparaminstance import ComparamInstance
 from ..database import Database
+from ..dataobjectproperty import DataObjectProperty
 from ..diagcomm import DiagComm
-from ..diaglayer import DiagLayer
+from ..diaglayers.basevariant import BaseVariant
+from ..diaglayers.diaglayer import DiagLayer
+from ..diaglayers.ecuvariant import EcuVariant
+from ..diaglayers.hierarchyelement import HierarchyElement
 from ..diagservice import DiagService
 from ..singleecujob import SingleEcuJob
 from . import _parser_utils
@@ -56,15 +61,14 @@ def print_summary(odxdb: Database,
 
         all_services: List[DiagComm] = sorted(dl.services, key=lambda x: x.short_name)
 
-        data_object_properties = dl.diag_data_dictionary_spec.data_object_props
-        comparam_refs = dl.comparam_refs
+        if isinstance(dl, (BaseVariant, EcuVariant)):
+            for proto in dl.protocols:
+                if (can_rx_id := dl.get_can_receive_id(proto.short_name)) is not None:
+                    rich.print(
+                        f"  CAN receive ID for protocol '{proto.short_name}': 0x{can_rx_id:x}")
 
-        for proto in dl.protocols:
-            if (can_rx_id := dl.get_can_receive_id(proto.short_name)) is not None:
-                rich.print(f"  CAN receive ID for protocol '{proto.short_name}': 0x{can_rx_id:x}")
-
-            if (can_tx_id := dl.get_can_send_id(proto.short_name)) is not None:
-                rich.print(f"  CAN send ID for protocol '{proto.short_name}': 0x{can_tx_id:x}")
+                if (can_tx_id := dl.get_can_send_id(proto.short_name)) is not None:
+                    rich.print(f"  CAN send ID for protocol '{proto.short_name}': 0x{can_tx_id:x}")
 
         if dl.description:
             desc = format_desc(dl.description, indent=2)
@@ -95,13 +99,19 @@ def print_summary(odxdb: Database,
                         rich.print(f" Single ECU job: {service.odx_id}")
                     else:
                         rich.print(f" Unidentifiable service: {service}")
-
+        ddd_spec = dl.diag_data_dictionary_spec
+        data_object_properties: List[
+            DataObjectProperty] = [] if ddd_spec is None else ddd_spec.data_object_props
         if print_dops and len(data_object_properties) > 0:
             rich.print("\n")
             rich.print(f"The DOPs of the {dl.variant_type.value} '{dl.short_name}' are: ")
             for dop in sorted(
                     data_object_properties, key=lambda x: (type(x).__name__, x.short_name)):
                 rich.print("  " + str(dop.short_name).replace("\n", "\n  "))
+
+        comparam_refs: List[ComparamInstance] = []
+        if isinstance(dl, HierarchyElement):
+            comparam_refs = dl.comparam_refs
 
         if print_comparams and len(comparam_refs) > 0:
             rich.print("\n")

@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, List, Optional
 
 if TYPE_CHECKING:
     from .database import Database
-    from .diaglayer import DiagLayer
+    from .diaglayers.diaglayer import DiagLayer
     from .diagservice import DiagService
     from .parameters.parameter import Parameter
     from .request import Request

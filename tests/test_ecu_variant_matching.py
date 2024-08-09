@@ -5,9 +5,9 @@ from typing import Any, Dict, List
 import pytest
 
 from odxtools.database import Database
-from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayerraw import DiagLayerRaw
-from odxtools.diaglayertype import DiagLayerType
+from odxtools.diaglayers.diaglayertype import DiagLayerType
+from odxtools.diaglayers.ecuvariant import EcuVariant
+from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
 from odxtools.diagservice import DiagService
 from odxtools.ecuvariantmatcher import EcuVariantMatcher
 from odxtools.ecuvariantpattern import EcuVariantPattern
@@ -194,8 +194,8 @@ def ecu_variant_1(
     ident_service: DiagService,
     supplier_service: DiagService,
     ecu_variant_pattern1: EcuVariantPattern,
-) -> DiagLayer:
-    raw_layer = DiagLayerRaw(
+) -> EcuVariant:
+    raw_layer = EcuVariantRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant1", doc_fragments=doc_frags),
         short_name="ecu_variant1",
@@ -217,13 +217,11 @@ def ecu_variant_1(
         parent_refs=[],
         comparam_refs=[],
         ecu_variant_patterns=[ecu_variant_pattern1],
-        comparam_spec_ref=None,
-        prot_stack_snref=None,
         diag_variables_raw=[],
         variable_groups=NamedItemList(),
         dyn_defined_spec=None,
     )
-    result = DiagLayer(diag_layer_raw=raw_layer)
+    result = EcuVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
     db = Database()
     result._resolve_odxlinks(odxlinks)
@@ -236,8 +234,8 @@ def ecu_variant_2(
     ident_service: DiagService,
     supplier_service: DiagService,
     ecu_variant_pattern2: EcuVariantPattern,
-) -> DiagLayer:
-    raw_layer = DiagLayerRaw(
+) -> EcuVariant:
+    raw_layer = EcuVariantRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant2", doc_fragments=doc_frags),
         short_name="ecu_variant2",
@@ -259,13 +257,11 @@ def ecu_variant_2(
         parent_refs=[],
         comparam_refs=[],
         ecu_variant_patterns=[ecu_variant_pattern2],
-        comparam_spec_ref=None,
-        prot_stack_snref=None,
         diag_variables_raw=[],
         variable_groups=NamedItemList(),
         dyn_defined_spec=None,
     )
-    result = DiagLayer(diag_layer_raw=raw_layer)
+    result = EcuVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
     db = Database()
     result._resolve_odxlinks(odxlinks)
@@ -279,8 +275,8 @@ def ecu_variant_3(
     supplier_service: DiagService,
     ecu_variant_pattern1: EcuVariantPattern,
     ecu_variant_pattern3: EcuVariantPattern,
-) -> DiagLayer:
-    raw_layer = DiagLayerRaw(
+) -> EcuVariant:
+    raw_layer = EcuVariantRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant3", doc_fragments=doc_frags),
         short_name="ecu_variant3",
@@ -302,13 +298,11 @@ def ecu_variant_3(
         parent_refs=[],
         comparam_refs=[],
         ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
-        comparam_spec_ref=None,
-        prot_stack_snref=None,
         diag_variables_raw=[],
         variable_groups=NamedItemList(),
         dyn_defined_spec=None,
     )
-    result = DiagLayer(diag_layer_raw=raw_layer)
+    result = EcuVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
     db = Database()
     result._resolve_odxlinks(odxlinks)
@@ -317,8 +311,8 @@ def ecu_variant_3(
 
 
 @pytest.fixture
-def ecu_variants(ecu_variant_1: DiagLayer, ecu_variant_2: DiagLayer,
-                 ecu_variant_3: DiagLayer) -> List[DiagLayer]:
+def ecu_variants(ecu_variant_1: EcuVariant, ecu_variant_2: EcuVariant,
+                 ecu_variant_3: EcuVariant) -> List[EcuVariant]:
     return [ecu_variant_1, ecu_variant_2, ecu_variant_3]
 
 
@@ -364,7 +358,7 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
     ],
 )
 def test_ecu_variant_matching(
-    ecu_variants: List[DiagLayer],
+    ecu_variants: List[EcuVariant],
     use_cache: bool,
     req_resp_mapping: Dict[bytes, bytes],
     expected_variant: str,
@@ -381,7 +375,7 @@ def test_ecu_variant_matching(
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-def test_no_match(ecu_variants: List[DiagLayer], use_cache: bool) -> None:
+def test_no_match(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
     # stores the responses for each request for the ecu-under-test
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 1000}),
@@ -404,7 +398,7 @@ def test_no_match(ecu_variants: List[DiagLayer], use_cache: bool) -> None:
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if pending matchers reject the has_match() or active variant query
-def test_no_request_loop(ecu_variants: List[DiagLayer], use_cache: bool) -> None:
+def test_no_request_loop(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
     matcher = EcuVariantMatcher(
         ecu_variant_candidates=ecu_variants,
         use_cache=use_cache,
@@ -417,7 +411,7 @@ def test_no_request_loop(ecu_variants: List[DiagLayer], use_cache: bool) -> None
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if runs of the request loop without calling `evaluate(...)` are rejected
-def test_request_loop_misuse(ecu_variants: List[DiagLayer], use_cache: bool) -> None:
+def test_request_loop_misuse(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
     matcher = EcuVariantMatcher(
         ecu_variant_candidates=ecu_variants,
         use_cache=use_cache,
@@ -429,7 +423,7 @@ def test_request_loop_misuse(ecu_variants: List[DiagLayer], use_cache: bool) -> 
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if request loop is idempotent, i.e., the matching is the same regardless of how often the request loop is run
-def test_request_loop_idempotency(ecu_variants: List[DiagLayer], use_cache: bool) -> None:
+def test_request_loop_idempotency(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 2000}),
         b"\x22\x20\00": as_bytes({"name": {
@@ -458,7 +452,7 @@ def test_request_loop_idempotency(ecu_variants: List[DiagLayer], use_cache: bool
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-def test_unresolvable_snpathref(ecu_variants: List[DiagLayer], use_cache: bool) -> None:
+def test_unresolvable_snpathref(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
     # stores the responses for each request for the ecu-under-test
     req_resp_mapping = {
         b"\x22\x10\00": as_bytes({"id": 1000}),

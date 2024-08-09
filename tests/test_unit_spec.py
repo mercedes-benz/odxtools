@@ -7,9 +7,9 @@ from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayerraw import DiagLayerRaw
-from odxtools.diaglayertype import DiagLayerType
+from odxtools.diaglayers.diaglayertype import DiagLayerType
+from odxtools.diaglayers.ecuvariant import EcuVariant
+from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
 from odxtools.exceptions import odxrequire
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -128,8 +128,8 @@ class TestUnitSpec(unittest.TestCase):
             internal_constr=None,
             physical_constr=None,
         )
-        dl_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        dl_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("BV_id", doc_frags),
             short_name="BaseVariant",
             long_name=None,
@@ -205,12 +205,11 @@ class TestUnitSpec(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
-            dyn_defined_spec=None)
-        dl = DiagLayer(diag_layer_raw=dl_raw)
+            dyn_defined_spec=None,
+        )
+        dl = EcuVariant(diag_layer_raw=dl_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(dl._build_odxlinks())
         db = Database()

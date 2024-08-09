@@ -19,7 +19,7 @@ from .statetransition import StateTransition
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
-    from .diaglayer import DiagLayer
+    from .diaglayers.protocol import Protocol
 
 
 class DiagClassType(Enum):
@@ -143,7 +143,7 @@ class DiagComm(IdentifiableElement):
         return self._functional_classes
 
     @property
-    def protocols(self) -> NamedItemList["DiagLayer"]:
+    def protocols(self) -> NamedItemList["Protocol"]:
         return self._protocols
 
     @property
@@ -216,12 +216,12 @@ class DiagComm(IdentifiableElement):
         if TYPE_CHECKING:
             diag_layer = odxrequire(context.diag_layer)
             self._protocols = NamedItemList([
-                resolve_snref(prot_snref, diag_layer.protocols, DiagLayer)
+                resolve_snref(prot_snref, getattr(diag_layer, "protocols", []), Protocol)
                 for prot_snref in self.protocol_snrefs
             ])
         else:
             diag_layer = odxrequire(context.diag_layer)
             self._protocols = NamedItemList([
-                resolve_snref(prot_snref, diag_layer.protocols)
+                resolve_snref(prot_snref, getattr(diag_layer, "protocols", []))
                 for prot_snref in self.protocol_snrefs
             ])

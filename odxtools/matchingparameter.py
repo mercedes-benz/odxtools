@@ -12,7 +12,7 @@ from .utils import is_short_name, is_short_name_path
 class MatchingParameter:
     """According to ISO 22901, a MatchingParameter contains a string value identifying
     the active ECU variant. Moreover, it references a DIAG-COMM via snref and one of its
-    positiv response's OUT-PARAM-IF via snref or snpathref.
+    positive response's OUT-PARAM-IF via snref or snpathref.
 
     Unlike other parameters defined in the `parameters` package, a MatchingParameter is
     not transferred over the network.

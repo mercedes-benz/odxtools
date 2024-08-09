@@ -29,10 +29,14 @@ from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.description import Description
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.diaglayer import DiagLayer
 from odxtools.diaglayercontainer import DiagLayerContainer
-from odxtools.diaglayerraw import DiagLayerRaw
-from odxtools.diaglayertype import DiagLayerType
+from odxtools.diaglayers.basevariant import BaseVariant
+from odxtools.diaglayers.basevariantraw import BaseVariantRaw
+from odxtools.diaglayers.diaglayertype import DiagLayerType
+from odxtools.diaglayers.ecuvariant import EcuVariant
+from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
+from odxtools.diaglayers.protocol import Protocol
+from odxtools.diaglayers.protocolraw import ProtocolRaw
 from odxtools.diagservice import DiagService
 from odxtools.docrevision import DocRevision
 from odxtools.exceptions import odxrequire
@@ -2014,7 +2018,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
 )
 
 # diagnostics layer for the protocol
-somersault_protocol_raw = DiagLayerRaw(
+somersault_protocol_raw = ProtocolRaw(
     variant_type=DiagLayerType.PROTOCOL,
     odx_id=OdxLinkId("somersault.protocol", doc_frags),
     short_name="somersault_protocol",
@@ -2039,14 +2043,11 @@ somersault_protocol_raw = DiagLayerRaw(
                                  [OdxDocFragment("ISO_15765_3_on_ISO_15765_2", "COMPARAM-SPEC")]),
     comparam_refs=somersault_comparam_refs,
     prot_stack_snref=None,
-    ecu_variant_patterns=[],
-    diag_variables_raw=[],
-    variable_groups=NamedItemList(),
-    dyn_defined_spec=None)
-somersault_protocol = DiagLayer(diag_layer_raw=somersault_protocol_raw)
+)
+somersault_protocol = Protocol(diag_layer_raw=somersault_protocol_raw)
 
 # diagnostics layer for the base variant
-somersault_base_variant_raw = DiagLayerRaw(
+somersault_base_variant_raw = BaseVariantRaw(
     variant_type=DiagLayerType.BASE_VARIANT,
     odx_id=OdxLinkId("somersault", doc_frags),
     short_name="somersault",
@@ -2076,19 +2077,16 @@ somersault_base_variant_raw = DiagLayerRaw(
         )
     ],
     comparam_refs=[],
-    ecu_variant_patterns=[],
-    comparam_spec_ref=None,
-    prot_stack_snref=None,
     diag_variables_raw=[],
     variable_groups=NamedItemList(),
     dyn_defined_spec=None)
-somersault_base_variant = DiagLayer(diag_layer_raw=somersault_base_variant_raw)
+somersault_base_variant = BaseVariant(diag_layer_raw=somersault_base_variant_raw)
 
 ##################
 # Lazy variant of Somersault ECU: this one is lazy and cuts corners
 ##################
 
-somersault_lazy_diaglayer_raw = DiagLayerRaw(
+somersault_lazy_ecu_raw = EcuVariantRaw(
     variant_type=DiagLayerType.ECU_VARIANT,
     odx_id=OdxLinkId("somersault_lazy", doc_frags),
     short_name="somersault_lazy",
@@ -2111,7 +2109,8 @@ somersault_lazy_diaglayer_raw = DiagLayerRaw(
     parent_refs=[
         ParentRef(
             layer_ref=OdxLinkRef.from_id(somersault_base_variant.odx_id),
-            # this variant does not do backflips
+            # this variant does not do backflips and does not like
+            # being told under which conditions it operates.
             not_inherited_diag_comms=[
                 somersault_requests["backward_flips"].short_name,
                 somersault_requests["set_operation_params"].short_name,
@@ -2122,15 +2121,13 @@ somersault_lazy_diaglayer_raw = DiagLayerRaw(
             not_inherited_global_neg_responses=[],
         )
     ],
-    comparam_refs=somersault_comparam_refs,
+    comparam_refs=[],
     ecu_variant_patterns=[],
-    comparam_spec_ref=None,
-    prot_stack_snref=None,
     diag_variables_raw=[],
     variable_groups=NamedItemList(),
     dyn_defined_spec=None,
 )
-somersault_lazy_diaglayer = DiagLayer(diag_layer_raw=somersault_lazy_diaglayer_raw)
+somersault_lazy_ecu = EcuVariant(diag_layer_raw=somersault_lazy_ecu_raw)
 
 ##################
 # Assiduous production variant of Somersault ECU: This one works
@@ -2303,7 +2300,7 @@ somersault_assiduous_services = {
         ),
 }
 
-somersault_assiduous_diaglayer_raw = DiagLayerRaw(
+somersault_assiduous_ecu_raw = EcuVariantRaw(
     variant_type=DiagLayerType.ECU_VARIANT,
     odx_id=OdxLinkId("somersault_assiduous", doc_frags),
     short_name="somersault_assiduous",
@@ -2342,6 +2339,7 @@ somersault_assiduous_diaglayer_raw = DiagLayerRaw(
         ParentRef(
             layer_ref=OdxLinkRef.from_id(somersault_base_variant.odx_id),
             # this variant does everything which the base variant does
+            # and more
             not_inherited_diag_comms=[],
             not_inherited_dops=[],
             not_inherited_variables=[],
@@ -2351,13 +2349,11 @@ somersault_assiduous_diaglayer_raw = DiagLayerRaw(
     ],
     comparam_refs=somersault_comparam_refs,
     ecu_variant_patterns=[],
-    comparam_spec_ref=None,
-    prot_stack_snref=None,
     diag_variables_raw=[],
     variable_groups=NamedItemList(),
     dyn_defined_spec=None,
 )
-somersault_assiduous_diaglayer = DiagLayer(diag_layer_raw=somersault_assiduous_diaglayer_raw)
+somersault_assiduous_ecu = EcuVariant(diag_layer_raw=somersault_assiduous_ecu_raw)
 
 ##################
 # Container with all ECUs
@@ -2376,7 +2372,7 @@ somersault_dlc = DiagLayerContainer(
         somersault_company_datas["acme"],
     ]),
     base_variants=NamedItemList([somersault_base_variant]),
-    ecu_variants=NamedItemList([somersault_lazy_diaglayer, somersault_assiduous_diaglayer]),
+    ecu_variants=NamedItemList([somersault_lazy_ecu, somersault_assiduous_ecu]),
     ecu_shared_datas=NamedItemList(),
     protocols=NamedItemList([somersault_protocol]),
     functional_groups=NamedItemList(),

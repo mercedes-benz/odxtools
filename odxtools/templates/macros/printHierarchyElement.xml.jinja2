@@ -1,0 +1,24 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printDiagLayer.xml.jinja2') as pdl %}
+{%- import('macros/printComparamRef.xml.jinja2') as pcom %}
+
+{%- macro printHierarchyElementAttribs(helem) -%}
+{{- pdl.printDiagLayerAttribs(helem) -}}
+{%- endmacro -%}
+
+{%- macro printHierarchyElementSubtags(helem) -%}
+{%- set dlr = helem.hierarchy_element_raw %}
+{{- pdl.printDiagLayerSubtags(helem) }}
+{%- if dlr.comparam_refs %}
+<COMPARAM-REFS>
+  {%- for cp in dlr.comparam_refs -%}
+  {{ pcom.printComparamRef(cp)|indent(2) }}
+  {%- endfor %}
+</COMPARAM-REFS>
+{%- endif %}
+
+{%- endmacro %}

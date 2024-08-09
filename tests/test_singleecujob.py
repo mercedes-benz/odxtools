@@ -22,9 +22,9 @@ from odxtools.compumethods.texttablecompumethod import TexttableCompuMethod
 from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.description import Description
-from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayerraw import DiagLayerRaw
-from odxtools.diaglayertype import DiagLayerType
+from odxtools.diaglayers.diaglayertype import DiagLayerType
+from odxtools.diaglayers.ecuvariant import EcuVariant
+from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
 from odxtools.exceptions import odxrequire
 from odxtools.functionalclass import FunctionalClass
 from odxtools.inputparam import InputParam
@@ -428,8 +428,8 @@ class TestSingleEcuJob(unittest.TestCase):
         self.assertEqual(sej.prog_codes[0].library_refs, [])
 
     def test_resolve_odxlinks(self) -> None:
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("ID.bv", doc_frags),
             short_name="bv",
             long_name=None,
@@ -450,15 +450,13 @@ class TestSingleEcuJob(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        dl = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(dl._build_odxlinks())
+        odxlinks.update(ecu_variant._build_odxlinks())
         # these objects are actually part of the diag layer's
         # diag_data_dictionary_spec, but it is less hassle to
         # "side-load" them...
@@ -474,8 +472,8 @@ class TestSingleEcuJob(unittest.TestCase):
         db.add_auxiliary_file("abc.jar",
                               BytesIO(b"this is supposed to be a JAR archive, but it isn't (HARR)"))
 
-        dl._resolve_odxlinks(odxlinks)
-        dl._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         self.assertEqual(self.context.extensiveTask,
                          self.singleecujob_object.functional_classes.extensiveTask)

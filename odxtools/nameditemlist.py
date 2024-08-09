@@ -1,15 +1,16 @@
 # SPDX-License-Identifier: MIT
 import abc
+import typing
 from copy import deepcopy
 from keyword import iskeyword
-from typing import (Any, Collection, Dict, Iterable, List, Optional, Protocol, SupportsIndex, Tuple,
-                    TypeVar, Union, cast, overload, runtime_checkable)
+from typing import (Any, Collection, Dict, Iterable, List, Optional, SupportsIndex, Tuple, TypeVar,
+                    Union, cast, overload, runtime_checkable)
 
 from .exceptions import odxraise
 
 
 @runtime_checkable
-class OdxNamed(Protocol):
+class OdxNamed(typing.Protocol):
 
     @property
     def short_name(self) -> str:

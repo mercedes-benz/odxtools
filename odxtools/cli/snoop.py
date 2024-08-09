@@ -4,12 +4,13 @@
 import argparse
 import asyncio
 import sys
-from typing import Any, Type
+from typing import Any, List, Optional, Type
 
 import can
 
 import odxtools.isotp_state_machine as ism
 import odxtools.uds as uds
+from odxtools.diaglayers.protocol import Protocol
 from odxtools.exceptions import DecodeError
 from odxtools.isotp_state_machine import IsoTpStateMachine
 from odxtools.response import Response, ResponseType
@@ -245,21 +246,43 @@ def run(args: argparse.Namespace) -> None:
 
     protocol_name = args.protocol
     if odx_diag_layer is not None and protocol_name is not None:
-        protocol_names = [x.short_name for x in odx_diag_layer.protocols]
+        protocols: Optional[List[Protocol]] = getattr(odx_diag_layer, "protocols", None)
+
+        if protocols is None:
+            print(f"ECU variant {odx_diag_layer.short_name} is of type "
+                  f"{odx_diag_layer.variant_type.value} and thus does not "
+                  f"feature any protocols")
+            sys.exit(1)
+
+        protocol_names = [x.short_name for x in protocols]
         if protocol_name not in protocol_names:
             print(f"ECU variant {odx_diag_layer.short_name} does not support "
                   f"a protocol named '{protocol_name}'. Supported protocols are:")
-            for x in odx_diag_layer.protocols:
+            for x in protocols:
                 desc = "" if x.description is None else f": {x.description}"
                 print(f"  {x.short_name}{desc}")
             sys.exit(1)
 
     # if no can IDs have been explicitly specified, take them from the DL
     if args.rx is None and odx_diag_layer:
-        args.rx = str(odx_diag_layer.get_can_receive_id(protocol=protocol_name))
+        get_can_rx_id = getattr(odx_diag_layer, "get_can_receive_id", None)
+        if get_can_rx_id is None:
+            print(f"ECU variant {odx_diag_layer.short_name} is of type "
+                  f"{odx_diag_layer.variant_type.value} and thus does not "
+                  f"provide any communication parameters")
+            sys.exit(1)
+
+        args.rx = str(get_can_rx_id(protocol=protocol_name))
 
     if args.tx is None and odx_diag_layer:
-        args.tx = str(odx_diag_layer.get_can_send_id(protocol=protocol_name))
+        get_can_tx_id = getattr(odx_diag_layer, "get_can_send_id", None)
+        if get_can_tx_id is None:
+            print(f"ECU variant {odx_diag_layer.short_name} is of type "
+                  f"{odx_diag_layer.variant_type.value} and thus does not "
+                  f"provide any communication parameters")
+            sys.exit(1)
+
+        args.tx = str(get_can_tx_id(protocol=protocol_name))
 
     if args.rx is None:
         print(f"Could not determine a CAN receive ID.")

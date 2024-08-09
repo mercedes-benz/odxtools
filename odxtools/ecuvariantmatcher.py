@@ -2,10 +2,11 @@
 from enum import Enum
 from typing import Dict, Generator, List, Optional
 
-from .diaglayer import DiagLayer
-from .diaglayertype import DiagLayerType
+from .diaglayers.diaglayer import DiagLayer
+from .diaglayers.diaglayertype import DiagLayerType
+from .diaglayers.ecuvariant import EcuVariant
 from .diagservice import DiagService
-from .exceptions import OdxError, odxassert
+from .exceptions import OdxError, odxassert, odxrequire
 from .matchingparameter import MatchingParameter
 from .odxtypes import ParameterValue
 from .response import Response
@@ -42,9 +43,7 @@ class EcuVariantMatcher:
     @staticmethod
     def get_ident_service(diag_layer: DiagLayer, matching_param: MatchingParameter) -> DiagService:
         service_name = matching_param.diag_comm_snref
-        odxassert(service_name in [x.short_name for x in diag_layer.services])
-        service = diag_layer.services[service_name]
-        odxassert(isinstance(service, DiagService))
+        service = odxrequire(diag_layer.services.get(service_name))
         return service
 
     @staticmethod
@@ -89,7 +88,7 @@ class EcuVariantMatcher:
         raise OdxError(f"The snref or snpathref '{matching_param.out_param_if}' is cannot be \
                 resolved for any positive or negative response.")
 
-    def __init__(self, ecu_variant_candidates: List[DiagLayer], use_cache: bool = True):
+    def __init__(self, ecu_variant_candidates: List[EcuVariant], use_cache: bool = True):
 
         self.ecus = ecu_variant_candidates
         for ecu in self.ecus:
