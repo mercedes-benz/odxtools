@@ -18,7 +18,7 @@
 {%- if limit_obj.value_raw is none %}
   {#- #}/>
 {%- else %}
-  {#- #}>{{- limit_obj.value_raw }}</{{tag_name}}>
+  {#- #}>{{- limit_obj.value_raw | e }}</{{tag_name}}>
 {%- endif -%}
 {%- endif -%}
 {%- endmacro -%}

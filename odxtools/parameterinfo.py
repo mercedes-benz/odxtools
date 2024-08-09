@@ -132,7 +132,16 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 val_str = ""
                 if scale.lower_limit is not None:
                     val_str = f"({repr(scale.lower_limit.value)})"
-                of.write(f"  {repr(scale.compu_const)}{val_str}\n")
+
+                if scale.compu_const is None:
+                    of.write(f"  <ERROR in ODX data: no value specified>\n")
+                else:
+                    vt = scale.compu_const.vt
+                    v = scale.compu_const.v
+                    if vt is not None:
+                        of.write(f"  \"{vt}\" {val_str}\n")
+                    else:
+                        of.write(f"  {v}\n")
 
         elif isinstance(cm, IdenticalCompuMethod):
             bdt = dop.physical_type.base_data_type
