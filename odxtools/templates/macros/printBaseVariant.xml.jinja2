@@ -1,0 +1,53 @@
+{#- -*- mode: sgml; tab-width: 2; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printHierarchyElement.xml.jinja2') as phe %}
+{%- import('macros/printComparamRef.xml.jinja2') as pcom %}
+{%- import('macros/printParentRef.xml.jinja2') as pparref %}
+
+{%- macro printBaseVariant(base_variant) -%}
+<BASE-VARIANT {{- phe.printHierarchyElementAttribs(base_variant) -}}>
+  {{ phe.printHierarchyElementSubtags(base_variant) | indent(2) }}
+  {%- set dlr = base_variant.base_variant_raw %}
+
+  {%- if dlr.diag_variables %}
+  <DIAG-VARIABLES>
+    {%- for dv in dlr.diag_variables -%}
+    {{ pdv.printDiagVariable(dv)|indent(4) }}
+    {%- endfor -%}
+  </DIAG-VARIABLES>
+  {%- endif %}
+
+  {%- if dlr.variable_groups %}
+  <VARIABLE-GROUPS>
+    {%- for vg in dlr.variable_groups -%}
+    {{ pdv.printVariableGroup(vg)|indent(4) }}
+    {%- endfor -%}
+  </VARIABLE-GROUPS>
+  {%- endif %}
+
+  {%- if dlr.dyn_defined_spec %}
+  {{ pdynspec.printPrintDefinedSpec(dlr.dyn_defined_spec)|indent(4) }}
+  {%- endif %}
+
+{#
+  {%- if dlr.base_variant_patterns %}
+  <BASE-VARIANT-PATTERNS>
+    {%- for vp in dlr.base_variant_patterns -%}
+    {{ pvpat.printBaseVariantPattern(vp)|indent(4) }}
+    {%- endfor -%}
+  </BASE-VARIANT-PATTERNS>
+  {%- endif %}
+#}
+
+  {%- if dlr.parent_refs %}
+  <PARENT-REFS>
+    {%- for parent in dlr.parent_refs -%}
+    {{ pparref.printParentRef(parent)|indent(4) }}
+    {%- endfor %}
+  </PARENT-REFS>
+  {%- endif %}
+</BASE-VARIANT>
+{%- endmacro %}

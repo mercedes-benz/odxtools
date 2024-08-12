@@ -1,0 +1,53 @@
+{#- -*- mode: sgml; tab-width: 2; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printHierarchyElement.xml.jinja2') as phe %}
+{%- import('macros/printComparamRef.xml.jinja2') as pcom %}
+{%- import('macros/printParentRef.xml.jinja2') as pparref %}
+{%- import('macros/printEcuVariantPattern.xml.jinja2') as pvpat %}
+{%- import('macros/printDynDefinedSpec.xml.jinja2') as pdynspec %}
+
+{%- macro printEcuVariant(ecu_variant) -%}
+<ECU-VARIANT {{- phe.printHierarchyElementAttribs(ecu_variant) -}}>
+  {{ phe.printHierarchyElementSubtags(ecu_variant) | indent(2) }}
+  {%- set dlr = ecu_variant.diag_layer_raw %}
+
+  {%- if dlr.diag_variables %}
+  <DIAG-VARIABLES>
+    {%- for dv in dlr.diag_variables -%}
+    {{ pdv.printDiagVariable(dv)|indent(4) }}
+    {%- endfor -%}
+  </DIAG-VARIABLES>
+  {%- endif %}
+
+  {%- if dlr.variable_groups %}
+  <VARIABLE-GROUPS>
+    {%- for vg in dlr.variable_groups -%}
+    {{ pdv.printVariableGroup(vg)|indent(4) }}
+    {%- endfor -%}
+  </VARIABLE-GROUPS>
+  {%- endif %}
+
+  {%- if dlr.dyn_defined_spec %}
+  {{ pdynspec.printPrintDefinedSpec(dlr.dyn_defined_spec)|indent(4) }}
+  {%- endif %}
+
+  {%- if dlr.ecu_variant_patterns %}
+  <ECU-VARIANT-PATTERNS>
+    {%- for vp in dlr.ecu_variant_patterns -%}
+    {{ pvpat.printEcuVariantPattern(vp)|indent(4) }}
+    {%- endfor -%}
+  </ECU-VARIANT-PATTERNS>
+  {%- endif %}
+
+  {%- if dlr.parent_refs %}
+  <PARENT-REFS>
+    {%- for parent in dlr.parent_refs -%}
+    {{ pparref.printParentRef(parent)|indent(4) }}
+    {%- endfor %}
+  </PARENT-REFS>
+  {%- endif %}
+</ECU-VARIANT>
+{%- endmacro %}

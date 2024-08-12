@@ -9,8 +9,13 @@ from packaging.version import Version
 
 from .comparamspec import ComparamSpec
 from .comparamsubset import ComparamSubset
-from .diaglayer import DiagLayer
 from .diaglayercontainer import DiagLayerContainer
+from .diaglayers.basevariant import BaseVariant
+from .diaglayers.diaglayer import DiagLayer
+from .diaglayers.ecushareddata import EcuSharedData
+from .diaglayers.ecuvariant import EcuVariant
+from .diaglayers.functionalgroup import FunctionalGroup
+from .diaglayers.protocol import Protocol
 from .exceptions import odxraise
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase, OdxLinkId
@@ -101,10 +106,16 @@ class Database:
         self._diag_layers = NamedItemList(
             chain(*[dlc.diag_layers for dlc in self.diag_layer_containers]))
 
+        self._ecu_shared_datas = NamedItemList(
+            chain(*[dlc.ecu_shared_datas for dlc in self.diag_layer_containers]))
         self._protocols = NamedItemList(
             chain(*[dlc.protocols for dlc in self.diag_layer_containers]))
-
-        self._ecus = NamedItemList(chain(*[dlc.ecu_variants for dlc in self.diag_layer_containers]))
+        self._functional_groups = NamedItemList(
+            chain(*[dlc.functional_groups for dlc in self.diag_layer_containers]))
+        self._base_variants = NamedItemList(
+            chain(*[dlc.base_variants for dlc in self.diag_layer_containers]))
+        self._ecu_variants = NamedItemList(
+            chain(*[dlc.ecu_variants for dlc in self.diag_layer_containers]))
 
         # Build odxlinks
         self._odxlinks = OdxLinkDatabase()
@@ -145,19 +156,44 @@ class Database:
         return self._odxlinks
 
     @property
-    def protocols(self) -> NamedItemList[DiagLayer]:
+    def ecu_shared_datas(self) -> NamedItemList[EcuSharedData]:
+        """All ECU shared data layers defined by this database
+
+        ECU shared data layers act as a kind of shared library for
+        data that is common to multiple otherwise unrelated ECUs.
+
         """
-        All protocols defined by this database
-        """
+        return self._ecu_shared_datas
+
+    @property
+    def protocols(self) -> NamedItemList[Protocol]:
+        """All protocol layers defined by this database"""
         return self._protocols
 
     @property
-    def ecus(self) -> NamedItemList[DiagLayer]:
-        """ECU-variants defined in the database"""
-        return self._ecus
+    def functional_groups(self) -> NamedItemList["FunctionalGroup"]:
+        """Functional group layers defined in the database"""
+        return self._functional_groups
 
     @property
-    def diag_layers(self) -> NamedItemList[DiagLayer]:
+    def base_variants(self) -> NamedItemList["BaseVariant"]:
+        """Base variants defined in the database"""
+        return self._base_variants
+
+    @property
+    def ecus(self) -> NamedItemList["EcuVariant"]:
+        """ECU variants defined in the database
+
+        This property is an alias for `.ecu_variants`"""
+        return self._ecu_variants
+
+    @property
+    def ecu_variants(self) -> NamedItemList["EcuVariant"]:
+        """ECU variants defined in the database"""
+        return self._ecu_variants
+
+    @property
+    def diag_layers(self) -> NamedItemList["DiagLayer"]:
         """All diagnostic layers defined in the database"""
         return self._diag_layers
 

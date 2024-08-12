@@ -1,0 +1,40 @@
+{#- -*- mode: sgml; tab-width: 2; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printHierarchyElement.xml.jinja2') as phe %}
+{%- import('macros/printComparamRef.xml.jinja2') as pcom %}
+{%- import('macros/printParentRef.xml.jinja2') as pparref %}
+
+{%- macro printFunctionalGroup(functional_group) -%}
+<FUNCTIONAL-GROUP {{- phe.printHierarchyElementAttribs(functional_group) -}}>
+  {{ phe.printHierarchyElementSubtags(functional_group) | indent(2) }}
+
+  {%- set dlr = functional_group.functional_group_raw %}
+
+  {%- if dlr.diag_variables %}
+  <DIAG-VARIABLES>
+    {%- for dv in dlr.diag_variables -%}
+    {{ pdv.printDiagVariable(dv)|indent(4) }}
+    {%- endfor -%}
+  </DIAG-VARIABLES>
+  {%- endif %}
+
+  {%- if dlr.variable_groups %}
+  <VARIABLE-GROUPS>
+    {%- for vg in dlr.variable_groups -%}
+    {{ pdv.printVariableGroup(vg)|indent(4) }}
+    {%- endfor -%}
+  </VARIABLE-GROUPS>
+  {%- endif %}
+
+  {%- if dlr.parent_refs %}
+  <PARENT-REFS>
+    {%- for parent in dlr.parent_refs -%}
+    {{ pparref.printParentRef(parent)|indent(4) }}
+    {%- endfor %}
+  </PARENT-REFS>
+  {%- endif %}
+</FUNCTIONAL-GROUP>
+{%- endmacro %}

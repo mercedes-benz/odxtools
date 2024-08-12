@@ -15,9 +15,9 @@ from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.decodestate import DecodeState
 from odxtools.description import Description
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
-from odxtools.diaglayer import DiagLayer
-from odxtools.diaglayerraw import DiagLayerRaw
-from odxtools.diaglayertype import DiagLayerType
+from odxtools.diaglayers.diaglayertype import DiagLayerType
+from odxtools.diaglayers.ecuvariant import EcuVariant
+from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
 from odxtools.encodestate import EncodeState
 from odxtools.exceptions import DecodeError, EncodeError, OdxError, odxrequire
 from odxtools.leadinglengthinfotype import LeadingLengthInfoType
@@ -255,8 +255,8 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         )
 
         # Dummy diag layer to resolve references from request parameters to DOPs
-        diag_layer_raw = DiagLayerRaw(
-            variant_type=DiagLayerType.BASE_VARIANT,
+        ecu_variant_raw = EcuVariantRaw(
+            variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("BV.dummy_DL", doc_frags),
             short_name="dummy_DL",
             long_name=None,
@@ -292,18 +292,16 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
+        odxlinks.update(ecu_variant._build_odxlinks())
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         # Test decoding.
         coded_request = bytes([
@@ -581,7 +579,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         )
 
         # Dummy diag layer to resolve references from request parameters to DOPs
-        diag_layer_raw = DiagLayerRaw(
+        ecu_variant_raw = EcuVariantRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("BV.dummy_DL", doc_frags),
             short_name="dummy_DL",
@@ -618,18 +616,16 @@ class TestParamLengthInfoType(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
+        odxlinks.update(ecu_variant._build_odxlinks())
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         # Test decoding.
         coded_request = bytes([
@@ -921,7 +917,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         )
 
         # Dummy diag layer to resolve references from request parameters to DOPs
-        diag_layer_raw = DiagLayerRaw(
+        ecu_variant_raw = EcuVariantRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("BV.dummy_DL", doc_frags),
             short_name="dummy_DL",
@@ -958,18 +954,16 @@ class TestMinMaxLengthType(unittest.TestCase):
             parent_refs=[],
             comparam_refs=[],
             ecu_variant_patterns=[],
-            comparam_spec_ref=None,
-            prot_stack_snref=None,
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             dyn_defined_spec=None,
         )
-        diag_layer = DiagLayer(diag_layer_raw=diag_layer_raw)
+        ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
-        odxlinks.update(diag_layer._build_odxlinks())
+        odxlinks.update(ecu_variant._build_odxlinks())
         db = Database()
-        diag_layer._resolve_odxlinks(odxlinks)
-        diag_layer._finalize_init(db, odxlinks)
+        ecu_variant._resolve_odxlinks(odxlinks)
+        ecu_variant._finalize_init(db, odxlinks)
 
         # Test decoding.
         coded_request = bytes([

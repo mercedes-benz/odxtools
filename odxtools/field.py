@@ -81,12 +81,11 @@ class Field(ComplexDop):
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         """Recursively resolve any short-name references"""
-        ddd_spec = odxrequire(context.diag_layer).diag_data_dictionary_spec
+        ddds = odxrequire(context.diag_layer).diag_data_dictionary_spec
 
         if self.structure_snref is not None:
-            self._structure = resolve_snref(self.structure_snref, ddd_spec.structures,
-                                            BasicStructure)
+            self._structure = resolve_snref(self.structure_snref, ddds.structures, BasicStructure)
 
         if self.env_data_desc_snref is not None:
-            self._env_data_desc = resolve_snref(self.env_data_desc_snref, ddd_spec.env_data_descs,
+            self._env_data_desc = resolve_snref(self.env_data_desc_snref, ddds.env_data_descs,
                                                 EnvironmentDataDescription)
