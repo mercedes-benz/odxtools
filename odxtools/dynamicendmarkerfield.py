@@ -31,8 +31,7 @@ class DynamicEndmarkerField(Field):
         # ODX 2.0 uses DATA-OBJECT-PROP-REF
         # ODX 2.2 uses DYN-END-DOP-REF
         dop_ref = et_element.find("DYN-END-DOP-REF") or et_element.find("DATA-OBJECT-PROP-REF")
-        dyn_end_dop_ref = DynEndDopRef.from_et(
-            odxrequire(dop_ref), doc_frags)
+        dyn_end_dop_ref = DynEndDopRef.from_et(odxrequire(dop_ref), doc_frags)
 
         return DynamicEndmarkerField(dyn_end_dop_ref=dyn_end_dop_ref, **kwargs)
 
