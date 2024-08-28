@@ -37,4 +37,5 @@ def create_any_compu_method_from_et(et_element: ElementTree.Element,
     # TODO: Implement all categories (never instantiate the CompuMethod base class!)
     odxraise(f"Warning: Computation category {compu_category} is not implemented!")
 
-    return IdenticalCompuMethod(internal_type=DataType.A_UINT32, physical_type=DataType.A_UINT32)
+    return IdenticalCompuMethod.compu_method_from_et(
+        et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
