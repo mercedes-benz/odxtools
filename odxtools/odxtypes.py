@@ -64,7 +64,7 @@ def bool_to_odxstr(bool_val: bool) -> str:
 
 def parse_int(value: str) -> int:
     try:
-        return int(value)
+        return int(value, 0)
     except ValueError:
         try:
             v = float(value)
