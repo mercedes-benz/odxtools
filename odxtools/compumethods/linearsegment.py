@@ -38,7 +38,7 @@ class LinearSegment:
         coeffs = odxrequire(scale.compu_rational_coeffs)
 
         offset = coeffs.numerators[0]
-        factor = coeffs.numerators[1]
+        factor = 0 if len(coeffs.numerators) == 1 else coeffs.numerators[1]
 
         denominator = 1.0
         if len(coeffs.denominators) > 0:
