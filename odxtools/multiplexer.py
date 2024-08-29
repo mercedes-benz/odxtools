@@ -96,6 +96,7 @@ class Multiplexer(ComplexDop):
                 f"(case_name, content_value) tuple instead of as '{physical_value!r}'")
 
         mux_case: Union[MultiplexerCase, MultiplexerDefaultCase]
+        applicable_cases: List[Union[MultiplexerCase, MultiplexerDefaultCase]]
 
         if isinstance(case_spec, str):
             applicable_cases = [x for x in self.cases if x.short_name == case_spec]
@@ -107,7 +108,7 @@ class Multiplexer(ComplexDop):
 
             odxassert(len(applicable_cases) == 1)
             mux_case = applicable_cases[0]
-            if mux_case == self.default_case:
+            if self.default_case and mux_case == self.default_case:
                 key_value = 0
             else:
                 key_value, _ = self._get_case_limits(mux_case)
