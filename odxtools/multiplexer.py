@@ -108,10 +108,10 @@ class Multiplexer(ComplexDop):
 
             odxassert(len(applicable_cases) == 1)
             mux_case = applicable_cases[0]
-            if self.default_case and mux_case == self.default_case:
-                key_value = 0
-            else:
+            if isinstance(mux_case, MultiplexerCase):
                 key_value, _ = self._get_case_limits(mux_case)
+            else:
+                key_value = 0
         elif isinstance(case_spec, int):
             applicable_cases = []
             for x in self.cases:
