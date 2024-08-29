@@ -96,15 +96,22 @@ class Multiplexer(ComplexDop):
                 f"(case_name, content_value) tuple instead of as '{physical_value!r}'")
 
         mux_case: Union[MultiplexerCase, MultiplexerDefaultCase]
+        applicable_cases: List[Union[MultiplexerCase, MultiplexerDefaultCase]]
+
         if isinstance(case_spec, str):
             applicable_cases = [x for x in self.cases if x.short_name == case_spec]
+            if not applicable_cases and self.default_case:
+                applicable_cases.append(self.default_case)
             if len(applicable_cases) == 0:
                 raise EncodeError(
                     f"Multiplexer {self.short_name} does not know any case called {case_spec}")
 
             odxassert(len(applicable_cases) == 1)
             mux_case = applicable_cases[0]
-            key_value, _ = self._get_case_limits(mux_case)
+            if isinstance(mux_case, MultiplexerCase):
+                key_value, _ = self._get_case_limits(mux_case)
+            else:
+                key_value = 0
         elif isinstance(case_spec, int):
             applicable_cases = []
             for x in self.cases:
