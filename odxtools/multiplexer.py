@@ -99,7 +99,7 @@ class Multiplexer(ComplexDop):
 
         if isinstance(case_spec, str):
             applicable_cases = [x for x in self.cases if x.short_name == case_spec]
-            if self.default_case:
+            if not applicable_cases and self.default_case:
                 applicable_cases.append(self.default_case)
             if len(applicable_cases) == 0:
                 raise EncodeError(
