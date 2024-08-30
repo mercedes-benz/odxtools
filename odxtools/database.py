@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from itertools import chain
 from pathlib import Path
-from typing import IO, Any, Dict, List, Optional, OrderedDict
+from typing import IO, Any, Dict, List, Optional, OrderedDict, Union
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
@@ -27,10 +27,7 @@ class Database:
     into a single PDX file.
     """
 
-    def __init__(self,
-                 *,
-                 pdx_zip: Optional[ZipFile] = None,
-                 odx_d_file_name: Optional[str] = None) -> None:
+    def __init__(self) -> None:
         self.model_version: Optional[Version] = None
         self.auxiliary_files: OrderedDict[str, IO[bytes]] = OrderedDict()
 
@@ -39,9 +36,14 @@ class Database:
         self._comparam_subsets = NamedItemList[ComparamSubset]()
         self._comparam_specs = NamedItemList[ComparamSpec]()
 
-    def add_pdx_file(self, pdx_file_name: str) -> None:
-        pdx_zip = ZipFile(pdx_file_name)
+    def add_pdx_file(self, pdx_file: Union[str, IO[bytes]]) -> None:
+        """Add PDX file to database.
+        Either pass the path to the file or an IO with the file content.
+        """
+        pdx_zip = ZipFile(pdx_file)
+        self.add_pdx_zip(pdx_zip)
 
+    def add_pdx_zip(self, pdx_zip: ZipFile) -> None:
         for zip_member in pdx_zip.namelist():
             # The name of ODX files can end with .odx, .odx-d,
             # .odx-c, .odx-cs, .odx-e, .odx-f, .odx-fd, .odx-m,
