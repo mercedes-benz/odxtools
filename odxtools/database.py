@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import IO, Any, Dict, List, Optional, OrderedDict, Union
 from xml.etree import ElementTree
 from zipfile import ZipFile
+from os import PathLike
 
 from packaging.version import Version
 
@@ -36,25 +37,23 @@ class Database:
         self._comparam_subsets = NamedItemList[ComparamSubset]()
         self._comparam_specs = NamedItemList[ComparamSpec]()
 
-    def add_pdx_file(self, pdx_file: Union[str, IO[bytes]]) -> None:
+    def add_pdx_file(self, pdx_file: Union[str, PathLike[str], IO[bytes], ZipFile]) -> None:
         """Add PDX file to database.
-        Either pass the path to the file or an IO with the file content.
+        Either pass the path to the file, an IO with the file content or a ZipFile object.
         """
-        pdx_zip = ZipFile(pdx_file)
-        self.add_pdx_zip(pdx_zip)
-
-    def add_pdx_zip(self, pdx_zip: ZipFile) -> None:
-        for zip_member in pdx_zip.namelist():
+        if not isinstance(pdx_file, ZipFile):
+            pdx_file = ZipFile(pdx_file)
+        for zip_member in pdx_file.namelist():
             # The name of ODX files can end with .odx, .odx-d,
             # .odx-c, .odx-cs, .odx-e, .odx-f, .odx-fd, .odx-m,
             # .odx-v .  We could test for all that, or just make
             # sure that the file's suffix starts with .odx
             p = Path(zip_member)
             if p.suffix.lower().startswith(".odx"):
-                root = ElementTree.parse(pdx_zip.open(zip_member)).getroot()
+                root = ElementTree.parse(pdx_file.open(zip_member)).getroot()
                 self._process_xml_tree(root)
             elif p.name.lower() != "index.xml":
-                self.add_auxiliary_file(zip_member, pdx_zip.open(zip_member))
+                self.add_auxiliary_file(zip_member, pdx_file.open(zip_member))
 
     def add_odx_file(self, odx_file_name: str) -> None:
         self._process_xml_tree(ElementTree.parse(odx_file_name).getroot())
