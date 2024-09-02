@@ -37,7 +37,7 @@ class Database:
         self._comparam_subsets = NamedItemList[ComparamSubset]()
         self._comparam_specs = NamedItemList[ComparamSpec]()
 
-    def add_pdx_file(self, pdx_file: Union[str, PathLike, IO[bytes], ZipFile]) -> None:
+    def add_pdx_file(self, pdx_file: Union[str, "PathLike[Any]", IO[bytes], ZipFile]) -> None:
         """Add PDX file to database.
         Either pass the path to the file, an IO with the file content or a ZipFile object.
         """
@@ -57,11 +57,11 @@ class Database:
             elif p.name.lower() != "index.xml":
                 self.add_auxiliary_file(zip_member, pdx_zip.open(zip_member))
 
-    def add_odx_file(self, odx_file_name: Union[str, PathLike]) -> None:
+    def add_odx_file(self, odx_file_name: Union[str, "PathLike[Any]"]) -> None:
         self._process_xml_tree(ElementTree.parse(odx_file_name).getroot())
 
     def add_auxiliary_file(self,
-                           aux_file_name: Union[str, PathLike],
+                           aux_file_name: Union[str, "PathLike[Any]"],
                            aux_file_obj: Optional[IO[bytes]] = None) -> None:
         if aux_file_obj is None:
             aux_file_obj = open(aux_file_name, "rb")
