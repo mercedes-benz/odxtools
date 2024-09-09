@@ -115,8 +115,7 @@ class LinearSegment:
         This method is called by `__post_init__()`.
         """
 
-        def convert_internal_to_physical_limit(internal_limit: Optional[Limit],
-                                               is_upper_limit: bool) -> Optional[Limit]:
+        def convert_internal_to_physical_limit(internal_limit: Optional[Limit]) -> Optional[Limit]:
             """Helper method to convert a single internal limit
             """
             if internal_limit is None or internal_limit.value_raw is None:
@@ -137,16 +136,16 @@ class LinearSegment:
 
         if self.factor >= 0:
             self._physical_lower_limit = convert_internal_to_physical_limit(
-                self.internal_lower_limit, False)
+                self.internal_lower_limit)
             self._physical_upper_limit = convert_internal_to_physical_limit(
-                self.internal_upper_limit, True)
+                self.internal_upper_limit)
         else:
             # If the scaling factor is negative, the lower and upper
             # limit are swapped
             self._physical_lower_limit = convert_internal_to_physical_limit(
-                self.internal_upper_limit, True)
+                self.internal_upper_limit)
             self._physical_upper_limit = convert_internal_to_physical_limit(
-                self.internal_lower_limit, False)
+                self.internal_lower_limit)
 
     def physical_applies(self, physical_value: AtomicOdxType) -> bool:
         """Returns True iff the segment is applicable to a given physical value"""

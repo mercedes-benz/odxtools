@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MIT
 from itertools import chain
+from os import PathLike
 from pathlib import Path
 from typing import IO, Any, Dict, List, Optional, OrderedDict, Union
 from xml.etree import ElementTree
 from zipfile import ZipFile
-from os import PathLike
 
 from packaging.version import Version
 
@@ -17,7 +17,7 @@ from .diaglayers.ecushareddata import EcuSharedData
 from .diaglayers.ecuvariant import EcuVariant
 from .diaglayers.functionalgroup import FunctionalGroup
 from .diaglayers.protocol import Protocol
-from .exceptions import odxraise
+from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase, OdxLinkId
 
@@ -36,6 +36,7 @@ class Database:
         self._diag_layer_containers = NamedItemList[DiagLayerContainer]()
         self._comparam_subsets = NamedItemList[ComparamSubset]()
         self._comparam_specs = NamedItemList[ComparamSpec]()
+        self._short_name = "odx_database"
 
     def add_pdx_file(self, pdx_file: Union[str, "PathLike[Any]", IO[bytes], ZipFile]) -> None:
         """Add PDX file to database.
@@ -54,7 +55,11 @@ class Database:
             if p.suffix.lower().startswith(".odx"):
                 root = ElementTree.parse(pdx_zip.open(zip_member)).getroot()
                 self._process_xml_tree(root)
-            elif p.name.lower() != "index.xml":
+            elif p.name.lower() == "index.xml":
+                root = ElementTree.parse(pdx_zip.open(zip_member)).getroot()
+                db_short_name = odxrequire(root.findtext("SHORT-NAME"))
+                self.short_name = db_short_name
+            else:
                 self.add_auxiliary_file(zip_member, pdx_zip.open(zip_member))
 
     def add_odx_file(self, odx_file_name: Union[str, "PathLike[Any]"]) -> None:
@@ -157,6 +162,14 @@ class Database:
     def odxlinks(self) -> OdxLinkDatabase:
         """A map from odx_id to object"""
         return self._odxlinks
+
+    @property
+    def short_name(self) -> str:
+        return self._short_name
+
+    @short_name.setter
+    def short_name(self, value: str) -> None:
+        self._short_name = value
 
     @property
     def ecu_shared_datas(self) -> NamedItemList[EcuSharedData]:

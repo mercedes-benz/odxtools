@@ -22,7 +22,7 @@ class CompuPhysToInternal:
                                        physical_type: DataType) -> "CompuPhysToInternal":
         compu_scales = [
             CompuScale.compuscale_from_et(
-                cse, doc_frags, internal_type=internal_type, physical_type=physical_type)
+                cse, doc_frags, domain_type=physical_type, range_type=internal_type)
             for cse in et_element.iterfind("COMPU-SCALES/COMPU-SCALE")
         ]
 

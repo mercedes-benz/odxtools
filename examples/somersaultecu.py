@@ -443,8 +443,8 @@ somersault_compumethods: Dict[str, CompuMethod] = {
                             value_raw="0", value_type=DataType.A_UINT32, interval_type=None),
                         short_label=None,
                         description=None,
-                        internal_type=DataType.A_UINT32,
-                        physical_type=DataType.A_UNICODE2STRING,
+                        domain_type=DataType.A_UINT32,
+                        range_type=DataType.A_UNICODE2STRING,
                         compu_inverse_value=None,
                         compu_rational_coeffs=None),
                     CompuScale(
@@ -455,8 +455,8 @@ somersault_compumethods: Dict[str, CompuMethod] = {
                             value_raw="1", value_type=DataType.A_UINT32, interval_type=None),
                         short_label=None,
                         description=None,
-                        internal_type=DataType.A_UINT32,
-                        physical_type=DataType.A_UNICODE2STRING,
+                        domain_type=DataType.A_UINT32,
+                        range_type=DataType.A_UNICODE2STRING,
                         compu_inverse_value=None,
                         compu_rational_coeffs=None),
                 ],
@@ -2403,6 +2403,7 @@ for odx_c_filename in ("UDSOnCAN_CPS.odx-c",):
 
 # create a database object
 database = Database()
+database.short_name = "somersault_database"
 database._diag_layer_containers = NamedItemList([somersault_dlc])
 database._comparam_subsets = NamedItemList(comparam_subsets)
 database._comparam_specs = NamedItemList(comparam_specs)
