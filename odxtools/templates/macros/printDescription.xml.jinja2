@@ -5,7 +5,7 @@
 
 {%- macro printDescription(desc) %}
 {%- if desc is not none %}
-<DESC {{make_xml_attrib("TI", desc.text_identifier)}}>{{desc.text}}
+<DESC {{- make_xml_attrib("TI", desc.text_identifier)}}>{{desc.text}}
 {%- if desc.external_docs %}
 <EXTERNAL-DOCS>
  {%- for ed in desc.external_docs %}
