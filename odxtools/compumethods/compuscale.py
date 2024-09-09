@@ -27,7 +27,13 @@ class CompuScale:
 
     # the following two attributes are not specified for COMPU-SCALE
     # tags in the XML, but they are required to do anything useful
-    # with it.
+    # with compu scales: The domain type is the input set of the
+    # function associated with the compu scale object, whilst the
+    # range type represents the output set. IOW, for scales contained
+    # by the internal-to-physical mapping function, the domain type is
+    # the internal and the range type is the physical type of the
+    # compu method. (Vice versa for scales specified by the
+    # physical-to-internal mapping function.)
     domain_type: DataType
     range_type: DataType
 
