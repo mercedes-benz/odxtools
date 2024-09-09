@@ -141,8 +141,7 @@ class ItemAttributeList(List[T]):
     def __getitem__(self, key: slice) -> List[T]:
         ...
 
-    def __getitem__(  # type: ignore
-            self, key: Union[SupportsIndex, str, slice]) -> Union[T, List[T]]:
+    def __getitem__(self, key: Union[SupportsIndex, str, slice]) -> Union[T, List[T]]:
         if isinstance(key, (SupportsIndex, slice)):
             return super().__getitem__(key)
         else:
