@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MIT
 from itertools import chain
+from os import PathLike
 from pathlib import Path
 from typing import IO, Any, Dict, List, Optional, OrderedDict, Union
 from xml.etree import ElementTree
 from zipfile import ZipFile
-from os import PathLike
 
 from packaging.version import Version
 
