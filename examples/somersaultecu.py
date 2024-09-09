@@ -2403,6 +2403,7 @@ for odx_c_filename in ("UDSOnCAN_CPS.odx-c",):
 
 # create a database object
 database = Database()
+database.short_name = "somersault_database"
 database._diag_layer_containers = NamedItemList([somersault_dlc])
 database._comparam_subsets = NamedItemList(comparam_subsets)
 database._comparam_specs = NamedItemList(comparam_specs)
