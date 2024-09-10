@@ -5,6 +5,11 @@
 
 {%- import('macros/printDescription.xml.jinja2') as pd %}
 
+{%- macro printElementIdAttribs(obj) -%}
+{#- #} {{- make_xml_attrib("ID", obj.odx_id.local_id) }}
+{#- #} {{- make_xml_attrib("OID", getattr(obj, "oid", none)) -}}
+{%- endmacro -%}
+
 {%- macro printElementIdSubtags(obj) -%}
 <SHORT-NAME>{{ obj.short_name }}</SHORT-NAME>
 {%- if obj.long_name %}

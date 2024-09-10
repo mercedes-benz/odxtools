@@ -27,6 +27,7 @@ odxlinks = OdxLinkDatabase()
 def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
     resp = Response(
         odx_id=OdxLinkId(local_id="dummy_resp", doc_fragments=doc_frags),
+        oid=None,
         short_name="dummy_resp",
         long_name=None,
         description=None,
@@ -52,6 +53,7 @@ def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
 def ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> DiagService:
     dummy_req = Request(
         odx_id=OdxLinkId(local_id="dummy_req", doc_fragments=doc_frags),
+        oid=None,
         short_name="dummy_req",
         long_name=None,
         description=None,
@@ -64,6 +66,7 @@ def ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> 
 
     diagService = DiagService(
         odx_id=OdxLinkId(local_id="identService", doc_fragments=doc_frags),
+        oid=None,
         short_name="identService",
         long_name=None,
         description=None,
@@ -101,6 +104,7 @@ def ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> 
 def supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> DiagService:
     dummy_req = Request(
         odx_id=OdxLinkId(local_id="dummy_req", doc_fragments=doc_frags),
+        oid=None,
         short_name="dummy_req",
         long_name=None,
         description=None,
@@ -113,6 +117,7 @@ def supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) 
 
     diagService = DiagService(
         odx_id=OdxLinkId(local_id="supplierService", doc_fragments=doc_frags),
+        oid=None,
         short_name="supplierService",
         long_name=None,
         description=None,
@@ -198,6 +203,7 @@ def ecu_variant_1(
     raw_layer = EcuVariantRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant1", doc_fragments=doc_frags),
+        oid=None,
         short_name="ecu_variant1",
         long_name=None,
         description=None,
@@ -238,6 +244,7 @@ def ecu_variant_2(
     raw_layer = EcuVariantRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant2", doc_fragments=doc_frags),
+        oid=None,
         short_name="ecu_variant2",
         long_name=None,
         description=None,
@@ -279,6 +286,7 @@ def ecu_variant_3(
     raw_layer = EcuVariantRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant3", doc_fragments=doc_frags),
+        oid=None,
         short_name="ecu_variant3",
         long_name=None,
         description=None,

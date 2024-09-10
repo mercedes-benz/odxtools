@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
@@ -41,7 +41,6 @@ class PhysicalDimension(IdentifiableElement):
     )
     ```
     """
-    oid: Optional[str]
     length_exp: int
     mass_exp: int
     time_exp: int
@@ -54,7 +53,6 @@ class PhysicalDimension(IdentifiableElement):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "PhysicalDimension":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
-        oid = et_element.get("OID")
 
         def read_optional_int(element: ElementTree.Element, name: str) -> int:
             if val_str := element.findtext(name):
@@ -71,7 +69,6 @@ class PhysicalDimension(IdentifiableElement):
         luminous_intensity_exp = read_optional_int(et_element, "LUMINOUS-INTENSITY-EXP")
 
         return PhysicalDimension(
-            oid=oid,
             length_exp=length_exp,
             mass_exp=mass_exp,
             time_exp=time_exp,

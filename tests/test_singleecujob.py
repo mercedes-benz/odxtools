@@ -65,18 +65,21 @@ class TestSingleEcuJob(unittest.TestCase):
         self.context = Context(
             extensiveTask=FunctionalClass(
                 odx_id=OdxLinkId("ID.extensiveTask", doc_frags),
+                oid=None,
                 short_name="extensiveTask",
                 long_name=None,
                 description=None,
             ),
             specialAudience=AdditionalAudience(
                 odx_id=OdxLinkId("ID.specialAudience", doc_frags),
+                oid=None,
                 short_name="specialAudience",
                 long_name=None,
                 description=None,
             ),
             inputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.inputDOP", doc_frags),
+                oid=None,
                 short_name="inputDOP",
                 long_name=None,
                 description=None,
@@ -135,6 +138,7 @@ class TestSingleEcuJob(unittest.TestCase):
             ),
             outputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.outputDOP", doc_frags),
+                oid=None,
                 short_name="outputDOP",
                 long_name=None,
                 description=None,
@@ -180,6 +184,7 @@ class TestSingleEcuJob(unittest.TestCase):
             ),
             negOutputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.negOutputDOP", doc_frags),
+                oid=None,
                 short_name="negOutputDOP",
                 long_name=None,
                 description=None,
@@ -259,6 +264,7 @@ class TestSingleEcuJob(unittest.TestCase):
 
         self.singleecujob_object = SingleEcuJob(
             odx_id=OdxLinkId("ID.JumpStart", doc_frags),
+            oid=None,
             short_name="JumpStart",
             long_name=None,
             description=None,
@@ -366,6 +372,7 @@ class TestSingleEcuJob(unittest.TestCase):
         jinja_env.globals["odxraise"] = jinja2_odxraise_helper
         jinja_env.globals["make_xml_attrib"] = make_xml_attrib
         jinja_env.globals["make_bool_xml_attrib"] = make_bool_xml_attrib
+        jinja_env.globals["getattr"] = getattr
         jinja_env.globals["hasattr"] = hasattr
 
         # Small template
@@ -393,6 +400,7 @@ class TestSingleEcuJob(unittest.TestCase):
         """Test that empty lists are assigned to list-attributes if no explicit value is passed."""
         sej = SingleEcuJob(
             odx_id=OdxLinkId("ID.SomeID", doc_frags),
+            oid=None,
             short_name="SN.SomeShortName",
             long_name=None,
             description=None,
@@ -433,6 +441,7 @@ class TestSingleEcuJob(unittest.TestCase):
         ecu_variant_raw = EcuVariantRaw(
             variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("ID.bv", doc_frags),
+            oid=None,
             short_name="bv",
             long_name=None,
             description=None,

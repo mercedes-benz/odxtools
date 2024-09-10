@@ -17,7 +17,7 @@
 {%- endmacro %}
 
 {%- macro printSdgCaption(sdg_caption) %}
-<SDG-CAPTION ID="{{sdg_caption.odx_id.local_id}}">
+<SDG-CAPTION {{-peid.printElementIdAttribs(sdg_caption)}}>
  {{ peid.printElementIdSubtags(sdg_caption)|indent(1) }}
 </SDG-CAPTION>
 {%- endmacro %}

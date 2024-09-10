@@ -11,8 +11,8 @@
 {%- set semattrib = make_xml_attrib("SEMANTIC", param.semantic) -%}
 {%- if param.parameter_type == "TABLE-KEY"  %}
 <PARAM {{ semattrib }}
-  {{- make_xml_attrib("ID", param.odx_id and param.odx_id.local_id) }}
-  xsi:type="{{param.parameter_type}}">
+       {{-peid.printElementIdAttribs(param)}}
+       xsi:type="{{param.parameter_type}}">
 {%- elif param.parameter_type == "SYSTEM" %}
 <PARAM {{ semattrib }}
   {{- make_xml_attrib("SYSPARAM", param.sysparam) }}

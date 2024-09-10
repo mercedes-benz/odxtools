@@ -9,7 +9,7 @@
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printDiagCommAttribs(dc) -%}
-ID="{{dc.odx_id.local_id}}"
+{{-peid.printElementIdAttribs(dc)}}
 {{-make_xml_attrib("SEMANTIC", dc.semantic)}}
 {{-make_xml_attrib("DIAGNOSTIC-CLASS", dc.diagnostic_class and dc.diagnostic_class.value)}}
 {{-make_bool_xml_attrib("IS-MANDATORY", dc.is_mandatory_raw)}}

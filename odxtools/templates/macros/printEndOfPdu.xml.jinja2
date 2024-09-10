@@ -6,7 +6,7 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printEndOfPdu(eopdu) -%}
-<END-OF-PDU-FIELD ID="{{eopdu.odx_id.local_id}}">
+<END-OF-PDU-FIELD {{-peid.printElementIdAttribs(eopdu)}}>
  {{ peid.printElementIdSubtags(eopdu)|indent(1) }}
  <BASIC-STRUCTURE-REF ID-REF="{{eopdu.structure_ref.ref_id}}" />
  {%- if eopdu.max_number_of_items is not none %}

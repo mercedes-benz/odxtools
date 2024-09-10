@@ -9,7 +9,7 @@
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printRequest(request) -%}
-<REQUEST ID="{{request.odx_id.local_id}}">
+<REQUEST {{-peid.printElementIdAttribs(request)}}>
  {{ peid.printElementIdSubtags(request)|indent(1) }}
 {%- if request.parameters %}
  <PARAMS>

@@ -27,7 +27,7 @@
 {%- import('macros/printAdminData.xml.jinja2') as pad %}
 
 {%- macro printDiagLayerAttribs(dl) -%}
-{#- #} ID="{{dl.diag_layer_raw.odx_id.local_id}}"{# -#}
+{#- #} {{-peid.printElementIdAttribs(dl)}}{# -#}
 {%- endmacro -%}
 
 {%- macro printDiagLayerSubtags(dl) -%}

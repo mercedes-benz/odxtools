@@ -130,7 +130,7 @@
  {%- if hasattr(dtc, "ref_id") %}
   <DTC-REF ID-REF="{{dtc.ref_id}}" />
  {%- else %}
-  <DTC ID="{{dtc.odx_id.local_id}}">
+  <DTC {{-peid.printElementIdAttribs(dtc)}}>
    <SHORT-NAME>{{dtc.short_name}}</SHORT-NAME>
    <TROUBLE-CODE>{{dtc.trouble_code}}</TROUBLE-CODE>
   {%- if dtc.display_trouble_code is not none   %}

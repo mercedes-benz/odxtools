@@ -53,6 +53,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
 
         dtc_dop = DtcDop(
             odx_id=OdxLinkId("test_ddds.dop.dtc_dop", doc_frags),
+            oid=None,
             short_name="dtc_dop",
             long_name=None,
             description=None,
@@ -64,6 +65,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             dtcs_raw=[
                 DiagnosticTroubleCode(
                     odx_id=OdxLinkId("test_ddds.dop.dtc_dop.DTC.X10", doc_frags),
+                    oid=None,
                     short_name="X10",
                     long_name=None,
                     description=None,
@@ -81,6 +83,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
 
         dop_1 = DataObjectProperty(
             odx_id=OdxLinkId("test_ddds.dop.the_dop", doc_frags),
+            oid=None,
             short_name="the_dop",
             long_name=None,
             description=None,
@@ -96,6 +99,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
 
         dop_2 = DataObjectProperty(
             odx_id=OdxLinkId("test_ddds.dop.another_dop", doc_frags),
+            oid=None,
             short_name="another_dop",
             long_name=None,
             description=None,
@@ -113,6 +117,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         flip_quality_ref = OdxLinkRef.from_id(flip_quality_id)
         table = Table(
             odx_id=flip_quality_id,
+            oid=None,
             short_name="flip_quality",
             long_name="Flip Quality",
             description=None,
@@ -124,6 +129,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             table_rows_raw=[
                 TableRow(
                     odx_id=OdxLinkId("test_ddds.table.flip_quality.average", doc_frags),
+                    oid=None,
                     table_ref=flip_quality_ref,
                     short_name="average",
                     long_name="Average",
@@ -138,6 +144,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                 ),
                 TableRow(
                     odx_id=OdxLinkId("test_ddds.table.flip_quality.good", doc_frags),
+                    oid=None,
                     table_ref=flip_quality_ref,
                     short_name="good",
                     long_name="Good",
@@ -152,6 +159,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                 ),
                 TableRow(
                     odx_id=OdxLinkId("test_ddds.table.flip_quality.best", doc_frags),
+                    oid=None,
                     table_ref=flip_quality_ref,
                     short_name="best",
                     long_name="Best",
@@ -170,6 +178,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
 
         env_data = EnvironmentData(
             odx_id=OdxLinkId("test_ddds.env_data.flip_env_data", doc_frags),
+            oid=None,
             short_name="flip_env_data",
             long_name="Flip Env Data",
             description=None,
@@ -177,6 +186,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             sdgs=[],
             parameters=NamedItemList([
                 ValueParameter(
+                    oid=None,
                     short_name="flip_speed",
                     long_name="Flip Speed",
                     description=None,
@@ -189,6 +199,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     sdgs=[],
                 ),
                 PhysicalConstantParameter(
+                    oid=None,
                     short_name="flip_direction",
                     long_name="Flip Direction",
                     description=None,
@@ -208,6 +219,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
 
         env_data_desc = EnvironmentDataDescription(
             odx_id=OdxLinkId("test_ddds.env_data_desc.flip_env_data_desc", doc_frags),
+            oid=None,
             short_name="flip_env_data_desc",
             long_name="Flip Env Data Desc",
             description=None,
@@ -221,6 +233,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
 
         mux_case1_struct = Structure(
             odx_id=OdxLinkId("ddds_test.mux.case1.struct", doc_frags),
+            oid=None,
             short_name="mux_case1_struct",
             long_name=None,
             description=None,
@@ -228,6 +241,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             sdgs=[],
             parameters=NamedItemList([
                 ValueParameter(
+                    oid=None,
                     short_name="min_donation",
                     long_name=None,
                     description=None,
@@ -240,6 +254,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="min_surface_softness",
                     long_name=None,
                     description=None,
@@ -257,6 +272,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
 
         mux_case2_struct = Structure(
             odx_id=OdxLinkId("ddds_test.mux.case2.struct", doc_frags),
+            oid=None,
             short_name="mux_case2_struct",
             long_name=None,
             description=None,
@@ -264,6 +280,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             sdgs=[],
             parameters=NamedItemList([
                 ValueParameter(
+                    oid=None,
                     short_name="min_temperature",
                     long_name=None,
                     description=None,
@@ -281,6 +298,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
 
         mux = Multiplexer(
             odx_id=OdxLinkId("test_ddds.multiplexer.flip_precondition", doc_frags),
+            oid=None,
             short_name="flip_precondition",
             long_name="Preconditions for doing flips",
             description=None,

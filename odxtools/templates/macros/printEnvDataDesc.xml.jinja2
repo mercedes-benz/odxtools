@@ -6,7 +6,7 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printEnvDataDesc(env_data_desc) %}
-<ENV-DATA-DESC ID="{{env_data_desc.odx_id.local_id}}">
+<ENV-DATA-DESC {{-peid.printElementIdAttribs(env_data_desc)}}>
   {{ peid.printElementIdSubtags(env_data_desc)|indent(1) }}
   <PARAM-SNREF SHORT-NAME="{{env_data_desc.param_snref}}"/>
   <ENV-DATA-REFS>

@@ -53,7 +53,6 @@ class Unit(IdentifiableElement):
     ```
     """
     display_name: str
-    oid: Optional[str]
     factor_si_to_unit: Optional[float]
     offset_si_to_unit: Optional[float]
     physical_dimension_ref: Optional[OdxLinkRef]
@@ -64,7 +63,7 @@ class Unit(IdentifiableElement):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Unit":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
-        oid = et_element.get("OID")
+
         display_name = odxrequire(et_element.findtext("DISPLAY-NAME"))
 
         def read_optional_float(element: ElementTree.Element, name: str) -> Optional[float]:
@@ -80,7 +79,6 @@ class Unit(IdentifiableElement):
 
         return Unit(
             display_name=display_name,
-            oid=oid,
             factor_si_to_unit=factor_si_to_unit,
             offset_si_to_unit=offset_si_to_unit,
             physical_dimension_ref=physical_dimension_ref,

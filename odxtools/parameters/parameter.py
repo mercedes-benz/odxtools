@@ -40,6 +40,7 @@ class Parameter(NamedElement):
     define any non-positionable parameter types.
 
     """
+    oid: Optional[str]
     byte_position: Optional[int]
     bit_position: Optional[int]
     semantic: Optional[str]
@@ -51,6 +52,7 @@ class Parameter(NamedElement):
 
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
 
+        oid = et_element.get("OID")
         semantic = et_element.get("SEMANTIC")
         sdgs = [
             SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
@@ -63,6 +65,7 @@ class Parameter(NamedElement):
         bit_position = int(bit_position_str) if bit_position_str is not None else None
 
         return Parameter(
+            oid=oid,
             byte_position=byte_position,
             bit_position=bit_position,
             semantic=semantic,

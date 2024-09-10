@@ -73,7 +73,7 @@
 {%- endmacro -%}
 
 {%- macro printOutputParam(param) -%}
-<OUTPUT-PARAM ID="{{param.odx_id.local_id}}"
+<OUTPUT-PARAM {{-peid.printElementIdAttribs(param)}}
               {{-make_xml_attrib("OID", param.oid)}}
               {{-make_xml_attrib("SEMANTIC", param.semantic)}}>
  {{ peid.printElementIdSubtags(param)|indent(1) }}

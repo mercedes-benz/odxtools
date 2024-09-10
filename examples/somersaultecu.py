@@ -105,6 +105,7 @@ somersault_team_members = {
     "doggy":
         TeamMember(
             odx_id=OdxLinkId("TM.Doggy", doc_frags),
+            oid=None,
             short_name="Doggy",
             long_name="Doggy the dog",
             description=Description.from_string("<p>Dog is man's best friend</p>"),
@@ -120,6 +121,7 @@ somersault_team_members = {
     "horsey":
         TeamMember(
             odx_id=OdxLinkId("TM.Horsey", doc_frags),
+            oid=None,
             short_name="Horsey",
             long_name="Horsey the horse",
             description=Description.from_string("<p>Trustworthy worker</p>"),
@@ -135,6 +137,7 @@ somersault_team_members = {
     "slothy":
         TeamMember(
             odx_id=OdxLinkId("TM.Slothy", doc_frags),
+            oid=None,
             short_name="Slothy",
             long_name=None,
             description=None,
@@ -153,6 +156,7 @@ somersault_company_datas = {
     "suncus":
         CompanyData(
             odx_id=OdxLinkId("CD.Suncus", doc_frags),
+            oid=None,
             short_name="Suncus",
             long_name="Circus of the sun",
             description=Description.from_string("<p>Prestigious group of performers</p>"),
@@ -184,6 +188,7 @@ somersault_company_datas = {
     "acme":
         CompanyData(
             odx_id=OdxLinkId("CD.ACME", doc_frags),
+            oid=None,
             short_name="ACME_Corporation",
             long_name=None,
             description=None,
@@ -250,6 +255,7 @@ somersault_functional_classes = {
     "flip":
         FunctionalClass(
             odx_id=OdxLinkId("somersault.FNC.flip", doc_frags),
+            oid=None,
             short_name="flip",
             long_name="Flip",
             description=None,
@@ -257,6 +263,7 @@ somersault_functional_classes = {
     "session":
         FunctionalClass(
             odx_id=OdxLinkId("somersault.FNC.session", doc_frags),
+            oid=None,
             short_name="session",
             long_name="Session",
             description=None,
@@ -268,6 +275,7 @@ somersault_additional_audiences = {
     "attentive_admirer":
         AdditionalAudience(
             odx_id=OdxLinkId("somersault.AA.attentive_admirer", doc_frags),
+            oid=None,
             short_name="attentive_admirer",
             long_name="Attentive Admirer",
             description=None,
@@ -275,6 +283,7 @@ somersault_additional_audiences = {
     "anyone":
         AdditionalAudience(
             odx_id=OdxLinkId("somersault.AA.anyone", doc_frags),
+            oid=None,
             short_name="anyone",
             long_name="Anyone",
             description=None,
@@ -325,6 +334,7 @@ somersault_physical_dimensions = {
     "time":
         PhysicalDimension(
             odx_id=OdxLinkId("somersault.PD.time", doc_frags),
+            oid=None,
             short_name="time",
             long_name="Time",
             time_exp=1,
@@ -334,12 +344,12 @@ somersault_physical_dimensions = {
             temperature_exp=0,
             molar_amount_exp=0,
             luminous_intensity_exp=0,
-            oid=None,
             description=None,
         ),
     "temperature":
         PhysicalDimension(
             odx_id=OdxLinkId("somersault.PD.temperature", doc_frags),
+            oid=None,
             short_name="temperature",
             long_name="Temperature",
             time_exp=0,
@@ -349,7 +359,6 @@ somersault_physical_dimensions = {
             temperature_exp=1,
             molar_amount_exp=0,
             luminous_intensity_exp=0,
-            oid=None,
             description=None,
         )
 }
@@ -471,6 +480,7 @@ somersault_dops = {
     "num_flips":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.num_flips", doc_frags),
+            oid=None,
             short_name="num_flips",
             long_name=None,
             description=None,
@@ -486,6 +496,7 @@ somersault_dops = {
     "soberness_check":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.soberness_check", doc_frags),
+            oid=None,
             short_name="soberness_check",
             long_name=None,
             description=None,
@@ -501,6 +512,7 @@ somersault_dops = {
     "dizzyness_level":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.dizzyness_level", doc_frags),
+            oid=None,
             short_name="dizzyness_level",
             long_name=None,
             description=None,
@@ -516,6 +528,7 @@ somersault_dops = {
     "happiness_level":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.happiness_level", doc_frags),
+            oid=None,
             short_name="happiness_level",
             long_name=None,
             description=None,
@@ -531,6 +544,7 @@ somersault_dops = {
     "duration":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.duration", doc_frags),
+            oid=None,
             short_name="duration",
             long_name=None,
             description=None,
@@ -546,6 +560,7 @@ somersault_dops = {
     "temperature":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.temperature", doc_frags),
+            oid=None,
             short_name="temperature",
             long_name=None,
             description=None,
@@ -561,6 +576,7 @@ somersault_dops = {
     "error_code":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.error_code", doc_frags),
+            oid=None,
             short_name="error_code",
             long_name=None,
             description=None,
@@ -576,6 +592,7 @@ somersault_dops = {
     "boolean":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.boolean", doc_frags),
+            oid=None,
             short_name="boolean",
             long_name=None,
             description=None,
@@ -592,6 +609,7 @@ somersault_dops = {
     "uint8":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.uint8", doc_frags),
+            oid=None,
             short_name="uint8",
             long_name=None,
             description=None,
@@ -607,6 +625,7 @@ somersault_dops = {
     "uint16":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.uint16", doc_frags),
+            oid=None,
             short_name="uint16",
             long_name=None,
             description=None,
@@ -622,6 +641,7 @@ somersault_dops = {
     "float":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.float", doc_frags),
+            oid=None,
             short_name="float",
             long_name=None,
             description=None,
@@ -644,6 +664,7 @@ somersault_positive_responses = {
     "session":
         Response(
             odx_id=OdxLinkId("somersault.PR.session_start", doc_frags),
+            oid=None,
             short_name="session",
             long_name=None,
             description=None,
@@ -652,6 +673,7 @@ somersault_positive_responses = {
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -664,6 +686,7 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="can_do_backward_flips",
                     long_name=None,
                     semantic=None,
@@ -681,6 +704,7 @@ somersault_positive_responses = {
     "tester_ok":
         Response(
             odx_id=OdxLinkId("somersault.PR.tester_present", doc_frags),
+            oid=None,
             short_name="tester_present",
             long_name=None,
             description=None,
@@ -689,6 +713,7 @@ somersault_positive_responses = {
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -701,6 +726,7 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="status",
                     long_name=None,
                     semantic=None,
@@ -718,6 +744,7 @@ somersault_positive_responses = {
     "forward_flips_grudgingly_done":
         Response(
             odx_id=OdxLinkId("somersault.PR.grudging_forward", doc_frags),
+            oid=None,
             short_name="grudging_forward",
             long_name=None,
             description=None,
@@ -726,6 +753,7 @@ somersault_positive_responses = {
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -739,6 +767,7 @@ somersault_positive_responses = {
                 ),
                 # TODO (?): non-byte aligned MatchingRequestParameters
                 MatchingRequestParameter(
+                    oid=None,
                     short_name="num_flips_done",
                     long_name=None,
                     semantic=None,
@@ -750,6 +779,7 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="sault_time",
                     long_name=None,
                     semantic=None,
@@ -767,6 +797,7 @@ somersault_positive_responses = {
     "forward_flips_happily_done":
         Response(
             odx_id=OdxLinkId("somersault.PR.happy_forward", doc_frags),
+            oid=None,
             short_name="happy_forward",
             long_name=None,
             description=None,
@@ -775,6 +806,7 @@ somersault_positive_responses = {
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -788,6 +820,7 @@ somersault_positive_responses = {
                 ),
                 # TODO (?): non-byte aligned MatchingRequestParameters
                 MatchingRequestParameter(
+                    oid=None,
                     short_name="num_flips_done",
                     long_name=None,
                     semantic=None,
@@ -799,6 +832,7 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="yeha_level",
                     long_name=None,
                     semantic=None,
@@ -816,6 +850,7 @@ somersault_positive_responses = {
     "backward_flips_grudgingly_done":
         Response(
             odx_id=OdxLinkId("somersault.PR.grudging_backward", doc_frags),
+            oid=None,
             short_name="grudging_backward",
             long_name=None,
             description=None,
@@ -824,6 +859,7 @@ somersault_positive_responses = {
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -836,6 +872,7 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="num_flips_done",
                     long_name=None,
                     semantic=None,
@@ -848,6 +885,7 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="grumpiness_level",
                     long_name=None,
                     semantic=None,
@@ -866,6 +904,7 @@ somersault_positive_responses = {
     "status_report":
         Response(
             odx_id=OdxLinkId("somersault.PR.status_report", doc_frags),
+            oid=None,
             short_name="status_report",
             long_name=None,
             description=None,
@@ -874,6 +913,7 @@ somersault_positive_responses = {
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -886,6 +926,7 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="dizzyness_level",
                     long_name=None,
                     semantic=None,
@@ -898,6 +939,7 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="happiness_level",
                     long_name=None,
                     semantic=None,
@@ -910,6 +952,7 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
                 TableKeyParameter(
+                    oid=None,
                     odx_id=OdxLinkId("somersault.PR.report_status.last_pos_response_key",
                                      doc_frags),
                     short_name="last_pos_response_key",
@@ -925,6 +968,7 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
                 TableStructParameter(
+                    oid=None,
                     short_name="last_pos_response",
                     long_name=None,
                     semantic=None,
@@ -942,6 +986,7 @@ somersault_positive_responses = {
     "set_operation_params":
         Response(
             odx_id=OdxLinkId("somersault.PR.set_operation_params", doc_frags),
+            oid=None,
             short_name="set_operation_params",
             long_name=None,
             description=None,
@@ -950,6 +995,7 @@ somersault_positive_responses = {
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -982,6 +1028,7 @@ somersault_negative_responses = {
     "general":
         Response(
             odx_id=OdxLinkId("somersault.NR.general_negative_response", doc_frags),
+            oid=None,
             short_name="general_negative_response",
             long_name=None,
             description=None,
@@ -990,6 +1037,7 @@ somersault_negative_responses = {
             response_type=ResponseType.NEGATIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -1001,6 +1049,7 @@ somersault_negative_responses = {
                     sdgs=[],
                 ),
                 MatchingRequestParameter(
+                    oid=None,
                     short_name="rq_sid",
                     long_name=None,
                     semantic=None,
@@ -1012,6 +1061,7 @@ somersault_negative_responses = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="response_code",
                     long_name=None,
                     semantic=None,
@@ -1032,6 +1082,7 @@ somersault_negative_responses = {
     "tester_nok":
         Response(
             odx_id=OdxLinkId("somersault.NR.tester_nok", doc_frags),
+            oid=None,
             short_name="tester_nok",
             long_name=None,
             description=None,
@@ -1040,6 +1091,7 @@ somersault_negative_responses = {
             response_type=ResponseType.NEGATIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -1051,6 +1103,7 @@ somersault_negative_responses = {
                     sdgs=[],
                 ),
                 CodedConstParameter(
+                    oid=None,
                     short_name="rq_sid",
                     long_name=None,
                     semantic=None,
@@ -1067,6 +1120,7 @@ somersault_negative_responses = {
     "flips_not_done":
         Response(
             odx_id=OdxLinkId("somersault.NR.flips_not_done", doc_frags),
+            oid=None,
             short_name="flips_not_done",
             long_name=None,
             description=None,
@@ -1075,6 +1129,7 @@ somersault_negative_responses = {
             response_type=ResponseType.NEGATIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -1086,6 +1141,7 @@ somersault_negative_responses = {
                     sdgs=[],
                 ),
                 MatchingRequestParameter(
+                    oid=None,
                     short_name="rq_sid",
                     long_name=None,
                     semantic=None,
@@ -1097,6 +1153,7 @@ somersault_negative_responses = {
                     sdgs=[],
                 ),
                 NrcConstParameter(
+                    oid=None,
                     short_name="reason",
                     long_name=None,
                     semantic=None,
@@ -1112,6 +1169,7 @@ somersault_negative_responses = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="flips_successfully_done",
                     long_name=None,
                     semantic=None,
@@ -1132,6 +1190,7 @@ somersault_global_negative_responses = {
     "general":
         Response(
             odx_id=OdxLinkId("GNR.too_hot", doc_frags),
+            oid=None,
             short_name="too_hot",
             long_name=None,
             description=None,
@@ -1140,6 +1199,7 @@ somersault_global_negative_responses = {
             response_type=ResponseType.GLOBAL_NEGATIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -1151,6 +1211,7 @@ somersault_global_negative_responses = {
                     sdgs=[],
                 ),
                 CodedConstParameter(
+                    oid=None,
                     short_name="too_hot_dummy",
                     long_name=None,
                     semantic=None,
@@ -1162,6 +1223,7 @@ somersault_global_negative_responses = {
                     sdgs=[],
                 ),
                 CodedConstParameter(
+                    oid=None,
                     short_name="too_hot_id",
                     long_name=None,
                     semantic=None,
@@ -1173,6 +1235,7 @@ somersault_global_negative_responses = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="temperature",
                     long_name=None,
                     semantic=None,
@@ -1196,6 +1259,7 @@ somersault_tables = {
     "last_flip_details":
         Table(
             odx_id=last_flip_details_table_id,
+            oid=None,
             short_name="last_flip_details",
             long_name="Flip Details",
             description=Description.from_string(
@@ -1209,6 +1273,7 @@ somersault_tables = {
                 TableRow(
                     table_ref=last_flip_details_table_ref,
                     odx_id=OdxLinkId("somersault.table.last_flip_details.none", doc_frags),
+                    oid=None,
                     short_name="none",
                     long_name="No Flips Done Yet",
                     key_raw="0",
@@ -1224,6 +1289,7 @@ somersault_tables = {
                     table_ref=last_flip_details_table_ref,
                     odx_id=OdxLinkId("somersault.table.last_flip_details.forward_grudging",
                                      doc_frags),
+                    oid=None,
                     short_name="forward_grudging",
                     long_name="Forward Flips Grudgingly Done",
                     key_raw="3",
@@ -1240,6 +1306,7 @@ somersault_tables = {
                 TableRow(
                     table_ref=last_flip_details_table_ref,
                     odx_id=OdxLinkId("somersault.table.last_flip_details.forward_happy", doc_frags),
+                    oid=None,
                     short_name="forward_happily",
                     long_name="Forward Flips Happily Done",
                     description=None,
@@ -1255,6 +1322,7 @@ somersault_tables = {
                 TableRow(
                     table_ref=last_flip_details_table_ref,
                     odx_id=OdxLinkId("somersault.table.last_flip_details.backward", doc_frags),
+                    oid=None,
                     short_name="backward_grudging",
                     long_name="Backward Flips",
                     description=None,
@@ -1277,6 +1345,7 @@ somersault_requests = {
     "start_session":
         Request(
             odx_id=OdxLinkId("somersault.RQ.start_session", doc_frags),
+            oid=None,
             short_name="start_session",
             long_name="Start the diagnostic session & do some mischief",
             description=None,
@@ -1284,6 +1353,7 @@ somersault_requests = {
             sdgs=[],
             parameters=[
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -1296,6 +1366,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 CodedConstParameter(
+                    oid=None,
                     short_name="id",
                     long_name=None,
                     semantic=None,
@@ -1312,6 +1383,7 @@ somersault_requests = {
     "stop_session":
         Request(
             odx_id=OdxLinkId("somersault.RQ.stop_session", doc_frags),
+            oid=None,
             short_name="stop_session",
             long_name="Terminate the current diagnostic session",
             description=None,
@@ -1319,6 +1391,7 @@ somersault_requests = {
             sdgs=[],
             parameters=[
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -1331,6 +1404,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 CodedConstParameter(
+                    oid=None,
                     short_name="id",
                     long_name=None,
                     semantic=None,
@@ -1347,6 +1421,7 @@ somersault_requests = {
     "tester_present":
         Request(
             odx_id=OdxLinkId("somersault.RQ.tester_present", doc_frags),
+            oid=None,
             short_name="tester_present",
             long_name="Prevent the current diagnostic session from timing out",
             description=None,
@@ -1354,6 +1429,7 @@ somersault_requests = {
             sdgs=[],
             parameters=[
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -1365,6 +1441,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 CodedConstParameter(
+                    oid=None,
                     short_name="id",
                     long_name=None,
                     semantic=None,
@@ -1381,6 +1458,7 @@ somersault_requests = {
     "set_operation_params":
         Request(
             odx_id=OdxLinkId("somersault.RQ.set_operation_params", doc_frags),
+            oid=None,
             short_name="set_operation_params",
             long_name="Specify the mode of operation for the ECU; e.g. if rings "
             "of fire ought to be used for maximum effect",
@@ -1389,6 +1467,7 @@ somersault_requests = {
             sdgs=[],
             parameters=[
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -1401,6 +1480,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="use_fire_ring",
                     long_name=None,
                     semantic=None,
@@ -1418,6 +1498,7 @@ somersault_requests = {
     "forward_flips":
         Request(
             odx_id=OdxLinkId("somersault.RQ.do_forward_flips", doc_frags),
+            oid=None,
             short_name="do_forward_flips",
             long_name="Do forward somersaults & some other mischief",
             description=None,
@@ -1425,6 +1506,7 @@ somersault_requests = {
             sdgs=[],
             parameters=[
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -1436,6 +1518,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="forward_soberness_check",
                     long_name=None,
                     semantic=None,
@@ -1449,6 +1532,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="num_flips",
                     long_name=None,
                     semantic=None,
@@ -1466,6 +1550,7 @@ somersault_requests = {
     "backward_flips":
         Request(
             odx_id=OdxLinkId("somersault.RQ.do_backward_flips", doc_frags),
+            oid=None,
             short_name="do_backward_flips",
             long_name="Do a backward somersault & some other mischief",
             description=None,
@@ -1473,6 +1558,7 @@ somersault_requests = {
             sdgs=[],
             parameters=[
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -1484,6 +1570,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="backward_soberness_check",
                     long_name=None,
                     semantic=None,
@@ -1497,6 +1584,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="num_flips",
                     long_name=None,
                     semantic=None,
@@ -1514,6 +1602,7 @@ somersault_requests = {
     "report_status":
         Request(
             odx_id=OdxLinkId("somersault.RQ.report_status", doc_frags),
+            oid=None,
             short_name="report_status",
             long_name="Report back the current level of dizzy- & happiness.",
             description=None,
@@ -1521,6 +1610,7 @@ somersault_requests = {
             sdgs=[],
             parameters=[
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -1533,6 +1623,7 @@ somersault_requests = {
                     sdgs=[],
                 ),
                 CodedConstParameter(
+                    oid=None,
                     short_name="id",
                     long_name=None,
                     semantic=None,
@@ -1553,6 +1644,7 @@ somersault_services = {
     "start_session":
         DiagService(
             odx_id=OdxLinkId("somersault.service.session_start", doc_frags),
+            oid=None,
             short_name="session_start",
             long_name=None,
             description=None,
@@ -1587,6 +1679,7 @@ somersault_services = {
     "stop_session":
         DiagService(
             odx_id=OdxLinkId("somersault.service.session_stop", doc_frags),
+            oid=None,
             short_name="session_stop",
             long_name=None,
             description=None,
@@ -1621,6 +1714,7 @@ somersault_services = {
     "tester_present":
         DiagService(
             odx_id=OdxLinkId("somersault.service.tester_present", doc_frags),
+            oid=None,
             short_name="tester_present",
             long_name=None,
             description=None,
@@ -1664,6 +1758,7 @@ somersault_services = {
     "set_operation_params":
         DiagService(
             odx_id=OdxLinkId("somersault.service.set_operation_params", doc_frags),
+            oid=None,
             short_name="set_operation_params",
             long_name=None,
             description=None,
@@ -1696,6 +1791,7 @@ somersault_services = {
     "forward_flips":
         DiagService(
             odx_id=OdxLinkId("somersault.service.do_forward_flips", doc_frags),
+            oid=None,
             short_name="do_forward_flips",
             long_name=None,
             description=Description.from_string("<p>Do a forward flip.</p>"),
@@ -1747,6 +1843,7 @@ somersault_services = {
     "backward_flips":
         DiagService(
             odx_id=OdxLinkId("somersault.service.do_backward_flips", doc_frags),
+            oid=None,
             short_name="do_backward_flips",
             long_name=None,
             description=None,
@@ -1792,6 +1889,7 @@ somersault_services = {
     "report_status":
         DiagService(
             odx_id=OdxLinkId("somersault.service.report_status", doc_frags),
+            oid=None,
             short_name="report_status",
             long_name=None,
             description=None,
@@ -1838,6 +1936,7 @@ somersault_single_ecu_jobs = {
         SingleEcuJob(
             audience=None,
             odx_id=OdxLinkId("somersault.service.compulsory_program", doc_frags),
+            oid=None,
             short_name="compulsory_program",
             long_name="Compulsory Program",
             description=Description.from_string("<p>Do several fancy moves.</p>"),
@@ -2021,6 +2120,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
 somersault_protocol_raw = ProtocolRaw(
     variant_type=DiagLayerType.PROTOCOL,
     odx_id=OdxLinkId("somersault.protocol", doc_frags),
+    oid=None,
     short_name="somersault_protocol",
     long_name="Somersault protocol info",
     description=Description.from_string(
@@ -2050,6 +2150,7 @@ somersault_protocol = Protocol(diag_layer_raw=somersault_protocol_raw)
 somersault_base_variant_raw = BaseVariantRaw(
     variant_type=DiagLayerType.BASE_VARIANT,
     odx_id=OdxLinkId("somersault", doc_frags),
+    oid=None,
     short_name="somersault",
     long_name="Somersault base variant",
     description=Description.from_string("<p>Base variant of the somersault ECU &amp; cetera</p>"),
@@ -2089,6 +2190,7 @@ somersault_base_variant = BaseVariant(diag_layer_raw=somersault_base_variant_raw
 somersault_lazy_ecu_raw = EcuVariantRaw(
     variant_type=DiagLayerType.ECU_VARIANT,
     odx_id=OdxLinkId("somersault_lazy", doc_frags),
+    oid=None,
     short_name="somersault_lazy",
     long_name="Somersault lazy ECU",
     description=Description.from_string(
@@ -2139,6 +2241,7 @@ somersault_assiduous_requests = {
     "headstand":
         Request(
             odx_id=OdxLinkId("somersault_assiduous.RQ.do_headstand", doc_frags),
+            oid=None,
             short_name="do_headstand",
             long_name="Do a headstand & whatever else is required to entertain the customer",
             description=None,
@@ -2146,6 +2249,7 @@ somersault_assiduous_requests = {
             sdgs=[],
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -2157,6 +2261,7 @@ somersault_assiduous_requests = {
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="duration",
                     long_name=None,
                     semantic=None,
@@ -2178,6 +2283,7 @@ somersault_assiduous_positive_responses = {
     "headstand_done":
         Response(
             odx_id=OdxLinkId("somersault_assiduous.PR.headstand_done", doc_frags),
+            oid=None,
             short_name="headstand_done",
             long_name=None,
             description=None,
@@ -2186,6 +2292,7 @@ somersault_assiduous_positive_responses = {
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -2198,6 +2305,7 @@ somersault_assiduous_positive_responses = {
                 ),
                 # TODO (?): non-byte aligned MatchingRequestParameters
                 MatchingRequestParameter(
+                    oid=None,
                     short_name="duration",
                     long_name=None,
                     semantic=None,
@@ -2218,6 +2326,7 @@ somersault_assiduous_negative_responses = {
     "fell_over":
         Response(
             odx_id=OdxLinkId("somersault_assiduous.NR.fell_over", doc_frags),
+            oid=None,
             short_name="fell_over",
             long_name=None,
             description=None,
@@ -2226,6 +2335,7 @@ somersault_assiduous_negative_responses = {
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="sid",
                     long_name=None,
                     semantic=None,
@@ -2238,6 +2348,7 @@ somersault_assiduous_negative_responses = {
                 ),
                 # TODO (?): non-byte aligned MatchingRequestParameters
                 MatchingRequestParameter(
+                    oid=None,
                     short_name="duration",
                     long_name=None,
                     semantic=None,
@@ -2258,6 +2369,7 @@ somersault_assiduous_services = {
     "headstand":
         DiagService(
             odx_id=OdxLinkId("somersault_assiduous.service.headstand", doc_frags),
+            oid=None,
             short_name="headstand",
             long_name=None,
             description=None,
@@ -2303,6 +2415,7 @@ somersault_assiduous_services = {
 somersault_assiduous_ecu_raw = EcuVariantRaw(
     variant_type=DiagLayerType.ECU_VARIANT,
     odx_id=OdxLinkId("somersault_assiduous", doc_frags),
+    oid=None,
     short_name="somersault_assiduous",
     long_name="Somersault assiduous ECU",
     description=Description.from_string(
@@ -2362,6 +2475,7 @@ somersault_assiduous_ecu = EcuVariant(diag_layer_raw=somersault_assiduous_ecu_ra
 # create a "diagnosis layer container" object
 somersault_dlc = DiagLayerContainer(
     odx_id=OdxLinkId("DLC.somersault", doc_frags),
+    oid=None,
     short_name=dlc_short_name,
     long_name="Collect all saults in the summer",
     description=Description.from_string(

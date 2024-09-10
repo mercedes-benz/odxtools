@@ -6,7 +6,7 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printStaticField(demf) -%}
-<DYNAMIC-ENDMARKER-FIELD ID="{{demf.odx_id.local_id}}">
+<DYNAMIC-ENDMARKER-FIELD {{-peid.printElementIdAttribs(demf)}}>
  {{ peid.printElementIdSubtags(demf)|indent(1) }}
  <BASIC-STRUCTURE-REF ID-REF="{{demf.structure_ref.ref_id}}" />
  <DYN-END-DOP-REF ID-REF="{{demf.dyn_end_dop_ref.ref_id}}">

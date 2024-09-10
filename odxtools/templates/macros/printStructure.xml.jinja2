@@ -7,7 +7,7 @@
 {%- import('macros/printParam.xml.jinja2') as pp %}
 
 {%- macro printStructure(st) -%}
-<STRUCTURE ID="{{st.odx_id.local_id}}">
+<STRUCTURE {{-peid.printElementIdAttribs(st)}}>
  {{ peid.printElementIdSubtags(st)|indent(1) }}
 {%- if st.byte_size is not none %}
  <BYTE-SIZE>{{st.byte_size}}</BYTE-SIZE>

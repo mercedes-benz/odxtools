@@ -8,7 +8,7 @@
 {%- import('macros/printDescription.xml.jinja2') as pd %}
 
 {%- macro printTable(table) %}
-<TABLE ID="{{table.odx_id.local_id}}"
+<TABLE {{-peid.printElementIdAttribs(table)}}
        {{-make_xml_attrib("SEMANTIC", table.semantic)}}>
  {{ peid.printElementIdSubtags(table)|indent(1) }}
 {%- if table.key_dop_ref %}
@@ -16,7 +16,7 @@
 {%- endif %}
  {%- for table_row in table.table_rows_raw %}
  {%- if hasattr(table_row, "key") %}
- <TABLE-ROW ID="{{table_row.odx_id.local_id}}"
+ <TABLE-ROW {{-peid.printElementIdAttribs(table_row)}}
             {{-make_xml_attrib("SEMANTIC", table_row.semantic)}}>
   <SHORT-NAME>{{table_row.short_name}}</SHORT-NAME>
   {%- if table_row.long_name %}

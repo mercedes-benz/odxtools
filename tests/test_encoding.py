@@ -49,6 +49,7 @@ class TestEncodeRequest(unittest.TestCase):
             is_condensed_raw=None,
         )
         param1 = CodedConstParameter(
+            oid=None,
             short_name="coded_const_parameter",
             long_name=None,
             description=None,
@@ -60,6 +61,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
         )
         param2 = CodedConstParameter(
+            oid=None,
             short_name="coded_const_parameter",
             long_name=None,
             description=None,
@@ -72,6 +74,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
         req = Request(
             odx_id=OdxLinkId("request_id", doc_frags),
+            oid=None,
             short_name="request_sn",
             long_name=None,
             description=None,
@@ -92,6 +95,7 @@ class TestEncodeRequest(unittest.TestCase):
             is_condensed_raw=None,
         )
         param1 = CodedConstParameter(
+            oid=None,
             short_name="param1",
             long_name=None,
             description=None,
@@ -103,6 +107,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
         )
         param2 = CodedConstParameter(
+            oid=None,
             short_name="param2",
             long_name=None,
             description=None,
@@ -115,6 +120,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
         req = Request(
             odx_id=OdxLinkId("request_id", doc_frags),
+            oid=None,
             short_name="request_sn",
             long_name=None,
             description=None,
@@ -162,6 +168,7 @@ class TestEncodeRequest(unittest.TestCase):
             physical_type=DataType.A_UINT32)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),
+            oid=None,
             short_name="dop_sn",
             long_name="example dop",
             description=None,
@@ -176,6 +183,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
         odxlinks.update({dop.odx_id: dop})
         param1 = ValueParameter(
+            oid=None,
             short_name="value_parameter",
             long_name=None,
             description=None,
@@ -189,6 +197,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
         req = Request(
             odx_id=OdxLinkId("request.id", doc_frags),
+            oid=None,
             short_name="request_sn",
             long_name=None,
             description=None,
@@ -222,6 +231,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),
+            oid=None,
             short_name="dop_sn",
             long_name="example dop",
             description=None,
@@ -240,6 +250,7 @@ class TestEncodeRequest(unittest.TestCase):
             physical_constr=None,
         )
         param1 = CodedConstParameter(
+            oid=None,
             short_name="param1",
             long_name=None,
             description=None,
@@ -251,6 +262,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
         )
         param2 = NrcConstParameter(
+            oid=None,
             short_name="param2",
             long_name=None,
             description=None,
@@ -262,6 +274,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
         )
         param3 = ValueParameter(
+            oid=None,
             short_name="param3",
             long_name=None,
             description=None,
@@ -275,6 +288,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
         resp = Response(
             odx_id=OdxLinkId("response_id", doc_frags),
+            oid=None,
             short_name="response_sn",
             long_name=None,
             description=None,
@@ -287,6 +301,7 @@ class TestEncodeRequest(unittest.TestCase):
 
         req = Request(
             odx_id=OdxLinkId("request_id", doc_frags),
+            oid=None,
             short_name="request_sn",
             long_name=None,
             description=None,
@@ -294,6 +309,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="req_param1",
                     long_name=None,
                     description=None,
@@ -310,6 +326,7 @@ class TestEncodeRequest(unittest.TestCase):
 
         service = DiagService(
             odx_id=OdxLinkId("service_id", doc_frags),
+            oid=None,
             short_name="service_sn",
             long_name=None,
             description=None,
@@ -339,6 +356,7 @@ class TestEncodeRequest(unittest.TestCase):
         ecu_variant_raw = EcuVariantRaw(
             variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
+            oid=None,
             short_name="dl_sn",
             long_name=None,
             description=None,
@@ -403,6 +421,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),
+            oid=None,
             short_name="dop_sn",
             long_name="example dop",
             description=None,
@@ -431,6 +450,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
         dtc_dop = DtcDop(
             odx_id=OdxLinkId("dtcdop.id", doc_frags),
+            oid=None,
             short_name="dtcdop_sn",
             long_name=None,
             description=Description(
@@ -451,6 +471,7 @@ class TestEncodeRequest(unittest.TestCase):
             dtcs_raw=[
                 DiagnosticTroubleCode(
                     odx_id=OdxLinkId("DTCs.first_trouble", doc_frags),
+                    oid=None,
                     short_name="first_trouble",
                     long_name=None,
                     description=None,
@@ -462,6 +483,7 @@ class TestEncodeRequest(unittest.TestCase):
                     sdgs=[]),
                 DiagnosticTroubleCode(
                     odx_id=OdxLinkId("DTCs.follow_up_trouble", doc_frags),
+                    oid=None,
                     short_name="follow_up_trouble",
                     long_name=None,
                     description=None,
@@ -473,6 +495,7 @@ class TestEncodeRequest(unittest.TestCase):
                     sdgs=[]),
                 DiagnosticTroubleCode(
                     odx_id=OdxLinkId("DTCs.screwed_up_hard", doc_frags),
+                    oid=None,
                     short_name="screwed_up_hard",
                     long_name=None,
                     description=None,
@@ -489,6 +512,7 @@ class TestEncodeRequest(unittest.TestCase):
 
         env_data_desc = EnvironmentDataDescription(
             odx_id=OdxLinkId("DTCs.trouble_explanation", doc_frags),
+            oid=None,
             short_name="trouble_explanation",
             long_name=None,
             description=None,
@@ -499,6 +523,7 @@ class TestEncodeRequest(unittest.TestCase):
             env_datas=[
                 EnvironmentData(
                     odx_id=OdxLinkId("DTCs.trouble_explanation.boiler_plate", doc_frags),
+                    oid=None,
                     short_name="boiler_plate",
                     long_name=None,
                     description=None,
@@ -509,6 +534,7 @@ class TestEncodeRequest(unittest.TestCase):
                     dtc_values=[],
                     parameters=NamedItemList([
                         CodedConstParameter(
+                            oid=None,
                             short_name="blabla_boiler",
                             long_name=None,
                             description=None,
@@ -522,6 +548,7 @@ class TestEncodeRequest(unittest.TestCase):
                     ])),
                 EnvironmentData(
                     odx_id=OdxLinkId("DTCs.trouble_explanation.reason_for_1", doc_frags),
+                    oid=None,
                     short_name="reason_for_1",
                     long_name=None,
                     description=None,
@@ -532,6 +559,7 @@ class TestEncodeRequest(unittest.TestCase):
                     dtc_values=[0x112233],
                     parameters=NamedItemList([
                         CodedConstParameter(
+                            oid=None,
                             short_name="blabla_1",
                             long_name=None,
                             description=None,
@@ -545,6 +573,7 @@ class TestEncodeRequest(unittest.TestCase):
                     ])),
                 EnvironmentData(
                     odx_id=OdxLinkId("DTCs.trouble_explanation.reason_for_2", doc_frags),
+                    oid=None,
                     short_name="reason_for_2",
                     long_name=None,
                     description=None,
@@ -555,6 +584,7 @@ class TestEncodeRequest(unittest.TestCase):
                     dtc_values=[0x445566],
                     parameters=NamedItemList([
                         CodedConstParameter(
+                            oid=None,
                             short_name="blabla_3",
                             long_name=None,
                             description=None,
@@ -566,6 +596,7 @@ class TestEncodeRequest(unittest.TestCase):
                             sdgs=[],
                         ),
                         CodedConstParameter(
+                            oid=None,
                             short_name="blabla_2",
                             long_name=None,
                             description=None,
@@ -582,6 +613,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
 
         param1 = ValueParameter(
+            oid=None,
             short_name="DTC",
             long_name=None,
             description=None,
@@ -594,6 +626,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
         )
         param2 = ValueParameter(
+            oid=None,
             short_name="dtc_info",
             long_name=None,
             description=Description(
@@ -609,6 +642,7 @@ class TestEncodeRequest(unittest.TestCase):
 
         resp = Response(
             odx_id=OdxLinkId("DTCs.report_dtc.answer", doc_frags),
+            oid=None,
             short_name="report_dtc_answer",
             long_name=None,
             description=None,
@@ -672,6 +706,7 @@ class TestEncodeRequest(unittest.TestCase):
             is_condensed_raw=None,
         )
         param1 = CodedConstParameter(
+            oid=None,
             short_name="code",
             long_name=None,
             description=None,
@@ -683,6 +718,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
         )
         param2 = CodedConstParameter(
+            oid=None,
             short_name="part1",
             long_name=None,
             description=None,
@@ -694,6 +730,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
         )
         param3 = CodedConstParameter(
+            oid=None,
             short_name="part2",
             long_name=None,
             description=None,
@@ -706,6 +743,7 @@ class TestEncodeRequest(unittest.TestCase):
         )
         req = Request(
             odx_id=OdxLinkId("request_id", doc_frags),
+            oid=None,
             short_name="request_sn",
             long_name=None,
             description=None,
@@ -720,6 +758,7 @@ class TestEncodeRequest(unittest.TestCase):
     def _create_request(self, parameters: List[Parameter]) -> Request:
         return Request(
             odx_id=OdxLinkId("request_id", doc_frags),
+            oid=None,
             short_name="request_sn",
             parameters=NamedItemList(parameters),
             long_name=None,
@@ -756,6 +795,7 @@ class TestEncodeRequest(unittest.TestCase):
 
         inner_dop = DataObjectProperty(
             odx_id=OdxLinkId('dop.inner', doc_frags),
+            oid=None,
             short_name="inner_dop",
             long_name=None,
             description=None,
@@ -770,6 +810,7 @@ class TestEncodeRequest(unittest.TestCase):
 
         outer_dop = DataObjectProperty(
             odx_id=OdxLinkId('dop.outer', doc_frags),
+            oid=None,
             short_name="outer_dop",
             long_name=None,
             description=None,
@@ -790,6 +831,7 @@ class TestEncodeRequest(unittest.TestCase):
 
         # Inner
         inner_param = ValueParameter(
+            oid=None,
             short_name="inner_param",
             long_name=None,
             description=None,
@@ -806,6 +848,7 @@ class TestEncodeRequest(unittest.TestCase):
 
         # Outer
         outer_param = ValueParameter(
+            oid=None,
             short_name="outer_param",
             long_name=None,
             description=None,
