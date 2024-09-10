@@ -24,12 +24,10 @@ def get_display_value(v: ParameterValue) -> str:
         return str(v)
 
 
-def print_summary(
-    odxdb: Database,
-    ecu_variants: Optional[List[str]] = None,
-    data: bytes = b'',
-    decode: bool = False,
-) -> None:
+def print_summary(odxdb: Database,
+                  ecu_variants: Optional[List[str]] = None,
+                  data: bytes = b'',
+                  decode: bool = False) -> None:
     ecu_names = ecu_variants if ecu_variants else [ecu.short_name for ecu in odxdb.ecus]
     service_db: Dict[str, DiagService] = {}
     service_ecus: Dict[str, List[str]] = {}
@@ -86,8 +84,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
             "    odxtools decode -h",
         ]),
         help="Find & print service by hex-data. Can also decode the hex-data to its named parameters.",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+        formatter_class=argparse.RawTextHelpFormatter)
     _parser_utils.add_pdx_argument(parser)
 
     parser.add_argument(
@@ -97,24 +94,13 @@ def add_subparser(subparsers: SubparsersList) -> None:
         metavar="VARIANT",
         required=False,
         help="Specifies which ecu variants should be included.",
-        default="all",
-    )
+        default="all")
 
     parser.add_argument(
-        "-d",
-        "--data",
-        metavar="DATA",
-        required=True,
-        help="Specify data of hex request",
-    )
+        "-d", "--data", metavar="DATA", required=True, help="Specify data of hex request")
 
     parser.add_argument(
-        "-D",
-        "--decode",
-        action="store_true",
-        required=False,
-        help="Decode the given hex data",
-    )
+        "-D", "--decode", action="store_true", required=False, help="Decode the given hex data")
 
 
 def hex_to_binary(data_str: str) -> bytes:
@@ -127,8 +113,4 @@ def run(args: argparse.Namespace) -> None:
     variants = args.variants
 
     print_summary(
-        odxdb,
-        ecu_variants=None if variants == "all" else variants,
-        data=data,
-        decode=args.decode,
-    )
+        odxdb, ecu_variants=None if variants == "all" else variants, data=data, decode=args.decode)

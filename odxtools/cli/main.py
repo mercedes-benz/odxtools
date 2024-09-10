@@ -31,15 +31,14 @@ def start_cli() -> None:
             "   odxtools browse ./path/to/database.pdx",
         ]),
         prog="odxtools",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+        formatter_class=argparse.RawTextHelpFormatter)
 
     argparser.add_argument(
         "--no-strict",
         action="store_true",
         default=False,
         required=False,
-        help="Load the dataset in non-strict mode (which is more robust but might lead to undefined behavior)",
+        help="Load the dataset in non-strict mode (which is more robust but might lead to undefined behavior)"
     )
 
     argparser.add_argument(

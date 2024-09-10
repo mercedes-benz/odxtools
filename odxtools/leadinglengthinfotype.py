@@ -38,10 +38,8 @@ class LeadingLengthInfoType(DiagCodedType):
                   "A Leading length info type with bit length == 0 does not make sense.")
         odxassert(
             self.base_data_type in [
-                DataType.A_BYTEFIELD,
-                DataType.A_ASCIISTRING,
-                DataType.A_UNICODE2STRING,
-                DataType.A_UTF8STRING,
+                DataType.A_BYTEFIELD, DataType.A_ASCIISTRING, DataType.A_UNICODE2STRING,
+                DataType.A_UTF8STRING
             ],
             f"A leading length info type cannot have the base data type {self.base_data_type.name}."
         )
@@ -79,16 +77,14 @@ class LeadingLengthInfoType(DiagCodedType):
             used_mask=None,
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,
-            is_highlow_byte_order=self.is_highlow_byte_order,
-        )
+            is_highlow_byte_order=self.is_highlow_byte_order)
 
         encode_state.emplace_atomic_value(
             internal_value=internal_value,
             used_mask=None,
             bit_length=8 * byte_length,
             base_data_type=self.base_data_type,
-            is_highlow_byte_order=self.is_highlow_byte_order,
-        )
+            is_highlow_byte_order=self.is_highlow_byte_order)
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
@@ -97,8 +93,7 @@ class LeadingLengthInfoType(DiagCodedType):
         byte_length = decode_state.extract_atomic_value(
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,  # length is an integer
-            is_highlow_byte_order=self.is_highlow_byte_order,
-        )
+            is_highlow_byte_order=self.is_highlow_byte_order)
 
         if not isinstance(byte_length, int):
             odxraise()
@@ -109,7 +104,6 @@ class LeadingLengthInfoType(DiagCodedType):
         value = decode_state.extract_atomic_value(
             bit_length=8 * byte_length,
             base_data_type=self.base_data_type,
-            is_highlow_byte_order=self.is_highlow_byte_order,
-        )
+            is_highlow_byte_order=self.is_highlow_byte_order)
 
         return value

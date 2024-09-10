@@ -116,8 +116,7 @@ somersault_team_members = {
             city="New Dogsville",
             phone="+0 1234/5678-9",
             fax="+0 1234/5678-0",
-            email="info@suncus.com",
-        ),
+            email="info@suncus.com"),
     "horsey":
         TeamMember(
             odx_id=OdxLinkId("TM.Horsey", doc_frags),
@@ -132,8 +131,7 @@ somersault_team_members = {
             city="New Dogsville",
             phone="+0 1234/5678-91",
             fax="+0 1234/5678-0",
-            email="info@suncus.com",
-        ),
+            email="info@suncus.com"),
     "slothy":
         TeamMember(
             odx_id=OdxLinkId("TM.Slothy", doc_frags),
@@ -148,8 +146,7 @@ somersault_team_members = {
             city=None,
             phone=None,
             fax=None,
-            email=None,
-        ),
+            email=None),
 }
 
 somersault_company_datas = {
@@ -161,10 +158,8 @@ somersault_company_datas = {
             long_name="Circus of the sun",
             description=Description.from_string("<p>Prestigious group of performers</p>"),
             roles=["circus", "gym"],
-            team_members=NamedItemList([
-                somersault_team_members["doggy"],
-                somersault_team_members["horsey"],
-            ]),
+            team_members=NamedItemList(
+                [somersault_team_members["doggy"], somersault_team_members["horsey"]]),
             company_specific_info=CompanySpecificInfo(
                 related_docs=[
                     RelatedDoc(
@@ -178,13 +173,9 @@ somersault_company_datas = {
                             date="2015-01-15T20:15:20+05:00",
                             publisher="Suncus Publishing",
                             url="https://suncus-is-the-best.com",
-                            position="first!",
-                        ),
-                    ),
+                            position="first!"))
                 ],
-                sdgs=[],
-            ),
-        ),
+                sdgs=[])),
     "acme":
         CompanyData(
             odx_id=OdxLinkId("CD.ACME", doc_frags),
@@ -192,12 +183,9 @@ somersault_company_datas = {
             short_name="ACME_Corporation",
             long_name=None,
             description=None,
-            team_members=NamedItemList([
-                somersault_team_members["slothy"],
-            ]),
+            team_members=NamedItemList([somersault_team_members["slothy"]]),
             roles=[],
-            company_specific_info=None,
-        ),
+            company_specific_info=None),
 }
 
 somersault_admin_data = AdminData(
@@ -207,8 +195,7 @@ somersault_admin_data = AdminData(
             company_data_ref=OdxLinkRef("CD.Suncus", doc_frags),
             team_member_ref=OdxLinkRef("TM.Doggy", doc_frags),
             doc_label="A really meaningful label",
-            sdgs=[],
-        ),
+            sdgs=[])
     ],
     doc_revisions=[
         DocRevision(
@@ -220,10 +207,9 @@ somersault_admin_data = AdminData(
             modifications=[
                 Modification(change="add somersault ECU", reason="we needed a new artist"),
                 Modification(
-                    change="increase robustness to dizzyness", reason="No alcohol anymore"),
+                    change="increase robustness to dizzyness", reason="No alcohol anymore")
             ],
-            company_revision_infos=[],
-        ),
+            company_revision_infos=[]),
         DocRevision(
             team_member_ref=OdxLinkRef("TM.Horsey", doc_frags),
             revision_label="1.1",
@@ -233,11 +219,9 @@ somersault_admin_data = AdminData(
             modifications=[
                 Modification(
                     change="rename somersault ECU to somersault_assiduous to enable slothy to add somersault_lazy",
-                    reason=None,
-                ),
+                    reason=None)
             ],
-            company_revision_infos=[],
-        ),
+            company_revision_infos=[]),
         DocRevision(
             team_member_ref=OdxLinkRef("TM.Slothy", doc_frags),
             revision_label="1.0.3.2.1.5.6",
@@ -245,10 +229,8 @@ somersault_admin_data = AdminData(
             state=None,
             tool=None,
             modifications=[],
-            company_revision_infos=[],
-        ),
-    ],
-)
+            company_revision_infos=[])
+    ])
 
 # functional classes
 somersault_functional_classes = {
@@ -258,16 +240,14 @@ somersault_functional_classes = {
             oid=None,
             short_name="flip",
             long_name="Flip",
-            description=None,
-        ),
+            description=None),
     "session":
         FunctionalClass(
             odx_id=OdxLinkId("somersault.FNC.session", doc_frags),
             oid=None,
             short_name="session",
             long_name="Session",
-            description=None,
-        ),
+            description=None),
 }
 
 # additional audiences
@@ -278,16 +258,14 @@ somersault_additional_audiences = {
             oid=None,
             short_name="attentive_admirer",
             long_name="Attentive Admirer",
-            description=None,
-        ),
+            description=None),
     "anyone":
         AdditionalAudience(
             odx_id=OdxLinkId("somersault.AA.anyone", doc_frags),
             oid=None,
             short_name="anyone",
             long_name="Anyone",
-            description=None,
-        ),
+            description=None),
 }
 
 # diag coded types
@@ -299,8 +277,7 @@ somersault_diagcodedtypes = {
             bit_mask=None,
             base_type_encoding=None,
             is_condensed_raw=None,
-            is_highlow_byte_order_raw=None,
-        ),
+            is_highlow_byte_order_raw=None),
     "uint8":
         StandardLengthType(
             base_data_type=DataType.A_UINT32,
@@ -308,8 +285,7 @@ somersault_diagcodedtypes = {
             bit_mask=None,
             is_condensed_raw=None,
             is_highlow_byte_order_raw=None,
-            base_type_encoding=None,
-        ),
+            base_type_encoding=None),
     "uint16":
         StandardLengthType(
             base_data_type=DataType.A_UINT32,
@@ -317,8 +293,7 @@ somersault_diagcodedtypes = {
             bit_mask=None,
             base_type_encoding=None,
             is_condensed_raw=None,
-            is_highlow_byte_order_raw=None,
-        ),
+            is_highlow_byte_order_raw=None),
     "float32":
         StandardLengthType(
             base_data_type=DataType.A_FLOAT32,
@@ -326,8 +301,7 @@ somersault_diagcodedtypes = {
             bit_mask=None,
             is_condensed_raw=None,
             is_highlow_byte_order_raw=None,
-            base_type_encoding=None,
-        ),
+            base_type_encoding=None),
 }
 
 somersault_physical_dimensions = {
@@ -344,8 +318,7 @@ somersault_physical_dimensions = {
             temperature_exp=0,
             molar_amount_exp=0,
             luminous_intensity_exp=0,
-            description=None,
-        ),
+            description=None),
     "temperature":
         PhysicalDimension(
             odx_id=OdxLinkId("somersault.PD.temperature", doc_frags),
@@ -359,8 +332,7 @@ somersault_physical_dimensions = {
             temperature_exp=1,
             molar_amount_exp=0,
             luminous_intensity_exp=0,
-            description=None,
-        )
+            description=None)
 }
 
 somersault_units = {
@@ -375,8 +347,7 @@ somersault_units = {
             factor_si_to_unit=1,
             offset_si_to_unit=0,
             physical_dimension_ref=OdxLinkRef.from_id(
-                somersault_physical_dimensions["time"].odx_id),
-        ),
+                somersault_physical_dimensions["time"].odx_id)),
     "minute":
         Unit(
             odx_id=OdxLinkId("somersault.unit.minute", doc_frags),
@@ -388,8 +359,7 @@ somersault_units = {
             factor_si_to_unit=60,
             offset_si_to_unit=0,
             physical_dimension_ref=OdxLinkRef.from_id(
-                somersault_physical_dimensions["time"].odx_id),
-        ),
+                somersault_physical_dimensions["time"].odx_id)),
     "celsius":
         Unit(
             odx_id=OdxLinkId("somersault.unit.celsius", doc_frags),
@@ -401,8 +371,7 @@ somersault_units = {
             factor_si_to_unit=1,
             offset_si_to_unit=-273.15,
             physical_dimension_ref=OdxLinkRef.from_id(
-                somersault_physical_dimensions["temperature"].odx_id),
-        ),
+                somersault_physical_dimensions["temperature"].odx_id)),
 }
 
 somersault_unit_groups = {
@@ -413,11 +382,10 @@ somersault_unit_groups = {
             category=UnitGroupCategory.COUNTRY,
             unit_refs=[
                 OdxLinkRef.from_id(somersault_units["second"].odx_id),
-                OdxLinkRef.from_id(somersault_units["minute"].odx_id),
+                OdxLinkRef.from_id(somersault_units["minute"].odx_id)
             ],
             long_name="Duration",
-            description=Description.from_string("<p>Units for measuring a duration</p>"),
-        ),
+            description=Description.from_string("<p>Units for measuring a duration</p>")),
 }
 
 # computation methods
@@ -467,12 +435,10 @@ somersault_compumethods: Dict[str, CompuMethod] = {
                         domain_type=DataType.A_UINT32,
                         range_type=DataType.A_UNICODE2STRING,
                         compu_inverse_value=None,
-                        compu_rational_coeffs=None),
-                ],
-            ),
+                        compu_rational_coeffs=None)
+                ]),
             internal_type=DataType.A_UINT32,
-            physical_type=DataType.A_UNICODE2STRING,
-        ),
+            physical_type=DataType.A_UNICODE2STRING),
 }
 
 # data object properties
@@ -491,8 +457,7 @@ somersault_dops = {
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        ),
+            physical_constr=None),
     "soberness_check":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.soberness_check", doc_frags),
@@ -507,8 +472,7 @@ somersault_dops = {
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        ),
+            physical_constr=None),
     "dizzyness_level":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.dizzyness_level", doc_frags),
@@ -523,8 +487,7 @@ somersault_dops = {
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        ),
+            physical_constr=None),
     "happiness_level":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.happiness_level", doc_frags),
@@ -539,8 +502,7 @@ somersault_dops = {
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        ),
+            physical_constr=None),
     "duration":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.duration", doc_frags),
@@ -555,8 +517,7 @@ somersault_dops = {
             unit_ref=OdxLinkRef.from_id(somersault_units["second"].odx_id),
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        ),
+            physical_constr=None),
     "temperature":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.temperature", doc_frags),
@@ -571,8 +532,7 @@ somersault_dops = {
             unit_ref=OdxLinkRef.from_id(somersault_units["celsius"].odx_id),
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        ),
+            physical_constr=None),
     "error_code":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.error_code", doc_frags),
@@ -587,8 +547,7 @@ somersault_dops = {
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        ),
+            physical_constr=None),
     "boolean":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.boolean", doc_frags),
@@ -604,8 +563,7 @@ somersault_dops = {
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        ),
+            physical_constr=None),
     "uint8":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.uint8", doc_frags),
@@ -620,8 +578,7 @@ somersault_dops = {
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        ),
+            physical_constr=None),
     "uint16":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.uint16", doc_frags),
@@ -636,8 +593,7 @@ somersault_dops = {
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        ),
+            physical_constr=None),
     "float":
         DataObjectProperty(
             odx_id=OdxLinkId("somersault.DOP.float", doc_frags),
@@ -652,8 +608,7 @@ somersault_dops = {
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        ),
+            physical_constr=None),
 }
 
 last_flip_details_table_id = OdxLinkId("somersault.table.last_flip_details", doc_frags)
@@ -683,8 +638,7 @@ somersault_positive_responses = {
                     coded_value=uds.positive_response_id(
                         SID.DiagnosticSessionControl.value),  # type: ignore[attr-defined]
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="can_do_backward_flips",
@@ -696,11 +650,9 @@ somersault_positive_responses = {
                     dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),
                     dop_snref=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
     "tester_ok":
         Response(
             odx_id=OdxLinkId("somersault.PR.tester_present", doc_frags),
@@ -723,8 +675,7 @@ somersault_positive_responses = {
                     coded_value=uds.positive_response_id(
                         SID.TesterPresent.value),  # type: ignore[attr-defined]
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="status",
@@ -736,11 +687,9 @@ somersault_positive_responses = {
                     physical_default_value_raw="0",
                     byte_position=1,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
     "forward_flips_grudgingly_done":
         Response(
             odx_id=OdxLinkId("somersault.PR.grudging_forward", doc_frags),
@@ -763,8 +712,7 @@ somersault_positive_responses = {
                     coded_value=uds.positive_response_id(
                         SID.ForwardFlip.value),  # type: ignore[attr-defined]
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 # TODO (?): non-byte aligned MatchingRequestParameters
                 MatchingRequestParameter(
                     oid=None,
@@ -776,8 +724,7 @@ somersault_positive_responses = {
                     byte_position=1,
                     byte_length=1,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="sault_time",
@@ -789,11 +736,9 @@ somersault_positive_responses = {
                     dop_ref=OdxLinkRef("somersault.DOP.duration", doc_frags),
                     dop_snref=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
     "forward_flips_happily_done":
         Response(
             odx_id=OdxLinkId("somersault.PR.happy_forward", doc_frags),
@@ -816,8 +761,7 @@ somersault_positive_responses = {
                     coded_value=uds.positive_response_id(
                         SID.ForwardFlip.value),  # type: ignore[attr-defined]
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 # TODO (?): non-byte aligned MatchingRequestParameters
                 MatchingRequestParameter(
                     oid=None,
@@ -829,8 +773,7 @@ somersault_positive_responses = {
                     byte_position=1,
                     byte_length=1,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="yeha_level",
@@ -842,11 +785,9 @@ somersault_positive_responses = {
                     dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frags),
                     dop_snref=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
     "backward_flips_grudgingly_done":
         Response(
             odx_id=OdxLinkId("somersault.PR.grudging_backward", doc_frags),
@@ -869,8 +810,7 @@ somersault_positive_responses = {
                     coded_value=uds.positive_response_id(
                         SID.BackwardFlip.value),  # type: ignore[attr-defined]
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="num_flips_done",
@@ -882,8 +822,7 @@ somersault_positive_responses = {
                     dop_snref=None,
                     byte_position=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="grumpiness_level",
@@ -895,11 +834,9 @@ somersault_positive_responses = {
                     dop_snref=None,
                     byte_position=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
     # Note that there is no such thing as a "backwards flip done happily"!
     "status_report":
         Response(
@@ -923,8 +860,7 @@ somersault_positive_responses = {
                     coded_value=uds.positive_response_id(
                         SID.ReadDataByIdentifier.value),  # type: ignore[attr-defined]
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="dizzyness_level",
@@ -936,8 +872,7 @@ somersault_positive_responses = {
                     dop_ref=OdxLinkRef("somersault.DOP.dizzyness_level", doc_frags),
                     dop_snref=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="happiness_level",
@@ -949,8 +884,7 @@ somersault_positive_responses = {
                     dop_ref=OdxLinkRef("somersault.DOP.happiness_level", doc_frags),
                     dop_snref=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 TableKeyParameter(
                     oid=None,
                     odx_id=OdxLinkId("somersault.PR.report_status.last_pos_response_key",
@@ -965,8 +899,7 @@ somersault_positive_responses = {
                     table_row_snref=None,
                     byte_position=3,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 TableStructParameter(
                     oid=None,
                     short_name="last_pos_response",
@@ -978,11 +911,9 @@ somersault_positive_responses = {
                     table_key_snref=None,
                     byte_position=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
     "set_operation_params":
         Response(
             odx_id=OdxLinkId("somersault.PR.set_operation_params", doc_frags),
@@ -1005,11 +936,9 @@ somersault_positive_responses = {
                     coded_value=uds.positive_response_id(
                         SID.ForwardFlipCondition.value),  # type: ignore[attr-defined]
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
 }
 
 # this is a hack to get around a catch-22: we need to specify the
@@ -1046,8 +975,7 @@ somersault_negative_responses = {
                     byte_position=0,
                     coded_value=uds.NegativeResponseId,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 MatchingRequestParameter(
                     oid=None,
                     short_name="rq_sid",
@@ -1058,8 +986,7 @@ somersault_negative_responses = {
                     byte_position=1,
                     byte_length=1,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="response_code",
@@ -1071,11 +998,9 @@ somersault_negative_responses = {
                     dop_ref=OdxLinkRef("somersault.DOP.error_code", doc_frags),
                     dop_snref=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
     # the tester present request needs separate negative and positive
     # responses because it must be fully specified a-priory to be able
     # to extract it for the COMPARAMS.
@@ -1100,8 +1025,7 @@ somersault_negative_responses = {
                     byte_position=0,
                     coded_value=uds.NegativeResponseId,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 CodedConstParameter(
                     oid=None,
                     short_name="rq_sid",
@@ -1112,11 +1036,9 @@ somersault_negative_responses = {
                     byte_position=1,
                     coded_value=uds.SID.TesterPresent.value,  # type: ignore[attr-defined]
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
     "flips_not_done":
         Response(
             odx_id=OdxLinkId("somersault.NR.flips_not_done", doc_frags),
@@ -1138,8 +1060,7 @@ somersault_negative_responses = {
                     byte_position=0,
                     coded_value=uds.NegativeResponseId,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 MatchingRequestParameter(
                     oid=None,
                     short_name="rq_sid",
@@ -1150,8 +1071,7 @@ somersault_negative_responses = {
                     byte_position=1,
                     byte_length=1,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 NrcConstParameter(
                     oid=None,
                     short_name="reason",
@@ -1166,8 +1086,7 @@ somersault_negative_responses = {
                     # 1 -> too dizzy
                     # 2 -> stumbled
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="flips_successfully_done",
@@ -1179,11 +1098,9 @@ somersault_negative_responses = {
                     dop_snref=None,
                     byte_position=3,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
 }
 
 somersault_global_negative_responses = {
@@ -1208,8 +1125,7 @@ somersault_global_negative_responses = {
                     byte_position=0,
                     coded_value=uds.NegativeResponseId,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 CodedConstParameter(
                     oid=None,
                     short_name="too_hot_dummy",
@@ -1220,8 +1136,7 @@ somersault_global_negative_responses = {
                     byte_position=1,
                     coded_value=0xfe,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 CodedConstParameter(
                     oid=None,
                     short_name="too_hot_id",
@@ -1232,8 +1147,7 @@ somersault_global_negative_responses = {
                     byte_position=2,
                     coded_value=0xa7,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="temperature",
@@ -1245,11 +1159,9 @@ somersault_global_negative_responses = {
                     dop_ref=OdxLinkRef("somersault.DOP.temperature", doc_frags),
                     dop_snref=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        )
+            byte_size=None)
 }
 
 # tables
@@ -1283,8 +1195,7 @@ somersault_tables = {
                     semantic="DETAILS-KEY",
                     dop_ref=OdxLinkRef.from_id(somersault_dops["soberness_check"].odx_id),
                     dop_snref=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 TableRow(
                     table_ref=last_flip_details_table_ref,
                     odx_id=OdxLinkId("somersault.table.last_flip_details.forward_grudging",
@@ -1301,8 +1212,7 @@ somersault_tables = {
                     semantic="DETAILS-KEY",
                     dop_ref=None,
                     dop_snref=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 TableRow(
                     table_ref=last_flip_details_table_ref,
                     odx_id=OdxLinkId("somersault.table.last_flip_details.forward_happy", doc_frags),
@@ -1317,8 +1227,7 @@ somersault_tables = {
                     structure_snref=None,
                     dop_ref=None,
                     dop_snref=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 TableRow(
                     table_ref=last_flip_details_table_ref,
                     odx_id=OdxLinkId("somersault.table.last_flip_details.backward", doc_frags),
@@ -1333,11 +1242,9 @@ somersault_tables = {
                     structure_snref=None,
                     dop_ref=None,
                     dop_snref=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ],
-            sdgs=[],
-        )
+            sdgs=[])
 }
 
 # requests
@@ -1363,8 +1270,7 @@ somersault_requests = {
                     coded_value=SID.DiagnosticSessionControl  # type: ignore[attr-defined,arg-type]
                     .value,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 CodedConstParameter(
                     oid=None,
                     short_name="id",
@@ -1375,11 +1281,9 @@ somersault_requests = {
                     byte_position=1,
                     coded_value=0x0,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ],
-            byte_size=None,
-        ),
+            byte_size=None),
     "stop_session":
         Request(
             odx_id=OdxLinkId("somersault.RQ.stop_session", doc_frags),
@@ -1401,8 +1305,7 @@ somersault_requests = {
                     coded_value=SID.DiagnosticSessionControl  # type: ignore[attr-defined,arg-type]
                     .value,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 CodedConstParameter(
                     oid=None,
                     short_name="id",
@@ -1413,11 +1316,9 @@ somersault_requests = {
                     byte_position=1,
                     coded_value=0x1,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ],
-            byte_size=None,
-        ),
+            byte_size=None),
     "tester_present":
         Request(
             odx_id=OdxLinkId("somersault.RQ.tester_present", doc_frags),
@@ -1438,8 +1339,7 @@ somersault_requests = {
                     byte_position=0,
                     coded_value=SID.TesterPresent.value,  # type: ignore[attr-defined,arg-type]
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 CodedConstParameter(
                     oid=None,
                     short_name="id",
@@ -1450,11 +1350,9 @@ somersault_requests = {
                     byte_position=1,
                     coded_value=0x0,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ],
-            byte_size=None,
-        ),
+            byte_size=None),
     "set_operation_params":
         Request(
             odx_id=OdxLinkId("somersault.RQ.set_operation_params", doc_frags),
@@ -1477,8 +1375,7 @@ somersault_requests = {
                     coded_value=SID.ForwardFlipCondition  # type: ignore[attr-defined,arg-type]
                     .value,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="use_fire_ring",
@@ -1490,11 +1387,9 @@ somersault_requests = {
                     dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),
                     dop_snref=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ],
-            byte_size=None,
-        ),
+            byte_size=None),
     "forward_flips":
         Request(
             odx_id=OdxLinkId("somersault.RQ.do_forward_flips", doc_frags),
@@ -1515,8 +1410,7 @@ somersault_requests = {
                     byte_position=0,
                     coded_value=SID.ForwardFlip.value,  # type: ignore[attr-defined,arg-type]
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="forward_soberness_check",
@@ -1529,8 +1423,7 @@ somersault_requests = {
                     byte_position=1,
                     # value must be 0x12 for the request to be accepted
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="num_flips",
@@ -1542,11 +1435,9 @@ somersault_requests = {
                     dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frags),
                     dop_snref=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ],
-            byte_size=None,
-        ),
+            byte_size=None),
     "backward_flips":
         Request(
             odx_id=OdxLinkId("somersault.RQ.do_backward_flips", doc_frags),
@@ -1567,8 +1458,7 @@ somersault_requests = {
                     byte_position=0,
                     coded_value=SID.BackwardFlip.value,  # type: ignore[attr-defined,arg-type]
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="backward_soberness_check",
@@ -1581,8 +1471,7 @@ somersault_requests = {
                     byte_position=1,
                     # value must be 0x21 for the request to be accepted
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="num_flips",
@@ -1594,11 +1483,9 @@ somersault_requests = {
                     dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frags),
                     dop_snref=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ],
-            byte_size=None,
-        ),
+            byte_size=None),
     "report_status":
         Request(
             odx_id=OdxLinkId("somersault.RQ.report_status", doc_frags),
@@ -1620,8 +1507,7 @@ somersault_requests = {
                     coded_value=SID.ReadDataByIdentifier  # type: ignore[attr-defined,arg-type]
                     .value,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 CodedConstParameter(
                     oid=None,
                     short_name="id",
@@ -1632,11 +1518,9 @@ somersault_requests = {
                     byte_position=1,
                     coded_value=0x0,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ],
-            byte_size=None,
-        ),
+            byte_size=None),
 }
 
 # services
@@ -1665,17 +1549,12 @@ somersault_services = {
             state_transition_refs=[],
             request_ref=OdxLinkRef.from_id(somersault_requests["start_session"].odx_id),
             semantic="SESSION",
-            pos_response_refs=[
-                OdxLinkRef.from_id(somersault_positive_responses["session"].odx_id),
-            ],
-            neg_response_refs=[
-                OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id),
-            ],
+            pos_response_refs=[OdxLinkRef.from_id(somersault_positive_responses["session"].odx_id)],
+            neg_response_refs=[OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id)],
             functional_class_refs=[
-                OdxLinkRef.from_id(somersault_functional_classes["session"].odx_id),
+                OdxLinkRef.from_id(somersault_functional_classes["session"].odx_id)
             ],
-            sdgs=[],
-        ),
+            sdgs=[]),
     "stop_session":
         DiagService(
             odx_id=OdxLinkId("somersault.service.session_stop", doc_frags),
@@ -1700,17 +1579,12 @@ somersault_services = {
             state_transition_refs=[],
             semantic="SESSION",
             request_ref=OdxLinkRef.from_id(somersault_requests["stop_session"].odx_id),
-            pos_response_refs=[
-                OdxLinkRef.from_id(somersault_positive_responses["session"].odx_id),
-            ],
-            neg_response_refs=[
-                OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id),
-            ],
+            pos_response_refs=[OdxLinkRef.from_id(somersault_positive_responses["session"].odx_id)],
+            neg_response_refs=[OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id)],
             functional_class_refs=[
                 OdxLinkRef.from_id(somersault_functional_classes["session"].odx_id)
             ],
-            sdgs=[],
-        ),
+            sdgs=[]),
     "tester_present":
         DiagService(
             odx_id=OdxLinkId("somersault.service.tester_present", doc_frags),
@@ -1733,28 +1607,26 @@ somersault_services = {
             audience=Audience(
                 enabled_audience_refs=[
                     OdxLinkRef.from_id(somersault_additional_audiences["attentive_admirer"].odx_id),
-                    OdxLinkRef.from_id(somersault_additional_audiences["anyone"].odx_id),
+                    OdxLinkRef.from_id(somersault_additional_audiences["anyone"].odx_id)
                 ],
                 disabled_audience_refs=[],
                 is_supplier_raw=None,
                 is_aftersales_raw=None,
                 is_aftermarket_raw=None,
                 is_manufacturing_raw=None,
-                is_development_raw=False,
-            ),
+                is_development_raw=False),
             functional_class_refs=[],
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="TESTERPRESENT",
             request_ref=OdxLinkRef.from_id(somersault_requests["tester_present"].odx_id),
             pos_response_refs=[
-                OdxLinkRef.from_id(somersault_positive_responses["tester_ok"].odx_id),
+                OdxLinkRef.from_id(somersault_positive_responses["tester_ok"].odx_id)
             ],
             neg_response_refs=[
-                OdxLinkRef.from_id(somersault_negative_responses["tester_nok"].odx_id),
+                OdxLinkRef.from_id(somersault_negative_responses["tester_nok"].odx_id)
             ],
-            sdgs=[],
-        ),
+            sdgs=[]),
     "set_operation_params":
         DiagService(
             odx_id=OdxLinkId("somersault.service.set_operation_params", doc_frags),
@@ -1781,13 +1653,10 @@ somersault_services = {
             semantic="FUNCTION",
             request_ref=OdxLinkRef.from_id(somersault_requests["set_operation_params"].odx_id),
             pos_response_refs=[
-                OdxLinkRef.from_id(somersault_positive_responses["set_operation_params"].odx_id),
+                OdxLinkRef.from_id(somersault_positive_responses["set_operation_params"].odx_id)
             ],
-            neg_response_refs=[
-                OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id),
-            ],
-            sdgs=[],
-        ),
+            neg_response_refs=[OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id)],
+            sdgs=[]),
     "forward_flips":
         DiagService(
             odx_id=OdxLinkId("somersault.service.do_forward_flips", doc_frags),
@@ -1816,8 +1685,7 @@ somersault_services = {
                 is_aftersales_raw=None,
                 is_aftermarket_raw=None,
                 is_manufacturing_raw=None,
-                is_development_raw=False,
-            ),
+                is_development_raw=False),
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="FUNCTION",
@@ -1838,8 +1706,7 @@ somersault_services = {
             functional_class_refs=[
                 OdxLinkRef.from_id(somersault_functional_classes["flip"].odx_id)
             ],
-            sdgs=[],
-        ),
+            sdgs=[]),
     "backward_flips":
         DiagService(
             odx_id=OdxLinkId("somersault.service.do_backward_flips", doc_frags),
@@ -1868,24 +1735,22 @@ somersault_services = {
                 is_aftersales_raw=None,
                 is_aftermarket_raw=None,
                 is_manufacturing_raw=None,
-                is_development_raw=False,
-            ),
+                is_development_raw=False),
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="FUNCTION",
             request_ref=OdxLinkRef.from_id(somersault_requests["backward_flips"].odx_id),
             pos_response_refs=[
                 OdxLinkRef.from_id(
-                    somersault_positive_responses["backward_flips_grudgingly_done"].odx_id),
+                    somersault_positive_responses["backward_flips_grudgingly_done"].odx_id)
             ],
             neg_response_refs=[
-                OdxLinkRef.from_id(somersault_negative_responses["flips_not_done"].odx_id),
+                OdxLinkRef.from_id(somersault_negative_responses["flips_not_done"].odx_id)
             ],
             functional_class_refs=[
                 OdxLinkRef.from_id(somersault_functional_classes["flip"].odx_id)
             ],
-            sdgs=[],
-        ),
+            sdgs=[]),
     "report_status":
         DiagService(
             odx_id=OdxLinkId("somersault.service.report_status", doc_frags),
@@ -1914,21 +1779,17 @@ somersault_services = {
                 is_manufacturing_raw=None,
                 is_development_raw=None,
                 is_aftersales_raw=False,
-                is_aftermarket_raw=False,
-            ),
+                is_aftermarket_raw=False),
             functional_class_refs=[],
             pre_condition_state_refs=[],
             state_transition_refs=[],
             semantic="CURRENTDATA",
             request_ref=OdxLinkRef.from_id(somersault_requests["report_status"].odx_id),
             pos_response_refs=[
-                OdxLinkRef.from_id(somersault_positive_responses["status_report"].odx_id),
+                OdxLinkRef.from_id(somersault_positive_responses["status_report"].odx_id)
             ],
-            neg_response_refs=[
-                OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id),
-            ],
-            sdgs=[],
-        ),
+            neg_response_refs=[OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id)],
+            sdgs=[]),
 }
 
 somersault_single_ecu_jobs = {
@@ -1955,8 +1816,7 @@ somersault_single_ecu_jobs = {
                     syntax="PYTHON3",
                     entrypoint="compulsory_program",
                     revision="1.23.4",
-                    library_refs=[],
-                ),
+                    library_refs=[])
             ],
             input_params=NamedItemList(),
             output_params=NamedItemList(),
@@ -1964,8 +1824,7 @@ somersault_single_ecu_jobs = {
             is_mandatory_raw=None,
             is_executable_raw=None,
             is_final_raw=None,
-            sdgs=[],
-        )
+            sdgs=[])
 }
 
 # communication parameters
@@ -1982,8 +1841,7 @@ somersault_comparam_refs = [
         value="500000",
         protocol_snref="somersault_protocol",
         prot_stack_snref=None,
-        description=None,
-    ),
+        description=None),
     # parameters of the CAN diagnostics frames
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_2.CP_UniqueRespIdTable", cp_iso15765_2_doc_frags),
@@ -2007,20 +1865,18 @@ somersault_comparam_refs = [
             # CP_CanRespUUDTExtAddr
             "0",
             # CP_ECULayerShortName
-            "Somersault",
+            "Somersault"
         ],
         protocol_snref="somersault_protocol",
         prot_stack_snref=None,
-        description=None,
-    ),
+        description=None),
     # timeout for responses [us]
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_RC21CompletionTimeout", cp_iso15765_3_doc_frags),
         value="1000000",
         protocol_snref="somersault_protocol",
         prot_stack_snref=None,
-        description=None,
-    ),
+        description=None),
     ###
     # "tester present" message handling
     ###
@@ -2030,40 +1886,35 @@ somersault_comparam_refs = [
         value=f"{tester_present_value.hex()}",
         protocol_snref="somersault_protocol",
         prot_stack_snref=None,
-        description=None,
-    ),
+        description=None),
     # a response is mandatory
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentReqRsp", cp_iso15765_3_doc_frags),
         value="Response expected",
         protocol_snref="somersault_protocol",
         prot_stack_snref=None,
-        description=None,
-    ),
+        description=None),
     # positive response to "tester present"
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentExpPosResp", cp_iso15765_3_doc_frags),
         value=f"{tester_pr_value.hex()}",
         protocol_snref="somersault_protocol",
         prot_stack_snref=None,
-        description=None,
-    ),
+        description=None),
     # negative response to "tester present"
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentExpNegResp", cp_iso15765_3_doc_frags),
         value=f"{tester_nr_value.hex()}",
         protocol_snref="somersault_protocol",
         prot_stack_snref=None,
-        description=None,
-    ),
+        description=None),
     # when a tester present message must be send
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentSendType", cp_iso15765_3_doc_frags),
         value="On idle",
         protocol_snref="somersault_protocol",
         prot_stack_snref=None,
-        description=None,
-    ),
+        description=None),
     # "tester present" messages are send directly to the CAN IDs
     # (i.e., they are not embedded in the ISO-TP telegram?)
     ComparamInstance(
@@ -2071,16 +1922,14 @@ somersault_comparam_refs = [
         value="Physical",
         protocol_snref="somersault_protocol",
         prot_stack_snref=None,
-        description=None,
-    ),
+        description=None),
     # is a response from the ECU to "tester present" messages expected
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentReqRsp", cp_iso15765_3_doc_frags),
         value="Response expected",
         protocol_snref="somersault_protocol",
         prot_stack_snref=None,
-        description=None,
-    ),
+        description=None),
     ###
     # ISO-TP parameters:
     ###
@@ -2090,8 +1939,7 @@ somersault_comparam_refs = [
         value="4",
         protocol_snref="somersault_protocol",
         prot_stack_snref=None,
-        description=None,
-    ),
+        description=None)
 ]
 
 somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
@@ -2101,8 +1949,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
         unit_groups=list(somersault_unit_groups.values()),
         units=list(somersault_units.values()),
         physical_dimensions=list(somersault_physical_dimensions.values()),
-        sdgs=[],
-    ),
+        sdgs=[]),
     tables=NamedItemList(somersault_tables.values()),
     muxs=NamedItemList(),
     env_datas=NamedItemList(),
@@ -2113,8 +1960,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
     end_of_pdu_fields=NamedItemList(),
     dynamic_length_fields=NamedItemList(),
     dynamic_endmarker_fields=NamedItemList(),
-    sdgs=[],
-)
+    sdgs=[])
 
 # diagnostics layer for the protocol
 somersault_protocol_raw = ProtocolRaw(
@@ -2142,8 +1988,7 @@ somersault_protocol_raw = ProtocolRaw(
     comparam_spec_ref=OdxLinkRef("CPS_ISO_15765_3_on_ISO_15765_2",
                                  [OdxDocFragment("ISO_15765_3_on_ISO_15765_2", "COMPARAM-SPEC")]),
     comparam_refs=somersault_comparam_refs,
-    prot_stack_snref=None,
-)
+    prot_stack_snref=None)
 somersault_protocol = Protocol(diag_layer_raw=somersault_protocol_raw)
 
 # diagnostics layer for the base variant
@@ -2174,8 +2019,7 @@ somersault_base_variant_raw = BaseVariantRaw(
             not_inherited_dops=[],
             not_inherited_variables=[],
             not_inherited_tables=[],
-            not_inherited_global_neg_responses=[],
-        )
+            not_inherited_global_neg_responses=[])
     ],
     comparam_refs=[],
     diag_variables_raw=[],
@@ -2215,20 +2059,18 @@ somersault_lazy_ecu_raw = EcuVariantRaw(
             # being told under which conditions it operates.
             not_inherited_diag_comms=[
                 somersault_requests["backward_flips"].short_name,
-                somersault_requests["set_operation_params"].short_name,
+                somersault_requests["set_operation_params"].short_name
             ],
             not_inherited_dops=[],
             not_inherited_variables=[],
             not_inherited_tables=[],
-            not_inherited_global_neg_responses=[],
-        )
+            not_inherited_global_neg_responses=[])
     ],
     comparam_refs=[],
     ecu_variant_patterns=[],
     diag_variables_raw=[],
     variable_groups=NamedItemList(),
-    dyn_defined_spec=None,
-)
+    dyn_defined_spec=None)
 somersault_lazy_ecu = EcuVariant(diag_layer_raw=somersault_lazy_ecu_raw)
 
 ##################
@@ -2258,8 +2100,7 @@ somersault_assiduous_requests = {
                     byte_position=0,
                     coded_value=0x3,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="duration",
@@ -2271,11 +2112,9 @@ somersault_assiduous_requests = {
                     dop_ref=OdxLinkRef("somersault.DOP.duration", doc_frags),
                     dop_snref=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
 }
 
 # positive responses
@@ -2301,8 +2140,7 @@ somersault_assiduous_positive_responses = {
                     byte_position=0,
                     coded_value=0x1,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 # TODO (?): non-byte aligned MatchingRequestParameters
                 MatchingRequestParameter(
                     oid=None,
@@ -2314,11 +2152,9 @@ somersault_assiduous_positive_responses = {
                     byte_position=1,
                     byte_length=1,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
 }
 
 # negative responses
@@ -2344,8 +2180,7 @@ somersault_assiduous_negative_responses = {
                     byte_position=0,
                     coded_value=0x20,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 # TODO (?): non-byte aligned MatchingRequestParameters
                 MatchingRequestParameter(
                     oid=None,
@@ -2357,11 +2192,9 @@ somersault_assiduous_negative_responses = {
                     byte_position=1,
                     byte_length=1,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        ),
+            byte_size=None),
 }
 
 # services
@@ -2386,11 +2219,10 @@ somersault_assiduous_services = {
             state_transition_refs=[],
             request_ref=OdxLinkRef.from_id(somersault_assiduous_requests["headstand"].odx_id),
             pos_response_refs=[
-                OdxLinkRef.from_id(
-                    somersault_assiduous_positive_responses["headstand_done"].odx_id),
+                OdxLinkRef.from_id(somersault_assiduous_positive_responses["headstand_done"].odx_id)
             ],
             neg_response_refs=[
-                OdxLinkRef.from_id(somersault_assiduous_negative_responses["fell_over"].odx_id),
+                OdxLinkRef.from_id(somersault_assiduous_negative_responses["fell_over"].odx_id)
             ],
             comparam_refs=[],
             is_cyclic_raw=None,
@@ -2406,10 +2238,8 @@ somersault_assiduous_services = {
                 is_manufacturing_raw=None,
                 is_development_raw=None,
                 is_aftersales_raw=None,
-                is_aftermarket_raw=None,
-            ),
-            sdgs=[],
-        ),
+                is_aftermarket_raw=None),
+            sdgs=[]),
 }
 
 somersault_assiduous_ecu_raw = EcuVariantRaw(
@@ -2437,8 +2267,7 @@ somersault_assiduous_ecu_raw = EcuVariantRaw(
         env_data_descs=NamedItemList(),
         muxs=NamedItemList(),
         unit_spec=None,
-        sdgs=[],
-    ),
+        sdgs=[]),
     diag_comms_raw=list(somersault_assiduous_services.values()),
     requests=NamedItemList(somersault_assiduous_requests.values()),
     positive_responses=NamedItemList(somersault_assiduous_positive_responses.values()),
@@ -2457,15 +2286,13 @@ somersault_assiduous_ecu_raw = EcuVariantRaw(
             not_inherited_dops=[],
             not_inherited_variables=[],
             not_inherited_tables=[],
-            not_inherited_global_neg_responses=[],
-        )
+            not_inherited_global_neg_responses=[])
     ],
     comparam_refs=somersault_comparam_refs,
     ecu_variant_patterns=[],
     diag_variables_raw=[],
     variable_groups=NamedItemList(),
-    dyn_defined_spec=None,
-)
+    dyn_defined_spec=None)
 somersault_assiduous_ecu = EcuVariant(diag_layer_raw=somersault_assiduous_ecu_raw)
 
 ##################
@@ -2481,28 +2308,21 @@ somersault_dlc = DiagLayerContainer(
     description=Description.from_string(
         "<p>This contains ECUs which do somersaults &amp; cetera</p>"),
     admin_data=somersault_admin_data,
-    company_datas=NamedItemList([
-        somersault_company_datas["suncus"],
-        somersault_company_datas["acme"],
-    ]),
+    company_datas=NamedItemList(
+        [somersault_company_datas["suncus"], somersault_company_datas["acme"]]),
     base_variants=NamedItemList([somersault_base_variant]),
     ecu_variants=NamedItemList([somersault_lazy_ecu, somersault_assiduous_ecu]),
     ecu_shared_datas=NamedItemList(),
     protocols=NamedItemList([somersault_protocol]),
     functional_groups=NamedItemList(),
-    sdgs=[],
-)
+    sdgs=[])
 
 # read the communication parameters
 comparam_subsets = []
 odx_cs_dir = pathlib.Path(__file__).parent / "data"
-for odx_cs_filename in (
-        "ISO_11898_2_DWCAN.odx-cs",
-        "ISO_11898_3_DWFTCAN.odx-cs",
-        "ISO_15765_2.odx-cs",
-        "ISO_15765_3_CPSS.odx-cs",
-        "SAE_J2411_SWCAN_CPSS.odx-cs",
-):
+for odx_cs_filename in ("ISO_11898_2_DWCAN.odx-cs", "ISO_11898_3_DWFTCAN.odx-cs",
+                        "ISO_15765_2.odx-cs", "ISO_15765_3_CPSS.odx-cs",
+                        "SAE_J2411_SWCAN_CPSS.odx-cs"):
     odx_cs_root = ElementTree.parse(odx_cs_dir / odx_cs_filename).getroot()
     subset = odx_cs_root.find("COMPARAM-SUBSET")
     if subset is not None:

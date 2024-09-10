@@ -34,12 +34,10 @@ class DummyTool:
             self._odxtools_tool_name_,
             description=desc.getvalue(),
             help="Tool unavailable",
-            formatter_class=argparse.RawTextHelpFormatter,
-        )
+            formatter_class=argparse.RawTextHelpFormatter)
 
     def run(self, args: argparse.Namespace) -> None:
         print(
             f"Error: Tool '{self._odxtools_tool_name_}' is unavailable: {self._error}",
-            file=sys.stderr,
-        )
+            file=sys.stderr)
         exit(1)

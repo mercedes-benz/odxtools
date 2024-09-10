@@ -67,9 +67,7 @@ class ParamLengthInfoType(DiagCodedType):
             # value for the length key in the encode_state based on
             # the value passed here.
             if self.base_data_type in [
-                    DataType.A_BYTEFIELD,
-                    DataType.A_ASCIISTRING,
-                    DataType.A_UTF8STRING,
+                    DataType.A_BYTEFIELD, DataType.A_ASCIISTRING, DataType.A_UTF8STRING
             ]:
                 bit_length = 8 * len(cast(str, internal_value))
             elif self.base_data_type in [DataType.A_UNICODE2STRING]:
@@ -97,8 +95,7 @@ class ParamLengthInfoType(DiagCodedType):
             used_mask=None,
             bit_length=bit_length,
             base_data_type=self.base_data_type,
-            is_highlow_byte_order=self.is_highlow_byte_order,
-        )
+            is_highlow_byte_order=self.is_highlow_byte_order)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         # First, we need to find a length key with matching ID.
@@ -114,8 +111,5 @@ class ParamLengthInfoType(DiagCodedType):
             bit_length = 0
 
         # Extract the internal value and return.
-        return decode_state.extract_atomic_value(
-            bit_length,
-            self.base_data_type,
-            self.is_highlow_byte_order,
-        )
+        return decode_state.extract_atomic_value(bit_length, self.base_data_type,
+                                                 self.is_highlow_byte_order)

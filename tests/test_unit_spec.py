@@ -43,8 +43,7 @@ class TestUnitSpec(unittest.TestCase):
                     luminous_intensity_exp=0,
                     oid=None,
                     long_name=None,
-                    description=None,
-                )
+                    description=None)
             ],
             units=[
                 Unit(
@@ -56,12 +55,10 @@ class TestUnitSpec(unittest.TestCase):
                     display_name="km",
                     physical_dimension_ref=OdxLinkRef("ID.metre", doc_frags),
                     factor_si_to_unit=1000,
-                    offset_si_to_unit=0,
-                )
+                    offset_si_to_unit=0)
             ],
             unit_groups=NamedItemList(),
-            sdgs=[],
-        )
+            sdgs=[])
         # Define an example ECU job as odx
         sample_unit_spec_odx = f"""
             <UNIT-SPEC>
@@ -99,16 +96,14 @@ class TestUnitSpec(unittest.TestCase):
             display_name="s",
             physical_dimension_ref=None,
             factor_si_to_unit=1,
-            offset_si_to_unit=0,
-        )
+            offset_si_to_unit=0)
         dct = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
             is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
-        )
+            is_condensed_raw=None)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop_id", doc_frags),
             oid=None,
@@ -127,8 +122,7 @@ class TestUnitSpec(unittest.TestCase):
             unit_ref=OdxLinkRef.from_id(unit.odx_id),
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        )
+            physical_constr=None)
         dl_raw = EcuVariantRaw(
             variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("BV_id", doc_frags),
@@ -146,8 +140,7 @@ class TestUnitSpec(unittest.TestCase):
                     units=[unit],
                     physical_dimensions=NamedItemList(),
                     unit_groups=NamedItemList(),
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 dtc_dops=NamedItemList(),
                 structures=NamedItemList(),
                 end_of_pdu_fields=NamedItemList(),
@@ -158,8 +151,7 @@ class TestUnitSpec(unittest.TestCase):
                 env_data_descs=NamedItemList(),
                 env_datas=NamedItemList(),
                 muxs=NamedItemList(),
-                sdgs=[],
-            ),
+                sdgs=[]),
             diag_comms_raw=[],
             requests=NamedItemList([
                 Request(
@@ -181,8 +173,7 @@ class TestUnitSpec(unittest.TestCase):
                             coded_value=0x12,
                             byte_position=None,
                             bit_position=None,
-                            sdgs=[],
-                        ),
+                            sdgs=[]),
                         ValueParameter(
                             oid=None,
                             short_name="time",
@@ -194,11 +185,9 @@ class TestUnitSpec(unittest.TestCase):
                             physical_default_value_raw=None,
                             byte_position=None,
                             bit_position=None,
-                            sdgs=[],
-                        ),
+                            sdgs=[])
                     ]),
-                    byte_size=None,
-                )
+                    byte_size=None)
             ]),
             positive_responses=NamedItemList(),
             negative_responses=NamedItemList(),
@@ -212,8 +201,7 @@ class TestUnitSpec(unittest.TestCase):
             ecu_variant_patterns=[],
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
-            dyn_defined_spec=None,
-        )
+            dyn_defined_spec=None)
         dl = EcuVariant(diag_layer_raw=dl_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(dl._build_odxlinks())

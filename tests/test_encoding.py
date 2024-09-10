@@ -46,8 +46,7 @@ class TestEncodeRequest(unittest.TestCase):
             bit_length=8,
             bit_mask=None,
             is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
-        )
+            is_condensed_raw=None)
         param1 = CodedConstParameter(
             oid=None,
             short_name="coded_const_parameter",
@@ -58,8 +57,7 @@ class TestEncodeRequest(unittest.TestCase):
             coded_value=0x7D,
             byte_position=0,
             bit_position=None,
-            sdgs=[],
-        )
+            sdgs=[])
         param2 = CodedConstParameter(
             oid=None,
             short_name="coded_const_parameter",
@@ -70,8 +68,7 @@ class TestEncodeRequest(unittest.TestCase):
             coded_value=0xAB,
             byte_position=None,
             bit_position=None,
-            sdgs=[],
-        )
+            sdgs=[])
         req = Request(
             odx_id=OdxLinkId("request_id", doc_frags),
             oid=None,
@@ -81,8 +78,7 @@ class TestEncodeRequest(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([param1, param2]),
-            byte_size=None,
-        )
+            byte_size=None)
         self.assertEqual(req.encode(), bytearray([0x7D, 0xAB]))
 
     def test_encode_coded_const_reorder(self) -> None:
@@ -92,8 +88,7 @@ class TestEncodeRequest(unittest.TestCase):
             bit_length=8,
             bit_mask=None,
             is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
-        )
+            is_condensed_raw=None)
         param1 = CodedConstParameter(
             oid=None,
             short_name="param1",
@@ -104,8 +99,7 @@ class TestEncodeRequest(unittest.TestCase):
             coded_value=0x34,
             byte_position=1,
             bit_position=None,
-            sdgs=[],
-        )
+            sdgs=[])
         param2 = CodedConstParameter(
             oid=None,
             short_name="param2",
@@ -116,8 +110,7 @@ class TestEncodeRequest(unittest.TestCase):
             coded_value=0x12,
             byte_position=0,
             bit_position=None,
-            sdgs=[],
-        )
+            sdgs=[])
         req = Request(
             odx_id=OdxLinkId("request_id", doc_frags),
             oid=None,
@@ -127,8 +120,7 @@ class TestEncodeRequest(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([param1, param2]),
-            byte_size=None,
-        )
+            byte_size=None)
         self.assertEqual(req.encode(), bytearray([0x12, 0x34]))
 
     def test_encode_linear(self) -> None:
@@ -139,8 +131,7 @@ class TestEncodeRequest(unittest.TestCase):
             bit_length=8,
             bit_mask=None,
             is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
-        )
+            is_condensed_raw=None)
         # This CompuMethod represents the linear function: decode(x) = 2*x + 8 and encode(x) = (x-8)/2
         compu_method = LinearCompuMethod(
             category=CompuCategory.LINEAR,
@@ -154,12 +145,9 @@ class TestEncodeRequest(unittest.TestCase):
                         compu_inverse_value=None,
                         compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[8, 2],
-                            denominators=[1],
-                        ),
+                            value_type=DataType.A_INT32, numerators=[8, 2], denominators=[1]),
                         domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
+                        range_type=DataType.A_INT32)
                 ],
                 prog_code=None,
                 compu_default_value=None),
@@ -179,8 +167,7 @@ class TestEncodeRequest(unittest.TestCase):
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        )
+            physical_constr=None)
         odxlinks.update({dop.odx_id: dop})
         param1 = ValueParameter(
             oid=None,
@@ -193,8 +180,7 @@ class TestEncodeRequest(unittest.TestCase):
             physical_default_value_raw=None,
             byte_position=None,
             bit_position=None,
-            sdgs=[],
-        )
+            sdgs=[])
         req = Request(
             odx_id=OdxLinkId("request.id", doc_frags),
             oid=None,
@@ -204,8 +190,7 @@ class TestEncodeRequest(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([param1]),
-            byte_size=None,
-        )
+            byte_size=None)
 
         snref_ctx = SnRefContext(parameters=req.parameters)
         param1._resolve_odxlinks(odxlinks)
@@ -227,8 +212,7 @@ class TestEncodeRequest(unittest.TestCase):
             bit_length=8,
             bit_mask=None,
             is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
-        )
+            is_condensed_raw=None)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),
             oid=None,
@@ -247,8 +231,7 @@ class TestEncodeRequest(unittest.TestCase):
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        )
+            physical_constr=None)
         param1 = CodedConstParameter(
             oid=None,
             short_name="param1",
@@ -259,8 +242,7 @@ class TestEncodeRequest(unittest.TestCase):
             coded_value=0x12,
             byte_position=0,
             bit_position=None,
-            sdgs=[],
-        )
+            sdgs=[])
         param2 = NrcConstParameter(
             oid=None,
             short_name="param2",
@@ -271,8 +253,7 @@ class TestEncodeRequest(unittest.TestCase):
             coded_values=[0x34, 0xAB],
             byte_position=1,
             bit_position=None,
-            sdgs=[],
-        )
+            sdgs=[])
         param3 = ValueParameter(
             oid=None,
             short_name="param3",
@@ -284,8 +265,7 @@ class TestEncodeRequest(unittest.TestCase):
             physical_default_value_raw=None,
             byte_position=1,
             bit_position=None,
-            sdgs=[],
-        )
+            sdgs=[])
         resp = Response(
             odx_id=OdxLinkId("response_id", doc_frags),
             oid=None,
@@ -296,8 +276,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([param1, param2, param3]),
-            byte_size=None,
-        )
+            byte_size=None)
 
         req = Request(
             odx_id=OdxLinkId("request_id", doc_frags),
@@ -318,11 +297,9 @@ class TestEncodeRequest(unittest.TestCase):
                     coded_value=0xB0,
                     byte_position=0,
                     bit_position=None,
-                    sdgs=[],
-                )
+                    sdgs=[])
             ]),
-            byte_size=None,
-        )
+            byte_size=None)
 
         service = DiagService(
             odx_id=OdxLinkId("service_id", doc_frags),
@@ -350,8 +327,7 @@ class TestEncodeRequest(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[],
             neg_response_refs=[OdxLinkRef.from_id(resp.odx_id)],
-            sdgs=[],
-        )
+            sdgs=[])
 
         ecu_variant_raw = EcuVariantRaw(
             variant_type=DiagLayerType.ECU_VARIANT,
@@ -392,8 +368,7 @@ class TestEncodeRequest(unittest.TestCase):
             ecu_variant_patterns=[],
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
-            dyn_defined_spec=None,
-        )
+            dyn_defined_spec=None)
 
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         db = Database()
@@ -417,8 +392,7 @@ class TestEncodeRequest(unittest.TestCase):
             bit_length=8,
             bit_mask=None,
             is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
-        )
+            is_condensed_raw=None)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),
             oid=None,
@@ -437,8 +411,7 @@ class TestEncodeRequest(unittest.TestCase):
             unit_ref=None,
             sdgs=[],
             internal_constr=None,
-            physical_constr=None,
-        )
+            physical_constr=None)
 
         dtc_dct = StandardLengthType(
             base_data_type=DataType.A_UINT32,
@@ -446,8 +419,7 @@ class TestEncodeRequest(unittest.TestCase):
             bit_length=24,
             bit_mask=None,
             is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
-        )
+            is_condensed_raw=None)
         dtc_dop = DtcDop(
             odx_id=OdxLinkId("dtcdop.id", doc_frags),
             oid=None,
@@ -504,11 +476,10 @@ class TestEncodeRequest(unittest.TestCase):
                     display_trouble_code="SCREW",
                     level=None,
                     is_temporary_raw=None,
-                    sdgs=[]),
+                    sdgs=[])
             ],
             linked_dtc_dop_refs=[],
-            is_visible_raw=None,
-        )
+            is_visible_raw=None)
 
         env_data_desc = EnvironmentDataDescription(
             odx_id=OdxLinkId("DTCs.trouble_explanation", doc_frags),
@@ -543,8 +514,7 @@ class TestEncodeRequest(unittest.TestCase):
                             coded_value=0xee,
                             byte_position=0,
                             bit_position=None,
-                            sdgs=[],
-                        )
+                            sdgs=[])
                     ])),
                 EnvironmentData(
                     odx_id=OdxLinkId("DTCs.trouble_explanation.reason_for_1", doc_frags),
@@ -568,8 +538,7 @@ class TestEncodeRequest(unittest.TestCase):
                             coded_value=0x01,
                             byte_position=None,
                             bit_position=None,
-                            sdgs=[],
-                        )
+                            sdgs=[])
                     ])),
                 EnvironmentData(
                     odx_id=OdxLinkId("DTCs.trouble_explanation.reason_for_2", doc_frags),
@@ -593,8 +562,7 @@ class TestEncodeRequest(unittest.TestCase):
                             coded_value=0x03,
                             byte_position=1,
                             bit_position=None,
-                            sdgs=[],
-                        ),
+                            sdgs=[]),
                         CodedConstParameter(
                             oid=None,
                             short_name="blabla_2",
@@ -605,12 +573,10 @@ class TestEncodeRequest(unittest.TestCase):
                             coded_value=0x02,
                             byte_position=0,
                             bit_position=None,
-                            sdgs=[],
-                        ),
-                    ])),
+                            sdgs=[])
+                    ]))
             ],
-            env_data_refs=[],
-        )
+            env_data_refs=[])
 
         param1 = ValueParameter(
             oid=None,
@@ -623,8 +589,7 @@ class TestEncodeRequest(unittest.TestCase):
             physical_default_value_raw=None,
             byte_position=None,
             bit_position=None,
-            sdgs=[],
-        )
+            sdgs=[])
         param2 = ValueParameter(
             oid=None,
             short_name="dtc_info",
@@ -637,8 +602,7 @@ class TestEncodeRequest(unittest.TestCase):
             physical_default_value_raw=None,
             byte_position=None,
             bit_position=None,
-            sdgs=[],
-        )
+            sdgs=[])
 
         resp = Response(
             odx_id=OdxLinkId("DTCs.report_dtc.answer", doc_frags),
@@ -650,8 +614,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
             parameters=NamedItemList([param1, param2]),
             byte_size=None,
-            response_type=ResponseType.POSITIVE,
-        )
+            response_type=ResponseType.POSITIVE)
 
         odxlinks = OdxLinkDatabase()
         odxlinks.update(dop._build_odxlinks())
@@ -695,16 +658,14 @@ class TestEncodeRequest(unittest.TestCase):
             bit_length=24,
             bit_mask=None,
             is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
-        )
+            is_condensed_raw=None)
         uint8 = StandardLengthType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             bit_length=8,
             bit_mask=None,
             is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
-        )
+            is_condensed_raw=None)
         param1 = CodedConstParameter(
             oid=None,
             short_name="code",
@@ -715,8 +676,7 @@ class TestEncodeRequest(unittest.TestCase):
             coded_value=0x123456,
             byte_position=0,
             bit_position=None,
-            sdgs=[],
-        )
+            sdgs=[])
         param2 = CodedConstParameter(
             oid=None,
             short_name="part1",
@@ -727,8 +687,7 @@ class TestEncodeRequest(unittest.TestCase):
             coded_value=0x23,
             byte_position=0,
             bit_position=4,
-            sdgs=[],
-        )
+            sdgs=[])
         param3 = CodedConstParameter(
             oid=None,
             short_name="part2",
@@ -739,8 +698,7 @@ class TestEncodeRequest(unittest.TestCase):
             coded_value=0x45,
             byte_position=1,
             bit_position=4,
-            sdgs=[],
-        )
+            sdgs=[])
         req = Request(
             odx_id=OdxLinkId("request_id", doc_frags),
             oid=None,
@@ -750,8 +708,7 @@ class TestEncodeRequest(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([param1, param2, param3]),
-            byte_size=None,
-        )
+            byte_size=None)
         self.assertEqual(req.encode().hex(), "123456")
         self.assertEqual(req.get_static_bit_length(), 24)
 
@@ -765,8 +722,7 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            byte_size=None,
-        )
+            byte_size=None)
 
     def test_bit_mask(self) -> None:
         inner_dct = StandardLengthType(

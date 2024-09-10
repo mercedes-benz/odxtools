@@ -54,10 +54,8 @@ class StandardLengthType(DiagCodedType):
     def __post_init__(self) -> None:
         if self.bit_mask is not None:
             maskable_types = (DataType.A_UINT32, DataType.A_INT32, DataType.A_BYTEFIELD)
-            odxassert(
-                self.base_data_type in maskable_types,
-                'Can not apply a bit_mask on a value of type {self.base_data_type}',
-            )
+            odxassert(self.base_data_type in maskable_types,
+                      'Can not apply a bit_mask on a value of type {self.base_data_type}')
 
     def __get_raw_mask(self, internal_value: AtomicOdxType) -> Optional[bytes]:
         """Returns a byte field where all bits that are used by the
@@ -120,11 +118,8 @@ class StandardLengthType(DiagCodedType):
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
-        internal_value = decode_state.extract_atomic_value(
-            self.bit_length,
-            self.base_data_type,
-            self.is_highlow_byte_order,
-        )
+        internal_value = decode_state.extract_atomic_value(self.bit_length, self.base_data_type,
+                                                           self.is_highlow_byte_order)
         internal_value = self.__apply_mask(internal_value)
 
         return internal_value

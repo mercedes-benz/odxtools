@@ -42,18 +42,10 @@ class LinearCompuMethod(CompuMethod):
         odxassert(self.category == CompuCategory.LINEAR,
                   "LinearCompuMethod must exhibit LINEAR category")
 
-        odxassert(self.physical_type in [
-            DataType.A_FLOAT32,
-            DataType.A_FLOAT64,
-            DataType.A_INT32,
-            DataType.A_UINT32,
-        ])
-        odxassert(self.internal_type in [
-            DataType.A_FLOAT32,
-            DataType.A_FLOAT64,
-            DataType.A_INT32,
-            DataType.A_UINT32,
-        ])
+        odxassert(self.physical_type in
+                  [DataType.A_FLOAT32, DataType.A_FLOAT64, DataType.A_INT32, DataType.A_UINT32])
+        odxassert(self.internal_type in
+                  [DataType.A_FLOAT32, DataType.A_FLOAT64, DataType.A_INT32, DataType.A_UINT32])
 
         if self.compu_internal_to_phys is None:
             odxraise("LINEAR compu methods require COMPU-INTERNAL-TO-PHYS")

@@ -58,11 +58,9 @@ assert isinstance(__module_filename, str)
 __templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templates"])
 
 
-def write_pdx_file(
-    output_file_name: str,
-    database: Database,
-    templates_dir: str = __templates_dir,
-) -> bool:
+def write_pdx_file(output_file_name: str,
+                   database: Database,
+                   templates_dir: str = __templates_dir) -> bool:
     """
     Write an internalized database to a PDX file.
     """

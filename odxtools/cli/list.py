@@ -137,8 +137,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
             "    odxtools list -h",
         ]),
         help="Print a summary of automotive diagnostic files.",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+        formatter_class=argparse.RawTextHelpFormatter)
     _parser_utils.add_pdx_argument(parser)
 
     parser.add_argument(
@@ -148,8 +147,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         metavar="VARIANT",
         required=False,
         help="Specifies which variants should be included.",
-        default="all",
-    )
+        default="all")
 
     parser.add_argument(
         "-g",
@@ -158,8 +156,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         action="store_const",
         const=True,
         required=False,
-        help="Print a list of the global negative responses for the selected ECUs.",
-    )
+        help="Print a list of the global negative responses for the selected ECUs.")
 
     # The service option is None if option is not passed at all (-> do not print services). It is an empty list if --services is passed
     parser.add_argument(
@@ -170,8 +167,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         metavar="SERVICE",
         required=False,
         help="Print a list of diagnostic services specified in the pdx. \n" +
-        "If no service names are specified, all services are printed.",
-    )
+        "If no service names are specified, all services are printed.")
     # Pretty print message format and list parameters
     parser.add_argument(
         "-p",
@@ -180,8 +176,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         action="store_const",
         const=True,
         required=False,
-        help="Print a list of all parameters relevant for the selected items.\n",
-    )
+        help="Print a list of all parameters relevant for the selected items.\n")
     parser.add_argument(
         "-d",
         "--dops",
@@ -189,8 +184,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         action="store_const",
         const=True,
         required=False,
-        help="Print a list of all data object properties relevant for the selected items",
-    )
+        help="Print a list of all data object properties relevant for the selected items")
 
     # Shortcut to just dump everything
     parser.add_argument(
@@ -200,16 +194,14 @@ def add_subparser(subparsers: SubparsersList) -> None:
         action="store_const",
         const=True,
         required=False,
-        help="Print a list of all diagnostic services and DOPs specified in the pdx",
-    )
+        help="Print a list of all diagnostic services and DOPs specified in the pdx")
 
     parser.add_argument(
         "--dump-database",
         action="store_true",
         required=False,
         help="Ignore all other parameters and print a comprehensive dump the full database "
-        "instead of providing a pretty-printed summary",
-    )
+        "instead of providing a pretty-printed summary")
 
 
 def run(args: argparse.Namespace) -> None:

@@ -118,11 +118,9 @@ flic_flac_request = Request(
             byte_position=0,
             coded_value=FLIC_FLAC_SID,
             bit_position=None,
-            sdgs=[],
-        )
+            sdgs=[])
     ]),
-    byte_size=None,
-)
+    byte_size=None)
 somersault_young_dlr.requests.append(flic_flac_request)
 
 flic_flac_positive_response = Response(
@@ -145,8 +143,7 @@ flic_flac_positive_response = Response(
             byte_position=0,
             coded_value=uds.positive_response_id(FLIC_FLAC_SID),
             bit_position=None,
-            sdgs=[],
-        ),
+            sdgs=[]),
         ValueParameter(
             oid=None,
             short_name="can_do_backward_flips",
@@ -158,11 +155,9 @@ flic_flac_positive_response = Response(
             dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),
             dop_snref=None,
             bit_position=None,
-            sdgs=[],
-        ),
+            sdgs=[])
     ]),
-    byte_size=None,
-)
+    byte_size=None)
 somersault_young_dlr.positive_responses.append(flic_flac_positive_response)
 
 flic_flac_service = DiagService(
@@ -189,14 +184,11 @@ flic_flac_service = DiagService(
     state_transition_refs=[],
     semantic="FUNCTION",
     request_ref=OdxLinkRef.from_id(flic_flac_request.odx_id),
-    pos_response_refs=[
-        OdxLinkRef.from_id(flic_flac_positive_response.odx_id),
-    ],
+    pos_response_refs=[OdxLinkRef.from_id(flic_flac_positive_response.odx_id)],
     neg_response_refs=[
-        OdxLinkRef.from_id(somersaultecu.somersault_negative_responses["general"].odx_id),
+        OdxLinkRef.from_id(somersaultecu.somersault_negative_responses["general"].odx_id)
     ],
-    sdgs=[],
-)
+    sdgs=[])
 
 # create a new list of diagnostic communications that does not include
 # the "set_operation_params" and "compulsory_program" services
@@ -225,14 +217,12 @@ if __name__ == "__main__":
             "The modified PDX file is primarily intended to be used a demo for the ",
             "'compare' command line tool."
         ]),
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+        formatter_class=argparse.RawTextHelpFormatter)
 
     argparser.add_argument(
         "output_pdx_file",
         metavar="OUTPUT_PDX_FILE",
-        help="Path to the where the resulting .pdx file is written",
-    )
+        help="Path to the where the resulting .pdx file is written")
 
     args = argparser.parse_args()
 

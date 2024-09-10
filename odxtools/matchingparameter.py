@@ -47,8 +47,7 @@ class MatchingParameter:
         return MatchingParameter(
             expected_value=expected_value,
             diag_comm_snref=diag_comm_snref,
-            out_param_if=out_param_if,
-        )
+            out_param_if=out_param_if)
 
     def is_match(self, ident_value: str) -> bool:
         """

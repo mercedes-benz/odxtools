@@ -274,8 +274,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
             IsoTp.FRAME_TYPE_FLOW_CONTROL,
             IsoTp.FLOW_CONTROL_CONTINUE,
             block_size,  # does not matter here?!
-            min_separation_time,
-        )
+            min_separation_time)
 
         self._send_can_message(tx_id, fc_payload)
         self._frames_received[telegram_idx] = None
@@ -288,13 +287,8 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         tx_id = self.can_tx_id(telegram_idx)
         block_size = 0xFF  # default value, can be overwritten later
         min_separation_time = 0  # ms
-        fc_payload = bitstruct.pack(
-            "u4u4u8u8",
-            IsoTp.FRAME_TYPE_FLOW_CONTROL,
-            IsoTp.FLOW_CONTROL_CONTINUE,
-            block_size,
-            min_separation_time,
-        )
+        fc_payload = bitstruct.pack("u4u4u8u8", IsoTp.FRAME_TYPE_FLOW_CONTROL,
+                                    IsoTp.FLOW_CONTROL_CONTINUE, block_size, min_separation_time)
 
         self._send_can_message(tx_id, fc_payload)
 
@@ -319,13 +313,9 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
             # rx_id = self.can_rx_id(telegram_idx)
             tx_id = self.can_tx_id(telegram_idx)
             min_separation_time = 0  # ms
-            fc_payload = bitstruct.pack(
-                "u4u4u8u8",
-                IsoTp.FRAME_TYPE_FLOW_CONTROL,
-                IsoTp.FLOW_CONTROL_CONTINUE,
-                block_size,
-                min_separation_time,
-            )
+            fc_payload = bitstruct.pack("u4u4u8u8", IsoTp.FRAME_TYPE_FLOW_CONTROL,
+                                        IsoTp.FLOW_CONTROL_CONTINUE, block_size,
+                                        min_separation_time)
             self._send_can_message(tx_id, fc_payload)
 
             self._frames_received[telegram_idx] = 0  # TODO: 1?

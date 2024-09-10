@@ -562,8 +562,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
             "    odxtools compare -h",
         ]),
         help="Compares two versions of diagnostic layers and/or databases with each other. Checks whether diagnostic services and its parameters have changed.",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+        formatter_class=argparse.RawTextHelpFormatter)
     _parser_utils.add_pdx_argument(parser)
 
     parser.add_argument(
@@ -573,8 +572,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         metavar="VARIANT",
         required=False,
         default=None,
-        help="Compare specified (ecu) variants to each other.",
-    )
+        help="Compare specified (ecu) variants to each other.")
 
     parser.add_argument(
         "-db",
@@ -583,8 +581,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         default=None,
         metavar="DATABASE",
         required=False,
-        help="Compare specified database file(s) to database file of first input argument.",
-    )
+        help="Compare specified database file(s) to database file of first input argument.")
 
     parser.add_argument(
         "-nd",
@@ -592,8 +589,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         action="store_false",
         default=True,
         required=False,
-        help="Don't show all service parameter details",
-    )
+        help="Don't show all service parameter details")
 
     # TODO
     # Idea: provide folder with multiple pdx files as argument

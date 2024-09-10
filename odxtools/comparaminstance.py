@@ -57,8 +57,7 @@ class ComparamInstance:
             spec_ref=spec_ref,
             description=description,
             protocol_snref=protocol_snref,
-            prot_stack_snref=prot_stack_snref,
-        )
+            prot_stack_snref=prot_stack_snref)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}
@@ -111,8 +110,7 @@ class ComparamInstance:
                 f"'{self.short_name}' are not specified "
                 f"correctly.",
                 OdxWarning,
-                stacklevel=1,
-            )
+                stacklevel=1)
             return None
 
         name_list = [cp.short_name for cp in comparam_spec.subparams]
@@ -124,8 +122,7 @@ class ComparamInstance:
                 f"Communication parameter '{self.short_name}' "
                 f"does not specify a '{subparam_name}' sub-parameter.",
                 OdxWarning,
-                stacklevel=1,
-            )
+                stacklevel=1)
             return None
 
         result = value_list[idx]

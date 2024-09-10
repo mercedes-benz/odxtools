@@ -46,8 +46,7 @@ class DtcDop(DopBase):
             odxrequire(et_element.find("COMPU-METHOD")),
             doc_frags,
             internal_type=diag_coded_type.base_data_type,
-            physical_type=physical_type.base_data_type,
-        )
+            physical_type=physical_type.base_data_type)
         dtcs_raw: List[Union[DiagnosticTroubleCode, OdxLinkRef]] = []
         if (dtcs_elem := et_element.find("DTCS")) is not None:
             for dtc_proxy_elem in dtcs_elem:
@@ -127,8 +126,7 @@ class DtcDop(DopBase):
             display_trouble_code=None,
             level=None,
             is_temporary_raw=None,
-            sdgs=[],
-        )
+            sdgs=[])
 
     def convert_to_numerical_trouble_code(self, dtc_value: ParameterValue) -> int:
         if isinstance(dtc_value, DiagnosticTroubleCode):

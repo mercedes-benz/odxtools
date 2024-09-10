@@ -44,12 +44,10 @@ class UtilFunctions:
         list_tool.run(list_args)
 
     @staticmethod
-    def run_decode_tool(
-        data: str,
-        decode_data: bool = False,
-        path_to_pdx_file: str = "./examples/somersault.pdx",
-        ecu_variants: Optional[List[str]] = None,
-    ) -> None:
+    def run_decode_tool(data: str,
+                        decode_data: bool = False,
+                        path_to_pdx_file: str = "./examples/somersault.pdx",
+                        ecu_variants: Optional[List[str]] = None) -> None:
         decode_args = Namespace(
             pdx_file=path_to_pdx_file, variants=ecu_variants, data=data, decode=decode_data)
 

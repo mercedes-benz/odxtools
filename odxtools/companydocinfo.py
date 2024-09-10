@@ -42,8 +42,7 @@ class CompanyDocInfo:
             company_data_ref=company_data_ref,
             team_member_ref=team_member_ref,
             doc_label=doc_label,
-            sdgs=sdgs,
-        )
+            sdgs=sdgs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}

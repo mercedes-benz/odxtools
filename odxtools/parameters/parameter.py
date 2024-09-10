@@ -14,20 +14,9 @@ from ..snrefcontext import SnRefContext
 from ..specialdatagroup import SpecialDataGroup
 from ..utils import dataclass_fields_asdict
 
-ParameterType = Literal[
-    "CODED-CONST",
-    "DYNAMIC",
-    "LENGTH-KEY",
-    "MATCHING-REQUEST-PARAM",
-    "NRC-CONST",
-    "PHYS-CONST",
-    "RESERVED",
-    "SYSTEM",
-    "TABLE-ENTRY",
-    "TABLE-KEY",
-    "TABLE-STRUCT",
-    "VALUE",
-]
+ParameterType = Literal["CODED-CONST", "DYNAMIC", "LENGTH-KEY", "MATCHING-REQUEST-PARAM",
+                        "NRC-CONST", "PHYS-CONST", "RESERVED", "SYSTEM", "TABLE-ENTRY", "TABLE-KEY",
+                        "TABLE-STRUCT", "VALUE"]
 
 
 @dataclass

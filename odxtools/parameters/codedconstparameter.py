@@ -95,8 +95,7 @@ class CodedConstParameter(Parameter):
                 f"at byte position {decode_state.cursor_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
                 DecodeError,
-                stacklevel=1,
-            )
+                stacklevel=1)
 
         return coded_val
 

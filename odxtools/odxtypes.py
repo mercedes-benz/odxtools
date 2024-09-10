@@ -48,12 +48,8 @@ def odxstr_to_bool(str_val: Optional[str]) -> Optional[bool]:
         return None
 
     str_val = str_val.strip()
-    odxassert(str_val in [
-        "0",
-        "1",
-        "false",
-        "true",
-    ], f"String '{str_val}' cannot be converted to a boolean")
+    odxassert(str_val in ["0", "1", "false", "true"],
+              f"String '{str_val}' cannot be converted to a boolean")
 
     return str_val in ["1", "true"]
 

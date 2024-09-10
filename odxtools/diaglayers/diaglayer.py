@@ -150,11 +150,10 @@ class DiagLayer:
 
         return unit_spec.unit_groups
 
-    def _compute_available_objects(
-        self,
-        get_local_objects: Callable[["DiagLayer"], Iterable[TNamed]],
-        get_not_inherited: Callable[[ParentRef], Iterable[str]],
-    ) -> Iterable[TNamed]:
+    def _compute_available_objects(self, get_local_objects: Callable[["DiagLayer"],
+                                                                     Iterable[TNamed]],
+                                   get_not_inherited: Callable[[ParentRef],
+                                                               Iterable[str]]) -> Iterable[TNamed]:
         """Helper method to compute the set of all objects applicable
         to the DiagLayer if these objects are subject to the value
         inheritance mechanism

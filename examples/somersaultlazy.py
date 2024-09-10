@@ -170,8 +170,7 @@ class SomersaultLazyEcu:
         self.isotp_socket = create_isotp_socket(
             can_channel,
             rxid=odxrequire(somersault_lazy_diag_layer.get_can_receive_id()),
-            txid=odxrequire(somersault_lazy_diag_layer.get_can_send_id()),
-        )
+            txid=odxrequire(somersault_lazy_diag_layer.get_can_send_id()))
 
         ##############
         # extract the tester present parameters from the ECU's
@@ -283,8 +282,7 @@ class SomersaultLazyEcu:
             response_data = response.encode(
                 coded_request=message.coded_message,
                 reason=0,  # -> not sober
-                flips_successfully_done=0,
-            )
+                flips_successfully_done=0)
             await ecu_send(self.isotp_socket, response_data)
             return
 
@@ -296,8 +294,7 @@ class SomersaultLazyEcu:
             response_data = response.encode(
                 coded_request=message.coded_message,
                 reason=1,  # -> too dizzy
-                flips_successfully_done=self.max_dizziness_level - self.dizziness_level,
-            )
+                flips_successfully_done=self.max_dizziness_level - self.dizziness_level)
             await ecu_send(self.isotp_socket, response_data)
             self.dizziness_level = self.max_dizziness_level
             return
@@ -310,8 +307,7 @@ class SomersaultLazyEcu:
                 response_data = response.encode(
                     coded_request=message.coded_message,
                     reason=2,  # -> stumbled
-                    flips_successfully_done=i,
-                )
+                    flips_successfully_done=i)
                 await ecu_send(self.isotp_socket, response_data)
                 return
 
@@ -415,8 +411,7 @@ async def tester_main() -> None:
     isotp_socket = create_isotp_socket(
         can_channel,
         txid=odxrequire(somersault_lazy_diag_layer.get_can_receive_id()),
-        rxid=odxrequire(somersault_lazy_diag_layer.get_can_send_id()),
-    )
+        rxid=odxrequire(somersault_lazy_diag_layer.get_can_send_id()))
 
     # try to to do a single forward flip without having an active session (ought to fail)
     tester_logger.debug(f"attempting a sessionless forward flip")
@@ -525,14 +520,13 @@ parser.add_argument(
     "--channel",
     "-c",
     required=False,
-    help="CAN interface name to be used (required for tester or server modes)",
-)
+    help="CAN interface name to be used (required for tester or server modes)")
 parser.add_argument(
     "--mode",
     "-m",
     default="unittest",
     required=False,
-    help="Specify whether to start the ECU side ('server'), the tester side ('tester') or both ('unittest')",
+    help="Specify whether to start the ECU side ('server'), the tester side ('tester') or both ('unittest')"
 )
 
 args = parser.parse_args()  # deals with the help message handling

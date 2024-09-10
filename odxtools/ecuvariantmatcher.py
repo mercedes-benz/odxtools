@@ -52,11 +52,8 @@ class EcuVariantMatcher:
         return bytes(service.encode_request())
 
     @staticmethod
-    def decode_ident_response(
-        diag_layer: DiagLayer,
-        matching_param: MatchingParameter,
-        response_bytes: bytes,
-    ) -> str:
+    def decode_ident_response(diag_layer: DiagLayer, matching_param: MatchingParameter,
+                              response_bytes: bytes) -> str:
         """Decode a binary response and extract the identification string according
         to the snref or snpathref of the matching_param.
         """

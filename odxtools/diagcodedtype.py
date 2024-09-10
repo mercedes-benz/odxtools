@@ -11,12 +11,8 @@ from .odxtypes import AtomicOdxType, DataType, odxstr_to_bool
 from .snrefcontext import SnRefContext
 
 # Allowed diag-coded types
-DctType = Literal[
-    "LEADING-LENGTH-INFO-TYPE",
-    "MIN-MAX-LENGTH-TYPE",
-    "PARAM-LENGTH-INFO-TYPE",
-    "STANDARD-LENGTH-TYPE",
-]
+DctType = Literal["LEADING-LENGTH-INFO-TYPE", "MIN-MAX-LENGTH-TYPE", "PARAM-LENGTH-INFO-TYPE",
+                  "STANDARD-LENGTH-TYPE"]
 
 
 @dataclass

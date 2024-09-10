@@ -45,8 +45,7 @@ class SpecialDataGroup:
             sdg_caption=sdg_caption,
             sdg_caption_ref=sdg_caption_ref,
             semantic_info=semantic_info,
-            values=values,
-        )
+            values=values)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}

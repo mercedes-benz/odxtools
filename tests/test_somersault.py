@@ -19,11 +19,10 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(odxdb.model_version, Version("2.2.0"))
         self.assertEqual([x.short_name for x in odxdb.diag_layer_containers], ["somersault"])
 
-        self.assertEqual(
-            {x.short_name
-             for x in odxdb.diag_layers},
-            {"somersault", "somersault_assiduous", "somersault_lazy", "somersault_protocol"},
-        )
+        self.assertEqual({
+            x.short_name
+            for x in odxdb.diag_layers
+        }, {"somersault", "somersault_assiduous", "somersault_lazy", "somersault_protocol"})
 
         self.assertEqual([x.short_name for x in odxdb.ecus],
                          ["somersault_lazy", "somersault_assiduous"])
@@ -116,28 +115,21 @@ class TestDatabase(unittest.TestCase):
         # TODO: this test is far from exhaustive
         ecu = odxdb.ecus.somersault_lazy
 
-        self.assertEqual(
-            {x.short_name
-             for x in ecu.diag_comms},
-            {
-                "compulsory_program",
-                "do_forward_flips",
-                "report_status",
-                "session_start",
-                "session_stop",
-                "tester_present",
-            },
-        )
+        self.assertEqual({x.short_name
+                          for x in ecu.diag_comms}, {
+                              "compulsory_program",
+                              "do_forward_flips",
+                              "report_status",
+                              "session_start",
+                              "session_stop",
+                              "tester_present",
+                          })
 
         service = ecu.services.do_forward_flips
-        self.assertEqual(
-            [x.short_name for x in odxrequire(service.request).parameters],
-            ["sid", "forward_soberness_check", "num_flips"],
-        )
-        self.assertEqual(
-            [x.short_name for x in odxrequire(service.request).required_parameters],
-            ["forward_soberness_check", "num_flips"],
-        )
+        self.assertEqual([x.short_name for x in odxrequire(service.request).parameters],
+                         ["sid", "forward_soberness_check", "num_flips"])
+        self.assertEqual([x.short_name for x in odxrequire(service.request).required_parameters],
+                         ["forward_soberness_check", "num_flips"])
         self.assertEqual(odxrequire(service.request).get_static_bit_length(), 24)
 
         self.assertEqual([x.short_name for x in service.positive_responses], ["grudging_forward"])
@@ -151,10 +143,8 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(pr.get_static_bit_length(), 24)
 
         nr = service.negative_responses.flips_not_done
-        self.assertEqual(
-            [x.short_name for x in nr.parameters],
-            ["sid", "rq_sid", "reason", "flips_successfully_done"],
-        )
+        self.assertEqual([x.short_name for x in nr.parameters],
+                         ["sid", "rq_sid", "reason", "flips_successfully_done"])
         self.assertEqual(nr.get_static_bit_length(), 32)
 
         nrc_const = nr.parameters.reason
@@ -344,8 +334,7 @@ class TestEnDecode(unittest.TestCase):
         messages = ecu.decode_response(raw_response_message, raw_request_message)
         self.assertTrue(
             len(messages) == 1,
-            f"There should be only one service for 0x0145 but there are: {messages}",
-        )
+            f"There should be only one service for 0x0145 but there are: {messages}")
         m = messages[0]
         self.assertEqual(m.coded_message.hex(), "fa03ff")
         self.assertEqual(m.coding_object, pos_response)

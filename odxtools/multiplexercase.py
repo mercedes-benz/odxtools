@@ -36,15 +36,9 @@ class MultiplexerCase(NamedElement):
             structure_snref = odxrequire(structure_snref_elem.get("SHORT-NAME"))
 
         lower_limit = Limit.limit_from_et(
-            odxrequire(et_element.find("LOWER-LIMIT")),
-            doc_frags,
-            value_type=None,
-        )
+            odxrequire(et_element.find("LOWER-LIMIT")), doc_frags, value_type=None)
         upper_limit = Limit.limit_from_et(
-            odxrequire(et_element.find("UPPER-LIMIT")),
-            doc_frags,
-            value_type=None,
-        )
+            odxrequire(et_element.find("UPPER-LIMIT")), doc_frags, value_type=None)
 
         return MultiplexerCase(
             structure_ref=structure_ref,

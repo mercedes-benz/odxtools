@@ -80,15 +80,9 @@ class EncodeState:
                      f"0x{self.coded_message.hex()}")
             self.used_mask = self.used_mask[:len(self.coded_message)]
 
-    def emplace_atomic_value(
-        self,
-        *,
-        internal_value: AtomicOdxType,
-        bit_length: int,
-        base_data_type: DataType,
-        is_highlow_byte_order: bool,
-        used_mask: Optional[bytes],
-    ) -> None:
+    def emplace_atomic_value(self, *, internal_value: AtomicOdxType, bit_length: int,
+                             base_data_type: DataType, is_highlow_byte_order: bool,
+                             used_mask: Optional[bytes]) -> None:
         """Convert the internal_value to bytes and emplace this into the PDU"""
 
         raw_value: AtomicOdxType
@@ -212,8 +206,7 @@ class EncodeState:
                     f"Overlapping objects detected in between bytes {pos} and "
                     f"{pos+n}",
                     OdxWarning,
-                    stacklevel=1,
-                )
+                    stacklevel=1)
             self.coded_message[pos:pos + n] = new_data
             self.used_mask[pos:pos + n] = b'\xff' * n
         else:
@@ -226,8 +219,7 @@ class EncodeState:
                     warnings.warn(
                         f"Overlapping objects detected at position {pos + i}",
                         OdxWarning,
-                        stacklevel=1,
-                    )
+                        stacklevel=1)
                 self.coded_message[pos + i] &= ~obj_used_mask[i]
                 self.coded_message[pos + i] |= new_data[i] & obj_used_mask[i]
                 self.used_mask[pos + i] |= obj_used_mask[i]

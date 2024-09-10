@@ -135,8 +135,7 @@ async def active_main(args: argparse.Namespace) -> None:
         can_bus=can_bus,
         can_rx_ids=ecu_rx_id,
         can_tx_ids=ecu_tx_id,
-        padding_size=8,
-    )
+        padding_size=8)
 
     print(f"Reacting to messages on channel {args.channel}")
     async for telegram_id, payload in isotp_decoder.read_telegrams(can_bus):
@@ -174,42 +173,37 @@ def add_cli_arguments(parser: argparse.ArgumentParser) -> None:
         action="store_const",
         const=True,
         required=False,
-        help="Active mode, sends flow control messages to receive ISO-TP telegrams successfully",
-    )
+        help="Active mode, sends flow control messages to receive ISO-TP telegrams successfully")
     parser.add_argument(
         "--channel",
         "-c",
         default=None,
-        help="CAN interface name to be used (required in active mode)",
-    )
+        help="CAN interface name to be used (required in active mode)")
     parser.add_argument(
         "--rx",
         "-r",
         default=None,
         required=False,
-        help="CAN ID in which the ECU listens for diagnostic messages",
-    )
+        help="CAN ID in which the ECU listens for diagnostic messages")
     parser.add_argument(
         "--tx",
         "-t",
         default=None,
         required=False,
-        help="CAN ID in which the ECU sends replys to diagnostic messages  (required in active mode)",
+        help="CAN ID in which the ECU sends replys to diagnostic messages  (required in active mode)"
     )
     parser.add_argument(
         "--variant",
         "-v",
         default=None,
         required=False,
-        help="Name of the ECU variant which the decode process ought to be based on",
-    )
+        help="Name of the ECU variant which the decode process ought to be based on")
     parser.add_argument(
         "--protocol",
         "-p",
         default=None,
         required=False,
-        help="Name of the protocol used for decoding",
-    )
+        help="Name of the protocol used for decoding")
     _parser_utils.add_pdx_argument(parser)
 
 
@@ -218,8 +212,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         "snoop",
         description="Live decoding of a diagnostic session.",
         help="Live decoding of a diagnostic session.",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+        formatter_class=argparse.RawTextHelpFormatter)
     add_cli_arguments(parser)
 
 

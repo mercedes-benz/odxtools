@@ -43,8 +43,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_data_type=DataType.A_BYTEFIELD,
             bit_length=6,
             base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         state = DecodeState(bytes([0x2, 0x34, 0x56]), cursor_byte_position=0)
         internal_value = dct.decode_from_pdu(state)
         self.assertEqual(internal_value, bytes([0x34, 0x56]))
@@ -53,8 +52,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_data_type=DataType.A_BYTEFIELD,
             bit_length=5,
             base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         # 0xC2 = 0b11000010, with bit_position=1 and bit_lenth=5, the extracted bits are 00001,
         # i.e. the leading length is 1, i.e. only the byte 0x3 should be extracted.
         state = DecodeState(
@@ -67,8 +65,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_data_type=DataType.A_BYTEFIELD,
             bit_length=8,
             base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         state = DecodeState(bytes([0x0, 0x1]), cursor_byte_position=0)
         internal_value = dct.decode_from_pdu(state)
         self.assertEqual(internal_value, b'')
@@ -79,8 +76,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_data_type=DataType.A_BYTEFIELD,
             bit_length=5,
             base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         state = EncodeState(bytearray(), cursor_bit_position=3)
         dct.encode_into_pdu(bytes([0x3]), state)
         self.assertEqual(state.coded_message.hex(), "0803")
@@ -90,8 +86,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_data_type=DataType.A_BYTEFIELD,
             bit_length=5,
             base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
 
         state = EncodeState(
             coded_message=bytearray.fromhex("0000ff00"),
@@ -108,8 +103,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_data_type=DataType.A_UNICODE2STRING,
             bit_length=7,
             base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         state = DecodeState(
             bytes([0x12, 0x8, 0x00, 0x61, 0x00, 0x39, 0xff, 0x00]),
             cursor_byte_position=1,
@@ -124,8 +118,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_data_type=DataType.A_UNICODE2STRING,
             bit_length=8,
             base_type_encoding=None,
-            is_highlow_byte_order_raw=False,
-        )
+            is_highlow_byte_order_raw=False)
         state = DecodeState(
             bytes([0x12, 0x4, 0x61, 0x00, 0x39, 0x00, 0xff, 0x00]), cursor_byte_position=1)
         internal_value = dct.decode_from_pdu(state)
@@ -138,8 +131,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_data_type=DataType.A_UNICODE2STRING,
             bit_length=8,
             base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         state = EncodeState(coded_message=bytearray())
         dct.encode_into_pdu("a9", state)
         self.assertEqual(state.coded_message, bytes([0x4, 0x00, 0x61, 0x00, 0x39]))
@@ -148,8 +140,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_data_type=DataType.A_UNICODE2STRING,
             bit_length=8,
             base_type_encoding=None,
-            is_highlow_byte_order_raw=False,
-        )
+            is_highlow_byte_order_raw=False)
         state = EncodeState(
             coded_message=bytearray(),
             cursor_byte_position=0,
@@ -168,15 +159,13 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     bit_length=8,
                     bit_mask=None,
                     is_condensed_raw=None,
-                    is_highlow_byte_order_raw=None,
-                ),
+                    is_highlow_byte_order_raw=None),
             "certificateClient":
                 LeadingLengthInfoType(
                     base_data_type=DataType.A_BYTEFIELD,
                     bit_length=8,
                     base_type_encoding=None,
-                    is_highlow_byte_order_raw=None,
-                ),
+                    is_highlow_byte_order_raw=None),
         }
 
         # computation methods
@@ -214,8 +203,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     unit_ref=None,
                     sdgs=[],
                     internal_constr=None,
-                    physical_constr=None,
-                ),
+                    physical_constr=None),
         }
 
         # Request
@@ -238,8 +226,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     byte_position=0,
                     bit_position=None,
                     coded_value=uds.UDSSID.Authentication.value,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="certificateClient",
@@ -252,11 +239,9 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     dop_ref=OdxLinkRef.from_id(dops["certificateClient"].odx_id),
                     dop_snref=None,
                     physical_default_value_raw=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        )
+            byte_size=None)
 
         # Dummy diag layer to resolve references from request parameters to DOPs
         ecu_variant_raw = EcuVariantRaw(
@@ -283,8 +268,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                 env_datas=NamedItemList(),
                 muxs=NamedItemList(),
                 unit_spec=None,
-                sdgs=[],
-            ),
+                sdgs=[]),
             diag_comms_raw=[],
             requests=NamedItemList([request]),
             positive_responses=NamedItemList(),
@@ -299,8 +283,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             ecu_variant_patterns=[],
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
-            dyn_defined_spec=None,
-        )
+            dyn_defined_spec=None)
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(ecu_variant._build_odxlinks())
@@ -317,18 +300,15 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             0x56,  # of three bytes
         ])
         self.assertEqual(
-            request.decode(coded_request),
-            {
+            request.decode(coded_request), {
                 "SID": 0x29,
                 "certificateClient": bytes([0x12, 0x34, 0x56])
-            },
-        )
+            })
 
         # Test encoding.
         self.assertEqual(
             request.encode(certificateClient=0x123456.to_bytes(3, "big")),
-            0x2903123456.to_bytes(5, "big"),
-        )
+            0x2903123456.to_bytes(5, "big"))
 
 
 class TestStandardLengthType(unittest.TestCase):
@@ -340,8 +320,7 @@ class TestStandardLengthType(unittest.TestCase):
             bit_length=5,
             bit_mask=None,
             is_condensed_raw=None,
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         state = DecodeState(bytes([0x1, 0x72, 0x3]), cursor_byte_position=1, cursor_bit_position=1)
         internal_value = dct.decode_from_pdu(state)
         self.assertEqual(internal_value, 25)
@@ -354,8 +333,7 @@ class TestStandardLengthType(unittest.TestCase):
             bit_length=16,
             bit_mask=None,
             is_highlow_byte_order_raw=False,
-            is_condensed_raw=None,
-        )
+            is_condensed_raw=None)
         state = DecodeState(bytes([0x1, 0x2, 0x3]), cursor_byte_position=1)
         internal_value = dct.decode_from_pdu(state)
         self.assertEqual(internal_value, 0x0302)
@@ -368,8 +346,7 @@ class TestStandardLengthType(unittest.TestCase):
             bit_length=16,
             bit_mask=None,
             is_condensed_raw=None,
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78]), cursor_byte_position=1)
         internal_value = dct.decode_from_pdu(state)
         self.assertEqual(internal_value, bytes([0x34, 0x56]))
@@ -392,22 +369,19 @@ class TestParamLengthInfoType(unittest.TestCase):
             dop_ref=OdxLinkRef("DOP.uint8", doc_frags),
             dop_snref=None,
             byte_position=1,
-            bit_position=None,
-        )
+            bit_position=None)
         dct = ParamLengthInfoType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             length_key_ref=length_key_ref,
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         odxlinks = OdxLinkDatabase()
         odxlinks.update({length_key_id: length_key})
         dct._resolve_odxlinks(odxlinks)
         state = DecodeState(
             coded_message=bytes([0x10, 0x12, 0x34, 0x56]),
             length_keys={length_key.short_name: 16},
-            cursor_byte_position=1,
-        )
+            cursor_byte_position=1)
         internal_value = dct.decode_from_pdu(state)
         self.assertEqual(internal_value, 0x1234)
         self.assertEqual(state.cursor_byte_position, 3)
@@ -425,14 +399,12 @@ class TestParamLengthInfoType(unittest.TestCase):
             dop_ref=OdxLinkRef("DOP.uint8", doc_frags),
             dop_snref=None,
             byte_position=1,
-            bit_position=None,
-        )
+            bit_position=None)
         dct = ParamLengthInfoType(
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
             length_key_ref=OdxLinkRef.from_id(length_key_id),
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         odxlinks = OdxLinkDatabase()
         odxlinks.update({length_key_id: length_key})
         dct._resolve_odxlinks(odxlinks)
@@ -451,15 +423,13 @@ class TestParamLengthInfoType(unittest.TestCase):
                     bit_length=8,
                     bit_mask=None,
                     is_condensed_raw=None,
-                    is_highlow_byte_order_raw=None,
-                ),
+                    is_highlow_byte_order_raw=None),
             "length_key_id_to_lengthOfCertificateClient":
                 ParamLengthInfoType(
                     base_data_type=DataType.A_UINT32,
                     base_type_encoding=None,
                     length_key_ref=OdxLinkRef("param.dummy_length_key", doc_frags),
-                    is_highlow_byte_order_raw=None,
-                ),
+                    is_highlow_byte_order_raw=None),
         }
 
         # computation methods
@@ -486,17 +456,15 @@ class TestParamLengthInfoType(unittest.TestCase):
                                 compu_rational_coeffs=CompuRationalCoeffs(
                                     value_type=DataType.A_INT32,
                                     numerators=[0, 8],
-                                    denominators=[1],
-                                ),
+                                    denominators=[1]),
                                 domain_type=DataType.A_INT32,
-                                range_type=DataType.A_INT32),
+                                range_type=DataType.A_INT32)
                         ],
                         prog_code=None,
                         compu_default_value=None),
                     compu_phys_to_internal=None,
                     internal_type=DataType.A_UINT32,
-                    physical_type=DataType.A_UINT32,
-                ),
+                    physical_type=DataType.A_UINT32),
         }
 
         # data object properties
@@ -516,8 +484,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     unit_ref=None,
                     sdgs=[],
                     internal_constr=None,
-                    physical_constr=None,
-                ),
+                    physical_constr=None),
             "certificateClient":
                 DataObjectProperty(
                     odx_id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
@@ -533,8 +500,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     unit_ref=None,
                     sdgs=[],
                     internal_constr=None,
-                    physical_constr=None,
-                ),
+                    physical_constr=None),
         }
 
         # Request using LengthKeyParameter and ParamLengthInfoType
@@ -557,8 +523,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     byte_position=0,
                     coded_value=uds.UDSSID.Authentication.value,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 LengthKeyParameter(
                     short_name="lengthOfCertificateClient",
                     long_name=None,
@@ -572,8 +537,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     # The DOP multiplies the coded value by 8, since the length key ref expects the number of bits.
                     dop_ref=OdxLinkRef.from_id(dops["uint8_times_8"].odx_id),
                     dop_snref=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="certificateClient",
@@ -586,11 +550,9 @@ class TestParamLengthInfoType(unittest.TestCase):
                     dop_ref=OdxLinkRef.from_id(dops["certificateClient"].odx_id),
                     dop_snref=None,
                     physical_default_value_raw=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        )
+            byte_size=None)
 
         # Dummy diag layer to resolve references from request parameters to DOPs
         ecu_variant_raw = EcuVariantRaw(
@@ -617,8 +579,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                 env_datas=NamedItemList(),
                 muxs=NamedItemList(),
                 unit_spec=None,
-                sdgs=[],
-            ),
+                sdgs=[]),
             diag_comms_raw=[],
             requests=NamedItemList([request]),
             positive_responses=NamedItemList(),
@@ -633,8 +594,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             ecu_variant_patterns=[],
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
-            dyn_defined_spec=None,
-        )
+            dyn_defined_spec=None)
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(ecu_variant._build_odxlinks())
@@ -652,13 +612,11 @@ class TestParamLengthInfoType(unittest.TestCase):
         ])
 
         self.assertEqual(
-            request.decode(coded_request),
-            {
+            request.decode(coded_request), {
                 "SID": 0x29,
                 "lengthOfCertificateClient": 24,
                 "certificateClient": 0x123456
-            },
-        )
+            })
 
         # explicit defined length key
         encoded = request.encode(lengthOfCertificateClient=24, certificateClient=0x123456)
@@ -678,8 +636,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             min_length=1,
             max_length=4,
             termination="HEX-FF",
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         state = DecodeState(bytes([0x12, 0xFF, 0x34, 0x56, 0xFF]), cursor_byte_position=1)
         internal_value = dct.decode_from_pdu(state)
         self.assertEqual(internal_value, bytes([0xFF, 0x34, 0x56]))
@@ -693,8 +650,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             min_length=2,
             max_length=4,
             termination="HEX-FF",
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         state = DecodeState(bytes([0x12, 0xFF]), cursor_byte_position=1)
         self.assertRaises(DecodeError, dct.decode_from_pdu, state)
 
@@ -707,8 +663,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 min_length=2,
                 max_length=5,
                 termination=termination,
-                is_highlow_byte_order_raw=None,
-            )
+                is_highlow_byte_order_raw=None)
             state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78, 0x9A]), cursor_byte_position=1)
             internal_value = dct.decode_from_pdu(state)
             self.assertEqual(internal_value, bytes([0x34, 0x56, 0x78, 0x9A]))
@@ -723,8 +678,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 min_length=2,
                 max_length=3,
                 termination=termination,
-                is_highlow_byte_order_raw=None,
-            )
+                is_highlow_byte_order_raw=None)
             state = DecodeState(bytes([0x12, 0x34, 0x56, 0x78, 0x9A]), cursor_byte_position=1)
             internal_value = dct.decode_from_pdu(state)
             self.assertEqual(internal_value, bytes([0x34, 0x56, 0x78]))
@@ -737,8 +691,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             min_length=1,
             max_length=4,
             termination="HEX-FF",
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         state = EncodeState(is_end_of_pdu=False)
         dct.encode_into_pdu(bytes([0x34, 0x56]), state)
         self.assertEqual(state.coded_message, bytes([0x34, 0x56, 0xFF]))
@@ -750,8 +703,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             min_length=2,
             max_length=4,
             termination="ZERO",
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
         state = EncodeState(is_end_of_pdu=False)
         dct.encode_into_pdu("Hi", state)
         self.assertEqual(state.coded_message, bytes([0x48, 0x69, 0x0]))
@@ -765,8 +717,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 min_length=2,
                 max_length=5,
                 termination=termination,
-                is_highlow_byte_order_raw=None,
-            )
+                is_highlow_byte_order_raw=None)
             state = EncodeState(coded_message=bytearray(), is_end_of_pdu=True)
             dct.encode_into_pdu(bytes([0x34, 0x56, 0x78, 0x9A]), state)
             self.assertEqual(state.coded_message.hex(), "3456789a")
@@ -789,17 +740,11 @@ class TestMinMaxLengthType(unittest.TestCase):
                 min_length=2,
                 max_length=3,
                 termination=termination,
-                is_highlow_byte_order_raw=None,
-            )
+                is_highlow_byte_order_raw=None)
             state = EncodeState(is_end_of_pdu=True)
             dct.encode_into_pdu(bytes([0x34, 0x56]), state)
             self.assertTrue(state.coded_message.hex().startswith("3456"))
-            self.assertRaises(
-                EncodeError,
-                dct.encode_into_pdu,
-                bytes([0x34]),
-                state,
-            )
+            self.assertRaises(EncodeError, dct.encode_into_pdu, bytes([0x34]), state)
 
     def test_encode_min_max_length_type_max_length(self) -> None:
         """If the internal value is larger than max length, an EncodeError must be raised."""
@@ -810,17 +755,12 @@ class TestMinMaxLengthType(unittest.TestCase):
                 min_length=2,
                 max_length=3,
                 termination=termination,
-                is_highlow_byte_order_raw=None,
-            )
+                is_highlow_byte_order_raw=None)
             state = EncodeState(is_end_of_pdu=True)
             dct.encode_into_pdu(bytes([0x34, 0x56, 0x78]), state)
             self.assertEqual(state.coded_message, bytes([0x34, 0x56, 0x78]))
-            self.assertRaises(
-                EncodeError,
-                dct.encode_into_pdu,
-                bytes([0x34, 0x56, 0x78, 0x9A]),
-                state,
-            )
+            self.assertRaises(EncodeError, dct.encode_into_pdu, bytes([0x34, 0x56, 0x78, 0x9A]),
+                              state)
 
     def test_end_to_end(self) -> None:
         # diag coded types
@@ -832,8 +772,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     bit_length=8,
                     bit_mask=None,
                     is_condensed_raw=None,
-                    is_highlow_byte_order_raw=None,
-                ),
+                    is_highlow_byte_order_raw=None),
             "certificateClient":
                 MinMaxLengthType(
                     base_data_type=DataType.A_BYTEFIELD,
@@ -841,8 +780,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     min_length=2,
                     max_length=10,
                     termination="ZERO",
-                    is_highlow_byte_order_raw=None,
-                ),
+                    is_highlow_byte_order_raw=None),
         }
 
         # computation methods
@@ -880,8 +818,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     unit_ref=None,
                     sdgs=[],
                     internal_constr=None,
-                    physical_constr=None,
-                ),
+                    physical_constr=None),
         }
 
         # Request
@@ -904,8 +841,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     byte_position=0,
                     coded_value=uds.UDSSID.Authentication.value,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 ValueParameter(
                     oid=None,
                     short_name="certificateClient",
@@ -918,8 +854,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     dop_ref=OdxLinkRef.from_id(dops["certificateClient"].odx_id),
                     dop_snref=None,
                     physical_default_value_raw=None,
-                    sdgs=[],
-                ),
+                    sdgs=[]),
                 CodedConstParameter(
                     oid=None,
                     short_name="dummy",
@@ -930,11 +865,9 @@ class TestMinMaxLengthType(unittest.TestCase):
                     coded_value=0x99,
                     byte_position=None,
                     bit_position=None,
-                    sdgs=[],
-                ),
+                    sdgs=[])
             ]),
-            byte_size=None,
-        )
+            byte_size=None)
 
         # Dummy diag layer to resolve references from request parameters to DOPs
         ecu_variant_raw = EcuVariantRaw(
@@ -961,8 +894,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                 env_datas=NamedItemList(),
                 muxs=NamedItemList(),
                 unit_spec=None,
-                sdgs=[],
-            ),
+                sdgs=[]),
             diag_comms_raw=[],
             requests=NamedItemList([request]),
             positive_responses=NamedItemList(),
@@ -977,8 +909,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             ecu_variant_patterns=[],
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
-            dyn_defined_spec=None,
-        )
+            dyn_defined_spec=None)
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(ecu_variant._build_odxlinks())
@@ -993,16 +924,14 @@ class TestMinMaxLengthType(unittest.TestCase):
             0x34,  # certificate
             0x56,  # of three bytes
             0x00,  # end of min-max length
-            0x99,
+            0x99
         ])
         self.assertEqual(
-            request.decode(coded_request),
-            {
+            request.decode(coded_request), {
                 "SID": 0x29,
                 "certificateClient": bytes([0x12, 0x34, 0x56]),
                 "dummy": 0x99
-            },
-        )
+            })
 
         # Test encoding.
         self.assertEqual(
@@ -1015,8 +944,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             min_length=8,
             max_length=16,
             termination="ZERO",
-            is_highlow_byte_order_raw=None,
-        )
+            is_highlow_byte_order_raw=None)
 
         # diag-coded-type requires xsi namespace
         diagcodedtype_odx = f"""

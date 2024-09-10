@@ -42,8 +42,7 @@ class ProgCode:
             revision=revision,
             encryption=encryption,
             entrypoint=entrypoint,
-            library_refs=library_refs,
-        )
+            library_refs=library_refs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}

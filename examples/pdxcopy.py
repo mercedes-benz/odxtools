@@ -13,16 +13,14 @@ argparser = argparse.ArgumentParser(
         "PDX files using odxtools, but it can also be used to strip",
         "'unnecessary' auxiliary data from the input PDX file.",
     ]),
-    formatter_class=argparse.RawTextHelpFormatter,
-)
+    formatter_class=argparse.RawTextHelpFormatter)
 
 argparser.add_argument(
     "input_pdx_file", metavar="INPUT_PDX_FILE", help="Path to the input .pdx file")
 argparser.add_argument(
     "output_pdx_file",
     metavar="OUTPUT_PDX_FILE",
-    help="Path to the where the resulting .pdx file is written",
-)
+    help="Path to the where the resulting .pdx file is written")
 
 args = argparser.parse_args()
 

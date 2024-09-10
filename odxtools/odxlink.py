@@ -173,8 +173,7 @@ class OdxLinkDatabase:
                     f"Warning: Unknown document fragment {ref_frag} "
                     f"when resolving reference {ref}",
                     OdxWarning,
-                    stacklevel=1,
-                )
+                    stacklevel=1)
                 continue
 
             # locate an object exhibiting with the referenced local ID
@@ -218,8 +217,7 @@ class OdxLinkDatabase:
                     f"Warning: Unknown document fragment {ref_frag} "
                     f"when resolving reference {ref}",
                     OdxWarning,
-                    stacklevel=1,
-                )
+                    stacklevel=1)
                 continue
 
             if (obj := doc_frag_db.get(ref.ref_id)) is not None:

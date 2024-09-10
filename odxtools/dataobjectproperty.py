@@ -58,8 +58,7 @@ class DataObjectProperty(DopBase):
             odxrequire(et_element.find("COMPU-METHOD")),
             doc_frags,
             internal_type=diag_coded_type.base_data_type,
-            physical_type=physical_type.base_data_type,
-        )
+            physical_type=physical_type.base_data_type)
         unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
 
         internal_constr = None

@@ -52,12 +52,8 @@ class DecodeState:
     #: other parameters; i.e., environment data description parameters
     journal: List[Tuple["Parameter", Optional[ParameterValue]]] = field(default_factory=list)
 
-    def extract_atomic_value(
-        self,
-        bit_length: int,
-        base_data_type: DataType,
-        is_highlow_byte_order: bool,
-    ) -> AtomicOdxType:
+    def extract_atomic_value(self, bit_length: int, base_data_type: DataType,
+                             is_highlow_byte_order: bool) -> AtomicOdxType:
         """Extract an internal value from a blob of raw bytes.
 
         :return: Tuple with the internal value of the object and the
@@ -79,10 +75,7 @@ class DecodeState:
         # if the data to be extracted is not byte aligned and crosses
         # byte boundaries, but it is what the specification says.
         if not is_highlow_byte_order and base_data_type in [
-                DataType.A_INT32,
-                DataType.A_UINT32,
-                DataType.A_FLOAT32,
-                DataType.A_FLOAT64,
+                DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32, DataType.A_FLOAT64
         ]:
             extracted_bytes = extracted_bytes[::-1]
 

@@ -68,15 +68,13 @@ class TestSingleEcuJob(unittest.TestCase):
                 oid=None,
                 short_name="extensiveTask",
                 long_name=None,
-                description=None,
-            ),
+                description=None),
             specialAudience=AdditionalAudience(
                 odx_id=OdxLinkId("ID.specialAudience", doc_frags),
                 oid=None,
                 short_name="specialAudience",
                 long_name=None,
-                description=None,
-            ),
+                description=None),
             inputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.inputDOP", doc_frags),
                 oid=None,
@@ -90,8 +88,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     bit_mask=None,
                     base_type_encoding=None,
                     is_condensed_raw=None,
-                    is_highlow_byte_order_raw=None,
-                ),
+                    is_highlow_byte_order_raw=None),
                 physical_type=PhysicalType(
                     DataType.A_UNICODE2STRING, display_radix=None, precision=None),
                 compu_method=TexttableCompuMethod(
@@ -111,8 +108,7 @@ class TestSingleEcuJob(unittest.TestCase):
                                 upper_limit=None,
                                 compu_rational_coeffs=None,
                                 domain_type=DataType.A_INT32,
-                                range_type=DataType.A_UNICODE2STRING,
-                            ),
+                                range_type=DataType.A_UNICODE2STRING),
                             CompuScale(
                                 "no",
                                 lower_limit=Limit(
@@ -124,18 +120,15 @@ class TestSingleEcuJob(unittest.TestCase):
                                 upper_limit=None,
                                 compu_rational_coeffs=None,
                                 domain_type=DataType.A_INT32,
-                                range_type=DataType.A_UNICODE2STRING),
+                                range_type=DataType.A_UNICODE2STRING)
                         ],
                         prog_code=None,
-                        compu_default_value=None,
-                    ),
-                    internal_type=DataType.A_UINT32,
-                ),
+                        compu_default_value=None),
+                    internal_type=DataType.A_UINT32),
                 unit_ref=None,
                 sdgs=[],
                 internal_constr=None,
-                physical_constr=None,
-            ),
+                physical_constr=None),
             outputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.outputDOP", doc_frags),
                 oid=None,
@@ -149,8 +142,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     bit_mask=None,
                     base_type_encoding=None,
                     is_condensed_raw=None,
-                    is_highlow_byte_order_raw=None,
-                ),
+                    is_highlow_byte_order_raw=None),
                 physical_type=PhysicalType(
                     DataType.A_UNICODE2STRING, display_radix=None, precision=None),
                 compu_method=LinearCompuMethod(
@@ -167,10 +159,9 @@ class TestSingleEcuJob(unittest.TestCase):
                                 compu_rational_coeffs=CompuRationalCoeffs(
                                     value_type=DataType.A_INT32,
                                     numerators=[1, -1],
-                                    denominators=[1],
-                                ),
+                                    denominators=[1]),
                                 domain_type=DataType.A_INT32,
-                                range_type=DataType.A_INT32),
+                                range_type=DataType.A_INT32)
                         ],
                         prog_code=None,
                         compu_default_value=None),
@@ -180,8 +171,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 unit_ref=None,
                 sdgs=[],
                 internal_constr=None,
-                physical_constr=None,
-            ),
+                physical_constr=None),
             negOutputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.negOutputDOP", doc_frags),
                 oid=None,
@@ -195,8 +185,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     bit_mask=None,
                     base_type_encoding=None,
                     is_condensed_raw=None,
-                    is_highlow_byte_order_raw=None,
-                ),
+                    is_highlow_byte_order_raw=None),
                 physical_type=PhysicalType(
                     DataType.A_UNICODE2STRING, display_radix=None, precision=None),
                 compu_method=LinearCompuMethod(
@@ -213,23 +202,19 @@ class TestSingleEcuJob(unittest.TestCase):
                                 compu_rational_coeffs=CompuRationalCoeffs(
                                     value_type=DataType.A_INT32,
                                     numerators=[1, -1],
-                                    denominators=[1],
-                                ),
+                                    denominators=[1]),
                                 domain_type=DataType.A_INT32,
-                                range_type=DataType.A_INT32),
+                                range_type=DataType.A_INT32)
                         ],
                         prog_code=None,
                         compu_default_value=None),
                     compu_phys_to_internal=None,
                     internal_type=DataType.A_UINT32,
-                    physical_type=DataType.A_UINT32,
-                ),
+                    physical_type=DataType.A_UINT32),
                 unit_ref=None,
                 sdgs=[],
                 internal_constr=None,
-                physical_constr=None,
-            ),
-        )
+                physical_constr=None))
 
         input_params = NamedItemList([
             InputParam(
@@ -239,8 +224,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 description=None,
                 semantic=None,
                 physical_default_value="Yes!",
-                dop_base_ref=OdxLinkRef.from_id(self.context.inputDOP.odx_id),
-            )
+                dop_base_ref=OdxLinkRef.from_id(self.context.inputDOP.odx_id))
         ])
         output_params = NamedItemList([
             OutputParam(
@@ -250,16 +234,14 @@ class TestSingleEcuJob(unittest.TestCase):
                 short_name="outputParam",
                 long_name="The Output Param",
                 description=Description.from_string("<p>The one and only output of this job.</p>"),
-                dop_base_ref=OdxLinkRef.from_id(self.context.outputDOP.odx_id),
-            )
+                dop_base_ref=OdxLinkRef.from_id(self.context.outputDOP.odx_id))
         ])
         neg_output_params = NamedItemList([
             NegOutputParam(
                 short_name="NegativeOutputParam",
                 long_name=None,
                 description=Description.from_string("<p>The one and only output of this job.</p>"),
-                dop_base_ref=OdxLinkRef.from_id(self.context.negOutputDOP.odx_id),
-            )
+                dop_base_ref=OdxLinkRef.from_id(self.context.negOutputDOP.odx_id))
         ])
 
         self.singleecujob_object = SingleEcuJob(
@@ -283,8 +265,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 is_development_raw=None,
                 is_aftersales_raw=None,
                 is_aftermarket_raw=None,
-                is_manufacturing_raw=False,
-            ),
+                is_manufacturing_raw=False),
             prog_codes=[
                 ProgCode(
                     code_file="abc.jar",
@@ -292,8 +273,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     syntax="JAR",
                     revision="0.12.34",
                     entrypoint="CalledClass",
-                    library_refs=[OdxLinkRef("my.favourite.lib", doc_frags)],
-                )
+                    library_refs=[OdxLinkRef("my.favourite.lib", doc_frags)])
             ],
             input_params=input_params,
             output_params=output_params,
@@ -301,8 +281,7 @@ class TestSingleEcuJob(unittest.TestCase):
             is_mandatory_raw=None,
             is_executable_raw=None,
             is_final_raw=None,
-            sdgs=[],
-        )
+            sdgs=[])
 
         self.singleecujob_odx = f"""
             <SINGLE-ECU-JOB ID="{self.singleecujob_object.odx_id.local_id}">
@@ -418,8 +397,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     encryption=None,
                     entrypoint=None,
                     syntax="abc",
-                    revision="12.34",
-                )
+                    revision="12.34")
             ],
             input_params=NamedItemList(),
             output_params=NamedItemList(),
@@ -429,8 +407,7 @@ class TestSingleEcuJob(unittest.TestCase):
             is_mandatory_raw=None,
             is_executable_raw=None,
             is_final_raw=None,
-            sdgs=[],
-        )
+            sdgs=[])
         self.assertEqual(sej.functional_class_refs, [])
         self.assertEqual(sej.input_params, NamedItemList())
         self.assertEqual(sej.output_params, NamedItemList())
@@ -463,8 +440,7 @@ class TestSingleEcuJob(unittest.TestCase):
             ecu_variant_patterns=[],
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
-            dyn_defined_spec=None,
-        )
+            dyn_defined_spec=None)
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()
         odxlinks.update(ecu_variant._build_odxlinks())

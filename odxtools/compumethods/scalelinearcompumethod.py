@@ -39,18 +39,10 @@ class ScaleLinearCompuMethod(CompuMethod):
         odxassert(self.category == CompuCategory.SCALE_LINEAR,
                   "ScaleLinearCompuMethod must exibit SCALE-LINEAR category")
 
-        odxassert(self.physical_type in [
-            DataType.A_FLOAT32,
-            DataType.A_FLOAT64,
-            DataType.A_INT32,
-            DataType.A_UINT32,
-        ])
-        odxassert(self.internal_type in [
-            DataType.A_FLOAT32,
-            DataType.A_FLOAT64,
-            DataType.A_INT32,
-            DataType.A_UINT32,
-        ])
+        odxassert(self.physical_type in
+                  [DataType.A_FLOAT32, DataType.A_FLOAT64, DataType.A_INT32, DataType.A_UINT32])
+        odxassert(self.internal_type in
+                  [DataType.A_FLOAT32, DataType.A_FLOAT64, DataType.A_INT32, DataType.A_UINT32])
 
         if self.compu_internal_to_phys is None:
             odxraise("SCALE-LINEAR compu methods require COMPU-INTERNAL-TO-PHYS")

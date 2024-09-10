@@ -56,8 +56,7 @@ class DocRevision:
             date=date,
             tool=tool,
             company_revision_infos=crilist,
-            modifications=modlist,
-        )
+            modifications=modlist)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}

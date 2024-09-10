@@ -67,8 +67,7 @@ class ParentRef:
             not_inherited_variables=not_inherited_variables,
             not_inherited_dops=not_inherited_dops,
             not_inherited_tables=not_inherited_tables,
-            not_inherited_global_neg_responses=not_inherited_global_neg_responses,
-        )
+            not_inherited_global_neg_responses=not_inherited_global_neg_responses)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}

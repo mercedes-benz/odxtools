@@ -78,8 +78,7 @@ class Audience:
             is_development_raw=is_development_raw,
             is_manufacturing_raw=is_manufacturing_raw,
             is_aftersales_raw=is_aftersales_raw,
-            is_aftermarket_raw=is_aftermarket_raw,
-        )
+            is_aftermarket_raw=is_aftermarket_raw)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}

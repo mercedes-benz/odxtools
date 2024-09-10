@@ -42,13 +42,9 @@ class DiagLayerContainer(IdentifiableElement):
         return self.ecu_variants
 
     def __post_init__(self) -> None:
-        self._diag_layers = NamedItemList[DiagLayer](chain(
-            self.ecu_shared_datas,
-            self.protocols,
-            self.functional_groups,
-            self.base_variants,
-            self.ecu_variants,
-        ),)
+        self._diag_layers = NamedItemList[DiagLayer](chain(self.ecu_shared_datas, self.protocols,
+                                                           self.functional_groups,
+                                                           self.base_variants, self.ecu_variants),)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,

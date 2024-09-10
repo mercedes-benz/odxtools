@@ -45,18 +45,9 @@ class DiagDataDictionarySpec:
 
     def __post_init__(self) -> None:
         self._all_data_object_properties: NamedItemList[DopBase] = NamedItemList(
-            chain(
-                self.dtc_dops,
-                self.env_data_descs,
-                self.data_object_props,
-                self.structures,
-                self.static_fields,
-                self.dynamic_length_fields,
-                self.dynamic_endmarker_fields,
-                self.end_of_pdu_fields,
-                self.muxs,
-                self.env_datas,
-            ))
+            chain(self.dtc_dops, self.env_data_descs, self.data_object_props, self.structures,
+                  self.static_fields, self.dynamic_length_fields, self.dynamic_endmarker_fields,
+                  self.end_of_pdu_fields, self.muxs, self.env_datas))
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -115,8 +106,7 @@ class DiagDataDictionarySpec:
         env_data_elements = chain(
             et_element.iterfind("ENV-DATAS/ENV-DATA"),
             # ODX 2.0.0 says ENV-DATA-DESC could contain a list of ENV-DATAS
-            et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC/ENV-DATAS/ENV-DATA"),
-        )
+            et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC/ENV-DATAS/ENV-DATA"))
         env_datas = [
             EnvironmentData.from_et(env_data_element, doc_frags)
             for env_data_element in env_data_elements
@@ -150,8 +140,7 @@ class DiagDataDictionarySpec:
             env_datas=NamedItemList(env_datas),
             unit_spec=unit_spec,
             tables=NamedItemList(tables),
-            sdgs=sdgs,
-        )
+            sdgs=sdgs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         # note that DataDictionarySpec objects do not exhibit an ODXLINK id.

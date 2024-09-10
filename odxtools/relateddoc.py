@@ -22,10 +22,7 @@ class RelatedDoc:
         if (xdoc_elem := et_element.find("XDOC")) is not None:
             xdoc = XDoc.from_et(xdoc_elem, doc_frags)
 
-        return RelatedDoc(
-            description=description,
-            xdoc=xdoc,
-        )
+        return RelatedDoc(description=description, xdoc=xdoc)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}

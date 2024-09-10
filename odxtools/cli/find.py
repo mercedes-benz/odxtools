@@ -80,8 +80,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
             "    odxtools find -h",
         ]),
         help="Find & display services by their name",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+        formatter_class=argparse.RawTextHelpFormatter)
     _parser_utils.add_pdx_argument(parser)
 
     parser.add_argument(
@@ -91,8 +90,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         metavar="VARIANT",
         required=False,
         help="Specifies which ecu variants should be included.",
-        default="all",
-    )
+        default="all")
 
     parser.add_argument(
         "-s",
@@ -101,24 +99,21 @@ def add_subparser(subparsers: SubparsersList) -> None:
         default=None,
         metavar="SERVICES",
         required=True,
-        help="Print a list of diagnostic services partially matching given service names",
-    )
+        help="Print a list of diagnostic services partially matching given service names")
 
     parser.add_argument(
         "-nd",
         "--no-details",
         action="store_true",
         required=False,
-        help="Don't show all service details",
-    )
+        help="Don't show all service details")
 
     parser.add_argument(
         "-ro",
         "--relaxed-output",
         action="store_true",
         required=False,
-        help="Relax output formatting rules (allow unknown bitlengths for ascii representation)",
-    )
+        help="Relax output formatting rules (allow unknown bitlengths for ascii representation)")
 
 
 def run(args: argparse.Namespace) -> None:

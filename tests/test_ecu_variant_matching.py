@@ -35,8 +35,7 @@ def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
         sdgs=[],
         parameters=NamedItemList(),
         response_type=ResponseType.POSITIVE,
-        byte_size=None,
-    )
+        byte_size=None)
     odxlinks.update({resp.odx_id: resp})
 
     def decode(message: bytes) -> Dict[str, Any]:
@@ -60,8 +59,7 @@ def ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> 
         admin_data=None,
         sdgs=[],
         parameters=NamedItemList(),
-        byte_size=None,
-    )
+        byte_size=None)
     odxlinks.update({dummy_req.odx_id: dummy_req})
 
     diagService = DiagService(
@@ -90,8 +88,7 @@ def ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> 
         request_ref=OdxLinkRef.from_id(dummy_req.odx_id),
         pos_response_refs=[OdxLinkRef.from_id(dummy_response.odx_id)],
         neg_response_refs=[],
-        sdgs=[],
-    )
+        sdgs=[])
 
     def encode_request() -> bytes:
         return b"\x22\x10\x00"
@@ -111,8 +108,7 @@ def supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) 
         admin_data=None,
         sdgs=[],
         parameters=NamedItemList(),
-        byte_size=None,
-    )
+        byte_size=None)
     odxlinks.update({dummy_req.odx_id: dummy_req})
 
     diagService = DiagService(
@@ -141,8 +137,7 @@ def supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) 
         request_ref=OdxLinkRef.from_id(dummy_req.odx_id),
         pos_response_refs=[OdxLinkRef.from_id(dummy_response.odx_id)],
         neg_response_refs=[],
-        sdgs=[],
-    )
+        sdgs=[])
 
     def encode_request() -> bytes:
         return b"\x22\x20\x00"
@@ -154,32 +149,22 @@ def supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) 
 @pytest.fixture
 def ecu_variant_pattern1() -> EcuVariantPattern:
     return EcuVariantPattern(matching_parameters=[
-        MatchingParameter(
-            diag_comm_snref="identService",
-            expected_value="1000",
-            out_param_if="id",
-        ),
+        MatchingParameter(diag_comm_snref="identService", expected_value="1000", out_param_if="id"),
         MatchingParameter(
             diag_comm_snref="supplierService",
             expected_value="supplier_A",
-            out_param_if="name.english",
-        ),
+            out_param_if="name.english")
     ])
 
 
 @pytest.fixture
 def ecu_variant_pattern2() -> EcuVariantPattern:
     return EcuVariantPattern(matching_parameters=[
-        MatchingParameter(
-            diag_comm_snref="identService",
-            expected_value="2000",
-            out_param_if="id",
-        ),
+        MatchingParameter(diag_comm_snref="identService", expected_value="2000", out_param_if="id"),
         MatchingParameter(
             diag_comm_snref="supplierService",
             expected_value="supplier_B",
-            out_param_if="name.english",
-        ),
+            out_param_if="name.english")
     ])
 
 
@@ -189,17 +174,13 @@ def ecu_variant_pattern3() -> EcuVariantPattern:
         MatchingParameter(
             diag_comm_snref="supplierService",
             expected_value="supplier_C",
-            out_param_if="name.english",
-        )
+            out_param_if="name.english")
     ])
 
 
 @pytest.fixture
-def ecu_variant_1(
-    ident_service: DiagService,
-    supplier_service: DiagService,
-    ecu_variant_pattern1: EcuVariantPattern,
-) -> EcuVariant:
+def ecu_variant_1(ident_service: DiagService, supplier_service: DiagService,
+                  ecu_variant_pattern1: EcuVariantPattern) -> EcuVariant:
     raw_layer = EcuVariantRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant1", doc_fragments=doc_frags),
@@ -225,8 +206,7 @@ def ecu_variant_1(
         ecu_variant_patterns=[ecu_variant_pattern1],
         diag_variables_raw=[],
         variable_groups=NamedItemList(),
-        dyn_defined_spec=None,
-    )
+        dyn_defined_spec=None)
     result = EcuVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
     db = Database()
@@ -236,11 +216,8 @@ def ecu_variant_1(
 
 
 @pytest.fixture
-def ecu_variant_2(
-    ident_service: DiagService,
-    supplier_service: DiagService,
-    ecu_variant_pattern2: EcuVariantPattern,
-) -> EcuVariant:
+def ecu_variant_2(ident_service: DiagService, supplier_service: DiagService,
+                  ecu_variant_pattern2: EcuVariantPattern) -> EcuVariant:
     raw_layer = EcuVariantRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant2", doc_fragments=doc_frags),
@@ -266,8 +243,7 @@ def ecu_variant_2(
         ecu_variant_patterns=[ecu_variant_pattern2],
         diag_variables_raw=[],
         variable_groups=NamedItemList(),
-        dyn_defined_spec=None,
-    )
+        dyn_defined_spec=None)
     result = EcuVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
     db = Database()
@@ -277,12 +253,9 @@ def ecu_variant_2(
 
 
 @pytest.fixture
-def ecu_variant_3(
-    ident_service: DiagService,
-    supplier_service: DiagService,
-    ecu_variant_pattern1: EcuVariantPattern,
-    ecu_variant_pattern3: EcuVariantPattern,
-) -> EcuVariant:
+def ecu_variant_3(ident_service: DiagService, supplier_service: DiagService,
+                  ecu_variant_pattern1: EcuVariantPattern,
+                  ecu_variant_pattern3: EcuVariantPattern) -> EcuVariant:
     raw_layer = EcuVariantRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant3", doc_fragments=doc_frags),
@@ -308,8 +281,7 @@ def ecu_variant_3(
         ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
         diag_variables_raw=[],
         variable_groups=NamedItemList(),
-        dyn_defined_spec=None,
-    )
+        dyn_defined_spec=None)
     result = EcuVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
     db = Database()
@@ -334,47 +306,30 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
     "req_resp_mapping, expected_variant",
     [
         # test if full match of matching parameters is accepted
-        (
-            {
-                b"\x22\x10\00": as_bytes({"id": 2000}),
-                b"\x22\x20\00": as_bytes({"name": {
-                    "english": "supplier_B"
-                }}),
-            },
-            "ecu_variant2",
-        ),
+        ({
+            b"\x22\x10\00": as_bytes({"id": 2000}),
+            b"\x22\x20\00": as_bytes({"name": {
+                "english": "supplier_B"
+            }}),
+        }, "ecu_variant2"),
         # test if partial match of matching parameters is rejected
-        (
-            {
-                b"\x22\x10\00": as_bytes({"id": 2000}),
-                b"\x22\x20\00": as_bytes({"name": {
-                    "english": "supplier_C"
-                }}),
-            },
-            "ecu_variant3",
-        ),
+        ({
+            b"\x22\x10\00": as_bytes({"id": 2000}),
+            b"\x22\x20\00": as_bytes({"name": {
+                "english": "supplier_C"
+            }}),
+        }, "ecu_variant3"),
         # test if first full match is preferred over second match
-        (
-            {
-                b"\x22\x10\00": as_bytes({"id": 1000}),
-                b"\x22\x20\00": as_bytes({"name": {
-                    "english": "supplier_A"
-                }}),
-            },
-            "ecu_variant1",
-        ),
-    ],
-)
-def test_ecu_variant_matching(
-    ecu_variants: List[EcuVariant],
-    use_cache: bool,
-    req_resp_mapping: Dict[bytes, bytes],
-    expected_variant: str,
-) -> None:
-    matcher = EcuVariantMatcher(
-        ecu_variant_candidates=ecu_variants,
-        use_cache=use_cache,
-    )
+        ({
+            b"\x22\x10\00": as_bytes({"id": 1000}),
+            b"\x22\x20\00": as_bytes({"name": {
+                "english": "supplier_A"
+            }}),
+        }, "ecu_variant1")
+    ])
+def test_ecu_variant_matching(ecu_variants: List[EcuVariant], use_cache: bool,
+                              req_resp_mapping: Dict[bytes, bytes], expected_variant: str) -> None:
+    matcher = EcuVariantMatcher(ecu_variant_candidates=ecu_variants, use_cache=use_cache)
     for req in matcher.request_loop():
         resp = req_resp_mapping[req]
         matcher.evaluate(resp)
@@ -392,10 +347,7 @@ def test_no_match(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
         }}),
     }
 
-    matcher = EcuVariantMatcher(
-        ecu_variant_candidates=ecu_variants,
-        use_cache=use_cache,
-    )
+    matcher = EcuVariantMatcher(ecu_variant_candidates=ecu_variants, use_cache=use_cache)
     for req in matcher.request_loop():
         resp = req_resp_mapping[req]
         matcher.evaluate(resp)
@@ -407,10 +359,7 @@ def test_no_match(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if pending matchers reject the has_match() or active variant query
 def test_no_request_loop(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
-    matcher = EcuVariantMatcher(
-        ecu_variant_candidates=ecu_variants,
-        use_cache=use_cache,
-    )
+    matcher = EcuVariantMatcher(ecu_variant_candidates=ecu_variants, use_cache=use_cache)
     with pytest.raises(RuntimeError):
         matcher.has_match()
     with pytest.raises(RuntimeError):
@@ -420,10 +369,7 @@ def test_no_request_loop(ecu_variants: List[EcuVariant], use_cache: bool) -> Non
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if runs of the request loop without calling `evaluate(...)` are rejected
 def test_request_loop_misuse(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
-    matcher = EcuVariantMatcher(
-        ecu_variant_candidates=ecu_variants,
-        use_cache=use_cache,
-    )
+    matcher = EcuVariantMatcher(ecu_variant_candidates=ecu_variants, use_cache=use_cache)
     with pytest.raises(RuntimeError):
         for _ in matcher.request_loop():
             pass
@@ -439,10 +385,7 @@ def test_request_loop_idempotency(ecu_variants: List[EcuVariant], use_cache: boo
         }}),
     }
 
-    matcher = EcuVariantMatcher(
-        ecu_variant_candidates=ecu_variants,
-        use_cache=use_cache,
-    )
+    matcher = EcuVariantMatcher(ecu_variant_candidates=ecu_variants, use_cache=use_cache)
 
     for req in matcher.request_loop():
         resp = req_resp_mapping[req]
@@ -468,10 +411,7 @@ def test_unresolvable_snpathref(ecu_variants: List[EcuVariant], use_cache: bool)
         b"\x22\x20\00": as_bytes({"name": "supplier_C"}),
     }
 
-    matcher = EcuVariantMatcher(
-        ecu_variant_candidates=ecu_variants,
-        use_cache=use_cache,
-    )
+    matcher = EcuVariantMatcher(ecu_variant_candidates=ecu_variants, use_cache=use_cache)
 
     with pytest.raises(OdxError):
         for req in matcher.request_loop():

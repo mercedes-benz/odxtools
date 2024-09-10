@@ -39,16 +39,11 @@ class MinMaxLengthType(DiagCodedType):
         odxassert(self.max_length is None or self.min_length <= self.max_length)
         odxassert(
             self.base_data_type in [
-                DataType.A_BYTEFIELD,
-                DataType.A_ASCIISTRING,
-                DataType.A_UNICODE2STRING,
-                DataType.A_UTF8STRING,
+                DataType.A_BYTEFIELD, DataType.A_ASCIISTRING, DataType.A_UNICODE2STRING,
+                DataType.A_UTF8STRING
             ], f"A min-max length type cannot have the base data type {self.base_data_type}.")
-        odxassert(self.termination in [
-            "ZERO",
-            "HEX-FF",
-            "END-OF-PDU",
-        ], f"A min-max length type cannot have the termination {self.termination}")
+        odxassert(self.termination in ["ZERO", "HEX-FF", "END-OF-PDU"],
+                  f"A min-max length type cannot have the termination {self.termination}")
 
     @property
     def dct_type(self) -> DctType:
@@ -89,8 +84,7 @@ class MinMaxLengthType(DiagCodedType):
             used_mask=None,
             bit_length=8 * data_length,
             base_data_type=self.base_data_type,
-            is_highlow_byte_order=self.is_highlow_byte_order,
-        )
+            is_highlow_byte_order=self.is_highlow_byte_order)
         value_len = encode_state.cursor_byte_position - orig_cursor
 
         # TODO: ensure that the termination delimiter is not
@@ -180,8 +174,7 @@ class MinMaxLengthType(DiagCodedType):
             value = decode_state.extract_atomic_value(
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
-                is_highlow_byte_order=self.is_highlow_byte_order,
-            )
+                is_highlow_byte_order=self.is_highlow_byte_order)
 
             if decode_state.cursor_byte_position != len(
                     decode_state.coded_message
@@ -198,7 +191,6 @@ class MinMaxLengthType(DiagCodedType):
             value = decode_state.extract_atomic_value(
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
-                is_highlow_byte_order=self.is_highlow_byte_order,
-            )
+                is_highlow_byte_order=self.is_highlow_byte_order)
 
             return value

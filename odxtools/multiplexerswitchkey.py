@@ -27,10 +27,7 @@ class MultiplexerSwitchKey:
         dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags))
 
         return MultiplexerSwitchKey(
-            byte_position=byte_position,
-            bit_position=bit_position,
-            dop_ref=dop_ref,
-        )
+            byte_position=byte_position, bit_position=bit_position, dop_ref=dop_ref)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {}

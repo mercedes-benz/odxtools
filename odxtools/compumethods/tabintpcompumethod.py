@@ -112,20 +112,14 @@ class TabIntpCompuMethod(CompuMethod):
         odxassert(len(self.internal_points) == len(self.physical_points))
 
         odxassert(
-            self.internal_type in [
-                DataType.A_INT32,
-                DataType.A_UINT32,
-                DataType.A_FLOAT32,
-                DataType.A_FLOAT64,
-            ], "Internal data type of TAB-INTP compumethod must be one of"
+            self.internal_type
+            in [DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32,
+                DataType.A_FLOAT64], "Internal data type of TAB-INTP compumethod must be one of"
             " [A_INT32, A_UINT32, A_FLOAT32, A_FLOAT64]")
         odxassert(
-            self.physical_type in [
-                DataType.A_INT32,
-                DataType.A_UINT32,
-                DataType.A_FLOAT32,
-                DataType.A_FLOAT64,
-            ], "Physical data type of TAB-INTP compumethod must be one of"
+            self.physical_type
+            in [DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32,
+                DataType.A_FLOAT64], "Physical data type of TAB-INTP compumethod must be one of"
             " [A_INT32, A_UINT32, A_FLOAT32, A_FLOAT64]")
 
     def __piecewise_linear_interpolate(self, x: Union[int, float],

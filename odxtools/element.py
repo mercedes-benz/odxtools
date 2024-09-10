@@ -20,8 +20,7 @@ class NamedElement:
         return NamedElement(
             short_name=odxrequire(et_element.findtext("SHORT-NAME")),
             long_name=et_element.findtext("LONG-NAME"),
-            description=Description.from_et(et_element.find("DESC"), doc_frags),
-        )
+            description=Description.from_et(et_element.find("DESC"), doc_frags))
 
 
 @dataclass

@@ -151,36 +151,26 @@ class HierarchyElement(DiagLayer):
 
         dops = self._compute_available_ddd_spec_items(
             lambda ddd_spec: ddd_spec.data_object_props,
-            lambda parent_ref: parent_ref.not_inherited_dops,
-        )
+            lambda parent_ref: parent_ref.not_inherited_dops)
         structures = self._compute_available_ddd_spec_items(
-            lambda ddd_spec: ddd_spec.structures,
-            lambda parent_ref: parent_ref.not_inherited_dops,
-        )
+            lambda ddd_spec: ddd_spec.structures, lambda parent_ref: parent_ref.not_inherited_dops)
         dtc_dops = self._compute_available_ddd_spec_items(
-            lambda ddd_spec: ddd_spec.dtc_dops,
-            lambda parent_ref: parent_ref.not_inherited_dops,
-        )
+            lambda ddd_spec: ddd_spec.dtc_dops, lambda parent_ref: parent_ref.not_inherited_dops)
         static_fields = self._compute_available_ddd_spec_items(
             lambda ddd_spec: ddd_spec.static_fields,
-            lambda parent_ref: parent_ref.not_inherited_dops,
-        )
+            lambda parent_ref: parent_ref.not_inherited_dops)
         end_of_pdu_fields = self._compute_available_ddd_spec_items(
             lambda ddd_spec: ddd_spec.end_of_pdu_fields,
-            lambda parent_ref: parent_ref.not_inherited_dops,
-        )
+            lambda parent_ref: parent_ref.not_inherited_dops)
         dynamic_endmarker_fields = self._compute_available_ddd_spec_items(
             lambda ddd_spec: ddd_spec.dynamic_endmarker_fields,
-            lambda parent_ref: parent_ref.not_inherited_dops,
-        )
+            lambda parent_ref: parent_ref.not_inherited_dops)
         dynamic_length_fields = self._compute_available_ddd_spec_items(
             lambda ddd_spec: ddd_spec.dynamic_length_fields,
-            lambda parent_ref: parent_ref.not_inherited_dops,
-        )
+            lambda parent_ref: parent_ref.not_inherited_dops)
         env_data_descs = self._compute_available_ddd_spec_items(
             lambda ddd_spec: ddd_spec.env_data_descs,
-            lambda parent_ref: parent_ref.not_inherited_dops,
-        )
+            lambda parent_ref: parent_ref.not_inherited_dops)
         env_datas = self._compute_available_ddd_spec_items(
             lambda ddd_spec: ddd_spec.env_datas, lambda parent_ref: parent_ref.not_inherited_dops)
         muxs = self._compute_available_ddd_spec_items(
@@ -211,8 +201,7 @@ class HierarchyElement(DiagLayer):
             env_datas=env_datas,
             muxs=muxs,
             unit_spec=unit_spec,
-            sdgs=ddds_sdgs,
-        )
+            sdgs=ddds_sdgs)
 
         #####
         # compute the communication parameters applicable to the
@@ -266,11 +255,10 @@ class HierarchyElement(DiagLayer):
             key=lambda pr: pr.layer.variant_type.inheritance_priority,
             reverse=reverse)
 
-    def _compute_available_objects(
-        self,
-        get_local_objects: Callable[["DiagLayer"], Iterable[TNamed]],
-        get_not_inherited: Callable[[ParentRef], Iterable[str]],
-    ) -> Iterable[TNamed]:
+    def _compute_available_objects(self, get_local_objects: Callable[["DiagLayer"],
+                                                                     Iterable[TNamed]],
+                                   get_not_inherited: Callable[[ParentRef],
+                                                               Iterable[str]]) -> Iterable[TNamed]:
         """Helper method to compute the set of all objects applicable
         to the DiagLayer if these objects are subject to the value
         inheritance mechanism
@@ -377,11 +365,10 @@ class HierarchyElement(DiagLayer):
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
-    def _compute_available_ddd_spec_items(
-        self,
-        include: Callable[[DiagDataDictionarySpec], Iterable[TNamed]],
-        exclude: Callable[["ParentRef"], List[str]],
-    ) -> NamedItemList[TNamed]:
+    def _compute_available_ddd_spec_items(self, include: Callable[[DiagDataDictionarySpec],
+                                                                  Iterable[TNamed]],
+                                          exclude: Callable[["ParentRef"],
+                                                            List[str]]) -> NamedItemList[TNamed]:
 
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[TNamed]:
             if dl.diag_layer_raw.diag_data_dictionary_spec is None:
@@ -575,12 +562,11 @@ class HierarchyElement(DiagLayer):
 
         return NamedItemList(result_dict.values())
 
-    def get_comparam(
-        self,
-        cp_short_name: str,
-        *,
-        protocol: Optional[Union[str, "Protocol"]] = None,
-    ) -> Optional[ComparamInstance]:
+    def get_comparam(self,
+                     cp_short_name: str,
+                     *,
+                     protocol: Optional[Union[str,
+                                              "Protocol"]] = None) -> Optional[ComparamInstance]:
         """Find a specific communication parameter according to some criteria.
 
         Setting a given parameter to `None` means "don't care"."""
@@ -603,8 +589,7 @@ class HierarchyElement(DiagLayer):
                 f"Communication parameter `{cp_short_name}` specified more "
                 f"than once. Using first occurence.",
                 OdxWarning,
-                stacklevel=1,
-            )
+                stacklevel=1)
         elif len(cps) == 0:
             return None
 
@@ -846,10 +831,7 @@ class HierarchyElement(DiagLayer):
 
         # retrieve CP_DoIPLogicalFunctionalAddress from the
         # ISO_13400_2_DIS_2015 subset. hopefully.
-        com_param = self.get_comparam(
-            "CP_DoIPLogicalFunctionalAddress",
-            protocol=protocol,
-        )
+        com_param = self.get_comparam("CP_DoIPLogicalFunctionalAddress", protocol=protocol)
         if com_param is None:
             return None
 

@@ -59,19 +59,15 @@ class TestLinearCompuMethod(unittest.TestCase):
                         compu_inverse_value=None,
                         compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[0, 1],
-                            denominators=[3600],
-                        ),
+                            value_type=DataType.A_INT32, numerators=[0, 1], denominators=[3600]),
                         domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
+                        range_type=DataType.A_INT32)
                 ],
                 prog_code=None,
                 compu_default_value=None),
             compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
-            physical_type=DataType.A_INT32,
-        )
+            physical_type=DataType.A_INT32)
 
         self.linear_compumethod_xml = f"""
         <COMPU-METHOD>
@@ -146,12 +142,9 @@ class TestLinearCompuMethod(unittest.TestCase):
                         compu_inverse_value=None,
                         compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[0, 1],
-                            denominators=[3600],
-                        ),
+                            value_type=DataType.A_INT32, numerators=[0, 1], denominators=[3600]),
                         domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
+                        range_type=DataType.A_INT32)
                 ],
                 prog_code=None,
                 compu_default_value=None),
@@ -175,12 +168,9 @@ class TestLinearCompuMethod(unittest.TestCase):
                         compu_inverse_value=None,
                         compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[1, 3],
-                            denominators=[1],
-                        ),
+                            value_type=DataType.A_INT32, numerators=[1, 3], denominators=[1]),
                         domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
+                        range_type=DataType.A_INT32)
                 ],
                 prog_code=None,
                 compu_default_value=None),
@@ -209,12 +199,9 @@ class TestLinearCompuMethod(unittest.TestCase):
                         compu_inverse_value=None,
                         compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[1, 3],
-                            denominators=[1],
-                        ),
+                            value_type=DataType.A_INT32, numerators=[1, 3], denominators=[1]),
                         domain_type=DataType.A_INT32,
-                        range_type=DataType.A_FLOAT32),
+                        range_type=DataType.A_FLOAT32)
                 ],
                 prog_code=None,
                 compu_default_value=None),
@@ -243,12 +230,9 @@ class TestLinearCompuMethod(unittest.TestCase):
                         compu_inverse_value=None,
                         compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[1, 3],
-                            denominators=[1],
-                        ),
+                            value_type=DataType.A_INT32, numerators=[1, 3], denominators=[1]),
                         domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
+                        range_type=DataType.A_INT32)
                 ],
                 prog_code=None,
                 compu_default_value=None),
@@ -277,12 +261,9 @@ class TestLinearCompuMethod(unittest.TestCase):
                             compu_inverse_value=None,
                             compu_const=None,
                             compu_rational_coeffs=CompuRationalCoeffs(
-                                value_type=DataType.A_INT32,
-                                numerators=[1, 3],
-                                denominators=[1],
-                            ),
+                                value_type=DataType.A_INT32, numerators=[1, 3], denominators=[1]),
                             domain_type=DataType.A_INT32,
-                            range_type=DataType.A_INT32),
+                            range_type=DataType.A_INT32)
                     ],
                     prog_code=None,
                     compu_default_value=None),
@@ -305,12 +286,9 @@ class TestLinearCompuMethod(unittest.TestCase):
                         compu_inverse_value=None,
                         compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[1, 5],
-                            denominators=[1],
-                        ),
+                            value_type=DataType.A_INT32, numerators=[1, 5], denominators=[1]),
                         domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
+                        range_type=DataType.A_INT32)
                 ],
                 prog_code=None,
                 compu_default_value=None),
@@ -354,12 +332,9 @@ class TestLinearCompuMethod(unittest.TestCase):
                         compu_inverse_value=None,
                         compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[1, -5],
-                            denominators=[1],
-                        ),
+                            value_type=DataType.A_INT32, numerators=[1, -5], denominators=[1]),
                         domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
+                        range_type=DataType.A_INT32)
                 ],
                 prog_code=None,
                 compu_default_value=None),
@@ -465,14 +440,13 @@ class TestTabIntpCompuMethod(unittest.TestCase):
                         compu_const=CompuConst(v="2", vt=None, data_type=DataType.A_INT32),
                         compu_rational_coeffs=None,
                         domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
+                        range_type=DataType.A_INT32)
                 ],
                 prog_code=None,
                 compu_default_value=None),
             compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
-            physical_type=DataType.A_FLOAT32,
-        )
+            physical_type=DataType.A_FLOAT32)
 
         self.tab_intp_compumethod_xml = f"""
         <COMPU-METHOD>
@@ -505,16 +479,8 @@ class TestTabIntpCompuMethod(unittest.TestCase):
     def test_tabintp_convert_type_int_float(self) -> None:
         method = self.tab_intp_compumethod
 
-        for internal, physical in [
-            (0, -1),
-            (2, -0.6),
-            (3, -0.4),
-            (5, 0),
-            (10, 1),
-            (20, 1.5),
-            (25, 1.75),
-            (30, 2),
-        ]:
+        for internal, physical in [(0, -1), (2, -0.6), (3, -0.4), (5, 0), (10, 1), (20, 1.5),
+                                   (25, 1.75), (30, 2)]:
             self.assertTrue(method.is_valid_internal_value(internal))
             self.assertTrue(method.is_valid_physical_value(physical))
             self.assertEqual(method.convert_internal_to_physical(internal), physical)

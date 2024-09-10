@@ -82,10 +82,7 @@ class LinearSegment:
 
         result = (self.offset + self.factor * internal_value) / self.denominator
 
-        if self.physical_type in [
-                DataType.A_INT32,
-                DataType.A_UINT32,
-        ]:
+        if self.physical_type in [DataType.A_INT32, DataType.A_UINT32]:
             result = round(result)
 
         return result
@@ -101,10 +98,7 @@ class LinearSegment:
 
         result = (physical_value * self.denominator - self.offset) / self.factor
 
-        if self.internal_type in [
-                DataType.A_INT32,
-                DataType.A_UINT32,
-        ]:
+        if self.internal_type in [DataType.A_INT32, DataType.A_UINT32]:
             result = round(result)
 
         return result

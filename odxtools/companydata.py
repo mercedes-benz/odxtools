@@ -40,8 +40,7 @@ class CompanyData(IdentifiableElement):
             roles=roles,
             team_members=NamedItemList(team_members),
             company_specific_info=company_specific_info,
-            **kwargs,
-        )
+            **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {self.odx_id: self}

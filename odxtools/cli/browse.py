@@ -187,9 +187,8 @@ def encode_message_interactively(sub_service: Union[Request, Response],
 
 
 def encode_message_from_string_values(
-    sub_service: Union[Request, Response],
-    parameter_values: Optional[ParameterValueDict] = None,
-) -> None:
+        sub_service: Union[Request, Response],
+        parameter_values: Optional[ParameterValueDict] = None) -> None:
     if parameter_values is None:
         parameter_values = {}
     parameter_values = parameter_values.copy()
@@ -368,8 +367,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         "browse",
         description="Interactively browse the content of automotive diagnostic files (*.pdx).",
         help="Interactively browse the content of automotive diagnostic files.",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
+        formatter_class=argparse.RawTextHelpFormatter)
 
     _parser_utils.add_pdx_argument(parser)
 

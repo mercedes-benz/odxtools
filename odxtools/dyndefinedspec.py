@@ -86,8 +86,7 @@ class DynIdDefModeInfo:
             dyn_def_message_ref=dyn_def_message_ref,
             dyn_def_message_snref=dyn_def_message_snref,
             supported_dyn_ids=supported_dyn_ids,
-            selection_table_refs=selection_table_refs,
-        )
+            selection_table_refs=selection_table_refs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result: Dict[OdxLinkId, Any] = {}
