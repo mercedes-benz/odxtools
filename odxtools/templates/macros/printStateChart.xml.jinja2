@@ -8,7 +8,7 @@
 {%- import('macros/printStateTransition.xml.jinja2') as pst %}
 
 {%- macro printStateChart(state_chart) -%}
-<STATE-CHART ID="{{state_chart.odx_id.local_id}}">
+<STATE-CHART {{-peid.printElementIdAttribs(state_chart)}}>
  {{ peid.printElementIdSubtags(state_chart)|indent(1) }}
  <SEMANTIC>{{state_chart.semantic}}</SEMANTIC>
  {%- if state_chart.state_transitions %}

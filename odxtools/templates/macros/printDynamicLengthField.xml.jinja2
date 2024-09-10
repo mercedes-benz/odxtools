@@ -6,7 +6,7 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printDynamicLengthField(dlf) -%}
-<DYNAMIC-LENGTH-FIELD ID="{{dlf.odx_id.local_id}}">
+<DYNAMIC-LENGTH-FIELD {{-peid.printElementIdAttribs(dlf)}}>
  {{ peid.printElementIdSubtags(dlf)|indent(1) }}
  <BASIC-STRUCTURE-REF ID-REF="{{dlf.structure_ref.ref_id}}" />
  <OFFSET>{{dlf.offset}}</OFFSET>

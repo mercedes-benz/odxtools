@@ -7,7 +7,7 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printFunctionalClass(fc) -%}
-<FUNCT-CLASS ID="{{fc.odx_id.local_id}}">
+<FUNCT-CLASS {{-peid.printElementIdAttribs(fc)}}>
  {{ peid.printElementIdSubtags(fc)|indent(1) }}
 </FUNCT-CLASS>
 {%- endmacro -%}

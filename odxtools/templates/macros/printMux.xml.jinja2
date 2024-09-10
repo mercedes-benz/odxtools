@@ -8,7 +8,7 @@
 {%- import('macros/printDOP.xml.jinja2') as pdop %}
 
 {%- macro printMux(mux) %}
-<MUX ID="{{mux.odx_id.local_id}}"
+<MUX {{-peid.printElementIdAttribs(mux)}}
      {{-make_bool_xml_attrib("IS-VISIBLE", mux.is_visible_raw)}}
      {#- #}>
   {{ peid.printElementIdSubtags(mux)|indent(1) }}

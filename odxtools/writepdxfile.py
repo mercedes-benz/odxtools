@@ -140,6 +140,7 @@ def write_pdx_file(
                 out_file.write(data_file.read())
 
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
+        jinja_env.globals["getattr"] = getattr
         jinja_env.globals["hasattr"] = hasattr
         jinja_env.globals["odxraise"] = jinja2_odxraise_helper
         jinja_env.globals["make_xml_attrib"] = make_xml_attrib

@@ -15,10 +15,7 @@ class NamedElement:
     description: Optional[Description]
 
     @staticmethod
-    def from_et(
-        et_element: ElementTree.Element,
-        doc_frags: List[OdxDocFragment],
-    ) -> "NamedElement":
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "NamedElement":
 
         return NamedElement(
             short_name=odxrequire(et_element.findtext("SHORT-NAME")),
@@ -30,15 +27,15 @@ class NamedElement:
 @dataclass
 class IdentifiableElement(NamedElement):
     odx_id: OdxLinkId
+    oid: Optional[str]
 
     @staticmethod
-    def from_et(
-        et_element: ElementTree.Element,
-        doc_frags: List[OdxDocFragment],
-    ) -> "IdentifiableElement":
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "IdentifiableElement":
 
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
-        return IdentifiableElement(
-            **kwargs,
-            odx_id=odxrequire(OdxLinkId.from_et(et_element, doc_frags)),
-        )
+
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        oid = et_element.get("OID")
+
+        return IdentifiableElement(**kwargs, odx_id=odx_id, oid=oid)

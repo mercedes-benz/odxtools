@@ -6,7 +6,7 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printAdditionalAudience(audience) -%}
-<ADDITIONAL-AUDIENCE ID="{{audience.odx_id.local_id}}">
+<ADDITIONAL-AUDIENCE {{-peid.printElementIdAttribs(audience)}}>
  {{ peid.printElementIdSubtags(audience)|indent(1) }}
 </ADDITIONAL-AUDIENCE>
 {%- endmacro -%}

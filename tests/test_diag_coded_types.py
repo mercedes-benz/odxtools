@@ -202,6 +202,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             "certificateClient":
                 DataObjectProperty(
                     odx_id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
+                    oid=None,
                     short_name="certificateClient",
                     long_name=None,
                     description=None,
@@ -220,6 +221,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         # Request
         request = Request(
             odx_id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate", doc_frags),
+            oid=None,
             short_name="sendCertificate",
             long_name=None,
             description=None,
@@ -227,6 +229,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             sdgs=[],
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="SID",
                     long_name=None,
                     description=None,
@@ -238,6 +241,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="certificateClient",
                     long_name=None,
                     description=Description.from_string("The certificate to verify."),
@@ -258,6 +262,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         ecu_variant_raw = EcuVariantRaw(
             variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("BV.dummy_DL", doc_frags),
+            oid=None,
             short_name="dummy_DL",
             long_name=None,
             description=None,
@@ -378,6 +383,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         length_key_ref = OdxLinkRef.from_id(length_key_id)
         length_key = LengthKeyParameter(
             odx_id=length_key_id,
+            oid=None,
             short_name="length_key",
             long_name=None,
             description=None,
@@ -410,6 +416,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         length_key_id = OdxLinkId("param.length_key", doc_frags)
         length_key = LengthKeyParameter(
             odx_id=length_key_id,
+            oid=None,
             short_name="length_key",
             long_name=None,
             description=None,
@@ -497,6 +504,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             "uint8_times_8":
                 DataObjectProperty(
                     odx_id=OdxLinkId("BV.dummy_DL.DOP.uint8_times_8", doc_frags),
+                    oid=None,
                     short_name="uint8_times_8",
                     long_name=None,
                     description=None,
@@ -513,6 +521,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             "certificateClient":
                 DataObjectProperty(
                     odx_id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
+                    oid=None,
                     short_name="certificateClient",
                     long_name=None,
                     description=None,
@@ -531,6 +540,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         # Request using LengthKeyParameter and ParamLengthInfoType
         request = Request(
             odx_id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate", doc_frags),
+            oid=None,
             short_name="sendCertificate",
             long_name=None,
             description=None,
@@ -538,6 +548,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             sdgs=[],
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="SID",
                     long_name=None,
                     description=None,
@@ -555,6 +566,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     semantic=None,
                     # LengthKeyParams have an ID to be referenced by a ParamLengthInfoType (which is a diag coded type)
                     odx_id=OdxLinkId("param.dummy_length_key", doc_frags),
+                    oid=None,
                     byte_position=1,
                     bit_position=None,
                     # The DOP multiplies the coded value by 8, since the length key ref expects the number of bits.
@@ -563,6 +575,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="certificateClient",
                     long_name=None,
                     description=Description.from_string("The certificate to verify."),
@@ -583,6 +596,7 @@ class TestParamLengthInfoType(unittest.TestCase):
         ecu_variant_raw = EcuVariantRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("BV.dummy_DL", doc_frags),
+            oid=None,
             short_name="dummy_DL",
             long_name=None,
             description=None,
@@ -854,6 +868,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             "certificateClient":
                 DataObjectProperty(
                     odx_id=OdxLinkId("BV.dummy_DL.DOP.certificateClient", doc_frags),
+                    oid=None,
                     short_name="certificateClient",
                     long_name=None,
                     description=None,
@@ -872,6 +887,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         # Request
         request = Request(
             odx_id=OdxLinkId("BV.dummy_DL.RQ.sendCertificate", doc_frags),
+            oid=None,
             short_name="sendCertificate",
             long_name=None,
             description=None,
@@ -879,6 +895,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             sdgs=[],
             parameters=NamedItemList([
                 CodedConstParameter(
+                    oid=None,
                     short_name="SID",
                     long_name=None,
                     description=None,
@@ -890,6 +907,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     sdgs=[],
                 ),
                 ValueParameter(
+                    oid=None,
                     short_name="certificateClient",
                     long_name=None,
                     description=Description.from_string("The certificate to verify."),
@@ -903,6 +921,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     sdgs=[],
                 ),
                 CodedConstParameter(
+                    oid=None,
                     short_name="dummy",
                     long_name=None,
                     description=None,
@@ -921,6 +940,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         ecu_variant_raw = EcuVariantRaw(
             variant_type=DiagLayerType.BASE_VARIANT,
             odx_id=OdxLinkId("BV.dummy_DL", doc_frags),
+            oid=None,
             short_name="dummy_DL",
             long_name=None,
             description=None,

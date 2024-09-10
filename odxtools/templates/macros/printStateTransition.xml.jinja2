@@ -6,7 +6,7 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printStateTransition(state_transition) -%}
-<STATE-TRANSITION ID="{{state_transition.odx_id.local_id}}">
+<STATE-TRANSITION {{-peid.printElementIdAttribs(state_transition)}}>
  {{ peid.printElementIdSubtags(state_transition)|indent(1) }}
  <SOURCE-SNREF SHORT-NAME="{{state_transition.source_snref}}" />
  <TARGET-SNREF SHORT-NAME="{{state_transition.target_snref}}" />

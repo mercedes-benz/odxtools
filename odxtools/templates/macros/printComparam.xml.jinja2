@@ -38,7 +38,7 @@
 {%- endmacro %}
 
 {%- macro printSimpleComparam(cp) %}
-<COMPARAM ID="{{cp.odx_id.local_id}}"
+<COMPARAM {{-peid.printElementIdAttribs(cp)}}
           PARAM-CLASS="{{cp.param_class}}"
           CPTYPE="{{cp.cptype.value}}"
          {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}{#- #}
@@ -52,7 +52,7 @@
 {%- endmacro %}
 
 {%- macro printComplexComparam(cp) %}
-<COMPLEX-COMPARAM ID="{{cp.odx_id.local_id}}"
+<COMPLEX-COMPARAM {{-peid.printElementIdAttribs(cp)}}
                   PARAM-CLASS="{{cp.param_class}}"
                   CPTYPE="{{cp.cptype.value}}"
                  {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}{#- #}

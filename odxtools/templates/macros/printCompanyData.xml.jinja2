@@ -8,7 +8,7 @@
 {%- import('macros/printDescription.xml.jinja2') as pd %}
 
 {%- macro printCompanyData(company_data) %}
-<COMPANY-DATA ID="{{company_data.odx_id.local_id}}">
+<COMPANY-DATA {{-peid.printElementIdAttribs(company_data)}}>
  {{ peid.printElementIdSubtags(company_data)|indent(1) }}
  {%- if company_data.roles is not none %}
  <ROLES>
@@ -20,7 +20,7 @@
  {%- if company_data.team_members is not none %}
  <TEAM-MEMBERS>
   {%- for team_member in company_data.team_members %}
-  <TEAM-MEMBER ID="{{team_member.odx_id.local_id}}">
+  <TEAM-MEMBER {{-peid.printElementIdAttribs(team_member)}}>
    {{ peid.printElementIdSubtags(team_member)|indent(3) }}
    {%- if team_member.roles is not none %}
    <ROLES>

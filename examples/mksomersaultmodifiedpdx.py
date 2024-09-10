@@ -101,6 +101,7 @@ pr.parameters = NamedItemList(new_params)
 # add a new "flic-flac" service
 flic_flac_request = Request(
     odx_id=OdxLinkId("somersault.RQ.flic_flac", doc_frags),
+    oid=None,
     short_name="RQ_flic_flac",
     long_name=None,
     description=None,
@@ -108,6 +109,7 @@ flic_flac_request = Request(
     sdgs=[],
     parameters=NamedItemList([
         CodedConstParameter(
+            oid=None,
             short_name="sid",
             long_name=None,
             semantic=None,
@@ -125,6 +127,7 @@ somersault_young_dlr.requests.append(flic_flac_request)
 
 flic_flac_positive_response = Response(
     odx_id=OdxLinkId("somersault.PR.flic_flac", doc_frags),
+    oid=None,
     short_name="PR_flic_flac",
     long_name=None,
     description=None,
@@ -133,6 +136,7 @@ flic_flac_positive_response = Response(
     response_type=ResponseType.POSITIVE,
     parameters=NamedItemList([
         CodedConstParameter(
+            oid=None,
             short_name="sid",
             long_name=None,
             semantic=None,
@@ -144,6 +148,7 @@ flic_flac_positive_response = Response(
             sdgs=[],
         ),
         ValueParameter(
+            oid=None,
             short_name="can_do_backward_flips",
             long_name=None,
             semantic=None,
@@ -162,6 +167,7 @@ somersault_young_dlr.positive_responses.append(flic_flac_positive_response)
 
 flic_flac_service = DiagService(
     odx_id=OdxLinkId("somersault.service.flic_flac", doc_frags),
+    oid=None,
     short_name="flic_flac",
     long_name=None,
     description=None,

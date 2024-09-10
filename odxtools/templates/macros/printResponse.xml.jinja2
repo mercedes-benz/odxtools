@@ -8,7 +8,7 @@
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printResponse(resp, tag_name="POS-RESPONSE") -%}
-<{{tag_name}} ID="{{resp.odx_id.local_id}}">
+<{{tag_name}} {{-peid.printElementIdAttribs(resp)}}>
  {{ peid.printElementIdSubtags(resp)|indent(1) }}
 {%- if resp.parameters %}
  <PARAMS>

@@ -6,7 +6,7 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printStaticField(sf) -%}
-<STATIC-FIELD ID="{{sf.odx_id.local_id}}">
+<STATIC-FIELD {{-peid.printElementIdAttribs(sf)}}>
  {{ peid.printElementIdSubtags(sf)|indent(1) }}
  <BASIC-STRUCTURE-REF ID-REF="{{sf.structure_ref.ref_id}}" />
  <FIXED-NUMBER-OF-ITEMS>{{sf.fixed_number_of_items}}</FIXED-NUMBER-OF-ITEMS>

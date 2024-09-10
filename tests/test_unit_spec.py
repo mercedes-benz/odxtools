@@ -111,6 +111,7 @@ class TestUnitSpec(unittest.TestCase):
         )
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop_id", doc_frags),
+            oid=None,
             short_name="dop_sn",
             admin_data=None,
             long_name=None,
@@ -131,6 +132,7 @@ class TestUnitSpec(unittest.TestCase):
         dl_raw = EcuVariantRaw(
             variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("BV_id", doc_frags),
+            oid=None,
             short_name="BaseVariant",
             long_name=None,
             description=None,
@@ -162,6 +164,7 @@ class TestUnitSpec(unittest.TestCase):
             requests=NamedItemList([
                 Request(
                     odx_id=OdxLinkId("rq_id", doc_frags),
+                    oid=None,
                     short_name="rq_sn",
                     admin_data=None,
                     long_name=None,
@@ -169,6 +172,7 @@ class TestUnitSpec(unittest.TestCase):
                     sdgs=[],
                     parameters=NamedItemList([
                         CodedConstParameter(
+                            oid=None,
                             short_name="sid",
                             long_name=None,
                             description=None,
@@ -180,6 +184,7 @@ class TestUnitSpec(unittest.TestCase):
                             sdgs=[],
                         ),
                         ValueParameter(
+                            oid=None,
                             short_name="time",
                             long_name=None,
                             description=None,

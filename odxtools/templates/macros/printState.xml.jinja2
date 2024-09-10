@@ -6,7 +6,7 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 
 {%- macro printState(state) -%}
-<STATE ID="{{state.odx_id.local_id}}">
+<STATE {{-peid.printElementIdAttribs(state)}}>
  {{ peid.printElementIdSubtags(state)|indent(1) }}
 </STATE>
 {%- endmacro -%}
