@@ -227,7 +227,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             sdgs=[],
             param_snref="flip_speed",
             param_snpathref=None,
-            env_datas=[],
+            env_datas=NamedItemList(),
             env_data_refs=[OdxLinkRef.from_id(env_data.odx_id)],
         )
 
@@ -317,7 +317,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                 structure_ref=None,
                 structure_snref=None,
             ),
-            cases=[
+            cases=NamedItemList([
                 MultiplexerCase(
                     short_name="forward_flip",
                     long_name="Preconditions for doing a Forward Flip",
@@ -340,7 +340,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     structure_ref=OdxLinkRef.from_id(mux_case2_struct.odx_id),
                     structure_snref=None,
                 ),
-            ],
+            ]),
             is_visible_raw=None,
         )
 
