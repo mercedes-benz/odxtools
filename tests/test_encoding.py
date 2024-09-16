@@ -520,7 +520,7 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
             param_snref="DTC",
             param_snpathref=None,
-            env_datas=[
+            env_datas=NamedItemList([
                 EnvironmentData(
                     odx_id=OdxLinkId("DTCs.trouble_explanation.boiler_plate", doc_frags),
                     oid=None,
@@ -608,7 +608,7 @@ class TestEncodeRequest(unittest.TestCase):
                             sdgs=[],
                         ),
                     ])),
-            ],
+            ]),
             env_data_refs=[],
         )
 

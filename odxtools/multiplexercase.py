@@ -15,7 +15,7 @@ from .utils import dataclass_fields_asdict
 
 @dataclass
 class MultiplexerCase(NamedElement):
-    """This class represents a Case which represents multiple options in a Multiplexer."""
+    """This class represents a case which represents a range of keys of a multiplexer."""
 
     structure_ref: Optional[OdxLinkRef]
     structure_snref: Optional[str]

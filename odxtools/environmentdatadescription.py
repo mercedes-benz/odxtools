@@ -11,6 +11,7 @@ from .dtcdop import DtcDop
 from .encodestate import EncodeState
 from .environmentdata import EnvironmentData
 from .exceptions import odxraise, odxrequire
+from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValue, ParameterValueDict
 from .parameters.parameter import Parameter
@@ -35,7 +36,7 @@ class EnvironmentDataDescription(ComplexDop):
     # in ODX 2.0.0, ENV-DATAS seems to be a mandatory
     # sub-element of ENV-DATA-DESC, in ODX 2.2 it is not
     # present
-    env_datas: List[EnvironmentData]
+    env_datas: NamedItemList[EnvironmentData]
     env_data_refs: List[OdxLinkRef]
 
     @property
@@ -62,16 +63,20 @@ class EnvironmentDataDescription(ComplexDop):
         param_snpathref = None
         if (param_snpathref_elem := et_element.find("PARAM-SNPATHREF")) is not None:
             param_snpathref = odxrequire(param_snpathref_elem.get("SHORT-NAME-PATH"))
+
+        # ODX 2.0 mandates ENV-DATA-DESC to contain a list of
+        # ENV-DATAS and no ENV-DATA-REFS while for ODX 2.2 the
+        # situation is reversed. This means that we will create one
+        # empty and one non-empty list here. (Which is which depends
+        # on the version of the standard used by the file.)
         env_data_refs = [
             odxrequire(OdxLinkRef.from_et(env_data_ref, doc_frags))
             for env_data_ref in et_element.iterfind("ENV-DATA-REFS/ENV-DATA-REF")
         ]
-
-        # ODX 2.0.0 says ENV-DATA-DESC could contain a list of ENV-DATAS
-        env_datas = [
+        env_datas = NamedItemList([
             EnvironmentData.from_et(env_data_elem, doc_frags)
             for env_data_elem in et_element.iterfind("ENV-DATAS/ENV-DATA")
-        ]
+        ])
 
         return EnvironmentDataDescription(
             param_snref=param_snref,
@@ -93,7 +98,7 @@ class EnvironmentDataDescription(ComplexDop):
         # ODX 2.0 specifies environment data objects here, ODX 2.2
         # uses references
         if self.env_data_refs:
-            self.env_datas = [odxlinks.resolve(x) for x in self.env_data_refs]
+            self.env_datas = NamedItemList([odxlinks.resolve(x) for x in self.env_data_refs])
         else:
             for ed in self.env_datas:
                 ed._resolve_odxlinks(odxlinks)

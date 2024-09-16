@@ -12,6 +12,7 @@ from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequir
 from .multiplexercase import MultiplexerCase
 from .multiplexerdefaultcase import MultiplexerDefaultCase
 from .multiplexerswitchkey import MultiplexerSwitchKey
+from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import AtomicOdxType, ParameterValue, odxstr_to_bool
 from .snrefcontext import SnRefContext
@@ -30,7 +31,7 @@ class Multiplexer(ComplexDop):
     byte_position: int
     switch_key: MultiplexerSwitchKey
     default_case: Optional[MultiplexerDefaultCase]
-    cases: List[MultiplexerCase]
+    cases: NamedItemList[MultiplexerCase]
     is_visible_raw: Optional[bool]
 
     @staticmethod
@@ -48,9 +49,8 @@ class Multiplexer(ComplexDop):
         if (dc_elem := et_element.find("DEFAULT-CASE")) is not None:
             default_case = MultiplexerDefaultCase.from_et(dc_elem, doc_frags)
 
-        cases = []
-        if (cases_elem := et_element.find("CASES")) is not None:
-            cases = [MultiplexerCase.from_et(el, doc_frags) for el in cases_elem.iterfind("CASE")]
+        cases = NamedItemList(
+            [MultiplexerCase.from_et(el, doc_frags) for el in et_element.iterfind("CASES/CASE")])
 
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
 
