@@ -88,7 +88,10 @@ class StandardLengthType(DiagCodedType):
         else:
             sz = (odxrequire(self.get_static_bit_length()) + 7) // 8
 
-        return self.bit_mask.to_bytes(sz, endianness)
+        max_value = (1 << (sz * 8)) - 1
+        bit_mask = self.bit_mask & max_value
+
+        return bit_mask.to_bytes(sz, endianness)
 
     def __apply_mask(self, internal_value: AtomicOdxType) -> AtomicOdxType:
         if self.bit_mask is None:
