@@ -11,6 +11,7 @@ from .identicalcompumethod import IdenticalCompuMethod
 from .linearcompumethod import LinearCompuMethod
 from .ratfunccompumethod import RatFuncCompuMethod
 from .scalelinearcompumethod import ScaleLinearCompuMethod
+from .scaleratfunccompumethod import ScaleRatFuncCompuMethod
 from .tabintpcompumethod import TabIntpCompuMethod
 from .texttablecompumethod import TexttableCompuMethod
 
@@ -26,11 +27,14 @@ def create_any_compu_method_from_et(et_element: ElementTree.Element,
     elif compu_category == "LINEAR":
         return LinearCompuMethod.compu_method_from_et(
             et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
+    elif compu_category == "SCALE-LINEAR":
+        return ScaleLinearCompuMethod.compu_method_from_et(
+            et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
     elif compu_category == "RAT-FUNC":
         return RatFuncCompuMethod.compu_method_from_et(
             et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
-    elif compu_category == "SCALE-LINEAR":
-        return ScaleLinearCompuMethod.compu_method_from_et(
+    elif compu_category == "SCALE-RAT-FUNC":
+        return ScaleRatFuncCompuMethod.compu_method_from_et(
             et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
     elif compu_category == "TEXTTABLE":
         return TexttableCompuMethod.compu_method_from_et(
