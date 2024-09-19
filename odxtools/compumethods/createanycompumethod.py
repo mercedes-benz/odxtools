@@ -5,6 +5,7 @@ from xml.etree import ElementTree
 from ..exceptions import odxraise, odxrequire
 from ..odxlink import OdxDocFragment
 from ..odxtypes import DataType
+from .compucodecompumethod import CompuCodeCompuMethod
 from .compumethod import CompuMethod
 from .identicalcompumethod import IdenticalCompuMethod
 from .linearcompumethod import LinearCompuMethod
@@ -29,6 +30,9 @@ def create_any_compu_method_from_et(et_element: ElementTree.Element,
             et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
     elif compu_category == "TEXTTABLE":
         return TexttableCompuMethod.compu_method_from_et(
+            et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
+    elif compu_category == "COMPUCODE":
+        return CompuCodeCompuMethod.compu_method_from_et(
             et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
     elif compu_category == "TAB-INTP":
         return TabIntpCompuMethod.compu_method_from_et(

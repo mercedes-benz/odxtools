@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
-from ..odxlink import OdxDocFragment
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from ..odxtypes import DataType
 from ..progcode import ProgCode
+from ..snrefcontext import SnRefContext
 from .compudefaultvalue import CompuDefaultValue
 from .compuscale import CompuScale
 
@@ -37,3 +38,19 @@ class CompuInternalToPhys:
 
         return CompuInternalToPhys(
             compu_scales=compu_scales, prog_code=prog_code, compu_default_value=compu_default_value)
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = {}
+
+        if self.prog_code is not None:
+            result.update(self.prog_code._build_odxlinks())
+
+        return result
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        if self.prog_code is not None:
+            self.prog_code._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        if self.prog_code is not None:
+            self.prog_code._resolve_snrefs(context)

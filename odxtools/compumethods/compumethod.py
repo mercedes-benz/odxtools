@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from ..exceptions import odxraise
-from ..odxlink import OdxDocFragment
+from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType, DataType
+from ..snrefcontext import SnRefContext
 from .compuinternaltophys import CompuInternalToPhys
 from .compuphystointernal import CompuPhysToInternal
 
@@ -76,6 +77,31 @@ class CompuMethod:
             compu_phys_to_internal=compu_phys_to_internal,
             physical_type=physical_type,
             internal_type=internal_type)
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = {}
+
+        if self.compu_internal_to_phys is not None:
+            result.update(self.compu_internal_to_phys._build_odxlinks())
+
+        if self.compu_phys_to_internal is not None:
+            result.update(self.compu_phys_to_internal._build_odxlinks())
+
+        return result
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        if self.compu_internal_to_phys is not None:
+            self.compu_internal_to_phys._resolve_odxlinks(odxlinks)
+
+        if self.compu_phys_to_internal is not None:
+            self.compu_phys_to_internal._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        if self.compu_internal_to_phys is not None:
+            self.compu_internal_to_phys._resolve_snrefs(context)
+
+        if self.compu_phys_to_internal is not None:
+            self.compu_phys_to_internal._resolve_snrefs(context)
 
     def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> AtomicOdxType:
         raise NotImplementedError()

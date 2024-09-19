@@ -178,6 +178,8 @@ class DtcDop(DopBase):
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
 
+        odxlinks.update(self.compu_method._build_odxlinks())
+
         for dtc_proxy in self.dtcs_raw:
             if isinstance(dtc_proxy, DiagnosticTroubleCode):
                 odxlinks.update(dtc_proxy._build_odxlinks())
@@ -186,6 +188,8 @@ class DtcDop(DopBase):
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         super()._resolve_odxlinks(odxlinks)
+
+        self.compu_method._resolve_odxlinks(odxlinks)
 
         self._dtcs = NamedItemList[DiagnosticTroubleCode]()
         for dtc_proxy in self.dtcs_raw:
@@ -201,6 +205,8 @@ class DtcDop(DopBase):
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         super()._resolve_snrefs(context)
+
+        self.compu_method._resolve_snrefs(context)
 
         for dtc_proxy in self.dtcs_raw:
             if isinstance(dtc_proxy, DiagnosticTroubleCode):

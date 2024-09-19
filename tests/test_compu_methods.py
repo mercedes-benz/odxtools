@@ -7,9 +7,11 @@ from xml.etree import ElementTree
 import jinja2
 
 import odxtools
+from odxtools.compumethods.compucodecompumethod import CompuCodeCompuMethod
 from odxtools.compumethods.compuconst import CompuConst
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
 from odxtools.compumethods.compumethod import CompuCategory
+from odxtools.compumethods.compuphystointernal import CompuPhysToInternal
 from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.createanycompumethod import create_any_compu_method_from_et
@@ -19,6 +21,7 @@ from odxtools.compumethods.tabintpcompumethod import TabIntpCompuMethod
 from odxtools.exceptions import DecodeError, EncodeError, OdxError
 from odxtools.odxlink import OdxDocFragment
 from odxtools.odxtypes import DataType
+from odxtools.progcode import ProgCode
 from odxtools.writepdxfile import (get_parent_container_name, jinja2_odxraise_helper,
                                    make_bool_xml_attrib, make_xml_attrib)
 
@@ -405,6 +408,42 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertTrue(compu_method.is_valid_physical_value(-14))
         self.assertTrue(compu_method.is_valid_physical_value(-10))
         self.assertFalse(compu_method.is_valid_physical_value(-9))
+
+
+class TestCompuCodeCompuMethod(unittest.TestCase):
+
+    def test_compu_code_compu_method(self) -> None:
+        compu_method = CompuCodeCompuMethod(
+            category=CompuCategory.COMPUCODE,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[],
+                prog_code=ProgCode(
+                    code_file="nice_computation.java",
+                    syntax="JAVA",
+                    revision="1.0",
+                    encryption=None,
+                    entrypoint=None,
+                    library_refs=[]),
+                compu_default_value=None),
+            compu_phys_to_internal=CompuPhysToInternal(
+                compu_scales=[],
+                prog_code=ProgCode(
+                    code_file="nice_inverse_computation.java",
+                    syntax="JAVA",
+                    revision="1.0",
+                    encryption=None,
+                    entrypoint=None,
+                    library_refs=[]),
+                compu_default_value=None),
+            internal_type=DataType.A_FLOAT32,
+            physical_type=DataType.A_FLOAT32)
+
+        # COMPUCODE compu methods can only be used from Java projects
+        # (i.e., not odxtools)
+        with self.assertRaises(DecodeError):
+            compu_method.convert_internal_to_physical(1)
+        with self.assertRaises(EncodeError):
+            compu_method.convert_physical_to_internal(2)
 
 
 class TestTabIntpCompuMethod(unittest.TestCase):
