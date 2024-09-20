@@ -30,7 +30,13 @@ class FunctionalGroupRaw(HierarchyElementRaw):
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "FunctionalGroupRaw":
-        kwargs = dataclass_fields_asdict(HierarchyElementRaw.from_et(et_element, doc_frags))
+        # objects contained by diagnostic layers exibit an additional
+        # document fragment for the diag layer, so we use the document
+        # fragments of the odx id of the diag layer for IDs of
+        # contained objects.
+        her = HierarchyElementRaw.from_et(et_element, doc_frags)
+        kwargs = dataclass_fields_asdict(her)
+        doc_frags = her.odx_id.doc_fragments
 
         diag_variables_raw: List[Union[DiagVariable, OdxLinkRef]] = []
         if (dv_elems := et_element.find("DIAG-VARIABLES")) is not None:
