@@ -22,7 +22,13 @@ class HierarchyElementRaw(DiagLayerRaw):
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "HierarchyElementRaw":
-        kwargs = dataclass_fields_asdict(DiagLayerRaw.from_et(et_element, doc_frags))
+        # objects contained by diagnostic layers exibit an additional
+        # document fragment for the diag layer, so we use the document
+        # fragments of the odx id of the diag layer for IDs of
+        # contained objects.
+        dlr = DiagLayerRaw.from_et(et_element, doc_frags)
+        kwargs = dataclass_fields_asdict(dlr)
+        doc_frags = dlr.odx_id.doc_fragments
 
         comparam_refs = [
             ComparamInstance.from_et(el, doc_frags)

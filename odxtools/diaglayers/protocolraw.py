@@ -37,7 +37,13 @@ class ProtocolRaw(HierarchyElementRaw):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ProtocolRaw":
-        kwargs = dataclass_fields_asdict(HierarchyElementRaw.from_et(et_element, doc_frags))
+        # objects contained by diagnostic layers exibit an additional
+        # document fragment for the diag layer, so we use the document
+        # fragments of the odx id of the diag layer for IDs of
+        # contained objects.
+        her = HierarchyElementRaw.from_et(et_element, doc_frags)
+        kwargs = dataclass_fields_asdict(her)
+        doc_frags = her.odx_id.doc_fragments
 
         comparam_spec_ref = OdxLinkRef.from_et(
             odxrequire(et_element.find("COMPARAM-SPEC-REF")), doc_frags)
