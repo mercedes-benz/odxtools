@@ -1,18 +1,24 @@
 # SPDX-License-Identifier: MIT
+import getpass
 from dataclasses import dataclass
+from datetime import datetime
 from typing import List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
 
-from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import odxrequire
+from ..exceptions import odxraise, odxrequire
 from ..odxlink import OdxDocFragment
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
+
+PREDEFINED_SYSPARAM_VALUES = [
+    "TIMESTAMP", "SECOND", "MINUTE", "HOUR", "TIMEZONE", "DAY", "WEEK", "MONTH", "YEAR", "CENTURY",
+    "TESTERID", "USERID"
+]
 
 
 @dataclass
@@ -38,18 +44,51 @@ class SystemParameter(ParameterWithDOP):
     @property
     @override
     def is_required(self) -> bool:
-        raise NotImplementedError("SystemParameter.is_required is not implemented yet.")
+        # if a SYSTEM parameter is not specified explicitly, its value
+        # can be determined from the operating system if it is type is
+        # predefined
+        return self.sysparam not in PREDEFINED_SYSPARAM_VALUES
 
     @property
     @override
     def is_settable(self) -> bool:
-        raise NotImplementedError("SystemParameter.is_settable is not implemented yet.")
+        return True
 
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
                                     encode_state: EncodeState) -> None:
-        raise NotImplementedError("Encoding a SystemParameter is not implemented yet.")
+        if physical_value is None:
+            # determine the value to be encoded automatically
+            now = datetime.now()
+            if self.sysparam == "TIMESTAMP":
+                physical_value = round(now.timestamp() * 1000).to_bytes(8, "big")
+            elif self.sysparam == "SECOND":
+                physical_value = now.second
+            elif self.sysparam == "MINUTE":
+                physical_value = now.minute
+            elif self.sysparam == "HOUR":
+                physical_value = now.hour
+            elif self.sysparam == "TIMEZONE":
+                if (utc_offset := now.astimezone().utcoffset()) is not None:
+                    physical_value = utc_offset.seconds // 60
+                else:
+                    physical_value = 0
+            elif self.sysparam == "DAY":
+                physical_value = now.day
+            elif self.sysparam == "WEEK":
+                physical_value = now.isocalendar()[1]
+            elif self.sysparam == "MONTH":
+                physical_value = now.month
+            elif self.sysparam == "YEAR":
+                physical_value = now.year
+            elif self.sysparam == "CENTURY":
+                physical_value = now.year // 100
+            elif self.sysparam == "TESTERID":
+                physical_value = "odxtools".encode("latin1")
+            elif self.sysparam == "USERID":
+                physical_value = getpass.getuser().encode("latin1")
+            else:
+                odxraise(f"Unknown system parameter type '{self.sysparam}'")
+                physical_value = 0
 
-    @override
-    def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
-        raise NotImplementedError("Decoding SystemParameter is not implemented yet.")
+        self.dop.encode_into_pdu(physical_value, encode_state=encode_state)

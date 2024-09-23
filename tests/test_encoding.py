@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import unittest
+from datetime import datetime
 from typing import List
 
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
@@ -10,6 +11,7 @@ from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty
+from odxtools.decodestate import DecodeState
 from odxtools.description import Description
 from odxtools.diagdatadictionaryspec import DiagDataDictionarySpec
 from odxtools.diaglayers.diaglayertype import DiagLayerType
@@ -18,6 +20,7 @@ from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
 from odxtools.diagnostictroublecode import DiagnosticTroubleCode
 from odxtools.diagservice import DiagService
 from odxtools.dtcdop import DtcDop
+from odxtools.encodestate import EncodeState
 from odxtools.environmentdata import EnvironmentData
 from odxtools.environmentdatadescription import EnvironmentDataDescription
 from odxtools.exceptions import EncodeError
@@ -27,6 +30,7 @@ from odxtools.odxtypes import DataType
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
 from odxtools.parameters.parameter import Parameter
+from odxtools.parameters.systemparameter import SystemParameter
 from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.physicaltype import PhysicalType, Radix
 from odxtools.request import Request
@@ -409,6 +413,74 @@ class TestEncodeRequest(unittest.TestCase):
             # Should raise an EncodeError because the value of
             # NRC-CONST parameters cannot be directly specified
             resp.encode(param2=0xEF, param3=0xAB)
+
+    def test_encode_system_parameter(self) -> None:
+        diag_coded_type = StandardLengthType(
+            base_data_type=DataType.A_UINT32,
+            base_type_encoding=None,
+            bit_length=16,
+            bit_mask=None,
+            is_highlow_byte_order_raw=None,
+            is_condensed_raw=None,
+        )
+        dop = DataObjectProperty(
+            odx_id=OdxLinkId("dop.year", doc_frags),
+            oid=None,
+            short_name="dop_year_sn",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            diag_coded_type=diag_coded_type,
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            compu_method=IdenticalCompuMethod(
+                category=CompuCategory.IDENTICAL,
+                compu_internal_to_phys=None,
+                compu_phys_to_internal=None,
+                internal_type=DataType.A_UINT32,
+                physical_type=DataType.A_UINT32),
+            unit_ref=None,
+            sdgs=[],
+            internal_constr=None,
+            physical_constr=None,
+        )
+        param1 = SystemParameter(
+            oid=None,
+            short_name="year_param",
+            long_name=None,
+            description=None,
+            semantic=None,
+            dop_ref=OdxLinkRef.from_id(dop.odx_id),
+            dop_snref=None,
+            sysparam="YEAR",
+            byte_position=0,
+            bit_position=None,
+            sdgs=[],
+        )
+
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(dop._build_odxlinks())
+
+        param1._resolve_odxlinks(odxlinks)
+
+        encode_state = EncodeState()
+        param1.encode_into_pdu(physical_value=2024, encode_state=encode_state)
+        self.assertEqual(encode_state.coded_message, b'\x07\xe8')
+
+        # test auto-determination of parameter value
+        cur_year = datetime.now().year
+        encode_state = EncodeState()
+        param1.encode_into_pdu(physical_value=None, encode_state=encode_state)
+
+        # there is a (rather theoretical) race condition here: if the
+        # cur_year variable was assigned before the year of the system
+        # date changes (e.g., because it is new-year's eve) and the
+        # encoding was done after that, we will get an incorrect value
+        # here. (good luck exploiting this!)
+        self.assertEqual(encode_state.coded_message, cur_year.to_bytes(2, 'big'))
+
+        # ensure that decoding works as well
+        decode_state = DecodeState(coded_message=encode_state.coded_message)
+        self.assertEqual(param1.decode_from_pdu(decode_state), cur_year)
 
     def test_encode_env_data_desc(self) -> None:
         dct = StandardLengthType(
