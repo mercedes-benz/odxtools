@@ -3,15 +3,21 @@ import textwrap
 from io import StringIO
 from typing import Iterable
 
+from .compumethods.compucodecompumethod import CompuCodeCompuMethod
 from .compumethods.identicalcompumethod import IdenticalCompuMethod
 from .compumethods.limit import IntervalType
 from .compumethods.linearcompumethod import LinearCompuMethod
+from .compumethods.linearsegment import LinearSegment
+from .compumethods.ratfunccompumethod import RatFuncCompuMethod
+from .compumethods.ratfuncsegment import RatFuncSegment
+from .compumethods.scalelinearcompumethod import ScaleLinearCompuMethod
+from .compumethods.scaleratfunccompumethod import ScaleRatFuncCompuMethod
 from .compumethods.texttablecompumethod import TexttableCompuMethod
 from .dataobjectproperty import DataObjectProperty
 from .dtcdop import DtcDop
 from .dynamiclengthfield import DynamicLengthField
 from .endofpdufield import EndOfPduField
-from .exceptions import odxrequire
+from .exceptions import odxraise, odxrequire
 from .multiplexer import Multiplexer
 from .odxtypes import DataType
 from .parameters.codedconstparameter import CodedConstParameter
@@ -20,10 +26,63 @@ from .parameters.nrcconstparameter import NrcConstParameter
 from .parameters.parameter import Parameter
 from .parameters.parameterwithdop import ParameterWithDOP
 from .parameters.reservedparameter import ReservedParameter
+from .parameters.systemparameter import SystemParameter
 from .parameters.tablekeyparameter import TableKeyParameter
 from .parameters.tablestructparameter import TableStructParameter
 from .paramlengthinfotype import ParamLengthInfoType
 from .staticfield import StaticField
+
+
+def _get_type_info(odx_type: DataType) -> str:
+    if odx_type == DataType.A_INT32:
+        return "int"
+    elif odx_type == DataType.A_UINT32:
+        return "uint"
+    elif odx_type in (DataType.A_FLOAT32, DataType.A_FLOAT64):
+        return "float"
+    elif odx_type == DataType.A_BYTEFIELD:
+        return "bytefield"
+    elif odx_type in (DataType.A_UNICODE2STRING, DataType.A_ASCIISTRING, DataType.A_UTF8STRING):
+        return "string"
+    else:
+        odxraise(f"Type info for type {odx_type.value}", NotImplementedError)
+        return "<unknown type>"
+
+
+def _get_linear_segment_info(segment: LinearSegment) -> str:
+    ll = segment.physical_lower_limit
+    ul = segment.physical_upper_limit
+    if ll is None or ll.interval_type == IntervalType.INFINITE:
+        ll_str = "(-inf"
+    else:
+        ll_delim = '(' if ll.interval_type == IntervalType.OPEN else '['
+        ll_str = f"{ll_delim}{ll._value!r}"
+
+        if ul is None or ul.interval_type == IntervalType.INFINITE:
+            ul_str = "inf)"
+        else:
+            ul_delim = ')' if ul.interval_type == IntervalType.OPEN else ']'
+            ul_str = f"{ul._value!r}{ul_delim}"
+
+    return f"{ll_str}, {ul_str}"
+
+
+def _get_rat_func_segment_info(segment: RatFuncSegment) -> str:
+    ll = segment.lower_limit
+    ul = segment.upper_limit
+    if ll is None or ll.interval_type == IntervalType.INFINITE:
+        ll_str = "(-inf"
+    else:
+        ll_delim = '(' if ll.interval_type == IntervalType.OPEN else '['
+        ll_str = f"{ll_delim}{ll._value!r}"
+
+        if ul is None or ul.interval_type == IntervalType.INFINITE:
+            ul_str = "inf)"
+        else:
+            ul_delim = ')' if ul.interval_type == IntervalType.OPEN else ']'
+            ul_str = f"{ul._value!r}{ul_delim}"
+
+    return f"{ll_str}, {ul_str}"
 
 
 def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) -> str:
@@ -41,6 +100,11 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
             continue
         elif isinstance(param, ReservedParameter):
             of.write(f"{q}{param.short_name}{q}: <reserved>\n")
+            continue
+        elif isinstance(param, SystemParameter):
+            of.write(
+                f"{q}{param.short_name}{q}: <system; kind = \"{param.sysparam}\">; required = {param.is_required}\n"
+            )
             continue
         elif isinstance(param, TableKeyParameter):
             of.write(
@@ -69,7 +133,10 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
             continue
 
         dop = param.dop
-        if isinstance(dop, EndOfPduField):
+        if dop is None:
+            of.write("{q}{param.short_name}{q}: <no DOP>\n")
+            continue
+        elif isinstance(dop, EndOfPduField):
             of.write(f"{q}{param.short_name}{q}: list({{\n")
             of.write(textwrap.indent(parameter_info(dop.structure.parameters, True), "  "))
             of.write(f"}})\n")
@@ -112,89 +179,102 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                     of.write(textwrap.indent(parameter_info(struc.parameters, True), "    "))
                 of.write(f"   }})\n")
             continue
+        elif isinstance(dop, DataObjectProperty):
+            # a "simple" DOP
+            if (cm := dop.compu_method) is None:
+                of.write(f"{q}{param.short_name}{q}: <no compu method>\n")
+                continue
 
-        of.write(f"{q}{param.short_name}{q}")
+            if isinstance(cm, TexttableCompuMethod):
+                of.write(f"{q}{param.short_name}{q}: enum; choices:\n")
+                for scale in odxrequire(cm.compu_internal_to_phys).compu_scales:
+                    val_str = ""
+                    if scale.lower_limit is not None:
+                        val_str = f"({repr(scale.lower_limit.value)})"
 
-        if dop is None:
-            of.write(": <no DOP>\n")
-            continue
-        elif not isinstance(dop, DataObjectProperty):
-            of.write(f": <unhandled DOP '{type(dop).__name__}'>\n")
-            continue
-
-        if (cm := dop.compu_method) is None:
-            of.write(": <no compu method>\n")
-            continue
-
-        if isinstance(cm, TexttableCompuMethod):
-            of.write(f": enum; choices:\n")
-            for scale in odxrequire(cm.compu_internal_to_phys).compu_scales:
-                val_str = ""
-                if scale.lower_limit is not None:
-                    val_str = f"({repr(scale.lower_limit.value)})"
-
-                if scale.compu_const is None:
-                    of.write(f"  <ERROR in ODX data: no value specified>\n")
-                else:
-                    vt = scale.compu_const.vt
-                    v = scale.compu_const.v
-                    if vt is not None:
-                        of.write(f"  \"{vt}\" {val_str}\n")
+                    if scale.compu_const is None:
+                        of.write(f"  <ERROR in ODX data: no value specified>\n")
                     else:
-                        of.write(f"  {v}\n")
+                        vt = scale.compu_const.vt
+                        v = scale.compu_const.v
+                        if vt is not None:
+                            of.write(f"  \"{vt}\" {val_str}\n")
+                        else:
+                            of.write(f"  {v}\n")
 
-        elif isinstance(cm, IdenticalCompuMethod):
-            bdt = dop.physical_type.base_data_type
-            if bdt in (DataType.A_UTF8STRING, DataType.A_UNICODE2STRING, DataType.A_ASCIISTRING):
-                of.write(f": str")
-            elif bdt == DataType.A_BYTEFIELD:
-                of.write(f": bytes")
-            elif bdt.name.startswith("A_FLOAT"):
-                of.write(f": float")
-            elif bdt.name.startswith("A_UINT"):
-                of.write(f": uint")
-            elif bdt.name.startswith("A_INT"):
-                of.write(f": int")
+            elif isinstance(cm, IdenticalCompuMethod):
+                of.write(
+                    f"{q}{param.short_name}{q}: {_get_type_info(dop.physical_type.base_data_type)}\n"
+                )
+
+            elif isinstance(cm, ScaleLinearCompuMethod):
+                of.write(
+                    f"{q}{param.short_name}{q}: {_get_type_info(dop.physical_type.base_data_type)}")
+                seg_list = [_get_linear_segment_info(x) for x in cm.segments]
+                of.write(f"; ranges = {{ {', '.join(seg_list)} }}")
+
+                unit = dop.unit
+                unit_str = unit.display_name if unit is not None else None
+                if unit_str is not None:
+                    of.write(f"; unit: {unit_str}")
+
+                of.write("\n")
+
+            elif isinstance(cm, LinearCompuMethod):
+                of.write(
+                    f"{q}{param.short_name}{q}: {_get_type_info(dop.physical_type.base_data_type)}")
+                of.write(f"; range: {_get_linear_segment_info(cm.segment)}")
+
+                unit = dop.unit
+                unit_str = unit.display_name if unit is not None else None
+                if unit_str is not None:
+                    of.write(f"; unit: {unit_str}")
+
+                of.write("\n")
+
+            elif isinstance(cm, ScaleRatFuncCompuMethod):
+                of.write(
+                    f"{q}{param.short_name}{q}: {_get_type_info(dop.physical_type.base_data_type)}")
+                if cm._phys_to_int_segments is None:
+                    of.write("<NOT ENCODABLE>")
+                else:
+                    seg_list = [_get_rat_func_segment_info(x) for x in cm._phys_to_int_segments]
+                    of.write(f"; ranges = {{ {', '.join(seg_list)} }}")
+
+                    unit = dop.unit
+                    unit_str = unit.display_name if unit is not None else None
+                    if unit_str is not None:
+                        of.write(f"; unit: {unit_str}")
+
+                    of.write("\n")
+
+            elif isinstance(cm, RatFuncCompuMethod):
+                of.write(
+                    f"{q}{param.short_name}{q}: {_get_type_info(dop.physical_type.base_data_type)}")
+                if cm._phys_to_int_segment is None:
+                    of.write("<NOT ENCODABLE>")
+                else:
+                    of.write(f"; range: {_get_rat_func_segment_info(cm._phys_to_int_segment)}")
+
+                    unit = dop.unit
+                    unit_str = unit.display_name if unit is not None else None
+                    if unit_str is not None:
+                        of.write(f"; unit: {unit_str}")
+
+                of.write("\n")
+
+            elif isinstance(cm, CompuCodeCompuMethod):
+                of.write(
+                    f"{q}{param.short_name}{q}: {_get_type_info(dop.physical_type.base_data_type)}")
+                of.write(f"; <programmatic translation>")
+
+                of.write("\n")
+
             else:
-                of.write(f": <unknown type {{ bdt.name }}>")
-
-            of.write("\n")
-
-        elif isinstance(cm, LinearCompuMethod):
-            bdt = dop.physical_type.base_data_type
-            if bdt in (DataType.A_UTF8STRING, DataType.A_UNICODE2STRING, DataType.A_ASCIISTRING):
-                of.write(f": str")
-            elif bdt in (DataType.A_BYTEFIELD,):
-                of.write(f": bytes")
-            elif bdt.name.startswith("A_FLOAT"):
-                of.write(f": float")
-            elif bdt.name.startswith("A_UINT"):
-                of.write(f": uint")
-            elif bdt.name.startswith("A_INT"):
-                of.write(f": int")
-            else:
-                of.write(f": <unknown type>")
-
-            ll = cm.segment.physical_lower_limit
-            ul = cm.segment.physical_upper_limit
-            if ll is None or ll.interval_type == IntervalType.INFINITE:
-                ll_str = "(-inf"
-            else:
-                ll_delim = '(' if ll.interval_type == IntervalType.OPEN else '['
-                ll_str = f"{ll_delim}{ll._value!r}"
-
-            if ul is None or ul.interval_type == IntervalType.INFINITE:
-                ul_str = "inf)"
-            else:
-                ul_delim = ')' if ul.interval_type == IntervalType.OPEN else ']'
-                ul_str = f"{ul._value!r}{ul_delim}"
-            of.write(f"; range: {ll_str}, {ul_str}")
-
-            unit = dop.unit
-            unit_str = unit.display_name if unit is not None else None
-            if unit_str is not None:
-                of.write(f"; unit: {unit_str}")
-
-            of.write("\n")
+                of.write(
+                    f"{q}{param.short_name}{q}: unknown compu method {type(dop.compu_method).__name__}\n"
+                )
+        else:
+            of.write(f"{q}{param.short_name}{q}: <unhandled DOP '{type(dop).__name__}'>\n")
 
     return of.getvalue()
