@@ -25,3 +25,16 @@ __pycache__/
 env
 venv
 /odxtools/version.py
+
+# editor and git backup files
+*~
+*.orig
+*.rej
+
+# files usually stemming from deflated PDX archives
+*.odx-d
+*.odx-c
+*.odx-cs
+*.jar
+index.xml
+!examples/data/*

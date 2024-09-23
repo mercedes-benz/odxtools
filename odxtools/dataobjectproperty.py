@@ -84,6 +84,7 @@ class DataObjectProperty(DopBase):
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
         result.update(self.diag_coded_type._build_odxlinks())
+        result.update(self.compu_method._build_odxlinks())
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -91,6 +92,7 @@ class DataObjectProperty(DopBase):
         super()._resolve_odxlinks(odxlinks)
 
         self.diag_coded_type._resolve_odxlinks(odxlinks)
+        self.compu_method._resolve_odxlinks(odxlinks)
 
         self._unit: Optional[Unit] = None
         if self.unit_ref:
@@ -100,6 +102,7 @@ class DataObjectProperty(DopBase):
         super()._resolve_snrefs(context)
 
         self.diag_coded_type._resolve_snrefs(context)
+        self.compu_method._resolve_snrefs(context)
 
     @property
     def unit(self) -> Optional[Unit]:

@@ -7,18 +7,23 @@ from xml.etree import ElementTree
 import jinja2
 
 import odxtools
+from odxtools.compumethods.compucodecompumethod import CompuCodeCompuMethod
 from odxtools.compumethods.compuconst import CompuConst
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
 from odxtools.compumethods.compumethod import CompuCategory
+from odxtools.compumethods.compuphystointernal import CompuPhysToInternal
 from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.createanycompumethod import create_any_compu_method_from_et
 from odxtools.compumethods.limit import IntervalType, Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
+from odxtools.compumethods.ratfunccompumethod import RatFuncCompuMethod
+from odxtools.compumethods.scaleratfunccompumethod import ScaleRatFuncCompuMethod
 from odxtools.compumethods.tabintpcompumethod import TabIntpCompuMethod
 from odxtools.exceptions import DecodeError, EncodeError, OdxError
 from odxtools.odxlink import OdxDocFragment
 from odxtools.odxtypes import DataType
+from odxtools.progcode import ProgCode
 from odxtools.writepdxfile import (get_parent_container_name, jinja2_odxraise_helper,
                                    make_bool_xml_attrib, make_xml_attrib)
 
@@ -37,6 +42,7 @@ class TestLinearCompuMethod(unittest.TestCase):
 
             jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
 
+            jinja_env.globals["getattr"] = getattr
             jinja_env.globals["hasattr"] = hasattr
             jinja_env.globals["odxraise"] = jinja2_odxraise_helper
             jinja_env.globals["make_xml_attrib"] = make_xml_attrib
@@ -407,6 +413,337 @@ class TestLinearCompuMethod(unittest.TestCase):
         self.assertFalse(compu_method.is_valid_physical_value(-9))
 
 
+class TestCompuCodeCompuMethod(unittest.TestCase):
+
+    def test_compu_code_compu_method(self) -> None:
+        compu_method = CompuCodeCompuMethod(
+            category=CompuCategory.COMPUCODE,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[],
+                prog_code=ProgCode(
+                    code_file="nice_computation.java",
+                    syntax="JAVA",
+                    revision="1.0",
+                    encryption=None,
+                    entrypoint=None,
+                    library_refs=[]),
+                compu_default_value=None),
+            compu_phys_to_internal=CompuPhysToInternal(
+                compu_scales=[],
+                prog_code=ProgCode(
+                    code_file="nice_inverse_computation.java",
+                    syntax="JAVA",
+                    revision="1.0",
+                    encryption=None,
+                    entrypoint=None,
+                    library_refs=[]),
+                compu_default_value=None),
+            internal_type=DataType.A_FLOAT32,
+            physical_type=DataType.A_FLOAT32)
+
+        # COMPUCODE compu methods can only be used from Java projects
+        # (i.e., not odxtools)
+        with self.assertRaises(DecodeError):
+            compu_method.convert_internal_to_physical(1)
+        with self.assertRaises(EncodeError):
+            compu_method.convert_physical_to_internal(2)
+
+
+class TestRatFuncCompuMethod(unittest.TestCase):
+
+    def test_rat_func_compu_method(self) -> None:
+        compu_method = RatFuncCompuMethod(
+            category=CompuCategory.RAT_FUNC,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="2",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        upper_limit=Limit(
+                            value_raw="3",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            value_type=DataType.A_FLOAT32,
+                            # f(x) = 3.14*(2*x^2 + 4x + 6) / 3.14
+                            numerators=[3.14 * 6, 3.14 * 4, 3.14 * 2],
+                            denominators=[3.14],
+                        ),
+                        domain_type=DataType.A_FLOAT32,
+                        range_type=DataType.A_FLOAT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_FLOAT32,
+            physical_type=DataType.A_FLOAT32)
+
+        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(2.5)) - 28.5) < 1e-5)
+
+        # out of range
+        with self.assertRaises(DecodeError):
+            compu_method.convert_internal_to_physical(3.01)
+        with self.assertRaises(DecodeError):
+            compu_method.convert_internal_to_physical(1.99)
+
+        # if the inverse function is not explicitly specified,
+        # inversion is not allowed!
+        with self.assertRaises(EncodeError):
+            compu_method.convert_physical_to_internal(2.5)
+
+    def test_rat_func_compu_method_with_inverse(self) -> None:
+        compu_method = RatFuncCompuMethod(
+            category=CompuCategory.RAT_FUNC,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="2",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        upper_limit=Limit(
+                            value_raw="3",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            value_type=DataType.A_FLOAT32,
+                            # f(x) = x^2
+                            numerators=[0, 0, 1],
+                            denominators=[1],
+                        ),
+                        domain_type=DataType.A_FLOAT32,
+                        range_type=DataType.A_FLOAT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=CompuPhysToInternal(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="4",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        upper_limit=Limit(
+                            value_raw="9",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            value_type=DataType.A_FLOAT32,
+                            # first three terms of Taylor expansion of
+                            # f(x) = sqrt(x) at evaluation point 1
+                            numerators=[2.72 * 3 / 8, 2.72 * 3 / 4, 2.72 * -1 / 8],
+                            denominators=[2.72],
+                        ),
+                        domain_type=DataType.A_FLOAT32,
+                        range_type=DataType.A_FLOAT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            internal_type=DataType.A_FLOAT32,
+            physical_type=DataType.A_FLOAT32)
+
+        self.assertEqual(compu_method.convert_internal_to_physical(2), 4)
+        self.assertEqual(compu_method.convert_internal_to_physical(2.5), 6.25)
+        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(3)) - 9) < 1e-8)
+
+        # note that the inverse values are pretty inaccurate because
+        # the Taylor series was cut off way quite early.
+        self.assertTrue(abs(float(compu_method.convert_physical_to_internal(4)) - 1.375) < 1e-4)
+        self.assertTrue(
+            abs(float(compu_method.convert_physical_to_internal(6.25)) - 0.17969) < 1e-4)
+        self.assertEqual(compu_method.convert_physical_to_internal(9), -3)
+
+        # ensure that we stay in bounds
+        with self.assertRaises(DecodeError):
+            compu_method.convert_internal_to_physical(3.99)
+        with self.assertRaises(DecodeError):
+            compu_method.convert_internal_to_physical(9.01)
+
+
+class TestScaleRatFuncCompuMethod(unittest.TestCase):
+
+    def test_scale_rat_func_compu_method(self) -> None:
+        compu_method = ScaleRatFuncCompuMethod(
+            category=CompuCategory.SCALE_RAT_FUNC,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="2",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        upper_limit=Limit(
+                            value_raw="3",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            value_type=DataType.A_FLOAT32,
+                            # f(x) = 3.14*(2*x^2 + 4x + 6) / 3.14
+                            numerators=[3.14 * 6, 3.14 * 4, 3.14 * 2],
+                            denominators=[3.14],
+                        ),
+                        domain_type=DataType.A_FLOAT32,
+                        range_type=DataType.A_FLOAT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_FLOAT32,
+            physical_type=DataType.A_FLOAT32)
+
+        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(2.5)) - 28.5) < 1e-5)
+
+        # out of range
+        with self.assertRaises(DecodeError):
+            compu_method.convert_internal_to_physical(3.01)
+        with self.assertRaises(DecodeError):
+            compu_method.convert_internal_to_physical(1.99)
+
+        # if the inverse function is not explicitly specified,
+        # inversion is not allowed!
+        with self.assertRaises(EncodeError):
+            compu_method.convert_physical_to_internal(2.5)
+
+    def test_scale_rat_func_compu_method_with_inverse(self) -> None:
+        compu_method = ScaleRatFuncCompuMethod(
+            category=CompuCategory.SCALE_RAT_FUNC,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="2",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        upper_limit=Limit(
+                            value_raw="3",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            value_type=DataType.A_FLOAT32,
+                            # f(x) = x^2
+                            numerators=[0, 0, 1],
+                            denominators=[1],
+                        ),
+                        domain_type=DataType.A_FLOAT32,
+                        range_type=DataType.A_FLOAT32),
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="4",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        upper_limit=Limit(
+                            value_raw="5",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            value_type=DataType.A_FLOAT32,
+                            # f(x) = 1.38e-23*(3*x + 10)/1.38e-23
+                            numerators=[1.38e-23 * 10, 1.38e-23 * 3],
+                            denominators=[1.38e-23],
+                        ),
+                        domain_type=DataType.A_FLOAT32,
+                        range_type=DataType.A_FLOAT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            compu_phys_to_internal=CompuPhysToInternal(
+                compu_scales=[
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="4",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        upper_limit=Limit(
+                            value_raw="9",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            value_type=DataType.A_FLOAT32,
+                            # first three terms of Taylor expansion of
+                            # f(x) = sqrt(x) at evaluation point 1
+                            numerators=[2.72 * 3 / 8, 2.72 * 3 / 4, 2.72 * -1 / 8],
+                            denominators=[2.72],
+                        ),
+                        domain_type=DataType.A_FLOAT32,
+                        range_type=DataType.A_FLOAT32),
+                    CompuScale(
+                        short_label=None,
+                        description=None,
+                        lower_limit=Limit(
+                            value_raw="22",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        upper_limit=Limit(
+                            value_raw="25",
+                            value_type=DataType.A_FLOAT32,
+                            interval_type=IntervalType.CLOSED),
+                        compu_inverse_value=None,
+                        compu_const=None,
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            value_type=DataType.A_FLOAT32,
+                            # f(x) = (x - 10)/3
+                            numerators=[-10, 1],
+                            denominators=[3],
+                        ),
+                        domain_type=DataType.A_FLOAT32,
+                        range_type=DataType.A_FLOAT32),
+                ],
+                prog_code=None,
+                compu_default_value=None),
+            internal_type=DataType.A_FLOAT32,
+            physical_type=DataType.A_FLOAT32)
+
+        self.assertEqual(compu_method.convert_internal_to_physical(2), 4)
+        self.assertEqual(compu_method.convert_internal_to_physical(2.5), 6.25)
+        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(3)) - 9) < 1e-8)
+
+        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(4)) - 22) < 1e-8)
+        self.assertTrue(abs(float(compu_method.convert_physical_to_internal(22)) - 4) < 1e-8)
+
+        # note that the inverse values are pretty inaccurate because
+        # the Taylor series was cut off way quite early.
+        self.assertTrue(abs(float(compu_method.convert_physical_to_internal(4)) - 1.375) < 1e-4)
+        self.assertTrue(
+            abs(float(compu_method.convert_physical_to_internal(6.25)) - 0.17969) < 1e-4)
+        self.assertEqual(compu_method.convert_physical_to_internal(9), -3)
+
+        # make sure that we stay in bounds
+        with self.assertRaises(DecodeError):
+            compu_method.convert_internal_to_physical(3.99)
+        with self.assertRaises(DecodeError):
+            compu_method.convert_internal_to_physical(9.01)
+
+
 class TestTabIntpCompuMethod(unittest.TestCase):
 
     def setUp(self) -> None:
@@ -424,6 +761,7 @@ class TestTabIntpCompuMethod(unittest.TestCase):
             jinja_env.filters["odxtools_collapse_xml_attribute"] = (lambda x: " " + x.strip()
                                                                     if x.strip() else "")
 
+            jinja_env.globals["getattr"] = getattr
             jinja_env.globals["hasattr"] = hasattr
             return jinja_env
 

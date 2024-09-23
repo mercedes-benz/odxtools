@@ -75,13 +75,13 @@ class LinearCompuMethod(CompuMethod):
 
     def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> AtomicOdxType:
         if not self._segment.internal_applies(internal_value):
-            odxraise(r"Cannot decode internal value {internal_value}", DecodeError)
+            odxraise(f"Cannot decode internal value {internal_value!r}", DecodeError)
 
         return self._segment.convert_internal_to_physical(internal_value)
 
     def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> AtomicOdxType:
         if not self._segment.physical_applies(physical_value):
-            odxraise(r"Cannot decode physical value {physical_value}", EncodeError)
+            odxraise(f"Cannot decode physical value {physical_value!r}", EncodeError)
 
         return self._segment.convert_physical_to_internal(physical_value)
 
