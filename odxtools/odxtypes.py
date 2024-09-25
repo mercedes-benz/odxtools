@@ -254,5 +254,4 @@ class DataType(Enum):
         elif self in (DataType.A_UNICODE2STRING, DataType.A_ASCIISTRING, DataType.A_UTF8STRING):
             return "string"
         else:
-            odxraise(f"Type info for type {self.value}", NotImplementedError)
-            return "<unknown type>"
+            return f"<unknown type '{self.value}'>"
