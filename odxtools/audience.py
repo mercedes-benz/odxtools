@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .additionalaudience import AdditionalAudience
+from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
@@ -45,11 +46,11 @@ class Audience:
         return self.is_aftermarket_raw in [None, True]
 
     @property
-    def enabled_audiences(self) -> List[AdditionalAudience]:
+    def enabled_audiences(self) -> NamedItemList[AdditionalAudience]:
         return self._enabled_audiences
 
     @property
-    def disabled_audiences(self) -> List[AdditionalAudience]:
+    def disabled_audiences(self) -> NamedItemList[AdditionalAudience]:
         return self._disabled_audiences
 
     @staticmethod
@@ -85,12 +86,10 @@ class Audience:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._enabled_audiences = [
-            odxlinks.resolve(ref, AdditionalAudience) for ref in self.enabled_audience_refs
-        ]
-        self._disabled_audiences = [
-            odxlinks.resolve(ref, AdditionalAudience) for ref in self.disabled_audience_refs
-        ]
+        self._enabled_audiences = NamedItemList(
+            [odxlinks.resolve(ref, AdditionalAudience) for ref in self.enabled_audience_refs])
+        self._disabled_audiences = NamedItemList(
+            [odxlinks.resolve(ref, AdditionalAudience) for ref in self.disabled_audience_refs])
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
