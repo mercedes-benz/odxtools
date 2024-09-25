@@ -2098,9 +2098,9 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
     admin_data=None,
     data_object_props=NamedItemList(somersault_dops.values()),
     unit_spec=UnitSpec(
-        unit_groups=list(somersault_unit_groups.values()),
-        units=list(somersault_units.values()),
-        physical_dimensions=list(somersault_physical_dimensions.values()),
+        unit_groups=NamedItemList(somersault_unit_groups.values()),
+        units=NamedItemList(somersault_units.values()),
+        physical_dimensions=NamedItemList(somersault_physical_dimensions.values()),
         sdgs=[],
     ),
     tables=NamedItemList(somersault_tables.values()),

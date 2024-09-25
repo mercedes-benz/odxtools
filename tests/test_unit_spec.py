@@ -30,7 +30,7 @@ class TestUnitSpec(unittest.TestCase):
 
     def test_read_odx(self) -> None:
         expected = UnitSpec(
-            physical_dimensions=[
+            physical_dimensions=NamedItemList([
                 PhysicalDimension(
                     odx_id=OdxLinkId("ID.metre", doc_frags),
                     short_name="metre",
@@ -45,8 +45,8 @@ class TestUnitSpec(unittest.TestCase):
                     long_name=None,
                     description=None,
                 )
-            ],
-            units=[
+            ]),
+            units=NamedItemList([
                 Unit(
                     odx_id=OdxLinkId("ID.kilometre", doc_frags),
                     oid=None,
@@ -58,7 +58,7 @@ class TestUnitSpec(unittest.TestCase):
                     factor_si_to_unit=1000,
                     offset_si_to_unit=0,
                 )
-            ],
+            ]),
             unit_groups=NamedItemList(),
             sdgs=[],
         )
@@ -143,7 +143,7 @@ class TestUnitSpec(unittest.TestCase):
                 admin_data=None,
                 data_object_props=NamedItemList([dop]),
                 unit_spec=UnitSpec(
-                    units=[unit],
+                    units=NamedItemList([unit]),
                     physical_dimensions=NamedItemList(),
                     unit_groups=NamedItemList(),
                     sdgs=[],

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 from xml.etree import ElementTree
 
 from .nameditemlist import NamedItemList
@@ -25,9 +25,9 @@ class UnitSpec:
     """
 
     # TODO (?): Why are there type errors...
-    unit_groups: Union[NamedItemList[UnitGroup], List[UnitGroup]]
-    units: Union[NamedItemList[Unit], List[Unit]]
-    physical_dimensions: Union[NamedItemList[PhysicalDimension], List[PhysicalDimension]]
+    unit_groups: NamedItemList[UnitGroup]
+    units: NamedItemList[Unit]
+    physical_dimensions: NamedItemList[PhysicalDimension]
     sdgs: List[SpecialDataGroup]
 
     def __post_init__(self) -> None:
@@ -38,14 +38,15 @@ class UnitSpec:
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "UnitSpec":
 
-        unit_groups = [
+        unit_groups = NamedItemList([
             UnitGroup.from_et(el, doc_frags) for el in et_element.iterfind("UNIT-GROUPS/UNIT-GROUP")
-        ]
-        units = [Unit.from_et(el, doc_frags) for el in et_element.iterfind("UNITS/UNIT")]
-        physical_dimensions = [
+        ])
+        units = NamedItemList(
+            [Unit.from_et(el, doc_frags) for el in et_element.iterfind("UNITS/UNIT")])
+        physical_dimensions = NamedItemList([
             PhysicalDimension.from_et(el, doc_frags)
             for el in et_element.iterfind("PHYSICAL-DIMENSIONS/PHYSICAL-DIMENSION")
-        ]
+        ])
         sdgs = [
             SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
         ]
