@@ -47,17 +47,17 @@ class CompuCodeCompuMethod(CompuMethod):
                   "CompuCodeCompuMethod must exhibit COMPUCODE category")
 
     def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> AtomicOdxType:
-        odxraise(r"CompuCodeCompuMethod cannot be executed", DecodeError)
+        odxraise(r"CompuCodeCompuMethod cannot be executed by odxtools", DecodeError)
         return cast(AtomicOdxType, None)
 
     def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> AtomicOdxType:
-        odxraise(r"CompuCodeCompuMethod cannot be executed", EncodeError)
+        odxraise(r"CompuCodeCompuMethod cannot be executed by odxtools", EncodeError)
         return cast(AtomicOdxType, None)
 
     def is_valid_physical_value(self, physical_value: AtomicOdxType) -> bool:
-        odxraise(r"CompuCodeCompuMethod cannot be executed", NotImplementedError)
+        # CompuCodeCompuMethod cannot be executed by odxtools
         return False
 
     def is_valid_internal_value(self, internal_value: AtomicOdxType) -> bool:
-        odxraise(r"CompuCodeCompuMethod cannot be executed", NotImplementedError)
+        # CompuCodeCompuMethod cannot be executed by odxtools
         return False
