@@ -15,6 +15,10 @@ from ..utils import dataclass_fields_asdict
 from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
+# The SYSTEM parameter types mandated by the ODX 2.2 standard. Users
+# are free to specify additional types, but these must be handled
+# (cf. table 5 in section 7.3.5.4 of the ASAM ODX 2.2 specification
+# document.)
 PREDEFINED_SYSPARAM_VALUES = [
     "TIMESTAMP", "SECOND", "MINUTE", "HOUR", "TIMEZONE", "DAY", "WEEK", "MONTH", "YEAR", "CENTURY",
     "TESTERID", "USERID"
