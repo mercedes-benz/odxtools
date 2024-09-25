@@ -17,9 +17,8 @@ from .dataobjectproperty import DataObjectProperty
 from .dtcdop import DtcDop
 from .dynamiclengthfield import DynamicLengthField
 from .endofpdufield import EndOfPduField
-from .exceptions import odxraise, odxrequire
+from .exceptions import odxrequire
 from .multiplexer import Multiplexer
-from .odxtypes import DataType
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.matchingrequestparameter import MatchingRequestParameter
 from .parameters.nrcconstparameter import NrcConstParameter
@@ -31,22 +30,6 @@ from .parameters.tablekeyparameter import TableKeyParameter
 from .parameters.tablestructparameter import TableStructParameter
 from .paramlengthinfotype import ParamLengthInfoType
 from .staticfield import StaticField
-
-
-def _get_type_info(odx_type: DataType) -> str:
-    if odx_type == DataType.A_INT32:
-        return "int"
-    elif odx_type == DataType.A_UINT32:
-        return "uint"
-    elif odx_type in (DataType.A_FLOAT32, DataType.A_FLOAT64):
-        return "float"
-    elif odx_type == DataType.A_BYTEFIELD:
-        return "bytefield"
-    elif odx_type in (DataType.A_UNICODE2STRING, DataType.A_ASCIISTRING, DataType.A_UTF8STRING):
-        return "string"
-    else:
-        odxraise(f"Type info for type {odx_type.value}", NotImplementedError)
-        return "<unknown type>"
 
 
 def _get_linear_segment_info(segment: LinearSegment) -> str:
@@ -203,13 +186,10 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                             of.write(f"  {v}\n")
 
             elif isinstance(cm, IdenticalCompuMethod):
-                of.write(
-                    f"{q}{param.short_name}{q}: {_get_type_info(dop.physical_type.base_data_type)}\n"
-                )
+                of.write(f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}\n")
 
             elif isinstance(cm, ScaleLinearCompuMethod):
-                of.write(
-                    f"{q}{param.short_name}{q}: {_get_type_info(dop.physical_type.base_data_type)}")
+                of.write(f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}")
                 seg_list = [_get_linear_segment_info(x) for x in cm.segments]
                 of.write(f"; ranges = {{ {', '.join(seg_list)} }}")
 
@@ -221,8 +201,7 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 of.write("\n")
 
             elif isinstance(cm, LinearCompuMethod):
-                of.write(
-                    f"{q}{param.short_name}{q}: {_get_type_info(dop.physical_type.base_data_type)}")
+                of.write(f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}")
                 of.write(f"; range: {_get_linear_segment_info(cm.segment)}")
 
                 unit = dop.unit
@@ -233,8 +212,7 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 of.write("\n")
 
             elif isinstance(cm, ScaleRatFuncCompuMethod):
-                of.write(
-                    f"{q}{param.short_name}{q}: {_get_type_info(dop.physical_type.base_data_type)}")
+                of.write(f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}")
                 if cm._phys_to_int_segments is None:
                     of.write("<NOT ENCODABLE>")
                 else:
@@ -249,8 +227,7 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                     of.write("\n")
 
             elif isinstance(cm, RatFuncCompuMethod):
-                of.write(
-                    f"{q}{param.short_name}{q}: {_get_type_info(dop.physical_type.base_data_type)}")
+                of.write(f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}")
                 if cm._phys_to_int_segment is None:
                     of.write("<NOT ENCODABLE>")
                 else:
@@ -264,8 +241,7 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 of.write("\n")
 
             elif isinstance(cm, CompuCodeCompuMethod):
-                of.write(
-                    f"{q}{param.short_name}{q}: {_get_type_info(dop.physical_type.base_data_type)}")
+                of.write(f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}")
                 of.write(f"; <programmatic translation>")
 
                 of.write("\n")

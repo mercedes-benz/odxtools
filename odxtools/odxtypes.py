@@ -241,3 +241,18 @@ class DataType(Enum):
             return True
         else:
             return False
+
+    def __str__(self) -> str:
+        if self == DataType.A_INT32:
+            return "int"
+        elif self == DataType.A_UINT32:
+            return "uint"
+        elif self in (DataType.A_FLOAT32, DataType.A_FLOAT64):
+            return "float"
+        elif self == DataType.A_BYTEFIELD:
+            return "bytefield"
+        elif self in (DataType.A_UNICODE2STRING, DataType.A_ASCIISTRING, DataType.A_UTF8STRING):
+            return "string"
+        else:
+            odxraise(f"Type info for type {self.value}", NotImplementedError)
+            return "<unknown type>"
