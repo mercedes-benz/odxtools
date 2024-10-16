@@ -5,13 +5,14 @@
 
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printDiagComm.xml.jinja2') as pdc %}
+{%- import('macros/printCompuMethod.xml.jinja2') as pcm %}
 
 {%- macro printSingleEcuJob(job) -%}
 <SINGLE-ECU-JOB {{pdc.printDiagCommAttribs(job)|indent(1) }}>
   {{pdc.printDiagCommSubtags(job) | indent(2, first=True) }}
   <PROG-CODES>
     {%- for prog in job.prog_codes %}
-    {{ printProgCode(prog)|indent(4) }}
+    {{ pcm.printProgCode(prog)|indent(4) }}
     {%- endfor %}
   </PROG-CODES>
   {%- if job.input_params %}
@@ -36,28 +37,6 @@
   </NEG-OUTPUT-PARAMS>
   {%- endif %}
 </SINGLE-ECU-JOB>
-{%- endmacro -%}
-
-
-{%- macro printProgCode(prog) -%}
-<PROG-CODE>
- <CODE-FILE>{{prog.code_file}}</CODE-FILE>
-{%- if prog.encryption %}
- <ENCRYPTION>{{prog.encryption}}</ENCRYPTION>
-{%- endif %}
- <SYNTAX>{{prog.syntax}}</SYNTAX>
- <REVISION>{{prog.revision}}</REVISION>
-{%- if prog.entrypoint %}
- <ENTRYPOINT>{{prog.entrypoint}}</ENTRYPOINT>
-{%- endif %}
-{%- if prog.library_refs %}
- <LIBRARY-REFS>
- {%- for ref in prog.library_refs %}
-   <LIBRARY-REF ID-REF="{{ref.ref_id}}" />
- {%- endfor %}
- </LIBRARY-REFS>
-{%- endif %}
-</PROG-CODE>
 {%- endmacro -%}
 
 

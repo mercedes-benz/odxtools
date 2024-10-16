@@ -28,6 +28,7 @@ from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
 from odxtools.exceptions import odxrequire
 from odxtools.functionalclass import FunctionalClass
 from odxtools.inputparam import InputParam
+from odxtools.library import Library
 from odxtools.nameditemlist import NamedItemList
 from odxtools.negoutputparam import NegOutputParam
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -463,6 +464,19 @@ class TestSingleEcuJob(unittest.TestCase):
             ecu_variant_patterns=[],
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
+            librarys=NamedItemList([
+                Library(
+                    short_name="great_lib",
+                    long_name=None,
+                    description=None,
+                    odx_id=OdxLinkId("my.favourite.lib", doc_frags),
+                    oid=None,
+                    code_file="great_lib.py",
+                    encryption=None,
+                    syntax="PYTHON",
+                    revision="3.141529",
+                    entrypoint="i_am_great")
+            ]),
             dyn_defined_spec=None,
         )
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
@@ -482,6 +496,10 @@ class TestSingleEcuJob(unittest.TestCase):
         db = Database()
         db.add_auxiliary_file("abc.jar",
                               BytesIO(b"this is supposed to be a JAR archive, but it isn't (HARR)"))
+        db.add_auxiliary_file(
+            "great_lib.py",
+            BytesIO(b"def i_am_great():\n"
+                    b"    print('The greatest algorithm eva!')"))
 
         ecu_variant._resolve_odxlinks(odxlinks)
         ecu_variant._finalize_init(db, odxlinks)

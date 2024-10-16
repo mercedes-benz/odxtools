@@ -13,6 +13,7 @@ from ..diagcomm import DiagComm
 from ..diagdatadictionaryspec import DiagDataDictionarySpec
 from ..diagservice import DiagService
 from ..exceptions import DecodeError, odxassert, odxraise
+from ..library import Library
 from ..message import Message
 from ..nameditemlist import NamedItemList, TNamed
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -258,6 +259,10 @@ class DiagLayer:
     @property
     def import_refs(self) -> List[OdxLinkRef]:
         return self.diag_layer_raw.import_refs
+
+    @property
+    def librarys(self) -> List[Library]:
+        return self.diag_layer_raw.librarys
 
     @property
     def sdgs(self) -> List[SpecialDataGroup]:

@@ -299,6 +299,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             ecu_variant_patterns=[],
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
+            librarys=NamedItemList(),
             dyn_defined_spec=None,
         )
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
@@ -633,6 +634,7 @@ class TestParamLengthInfoType(unittest.TestCase):
             ecu_variant_patterns=[],
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
+            librarys=NamedItemList(),
             dyn_defined_spec=None,
         )
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
@@ -977,6 +979,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             ecu_variant_patterns=[],
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
+            librarys=NamedItemList(),
             dyn_defined_spec=None,
         )
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)

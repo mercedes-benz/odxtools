@@ -225,6 +225,7 @@ def ecu_variant_1(
         ecu_variant_patterns=[ecu_variant_pattern1],
         diag_variables_raw=[],
         variable_groups=NamedItemList(),
+        librarys=NamedItemList(),
         dyn_defined_spec=None,
     )
     result = EcuVariant(diag_layer_raw=raw_layer)
@@ -266,6 +267,7 @@ def ecu_variant_2(
         ecu_variant_patterns=[ecu_variant_pattern2],
         diag_variables_raw=[],
         variable_groups=NamedItemList(),
+        librarys=NamedItemList(),
         dyn_defined_spec=None,
     )
     result = EcuVariant(diag_layer_raw=raw_layer)
@@ -308,6 +310,7 @@ def ecu_variant_3(
         ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
         diag_variables_raw=[],
         variable_groups=NamedItemList(),
+        librarys=NamedItemList(),
         dyn_defined_spec=None,
     )
     result = EcuVariant(diag_layer_raw=raw_layer)
