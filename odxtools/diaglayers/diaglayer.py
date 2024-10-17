@@ -262,7 +262,7 @@ class DiagLayer:
         return self.diag_layer_raw.import_refs
 
     @property
-    def libraries(self) -> List[Library]:
+    def libraries(self) -> NamedItemList[Library]:
         return self.diag_layer_raw.libraries
 
     @property
