@@ -464,7 +464,7 @@ class TestSingleEcuJob(unittest.TestCase):
             ecu_variant_patterns=[],
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
-            librarys=NamedItemList([
+            libraries=NamedItemList([
                 Library(
                     short_name="great_lib",
                     long_name=None,

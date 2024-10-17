@@ -203,9 +203,9 @@
   {%- endfor %}
 </ADDITIONAL-AUDIENCES>
 {%- endif %}
-{%- if dlr.librarys %}
+{%- if dlr.libraries %}
 <LIBRARYS>
-  {%- for lib in dlr.librarys %}
+  {%- for lib in dlr.libraries %}
   {{ plib.printLibrary(lib)|indent(2) }}
   {%- endfor %}
 </LIBRARYS>

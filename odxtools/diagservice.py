@@ -42,7 +42,9 @@ class DiagService(DiagComm):
     pos_response_refs: List[OdxLinkRef]
     neg_response_refs: List[OdxLinkRef]
 
-    # TODO: pos_response_suppressable: Optional[PosResponseSuppressable] # (sic!)
+    # note that the spec has a typo here: it calls the corresponding
+    # XML tag POS-RESPONSE-SUPPRESSABLE...
+    # TODO: pos_response_suppressible: Optional[PosResponseSuppressible]
 
     is_cyclic_raw: Optional[bool]
     is_multiple_raw: Optional[bool]

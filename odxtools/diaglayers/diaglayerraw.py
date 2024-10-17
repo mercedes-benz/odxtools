@@ -48,7 +48,7 @@ class DiagLayerRaw(IdentifiableElement):
     state_charts: NamedItemList[StateChart]
     additional_audiences: NamedItemList[AdditionalAudience]
     # sub_components: List[DiagLayer] # TODO
-    librarys: NamedItemList[Library]  # (sic!)
+    libraries: NamedItemList[Library]
     sdgs: List[SpecialDataGroup]
 
     @property
@@ -150,7 +150,7 @@ class DiagLayerRaw(IdentifiableElement):
             for el in et_element.iterfind("ADDITIONAL-AUDIENCES/ADDITIONAL-AUDIENCE")
         ]
 
-        librarys = [
+        libraries = [
             Library.from_et(el, doc_frags) for el in et_element.iterfind("LIBRARYS/LIBRARY")
         ]
 
@@ -173,7 +173,7 @@ class DiagLayerRaw(IdentifiableElement):
             import_refs=import_refs,
             state_charts=NamedItemList(state_charts),
             additional_audiences=NamedItemList(additional_audiences),
-            librarys=NamedItemList(librarys),
+            libraries=NamedItemList(libraries),
             sdgs=sdgs,
             **kwargs)
 
@@ -206,7 +206,7 @@ class DiagLayerRaw(IdentifiableElement):
             odxlinks.update(state_chart._build_odxlinks())
         for additional_audience in self.additional_audiences:
             odxlinks.update(additional_audience._build_odxlinks())
-        for library in self.librarys:
+        for library in self.libraries:
             odxlinks.update(library._build_odxlinks())
         for sdg in self.sdgs:
             odxlinks.update(sdg._build_odxlinks())
@@ -260,7 +260,7 @@ class DiagLayerRaw(IdentifiableElement):
             state_chart._resolve_odxlinks(odxlinks)
         for additional_audience in self.additional_audiences:
             additional_audience._resolve_odxlinks(odxlinks)
-        for library in self.librarys:
+        for library in self.libraries:
             library._resolve_odxlinks(odxlinks)
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
@@ -292,7 +292,7 @@ class DiagLayerRaw(IdentifiableElement):
             state_chart._resolve_snrefs(context)
         for additional_audience in self.additional_audiences:
             additional_audience._resolve_snrefs(context)
-        for library in self.librarys:
+        for library in self.libraries:
             library._resolve_snrefs(context)
         for sdg in self.sdgs:
             sdg._resolve_snrefs(context)

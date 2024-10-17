@@ -2142,7 +2142,7 @@ somersault_protocol_raw = ProtocolRaw(
     comparam_spec_ref=OdxLinkRef("CPS_ISO_15765_3_on_ISO_15765_2",
                                  [OdxDocFragment("ISO_15765_3_on_ISO_15765_2", "COMPARAM-SPEC")]),
     comparam_refs=somersault_comparam_refs,
-    librarys=NamedItemList(),
+    libraries=NamedItemList(),
     prot_stack_snref=None,
 )
 somersault_protocol = Protocol(diag_layer_raw=somersault_protocol_raw)
@@ -2181,7 +2181,7 @@ somersault_base_variant_raw = BaseVariantRaw(
     comparam_refs=[],
     diag_variables_raw=[],
     variable_groups=NamedItemList(),
-    librarys=NamedItemList(),
+    libraries=NamedItemList(),
     dyn_defined_spec=None)
 somersault_base_variant = BaseVariant(diag_layer_raw=somersault_base_variant_raw)
 
@@ -2229,7 +2229,7 @@ somersault_lazy_ecu_raw = EcuVariantRaw(
     ecu_variant_patterns=[],
     diag_variables_raw=[],
     variable_groups=NamedItemList(),
-    librarys=NamedItemList(),
+    libraries=NamedItemList(),
     dyn_defined_spec=None,
 )
 somersault_lazy_ecu = EcuVariant(diag_layer_raw=somersault_lazy_ecu_raw)
@@ -2467,7 +2467,7 @@ somersault_assiduous_ecu_raw = EcuVariantRaw(
     ecu_variant_patterns=[],
     diag_variables_raw=[],
     variable_groups=NamedItemList(),
-    librarys=NamedItemList(),
+    libraries=NamedItemList(),
     dyn_defined_spec=None,
 )
 somersault_assiduous_ecu = EcuVariant(diag_layer_raw=somersault_assiduous_ecu_raw)

@@ -261,8 +261,8 @@ class DiagLayer:
         return self.diag_layer_raw.import_refs
 
     @property
-    def librarys(self) -> List[Library]:
-        return self.diag_layer_raw.librarys
+    def libraries(self) -> List[Library]:
+        return self.diag_layer_raw.libraries
 
     @property
     def sdgs(self) -> List[SpecialDataGroup]:
