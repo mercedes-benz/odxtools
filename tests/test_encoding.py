@@ -398,6 +398,7 @@ class TestEncodeRequest(unittest.TestCase):
             variable_groups=NamedItemList(),
             libraries=NamedItemList(),
             dyn_defined_spec=None,
+            sub_components=NamedItemList(),
         )
 
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)

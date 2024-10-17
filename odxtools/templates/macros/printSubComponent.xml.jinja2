@@ -1,0 +1,104 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+#
+# SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printEcuVariantPattern.xml.jinja2') as pevp %}
+
+{%- macro printSubComponentPattern(pat) %}
+<SUB-COMPONENT-PATTERN>
+  <MATCHING-PARAMETERS>
+    {%- for mp in pat.matching_parameters %}
+    {{ pvp.printMatchingParameter(mp)|indent(4) }}
+    {%- endfor %}
+  </MATCHING-PARAMETERS>
+</SUB-COMPONENT-PATTERN>
+{%- endmacro %}
+
+{%- macro printSubComponentParamConnector(conn) %}
+<SUB-COMPONENT-PARAM-CONNECTOR{#- #} {{-peid.printElementIdAttribs(conn)}}>
+  {{ peid.printElementIdSubtags(conn)|indent(2) }}
+  <DIAG-COMM-SNREF {{- make_xml_attrib("SHORT-NAME", conn.diag_comm_snref ) }} />
+  {%- if conn.out_param_if_refs %}
+  <OUT-PARAM-IF-REFS>
+    {%- for snref in conn.out_param_if_refs %}
+    <OUT-PARAM-IF-SNREF SHORT-NAME="{{snref}}" />
+    {%- endfor %}
+  </OUT-PARAM-IF-REFS>
+  {%- endif %}
+  {%- if conn.in_param_if_refs %}
+  <IN-PARAM-IF-REFS>
+    {%- for snref in conn.in_param_if_refs %}
+    <IN-PARAM-IF-SNREF SHORT-NAME="{{snref}}" />
+    {%- endfor %}
+  </IN-PARAM-IF-REFS>
+  {%- endif %}
+</SUB-COMPONENT-PARAM-CONNECTOR>
+{%- endmacro %}
+
+{%- macro printTableRowConnector(conn) %}
+<TABLE-ROW-CONNECTOR>
+  {{ peid.printElementIdSubtags(conn)|indent(2) }}
+  <TABLE-REF ID-REF="{{ conn.table_ref.ref_id }}" />
+  <TABLE-ROW-SNREF {{- make_xml_attrib("SHORT-NAME", conn.table_row_snref ) }} />
+</TABLE-ROW-CONNECTOR>
+{%- endmacro %}
+
+{%- macro printEnvDataConnector(conn) %}
+<ENV-DATA-CONNECTOR>
+  {{ peid.printElementIdSubtags(conn)|indent(2) }}
+  <ENV-DATA-DESC-REF ID-REF="{{ conn.env_data_desc_ref.ref_id }}" />
+  <ENV-DATA-SNREF {{- make_xml_attrib("SHORT-NAME", conn.env_data_snref ) }} />
+</ENV-DATA-CONNECTOR>
+{%- endmacro %}
+
+{%- macro printDtcConnector(conn) %}
+<DTC-CONNECTOR>
+  {{ peid.printElementIdSubtags(conn)|indent(2) }}
+  <DTC-DOP-REF ID-REF="{{ conn.dtc_dop_ref.ref_id }}" />
+  <DOP-SNREF {{- make_xml_attrib("SHORT-NAME", conn.dtc_snref ) }} />
+</DTC-CONNECTOR>
+{%- endmacro %}
+
+{%- macro printSubComponent(sc) %}
+<SUB-COMPONENT{#- #} {{-peid.printElementIdAttribs(sc)}}
+              {{- make_xml_attrib("SEMANTIC", sc.semantic) }}>
+  {{ peid.printElementIdSubtags(sc)|indent(2) }}
+  {%- if sc.sub_component_patterns %}
+  <SUB-COMPONENT-PATTERNS>
+    {%- for scp in sc.sub_component_patterns %}
+    {{ printSubComponentPattern(scp)|indent(4) }}
+    {%- endfor %}
+  </SUB-COMPONENT-PATTERNS>
+  {%- endif %}
+  {%- if sc.sub_component_param_connectors %}
+  <SUB-COMPONENT-PARAM-CONNECTORS>
+    {%- for conn in sc.sub_component_param_connectors %}
+    {{ printSubComponentParamConnector(conn)|indent(4) }}
+    {%- endfor %}
+  </SUB-COMPONENT-PARAM-CONNECTORS>
+  {%- endif %}
+  {%- if sc.table_row_connectors %}
+  <TABLE-ROW-CONNECTORS>
+    {%- for conn in sc.table_row_connectors %}
+    {{ printTableRowConnector(conn)|indent(4) }}
+    {%- endfor %}
+  </TABLE-ROW-CONNECTORS>
+  {%- endif %}
+  {%- if sc.env_data_connectors %}
+  <ENV-DATA-CONNECTORS>
+    {%- for conn in sc.env_data_connectors %}
+    {{ printEnvDataConnector(conn)|indent(4) }}
+    {%- endfor %}
+  </ENV-DATA-CONNECTORS>
+  {%- endif %}
+  {%- if sc.dtc_connectors %}
+  <DTC-CONNECTORS>
+    {%- for conn in sc.dtc_connectors %}
+    {{ printDtcConnector(conn)|indent(4) }}
+    {%- endfor %}
+  </DTC-CONNECTORS>
+  {%- endif %}
+</SUB-COMPONENT>
+{%- endmacro %}

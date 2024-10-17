@@ -227,6 +227,7 @@ def ecu_variant_1(
         variable_groups=NamedItemList(),
         libraries=NamedItemList(),
         dyn_defined_spec=None,
+        sub_components=NamedItemList(),
     )
     result = EcuVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
@@ -269,6 +270,7 @@ def ecu_variant_2(
         variable_groups=NamedItemList(),
         libraries=NamedItemList(),
         dyn_defined_spec=None,
+        sub_components=NamedItemList(),
     )
     result = EcuVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
@@ -312,6 +314,7 @@ def ecu_variant_3(
         variable_groups=NamedItemList(),
         libraries=NamedItemList(),
         dyn_defined_spec=None,
+        sub_components=NamedItemList(),
     )
     result = EcuVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())

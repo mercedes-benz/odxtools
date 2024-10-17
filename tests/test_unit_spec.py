@@ -214,6 +214,7 @@ class TestUnitSpec(unittest.TestCase):
             variable_groups=NamedItemList(),
             libraries=NamedItemList(),
             dyn_defined_spec=None,
+            sub_components=NamedItemList(),
         )
         dl = EcuVariant(diag_layer_raw=dl_raw)
         odxlinks = OdxLinkDatabase()

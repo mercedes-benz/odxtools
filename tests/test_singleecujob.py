@@ -478,6 +478,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     entrypoint="i_am_great")
             ]),
             dyn_defined_spec=None,
+            sub_components=NamedItemList(),
         )
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()

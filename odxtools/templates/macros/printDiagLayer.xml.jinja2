@@ -22,6 +22,7 @@
 {%- import('macros/printResponse.xml.jinja2') as presp %}
 {%- import('macros/printStateChart.xml.jinja2') as psc %}
 {%- import('macros/printAudience.xml.jinja2') as paud %}
+{%- import('macros/printSubComponent.xml.jinja2') as psubcomp %}
 {%- import('macros/printLibrary.xml.jinja2') as plib %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 {%- import('macros/printEcuVariantPattern.xml.jinja2') as pvpat %}
@@ -202,6 +203,13 @@
   {{ paud.printAdditionalAudience(audience)|indent(2) }}
   {%- endfor %}
 </ADDITIONAL-AUDIENCES>
+{%- endif %}
+{%- if dlr.sub_components %}
+<SUB-COMPONENTS>
+  {%- for sc in dlr.sub_components %}
+  {{ psubcomp.printSubComponent(sc)|indent(2) }}
+  {%- endfor %}
+</SUB-COMPONENTS>
 {%- endif %}
 {%- if dlr.libraries %}
 <LIBRARYS>
