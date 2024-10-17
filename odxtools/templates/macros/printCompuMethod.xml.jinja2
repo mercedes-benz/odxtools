@@ -92,12 +92,13 @@
 {%- macro printProgCode(pc) -%}
 <PROG-CODE>
   <CODE-FILE>{{pc.code_file}}</CODE-FILE>
-  <SYNTAX>{{pc.syntax}}</SYNTAX>
   {%- if pc.encryption is not none %}
   <ENCRYPTION>{{pc.encryption}}</ENCRYPTION>
   {%- endif %}
+  <SYNTAX>{{pc.syntax}}</SYNTAX>
+  <REVISION>{{pc.revision}}</REVISION>
   {%- if pc.entry_point is not none %}
-  <ENTRY-POINT>{{pc.entry_point}}</ENTRY-POINT>
+  <ENTRYPOINT>{{pc.entrypoint}}</ENTRYPOINT>
   {%- endif %}
   {%- if pc.library_refs %}
   <LIBRARY-REFS>

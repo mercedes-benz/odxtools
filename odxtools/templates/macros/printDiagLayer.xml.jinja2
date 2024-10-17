@@ -22,6 +22,7 @@
 {%- import('macros/printResponse.xml.jinja2') as presp %}
 {%- import('macros/printStateChart.xml.jinja2') as psc %}
 {%- import('macros/printAudience.xml.jinja2') as paud %}
+{%- import('macros/printLibrary.xml.jinja2') as plib %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 {%- import('macros/printEcuVariantPattern.xml.jinja2') as pvpat %}
 {%- import('macros/printAdminData.xml.jinja2') as pad %}
@@ -201,6 +202,13 @@
   {{ paud.printAdditionalAudience(audience)|indent(2) }}
   {%- endfor %}
 </ADDITIONAL-AUDIENCES>
+{%- endif %}
+{%- if dlr.libraries %}
+<LIBRARYS>
+  {%- for lib in dlr.libraries %}
+  {{ plib.printLibrary(lib)|indent(2) }}
+  {%- endfor %}
+</LIBRARYS>
 {%- endif %}
 {{- psd.printSpecialDataGroups(dlr.sdgs)|indent(0, first=True) }}
 {%- endmacro -%}

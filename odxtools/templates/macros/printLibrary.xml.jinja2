@@ -1,0 +1,21 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+
+{%- macro printLibrary(library) %}
+<LIBRARY{#- #} {{-peid.printElementIdAttribs(library)}}{# -#}>
+  {{ peid.printElementIdSubtags(library)|indent(1) }}
+  <CODE-FILE>{{library.code_file}}</CODE-FILE>
+  {%- if library.encryption is not none %}
+  <ENCRYPTION>{{library.encryption}}</ENCRYPTION>
+  {%- endif %}
+  <SYNTAX>{{library.syntax}}</SYNTAX>
+  <REVISION>{{library.revision}}</REVISION>
+  {%- if library.entrypoint is not none %}
+  <ENTRYPOINT>{{library.entrypoint}}</ENTRYPOINT>
+  {%- endif %}
+</LIBRARY>
+{%- endmacro %}
