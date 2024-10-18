@@ -74,7 +74,7 @@ class MinMaxLengthType(DiagCodedType):
     @override
     def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:
 
-        if not isinstance(internal_value, (bytes, str)):
+        if not isinstance(internal_value, (bytes, str, bytearray)):
             odxraise("MinMaxLengthType is currently only implemented for strings and byte arrays",
                      EncodeError)
 
