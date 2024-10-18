@@ -24,6 +24,7 @@ from ..servicebinner import ServiceBinner
 from ..singleecujob import SingleEcuJob
 from ..snrefcontext import SnRefContext
 from ..specialdatagroup import SpecialDataGroup
+from ..subcomponent import SubComponent
 from ..unitgroup import UnitGroup
 from .diaglayerraw import DiagLayerRaw
 from .diaglayertype import DiagLayerType
@@ -261,8 +262,12 @@ class DiagLayer:
         return self.diag_layer_raw.import_refs
 
     @property
-    def libraries(self) -> List[Library]:
+    def libraries(self) -> NamedItemList[Library]:
         return self.diag_layer_raw.libraries
+
+    @property
+    def sub_components(self) -> NamedItemList[SubComponent]:
+        return self.diag_layer_raw.sub_components
 
     @property
     def sdgs(self) -> List[SpecialDataGroup]:

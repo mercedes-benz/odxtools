@@ -2144,6 +2144,7 @@ somersault_protocol_raw = ProtocolRaw(
     comparam_refs=somersault_comparam_refs,
     libraries=NamedItemList(),
     prot_stack_snref=None,
+    sub_components=NamedItemList(),
 )
 somersault_protocol = Protocol(diag_layer_raw=somersault_protocol_raw)
 
@@ -2182,6 +2183,7 @@ somersault_base_variant_raw = BaseVariantRaw(
     diag_variables_raw=[],
     variable_groups=NamedItemList(),
     libraries=NamedItemList(),
+    sub_components=NamedItemList(),
     dyn_defined_spec=None)
 somersault_base_variant = BaseVariant(diag_layer_raw=somersault_base_variant_raw)
 
@@ -2231,6 +2233,7 @@ somersault_lazy_ecu_raw = EcuVariantRaw(
     variable_groups=NamedItemList(),
     libraries=NamedItemList(),
     dyn_defined_spec=None,
+    sub_components=NamedItemList(),
 )
 somersault_lazy_ecu = EcuVariant(diag_layer_raw=somersault_lazy_ecu_raw)
 
@@ -2469,6 +2472,7 @@ somersault_assiduous_ecu_raw = EcuVariantRaw(
     variable_groups=NamedItemList(),
     libraries=NamedItemList(),
     dyn_defined_spec=None,
+    sub_components=NamedItemList(),
 )
 somersault_assiduous_ecu = EcuVariant(diag_layer_raw=somersault_assiduous_ecu_raw)
 
