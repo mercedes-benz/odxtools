@@ -163,8 +163,6 @@ class DynDefinedSpec:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result: Dict[OdxLinkId, Any] = {}
 
-        result.update(self._build_odxlinks())
-
         for didmi in self.dyn_id_def_mode_infos:
             result.update(didmi._build_odxlinks())
 

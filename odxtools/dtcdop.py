@@ -120,6 +120,7 @@ class DtcDop(DopBase):
         return DiagnosticTroubleCode(
             trouble_code=trouble_code,
             odx_id=cast(OdxLinkId, None),
+            oid=None,
             short_name=f'DTC_{trouble_code:06x}',
             long_name=None,
             description=None,
