@@ -51,7 +51,7 @@
 {%- if param.dop_ref %}
  <DOP-REF ID-REF="{{param.dop_ref.ref_id}}"/>
 {%- elif param.dop_snref %}
- <DOP-SNREF SN="{{param.dop_snref}}"/>
+ <DOP-SNREF SHORT-NAME="{{param.dop_snref}}"/>
 {%- elif param.diag_coded_type is defined %}
  {{pdop.printDiagCodedType(param.diag_coded_type)|indent(2)}}
 {%- elif param.bit_length is defined and param.bit_length is not none %}
@@ -76,7 +76,7 @@
  <TABLE-KEY-REF ID-REF="{{param.table_key_ref.ref_id}}"/>
  {%- endif %}
  {%- if param.table_key_snref %}
- <TABLE-KEY-SNREF SHORT-NAME="{{param.table_ref}}"/>
+ <TABLE-KEY-SNREF SHORT-NAME="{{param.table_key_snref}}"/>
  {%- endif %}
 {%- endif %}
 </PARAM>
