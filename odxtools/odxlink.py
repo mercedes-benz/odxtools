@@ -230,7 +230,7 @@ class OdxLinkDatabase:
 
         return None
 
-    def update(self, new_entries: Dict[OdxLinkId, Any], overwrite: bool = True) -> None:
+    def update(self, new_entries: Dict[OdxLinkId, Any]) -> None:
         """
         Add a bunch of new objects to the ODXLINK database.
 
@@ -244,10 +244,7 @@ class OdxLinkDatabase:
                 if doc_frag not in self._db:
                     self._db[doc_frag] = {}
 
-                if overwrite:
-                    self._db[doc_frag][odx_id.local_id] = obj
-                else:
-                    self._db[doc_frag].setdefault(odx_id.local_id, obj)
+                self._db[doc_frag][odx_id.local_id] = obj
 
 
 @overload
