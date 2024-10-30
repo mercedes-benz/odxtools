@@ -124,7 +124,7 @@ class DiagLayer:
             # imported references only apply within this specific
             # diagnostic layer
             extended_odxlinks = copy(odxlinks)
-            extended_odxlinks.update(imported_links)
+            extended_odxlinks.update(imported_links, False)
 
             self.diag_layer_raw._resolve_odxlinks(extended_odxlinks)
             return
