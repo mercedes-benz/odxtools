@@ -230,7 +230,7 @@ class OdxLinkDatabase:
 
         return None
 
-    def update(self, new_entries: Dict[OdxLinkId, Any], overwrite: bool = True) -> None:
+    def update(self, new_entries: Dict[OdxLinkId, Any], *, overwrite: bool = True) -> None:
         """
         Add a bunch of new objects to the ODXLINK database.
 
