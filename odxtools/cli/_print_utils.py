@@ -4,7 +4,8 @@ import textwrap
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import markdownify
-from tabulate import tabulate  # TODO: switch to rich tables
+from rich.table import Table
+from rich.console import Console
 
 from ..description import Description
 from ..diaglayers.diaglayer import DiagLayer
@@ -82,9 +83,7 @@ def print_service_parameters(service: DiagService,
             f"    Identifying Prefix: 0x{const_prefix.hex().upper()} ({bytes(const_prefix)!r})")
         print_fn(f"    Parameters:")
         table = extract_parameter_tabulation_data(list(service.request.parameters))
-        table_str = textwrap.indent(tabulate(table, headers='keys', tablefmt='presto'), "    ")
-        print_fn()
-        print_fn(table_str)
+        print_fn(table)
         print_fn()
     else:
         print_fn(f"  No Request!")
@@ -97,8 +96,7 @@ def print_service_parameters(service: DiagService,
         print_fn(f"  Positive Response '{resp.short_name}':")
         print_fn(f"   Parameters:\n")
         table = extract_parameter_tabulation_data(list(resp.parameters))
-        table_str = textwrap.indent(tabulate(table, headers='keys', tablefmt='presto'), "    ")
-        print_fn(table_str)
+        print_fn(table)
         print_fn()
 
     # Negative Response
@@ -109,8 +107,7 @@ def print_service_parameters(service: DiagService,
         print_fn(f" Negative Response '{resp.short_name}':")
         print_fn(f"   Parameters:\n")
         table = extract_parameter_tabulation_data(list(resp.parameters))
-        table_str = textwrap.indent(tabulate(table, headers='keys', tablefmt='presto'), "    ")
-        print_fn(table_str)
+        print_fn(table)
         print_fn()
 
     print_fn("\n")
@@ -138,9 +135,29 @@ def extract_service_tabulation_data(services: List[DiagService]) -> Dict[str, An
     return {'Name': name, 'Semantic': semantic, 'Hex-Request': request}
 
 
-def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Dict[str, Any]:
+def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
     # extracts data of parameters of diagnostic services into Dictionary which can be printed by tabulate module
     # TODO: consider indentation
+
+    # Create Rich table
+    table = Table(
+        title="",
+        show_header=True,
+        header_style="bold cyan",
+        border_style="blue",
+        show_lines=True
+    )
+
+    # Add columns with appropriate styling
+    table.add_column("Name", style="green")
+    table.add_column("Byte Position", justify="right", style="yellow")
+    table.add_column("Bit Length", justify="right", style="yellow")
+    table.add_column("Semantic", justify="left", style="white")
+    table.add_column("Parameter Type", justify="left", style="white")
+    table.add_column("Data Type", justify="left", style="yellow")
+    table.add_column("Value", justify="left", style="white")
+    table.add_column("Value Type", justify="left", style="white")
+    table.add_column("Linked DOP", justify="left", style="white")
 
     name = []
     byte = []
@@ -216,42 +233,55 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Dict[str, 
             value_type.append(None)
             dop.append(None)
 
-    return {
-        'Name': name,
-        'Byte Position': byte,
-        'Bit Length': bit_length,
-        'Semantic': semantic,
-        'Parameter Type': param_type,
-        'Data Type': data_type,
-        'Value': value,
-        'Value Type': value_type,
-        'Linked DOP': dop
-    }
+    # Add all rows at once by zipping dictionary values
+    rows = zip(*[[value if value != None else "" for value in col] 
+                 for col in [name, byte,
+                    bit_length, semantic, param_type,
+                    value, value_type, data_type, dop]])
+    for row in rows:
+        table.add_row(*map(str, row))
+    
+    return table
 
 
 def print_dl_metrics(variants: List[DiagLayer], print_fn: Callable[..., Any] = print) -> None:
-
-    name = []
-    type = []
-    num_services = []
-    num_dops = []
-    num_comparam_refs = []
+    """
+    Print diagnostic layer metrics using Rich tables.
+    
+    Args:
+        variants: List of diagnostic layer variants to analyze
+        print_fn: Optional callable for custom print handling (defaults to built-in print)
+    """
+    # Create Rich table
+    table = Table(
+        title="",
+        show_header=True,
+        header_style="bold cyan",
+        border_style="blue",
+        show_lines=True
+    )
+    
+    # Add columns with appropriate styling
+    table.add_column("Name", style="green")
+    table.add_column("Variant Type", style="magenta")
+    table.add_column("Number of Services", justify="right", style="yellow")
+    table.add_column("Number of DOPs", justify="right", style="yellow")
+    table.add_column("Number of communication parameters", justify="right", style="yellow")
+    
+    # Process each variant
     for variant in variants:
         assert isinstance(variant, DiagLayer)
         all_services: List[Union[DiagService, SingleEcuJob]] = sorted(
-            variant.services, key=lambda x: x.short_name)
-        name.append(variant.short_name)
-        type.append(variant.variant_type.value)
-        num_services.append(len(all_services))
+            variant.services, key=lambda x: x.short_name
+        )
         ddds = variant.diag_data_dictionary_spec
-        num_dops.append(len(ddds.data_object_props))
-        num_comparam_refs.append(len(getattr(variant, "comparams_refs", [])))
-
-    table = {
-        'Name': name,
-        'Variant Type': type,
-        'Number of Services': num_services,
-        'Number of DOPs': num_dops,
-        'Number of communication parameters': num_comparam_refs
-    }
-    print_fn(tabulate(table, headers='keys', tablefmt='presto'))
+        
+        # Add row to table
+        table.add_row(
+            variant.short_name,
+            variant.variant_type.value,
+            str(len(all_services)),
+            str(len(ddds.data_object_props)),
+            str(len(getattr(variant, "comparams_refs", [])))
+        )
+    print_fn(table)
