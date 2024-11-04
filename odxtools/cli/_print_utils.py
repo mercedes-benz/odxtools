@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, List, Optional, Union
 
 import markdownify
 from rich.table import Table
-from rich.console import Console
+from rich.padding import Padding
 
 from ..description import Description
 from ..diaglayers.diaglayer import DiagLayer
@@ -83,7 +83,7 @@ def print_service_parameters(service: DiagService,
             f"    Identifying Prefix: 0x{const_prefix.hex().upper()} ({bytes(const_prefix)!r})")
         print_fn(f"    Parameters:")
         table = extract_parameter_tabulation_data(list(service.request.parameters))
-        print_fn(table)
+        print_fn(Padding(table, pad=(0, 0, 0, 4)))
         print_fn()
     else:
         print_fn(f"  No Request!")
@@ -96,7 +96,7 @@ def print_service_parameters(service: DiagService,
         print_fn(f"  Positive Response '{resp.short_name}':")
         print_fn(f"   Parameters:\n")
         table = extract_parameter_tabulation_data(list(resp.parameters))
-        print_fn(table)
+        print_fn(Padding(table, pad=(0, 0, 0, 4)))
         print_fn()
 
     # Negative Response
@@ -107,7 +107,7 @@ def print_service_parameters(service: DiagService,
         print_fn(f" Negative Response '{resp.short_name}':")
         print_fn(f"   Parameters:\n")
         table = extract_parameter_tabulation_data(list(resp.parameters))
-        print_fn(table)
+        print_fn(Padding(table, pad=(0, 0, 0, 4)))
         print_fn()
 
     print_fn("\n")
