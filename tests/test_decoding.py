@@ -2516,7 +2516,7 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_type,
-            linked_dtc_dop_refs=[],
+            linked_dtc_dops_raw=[],
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=compu_method,
             dtcs_raw=[dtc1, dtc2],
