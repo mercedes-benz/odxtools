@@ -60,7 +60,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             admin_data=None,
             diag_coded_type=uint8_dct,
             physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
-            linked_dtc_dop_refs=[],
+            linked_dtc_dops_raw=[],
             compu_method=ident_compu_method,
             dtcs_raw=[
                 DiagnosticTroubleCode(

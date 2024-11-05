@@ -580,7 +580,7 @@ class TestEncodeRequest(unittest.TestCase):
                     is_temporary_raw=None,
                     sdgs=[]),
             ],
-            linked_dtc_dop_refs=[],
+            linked_dtc_dops_raw=[],
             is_visible_raw=None,
         )
 
