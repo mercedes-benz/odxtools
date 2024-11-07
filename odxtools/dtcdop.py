@@ -15,11 +15,57 @@ from .dopbase import DopBase
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import ParameterValue, odxstr_to_bool
 from .physicaltype import PhysicalType
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
+
+
+@dataclass
+class LinkedDtcDop:
+    not_inherited_dtc_snrefs: List[str]
+    dtc_dop_ref: OdxLinkRef
+
+    @property
+    def dtc_dop(self) -> "DtcDop":
+        return self._dtc_dop
+
+    @property
+    def short_name(self) -> str:
+        return self._dtc_dop.short_name
+
+    @property
+    def not_inherited_dtcs(self) -> NamedItemList[DiagnosticTroubleCode]:
+        return self._not_inherited_dtcs
+
+    @staticmethod
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "LinkedDtcDop":
+        not_inherited_dtc_snrefs = [
+            odxrequire(el.get("SHORT-NAME"))
+            for el in et_element.iterfind("NOT-INHERITED-DTC-SNREFS/"
+                                          "NOT-INHERITED-DTC-SNREF")
+        ]
+
+        dtc_dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DTC-DOP-REF"), doc_frags))
+
+        return LinkedDtcDop(
+            not_inherited_dtc_snrefs=not_inherited_dtc_snrefs, dtc_dop_ref=dtc_dop_ref)
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        self._dtc_dop = odxlinks.resolve(self.dtc_dop_ref, DtcDop)
+
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        dtc_dop = self._dtc_dop
+        not_inherited_dtcs = [
+            resolve_snref(ni_snref, dtc_dop.dtcs, DiagnosticTroubleCode)
+            for ni_snref in self.not_inherited_dtc_snrefs
+        ]
+
+        self._not_inherited_dtcs = NamedItemList(not_inherited_dtcs)
 
 
 @dataclass
@@ -30,8 +76,11 @@ class DtcDop(DopBase):
     physical_type: PhysicalType
     compu_method: CompuMethod
     dtcs_raw: List[Union[DiagnosticTroubleCode, OdxLinkRef]]
-    linked_dtc_dop_refs: List[OdxLinkRef]
+    linked_dtc_dops_raw: List[LinkedDtcDop]
     is_visible_raw: Optional[bool]
+
+    def __post_init__(self) -> None:
+        self._init_finished = False
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DtcDop":
@@ -56,12 +105,10 @@ class DtcDop(DopBase):
                 elif dtc_proxy_elem.tag == "DTC-REF":
                     dtcs_raw.append(OdxLinkRef.from_et(dtc_proxy_elem, doc_frags))
 
-        # TODO: NOT-INHERITED-DTC-SNREFS
-        linked_dtc_dop_refs = [
-            OdxLinkRef.from_et(dtc_ref_elem, doc_frags)
+        linked_dtc_dops_raw = [
+            LinkedDtcDop.from_et(dtc_ref_elem, doc_frags)
             for dtc_ref_elem in et_element.iterfind("LINKED-DTC-DOPS/"
-                                                    "LINKED-DTC-DOP/"
-                                                    "DTC-DOP-REF")
+                                                    "LINKED-DTC-DOP")
         ]
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
 
@@ -70,7 +117,7 @@ class DtcDop(DopBase):
             physical_type=physical_type,
             compu_method=compu_method,
             dtcs_raw=dtcs_raw,
-            linked_dtc_dop_refs=linked_dtc_dop_refs,
+            linked_dtc_dops_raw=linked_dtc_dops_raw,
             is_visible_raw=is_visible_raw,
             **kwargs)
 
@@ -79,12 +126,12 @@ class DtcDop(DopBase):
         return self._dtcs
 
     @property
-    def is_visible(self) -> bool:
-        return self.is_visible_raw is True
+    def linked_dtc_dops(self) -> NamedItemList[LinkedDtcDop]:
+        return self._linked_dtc_dops
 
     @property
-    def linked_dtc_dops(self) -> NamedItemList["DtcDop"]:
-        return self._linked_dtc_dops
+    def is_visible(self) -> bool:
+        return self.is_visible_raw is True
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
@@ -185,6 +232,9 @@ class DtcDop(DopBase):
             if isinstance(dtc_proxy, DiagnosticTroubleCode):
                 odxlinks.update(dtc_proxy._build_odxlinks())
 
+        for linked_dtc_dop in self.linked_dtc_dops_raw:
+            odxlinks.update(linked_dtc_dop._build_odxlinks())
+
         return odxlinks
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -201,10 +251,19 @@ class DtcDop(DopBase):
                 dtc = odxlinks.resolve(dtc_proxy, DiagnosticTroubleCode)
                 self._dtcs.append(dtc)
 
-        linked_dtc_dops = [odxlinks.resolve(x, DtcDop) for x in self.linked_dtc_dop_refs]
-        self._linked_dtc_dops = NamedItemList(linked_dtc_dops)
+        for linked_dtc_dop in self.linked_dtc_dops_raw:
+            linked_dtc_dop._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
+        # hack to avoid initializing the DtcDop object multiple
+        # times. This is required, because the linked DTC DOP feature
+        # requires the "parent" DTC DOPs to be fully initialized but
+        # the standard does not define a formal ordering of DTC DOPs.
+        if self._init_finished:
+            return
+
+        self._init_finished = True
+
         super()._resolve_snrefs(context)
 
         self.compu_method._resolve_snrefs(context)
@@ -212,3 +271,31 @@ class DtcDop(DopBase):
         for dtc_proxy in self.dtcs_raw:
             if isinstance(dtc_proxy, DiagnosticTroubleCode):
                 dtc_proxy._resolve_snrefs(context)
+
+        for linked_dtc_dop in self.linked_dtc_dops_raw:
+            linked_dtc_dop._resolve_snrefs(context)
+
+        # add the inherited DTCs from linked DTC DOPs. Note that this
+        # requires that there are no cycles in the "link-hierarchy"
+        dtc_short_names = {dtc.short_name for dtc in self._dtcs}
+        for linked_dtc_dop in self.linked_dtc_dops_raw:
+            linked_dtc_dop.dtc_dop._resolve_snrefs(context)
+
+            for dtc in linked_dtc_dop.dtc_dop.dtcs:
+                if dtc.short_name in dtc_short_names:
+                    # we already have a DTC with that name. Since we
+                    # are not supposed to overwrite the local DTCs, we
+                    # skip processing this one. TODO: Are inheritance
+                    # conflicts for DTCs allowed?
+                    continue
+
+                if dtc.short_name in linked_dtc_dop.not_inherited_dtc_snrefs:
+                    # DTC is explicitly not inherited
+                    continue
+
+                self._dtcs.append(dtc)
+                dtc_short_names.add(dtc.short_name)
+
+        # at this place, the linked DTC DOPs exhibit .short_name, so
+        # we can create a NamedItemList...
+        self._linked_dtc_dops = NamedItemList(self.linked_dtc_dops_raw)
