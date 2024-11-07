@@ -79,6 +79,9 @@ class DtcDop(DopBase):
     linked_dtc_dops_raw: List[LinkedDtcDop]
     is_visible_raw: Optional[bool]
 
+    def __post_init__(self) -> None:
+        self._init_finished = False
+
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DtcDop":
         """Reads a DTC-DOP."""
@@ -256,8 +259,10 @@ class DtcDop(DopBase):
         # times. This is required, because the linked DTC DOP feature
         # requires the "parent" DTC DOPs to be fully initialized but
         # the standard does not define a formal ordering of DTC DOPs.
-        if hasattr(self, "_linked_dtc_dops"):
+        if self._init_finished:
             return
+
+        self._init_finished = True
 
         super()._resolve_snrefs(context)
 
@@ -274,10 +279,7 @@ class DtcDop(DopBase):
         # requires that there are no cycles in the "link-hierarchy"
         dtc_short_names = {dtc.short_name for dtc in self._dtcs}
         for linked_dtc_dop in self.linked_dtc_dops_raw:
-            # hack to make sure that the dtcs of the linked DTC DOP
-            # objects have been determined.
-            if not hasattr(linked_dtc_dop.dtc_dop, "_linked_dtc_dops"):
-                linked_dtc_dop.dtc_dop._resolve_snrefs(context)
+            linked_dtc_dop.dtc_dop._resolve_snrefs(context)
 
             for dtc in linked_dtc_dop.dtc_dop.dtcs:
                 if dtc.short_name in dtc_short_names:
