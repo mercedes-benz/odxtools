@@ -154,15 +154,15 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
     table.add_column("Value Type", justify="left", style="white")
     table.add_column("Linked DOP", justify="left", style="white")
 
-    name = []
-    byte = []
-    bit_length: List[Optional[int]] = []
-    semantic = []
-    param_type = []
-    value: List[Optional[str]] = []
-    value_type: List[Optional[str]] = []
-    data_type: List[Optional[str]] = []
-    dop: List[Optional[str]] = []
+    name: List[Optional[object]] = []
+    byte: List[Optional[object]] = []
+    bit_length: List[Optional[object]] = []
+    semantic: List[Optional[object]] = []
+    param_type: List[Optional[object]] = []
+    value: List[Optional[object]] = []
+    value_type: List[Optional[object]] = []
+    data_type: List[Optional[object]] = []
+    dop: List[Optional[object]] = []
 
     for param in parameters:
         name.append(param.short_name)
