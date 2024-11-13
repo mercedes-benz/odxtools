@@ -141,12 +141,7 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
 
     # Create Rich table
     table = Table(
-        title="",
-        show_header=True,
-        header_style="bold cyan",
-        border_style="blue",
-        show_lines=True
-    )
+        title="", show_header=True, header_style="bold cyan", border_style="blue", show_lines=True)
 
     # Add columns with appropriate styling
     table.add_column("Name", style="green")
@@ -234,13 +229,11 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
             dop.append(None)
 
     # Add all rows at once by zipping dictionary values
-    rows = zip(*[[value if value != None else "" for value in col] 
-                 for col in [name, byte,
-                    bit_length, semantic, param_type,
-                    value, value_type, data_type, dop]])
+    rows = zip(*[[value if value != None else "" for value in col] for col in
+                 [name, byte, bit_length, semantic, param_type, value, value_type, data_type, dop]])
     for row in rows:
         table.add_row(*map(str, row))
-    
+
     return table
 
 
@@ -254,34 +247,24 @@ def print_dl_metrics(variants: List[DiagLayer], print_fn: Callable[..., Any] = p
     """
     # Create Rich table
     table = Table(
-        title="",
-        show_header=True,
-        header_style="bold cyan",
-        border_style="blue",
-        show_lines=True
-    )
-    
+        title="", show_header=True, header_style="bold cyan", border_style="blue", show_lines=True)
+
     # Add columns with appropriate styling
     table.add_column("Name", style="green")
     table.add_column("Variant Type", style="magenta")
     table.add_column("Number of Services", justify="right", style="yellow")
     table.add_column("Number of DOPs", justify="right", style="yellow")
     table.add_column("Number of communication parameters", justify="right", style="yellow")
-    
+
     # Process each variant
     for variant in variants:
         assert isinstance(variant, DiagLayer)
         all_services: List[Union[DiagService, SingleEcuJob]] = sorted(
-            variant.services, key=lambda x: x.short_name
-        )
+            variant.services, key=lambda x: x.short_name)
         ddds = variant.diag_data_dictionary_spec
-        
+
         # Add row to table
-        table.add_row(
-            variant.short_name,
-            variant.variant_type.value,
-            str(len(all_services)),
-            str(len(ddds.data_object_props)),
-            str(len(getattr(variant, "comparams_refs", [])))
-        )
+        table.add_row(variant.short_name, variant.variant_type.value, str(len(all_services)),
+                      str(len(ddds.data_object_props)),
+                      str(len(getattr(variant, "comparams_refs", []))))
     print_fn(table)
