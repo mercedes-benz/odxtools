@@ -145,5 +145,21 @@
  {%- endif %}
  {%- endfor %}
  </DTCS>
+ {%- if dop.linked_dtc_dops_raw   %}
+ <LINKED-DTC-DOPS>
+   {%- for linked_dtc_dop in dop.linked_dtc_dops_raw %}
+   <LINKED-DTC-DOP>
+     {%- if linked_dtc_dop.not_inherited_dtc_snrefs  %}
+     <NOT-INHERITED-DTC-SNREFS>
+       {%- for ni_snref in linked_dtc_dop.not_inherited_dtc_snrefs %}
+       <NOT-INHERITED-DTC-SNREF SHORT-NAME="{{ni_snref}}" />
+       {%- endfor %}
+     </NOT-INHERITED-DTC-SNREFS>
+     {%- endif %}
+     <DTC-DOP-REF ID-REF="{{linked_dtc_dop.dtc_dop_ref.ref_id}}" />
+   </LINKED-DTC-DOP>
+   {%- endfor %}
+ </LINKED-DTC-DOPS>
+ {%- endif %}
 </DTC-DOP>
 {%- endmacro -%}
