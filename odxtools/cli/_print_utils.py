@@ -240,7 +240,6 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
 def print_dl_metrics(variants: List[DiagLayer], print_fn: Callable[..., Any] = print) -> None:
     """
     Print diagnostic layer metrics using Rich tables.
-    
     Args:
         variants: List of diagnostic layer variants to analyze
         print_fn: Optional callable for custom print handling (defaults to built-in print)
