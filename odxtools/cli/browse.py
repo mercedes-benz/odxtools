@@ -5,7 +5,6 @@ import sys
 from typing import List, Optional, Union, cast
 
 import InquirerPy.prompt as IP_prompt
-# from tabulate import tabulate  # TODO: switch to rich tables
 
 from ..database import Database
 from ..dataobjectproperty import DataObjectProperty
