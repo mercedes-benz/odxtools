@@ -5,7 +5,7 @@ import sys
 from typing import List, Optional, Union, cast
 
 import InquirerPy.prompt as IP_prompt
-from tabulate import tabulate  # TODO: switch to rich tables
+# from tabulate import tabulate  # TODO: switch to rich tables
 
 from ..database import Database
 from ..dataobjectproperty import DataObjectProperty
@@ -356,9 +356,8 @@ def browse(odxdb: Database) -> None:
             if codec is not None:
                 assert isinstance(codec, (Request, Response))
                 table = extract_parameter_tabulation_data(codec.parameters)
-                table_str = tabulate(table, headers='keys', tablefmt='presto')
-                print(table_str)
-
+                print(table)
+                
                 encode_message_interactively(codec, ask_user_confirmation=True)
 
 
