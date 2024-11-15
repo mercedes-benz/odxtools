@@ -229,7 +229,7 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
             dop.append(None)
 
     # Add all rows at once by zipping dictionary values
-    rows = zip(*[[value if value != None else "" for value in col] for col in
+    rows = zip(*[[value if value is not None else "" for value in col] for col in
                  [name, byte, bit_length, semantic, param_type, value, value_type, data_type, dop]])
     for row in rows:
         table.add_row(*map(str, row))

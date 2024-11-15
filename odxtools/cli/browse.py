@@ -356,7 +356,7 @@ def browse(odxdb: Database) -> None:
                 assert isinstance(codec, (Request, Response))
                 table = extract_parameter_tabulation_data(codec.parameters)
                 print(table)
-                
+
                 encode_message_interactively(codec, ask_user_confirmation=True)
 
 
