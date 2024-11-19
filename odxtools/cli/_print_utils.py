@@ -149,20 +149,20 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
     table.add_column("Bit Length", justify="right", style="yellow")
     table.add_column("Semantic", justify="left", style="white")
     table.add_column("Parameter Type", justify="left", style="white")
-    table.add_column("Data Type", justify="left", style="yellow")
-    table.add_column("Value", justify="left", style="white")
+    table.add_column("Data Type", justify="left", style="white")
+    table.add_column("Value", justify="left", style="yellow")
     table.add_column("Value Type", justify="left", style="white")
     table.add_column("Linked DOP", justify="left", style="white")
 
-    name: List[Optional[object]] = []
-    byte: List[Optional[object]] = []
-    bit_length: List[Optional[object]] = []
-    semantic: List[Optional[object]] = []
-    param_type: List[Optional[object]] = []
-    value: List[Optional[object]] = []
-    value_type: List[Optional[object]] = []
-    data_type: List[Optional[object]] = []
-    dop: List[Optional[object]] = []
+    name: List[str] = []
+    byte: List[Any] = []
+    bit_length: List[Any] = []
+    semantic: List[Optional[str]] = []
+    param_type: List[Optional[str]] = []
+    value: List[Optional[str]] = []
+    value_type: List[Optional[str]] = []
+    data_type: List[Optional[str]] = []
+    dop: List[Optional[str]] = []
 
     for param in parameters:
         name.append(param.short_name)
@@ -228,9 +228,10 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
             value_type.append(None)
             dop.append(None)
 
+    for lst in [byte, semantic, bit_length, value, value_type, data_type, dop]:
+        lst[:] = ["" if x is None else x for x in lst]
     # Add all rows at once by zipping dictionary values
-    rows = zip(*[[value if value is not None else "" for value in col] for col in
-                 [name, byte, bit_length, semantic, param_type, value, value_type, data_type, dop]])
+    rows = zip(name, byte, bit_length, semantic, param_type, data_type, value, value_type, dop)
     for row in rows:
         table.add_row(*map(str, row))
 
