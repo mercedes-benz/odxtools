@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
 import re
 import textwrap
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, List, Optional, Tuple, Union
 
 import markdownify
-from rich.padding import Padding
-from rich.table import Table
+from rich.padding import Padding as RichPadding
+from rich.table import Table as RichTable
 
 from ..description import Description
 from ..diaglayers.diaglayer import DiagLayer
@@ -71,9 +71,11 @@ def print_diagnostic_service(service: DiagService,
 
 
 def print_service_parameters(service: DiagService,
+                             *,
                              allow_unknown_bit_lengths: bool = False,
                              print_fn: Callable[..., Any] = print) -> None:
-    # prints parameter details of request, positive response and negative response of diagnostic service
+    # prints parameter details of request, positive response and
+    # negative response of diagnostic service
 
     # Request
     if service.request:
@@ -82,8 +84,8 @@ def print_service_parameters(service: DiagService,
         print_fn(
             f"    Identifying Prefix: 0x{const_prefix.hex().upper()} ({bytes(const_prefix)!r})")
         print_fn(f"    Parameters:")
-        table = extract_parameter_tabulation_data(list(service.request.parameters))
-        print_fn(Padding(table, pad=(0, 0, 0, 4)))
+        param_table = extract_parameter_tabulation_data(service.request.parameters)
+        print_fn(RichPadding(param_table, pad=(0, 0, 0, 4)))
         print_fn()
     else:
         print_fn(f"  No Request!")
@@ -96,7 +98,7 @@ def print_service_parameters(service: DiagService,
         print_fn(f"  Positive Response '{resp.short_name}':")
         print_fn(f"   Parameters:\n")
         table = extract_parameter_tabulation_data(list(resp.parameters))
-        print_fn(Padding(table, pad=(0, 0, 0, 4)))
+        print_fn(RichPadding(table, pad=(0, 0, 0, 4)))
         print_fn()
 
     # Negative Response
@@ -107,40 +109,60 @@ def print_service_parameters(service: DiagService,
         print_fn(f" Negative Response '{resp.short_name}':")
         print_fn(f"   Parameters:\n")
         table = extract_parameter_tabulation_data(list(resp.parameters))
-        print_fn(Padding(table, pad=(0, 0, 0, 4)))
+        print_fn(RichPadding(table, pad=(0, 0, 0, 4)))
         print_fn()
 
     print_fn("\n")
 
 
-def extract_service_tabulation_data(services: List[DiagService]) -> Dict[str, Any]:
-    # extracts data of diagnostic services into Dictionary which can be printed by tabulate module
-    # TODO: consider indentation
+def extract_service_tabulation_data(services: List[DiagService],
+                                    *,
+                                    additional_columns: Optional[List[Tuple[str, List[str]]]] = None
+                                   ) -> RichTable:
+    """Extracts data of diagnostic services into Dictionary which can
+    be printed by tabulate module
+    """
 
-    name = []
-    semantic = []
-    request: List[Optional[str]] = []
+    # Create Rich table
+    table = RichTable(
+        title="", show_header=True, header_style="bold cyan", border_style="blue", show_lines=True)
+
+    name_column: List[str] = []
+    semantic_column: List[str] = []
+    request_column: List[str] = []
 
     for service in services:
-        name.append(service.short_name)
-        semantic.append(service.semantic)
+        name_column.append(service.short_name)
+        semantic_column.append(service.semantic or "")
 
         if service.request:
             prefix = service.request.coded_const_prefix()
-            request.append(f"0x{str(prefix.hex().upper())[:32]}...") if len(
-                prefix) > 32 else request.append(f"0x{str(prefix.hex().upper())}")
+            request_column.append(f"0x{str(prefix.hex().upper())[:32]}...") if len(
+                prefix) > 32 else request_column.append(f"0x{str(prefix.hex().upper())}")
         else:
-            request.append(None)
+            request_column.append("")
 
-    return {'Name': name, 'Semantic': semantic, 'Hex-Request': request}
+    table.add_column("Name", style="green")
+    table.add_column("Semantic", justify="left", style="white")
+    table.add_column("Request", justify="left", style="white")
+    if additional_columns is not None:
+        for ac_title, _ in additional_columns:
+            table.add_column(ac_title, justify="left", style="white")
+
+        rows = zip(name_column, semantic_column, request_column,
+                   *[ac[1] for ac in additional_columns])
+        for row in rows:
+            table.add_row(*map(str, row))
+
+    return table
 
 
-def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
-    # extracts data of parameters of diagnostic services into Dictionary which can be printed by tabulate module
-    # TODO: consider indentation
+def extract_parameter_tabulation_data(parameters: List[Parameter]) -> RichTable:
+    # extracts data of parameters of diagnostic services into
+    # a RichTable object that can be printed
 
     # Create Rich table
-    table = Table(
+    table = RichTable(
         title="", show_header=True, header_style="bold cyan", border_style="blue", show_lines=True)
 
     # Add columns with appropriate styling
@@ -246,7 +268,7 @@ def print_dl_metrics(variants: List[DiagLayer], print_fn: Callable[..., Any] = p
         print_fn: Optional callable for custom print handling (defaults to built-in print)
     """
     # Create Rich table
-    table = Table(
+    table = RichTable(
         title="", show_header=True, header_style="bold cyan", border_style="blue", show_lines=True)
 
     # Add columns with appropriate styling

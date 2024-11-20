@@ -5,8 +5,9 @@ import argparse
 import os
 from typing import Any, Dict, List, Optional, Set, Union, cast
 
-from rich import print
-from tabulate import tabulate  # TODO: switch to rich tables
+from rich import print as rich_print
+from rich.padding import Padding as RichPadding
+from rich.table import Table as RichTable
 
 from ..database import Database
 from ..diaglayers.diaglayer import DiagLayer
@@ -46,11 +47,14 @@ class Display:
     # class with variables and functions to display the result of the comparison
 
     # TODO
-    # Idea: results as json export
-    # - write results of comparison in json structure
-    # - use odxlinks to refer to dignostic services / objects if changes have already been detected (e.g. in another ecu variant / diagnostic layer)
-
-    # print all information about parameter properties (request, pos. response & neg. response parameters) for changed diagnostic services
+    # - Idea: results as json export
+    #  - write results of comparison in json structure
+    #  - use odxlinks to refer to dignostic services / objects if
+    #    changes have already been detected (e.g. in another ecu
+    #    variant / diagnostic layer)
+    # - print all information about parameter properties (request,
+    #   pos. response & neg. response parameters) for changed diagnostic
+    #   services
     param_detailed: bool
     obj_detailed: bool
 
@@ -62,46 +66,45 @@ class Display:
         if service_dict["new_services"] or service_dict["deleted_services"] or service_dict[
                 "changed_name_of_service"][0] or service_dict["changed_parameters_of_service"][0]:
             assert isinstance(service_dict["diag_layer"], str)
-            print()
-            print(
+            rich_print()
+            rich_print(
                 f"Changed diagnostic services for diagnostic layer '{service_dict['diag_layer']}' ({service_dict['diag_layer_type']}):"
             )
         if service_dict["new_services"]:
             assert isinstance(service_dict["new_services"], List)
-            print()
-            print(" [blue]New services[/blue]")
-            table = extract_service_tabulation_data(
-                service_dict["new_services"])  # type: ignore[arg-type]
-            print(tabulate(table, headers="keys", tablefmt="presto"))
+            rich_print()
+            rich_print(" [blue]New services[/blue]")
+            rich_print(extract_service_tabulation_data(
+                service_dict["new_services"]))  # type: ignore[arg-type]
         if service_dict["deleted_services"]:
             assert isinstance(service_dict["deleted_services"], List)
-            print()
-            print(" [blue]Deleted services[/blue]")
-            table = extract_service_tabulation_data(
-                service_dict["deleted_services"])  # type: ignore[arg-type]
-            print(tabulate(table, headers="keys", tablefmt="presto"))
+            rich_print()
+            rich_print(" [blue]Deleted services[/blue]")
+            rich_print(extract_service_tabulation_data(
+                service_dict["deleted_services"]))  # type: ignore[arg-type]
         if service_dict["changed_name_of_service"][0]:
-            print()
-            print(" [blue]Renamed services[/blue]")
-            table = extract_service_tabulation_data(
-                service_dict["changed_name_of_service"][0])  # type: ignore[arg-type]
-            table["Old service name"] = service_dict["changed_name_of_service"][1]
-            print(tabulate(table, headers="keys", tablefmt="presto"))
+            rich_print()
+            rich_print(" [blue]Renamed services[/blue]")
+            rich_print(extract_service_tabulation_data(
+                service_dict["changed_name_of_service"][0]))  # type: ignore[arg-type]
         if service_dict["changed_parameters_of_service"][0]:
-            print()
-            print(" [blue]Services with parameter changes[/blue]")
+            rich_print()
+            rich_print(" [blue]Services with parameter changes[/blue]")
             # create table with information about services with parameter changes
+            changed_param_column = [
+                str(x) for x in service_dict["changed_parameters_of_service"][
+                    1]  # type: ignore[union-attr]
+            ]
             table = extract_service_tabulation_data(
-                service_dict["changed_parameters_of_service"][0])  # type: ignore[arg-type]
-            # add information about changed parameters
-            table["Changed parameters"] = service_dict["changed_parameters_of_service"][1]
-            print(tabulate(table, headers="keys", tablefmt="presto"))
+                service_dict["changed_parameters_of_service"][0],  # type: ignore[arg-type]
+                additional_columns=[("Changed Parameters", changed_param_column)])
+            rich_print(table)
 
             for service_idx, service in enumerate(
                     service_dict["changed_parameters_of_service"][0]):  # type: ignore[arg-type]
                 assert isinstance(service, DiagService)
-                print()
-                print(
+                rich_print()
+                rich_print(
                     f"  Detailed changes of diagnostic service [u cyan]{service.short_name}[/u cyan]"
                 )
                 #   detailed_info in [infotext1, dict1, infotext2, dict2, ...]
@@ -110,13 +113,26 @@ class Display:
                     service_dict["changed_parameters_of_service"])[2][service_idx]
                 for detailed_info in info_list:
                     if isinstance(detailed_info, str):
-                        print()
-                        print(detailed_info)
+                        rich_print()
+                        rich_print(detailed_info)
                     elif isinstance(detailed_info, dict):
-                        print(tabulate(detailed_info, headers="keys", tablefmt="presto"))
+                        table = RichTable(
+                            show_header=True,
+                            header_style="bold cyan",
+                            border_style="blue",
+                            show_lines=True)
+                        for header in detailed_info:
+                            table.add_column(header)
+                        rows = zip(*detailed_info.values())
+                        for row in rows:
+                            table.add_row(*map(str, row))
+
+                        rich_print(RichPadding(table, pad=(0, 0, 0, 4)))
+                        rich_print()
                 if self.param_detailed:
                     # print all parameter details of diagnostic service
-                    print_service_parameters(service, allow_unknown_bit_lengths=True)
+                    print_service_parameters(
+                        service, allow_unknown_bit_lengths=True, print_fn=rich_print)
 
     def print_database_changes(self, changes_variants: SpecsChangesVariants) -> None:
         # prints result of database comparison (input variable: dictionary: changes_variants)
@@ -124,16 +140,18 @@ class Display:
         # diagnostic layers
         if changes_variants["new_diagnostic_layers"] or changes_variants[
                 "deleted_diagnostic_layers"]:
-            print()
-            print("[bright_blue]Changed diagnostic layers[/bright_blue]: ")
-            print(" New diagnostic layers: ")
+            rich_print()
+            rich_print("[bright_blue]Changed diagnostic layers[/bright_blue]: ")
+            rich_print(" New diagnostic layers: ")
             for variant in changes_variants["new_diagnostic_layers"]:
                 assert isinstance(variant, DiagLayer)
-                print(f"  [magenta]{variant.short_name}[/magenta] ({variant.variant_type.value})")
-            print(" Deleted diagnostic layers: ")
+                rich_print(
+                    f"  [magenta]{variant.short_name}[/magenta] ({variant.variant_type.value})")
+            rich_print(" Deleted diagnostic layers: ")
             for variant in changes_variants["deleted_diagnostic_layers"]:
                 assert isinstance(variant, DiagLayer)
-                print(f"  [magenta]{variant.short_name}[/magenta] ({variant.variant_type.value})")
+                rich_print(
+                    f"  [magenta]{variant.short_name}[/magenta] ({variant.variant_type.value})")
 
         # diagnostic services
         for _, value in changes_variants.items():
@@ -275,8 +293,8 @@ class Comparison(Display):
                     if res1_idx == res2_idx:
                         # find changed request parameter properties
                         table = self.compare_parameters(param1, param2)
-                        infotext = (f"   Properties of request parameter '{param2.short_name}'"
-                                    f" have changed\n")
+                        infotext = (f"   Properties of request parameter '{param2.short_name}' "
+                                    f"that have changed:\n")
                         # array index starts with 0 -> param[0] is 1. service parameter
 
                         if table["Property"]:
@@ -311,8 +329,8 @@ class Comparison(Display):
                                         # find changed positive response parameter properties
                                         table = self.compare_parameters(param1, param2)
                                         infotext = (
-                                            f"   Properties of positive response parameter '{param2.short_name}'"
-                                            f"have changed\n")
+                                            f"   Properties of positive response parameter '{param2.short_name}' that "
+                                            f"have changed:\n")
                                         # array index starts with 0 -> param[0] is first service parameter
 
                                         if table["Property"]:
@@ -354,7 +372,7 @@ class Comparison(Display):
                                     if param1_idx == param2_idx:
                                         # find changed negative response parameter properties
                                         table = self.compare_parameters(param1, param2)
-                                        infotext = f"   Properties of response parameter '{param2.short_name}' have changed\n"
+                                        infotext = f"   Properties of response parameter '{param2.short_name}' that have changed:\n"
                                         # array index starts with 0 -> param[0] is 1. service parameter
 
                                         if table["Property"]:
@@ -622,7 +640,7 @@ def run(args: argparse.Namespace) -> None:
 
         for name in args.variants:
             if name not in task.diagnostic_layer_names:
-                print(f"The variant '{name}' could not be found!")
+                rich_print(f"The variant '{name}' could not be found!")
                 return
 
         task.db_indicator_1 = 0
@@ -632,23 +650,26 @@ def run(args: argparse.Namespace) -> None:
                 break
             task.db_indicator_2 = db_idx + 1
 
-            print()
-            print(f"Changes in file '{os.path.basename(db_names[0])}'")
-            print(f" (compared to '{os.path.basename(db_names[db_idx + 1])}')")
+            rich_print()
+            rich_print(f"Changes in file '{os.path.basename(db_names[0])}'")
+            rich_print(f" (compared to '{os.path.basename(db_names[db_idx + 1])}')")
 
-            print()
-            print(f"Overview of diagnostic layers (for {os.path.basename(db_names[0])})")
+            rich_print()
+            rich_print(f"Overview of diagnostic layers (for {os.path.basename(db_names[0])})")
             print_dl_metrics([
                 variant for variant in task.databases[0].diag_layers
                 if variant.short_name in task.diagnostic_layer_names
-            ])
+            ],
+                             print_fn=rich_print)
 
-            print()
-            print(f"Overview of diagnostic layers (for {os.path.basename(db_names[db_idx+1])})")
+            rich_print()
+            rich_print(
+                f"Overview of diagnostic layers (for {os.path.basename(db_names[db_idx+1])})")
             print_dl_metrics([
                 variant for variant in task.databases[db_idx + 1].diag_layers
                 if variant.short_name in task.diagnostic_layer_names
-            ])
+            ],
+                             print_fn=rich_print)
 
             task.print_database_changes(
                 task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
@@ -673,17 +694,18 @@ def run(args: argparse.Namespace) -> None:
                 break
             task.db_indicator_2 = db_idx + 1
 
-            print()
-            print(f"Changes in file '{os.path.basename(db_names[0])}")
-            print(f" (compared to '{os.path.basename(db_names[db_idx + 1])}')")
+            rich_print()
+            rich_print(f"Changes in file '{os.path.basename(db_names[0])}")
+            rich_print(f" (compared to '{os.path.basename(db_names[db_idx + 1])}')")
 
-            print()
-            print(f"Overview of diagnostic layers (for {os.path.basename(db_names[0])})")
-            print_dl_metrics(list(task.databases[0].diag_layers))
+            rich_print()
+            rich_print(f"Overview of diagnostic layers (for {os.path.basename(db_names[0])})")
+            print_dl_metrics(list(task.databases[0].diag_layers), print_fn=rich_print)
 
-            print()
-            print(f"Overview of diagnostic layers (for {os.path.basename(db_names[db_idx+1])})")
-            print_dl_metrics(list(task.databases[db_idx + 1].diag_layers))
+            rich_print()
+            rich_print(
+                f"Overview of diagnostic layers (for {os.path.basename(db_names[db_idx+1])})")
+            print_dl_metrics(list(task.databases[db_idx + 1].diag_layers), print_fn=rich_print)
 
             task.print_database_changes(
                 task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
@@ -704,20 +726,20 @@ def run(args: argparse.Namespace) -> None:
 
         for name in args.variants:
             if name not in task.diagnostic_layer_names:
-                print(f"The variant '{name}' could not be found!")
+                rich_print(f"The variant '{name}' could not be found!")
                 return
 
-        print()
-        print(f"Overview of diagnostic layers: ")
-        print_dl_metrics(task.diagnostic_layers)
+        rich_print()
+        rich_print(f"Overview of diagnostic layers: ")
+        print_dl_metrics(task.diagnostic_layers, print_fn=rich_print)
 
         for db_idx, dl in enumerate(task.diagnostic_layers):
             if db_idx + 1 >= len(task.diagnostic_layers):
                 break
 
-            print()
-            print(f"Changes in diagnostic layer '{dl.short_name}' ({dl.variant_type.value})")
-            print(
+            rich_print()
+            rich_print(f"Changes in diagnostic layer '{dl.short_name}' ({dl.variant_type.value})")
+            rich_print(
                 f" (compared to '{task.diagnostic_layers[db_idx + 1].short_name}' ({task.diagnostic_layers[db_idx + 1].variant_type.value}))"
             )
             task.print_dl_changes(
@@ -725,4 +747,4 @@ def run(args: argparse.Namespace) -> None:
 
     else:
         # no databases & no variants specified
-        print("Please specify either a database or variant for a comparison")
+        rich_print("Please specify either a database or variant for a comparison")
