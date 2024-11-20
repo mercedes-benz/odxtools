@@ -42,7 +42,6 @@ dependencies = [
     "markdownify >= 0.11",
     "deprecation >= 2.1",
     "packaging",
-    "tabulate >= 0.9",
     "rich >= 13.7",
     "typing_extensions >= 4.9",
 ]
