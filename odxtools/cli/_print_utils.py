@@ -4,8 +4,8 @@ import textwrap
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import markdownify
-from rich.table import Table
 from rich.padding import Padding
+from rich.table import Table
 
 from ..description import Description
 from ..diaglayers.diaglayer import DiagLayer
@@ -154,42 +154,43 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
     table.add_column("Value Type", justify="left", style="white")
     table.add_column("Linked DOP", justify="left", style="white")
 
-    name: List[str] = []
-    byte: List[Optional[int]] = []
-    bit_length: List[Optional[int]] = []
-    semantic: List[Optional[str]] = []
-    param_type: List[Optional[str]] = []
-    value: List[Optional[str]] = []
-    value_type: List[Optional[str]] = []
-    data_type: List[Optional[str]] = []
-    dop: List[Optional[str]] = []
+    name_column: List[str] = []
+    byte_column: List[str] = []
+    bit_length_column: List[str] = []
+    semantic_column: List[str] = []
+    param_type_column: List[str] = []
+    value_column: List[str] = []
+    value_type_column: List[str] = []
+    data_type_column: List[str] = []
+    dop_column: List[str] = []
 
     for param in parameters:
-        name.append(param.short_name)
-        byte.append(param.byte_position)
-        semantic.append(param.semantic)
-        param_type.append(param.parameter_type)
+        name_column.append(param.short_name)
+        byte_column.append("" if param.byte_position is None else str(param.byte_position))
+        semantic_column.append(param.semantic or "")
+        param_type_column.append(param.parameter_type)
         length = 0
         if param.get_static_bit_length() is not None:
-            bit_length.append(param.get_static_bit_length())
-            length = (param.get_static_bit_length() or 0) // 4
+            n = param.get_static_bit_length()
+            bit_length_column.append("" if n is None else str(n))
+            length = (n or 0) // 4
         else:
-            bit_length.append(None)
+            bit_length_column.append("")
         if isinstance(param, CodedConstParameter):
             if isinstance(param.coded_value, int):
-                value.append(f"0x{param.coded_value:0{length}X}")
+                value_column.append(f"0x{param.coded_value:0{length}X}")
             elif isinstance(param.coded_value, bytes) or isinstance(param.coded_value, bytearray):
-                value.append(f"0x{param.coded_value.hex().upper()}")
+                value_column.append(f"0x{param.coded_value.hex().upper()}")
             else:
-                value.append(f"{param.coded_value!r}")
-            data_type.append(param.diag_coded_type.base_data_type.name)
-            value_type.append('coded value')
-            dop.append(None)
+                value_column.append(f"{param.coded_value!r}")
+            data_type_column.append(param.diag_coded_type.base_data_type.name)
+            value_type_column.append('coded value')
+            dop_column.append("")
         elif isinstance(param, NrcConstParameter):
-            data_type.append(param.diag_coded_type.base_data_type.name)
-            value.append(str(param.coded_values))
-            value_type.append('coded values')
-            dop.append(None)
+            data_type_column.append(param.diag_coded_type.base_data_type.name)
+            value_column.append(str(param.coded_values))
+            value_type_column.append('coded values')
+            dop_column.append("")
         elif isinstance(param, (PhysicalConstantParameter, SystemParameter, ValueParameter)):
             # this is a hack to make this routine work for parameters
             # which reference DOPs of a type that a is not yet
@@ -198,40 +199,39 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
             param_dop = getattr(param, "_dop", None)
 
             if param_dop is not None:
-                dop.append(param_dop.short_name)
+                dop_column.append(param_dop.short_name)
 
             if param_dop is not None and (phys_type := getattr(param, "physical_type",
                                                                None)) is not None:
-                data_type.append(phys_type.base_data_type.name)
+                data_type_column.append(phys_type.base_data_type.name)
             else:
-                data_type.append(None)
+                data_type_column.append("")
             if isinstance(param, PhysicalConstantParameter):
                 if isinstance(param.physical_constant_value, bytes) or isinstance(
                         param.physical_constant_value, bytearray):
-                    value.append(f"0x{param.physical_constant_value.hex().upper()}")
+                    value_column.append(f"0x{param.physical_constant_value.hex().upper()}")
                 else:
-                    value.append(f"{param.physical_constant_value!r}")
-                value_type.append('constant value')
+                    value_column.append(f"{param.physical_constant_value!r}")
+                value_type_column.append('constant value')
             elif isinstance(param, ValueParameter) and param.physical_default_value is not None:
                 if isinstance(param.physical_default_value, bytes) or isinstance(
                         param.physical_default_value, bytearray):
-                    value.append(f"0x{param.physical_default_value.hex().upper()}")
+                    value_column.append(f"0x{param.physical_default_value.hex().upper()}")
                 else:
-                    value.append(f"{param.physical_default_value!r}")
-                value_type.append('default value')
+                    value_column.append(f"{param.physical_default_value!r}")
+                value_type_column.append('default value')
             else:
-                value.append(None)
-                value_type.append(None)
+                value_column.append("")
+                value_type_column.append("")
         else:
-            value.append(None)
-            data_type.append(None)
-            value_type.append(None)
-            dop.append(None)
+            value_column.append("")
+            data_type_column.append("")
+            value_type_column.append("")
+            dop_column.append("")
 
-    for lst in [byte, semantic, bit_length, value, value_type, data_type, dop]:
-        lst[:] = ["" if x is None else x for x in lst]  # type: ignore[attr-defined, index]
     # Add all rows at once by zipping dictionary values
-    rows = zip(name, byte, bit_length, semantic, param_type, data_type, value, value_type, dop)
+    rows = zip(name_column, byte_column, bit_length_column, semantic_column, param_type_column,
+               data_type_column, value_column, value_type_column, dop_column)
     for row in rows:
         table.add_row(*map(str, row))
 
