@@ -131,8 +131,7 @@ class Display:
                         rich_print()
                 if self.param_detailed:
                     # print all parameter details of diagnostic service
-                    print_service_parameters(
-                        service, allow_unknown_bit_lengths=True, print_fn=rich_print)
+                    print_service_parameters(service, allow_unknown_bit_lengths=True)
 
     def print_database_changes(self, changes_variants: SpecsChangesVariants) -> None:
         # prints result of database comparison (input variable: dictionary: changes_variants)
@@ -659,8 +658,7 @@ def run(args: argparse.Namespace) -> None:
             print_dl_metrics([
                 variant for variant in task.databases[0].diag_layers
                 if variant.short_name in task.diagnostic_layer_names
-            ],
-                             print_fn=rich_print)
+            ])
 
             rich_print()
             rich_print(
@@ -668,8 +666,7 @@ def run(args: argparse.Namespace) -> None:
             print_dl_metrics([
                 variant for variant in task.databases[db_idx + 1].diag_layers
                 if variant.short_name in task.diagnostic_layer_names
-            ],
-                             print_fn=rich_print)
+            ])
 
             task.print_database_changes(
                 task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
@@ -700,12 +697,12 @@ def run(args: argparse.Namespace) -> None:
 
             rich_print()
             rich_print(f"Overview of diagnostic layers (for {os.path.basename(db_names[0])})")
-            print_dl_metrics(list(task.databases[0].diag_layers), print_fn=rich_print)
+            print_dl_metrics(list(task.databases[0].diag_layers))
 
             rich_print()
             rich_print(
                 f"Overview of diagnostic layers (for {os.path.basename(db_names[db_idx+1])})")
-            print_dl_metrics(list(task.databases[db_idx + 1].diag_layers), print_fn=rich_print)
+            print_dl_metrics(list(task.databases[db_idx + 1].diag_layers))
 
             task.print_database_changes(
                 task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
@@ -731,7 +728,7 @@ def run(args: argparse.Namespace) -> None:
 
         rich_print()
         rich_print(f"Overview of diagnostic layers: ")
-        print_dl_metrics(task.diagnostic_layers, print_fn=rich_print)
+        print_dl_metrics(task.diagnostic_layers)
 
         for db_idx, dl in enumerate(task.diagnostic_layers):
             if db_idx + 1 >= len(task.diagnostic_layers):
