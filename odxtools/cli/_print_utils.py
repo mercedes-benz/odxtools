@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MIT
 import re
 import textwrap
-from typing import Any, Callable, List, Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import markdownify
+from rich import print as rich_print
 from rich.padding import Padding as RichPadding
 from rich.table import Table as RichTable
 
@@ -37,82 +38,79 @@ def print_diagnostic_service(service: DiagService,
                              print_pre_condition_states: bool = False,
                              print_state_transitions: bool = False,
                              print_audiences: bool = False,
-                             allow_unknown_bit_lengths: bool = False,
-                             print_fn: Callable[..., Any] = print) -> None:
+                             allow_unknown_bit_lengths: bool = False) -> None:
 
-    print_fn(f" Service '{service.short_name}':")
+    rich_print(f" Service '{service.short_name}':")
 
     if service.description:
         desc = format_desc(service.description, indent=3)
-        print_fn(f"  Description: " + desc)
+        rich_print(f"  Description: " + desc)
 
     if print_pre_condition_states and len(service.pre_condition_states) > 0:
         pre_condition_states_short_names = [
             pre_condition_state.short_name for pre_condition_state in service.pre_condition_states
         ]
-        print_fn(f"  Pre-Condition States: {', '.join(pre_condition_states_short_names)}")
+        rich_print(f"  Pre-Condition States: {', '.join(pre_condition_states_short_names)}")
 
     if print_state_transitions and len(service.state_transitions) > 0:
         state_transitions = [
             f"{state_transition.source_snref} -> {state_transition.target_snref}"
             for state_transition in service.state_transitions
         ]
-        print_fn(f"  State Transitions: {', '.join(state_transitions)}")
+        rich_print(f"  State Transitions: {', '.join(state_transitions)}")
 
     if print_audiences and service.audience:
         enabled_audiences_short_names = [
             enabled_audience.short_name for enabled_audience in service.audience.enabled_audiences
         ]
-        print_fn(f"  Enabled Audiences: {', '.join(enabled_audiences_short_names)}")
+        rich_print(f"  Enabled Audiences: {', '.join(enabled_audiences_short_names)}")
 
     if print_params:
-        print_service_parameters(
-            service, allow_unknown_bit_lengths=allow_unknown_bit_lengths, print_fn=print_fn)
+        print_service_parameters(service, allow_unknown_bit_lengths=allow_unknown_bit_lengths)
 
 
 def print_service_parameters(service: DiagService,
                              *,
-                             allow_unknown_bit_lengths: bool = False,
-                             print_fn: Callable[..., Any] = print) -> None:
+                             allow_unknown_bit_lengths: bool = False) -> None:
     # prints parameter details of request, positive response and
     # negative response of diagnostic service
 
     # Request
     if service.request:
-        print_fn(f"  Request '{service.request.short_name}':")
+        rich_print(f"  Request '{service.request.short_name}':")
         const_prefix = service.request.coded_const_prefix()
-        print_fn(
+        rich_print(
             f"    Identifying Prefix: 0x{const_prefix.hex().upper()} ({bytes(const_prefix)!r})")
-        print_fn(f"    Parameters:")
+        rich_print(f"    Parameters:")
         param_table = extract_parameter_tabulation_data(service.request.parameters)
-        print_fn(RichPadding(param_table, pad=(0, 0, 0, 4)))
-        print_fn()
+        rich_print(RichPadding(param_table, pad=(0, 0, 0, 4)))
+        rich_print()
     else:
-        print_fn(f"  No Request!")
+        rich_print(f"  No Request!")
 
     # Positive Responses
     if not service.positive_responses:
-        print_fn(f"  No positive responses")
+        rich_print(f"  No positive responses")
 
     for resp in service.positive_responses:
-        print_fn(f"  Positive Response '{resp.short_name}':")
-        print_fn(f"   Parameters:\n")
+        rich_print(f"  Positive Response '{resp.short_name}':")
+        rich_print(f"   Parameters:\n")
         table = extract_parameter_tabulation_data(list(resp.parameters))
-        print_fn(RichPadding(table, pad=(0, 0, 0, 4)))
-        print_fn()
+        rich_print(RichPadding(table, pad=(0, 0, 0, 4)))
+        rich_print()
 
     # Negative Response
     if not service.negative_responses:
-        print_fn(f"  No negative responses")
+        rich_print(f"  No negative responses")
 
     for resp in service.negative_responses:
-        print_fn(f" Negative Response '{resp.short_name}':")
-        print_fn(f"   Parameters:\n")
+        rich_print(f" Negative Response '{resp.short_name}':")
+        rich_print(f"   Parameters:\n")
         table = extract_parameter_tabulation_data(list(resp.parameters))
-        print_fn(RichPadding(table, pad=(0, 0, 0, 4)))
-        print_fn()
+        rich_print(RichPadding(table, pad=(0, 0, 0, 4)))
+        rich_print()
 
-    print_fn("\n")
+    rich_print("\n")
 
 
 def extract_service_tabulation_data(services: List[DiagService],
@@ -260,12 +258,11 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> RichTable:
     return table
 
 
-def print_dl_metrics(variants: List[DiagLayer], print_fn: Callable[..., Any] = print) -> None:
+def print_dl_metrics(variants: List[DiagLayer]) -> None:
     """
     Print diagnostic layer metrics using Rich tables.
     Args:
         variants: List of diagnostic layer variants to analyze
-        print_fn: Optional callable for custom print handling (defaults to built-in print)
     """
     # Create Rich table
     table = RichTable(
@@ -289,4 +286,4 @@ def print_dl_metrics(variants: List[DiagLayer], print_fn: Callable[..., Any] = p
         table.add_row(variant.short_name, variant.variant_type.value, str(len(all_services)),
                       str(len(ddds.data_object_props)),
                       str(len(getattr(variant, "comparams_refs", []))))
-    print_fn(table)
+    rich_print(table)

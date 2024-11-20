@@ -52,7 +52,7 @@ def print_summary(odxdb: Database,
     if diag_layers:
         rich.print("\n")
         rich.print(f"Overview of diagnostic layers: ")
-        print_dl_metrics(diag_layers, print_fn=rich.print)
+        print_dl_metrics(diag_layers)
 
     for dl in diag_layers:
         rich.print("\n")
@@ -93,8 +93,7 @@ def print_summary(odxdb: Database,
                             print_pre_condition_states=print_pre_condition_states,
                             print_state_transitions=print_state_transitions,
                             print_audiences=print_audiences,
-                            allow_unknown_bit_lengths=allow_unknown_bit_lengths,
-                            print_fn=rich.print)
+                            allow_unknown_bit_lengths=allow_unknown_bit_lengths)
                     elif isinstance(service, SingleEcuJob):
                         rich.print(f" Single ECU job: {service.odx_id}")
                     else:
