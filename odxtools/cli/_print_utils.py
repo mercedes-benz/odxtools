@@ -155,8 +155,8 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
     table.add_column("Linked DOP", justify="left", style="white")
 
     name: List[str] = []
-    byte: List[Any] = []
-    bit_length: List[Any] = []
+    byte: List[Optional[int]] = []
+    bit_length: List[Optional[int]] = []
     semantic: List[Optional[str]] = []
     param_type: List[Optional[str]] = []
     value: List[Optional[str]] = []
@@ -229,7 +229,7 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> Table:
             dop.append(None)
 
     for lst in [byte, semantic, bit_length, value, value_type, data_type, dop]:
-        lst[:] = ["" if x is None else x for x in lst]
+        lst[:] = ["" if x is None else x for x in lst]  # type: ignore[attr-defined, index]
     # Add all rows at once by zipping dictionary values
     rows = zip(name, byte, bit_length, semantic, param_type, data_type, value, value_type, dop)
     for row in rows:
