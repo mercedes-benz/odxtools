@@ -5,6 +5,7 @@ from xml.etree import ElementTree
 
 from typing_extensions import final, override
 
+from ..codec import Codec
 from ..decodestate import DecodeState
 from ..element import NamedElement
 from ..encodestate import EncodeState
@@ -45,6 +46,9 @@ class Parameter(NamedElement):
     bit_position: Optional[int]
     semantic: Optional[str]
     sdgs: List[SpecialDataGroup]
+
+    def __post_init__(self) -> None:
+        assert isinstance(self, Codec)
 
     @staticmethod
     @override

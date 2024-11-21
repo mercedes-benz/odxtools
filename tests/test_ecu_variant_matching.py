@@ -35,7 +35,6 @@ def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
         sdgs=[],
         parameters=NamedItemList(),
         response_type=ResponseType.POSITIVE,
-        byte_size=None,
     )
     odxlinks.update({resp.odx_id: resp})
 
@@ -60,7 +59,6 @@ def ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> 
         admin_data=None,
         sdgs=[],
         parameters=NamedItemList(),
-        byte_size=None,
     )
     odxlinks.update({dummy_req.odx_id: dummy_req})
 
@@ -111,7 +109,6 @@ def supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) 
         admin_data=None,
         sdgs=[],
         parameters=NamedItemList(),
-        byte_size=None,
     )
     odxlinks.update({dummy_req.odx_id: dummy_req})
 

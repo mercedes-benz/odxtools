@@ -13,8 +13,8 @@ from .specialdatagroupcaption import SpecialDataGroupCaption
 class SpecialDataGroup:
     sdg_caption: Optional[SpecialDataGroupCaption]
     sdg_caption_ref: Optional[OdxLinkRef]
-    semantic_info: Optional[str]  # the "SI" attribute
     values: List[Union["SpecialDataGroup", SpecialData]]
+    semantic_info: Optional[str]  # the "SI" attribute
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,

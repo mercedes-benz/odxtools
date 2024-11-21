@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -49,13 +49,6 @@ class LeadingLengthInfoType(DiagCodedType):
     @property
     def dct_type(self) -> DctType:
         return "LEADING-LENGTH-INFO-TYPE"
-
-    def get_static_bit_length(self) -> Optional[int]:
-        # note that self.bit_length is just the length of the length
-        # specifier field. This is then followed by the same number of
-        # bytes as the value of this field, i.e., the length of this
-        # DCT is dynamic!
-        return None
 
     @override
     def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:

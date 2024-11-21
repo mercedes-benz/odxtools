@@ -98,7 +98,6 @@ class TestIdentifyingService(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2]),
-            byte_size=None,
         )
         odxlinks = OdxLinkDatabase()
         odxlinks.update({req.odx_id: req})
@@ -151,7 +150,6 @@ class TestIdentifyingService(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            byte_size=None,
             parameters=NamedItemList([req_param1, req2_param2]),
         )
         odxlinks.update({req2.odx_id: req2})
@@ -178,7 +176,6 @@ class TestIdentifyingService(unittest.TestCase):
             sdgs=[],
             response_type=ResponseType.NEGATIVE,
             parameters=NamedItemList([req_param1, resp2_param2]),
-            byte_size=None,
         )
         odxlinks.update({resp2.odx_id: resp2})
 
@@ -307,7 +304,6 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2]),
-            byte_size=None,
         )
 
         service = DiagService(
@@ -467,7 +463,6 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([param1, param2, param3]),
-            byte_size=None,
         )
 
         req = Request(
@@ -492,7 +487,6 @@ class TestDecoding(unittest.TestCase):
                     sdgs=[],
                 )
             ]),
-            byte_size=None,
         )
 
         service = DiagService(
@@ -662,7 +656,6 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2, req_param3, req_param4]),
-            byte_size=None,
         )
 
         odxlinks = OdxLinkDatabase()
@@ -871,7 +864,6 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2]),
-            byte_size=None,
         )
         service = DiagService(
             odx_id=OdxLinkId("service_id", doc_frags),
@@ -1092,7 +1084,6 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2]),
-            byte_size=None,
         )
         service = DiagService(
             odx_id=OdxLinkId("static_field.service.id", doc_frags),
@@ -1403,7 +1394,6 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2, req_demf_endmarker_param,
                                       req_param3]),
-            byte_size=None,
         )
 
         # same as the previous request, but the dynamic endmarker
@@ -1417,7 +1407,6 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1_1, req_param2]),
-            byte_size=None,
         )
 
         service = DiagService(
@@ -1733,7 +1722,6 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2]),
-            byte_size=None,
         )
         service = DiagService(
             odx_id=OdxLinkId("dlf.service.id", doc_frags),
@@ -1977,7 +1965,6 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2]),
-            byte_size=None,
         )
         service = DiagService(
             odx_id=OdxLinkId("service_id", doc_frags),
@@ -2166,7 +2153,6 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2]),
-            byte_size=None,
         )
 
         service = DiagService(
@@ -2306,7 +2292,6 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2]),
-            byte_size=None,
         )
 
         resp_param1 = CodedConstParameter(
@@ -2343,7 +2328,6 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([resp_param1, resp_param2]),
-            byte_size=None,
         )
 
         resp_param1 = CodedConstParameter(
@@ -2380,7 +2364,6 @@ class TestDecoding(unittest.TestCase):
             sdgs=[],
             response_type=ResponseType.NEGATIVE,
             parameters=NamedItemList([resp_param1, resp_param2]),
-            byte_size=None,
         )
 
         service = DiagService(
@@ -2558,7 +2541,6 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([resp_param1, resp_param2]),
-            byte_size=None,
             response_type=ResponseType.POSITIVE,
         )
         odxlinks.update(pos_response._build_odxlinks())
@@ -2663,7 +2645,6 @@ class TestDecodingAndEncoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2]),
-            byte_size=None,
         )
         expected_coded_message = bytes([0x12, 0x34])
         expected_param_dict = {"SID": 0x12, "min_max_parameter": bytes([0x34])}
@@ -2716,7 +2697,6 @@ class TestDecodingAndEncoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2]),
-            byte_size=None,
         )
 
         req_param1._resolve_odxlinks(odxlinks)
@@ -2824,7 +2804,6 @@ class TestDecodingAndEncoding(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([req_param1, req_param2]),
-            byte_size=None,
         )
 
         req_param1._resolve_odxlinks(odxlinks)
