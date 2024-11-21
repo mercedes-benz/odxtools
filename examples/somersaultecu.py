@@ -60,6 +60,7 @@ from odxtools.request import Request
 from odxtools.response import Response, ResponseType
 from odxtools.singleecujob import SingleEcuJob
 from odxtools.standardlengthtype import StandardLengthType
+from odxtools.structure import Structure
 from odxtools.table import Table
 from odxtools.tablerow import TableRow
 from odxtools.teammember import TeamMember
@@ -699,7 +700,6 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
     "tester_ok":
         Response(
@@ -739,7 +739,6 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
     "forward_flips_grudgingly_done":
         Response(
@@ -792,7 +791,6 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
     "forward_flips_happily_done":
         Response(
@@ -845,7 +843,6 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
     "backward_flips_grudgingly_done":
         Response(
@@ -898,7 +895,6 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
     # Note that there is no such thing as a "backwards flip done happily"!
     "status_report":
@@ -981,7 +977,6 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
     "set_operation_params":
         Response(
@@ -1008,8 +1003,43 @@ somersault_positive_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
+}
+
+somersault_structures = {
+    "forward_flips_grudgingly_done":
+        Structure(
+            short_name="forward_flips_grudgingly_done_recall",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            oid=None,
+            odx_id=OdxLinkId("somersault.struct.recall.forward_flips_grudgingly_done", doc_frags),
+            parameters=somersault_positive_responses["forward_flips_grudgingly_done"].parameters,
+            byte_size=None),
+    "forward_flips_happily_done":
+        Structure(
+            short_name="forward_flips_happily_done_recall",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            oid=None,
+            odx_id=OdxLinkId("somersault.struct.recall.forward_flips_happily_done", doc_frags),
+            parameters=somersault_positive_responses["forward_flips_happily_done"].parameters,
+            byte_size=None),
+    "backward_flips_grudgingly_done":
+        Structure(
+            short_name="backward_flips_grudgingly_done_recall",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            oid=None,
+            odx_id=OdxLinkId("somersault.struct.recall.backward_flips_grudgingly_done", doc_frags),
+            parameters=somersault_positive_responses["backward_flips_grudgingly_done"].parameters,
+            byte_size=None),
 }
 
 # this is a hack to get around a catch-22: we need to specify the
@@ -1074,7 +1104,6 @@ somersault_negative_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
     # the tester present request needs separate negative and positive
     # responses because it must be fully specified a-priory to be able
@@ -1115,7 +1144,6 @@ somersault_negative_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
     "flips_not_done":
         Response(
@@ -1182,7 +1210,6 @@ somersault_negative_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
 }
 
@@ -1248,7 +1275,6 @@ somersault_global_negative_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         )
 }
 
@@ -1294,7 +1320,7 @@ somersault_tables = {
                     long_name="Forward Flips Grudgingly Done",
                     key_raw="3",
                     structure_ref=OdxLinkRef.from_id(
-                        somersault_positive_responses["forward_flips_grudgingly_done"].odx_id),
+                        somersault_structures["forward_flips_grudgingly_done"].odx_id),
                     structure_snref=None,
                     description=Description.from_string(
                         "<p>The the last forward flip was grudgingly done</p>"),
@@ -1313,7 +1339,7 @@ somersault_tables = {
                     semantic=None,
                     key_raw="5",
                     structure_ref=OdxLinkRef.from_id(
-                        somersault_positive_responses["forward_flips_happily_done"].odx_id),
+                        somersault_structures["forward_flips_happily_done"].odx_id),
                     structure_snref=None,
                     dop_ref=None,
                     dop_snref=None,
@@ -1329,7 +1355,7 @@ somersault_tables = {
                     semantic=None,
                     key_raw="10",
                     structure_ref=OdxLinkRef.from_id(
-                        somersault_positive_responses["backward_flips_grudgingly_done"].odx_id),
+                        somersault_structures["backward_flips_grudgingly_done"].odx_id),
                     structure_snref=None,
                     dop_ref=None,
                     dop_snref=None,
@@ -1378,7 +1404,6 @@ somersault_requests = {
                     sdgs=[],
                 ),
             ],
-            byte_size=None,
         ),
     "stop_session":
         Request(
@@ -1416,7 +1441,6 @@ somersault_requests = {
                     sdgs=[],
                 ),
             ],
-            byte_size=None,
         ),
     "tester_present":
         Request(
@@ -1453,7 +1477,6 @@ somersault_requests = {
                     sdgs=[],
                 ),
             ],
-            byte_size=None,
         ),
     "set_operation_params":
         Request(
@@ -1493,7 +1516,6 @@ somersault_requests = {
                     sdgs=[],
                 ),
             ],
-            byte_size=None,
         ),
     "forward_flips":
         Request(
@@ -1545,7 +1567,6 @@ somersault_requests = {
                     sdgs=[],
                 ),
             ],
-            byte_size=None,
         ),
     "backward_flips":
         Request(
@@ -1597,7 +1618,6 @@ somersault_requests = {
                     sdgs=[],
                 ),
             ],
-            byte_size=None,
         ),
     "report_status":
         Request(
@@ -1635,7 +1655,6 @@ somersault_requests = {
                     sdgs=[],
                 ),
             ],
-            byte_size=None,
         ),
 }
 
@@ -2108,7 +2127,7 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
     env_datas=NamedItemList(),
     env_data_descs=NamedItemList(),
     dtc_dops=NamedItemList(),
-    structures=NamedItemList(),
+    structures=NamedItemList(somersault_structures.values()),
     static_fields=NamedItemList(),
     end_of_pdu_fields=NamedItemList(),
     dynamic_length_fields=NamedItemList(),
@@ -2280,7 +2299,6 @@ somersault_assiduous_requests = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
 }
 
@@ -2323,7 +2341,6 @@ somersault_assiduous_positive_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
 }
 
@@ -2366,7 +2383,6 @@ somersault_assiduous_negative_responses = {
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         ),
 }
 

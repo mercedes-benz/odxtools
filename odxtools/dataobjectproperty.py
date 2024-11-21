@@ -108,6 +108,10 @@ class DataObjectProperty(DopBase):
     def unit(self) -> Optional[Unit]:
         return self._unit
 
+    @property
+    def byte_size(self) -> Optional[int]:
+        return self.diag_coded_type.byte_size
+
     def get_static_bit_length(self) -> Optional[int]:
         return self.diag_coded_type.get_static_bit_length()
 

@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .admindata import AdminData
+from .codec import Codec
 from .decodestate import DecodeState
 from .element import IdentifiableElement
 from .encodestate import EncodeState
@@ -24,6 +25,9 @@ class DopBase(IdentifiableElement):
 
     admin_data: Optional[AdminData]
     sdgs: List[SpecialDataGroup]
+
+    def __post_init__(self) -> None:
+        assert isinstance(self, Codec)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DopBase":

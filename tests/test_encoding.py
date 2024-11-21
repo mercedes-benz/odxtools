@@ -85,7 +85,6 @@ class TestEncodeRequest(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([param1, param2]),
-            byte_size=None,
         )
         self.assertEqual(req.encode(), bytearray([0x7D, 0xAB]))
 
@@ -131,7 +130,6 @@ class TestEncodeRequest(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([param1, param2]),
-            byte_size=None,
         )
         self.assertEqual(req.encode(), bytearray([0x12, 0x34]))
 
@@ -208,7 +206,6 @@ class TestEncodeRequest(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([param1]),
-            byte_size=None,
         )
 
         snref_ctx = SnRefContext(parameters=req.parameters)
@@ -300,7 +297,6 @@ class TestEncodeRequest(unittest.TestCase):
             sdgs=[],
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([param1, param2, param3]),
-            byte_size=None,
         )
 
         req = Request(
@@ -325,7 +321,6 @@ class TestEncodeRequest(unittest.TestCase):
                     sdgs=[],
                 )
             ]),
-            byte_size=None,
         )
 
         service = DiagService(
@@ -723,7 +718,6 @@ class TestEncodeRequest(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([param1, param2]),
-            byte_size=None,
             response_type=ResponseType.POSITIVE,
         )
 
@@ -824,7 +818,6 @@ class TestEncodeRequest(unittest.TestCase):
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([param1, param2, param3]),
-            byte_size=None,
         )
         self.assertEqual(req.encode().hex(), "123456")
         self.assertEqual(req.get_static_bit_length(), 24)
@@ -839,7 +832,6 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             admin_data=None,
             sdgs=[],
-            byte_size=None,
         )
 
     def test_bit_mask(self) -> None:
