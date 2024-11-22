@@ -5,7 +5,6 @@ from xml.etree import ElementTree
 
 from typing_extensions import final, override
 
-from ..codec import Codec
 from ..decodestate import DecodeState
 from ..element import NamedElement
 from ..encodestate import EncodeState
@@ -34,11 +33,13 @@ ParameterType = Literal[
 @dataclass
 class Parameter(NamedElement):
     """This class corresponds to POSITIONABLE-PARAM in the ODX
-    specification.
+    specification
 
-    Be aware that, even though the ODX specification seems to make the
-    distinction of "positionable" and "normal" parameters, it does not
-    define any non-positionable parameter types.
+    All parameter classes must adhere to the `Codec` type protocol, so
+    `isinstance(param, Codec)` ought to be true.  Be aware that, even
+    though the ODX specification seems to make the distinction of
+    "positionable" and "normal" parameters, it does not define any
+    non-positionable parameter types.
 
     """
     oid: Optional[str]
@@ -46,9 +47,6 @@ class Parameter(NamedElement):
     bit_position: Optional[int]
     semantic: Optional[str]
     sdgs: List[SpecialDataGroup]
-
-    def __post_init__(self) -> None:
-        assert isinstance(self, Codec)
 
     @staticmethod
     @override
