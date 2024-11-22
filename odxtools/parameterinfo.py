@@ -34,36 +34,36 @@ from .staticfield import StaticField
 
 def _get_linear_segment_info(segment: LinearSegment) -> str:
     ll = segment.physical_lower_limit
-    ul = segment.physical_upper_limit
     if ll is None or ll.interval_type == IntervalType.INFINITE:
         ll_str = "(-inf"
     else:
         ll_delim = '(' if ll.interval_type == IntervalType.OPEN else '['
         ll_str = f"{ll_delim}{ll._value!r}"
 
-        if ul is None or ul.interval_type == IntervalType.INFINITE:
-            ul_str = "inf)"
-        else:
-            ul_delim = ')' if ul.interval_type == IntervalType.OPEN else ']'
-            ul_str = f"{ul._value!r}{ul_delim}"
+    ul = segment.physical_upper_limit
+    if ul is None or ul.interval_type == IntervalType.INFINITE:
+        ul_str = "inf)"
+    else:
+        ul_delim = ')' if ul.interval_type == IntervalType.OPEN else ']'
+        ul_str = f"{ul._value!r}{ul_delim}"
 
     return f"{ll_str}, {ul_str}"
 
 
 def _get_rat_func_segment_info(segment: RatFuncSegment) -> str:
     ll = segment.lower_limit
-    ul = segment.upper_limit
     if ll is None or ll.interval_type == IntervalType.INFINITE:
         ll_str = "(-inf"
     else:
         ll_delim = '(' if ll.interval_type == IntervalType.OPEN else '['
         ll_str = f"{ll_delim}{ll._value!r}"
 
-        if ul is None or ul.interval_type == IntervalType.INFINITE:
-            ul_str = "inf)"
-        else:
-            ul_delim = ')' if ul.interval_type == IntervalType.OPEN else ']'
-            ul_str = f"{ul._value!r}{ul_delim}"
+    ul = segment.upper_limit
+    if ul is None or ul.interval_type == IntervalType.INFINITE:
+        ul_str = "inf)"
+    else:
+        ul_delim = ')' if ul.interval_type == IntervalType.OPEN else ']'
+        ul_str = f"{ul._value!r}{ul_delim}"
 
     return f"{ll_str}, {ul_str}"
 
