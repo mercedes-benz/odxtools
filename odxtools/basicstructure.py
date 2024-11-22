@@ -5,9 +5,9 @@ from xml.etree import ElementTree
 
 from typing_extensions import override
 
-from .codec import (CompositeCodec, composite_codec_decode_from_pdu,
-                    composite_codec_encode_into_pdu, composite_codec_get_free_parameters,
-                    composite_codec_get_required_parameters, composite_codec_get_static_bit_length)
+from .codec import (composite_codec_decode_from_pdu, composite_codec_encode_into_pdu,
+                    composite_codec_get_free_parameters, composite_codec_get_required_parameters,
+                    composite_codec_get_static_bit_length)
 from .complexdop import ComplexDop
 from .decodestate import DecodeState
 from .encodestate import EncodeState
@@ -23,11 +23,14 @@ from .utils import dataclass_fields_asdict
 
 @dataclass
 class BasicStructure(ComplexDop):
+    """Base class for structure-like objects
+
+    "Structure-like" objects are structures as well as environment
+    data objects. All structure-like objects adhere to the
+    `CompositeCodec` type protocol.
+    """
     parameters: NamedItemList[Parameter]
     byte_size: Optional[int]
-
-    def __post_init__(self) -> None:
-        assert isinstance(self, CompositeCodec)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
