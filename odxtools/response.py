@@ -81,13 +81,14 @@ class Response(IdentifiableElement):
             param._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
+        context.response = self
         context.parameters = self.parameters
 
-        try:
-            for param in self.parameters:
-                param._resolve_snrefs(context)
-        finally:
-            context.parameters = None
+        for param in self.parameters:
+            param._resolve_snrefs(context)
+
+        context.response = None
+        context.parameters = None
 
     def encode(self, coded_request: Optional[bytes] = None, **kwargs: ParameterValue) -> bytearray:
         encode_state = EncodeState(triggering_request=coded_request, is_end_of_pdu=True)

@@ -127,10 +127,8 @@ class BasicStructure(ComplexDop):
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         context.parameters = self.parameters
 
-        try:
-            super()._resolve_snrefs(context)
+        super()._resolve_snrefs(context)
+        for param in self.parameters:
+            param._resolve_snrefs(context)
 
-            for param in self.parameters:
-                param._resolve_snrefs(context)
-        finally:
-            context.parameters = None
+        context.parameters = None

@@ -77,12 +77,11 @@ class Request(IdentifiableElement):
         context.request = self
         context.parameters = self.parameters
 
-        try:
-            for param in self.parameters:
-                param._resolve_snrefs(context)
-        finally:
-            context.request = None
-            context.parameters = None
+        for param in self.parameters:
+            param._resolve_snrefs(context)
+
+        context.request = None
+        context.parameters = None
 
     def get_static_bit_length(self) -> Optional[int]:
         return composite_codec_get_static_bit_length(self)
