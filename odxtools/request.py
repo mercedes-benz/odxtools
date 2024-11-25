@@ -4,10 +4,9 @@ from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from .admindata import AdminData
-from .codec import (CompositeCodec, ToplevelCodec, composite_codec_decode_from_pdu,
-                    composite_codec_encode_into_pdu, composite_codec_get_coded_const_prefix,
-                    composite_codec_get_free_parameters, composite_codec_get_required_parameters,
-                    composite_codec_get_static_bit_length)
+from .codec import (composite_codec_decode_from_pdu, composite_codec_encode_into_pdu,
+                    composite_codec_get_coded_const_prefix, composite_codec_get_free_parameters,
+                    composite_codec_get_required_parameters, composite_codec_get_static_bit_length)
 from .decodestate import DecodeState
 from .element import IdentifiableElement
 from .encodestate import EncodeState
@@ -26,9 +25,7 @@ from .utils import dataclass_fields_asdict
 class Request(IdentifiableElement):
     """Represents all information related to an UDS request
 
-    This class implements the `CompositeCodec` and `ToplevelCodec`
-    interfaces.
-
+    This class implements the `CompositeCodec` interface.
     """
     admin_data: Optional[AdminData]
     parameters: NamedItemList[Parameter]
@@ -41,10 +38,6 @@ class Request(IdentifiableElement):
     @property
     def free_parameters(self) -> List[Parameter]:
         return composite_codec_get_free_parameters(self)
-
-    def __post_init__(self) -> None:
-        assert isinstance(self, CompositeCodec)
-        assert isinstance(self, ToplevelCodec)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Request":
