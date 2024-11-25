@@ -80,7 +80,7 @@ def composite_codec_get_static_bit_length(codec: CompositeCodec) -> Optional[int
 
 def composite_codec_get_required_parameters(codec: CompositeCodec) -> List["Parameter"]:
     """Return the list of parameters which are required to be
-    specified for encoding the structure
+    specified for encoding the composite codec object
 
     I.e., all free parameters that do not exhibit a default value.
     """
@@ -89,7 +89,7 @@ def composite_codec_get_required_parameters(codec: CompositeCodec) -> List["Para
 
 def composite_codec_get_free_parameters(codec: CompositeCodec) -> List["Parameter"]:
     """Return the list of parameters which can be freely specified by
-    the user when encoding the structure
+    the user when encoding the composite codec object
 
     This means all required parameters plus parameters that can be
     omitted because they specify a default.
@@ -143,14 +143,16 @@ def composite_codec_encode_into_pdu(codec: CompositeCodec, physical_value: Optio
         for param_value_name in physical_value:
             if param_value_name not in param_names:
                 odxraise(f"Value for unknown parameter '{param_value_name}' specified "
-                         f"for structure {codec.short_name}")
+                         f"for composite codec object {codec.short_name}")
 
     for param in codec.parameters:
         if id(param) == id(codec.parameters[-1]):
-            # The last parameter of the structure is at the end of
-            # the PDU if the structure itcodec is at the end of the
-            # PDU. TODO: This assumes that the last parameter
-            # specified in the ODX is located last in the PDU...
+            # The last parameter of the composite codec object is at
+            # the end of the PDU if the codec object itself is at the
+            # end of the PDU.
+            #
+            # TODO: This assumes that the last parameter specified in
+            # the ODX is located last in the PDU...
             encode_state.is_end_of_pdu = orig_is_end_of_pdu
 
         if isinstance(param, (LengthKeyParameter, TableKeyParameter)):
@@ -193,7 +195,8 @@ def composite_codec_encode_into_pdu(codec: CompositeCodec, physical_value: Optio
 def composite_codec_decode_from_pdu(codec: CompositeCodec,
                                     decode_state: DecodeState) -> ParameterValue:
     # move the origin since positions specified by sub-parameters of
-    # structures are relative to the beginning of the structure object.
+    # composite codec objects are relative to the beginning of the
+    # object.
     orig_origin = decode_state.origin_byte_position
     decode_state.origin_byte_position = decode_state.cursor_byte_position
 
@@ -204,7 +207,8 @@ def composite_codec_decode_from_pdu(codec: CompositeCodec,
         decode_state.journal.append((param, value))
         result[param.short_name] = value
 
-    # decoding of the structure finished. go back the original origin.
+    # decoding of the composite codec object finished. go back the
+    # original origin.
     decode_state.origin_byte_position = orig_origin
 
     return result
