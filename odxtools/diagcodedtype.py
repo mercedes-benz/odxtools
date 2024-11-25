@@ -55,10 +55,6 @@ class DiagCodedType:
         """Recursively resolve any short-name references"""
         pass
 
-    @property
-    def byte_size(self) -> Optional[int]:
-        return None
-
     def get_static_bit_length(self) -> Optional[int]:
         return None
 
