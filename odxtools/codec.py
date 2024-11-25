@@ -75,8 +75,6 @@ def composite_codec_get_static_bit_length(codec: CompositeCodec) -> Optional[int
         cursor += ((param.bit_position or 0) + param_bit_length + 7) // 8
         byte_length = max(byte_length, cursor)
 
-    # Round up to account for padding bits (all structures are
-    # byte aligned)
     return byte_length * 8
 
 
