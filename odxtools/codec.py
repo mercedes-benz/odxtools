@@ -1,14 +1,15 @@
 # SPDX-License-Identifier: MIT
 import typing
-from typing import TYPE_CHECKING, List, Optional, runtime_checkable
+from typing import List, Optional, runtime_checkable
 
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import EncodeError, odxraise
 from .odxtypes import ParameterValue
-
-if TYPE_CHECKING:
-    from .parameters.parameter import Parameter
+from .parameters.codedconstparameter import CodedConstParameter
+from .parameters.matchingrequestparameter import MatchingRequestParameter
+from .parameters.parameter import Parameter
+from .parameters.physicalconstantparameter import PhysicalConstantParameter
 
 
 @runtime_checkable
@@ -41,15 +42,15 @@ class CompositeCodec(Codec, typing.Protocol):
     """
 
     @property
-    def parameters(self) -> List["Parameter"]:
+    def parameters(self) -> List[Parameter]:
         return []
 
     @property
-    def required_parameters(self) -> List["Parameter"]:
+    def required_parameters(self) -> List[Parameter]:
         return []
 
     @property
-    def free_parameters(self) -> List["Parameter"]:
+    def free_parameters(self) -> List[Parameter]:
         return []
 
 
@@ -78,7 +79,7 @@ def composite_codec_get_static_bit_length(codec: CompositeCodec) -> Optional[int
     return byte_length * 8
 
 
-def composite_codec_get_required_parameters(codec: CompositeCodec) -> List["Parameter"]:
+def composite_codec_get_required_parameters(codec: CompositeCodec) -> List[Parameter]:
     """Return the list of parameters which are required to be
     specified for encoding the composite codec object
 
@@ -87,7 +88,7 @@ def composite_codec_get_required_parameters(codec: CompositeCodec) -> List["Para
     return [p for p in codec.parameters if p.is_required]
 
 
-def composite_codec_get_free_parameters(codec: CompositeCodec) -> List["Parameter"]:
+def composite_codec_get_free_parameters(codec: CompositeCodec) -> List[Parameter]:
     """Return the list of parameters which can be freely specified by
     the user when encoding the composite codec object
 
@@ -99,10 +100,6 @@ def composite_codec_get_free_parameters(codec: CompositeCodec) -> List["Paramete
 
 def composite_codec_get_coded_const_prefix(codec: CompositeCodec,
                                            request_prefix: bytes = b'') -> bytes:
-    from .parameters.codedconstparameter import CodedConstParameter
-    from .parameters.matchingrequestparameter import MatchingRequestParameter
-    from .parameters.physicalconstantparameter import PhysicalConstantParameter
-
     encode_state = EncodeState(coded_message=bytearray(), triggering_request=request_prefix)
 
     for param in codec.parameters:
