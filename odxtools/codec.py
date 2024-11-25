@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, List, Optional, runtime_checkable
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import EncodeError, odxraise
-from .odxtypes import ParameterValue, ParameterValueDict
+from .odxtypes import ParameterValue
 
 if TYPE_CHECKING:
     from .parameters.parameter import Parameter
@@ -210,18 +210,3 @@ def composite_codec_decode_from_pdu(codec: CompositeCodec,
     decode_state.origin_byte_position = orig_origin
 
     return result
-
-
-@runtime_checkable
-class ToplevelCodec(typing.Protocol):
-    """All "user-visible" objects which can be transmitted over the
-    wire implements this API.
-
-    Basically, this means requests and responses.
-    """
-
-    def decode(self, message: bytes) -> ParameterValueDict:
-        return {}
-
-    def encode(self, **kwargs: ParameterValue) -> bytearray:
-        return bytearray()
