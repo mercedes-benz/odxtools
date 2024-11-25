@@ -2,8 +2,6 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Union
 
-from deprecation import deprecated
-
 from .odxtypes import ParameterValue, ParameterValueDict
 
 if TYPE_CHECKING:
@@ -29,8 +27,3 @@ class Message:
 
     def __getitem__(self, key: str) -> ParameterValue:
         return self.param_dict[key]
-
-    @property
-    @deprecated("use .coding_object")  # type: ignore[misc]
-    def structure(self) -> Union["Request", "Response"]:
-        return self.coding_object
