@@ -71,21 +71,39 @@ class Response(IdentifiableElement):
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
+        if self.admin_data is not None:
+            result.update(self.admin_data._build_odxlinks())
+
         for param in self.parameters:
             result.update(param._build_odxlinks())
+
+        for sdg in self.sdgs:
+            result.update(sdg._build_odxlinks())
 
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        if self.admin_data is not None:
+            self.admin_data._resolve_odxlinks(odxlinks)
+
         for param in self.parameters:
             param._resolve_odxlinks(odxlinks)
+
+        for sdg in self.sdgs:
+            sdg._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         context.response = self
         context.parameters = self.parameters
 
+        if self.admin_data is not None:
+            self.admin_data._resolve_snrefs(context)
+
         for param in self.parameters:
             param._resolve_snrefs(context)
+
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(context)
 
         context.response = None
         context.parameters = None
