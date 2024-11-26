@@ -3,8 +3,6 @@ from enum import IntEnum
 from itertools import chain
 from typing import Optional
 
-from deprecation import deprecated
-
 import odxtools.obd as obd
 
 
@@ -170,9 +168,3 @@ def is_response_pending(telegram_payload: bytes, request_sid: Optional[int] = No
 
     # if all of the above applies, we received a "stay tuned" response
     return True
-
-
-# previous versions of odxtools had a typo here. hit happens!
-@deprecated(details="use is_response_pending()")  # type: ignore[misc]
-def is_reponse_pending(telegram_payload: bytes, request_sid: Optional[int] = None) -> bool:
-    return is_response_pending(telegram_payload, request_sid)

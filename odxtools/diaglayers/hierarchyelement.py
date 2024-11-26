@@ -8,8 +8,6 @@ from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional
                     Union, cast)
 from xml.etree import ElementTree
 
-from deprecation import deprecated
-
 from ..additionalaudience import AdditionalAudience
 from ..admindata import AdminData
 from ..comparaminstance import ComparamInstance
@@ -724,10 +722,6 @@ class HierarchyElement(DiagLayer):
 
         return int(result)
 
-    @deprecated(details="use get_can_receive_id()")  # type: ignore[misc]
-    def get_receive_id(self) -> Optional[int]:
-        return self.get_can_receive_id()
-
     def get_can_send_id(self, protocol: Optional[Union[str, "Protocol"]] = None) -> Optional[int]:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
 
@@ -752,10 +746,6 @@ class HierarchyElement(DiagLayer):
         odxassert(isinstance(result, str))
 
         return int(result)
-
-    @deprecated(details="use get_can_send_id()")  # type: ignore[misc]
-    def get_send_id(self) -> Optional[int]:
-        return self.get_can_send_id()
 
     def get_can_func_req_id(self,
                             protocol: Optional[Union[str, "Protocol"]] = None) -> Optional[int]:
