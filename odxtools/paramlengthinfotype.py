@@ -20,8 +20,15 @@ if TYPE_CHECKING:
 
 @dataclass
 class ParamLengthInfoType(DiagCodedType):
-
     length_key_ref: OdxLinkRef
+
+    @property
+    def dct_type(self) -> DctType:
+        return "PARAM-LENGTH-INFO-TYPE"
+
+    @property
+    def length_key(self) -> "LengthKeyParameter":
+        return self._length_key
 
     @staticmethod
     @override
@@ -33,10 +40,6 @@ class ParamLengthInfoType(DiagCodedType):
             OdxLinkRef.from_et(et_element.find("LENGTH-KEY-REF"), doc_frags))
 
         return ParamLengthInfoType(length_key_ref=length_key_ref, **kwargs)
-
-    @property
-    def dct_type(self) -> DctType:
-        return "PARAM-LENGTH-INFO-TYPE"
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
@@ -53,10 +56,6 @@ class ParamLengthInfoType(DiagCodedType):
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         """Recursively resolve any short-name references"""
         super()._resolve_snrefs(context)
-
-    @property
-    def length_key(self) -> "LengthKeyParameter":
-        return self._length_key
 
     @override
     def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:

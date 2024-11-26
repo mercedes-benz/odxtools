@@ -6,12 +6,15 @@ from typing import List, Optional, Union, cast
 
 import InquirerPy.prompt as IP_prompt
 
+from ..complexdop import ComplexDop
 from ..database import Database
 from ..dataobjectproperty import DataObjectProperty
 from ..diaglayer import DiagLayer
 from ..diagservice import DiagService
+from ..dopbase import DopBase
 from ..exceptions import odxraise, odxrequire
 from ..hierarchyelement import HierarchyElement
+from ..odxlink import resolve_snref
 from ..odxtypes import AtomicOdxType, DataType, ParameterValueDict
 from ..parameters.matchingrequestparameter import MatchingRequestParameter
 from ..parameters.parameter import Parameter
@@ -110,24 +113,44 @@ def prompt_single_parameter_value(parameter: Parameter) -> Optional[AtomicOdxTyp
         return cast(str, answer.get(parameter.short_name))
 
 
-def encode_message_interactively(sub_service: Union[Request, Response],
+def encode_message_interactively(codec: Union[Request, Response],
                                  ask_user_confirmation: bool = False) -> None:
     if sys.__stdin__ is None or sys.__stdout__ is None or not sys.__stdin__.isatty(
     ) or not sys.__stdout__.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
-    param_dict = sub_service.parameter_dict()
 
-    exists_definable_param = False
-    for param_or_dict in param_dict.values():
-        if isinstance(param_or_dict, dict):
-            for param in param_or_dict.values():
-                if isinstance(param, Parameter) and param.is_settable:
-                    exists_definable_param = True
-        elif param_or_dict.is_settable:
-            exists_definable_param = True
+    answered_request = b''
+    if isinstance(codec, Response):
+        answered_request_prompt = [{
+            "type":
+                "input",
+            "name":
+                "request",
+            "message":
+                f"What is the request you want to answer? (Enter the coded request as integer in hexadecimal format (e.g. 12 3B 5)",
+            "filter":
+                lambda input: _convert_string_to_bytes(input),
+        }]
+        answer = IP_prompt(answered_request_prompt)
+        answered_request = cast(bytes, answer.get("request"))
+        print(f"Input interpretation as list: {list(answered_request)}")
+
+    has_settable_param = False
+    for param in codec.parameters:
+        if not param.is_settable:
+            continue
+
+        # TODO: Specifying complex parameters with nesting depth > 1
+        # is not possible yet
+        if (inner_params := getattr(getattr(param, "dop", None), "parameters", None)) is not None:
+            for inner_param in inner_params:
+                if inner_param.is_settable:
+                    has_settable_param = True
+        elif param.is_settable:
+            has_settable_param = True
 
     param_values: ParameterValueDict = {}
-    if exists_definable_param > 0:
+    if has_settable_param:
         # Ask whether user wants to encode a message
         if ask_user_confirmation:
             encode_message_prompt = [{
@@ -140,48 +163,40 @@ def encode_message_interactively(sub_service: Union[Request, Response],
             if answer.get("yes_no_prompt") == "no":
                 return
 
-        answered_request = b''
-        if isinstance(sub_service, Response):
-            answered_request_prompt = [{
-                "type":
-                    "input",
-                "name":
-                    "request",
-                "message":
-                    f"What is the request you want to answer? (Enter the coded request as integer in hexadecimal format (e.g. 12 3B 5)",
-                "filter":
-                    lambda input: _convert_string_to_bytes(input),
-            }]
-            answer = IP_prompt(answered_request_prompt)
-            answered_request = cast(bytes, answer.get("request"))
-            print(f"Input interpretation as list: {list(answered_request)}")
-
-        # Request values for parameters
-        for key, param_or_structure in param_dict.items():
-            if isinstance(param_or_structure, dict):
-                # param_or_structure refers to a structure (represented as dict of params)
+        # Query user for the values of all settable parameters
+        for param in codec.parameters:
+            if (inner_params := getattr(dop := getattr(param, "dop", None), "parameters",
+                                        None)) is not None:
+                assert isinstance(dop, DopBase)
+                inner_params = cast(List[Parameter], inner_params)
+                # param refers to a complex DOP, i.e., the required
+                # value is a key-value dict
                 print(
-                    f"The next {len(param_or_structure)} parameters belong to the structure '{key}'"
+                    f"The next {len(inner_params)} parameters belong to the structure '{dop.short_name}'"
                 )
                 structure_param_values: ParameterValueDict = {}
-                for param_sn, param in param_or_structure.items():
-                    if not isinstance(param, dict) and param.is_settable:
-                        val = prompt_single_parameter_value(param)
+                for inner_param in inner_params:
+                    if inner_param.is_settable:
+                        val = prompt_single_parameter_value(inner_param)
                         if val is not None:
-                            structure_param_values[param_sn] = val
-                param_values[key] = structure_param_values
-            elif param_or_structure.is_settable:
-                # param_or_structure is a parameter
-                val = prompt_single_parameter_value(param_or_structure)
+                            structure_param_values[inner_param.short_name] = val
+                param_values[param.short_name] = structure_param_values
+            elif param.is_settable:
+                val = prompt_single_parameter_value(param)
                 if val is not None:
-                    param_values[key] = val
-        if isinstance(sub_service, Response):
-            payload = sub_service.encode(coded_request=answered_request, **param_values)
+                    param_values[param.short_name] = val
+
+        if isinstance(codec, Response):
+            payload = codec.encode(coded_request=answered_request, **param_values)
         else:
-            payload = sub_service.encode(coded_request=b'', **param_values)
+            payload = codec.encode(coded_request=b'', **param_values)
     else:
-        # There are no optional parameters that need to be defined by the user -> Just print message
-        payload = sub_service.encode()
+        # There are no settable parameters -> Just print message
+        if isinstance(codec, Response):
+            payload = codec.encode(coded_request=answered_request)
+        else:
+            payload = codec.encode()
+
     print(f"Message payload: 0x{bytes(payload).hex()}")
 
 
@@ -192,56 +207,58 @@ def encode_message_from_string_values(
     if parameter_values is None:
         parameter_values = {}
     parameter_values = parameter_values.copy()
-    param_dict = sub_service.parameter_dict()
 
-    # Check if all needed parameters are given
+    # Check if all needed parameters have been specified
     missing_parameter_names = []
-    for param_sn, param in param_dict.items():
-        if isinstance(param, dict):
-            # param_value refers to a structure (represented as dict of params)
-            for simple_param_sn, simple_param in param.items():
-                structured_value = parameter_values.get(param_sn)
-                if not isinstance(simple_param, Parameter):
-                    continue
-                if simple_param.is_required and (not isinstance(structured_value, dict) or
-                                                 structured_value.get(simple_param_sn) is None):
-                    missing_parameter_names.append(f"{param_sn} :: {simple_param_sn}")
+    for param in sub_service.parameters:
+        if (inner_params := getattr(dop := getattr(param, "dop", None), "parameters",
+                                    None)) is not None:
+            inner_param_values = parameter_values.get(param.short_name, {})
+            if not isinstance(inner_param_values, dict):
+                print(f"Value for composite parameter {param.short_name} must be "
+                      f"a dictionary, got {type(inner_param_values).__name__}")
+                continue
+            for inner_param in inner_params:
+                if inner_param.is_required and inner_param.short_name not in inner_param_values:
+                    missing_parameter_names.append(f"{param.short_name}.{inner_param.short_name}")
         else:
-            if param.is_required and parameter_values.get(param_sn) is None:
-                missing_parameter_names.append(param_sn)
+            if param.is_required and parameter_values.get(param.short_name) is None:
+                missing_parameter_names.append(param.short_name)
 
     if len(missing_parameter_names) > 0:
-        print("The following parameters are required but missing!")
-        print(" - " + "\n - ".join(missing_parameter_names))
+        print("The following parameters are required but missing:")
+        print(" - " + "\n - ".join(sorted(missing_parameter_names)))
         return
 
     # Request values for parameters
     for parameter_sn, parameter_value in parameter_values.items():
-        parameter = param_dict.get(parameter_sn)
+        parameter = resolve_snref(parameter_sn, sub_service.parameters, Parameter)
         if parameter is None:
             print(f"I don't know the parameter {parameter_sn}")
             continue
 
         if isinstance(parameter_value, dict):
             # parameter_value refers to a structure (represented as dict of params)
+            dop = getattr(parameter, "dop", None)
+            inner_params = getattr(dop, "parameters", None)
+            assert isinstance(dop, ComplexDop)
+            assert isinstance(inner_params, list)
+            inner_params = cast(List[Parameter], inner_params)
+
             typed_dict = parameter_value.copy()
-            for simple_param_sn, simple_param_val in parameter_value.items():
-                simple_parameter = param_dict.get(simple_param_sn)
-                if simple_parameter is None:
-                    print(f"Unknown sub-parameter {simple_param_sn}")
+            for inner_param_sn, inner_param_value in parameter_value.items():
+                inner_param = resolve_snref(inner_param_sn, inner_params, Parameter)
+                if inner_param is None:
+                    print(f"Unknown sub-parameter {inner_param_sn}")
                     continue
-                if not isinstance(simple_param_val, str):
-                    print(f"The value specified for parameter {simple_param_sn} is not a string")
+                if not isinstance(inner_param_value, str):
+                    print(f"The value specified for parameter {inner_param_sn} is not a string")
                     continue
 
-                typed_dict[simple_param_sn] = _convert_string_to_odx_type(
-                    simple_param_val,
-                    simple_parameter.physical_type.base_data_type  # type: ignore[union-attr]
-                )
-                parameter_values[parameter_sn] = typed_dict
+                typed_dict[inner_param_sn] = _convert_string_to_odx_type(
+                    inner_param_value, inner_param.physical_type.base_data_type)
+            parameter_values[parameter.short_name] = typed_dict
         else:
-            assert isinstance(parameter, Parameter)
-
             if not isinstance(parameter_value, str):
                 print(f"Value for parameter {parameter_sn} is not a string")
                 continue

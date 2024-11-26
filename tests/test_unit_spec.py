@@ -197,7 +197,6 @@ class TestUnitSpec(unittest.TestCase):
                             sdgs=[],
                         ),
                     ]),
-                    byte_size=None,
                 )
             ]),
             positive_responses=NamedItemList(),

@@ -121,7 +121,6 @@ flic_flac_request = Request(
             sdgs=[],
         )
     ]),
-    byte_size=None,
 )
 somersault_young_dlr.requests.append(flic_flac_request)
 
@@ -161,7 +160,6 @@ flic_flac_positive_response = Response(
             sdgs=[],
         ),
     ]),
-    byte_size=None,
 )
 somersault_young_dlr.positive_responses.append(flic_flac_positive_response)
 

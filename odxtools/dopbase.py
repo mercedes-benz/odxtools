@@ -16,10 +16,12 @@ from .utils import dataclass_fields_asdict
 
 @dataclass
 class DopBase(IdentifiableElement):
-    """Base class for all DOPs.
+    """Base class for all (simple and complex) data object properties.
 
-    Any class that a parameter can reference via a DOP-REF should
-    inherit from this class.
+    Any class that a parameter can reference via a DOP-REF (Simple
+    DOPs, structures, ...) inherits from this class. All DOPs objects
+    implement the `Codec` type protocol.
+
     """
 
     admin_data: Optional[AdminData]

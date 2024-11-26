@@ -20,6 +20,10 @@ class MinMaxLengthType(DiagCodedType):
     max_length: Optional[int]
     termination: str
 
+    @property
+    def dct_type(self) -> DctType:
+        return "MIN-MAX-LENGTH-TYPE"
+
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
@@ -49,10 +53,6 @@ class MinMaxLengthType(DiagCodedType):
             "HEX-FF",
             "END-OF-PDU",
         ], f"A min-max length type cannot have the termination {self.termination}")
-
-    @property
-    def dct_type(self) -> DctType:
-        return "MIN-MAX-LENGTH-TYPE"
 
     def __termination_sequence(self) -> bytes:
         """Returns the termination byte sequence if it isn't defined."""

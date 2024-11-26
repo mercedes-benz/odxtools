@@ -174,7 +174,8 @@ class TestEnDecode(unittest.TestCase):
 
         self.assertEqual(
             str(eo.exception),
-            "Value for unknown parameter 'grass_level' specified for structure do_forward_flips")
+            "Value for unknown parameter 'grass_level' specified for composite codec object do_forward_flips"
+        )
 
     def test_decode_request(self) -> None:
         messages = odxdb.ecus.somersault_assiduous.decode(bytes([0x03, 0x45]))

@@ -255,7 +255,6 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         )
 
         # Dummy diag layer to resolve references from request parameters to DOPs
@@ -591,7 +590,6 @@ class TestParamLengthInfoType(unittest.TestCase):
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         )
 
         # Dummy diag layer to resolve references from request parameters to DOPs
@@ -937,7 +935,6 @@ class TestMinMaxLengthType(unittest.TestCase):
                     sdgs=[],
                 ),
             ]),
-            byte_size=None,
         )
 
         # Dummy diag layer to resolve references from request parameters to DOPs

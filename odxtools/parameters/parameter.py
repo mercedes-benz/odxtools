@@ -33,11 +33,13 @@ ParameterType = Literal[
 @dataclass
 class Parameter(NamedElement):
     """This class corresponds to POSITIONABLE-PARAM in the ODX
-    specification.
+    specification
 
-    Be aware that, even though the ODX specification seems to make the
-    distinction of "positionable" and "normal" parameters, it does not
-    define any non-positionable parameter types.
+    All parameter classes must adhere to the `Codec` type protocol, so
+    `isinstance(param, Codec)` ought to be true.  Be aware that, even
+    though the ODX specification seems to make the distinction of
+    "positionable" and "normal" parameters, it does not define any
+    non-positionable parameter types.
 
     """
     oid: Optional[str]
