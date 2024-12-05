@@ -2,9 +2,7 @@
  #
  # SPDX-License-Identifier: MIT
 -#}
-{%- import('macros/printAdminData.xml.jinja2') as pad -%}
-{%- import('macros/printCompanyData.xml.jinja2') as pcd -%}
-{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printOdxCategory.xml.jinja2') as poc %}
 {%- import('macros/printEcuSharedData.xml.jinja2') as pecusd -%}
 {%- import('macros/printProtocol.xml.jinja2') as pprot %}
 {%- import('macros/printFunctionalGroup.xml.jinja2') as pfuncgroup %}
@@ -14,29 +12,10 @@
 {#- -#}
 
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- Written using odxtools {{odxtools_version}} -->
 <ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
- <!-- Written using odxtools {{odxtools_version}} -->
- <DIAG-LAYER-CONTAINER ID="{{dlc.odx_id.local_id}}">
-  <SHORT-NAME>{{dlc.short_name}}</SHORT-NAME>
-{%- if dlc.long_name %}
-  <LONG-NAME>{{dlc.long_name|e}}</LONG-NAME>
-{%- endif %}
-{%- if dlc.description %}
-  <DESC>
-{{dlc.description}}
-  </DESC>
-{%- endif %}
-{%- if dlc.admin_data %}
-  {{pad.printAdminData(dlc.admin_data)|indent(2)}}
-{%- endif %}
-{%- if dlc.company_datas %}
-  <COMPANY-DATAS>
- {%- for cd in dlc.company_datas %}
-   {{pcd.printCompanyData(cd)|indent(3)}}
- {%- endfor %}
-  </COMPANY-DATAS>
-{%- endif %}
-  {{- psd.printSpecialDataGroups(dlc.sdgs)|indent(2, first=True) }}
+ <DIAG-LAYER-CONTAINER {{- poc.printOdxCategoryAttribs(dlc) }}>
+  {{- poc.printOdxCategorySubtags(dlc)|indent(3) }}
 {%- if dlc.protocols %}
   <PROTOCOLS>
  {%- for dl in dlc.protocols %}

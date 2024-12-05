@@ -145,15 +145,20 @@ class Database:
         context = SnRefContext()
         context.database = self
 
+        # let the diaglayers sort out the inherited objects
+        for subset in self.comparam_subsets:
+            subset._finalize_init(self, self._odxlinks)
+        for spec in self.comparam_specs:
+            spec._finalize_init(self, self._odxlinks)
+        for dlc in self.diag_layer_containers:
+            dlc._finalize_init(self, self._odxlinks)
+
         for subset in self.comparam_subsets:
             subset._resolve_snrefs(context)
         for spec in self.comparam_specs:
             spec._resolve_snrefs(context)
-
-        # let the diaglayers sort out the inherited objects and the
-        # short name references
         for dlc in self.diag_layer_containers:
-            dlc._finalize_init(self, self._odxlinks)
+            dlc._resolve_snrefs(context)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result: Dict[OdxLinkId, Any] = {}
