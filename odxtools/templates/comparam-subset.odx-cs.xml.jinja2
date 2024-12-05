@@ -5,36 +5,18 @@
  # This template writes an .odx-cs file for a communication
  # parameter subset.
 -#}
+{%- import('macros/printOdxCategory.xml.jinja2') as poc %}
 {%- import('macros/printComparam.xml.jinja2') as pcp -%}
-{%- import('macros/printAdminData.xml.jinja2') as pad -%}
-{%- import('macros/printCompanyData.xml.jinja2') as pcd -%}
 {%- import('macros/printDOP.xml.jinja2') as pdop %}
 {%- import('macros/printUnitSpec.xml.jinja2') as pus %}
-{%- import('macros/printSpecialData.xml.jinja2') as psd %}
 {%- import('macros/printDescription.xml.jinja2') as pd %}
 {#- -#}
 
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
 <!-- Written using odxtools {{odxtools_version}} -->
- <COMPARAM-SUBSET ID="{{comparam_subset.odx_id.local_id}}"
-                  CATEGORY="{{comparam_subset.category}}" >
-   <SHORT-NAME>{{comparam_subset.short_name}}</SHORT-NAME>
-   {%- if comparam_subset.long_name is not none %}
-   <LONG-NAME>{{comparam_subset.long_name|e}}</LONG-NAME>
-   {%- endif %}
-   {{pd.printDescription(comparam_subset.description)}}
-   {%- if comparam_subset.admin_data is not none %}
-   {{- pad.printAdminData(comparam_subset.admin_data) | indent(3) }}
-   {%- endif %}
-   {%- if comparam_subset.company_datas %}
-   <COMPANY-DATAS>
-     {%- for cd in comparam_subset.company_datas %}
-     {{- pcd.printCompanyData(cd) | indent(5, first=True) }}
-     {%- endfor %}
-   </COMPANY-DATAS>
-   {%- endif %}
-   {{- psd.printSpecialDataGroups(comparam_subset.sdgs)|indent(3, first=True) }}
+<ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
+ <COMPARAM-SUBSET  {{- poc.printOdxCategoryAttribs(comparam_subset) }} {{make_xml_attrib("CATEGORY", comparam_subset.category)}}>
+   {{- poc.printOdxCategorySubtags(comparam_subset)|indent(3) }}
    {%- if comparam_subset.comparams %}
    <COMPARAMS>
      {%- for cp in comparam_subset.comparams %}
