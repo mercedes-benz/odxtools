@@ -1,0 +1,28 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printAdminData.xml.jinja2') as pad -%}
+{%- import('macros/printCompanyData.xml.jinja2') as pcd -%}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printOdxCategoryAttribs(obj) -%}
+{#- #} {{- peid.printElementIdAttribs(obj) }}
+{%- endmacro -%}
+
+{%- macro printOdxCategorySubtags(obj) -%}
+{{ peid.printElementIdSubtags(obj) }}
+{%- if obj.admin_data %}
+{{pad.printAdminData(obj.admin_data)|indent(2)}}
+{%- endif %}
+{%- if obj.company_datas %}
+<COMPANY-DATAS>
+{%- for cd in obj.company_datas %}
+{{pcd.printCompanyData(cd)|indent(3)}}
+{%- endfor %}
+</COMPANY-DATAS>
+{%- endif %}
+{{- psd.printSpecialDataGroups(obj.sdgs)|indent(2, first=True) }}
+{%- endmacro -%}

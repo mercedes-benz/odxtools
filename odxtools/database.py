@@ -20,6 +20,7 @@ from .diaglayers.protocol import Protocol
 from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxLinkDatabase, OdxLinkId
+from .snrefcontext import SnRefContext
 
 
 class Database:
@@ -139,10 +140,25 @@ class Database:
         for dlc in self.diag_layer_containers:
             dlc._resolve_odxlinks(self._odxlinks)
 
-        # let the diaglayers sort out the inherited objects and the
-        # short name references
+        # resolve short name references for containers which do not do
+        # inheritance (we can call directly call _resolve_snrefs())
+        context = SnRefContext()
+        context.database = self
+
+        # let the diaglayers sort out the inherited objects
+        for subset in self.comparam_subsets:
+            subset._finalize_init(self, self._odxlinks)
+        for spec in self.comparam_specs:
+            spec._finalize_init(self, self._odxlinks)
         for dlc in self.diag_layer_containers:
             dlc._finalize_init(self, self._odxlinks)
+
+        for subset in self.comparam_subsets:
+            subset._resolve_snrefs(context)
+        for spec in self.comparam_specs:
+            spec._resolve_snrefs(context)
+        for dlc in self.diag_layer_containers:
+            dlc._resolve_snrefs(context)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result: Dict[OdxLinkId, Any] = {}
