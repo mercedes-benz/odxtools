@@ -189,6 +189,12 @@ class ItemAttributeList(List[T]):
 
         return result
 
+    def __reduce__(self):
+        reconstruct_function = self.__class__
+        args = (list(self),)
+        state = {"_item_dict": self._item_dict}
+        return reconstruct_function, args, state
+
 
 class NamedItemList(ItemAttributeList[T]):
 
