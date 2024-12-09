@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
@@ -158,9 +158,9 @@ class TableRow(IdentifiableElement):
         """The data object property object resolved by dop_ref."""
         return self._dop
 
-    def __reduce__(self):
+    def __reduce__(self) -> Tuple[Any, ...]:
         state = self.__dict__.copy()
-        return (self.__class__, (self.short_name, self.long_name, self.description, self.odx_id,
-                                 self.oid, self.table_ref, self.key_raw, self.structure_ref,
-                                 self.structure_snref, self.dop_ref, self.dop_snref, self.semantic,
-                                 self.sdgs), state)
+        return (self.__class__,
+                (self.short_name, self.long_name, self.description, self.odx_id, self.oid,
+                 self.table_ref, self.key_raw, self.structure_ref, self.structure_snref,
+                 self.dop_ref, self.dop_snref, self.semantic, self.sdgs), state)

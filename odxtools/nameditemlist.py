@@ -189,7 +189,7 @@ class ItemAttributeList(List[T]):
 
         return result
 
-    def __reduce__(self):
+    def __reduce__(self) -> Tuple[Any, ...]:
         reconstruct_function = self.__class__
         args = (list(self),)
         state = {"_item_dict": self._item_dict}
