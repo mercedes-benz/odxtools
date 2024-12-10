@@ -187,7 +187,12 @@ class DiagService(DiagComm):
         # here because ComparamInstance.short_name is only valid after
         # reference resolution
         self._comparams = NamedItemList(self.comparam_refs)
-
+        if self._request:
+            self._request._resolve_snrefs(context)
+        for response in self._positive_responses:
+            response._resolve_snrefs(context)
+        for response in self._negative_responses:
+            response._resolve_snrefs(context)
         context.diag_service = None
 
     def decode_message(self, raw_message: bytes) -> Message:
