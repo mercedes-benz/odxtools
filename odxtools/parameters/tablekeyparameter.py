@@ -91,6 +91,7 @@ class TableKeyParameter(Parameter):
                 self._table_row = odxlinks.resolve(self.table_row_ref, TableRow)
             else:
                 self._table_row = odxlinks.resolve(self.table_row_ref)
+            self._table_row._resolve_odxlinks(odxlinks)
             self._table = self._table_row.table
 
     @override

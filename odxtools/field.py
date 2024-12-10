@@ -89,3 +89,7 @@ class Field(ComplexDop):
         if self.env_data_desc_snref is not None:
             self._env_data_desc = resolve_snref(self.env_data_desc_snref, ddds.env_data_descs,
                                                 EnvironmentDataDescription)
+        if self._structure:
+            self._structure._resolve_snrefs(context)
+        if self._env_data_desc:
+            self._env_data_desc._resolve_snrefs(context)
