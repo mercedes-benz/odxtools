@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+import pickle
 import unittest
 from copy import copy
 
@@ -427,6 +428,11 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             coded_message=copy(encode_state.coded_message), cursor_byte_position=2)
         decoded = mux.decode_from_pdu(decode_state)
         self.assertEqual(decoded, ("default_case", {}))
+
+        # check that the object can be properly serialized and deserialized using pickle
+        pickled_ddds = pickle.dumps(ddds)
+        unpickled_ddds = pickle.loads(pickled_ddds)
+        self.assertEqual(ddds, unpickled_ddds)
 
 
 if __name__ == "__main__":

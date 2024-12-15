@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+import pickle
 import unittest
 from dataclasses import dataclass
 from typing import List
@@ -90,16 +91,28 @@ class TestComposeUDS(unittest.TestCase):
         self.assertEqual(bytes(coded_response), bytes.fromhex("faba03"))
 
 
+@dataclass
+class X:
+    short_name: str
+    value: int
+    
+
 class TestNamedItemList(unittest.TestCase):
 
-    def test_NamedItemList(self) -> None:
+    def setUp(self):
+        self.foo_obj = NamedItemList([X("hello", 0), X("world", 1)])
 
-        @dataclass
-        class X:
-            short_name: str
-            value: int
+    def test_NamedItemList(self):
+        # Test with the original object
+        foo = self.foo_obj.__class__(self.foo_obj)
+        self._test_NamedItemList_functionality(foo)
 
-        foo = NamedItemList([X("hello", 0), X("world", 1)])
+        # Test with the pickled object
+        pickled_foo = pickle.dumps(self.foo_obj)
+        unpickled_foo = pickle.loads(pickled_foo)
+        self._test_NamedItemList_functionality(unpickled_foo)
+
+    def _test_NamedItemList_functionality(self, foo):
         self.assertEqual(foo.hello, X("hello", 0))
         self.assertEqual(foo[0], X("hello", 0))
         self.assertEqual(foo[1], X("world", 1))

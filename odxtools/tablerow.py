@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree
 
@@ -159,8 +159,6 @@ class TableRow(IdentifiableElement):
         return self._dop
 
     def __reduce__(self) -> Tuple[Any, ...]:
+        """This ensures that the object can be correctly reconstructed during unpickling."""
         state = self.__dict__.copy()
-        return (self.__class__,
-                (self.short_name, self.long_name, self.description, self.odx_id, self.oid,
-                 self.table_ref, self.key_raw, self.structure_ref, self.structure_snref,
-                 self.dop_ref, self.dop_snref, self.semantic, self.sdgs), state)
+        return self.__class__, tuple([getattr(self, x.name) for x in fields(self)]), state

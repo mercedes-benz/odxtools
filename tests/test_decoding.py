@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+import pickle
 import unittest
 
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
@@ -2446,6 +2447,12 @@ class TestDecoding(unittest.TestCase):
             self.assertEqual(expected_message.service, decoded_message.service)
             self.assertEqual(expected_message.coding_object, decoded_message.coding_object)
             self.assertEqual(expected_message.param_dict, decoded_message.param_dict)
+
+        # check object serialization and deserialization using pickle
+        pickled_ecu_var = pickle.dumps(ecu_variant)
+        unpickled_ecu_var = pickle.loads(pickled_ecu_var)
+
+        self.assertEqual(ecu_variant, unpickled_ecu_var)
 
     def test_code_dtc(self) -> None:
         odxlinks = OdxLinkDatabase()
