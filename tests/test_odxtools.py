@@ -95,14 +95,13 @@ class TestComposeUDS(unittest.TestCase):
 class X:
     short_name: str
     value: int
-    
+
 
 class TestNamedItemList(unittest.TestCase):
-
-    def setUp(self):
+    def setUp(self) -> None:
         self.foo_obj = NamedItemList([X("hello", 0), X("world", 1)])
 
-    def test_NamedItemList(self):
+    def test_NamedItemList(self) -> None:
         # Test with the original object
         foo = self.foo_obj.__class__(self.foo_obj)
         self._test_NamedItemList_functionality(foo)
@@ -112,7 +111,7 @@ class TestNamedItemList(unittest.TestCase):
         unpickled_foo = pickle.loads(pickled_foo)
         self._test_NamedItemList_functionality(unpickled_foo)
 
-    def _test_NamedItemList_functionality(self, foo):
+    def _test_NamedItemList_functionality(self, foo: NamedItemList[X]) -> None:
         self.assertEqual(foo.hello, X("hello", 0))
         self.assertEqual(foo[0], X("hello", 0))
         self.assertEqual(foo[1], X("world", 1))
