@@ -98,6 +98,7 @@ class X:
 
 
 class TestNamedItemList(unittest.TestCase):
+    
     def setUp(self) -> None:
         self.foo_obj = NamedItemList([X("hello", 0), X("world", 1)])
 
