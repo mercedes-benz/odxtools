@@ -80,18 +80,23 @@ class TableKeyParameter(Parameter):
         super()._resolve_odxlinks(odxlinks)
 
         # Either table_ref or table_row_ref will be defined
-        if self.table_ref:
+        if self.table_ref is not None:
             if TYPE_CHECKING:
                 self._table = odxlinks.resolve(self.table_ref, Table)
             else:
                 self._table = odxlinks.resolve(self.table_ref)
 
-        if self.table_row_ref:
+        if self.table_row_ref is not None:
             if TYPE_CHECKING:
                 self._table_row = odxlinks.resolve(self.table_row_ref, TableRow)
             else:
                 self._table_row = odxlinks.resolve(self.table_row_ref)
-            self._table = self._table_row.table
+
+            if self.table_ref is None and self.table_snref is None:
+                if TYPE_CHECKING:
+                    self._table = odxlinks.resolve(self._table_row.table_ref, Table)
+                else:
+                    self._table = odxlinks.resolve(self._table_row.table_ref)
 
     @override
     def _resolve_snrefs(self, context: SnRefContext) -> None:
@@ -116,11 +121,7 @@ class TableKeyParameter(Parameter):
 
     @property
     def table(self) -> "Table":
-        if self._table is not None:
-            return self._table
-        if self._table_row is not None:
-            return self._table_row.table
-        odxraise(f'Could not resolve the table of {self.short_name}')
+        return self._table
 
     @property
     def table_row(self) -> Optional["TableRow"]:
