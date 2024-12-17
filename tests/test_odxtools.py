@@ -99,17 +99,15 @@ class X:
 
 class TestNamedItemList(unittest.TestCase):
 
-    def setUp(self) -> None:
-        self.foo_obj = NamedItemList([X("hello", 0), X("world", 1)])
-
     def test_NamedItemList(self) -> None:
-        # Test with the original object
-        foo = self.foo_obj.__class__(self.foo_obj)
-        self._test_NamedItemList_functionality(foo)
+        foo = NamedItemList([X("hello", 0), X("world", 1)])
 
-        # Test with the pickled object
-        pickled_foo = pickle.dumps(self.foo_obj)
+        pickled_foo = pickle.dumps(foo)
         unpickled_foo = pickle.loads(pickled_foo)
+
+        # Test with the original object
+        self._test_NamedItemList_functionality(foo)
+        # Test with the pickled object
         self._test_NamedItemList_functionality(unpickled_foo)
 
     def _test_NamedItemList_functionality(self, foo: NamedItemList[X]) -> None:
