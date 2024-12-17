@@ -105,9 +105,8 @@ class LengthKeyParameter(ParameterWithDOP):
         # emplace a value of zero into the encode state, but pretend the bits not to be used
         n = odxrequire(self.dop.get_static_bit_length()) + encode_state.cursor_bit_position
         tmp_val = b'\x00' * ((n + 7) // 8)
-        encode_state.emplace_bytes(tmp_val, obj_used_mask=tmp_val)
-
         encode_state.cursor_bit_position = 0
+        encode_state.emplace_bytes(tmp_val, obj_used_mask=tmp_val)
 
     def encode_value_into_pdu(self, encode_state: EncodeState) -> None:
 
