@@ -189,6 +189,16 @@ class ItemAttributeList(List[T]):
 
         return result
 
+    def __reduce__(self) -> Tuple[Any, ...]:
+        """Support for Python's pickle protocol.
+        This method ensures that the object can be reconstructed with its current state,
+        using its class and the list of items it contains.
+        It returns a tuple containing the reconstruction function (the class)
+        and its arguments necessary to recreate the object.
+
+        """
+        return self.__class__, (list(self),)
+
 
 class NamedItemList(ItemAttributeList[T]):
 
