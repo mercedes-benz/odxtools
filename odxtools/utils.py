@@ -32,8 +32,10 @@ def retarget_snrefs(database: "Database",
     if context is None:
         context = SnRefContext()
 
-    if context.diag_layer is None:
+    if context.database is None:
         context.database = database
+
+    if context.diag_layer is None:
         context.diag_layer = diag_layer
 
     # retarget the objects "owned" by the layer itself
