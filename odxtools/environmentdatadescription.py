@@ -6,6 +6,7 @@ from xml.etree import ElementTree
 from typing_extensions import override
 
 from .complexdop import ComplexDop
+from .dataobjectproperty import DataObjectProperty
 from .decodestate import DecodeState
 from .dtcdop import DtcDop
 from .encodestate import EncodeState
@@ -13,8 +14,9 @@ from .environmentdata import EnvironmentData
 from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import ParameterValue, ParameterValueDict
+from .odxtypes import DataType, ParameterValue, ParameterValueDict
 from .parameters.parameter import Parameter
+from .parameters.valueparameter import ValueParameter
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -116,39 +118,63 @@ class EnvironmentDataDescription(ComplexDop):
         """Convert a physical value into bytes and emplace them into a PDU.
         """
 
-        # retrieve the relevant DTC parameter which must be located in
-        # front of the environment data description.
+        # retrieve the DTC as a numerical value from the referenced
+        # parameter (which must be located somewhere before the
+        # parameter using the environment data description)
         if self.param_snref is None:
             odxraise("Specifying the DTC parameter for environment data "
                      "descriptions via SNPATHREF is not supported yet")
             return None
 
-        dtc_param: Optional[Parameter] = None
-        dtc_dop: Optional[DtcDop] = None
-        dtc_param_value: Optional[ParameterValue] = None
+        numerical_dtc_value: Optional[ParameterValue] = None
         for prev_param, prev_param_value in reversed(encode_state.journal):
             if prev_param.short_name == self.param_snref:
-                dtc_param = prev_param
-                prev_dop = getattr(prev_param, "dop", None)
-                if not isinstance(prev_dop, DtcDop):
-                    odxraise(f"The DOP of the parameter referenced by environment data "
-                             f"descriptions must be a DTC-DOP (is '{type(prev_dop).__name__}')")
+                if not isinstance(prev_param, ValueParameter):
+                    odxraise(
+                        f"The parameter referenced by environment data descriptions "
+                        f"must use a VALUE-PARAMETER (encountered {type(prev_param).__name__} "
+                        f"for reference '{self.param_snref}' of ENV-DATA-DESC '{self.short_name}')")
                     return
-                dtc_dop = prev_dop
-                dtc_param_value = prev_param_value
+
+                prev_dop = prev_param.dop
+                if isinstance(prev_dop, DtcDop):
+                    if prev_dop.diag_coded_type.base_data_type != DataType.A_UINT32:
+                        odxraise(f"The data type used by the DOP of the parameter referenced "
+                                 f"by environment data descriptions must be A_UINT32 "
+                                 f"(encountered '{prev_dop.diag_coded_type.base_data_type.value}')")
+                        return
+
+                    if prev_param_value is None:
+                        odxraise()
+                        return
+
+                    numerical_dtc_value = prev_dop.convert_to_numerical_trouble_code(
+                        prev_param_value)
+                elif isinstance(prev_dop, DataObjectProperty):
+                    if prev_dop.diag_coded_type.base_data_type != DataType.A_UINT32:
+                        odxraise(f"The data type used by the DOP of the parameter referenced "
+                                 f"by environment data descriptions must be A_UINT32 "
+                                 f"(encountered '{prev_dop.diag_coded_type.base_data_type.value}')")
+                        return
+
+                    if not isinstance(prev_param_value, (int, str)):
+                        odxraise()
+                        return
+
+                    numerical_dtc_value = prev_dop.compu_method.convert_physical_to_internal(
+                        prev_param_value)
+                else:
+                    odxraise(f"The DOP of the parameter referenced "
+                             f"by environment data descriptions must use a simple DOP or a DTC-DOP "
+                             f"(encountered '{type(prev_dop).__name__}')")
+                    return
+
                 break
 
-        if dtc_param is None:
+        if numerical_dtc_value is None:
             odxraise("Environment data description parameters are only allowed following "
                      "the referenced value parameter.")
             return
-
-        if dtc_param_value is None or dtc_dop is None:
-            # this should never happen
-            odxraise()
-            return
-
-        numerical_dtc = dtc_dop.convert_to_numerical_trouble_code(dtc_param_value)
 
         # deal with the "all value" environment data. This holds
         # parameters that are common to all DTCs. Be aware that the
@@ -165,7 +191,7 @@ class EnvironmentDataDescription(ComplexDop):
         # find the environment data corresponding to the given trouble
         # code
         for env_data in self.env_datas:
-            if numerical_dtc in env_data.dtc_values:
+            if numerical_dtc_value in env_data.dtc_values:
                 tmp = encode_state.allow_unknown_parameters
                 encode_state.allow_unknown_parameters = True
                 env_data.encode_into_pdu(physical_value, encode_state)
@@ -177,39 +203,63 @@ class EnvironmentDataDescription(ComplexDop):
         """Extract the bytes from a PDU and convert them to a physical value.
         """
 
-        # retrieve the relevant DTC parameter which must be located in
-        # front of the environment data description.
+        # retrieve the DTC as a numerical value from the referenced
+        # parameter (which must be located somewhere before the
+        # parameter using the environment data description)
         if self.param_snref is None:
             odxraise("Specifying the DTC parameter for environment data "
                      "descriptions via SNPATHREF is not supported yet")
             return None
 
-        dtc_param: Optional[Parameter] = None
-        dtc_dop: Optional[DtcDop] = None
-        dtc_param_value: Optional[ParameterValue] = None
+        numerical_dtc_value: Optional[ParameterValue] = None
         for prev_param, prev_param_value in reversed(decode_state.journal):
             if prev_param.short_name == self.param_snref:
-                dtc_param = prev_param
-                prev_dop = getattr(prev_param, "dop", None)
-                if not isinstance(prev_dop, DtcDop):
-                    odxraise(f"The DOP of the parameter referenced by environment data "
-                             f"descriptions must be a DTC-DOP (is '{type(prev_dop).__name__}')")
+                if not isinstance(prev_param, ValueParameter):
+                    odxraise(
+                        f"The parameter referenced by environment data descriptions "
+                        f"must use a VALUE-PARAMETER (encountered {type(prev_param).__name__} "
+                        f"for reference '{self.param_snref}' of ENV-DATA-DESC '{self.short_name}')")
                     return
-                dtc_dop = prev_dop
-                dtc_param_value = prev_param_value
+
+                prev_dop = prev_param.dop
+                if isinstance(prev_dop, DtcDop):
+                    if prev_dop.diag_coded_type.base_data_type != DataType.A_UINT32:
+                        odxraise(f"The data type used by the DOP of the parameter referenced "
+                                 f"by environment data descriptions must be A_UINT32 "
+                                 f"(encountered '{prev_dop.diag_coded_type.base_data_type.value}')")
+                        return
+
+                    if prev_param_value is None:
+                        odxraise()
+                        return
+
+                    numerical_dtc_value = prev_dop.convert_to_numerical_trouble_code(
+                        prev_param_value)
+                elif isinstance(prev_dop, DataObjectProperty):
+                    if prev_dop.diag_coded_type.base_data_type != DataType.A_UINT32:
+                        odxraise(f"The data type used by the DOP of the parameter referenced "
+                                 f"by environment data descriptions must be A_UINT32 "
+                                 f"(encountered '{prev_dop.diag_coded_type.base_data_type.value}')")
+                        return
+
+                    if not isinstance(prev_param_value, (int, str)):
+                        odxraise()
+                        return
+
+                    numerical_dtc_value = prev_dop.compu_method.convert_physical_to_internal(
+                        prev_param_value)
+                else:
+                    odxraise(f"The DOP of the parameter referenced "
+                             f"by environment data descriptions must use a simple DOP or a DTC-DOP "
+                             f"(encountered '{type(prev_dop).__name__}')")
+                    return
+
                 break
 
-        if dtc_param is None:
+        if numerical_dtc_value is None:
             odxraise("Environment data description parameters are only allowed following "
                      "the referenced value parameter.")
             return
-
-        if dtc_param_value is None or dtc_dop is None:
-            # this should never happen
-            odxraise()
-            return
-
-        numerical_dtc = dtc_dop.convert_to_numerical_trouble_code(dtc_param_value)
 
         result: ParameterValueDict = {}
 
@@ -228,7 +278,7 @@ class EnvironmentDataDescription(ComplexDop):
         # find the environment data corresponding to the given trouble
         # code
         for env_data in self.env_datas:
-            if numerical_dtc in env_data.dtc_values:
+            if numerical_dtc_value in env_data.dtc_values:
                 tmp = env_data.decode_from_pdu(decode_state)
                 if not isinstance(tmp, dict):
                     odxraise()
