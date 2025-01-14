@@ -9,6 +9,8 @@ from odxtools.description import Description
 from odxtools.exceptions import OdxError, odxrequire
 from odxtools.loadfile import load_pdx_file
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
+from odxtools.parameters.valueparameter import ValueParameter
+from odxtools.utils import retarget_snrefs
 
 odxdb = load_pdx_file("./examples/somersault.pdx")
 
@@ -126,6 +128,7 @@ class TestDatabase(unittest.TestCase):
                 "session_start",
                 "session_stop",
                 "tester_present",
+                "schroedinger",
             },
         )
 
@@ -351,6 +354,48 @@ class TestEnDecode(unittest.TestCase):
         self.assertEqual(m.coded_message.hex(), "fa03ff")
         self.assertEqual(m.coding_object, pos_response)
         self.assertEqual(m.param_dict, {"sid": 0xFA, "num_flips_done": 0x03, "sault_time": 255})
+
+    def test_retarget_snrefs(self) -> None:
+        base_variant = odxdb.base_variants.somersault
+        ecu_lazy = odxdb.ecu_variants.somersault_lazy
+        ecu_assiduous = odxdb.ecu_variants.somersault_assiduous
+
+        schroedinger_param_base = odxrequire(
+            base_variant.services.schroedinger.request).parameters.schroedinger_param
+        schroedinger_param_lazy = odxrequire(
+            ecu_lazy.services.schroedinger.request).parameters.schroedinger_param
+        schroedinger_param_assiduous = odxrequire(
+            ecu_assiduous.services.schroedinger.request).parameters.schroedinger_param
+
+        # the parameter object is the same regardless of how it has
+        # been accessed.
+        self.assertEqual(id(schroedinger_param_base), id(schroedinger_param_lazy))
+        self.assertEqual(id(schroedinger_param_base), id(schroedinger_param_assiduous))
+
+        # all Schroedinger parameters are the same, so let's skip the
+        # qualifier from here on out
+        schroedinger_param = schroedinger_param_base
+
+        # by default, the DOP referenced by the Schroedinger parameter
+        # is the one defined by the base variant
+        assert isinstance(schroedinger_param, ValueParameter)
+        self.assertEqual(schroedinger_param.dop.odx_id.local_id, "somersault.DOP.schroedinger_base")
+
+        # if we retarget all short name references towards the lazy or
+        # assiduous ECUs, the schroedinger parameter's DOP will change
+        # accordingly (note that the parameter always references a DOP
+        # called "schroedinger_dop" via SNREF but each diag layer
+        # redefines this DOP)
+        retarget_snrefs(odxdb, ecu_lazy)
+        self.assertEqual(schroedinger_param.dop.odx_id.local_id, "somersault.DOP.schroedinger_lazy")
+
+        retarget_snrefs(odxdb, ecu_assiduous)
+        self.assertEqual(schroedinger_param.dop.odx_id.local_id,
+                         "somersault.DOP.schroedinger_assiduous")
+
+        # after the database is refreshed, it is back to the original state
+        odxdb.refresh()
+        self.assertEqual(schroedinger_param.dop.odx_id.local_id, "somersault.DOP.schroedinger_base")
 
 
 class TestNavigation(unittest.TestCase):
