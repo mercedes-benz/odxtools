@@ -15,9 +15,13 @@ from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import DataType, ParameterValue, ParameterValueDict
+from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.parameter import Parameter
+from .parameters.parameterwithdop import ParameterWithDOP
+from .parameters.physicalconstantparameter import PhysicalConstantParameter
 from .parameters.valueparameter import ValueParameter
 from .snrefcontext import SnRefContext
+from .standardlengthtype import StandardLengthType
 from .utils import dataclass_fields_asdict
 
 
@@ -129,38 +133,44 @@ class EnvironmentDataDescription(ComplexDop):
         numerical_dtc_value: Optional[ParameterValue] = None
         for prev_param, prev_param_value in reversed(encode_state.journal):
             if prev_param.short_name == self.param_snref:
-                if not isinstance(prev_param, ValueParameter):
+                if not isinstance(prev_param, ParameterWithDOP):
                     odxraise(
                         f"The parameter referenced by environment data descriptions "
-                        f"must use a VALUE-PARAMETER (encountered {type(prev_param).__name__} "
+                        f"must use a parameter that specifies a DOP (encountered {type(prev_param).__name__} "
                         f"for reference '{self.param_snref}' of ENV-DATA-DESC '{self.short_name}')")
                     return
 
                 prev_dop = prev_param.dop
+                if not isinstance(prev_dop, (StandardLengthType, DtcDop)):
+                    odxraise(
+                        f"The DOP of the parameter referenced by environment data descriptions "
+                        f"must use either be StandardLengthType or a DtcDop (encountered "
+                        f"{type(prev_param).__name__} for reference '{self.param_snref}' "
+                        f"of ENV-DATA-DESC '{self.short_name}')")
+                    return
+
+                if prev_dop.diag_coded_type.base_data_type != DataType.A_UINT32:
+                    odxraise(f"The data type used by the DOP of the parameter referenced "
+                             f"by environment data descriptions must be A_UINT32 "
+                             f"(encountered '{prev_dop.diag_coded_type.base_data_type.value}')")
+                    return
+
+                if prev_param_value is None:
+                    if isinstance(prev_param, ValueParameter):
+                        prev_param_value = prev_param.physical_default_value
+                    elif isinstance(prev_param, CodedConstParameter):
+                        prev_param_value = prev_param.coded_value
+                    elif isinstance(prev_param, PhysicalConstantParameter):
+                        prev_param_value = prev_param.physical_constant_value
+                    else:
+                        odxraise()  # make mypy happy...
+                        return
+
                 if isinstance(prev_dop, DtcDop):
-                    if prev_dop.diag_coded_type.base_data_type != DataType.A_UINT32:
-                        odxraise(f"The data type used by the DOP of the parameter referenced "
-                                 f"by environment data descriptions must be A_UINT32 "
-                                 f"(encountered '{prev_dop.diag_coded_type.base_data_type.value}')")
-                        return
-
-                    if prev_param_value is None:
-                        odxraise()
-                        return
-
+                    assert isinstance(prev_param_value, (int, str))
                     numerical_dtc_value = prev_dop.convert_to_numerical_trouble_code(
                         prev_param_value)
                 elif isinstance(prev_dop, DataObjectProperty):
-                    if prev_dop.diag_coded_type.base_data_type != DataType.A_UINT32:
-                        odxraise(f"The data type used by the DOP of the parameter referenced "
-                                 f"by environment data descriptions must be A_UINT32 "
-                                 f"(encountered '{prev_dop.diag_coded_type.base_data_type.value}')")
-                        return
-
-                    if not isinstance(prev_param_value, (int, str)):
-                        odxraise()
-                        return
-
                     numerical_dtc_value = prev_dop.compu_method.convert_physical_to_internal(
                         prev_param_value)
                 else:
