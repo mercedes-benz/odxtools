@@ -21,7 +21,6 @@ from .parameters.parameterwithdop import ParameterWithDOP
 from .parameters.physicalconstantparameter import PhysicalConstantParameter
 from .parameters.valueparameter import ValueParameter
 from .snrefcontext import SnRefContext
-from .standardlengthtype import StandardLengthType
 from .utils import dataclass_fields_asdict
 
 
@@ -219,18 +218,17 @@ class EnvironmentDataDescription(ComplexDop):
                                           param_value: Optional[ParameterValue]) -> int:
         if isinstance(param, ParameterWithDOP):
             dop = param.dop
-            if not isinstance(dop, (StandardLengthType, DtcDop)):
+            if not isinstance(dop, (DataObjectProperty, DtcDop)):
                 odxraise(f"The DOP of the parameter referenced by environment data descriptions "
-                         f"must use either be StandardLengthType or a DtcDop (encountered "
+                         f"must use either be DataObjectProperty or a DtcDop (encountered "
                          f"{type(param).__name__} for parameter '{self.param.short_name}' "
                          f"of ENV-DATA-DESC '{self.short_name}')")
-                return
+                return 0
 
             if dop.diag_coded_type.base_data_type != DataType.A_UINT32:
                 odxraise(f"The data type used by the DOP of the parameter referenced "
                          f"by environment data descriptions must be A_UINT32 "
                          f"(encountered '{dop.diag_coded_type.base_data_type.value}')")
-                return
 
             if param_value is None:
                 if isinstance(param, ValueParameter):
@@ -244,18 +242,21 @@ class EnvironmentDataDescription(ComplexDop):
             if isinstance(dop, DtcDop):
                 return dop.convert_to_numerical_trouble_code(odxrequire(param_value))
             elif isinstance(dop, DataObjectProperty):
-                return dop.compu_method.convert_physical_to_internal(param_value)
+                return int(dop.compu_method.convert_physical_to_internal(
+                    param_value))  # type: ignore[arg-type]
 
-            odxraise()  # not reachable
+            odxraise()  # not reachable...
 
         elif isinstance(param, CodedConstParameter):
             if param.diag_coded_type.base_data_type != DataType.A_UINT32:
                 odxraise(f"The data type used by the parameter referenced "
                          f"by environment data descriptions must be A_UINT32 "
                          f"(encountered '{param.diag_coded_type.base_data_type.value}')")
-                return
 
-            assert isinstance(param.coded_value, int)
+                return param.coded_value
+
+            if not isinstance(param.coded_value, int):
+                odxraise()
 
             return param.coded_value
 
@@ -264,4 +265,4 @@ class EnvironmentDataDescription(ComplexDop):
                      f"must be a parameter that either specifies a DOP or a constant "
                      f"(encountered {type(param).__name__} for reference '{self.param_snref}' of "
                      f"ENV-DATA-DESC '{self.short_name}')")
-            return
+            return 0
