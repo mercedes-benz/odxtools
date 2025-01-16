@@ -218,7 +218,7 @@ class TestNavigation(unittest.TestCase):
 
         service_groups = ecu.service_groups
 
-        self.assertEqual(len(service_groups._service_groups), 4)
+        self.assertEqual(len(service_groups._service_groups), 5)
         self.assertEqual([s.short_name for s in service_groups[0x10]],
                          ["session_start", "session_stop"])
         self.assertEqual(service_groups[0x10].session_start.short_name, "session_start")

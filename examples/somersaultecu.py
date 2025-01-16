@@ -302,6 +302,15 @@ somersault_diagcodedtypes = {
             is_condensed_raw=None,
             is_highlow_byte_order_raw=None,
         ),
+    "int8":
+        StandardLengthType(
+            base_data_type=DataType.A_INT32,
+            bit_length=8,
+            bit_mask=None,
+            is_condensed_raw=None,
+            is_highlow_byte_order_raw=None,
+            base_type_encoding=None,
+        ),
     "uint8":
         StandardLengthType(
             base_data_type=DataType.A_UINT32,
@@ -423,6 +432,13 @@ somersault_unit_groups = {
 
 # computation methods
 somersault_compumethods: Dict[str, CompuMethod] = {
+    "int_passthrough":
+        IdenticalCompuMethod(
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_INT32,
+            physical_type=DataType.A_INT32),
     "uint_passthrough":
         IdenticalCompuMethod(
             category=CompuCategory.IDENTICAL,
@@ -644,6 +660,54 @@ somersault_dops = {
             odx_id=OdxLinkId("somersault.DOP.float", doc_frags),
             oid=None,
             short_name="float",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            diag_coded_type=somersault_diagcodedtypes["float32"],
+            physical_type=PhysicalType(DataType.A_FLOAT32, display_radix=None, precision=None),
+            compu_method=somersault_compumethods["float_passthrough"],
+            unit_ref=None,
+            sdgs=[],
+            internal_constr=None,
+            physical_constr=None,
+        ),
+    "schroedinger_base":
+        DataObjectProperty(
+            odx_id=OdxLinkId("somersault.DOP.schroedinger_base", doc_frags),
+            oid=None,
+            short_name="schroedinger_dop",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            diag_coded_type=somersault_diagcodedtypes["int8"],
+            physical_type=PhysicalType(DataType.A_INT32, display_radix=None, precision=None),
+            compu_method=somersault_compumethods["int_passthrough"],
+            unit_ref=None,
+            sdgs=[],
+            internal_constr=None,
+            physical_constr=None,
+        ),
+    "schroedinger_lazy":
+        DataObjectProperty(
+            odx_id=OdxLinkId("somersault.DOP.schroedinger_lazy", doc_frags),
+            oid=None,
+            short_name="schroedinger_dop",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            diag_coded_type=somersault_diagcodedtypes["uint8"],
+            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            compu_method=somersault_compumethods["uint_passthrough"],
+            unit_ref=None,
+            sdgs=[],
+            internal_constr=None,
+            physical_constr=None,
+        ),
+    "schroedinger_assiduous":
+        DataObjectProperty(
+            odx_id=OdxLinkId("somersault.DOP.schroedinger_assiduous", doc_frags),
+            oid=None,
+            short_name="schroedinger_dop",
             long_name=None,
             description=None,
             admin_data=None,
@@ -1656,6 +1720,33 @@ somersault_requests = {
                 ),
             ],
         ),
+    "schroedinger":
+        Request(
+            odx_id=OdxLinkId("somersault.RQ.schroedinger", doc_frags),
+            oid=None,
+            short_name="schroedinger_request",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            parameters=NamedItemList([
+                ValueParameter(
+                    oid=None,
+                    short_name="schroedinger_param",
+                    long_name=None,
+                    semantic=None,
+                    description=Description.from_string(
+                        "Parameter where the DOP changes dending on how you "
+                        "look at the SNREF to it"),
+                    physical_default_value_raw=None,
+                    byte_position=0,
+                    dop_ref=None,
+                    dop_snref="schroedinger_dop",
+                    bit_position=None,
+                    sdgs=[],
+                ),
+            ]),
+        ),
 }
 
 # services
@@ -1948,6 +2039,35 @@ somersault_services = {
             ],
             sdgs=[],
         ),
+    "schroedinger":
+        DiagService(
+            odx_id=OdxLinkId("somersault.service.schroedinger", doc_frags),
+            oid=None,
+            short_name="schroedinger",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            protocol_snrefs=[],
+            related_diag_comm_refs=[],
+            diagnostic_class=None,
+            is_mandatory_raw=None,
+            is_executable_raw=None,
+            is_final_raw=None,
+            comparam_refs=[],
+            is_cyclic_raw=None,
+            is_multiple_raw=None,
+            addressing_raw=None,
+            transmission_mode_raw=None,
+            audience=None,
+            pre_condition_state_refs=[],
+            state_transition_refs=[],
+            request_ref=OdxLinkRef.from_id(somersault_requests["schroedinger"].odx_id),
+            semantic="ROUTINE",
+            pos_response_refs=[],
+            neg_response_refs=[],
+            functional_class_refs=[],
+            sdgs=[],
+        ),
 }
 
 somersault_single_ecu_jobs = {
@@ -2113,9 +2233,11 @@ somersault_comparam_refs = [
     ),
 ]
 
-somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
+somersault_base_diag_data_dictionary_spec = DiagDataDictionarySpec(
     admin_data=None,
-    data_object_props=NamedItemList(somersault_dops.values()),
+    data_object_props=NamedItemList(
+        [x for x in somersault_dops.values() if x.short_name != "schroedinger_dop"] +
+        [somersault_dops["schroedinger_base"]]),
     unit_spec=UnitSpec(
         unit_groups=NamedItemList(somersault_unit_groups.values()),
         units=NamedItemList(somersault_units.values()),
@@ -2128,6 +2250,40 @@ somersault_diag_data_dictionary_spec = DiagDataDictionarySpec(
     env_data_descs=NamedItemList(),
     dtc_dops=NamedItemList(),
     structures=NamedItemList(somersault_structures.values()),
+    static_fields=NamedItemList(),
+    end_of_pdu_fields=NamedItemList(),
+    dynamic_length_fields=NamedItemList(),
+    dynamic_endmarker_fields=NamedItemList(),
+    sdgs=[],
+)
+
+somersault_lazy_diag_data_dictionary_spec = DiagDataDictionarySpec(
+    admin_data=None,
+    data_object_props=NamedItemList([somersault_dops["schroedinger_lazy"]]),
+    unit_spec=None,
+    tables=NamedItemList(),
+    muxs=NamedItemList(),
+    env_datas=NamedItemList(),
+    env_data_descs=NamedItemList(),
+    dtc_dops=NamedItemList(),
+    structures=NamedItemList(),
+    static_fields=NamedItemList(),
+    end_of_pdu_fields=NamedItemList(),
+    dynamic_length_fields=NamedItemList(),
+    dynamic_endmarker_fields=NamedItemList(),
+    sdgs=[],
+)
+
+somersault_assiduous_diag_data_dictionary_spec = DiagDataDictionarySpec(
+    admin_data=None,
+    data_object_props=NamedItemList([somersault_dops["schroedinger_assiduous"]]),
+    unit_spec=None,
+    tables=NamedItemList(),
+    muxs=NamedItemList(),
+    env_datas=NamedItemList(),
+    env_data_descs=NamedItemList(),
+    dtc_dops=NamedItemList(),
+    structures=NamedItemList(),
     static_fields=NamedItemList(),
     end_of_pdu_fields=NamedItemList(),
     dynamic_length_fields=NamedItemList(),
@@ -2178,7 +2334,7 @@ somersault_base_variant_raw = BaseVariantRaw(
     admin_data=None,
     company_datas=NamedItemList(),
     functional_classes=NamedItemList(somersault_functional_classes.values()),
-    diag_data_dictionary_spec=somersault_diag_data_dictionary_spec,
+    diag_data_dictionary_spec=somersault_base_diag_data_dictionary_spec,
     diag_comms_raw=[*somersault_services.values(), *somersault_single_ecu_jobs.values()],
     requests=NamedItemList(somersault_requests.values()),
     positive_responses=NamedItemList(somersault_positive_responses.values()),
@@ -2221,7 +2377,7 @@ somersault_lazy_ecu_raw = EcuVariantRaw(
     admin_data=None,
     company_datas=NamedItemList(),
     functional_classes=NamedItemList(),
-    diag_data_dictionary_spec=None,
+    diag_data_dictionary_spec=somersault_lazy_diag_data_dictionary_spec,
     diag_comms_raw=[],
     requests=NamedItemList(),
     positive_responses=NamedItemList(),
@@ -2445,22 +2601,7 @@ somersault_assiduous_ecu_raw = EcuVariantRaw(
     admin_data=None,
     company_datas=NamedItemList(),
     functional_classes=NamedItemList(),
-    diag_data_dictionary_spec=DiagDataDictionarySpec(
-        admin_data=None,
-        dtc_dops=NamedItemList(),
-        data_object_props=NamedItemList(),
-        static_fields=NamedItemList(),
-        structures=NamedItemList(),
-        end_of_pdu_fields=NamedItemList(),
-        dynamic_length_fields=NamedItemList(),
-        dynamic_endmarker_fields=NamedItemList(),
-        tables=NamedItemList(),
-        env_datas=NamedItemList(),
-        env_data_descs=NamedItemList(),
-        muxs=NamedItemList(),
-        unit_spec=None,
-        sdgs=[],
-    ),
+    diag_data_dictionary_spec=somersault_assiduous_diag_data_dictionary_spec,
     diag_comms_raw=list(somersault_assiduous_services.values()),
     requests=NamedItemList(somersault_assiduous_requests.values()),
     positive_responses=NamedItemList(somersault_assiduous_positive_responses.values()),
@@ -2476,7 +2617,7 @@ somersault_assiduous_ecu_raw = EcuVariantRaw(
             # this variant does everything which the base variant does
             # and more
             not_inherited_diag_comms=[],
-            not_inherited_dops=[],
+            not_inherited_dops=["schroedinger"],
             not_inherited_variables=[],
             not_inherited_tables=[],
             not_inherited_global_neg_responses=[],
