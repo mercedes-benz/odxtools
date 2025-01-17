@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+import math
 import unittest
 from datetime import datetime
 from typing import List
@@ -357,6 +358,24 @@ class TestEncodeRequest(unittest.TestCase):
             base_type_encoding=Encoding.NONE,
             is_highlow_byte_order=True)
         self.assertTrue(abs(float(decoded) - (-1.234)) < 1e-6)
+
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value=float("nan"),
+            bit_length=32,
+            base_data_type=DataType.A_FLOAT32,
+            base_type_encoding=Encoding.NONE,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, b'\x00\x00\xc0\x7f'[::-1])
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=32,
+            base_data_type=DataType.A_FLOAT32,
+            base_type_encoding=Encoding.NONE,
+            is_highlow_byte_order=True)
+        self.assertTrue(math.isnan(float(decoded)))
 
         # FLOAT64
         encode_state = EncodeState()
