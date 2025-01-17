@@ -12,7 +12,7 @@
 
 {%- macro printDiagCodedType(dct) -%}
 <DIAG-CODED-TYPE {{-make_xml_attrib("BASE-DATA-TYPE", dct.base_data_type.value)}}
-                 {{-make_xml_attrib("BASE-TYPE-ENCODING", dct.base_type_encoding)}}
+                 {{-make_xml_attrib("BASE-TYPE-ENCODING", dct.base_type_encoding and dct.base_type_encoding.value)}}
                  {{-make_bool_xml_attrib("IS-HIGHLOW-BYTE-ORDER", dct.is_highlow_byte_order_raw)}}
                  {%- if dct.termination is defined %}
                  {{-make_xml_attrib("TERMINATION", dct.termination)}}

@@ -19,6 +19,7 @@ from odxtools.diaglayers.diaglayertype import DiagLayerType
 from odxtools.diaglayers.ecuvariant import EcuVariant
 from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
 from odxtools.encodestate import EncodeState
+from odxtools.encoding import Encoding
 from odxtools.exceptions import DecodeError, EncodeError, OdxError, odxrequire
 from odxtools.leadinglengthinfotype import LeadingLengthInfoType
 from odxtools.minmaxlengthtype import MinMaxLengthType
@@ -1014,7 +1015,7 @@ class TestMinMaxLengthType(unittest.TestCase):
     def test_read_odx(self) -> None:
         expected = MinMaxLengthType(
             base_data_type=DataType.A_ASCIISTRING,
-            base_type_encoding="ISO-8859-1",
+            base_type_encoding=Encoding.ISO_8859_1,
             min_length=8,
             max_length=16,
             termination="ZERO",
@@ -1024,7 +1025,7 @@ class TestMinMaxLengthType(unittest.TestCase):
         # diag-coded-type requires xsi namespace
         diagcodedtype_odx = f"""
         <ODX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <DIAG-CODED-TYPE BASE-TYPE-ENCODING="{expected.base_type_encoding}" BASE-DATA-TYPE="{expected.base_data_type.value}" TERMINATION="{expected.termination}" xsi:type="MIN-MAX-LENGTH-TYPE">
+            <DIAG-CODED-TYPE BASE-TYPE-ENCODING="{expected.base_type_encoding and expected.base_type_encoding.value}" BASE-DATA-TYPE="{expected.base_data_type.value}" TERMINATION="{expected.termination}" xsi:type="MIN-MAX-LENGTH-TYPE">
                 <MIN-LENGTH>{expected.min_length}</MIN-LENGTH>
                 <MAX-LENGTH>{expected.max_length}</MAX-LENGTH>
             </DIAG-CODED-TYPE>

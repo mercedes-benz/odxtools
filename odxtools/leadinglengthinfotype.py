@@ -72,6 +72,7 @@ class LeadingLengthInfoType(DiagCodedType):
             used_mask=None,
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,
+            base_type_encoding=None,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
@@ -80,6 +81,7 @@ class LeadingLengthInfoType(DiagCodedType):
             used_mask=None,
             bit_length=8 * byte_length,
             base_data_type=self.base_data_type,
+            base_type_encoding=None,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
@@ -90,6 +92,7 @@ class LeadingLengthInfoType(DiagCodedType):
         byte_length = decode_state.extract_atomic_value(
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,  # length is an integer
+            base_type_encoding=None,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
@@ -102,6 +105,7 @@ class LeadingLengthInfoType(DiagCodedType):
         value = decode_state.extract_atomic_value(
             bit_length=8 * byte_length,
             base_data_type=self.base_data_type,
+            base_type_encoding=None,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 

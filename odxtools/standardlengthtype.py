@@ -119,15 +119,16 @@ class StandardLengthType(DiagCodedType):
             used_mask=self.__get_raw_mask(internal_value),
             bit_length=self.bit_length,
             base_data_type=self.base_data_type,
+            base_type_encoding=self.base_type_encoding,
             is_highlow_byte_order=self.is_highlow_byte_order)
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         internal_value = decode_state.extract_atomic_value(
-            self.bit_length,
-            self.base_data_type,
-            self.is_highlow_byte_order,
-        )
+            bit_length=self.bit_length,
+            base_data_type=self.base_data_type,
+            base_type_encoding=self.base_type_encoding,
+            is_highlow_byte_order=self.is_highlow_byte_order)
         internal_value = self.__apply_mask(internal_value)
 
         return internal_value

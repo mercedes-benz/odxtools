@@ -21,9 +21,10 @@ from odxtools.diagnostictroublecode import DiagnosticTroubleCode
 from odxtools.diagservice import DiagService
 from odxtools.dtcdop import DtcDop
 from odxtools.encodestate import EncodeState
+from odxtools.encoding import Encoding
 from odxtools.environmentdata import EnvironmentData
 from odxtools.environmentdatadescription import EnvironmentDataDescription
-from odxtools.exceptions import EncodeError
+from odxtools.exceptions import EncodeError, OdxError
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
@@ -87,6 +88,300 @@ class TestEncodeRequest(unittest.TestCase):
             parameters=NamedItemList([param1, param2]),
         )
         self.assertEqual(req.encode(), bytearray([0x7D, 0xAB]))
+
+    def test_string_encodings(self) -> None:
+        # ISO 8859-1 (latin1)
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value="ä?a",
+            bit_length=24,
+            base_data_type=DataType.A_UTF8STRING,
+            base_type_encoding=Encoding.ISO_8859_1,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, bytes([0xe4, 0x3f, 0x61]))
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=24,
+            base_data_type=DataType.A_UTF8STRING,
+            base_type_encoding=Encoding.ISO_8859_1,
+            is_highlow_byte_order=True)
+        self.assertEqual(decoded, "ä?a")
+
+        # UTF-8
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value="ä?",
+            bit_length=24,
+            base_data_type=DataType.A_UTF8STRING,
+            base_type_encoding=Encoding.UTF8,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, bytes([0xc3, 0xa4, 0x3f]))
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=24,
+            base_data_type=DataType.A_UTF8STRING,
+            base_type_encoding=Encoding.UTF8,
+            is_highlow_byte_order=True)
+        self.assertEqual(decoded, "ä?")
+
+        # big-endian UTF-16
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value="ä",
+            bit_length=16,
+            base_data_type=DataType.A_UTF8STRING,
+            base_type_encoding=Encoding.UCS2,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, bytes([0x00, 0xe4]))
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=16,
+            base_data_type=DataType.A_UTF8STRING,
+            base_type_encoding=Encoding.UCS2,
+            is_highlow_byte_order=True)
+        self.assertEqual(decoded, "ä")
+
+        # little-endian UTF-16
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value="ä",
+            bit_length=16,
+            base_data_type=DataType.A_UTF8STRING,
+            base_type_encoding=Encoding.UCS2,
+            is_highlow_byte_order=False,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, bytes([0xe4, 0x00]))
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=16,
+            base_data_type=DataType.A_UTF8STRING,
+            base_type_encoding=Encoding.UCS2,
+            is_highlow_byte_order=False)
+        self.assertEqual(decoded, "ä")
+
+    def test_int_encodings(self) -> None:
+        # packed BCD
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value=1234,
+            bit_length=24,
+            base_data_type=DataType.A_UINT32,
+            base_type_encoding=Encoding.BCD_P,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, bytes([0x00, 0x12, 0x34]))
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=24,
+            base_data_type=DataType.A_UINT32,
+            base_type_encoding=Encoding.BCD_P,
+            is_highlow_byte_order=True)
+        self.assertEqual(decoded, 1234)
+
+        # unpacked BCD
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value=12,
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.BCD_UP,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, bytes([0x00, 0x01, 0x02]))
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=24,
+            base_data_type=DataType.A_UINT32,
+            base_type_encoding=Encoding.BCD_UP,
+            is_highlow_byte_order=True)
+        self.assertEqual(decoded, 12)
+
+        # one complement
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value=0x1234,
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.ONEC,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, bytes([0x00, 0x12, 0x34]))
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.ONEC,
+            is_highlow_byte_order=True)
+        self.assertEqual(decoded, 0x1234)
+
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value=-0x1234,
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.ONEC,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, bytes([0xff, 0xed, 0xcb]))
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.ONEC,
+            is_highlow_byte_order=True)
+        self.assertEqual(decoded, -0x1234)
+
+        # two complement
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value=0x1234,
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.TWOC,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, bytes([0x00, 0x12, 0x34]))
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.TWOC,
+            is_highlow_byte_order=True)
+        self.assertEqual(decoded, 0x1234)
+
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value=-0x1234,
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.TWOC,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, bytes([0xff, 0xed, 0xcc]))
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.TWOC,
+            is_highlow_byte_order=True)
+        self.assertEqual(decoded, -0x1234)
+
+        # sign-magnitude
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value=0x1234,
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.SM,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, bytes([0x00, 0x12, 0x34]))
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.SM,
+            is_highlow_byte_order=True)
+        self.assertEqual(decoded, 0x1234)
+
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value=-0x1234,
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.SM,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, bytes([0x80, 0x12, 0x34]))
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=24,
+            base_data_type=DataType.A_INT32,
+            base_type_encoding=Encoding.SM,
+            is_highlow_byte_order=True)
+        self.assertEqual(decoded, -0x1234)
+
+    def test_float_encodings(self) -> None:
+        # FLOAT32
+        encode_state = EncodeState()
+        with self.assertRaises(OdxError):
+            encode_state.emplace_atomic_value(
+                internal_value=-1.234,
+                bit_length=24,
+                base_data_type=DataType.A_FLOAT32,
+                base_type_encoding=Encoding.NONE,
+                is_highlow_byte_order=True,
+                used_mask=None)
+        encode_state.emplace_atomic_value(
+            internal_value=-1.234,
+            bit_length=32,
+            base_data_type=DataType.A_FLOAT32,
+            base_type_encoding=Encoding.NONE,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, b'\xb6\xf3\x9d\xbf'[::-1])
+
+        decode_state = DecodeState(encode_state.coded_message)
+        with self.assertRaises(OdxError):
+            decoded = decode_state.extract_atomic_value(
+                bit_length=24,
+                base_data_type=DataType.A_FLOAT32,
+                base_type_encoding=Encoding.NONE,
+                is_highlow_byte_order=True)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=32,
+            base_data_type=DataType.A_FLOAT32,
+            base_type_encoding=Encoding.NONE,
+            is_highlow_byte_order=True)
+        self.assertTrue(abs(float(decoded) - (-1.234)) < 1e-6)
+
+        # FLOAT64
+        encode_state = EncodeState()
+        with self.assertRaises(OdxError):
+            encode_state.emplace_atomic_value(
+                internal_value=-1.234,
+                bit_length=24,
+                base_data_type=DataType.A_FLOAT64,
+                base_type_encoding=Encoding.NONE,
+                is_highlow_byte_order=True,
+                used_mask=None)
+        encode_state.emplace_atomic_value(
+            internal_value=-1.234,
+            bit_length=64,
+            base_data_type=DataType.A_FLOAT64,
+            base_type_encoding=Encoding.NONE,
+            is_highlow_byte_order=True,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, b'X9\xb4\xc8v\xbe\xf3\xbf'[::-1])
+
+        decode_state = DecodeState(encode_state.coded_message)
+        with self.assertRaises(OdxError):
+            decoded = decode_state.extract_atomic_value(
+                bit_length=24,
+                base_data_type=DataType.A_FLOAT64,
+                base_type_encoding=Encoding.NONE,
+                is_highlow_byte_order=True)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=64,
+            base_data_type=DataType.A_FLOAT64,
+            base_type_encoding=Encoding.NONE,
+            is_highlow_byte_order=True)
+        self.assertTrue(abs(float(decoded) - (-1.234)) < 1e-9)
 
     def test_encode_coded_const_reorder(self) -> None:
         diag_coded_type = StandardLengthType(

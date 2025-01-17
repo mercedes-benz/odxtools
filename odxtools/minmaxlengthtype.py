@@ -78,20 +78,33 @@ class MinMaxLengthType(DiagCodedType):
             odxraise("MinMaxLengthType is currently only implemented for strings and byte arrays",
                      EncodeError)
 
-        if self.max_length is not None:
-            data_length = min(len(internal_value), self.max_length)
-        else:
-            data_length = len(internal_value)
+        # TODO: This assumes that each character of a string is
+        #       encoded into a single byte. This is never the case for
+        #       UTF-16 encoded strings and does not always hold for
+        #       UTF-8. We ignore this issue for now...
+        data_length = len(internal_value)
 
-        orig_cursor = encode_state.cursor_byte_position
+        if data_length < self.min_length:
+            odxraise(
+                f"Encoded value for MinMaxLengthType "
+                f"must be at least {self.min_length} bytes long. "
+                f"(Is: {data_length} bytes.)", EncodeError)
+            data_length = self.min_length
+        elif self.max_length is not None and data_length > self.max_length:
+            odxraise(
+                f"Encoded value for MinMaxLengthType "
+                f"must not be longer than {self.max_length} bytes. "
+                f"(Is: {data_length} bytes.)", EncodeError)
+            data_length = self.max_length
+
         encode_state.emplace_atomic_value(
             internal_value=internal_value,
             used_mask=None,
             bit_length=8 * data_length,
             base_data_type=self.base_data_type,
+            base_type_encoding=self.base_type_encoding,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
-        value_len = encode_state.cursor_byte_position - orig_cursor
 
         # TODO: ensure that the termination delimiter is not
         # encountered within the encoded value.
@@ -100,7 +113,7 @@ class MinMaxLengthType(DiagCodedType):
             self.termination != "END-OF-PDU" or encode_state.is_end_of_pdu,
             "Encountered a MIN-MAX-LENGTH type with END-OF-PDU termination "
             "which is not located at the end of the PDU")
-        if encode_state.is_end_of_pdu or value_len == self.max_length:
+        if encode_state.is_end_of_pdu or data_length == self.max_length:
             # All termination types may be ended by the end of the PDU
             # or once reaching the maximum length. In this case, we
             # must not add the termination sequence
@@ -110,23 +123,10 @@ class MinMaxLengthType(DiagCodedType):
 
             # ensure that we don't try to encode an odd-length
             # value when using a two-byte terminator
-            odxassert(value_len % len(termination_sequence) == 0)
+            odxassert(data_length % len(termination_sequence) == 0)
 
-            value_len += len(termination_sequence)
+            data_length += len(termination_sequence)
             encode_state.emplace_bytes(termination_sequence)
-
-        if value_len < self.min_length:
-            odxraise(
-                f"Encoded value for MinMaxLengthType "
-                f"must be at least {self.min_length} bytes long. "
-                f"(Is: {value_len} bytes.)", EncodeError)
-            return
-        elif self.max_length is not None and value_len > self.max_length:
-            odxraise(
-                f"Encoded value for MinMaxLengthType "
-                f"must not be longer than {self.max_length} bytes. "
-                f"(Is: {value_len} bytes.)", EncodeError)
-            return
 
     def decode_from_pdu(self, decode_state: DecodeState) -> AtomicOdxType:
         odxassert(decode_state.cursor_bit_position == 0,
@@ -180,6 +180,7 @@ class MinMaxLengthType(DiagCodedType):
             value = decode_state.extract_atomic_value(
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
+                base_type_encoding=self.base_type_encoding,
                 is_highlow_byte_order=self.is_highlow_byte_order,
             )
 
@@ -198,6 +199,7 @@ class MinMaxLengthType(DiagCodedType):
             value = decode_state.extract_atomic_value(
                 bit_length=8 * byte_length,
                 base_data_type=self.base_data_type,
+                base_type_encoding=self.base_type_encoding,
                 is_highlow_byte_order=self.is_highlow_byte_order,
             )
 
