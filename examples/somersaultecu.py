@@ -1733,11 +1733,10 @@ somersault_requests = {
                 ValueParameter(
                     oid=None,
                     short_name="schroedinger_param",
-                    long_name=None,
+                    long_name="Parameter where the DOP changes dending on how you "
+                    "look at the SNREF to it",
                     semantic=None,
-                    description=Description.from_string(
-                        "Parameter where the DOP changes dending on how you "
-                        "look at the SNREF to it"),
+                    description=None,
                     physical_default_value_raw=None,
                     byte_position=0,
                     dop_ref=None,
