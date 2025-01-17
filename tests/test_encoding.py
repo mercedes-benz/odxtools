@@ -188,10 +188,18 @@ class TestEncodeRequest(unittest.TestCase):
 
         # unpacked BCD
         encode_state = EncodeState()
+        with self.assertRaises(OdxError):
+            encode_state.emplace_atomic_value(
+                internal_value=12,
+                bit_length=24,
+                base_data_type=DataType.A_INT32,
+                base_type_encoding=Encoding.BCD_UP,
+                is_highlow_byte_order=True,
+                used_mask=None)
         encode_state.emplace_atomic_value(
             internal_value=12,
             bit_length=24,
-            base_data_type=DataType.A_INT32,
+            base_data_type=DataType.A_UINT32,
             base_type_encoding=Encoding.BCD_UP,
             is_highlow_byte_order=True,
             used_mask=None)

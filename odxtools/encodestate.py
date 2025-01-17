@@ -101,8 +101,12 @@ class EncodeState:
                 odxraise(f"{internal_value!r} is not a bytefield", EncodeError)
                 return
 
-            odxassert(base_type_encoding is None or base_type_encoding == Encoding.NONE)
+            odxassert(
+                base_type_encoding is None or
+                base_type_encoding in (Encoding.NONE, Encoding.BCD_P, Encoding.BCD_UP))
 
+            # note that we do not ensure that BCD-encoded byte fields
+            # only represent "legal" values
             raw_value = bytes(internal_value)
 
         # ... string types, ...
@@ -111,35 +115,29 @@ class EncodeState:
             if not isinstance(internal_value, str):
                 odxraise(f"The internal value {internal_value!r} is not a string", EncodeError)
 
-            if base_type_encoding == Encoding.UTF8:
+            # note that the spec disallows certain combinations of
+            # base_data_type and encoding (e.g., A_ASCIISTRING encoded
+            # using UTF-8). Since in python3 strings are always
+            # capable of the full unicode character set, odxtools
+            # ignores these restrictions...
+
+            if base_type_encoding == Encoding.UTF8 or (base_data_type == DataType.A_UTF8STRING and
+                                                       base_type_encoding is None):
                 raw_value = internal_value.encode("utf-8")
-            elif base_type_encoding == Encoding.UCS2:
+            elif base_type_encoding == Encoding.UCS2 or (base_data_type == DataType.A_UNICODE2STRING
+                                                         and base_type_encoding is None):
                 text_encoding = "utf-16-be" if is_highlow_byte_order else "utf-16-le"
                 raw_value = internal_value.encode(text_encoding)
-            elif base_type_encoding == Encoding.ISO_8859_1:
+            elif base_type_encoding == Encoding.ISO_8859_1 or (
+                    base_data_type == DataType.A_ASCIISTRING and base_type_encoding is None):
                 raw_value = internal_value.encode("iso-8859-1")
             elif base_type_encoding == Encoding.ISO_8859_2:
                 raw_value = internal_value.encode("iso-8859-2")
             elif base_type_encoding == Encoding.WINDOWS_1252:
                 raw_value = internal_value.encode("cp1252")
             else:
-                odxassert(base_type_encoding is None or base_type_encoding == Encoding.NONE)
-
-                # if no encoding has been specified explicitly, we
-                # make assumptions by looking at the data type
-                if base_data_type == DataType.A_UTF8STRING:
-                    raw_value = internal_value.encode("utf-8")
-                elif base_data_type == DataType.A_UNICODE2STRING:
-                    text_encoding = "utf-16-be" if is_highlow_byte_order else "utf-16-le"
-                    raw_value = internal_value.encode(text_encoding)
-                else:
-                    odxassert(base_data_type == DataType.A_ASCIISTRING)
-                    # The spec says ASCII, meaning only character
-                    # values 0-127.  In practice, vendors use
-                    # iso-8859-1, aka latin-1, because iso-8859-1
-                    # never fails since it has a valid character
-                    # mapping for every possible value
-                    raw_value = internal_value.encode("iso-8859-1")
+                odxraise(f"Specified illegal encoding {base_type_encoding} for string object")
+                raw_value = internal_value.encode("iso-8859-1")
 
             if 8 * len(raw_value) > bit_length:
                 odxraise(
@@ -147,46 +145,21 @@ class EncodeState:
                     f"to be encoded. The maximum number of bytes is {(bit_length + 7)//8}.",
                     EncodeError)
 
-        # ... integers, ...
-        elif base_data_type in (DataType.A_INT32, DataType.A_UINT32):
+        # ... signed integers, ...
+        elif base_data_type == DataType.A_INT32:
             if not isinstance(internal_value, int):
                 odxraise(
                     f"Internal value must be of integer type, not {type(internal_value).__name__}",
                     EncodeError)
 
-            # BCD encodings
-            if base_type_encoding == Encoding.BCD_P:
-                # packed BCD
-                odxassert(internal_value >= 0,
-                          f"Values to be BCD encoded must be positive (is {internal_value})",
-                          EncodeError)
-                tmp2 = internal_value
-                raw_value = 0
-                shift = 0
-                while tmp2 > 0:
-                    raw_value |= (tmp2 % 10) << shift
-                    shift += 4
-                    tmp2 //= 10
-            elif base_type_encoding == Encoding.BCD_UP:
-                # unpacked BCD
-                odxassert(internal_value >= 0,
-                          f"Values to be BCD encoded must be positive (is {internal_value})",
-                          EncodeError)
-                tmp2 = internal_value
-                raw_value = 0
-                shift = 0
-                while tmp2 > 0:
-                    raw_value |= (tmp2 % 10) << shift
-                    shift += 8
-                    tmp2 //= 10
-            elif base_type_encoding == Encoding.ONEC:
+            if base_type_encoding == Encoding.ONEC:
                 # one-complement
                 if internal_value >= 0:
                     raw_value = internal_value
                 else:
                     mask = (1 << bit_length) - 1
                     raw_value = mask + internal_value
-            elif base_type_encoding == Encoding.TWOC:
+            elif base_type_encoding in (None, Encoding.TWOC):
                 # two-complement
                 if internal_value >= 0:
                     raw_value = internal_value
@@ -200,11 +173,42 @@ class EncodeState:
                 else:
                     raw_value = (1 << (bit_length - 1)) + abs(internal_value)
             else:
-                # None specified
-                odxassert(
-                    base_type_encoding in (None, Encoding.NONE),
-                    f"Unhandled integer encoding '{base_type_encoding}'")
+                odxraise(f"Illegal encoding ({base_type_encoding}) specified for "
+                         f"{base_data_type.value}")
+
+                internal_value = raw_value
+
+        # ... unsigned integers, ...
+        elif base_data_type == DataType.A_UINT32:
+            if not isinstance(internal_value, int) or internal_value < 0:
+                odxraise(f"Internal value must be a positive integer, not {internal_value!r}")
+
+            if base_type_encoding == Encoding.BCD_P:
+                # packed BCD
+                tmp2 = internal_value
+                raw_value = 0
+                shift = 0
+                while tmp2 > 0:
+                    raw_value |= (tmp2 % 10) << shift
+                    shift += 4
+                    tmp2 //= 10
+            elif base_type_encoding == Encoding.BCD_UP:
+                # unpacked BCD
+                tmp2 = internal_value
+                raw_value = 0
+                shift = 0
+                while tmp2 > 0:
+                    raw_value |= (tmp2 % 10) << shift
+                    shift += 8
+                    tmp2 //= 10
+            elif base_type_encoding in (None, Encoding.NONE):
+                # no encoding
                 raw_value = internal_value
+            else:
+                odxraise(f"Illegal encoding ({base_type_encoding}) specified for "
+                         f"{base_data_type.value}")
+
+                internal_value = raw_value
 
         # ... and others (floating point values)
         else:
