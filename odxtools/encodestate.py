@@ -220,7 +220,7 @@ class EncodeState:
                 bit_length = 32
             elif base_data_type == DataType.A_FLOAT64 and bit_length != 64:
                 odxraise(f"Illegal bit length for a float64 object ({bit_length})")
-                bit_length = 32
+                bit_length = 64
 
             raw_value = float(internal_value)
 

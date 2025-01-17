@@ -71,8 +71,10 @@ class DecodeState:
 
         if base_data_type == DataType.A_FLOAT32 and bit_length != 32:
             odxraise("The bit length of FLOAT32 values must be 32 bits")
+            bit_length = 32
         elif base_data_type == DataType.A_FLOAT64 and bit_length != 64:
             odxraise("The bit length of FLOAT64 values must be 64 bits")
+            bit_length = 64
 
         byte_length = (bit_length + self.cursor_bit_position + 7) // 8
         if self.cursor_byte_position + byte_length > len(self.coded_message):
@@ -91,13 +93,6 @@ class DecodeState:
                 DataType.A_FLOAT64,
         ]:
             extracted_bytes = extracted_bytes[::-1]
-
-        if base_data_type == DataType.A_FLOAT32 and bit_length != 32:
-            odxraise(f"Illegal bit length for a float32 object ({bit_length})")
-            bit_length = 32
-        elif base_data_type == DataType.A_FLOAT64 and bit_length != 64:
-            odxraise(f"Illegal bit length for a float64 object ({bit_length})")
-            bit_length = 64
 
         padding = (8 - (bit_length + self.cursor_bit_position) % 8) % 8
         raw_value, = bitstruct.unpack_from(

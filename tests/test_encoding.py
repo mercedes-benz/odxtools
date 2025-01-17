@@ -357,6 +357,8 @@ class TestEncodeRequest(unittest.TestCase):
             base_data_type=DataType.A_FLOAT32,
             base_type_encoding=Encoding.NONE,
             is_highlow_byte_order=True)
+        # allow rounding errors due to python's float objects
+        # potentially using a different representation
         self.assertTrue(abs(float(decoded) - (-1.234)) < 1e-6)
 
         encode_state = EncodeState()
@@ -408,6 +410,8 @@ class TestEncodeRequest(unittest.TestCase):
             base_data_type=DataType.A_FLOAT64,
             base_type_encoding=Encoding.NONE,
             is_highlow_byte_order=True)
+        # allow rounding errors due to python's float objects
+        # potentially using a different representation
         self.assertTrue(abs(float(decoded) - (-1.234)) < 1e-9)
 
     def test_encode_coded_const_reorder(self) -> None:
