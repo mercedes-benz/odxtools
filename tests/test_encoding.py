@@ -343,7 +343,7 @@ class TestEncodeRequest(unittest.TestCase):
             base_type_encoding=Encoding.NONE,
             is_highlow_byte_order=True,
             used_mask=None)
-        self.assertEqual(encode_state.coded_message, b'\xb6\xf3\x9d\xbf'[::-1])
+        self.assertEqual(encode_state.coded_message, b'\xbf\x9d\xf3\xb6')
 
         decode_state = DecodeState(encode_state.coded_message)
         with self.assertRaises(OdxError):
@@ -361,6 +361,28 @@ class TestEncodeRequest(unittest.TestCase):
         # potentially using a different representation
         self.assertTrue(abs(float(decoded) - (-1.234)) < 1e-6)
 
+        # FLOAT32 little-endian
+        encode_state = EncodeState()
+        encode_state.emplace_atomic_value(
+            internal_value=-1.234,
+            bit_length=32,
+            base_data_type=DataType.A_FLOAT32,
+            base_type_encoding=Encoding.NONE,
+            is_highlow_byte_order=False,
+            used_mask=None)
+        self.assertEqual(encode_state.coded_message, b'\xb6\xf3\x9d\xbf')
+
+        decode_state = DecodeState(encode_state.coded_message)
+        decoded = decode_state.extract_atomic_value(
+            bit_length=32,
+            base_data_type=DataType.A_FLOAT32,
+            base_type_encoding=Encoding.NONE,
+            is_highlow_byte_order=False)
+        # allow rounding errors due to python's float objects
+        # potentially using a different representation
+        self.assertTrue(abs(float(decoded) - (-1.234)) < 1e-6)
+
+        # check if NaN can be handled
         encode_state = EncodeState()
         encode_state.emplace_atomic_value(
             internal_value=float("nan"),
@@ -369,7 +391,7 @@ class TestEncodeRequest(unittest.TestCase):
             base_type_encoding=Encoding.NONE,
             is_highlow_byte_order=True,
             used_mask=None)
-        self.assertEqual(encode_state.coded_message, b'\x00\x00\xc0\x7f'[::-1])
+        self.assertEqual(encode_state.coded_message, b'\x7f\xc0\x00\x00')
 
         decode_state = DecodeState(encode_state.coded_message)
         decoded = decode_state.extract_atomic_value(
@@ -396,7 +418,7 @@ class TestEncodeRequest(unittest.TestCase):
             base_type_encoding=Encoding.NONE,
             is_highlow_byte_order=True,
             used_mask=None)
-        self.assertEqual(encode_state.coded_message, b'X9\xb4\xc8v\xbe\xf3\xbf'[::-1])
+        self.assertEqual(encode_state.coded_message, b'\xbf\xf3\xbev\xc8\xb49X')
 
         decode_state = DecodeState(encode_state.coded_message)
         with self.assertRaises(OdxError):
