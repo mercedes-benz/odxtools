@@ -122,9 +122,6 @@ class DecodeState:
 
         # ... signed integers, ...
         elif base_data_type == DataType.A_INT32:
-            if not isinstance(raw_value, int):
-                odxraise(f"Raw value must be of integer type, not {type(raw_value).__name__}")
-
             if base_type_encoding == Encoding.ONEC:
                 # one-complement
                 sign_bit = 1 << (bit_length - 1)
@@ -156,9 +153,6 @@ class DecodeState:
 
         # ... unsigned integers, ...
         elif base_data_type == DataType.A_UINT32:
-            if not isinstance(raw_value, int) or raw_value < 0:
-                odxraise(f"Raw value must be a positive integer, not {raw_value}")
-
             if base_type_encoding == Encoding.BCD_P:
                 # packed BCD
                 tmp2 = raw_value
