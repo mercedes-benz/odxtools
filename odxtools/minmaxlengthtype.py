@@ -8,6 +8,7 @@ from typing_extensions import override
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
+from .encoding import get_string_encoding
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment
 from .odxtypes import AtomicOdxType, DataType
@@ -78,11 +79,21 @@ class MinMaxLengthType(DiagCodedType):
             odxraise("MinMaxLengthType is currently only implemented for strings and byte arrays",
                      EncodeError)
 
-        # TODO: This assumes that each character of a string is
-        #       encoded into a single byte. This is never the case for
-        #       UTF-16 encoded strings and does not always hold for
-        #       UTF-8. We ignore this issue for now...
-        data_length = len(internal_value)
+        raw_value = b''
+        if isinstance(internal_value, str):
+            str_encoding = get_string_encoding(self.base_data_type, self.base_type_encoding,
+                                               self.is_highlow_byte_order)
+
+            if str_encoding is None:
+                odxraise(f"Internal string value specified for object which is "
+                         f"'{self.base_data_type.value}' not a string")
+                raw_value = b''
+            else:
+                raw_value = internal_value.encode(str_encoding)
+        else:
+            raw_value = bytes(internal_value)
+
+        data_length = len(raw_value)
 
         if data_length < self.min_length:
             odxraise(
@@ -98,12 +109,12 @@ class MinMaxLengthType(DiagCodedType):
             data_length = self.max_length
 
         encode_state.emplace_atomic_value(
-            internal_value=internal_value,
+            internal_value=raw_value,
             used_mask=None,
             bit_length=8 * data_length,
-            base_data_type=self.base_data_type,
-            base_type_encoding=self.base_type_encoding,
-            is_highlow_byte_order=self.is_highlow_byte_order,
+            base_data_type=DataType.A_BYTEFIELD,
+            base_type_encoding=None,
+            is_highlow_byte_order=True,
         )
 
         # TODO: ensure that the termination delimiter is not

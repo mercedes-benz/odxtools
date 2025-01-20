@@ -3,7 +3,7 @@ import warnings
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Dict, List, Optional, SupportsBytes, Tuple
 
-from .encoding import Encoding
+from .encoding import Encoding, get_string_encoding
 from .exceptions import EncodeError, OdxWarning, odxassert, odxraise
 from .odxtypes import AtomicOdxType, DataType, ParameterValue
 
@@ -115,29 +115,12 @@ class EncodeState:
             if not isinstance(internal_value, str):
                 odxraise(f"The internal value {internal_value!r} is not a string", EncodeError)
 
-            # note that the spec disallows certain combinations of
-            # base_data_type and encoding (e.g., A_ASCIISTRING encoded
-            # using UTF-8). Since in python3 strings are always
-            # capable of the full unicode character set, odxtools
-            # ignores these restrictions...
-
-            if base_type_encoding == Encoding.UTF8 or (base_data_type == DataType.A_UTF8STRING and
-                                                       base_type_encoding is None):
-                raw_value = internal_value.encode("utf-8")
-            elif base_type_encoding == Encoding.UCS2 or (base_data_type == DataType.A_UNICODE2STRING
-                                                         and base_type_encoding is None):
-                text_encoding = "utf-16-be" if is_highlow_byte_order else "utf-16-le"
-                raw_value = internal_value.encode(text_encoding)
-            elif base_type_encoding == Encoding.ISO_8859_1 or (
-                    base_data_type == DataType.A_ASCIISTRING and base_type_encoding is None):
-                raw_value = internal_value.encode("iso-8859-1")
-            elif base_type_encoding == Encoding.ISO_8859_2:
-                raw_value = internal_value.encode("iso-8859-2")
-            elif base_type_encoding == Encoding.WINDOWS_1252:
-                raw_value = internal_value.encode("cp1252")
+            str_encoding = get_string_encoding(base_data_type, base_type_encoding,
+                                               is_highlow_byte_order)
+            if str_encoding is not None:
+                raw_value = internal_value.encode(str_encoding)
             else:
-                odxraise(f"Specified illegal encoding {base_type_encoding} for string object")
-                raw_value = internal_value.encode("iso-8859-1")
+                raw_value = b""
 
             if 8 * len(raw_value) > bit_length:
                 odxraise(

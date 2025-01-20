@@ -2,7 +2,7 @@
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
-from .encoding import Encoding
+from .encoding import Encoding, get_string_encoding
 from .exceptions import DecodeError, odxassert, odxraise, strict_mode
 from .odxtypes import AtomicOdxType, DataType, ParameterValue
 
@@ -114,29 +114,13 @@ class DecodeState:
         # ... string types, ...
         elif base_data_type in (DataType.A_UTF8STRING, DataType.A_ASCIISTRING,
                                 DataType.A_UNICODE2STRING):
-            # note that the spec disallows certain combinations of
-            # base_data_type and encoding (e.g., A_ASCIISTRING encoded
-            # using UTF-8). Since in python3 strings are always
-            # capable of the full unicode character set, odxtools
-            # ignores these restrictions...
             text_errors = 'strict' if strict_mode else 'replace'
-            if base_type_encoding == Encoding.UTF8 or (base_data_type == DataType.A_UTF8STRING and
-                                                       base_type_encoding is None):
-                internal_value = raw_value.decode("utf-8", errors=text_errors)
-            elif base_type_encoding == Encoding.UCS2 or (base_data_type == DataType.A_UNICODE2STRING
-                                                         and base_type_encoding is None):
-                text_encoding = "utf-16-be" if is_highlow_byte_order else "utf-16-le"
-                internal_value = raw_value.decode(text_encoding, errors=text_errors)
-            elif base_type_encoding == Encoding.ISO_8859_1 or (
-                    base_data_type == DataType.A_ASCIISTRING and base_type_encoding is None):
-                internal_value = raw_value.decode("iso-8859-1", errors=text_errors)
-            elif base_type_encoding == Encoding.ISO_8859_2:
-                internal_value = raw_value.decode("iso-8859-2", errors=text_errors)
-            elif base_type_encoding == Encoding.WINDOWS_1252:
-                internal_value = raw_value.decode("cp1252", errors=text_errors)
+            str_encoding = get_string_encoding(base_data_type, base_type_encoding,
+                                               is_highlow_byte_order)
+            if str_encoding is not None:
+                internal_value = raw_value.decode(str_encoding, errors=text_errors)
             else:
-                odxraise(f"Specified illegal encoding {base_type_encoding} for string object")
-                internal_value = raw_value.decode("iso-8859-1", errors=text_errors)
+                internal_value = "ERROR"
 
         # ... signed integers, ...
         elif base_data_type == DataType.A_INT32:
