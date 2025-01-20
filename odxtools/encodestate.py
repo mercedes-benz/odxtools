@@ -101,9 +101,7 @@ class EncodeState:
                 odxraise(f"{internal_value!r} is not a bytefield", EncodeError)
                 return
 
-            odxassert(
-                base_type_encoding is None or
-                base_type_encoding in (Encoding.NONE, Encoding.BCD_P, Encoding.BCD_UP))
+            odxassert(base_type_encoding in (None, Encoding.NONE, Encoding.BCD_P, Encoding.BCD_UP))
 
             # note that we do not ensure that BCD-encoded byte fields
             # only represent "legal" values

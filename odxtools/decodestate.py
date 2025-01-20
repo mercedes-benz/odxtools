@@ -103,9 +103,7 @@ class DecodeState:
 
         # Deal with raw byte fields, ...
         if base_data_type == DataType.A_BYTEFIELD:
-            odxassert(
-                base_type_encoding is None or
-                base_type_encoding in (Encoding.NONE, Encoding.BCD_P, Encoding.BCD_UP))
+            odxassert(base_type_encoding in (None, Encoding.NONE, Encoding.BCD_P, Encoding.BCD_UP))
 
             # note that we do not ensure that BCD-encoded byte fields
             # only represent "legal" values
@@ -136,7 +134,7 @@ class DecodeState:
                     # python defines the bitwise inversion of a
                     # positive integer value x as ~x = -(x + 1).
                     internal_value = -((1 << bit_length) - raw_value - 1)
-            elif base_type_encoding == Encoding.TWOC or base_type_encoding is None:
+            elif base_type_encoding in (None, Encoding.TWOC):
                 # two-complement
                 sign_bit = 1 << (bit_length - 1)
                 if raw_value < sign_bit:
