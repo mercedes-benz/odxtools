@@ -1287,6 +1287,69 @@ class TestEncodeRequest(unittest.TestCase):
                 "outer_param": 0xa00d
             })
 
+    def test_condensed_bit_mask(self) -> None:
+        dct = StandardLengthType(
+            bit_mask=0xf00f,
+            base_data_type=DataType.A_UINT32,
+            base_type_encoding=None,
+            is_highlow_byte_order_raw=None,
+            is_condensed_raw=True,
+            bit_length=16)
+
+        self.assertEqual(dct.get_static_bit_length(), 8)
+
+        physical_type = PhysicalType(
+            base_data_type=DataType.A_UINT32, display_radix=None, precision=None)
+        compu_method = IdenticalCompuMethod(
+            category=CompuCategory.IDENTICAL,
+            compu_internal_to_phys=None,
+            compu_phys_to_internal=None,
+            internal_type=DataType.A_UINT32,
+            physical_type=DataType.A_UINT32)
+
+        dop = DataObjectProperty(
+            odx_id=OdxLinkId('dop.inner', doc_frags),
+            oid=None,
+            short_name="dop",
+            long_name=None,
+            description=None,
+            admin_data=None,
+            sdgs=[],
+            diag_coded_type=dct,
+            physical_type=physical_type,
+            compu_method=compu_method,
+            unit_ref=None,
+            internal_constr=None,
+            physical_constr=None)
+
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update(dop._build_odxlinks())
+        odxlinks.update(dct._build_odxlinks())
+
+        # Inner
+        param = ValueParameter(
+            oid=None,
+            short_name="param",
+            long_name=None,
+            description=None,
+            byte_position=0,
+            bit_position=2,
+            dop_ref=OdxLinkRef.from_id(dop.odx_id),
+            dop_snref=None,
+            semantic=None,
+            sdgs=[],
+            physical_default_value_raw=None)
+        param._resolve_odxlinks(odxlinks)
+
+        req = self._create_request([param])
+
+        # the values here stem from the fact that we placed the
+        # parameter at bit position 2...
+        self.assertEqual(req.encode(param=0x1ff4).hex(), "000050")
+        self.assertEqual(req.decode(bytes.fromhex('000050')), {
+            "param": 0x1004,
+        })
+
 
 if __name__ == "__main__":
     unittest.main()
