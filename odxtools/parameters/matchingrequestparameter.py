@@ -79,4 +79,5 @@ class MatchingRequestParameter(Parameter):
         return decode_state.extract_atomic_value(
             bit_length=self.byte_length * 8,
             base_data_type=DataType.A_UINT32,
+            base_type_encoding=None,
             is_highlow_byte_order=False)

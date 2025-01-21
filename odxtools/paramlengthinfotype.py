@@ -96,6 +96,7 @@ class ParamLengthInfoType(DiagCodedType):
             used_mask=None,
             bit_length=bit_length,
             base_data_type=self.base_data_type,
+            base_type_encoding=self.base_type_encoding,
             is_highlow_byte_order=self.is_highlow_byte_order,
         )
 
@@ -114,7 +115,8 @@ class ParamLengthInfoType(DiagCodedType):
 
         # Extract the internal value and return.
         return decode_state.extract_atomic_value(
-            bit_length,
-            self.base_data_type,
-            self.is_highlow_byte_order,
+            bit_length=bit_length,
+            base_data_type=self.base_data_type,
+            base_type_encoding=self.base_type_encoding,
+            is_highlow_byte_order=self.is_highlow_byte_order,
         )

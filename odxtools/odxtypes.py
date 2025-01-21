@@ -157,7 +157,7 @@ def compare_odx_values(a: AtomicOdxType, b: AtomicOdxType) -> int:
 
 # format specifiers for the data type using the bitstruct module
 _BITSTRUCT_FORMAT_LETTER_MAP__ = {
-    "A_INT32": "s",
+    "A_INT32": "u",  # the sign must be handled separately
     "A_UINT32": "u",
     "A_FLOAT32": "f",
     "A_FLOAT64": "f",

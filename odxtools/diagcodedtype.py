@@ -5,6 +5,7 @@ from xml.etree import ElementTree
 
 from .decodestate import DecodeState
 from .encodestate import EncodeState
+from .encoding import Encoding
 from .exceptions import odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import AtomicOdxType, DataType, odxstr_to_bool
@@ -23,7 +24,7 @@ DctType = Literal[
 class DiagCodedType:
 
     base_data_type: DataType
-    base_type_encoding: Optional[str]
+    base_type_encoding: Optional[Encoding]
     is_highlow_byte_order_raw: Optional[bool]
 
     @staticmethod
@@ -36,7 +37,13 @@ class DiagCodedType:
             odxraise(f"Unknown base data type {base_data_type_str}")
             base_data_type = cast(DataType, None)
 
-        base_type_encoding = et_element.get("BASE-TYPE-ENCODING")
+        base_type_encoding = None
+        if (base_type_encoding_str := et_element.get("BASE-TYPE-ENCODING")) is not None:
+            try:
+                base_type_encoding = Encoding(base_type_encoding_str)
+            except ValueError:
+                odxraise(f"Encountered unknown BASE-TYPE-ENCODING '{base_type_encoding_str}'")
+
         is_highlow_byte_order_raw = odxstr_to_bool(et_element.get("IS-HIGHLOW-BYTE-ORDER"))
 
         return DiagCodedType(

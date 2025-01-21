@@ -61,4 +61,5 @@ class ReservedParameter(Parameter):
         return decode_state.extract_atomic_value(
             bit_length=self.bit_length,
             base_data_type=DataType.A_UINT32,
+            base_type_encoding=None,
             is_highlow_byte_order=False)

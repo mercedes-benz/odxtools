@@ -3,6 +3,7 @@ import warnings
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Dict, List, Optional, SupportsBytes, Tuple
 
+from .encoding import Encoding, get_string_encoding
 from .exceptions import EncodeError, OdxWarning, odxassert, odxraise
 from .odxtypes import AtomicOdxType, DataType, ParameterValue
 
@@ -86,6 +87,7 @@ class EncodeState:
         internal_value: AtomicOdxType,
         bit_length: int,
         base_data_type: DataType,
+        base_type_encoding: Optional[Encoding],
         is_highlow_byte_order: bool,
         used_mask: Optional[bytes],
     ) -> None:
@@ -93,59 +95,118 @@ class EncodeState:
 
         raw_value: AtomicOdxType
 
-        # Check that bytes and strings actually fit into the bit length
+        # Deal with raw byte fields, ...
         if base_data_type == DataType.A_BYTEFIELD:
             if not isinstance(internal_value, (bytes, bytearray, SupportsBytes)):
-                odxraise()
-            if 8 * len(internal_value) > bit_length:
-                raise EncodeError(f"The bytefield {internal_value.hex()} is too large "
-                                  f"({len(internal_value)} bytes)."
-                                  f" The maximum length is {bit_length//8}.")
+                odxraise(f"{internal_value!r} is not a bytefield", EncodeError)
+                return
+
+            odxassert(base_type_encoding in (None, Encoding.NONE, Encoding.BCD_P, Encoding.BCD_UP))
+
+            # note that we do not ensure that BCD-encoded byte fields
+            # only represent "legal" values
             raw_value = bytes(internal_value)
-        elif base_data_type == DataType.A_ASCIISTRING:
-            if not isinstance(internal_value, str):
-                odxraise()
 
-            # The spec says ASCII, meaning only byte values 0-127.
-            # But in practice, vendors use iso-8859-1, aka latin-1
-            # reason being iso-8859-1 never fails since it has a valid
-            # character mapping for every possible byte sequence.
-            raw_value = internal_value.encode("iso-8859-1")
+        # ... string types, ...
+        elif base_data_type in (DataType.A_UTF8STRING, DataType.A_ASCIISTRING,
+                                DataType.A_UNICODE2STRING):
+            if not isinstance(internal_value, str):
+                odxraise(f"The internal value {internal_value!r} is not a string", EncodeError)
+
+            str_encoding = get_string_encoding(base_data_type, base_type_encoding,
+                                               is_highlow_byte_order)
+            if str_encoding is not None:
+                raw_value = internal_value.encode(str_encoding)
+            else:
+                raw_value = b""
 
             if 8 * len(raw_value) > bit_length:
-                raise EncodeError(f"The string {repr(internal_value)} is too large."
-                                  f" The maximum number of characters is {bit_length//8}.")
-        elif base_data_type == DataType.A_UTF8STRING:
-            if not isinstance(internal_value, str):
-                odxraise()
-
-            raw_value = internal_value.encode("utf-8")
-
-            if 8 * len(raw_value) > bit_length:
-                raise EncodeError(f"The string {repr(internal_value)} is too large."
-                                  f" The maximum number of bytes is {bit_length//8}.")
-
-        elif base_data_type == DataType.A_UNICODE2STRING:
-            if not isinstance(internal_value, str):
-                odxraise()
-
-            text_encoding = "utf-16-be" if is_highlow_byte_order else "utf-16-le"
-            raw_value = internal_value.encode(text_encoding)
-
-            if 8 * len(raw_value) > bit_length:
-                raise EncodeError(f"The string {repr(internal_value)} is too large."
-                                  f" The maximum number of characters is {bit_length//16}.")
-        else:
-            raw_value = internal_value
-
-        # If the bit length is zero, return empty bytes
-        if bit_length == 0:
-            if (base_data_type.value in [
-                    DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32, DataType.A_FLOAT64
-            ] and base_data_type.value != 0):
                 odxraise(
-                    f"The number {repr(internal_value)} cannot be encoded into {bit_length} bits.",
+                    f"The internal representation {raw_value!r} is too large "
+                    f"to be encoded. The maximum number of bytes is {(bit_length + 7)//8}.",
                     EncodeError)
+
+        # ... signed integers, ...
+        elif base_data_type == DataType.A_INT32:
+            if not isinstance(internal_value, int):
+                odxraise(
+                    f"Internal value must be of integer type, not {type(internal_value).__name__}",
+                    EncodeError)
+
+            if base_type_encoding == Encoding.ONEC:
+                # one-complement
+                if internal_value >= 0:
+                    raw_value = internal_value
+                else:
+                    mask = (1 << bit_length) - 1
+                    raw_value = mask + internal_value
+            elif base_type_encoding in (None, Encoding.TWOC):
+                # two-complement
+                if internal_value >= 0:
+                    raw_value = internal_value
+                else:
+                    mask = (1 << bit_length) - 1
+                    raw_value = mask + internal_value + 1
+            elif base_type_encoding == Encoding.SM:
+                # sign-magnitude
+                if internal_value >= 0:
+                    raw_value = internal_value
+                else:
+                    raw_value = (1 << (bit_length - 1)) + abs(internal_value)
+            else:
+                odxraise(f"Illegal encoding ({base_type_encoding}) specified for "
+                         f"{base_data_type.value}")
+
+                internal_value = raw_value
+
+        # ... unsigned integers, ...
+        elif base_data_type == DataType.A_UINT32:
+            if not isinstance(internal_value, int) or internal_value < 0:
+                odxraise(f"Internal value must be a positive integer, not {internal_value!r}")
+
+            if base_type_encoding == Encoding.BCD_P:
+                # packed BCD
+                tmp2 = internal_value
+                raw_value = 0
+                shift = 0
+                while tmp2 > 0:
+                    raw_value |= (tmp2 % 10) << shift
+                    shift += 4
+                    tmp2 //= 10
+            elif base_type_encoding == Encoding.BCD_UP:
+                # unpacked BCD
+                tmp2 = internal_value
+                raw_value = 0
+                shift = 0
+                while tmp2 > 0:
+                    raw_value |= (tmp2 % 10) << shift
+                    shift += 8
+                    tmp2 //= 10
+            elif base_type_encoding in (None, Encoding.NONE):
+                # no encoding
+                raw_value = internal_value
+            else:
+                odxraise(f"Illegal encoding ({base_type_encoding}) specified for "
+                         f"{base_data_type.value}")
+
+                internal_value = raw_value
+
+        # ... and others (floating point values)
+        else:
+            odxassert(base_data_type in (DataType.A_FLOAT32, DataType.A_FLOAT64))
+            odxassert(base_type_encoding in (None, Encoding.NONE))
+
+            if base_data_type == DataType.A_FLOAT32 and bit_length != 32:
+                odxraise(f"Illegal bit length for a float32 object ({bit_length})")
+                bit_length = 32
+            elif base_data_type == DataType.A_FLOAT64 and bit_length != 64:
+                odxraise(f"Illegal bit length for a float64 object ({bit_length})")
+                bit_length = 64
+
+            raw_value = float(internal_value)
+
+        # If the bit length is zero, encode an empty value
+        if bit_length == 0:
             self.emplace_bytes(b'')
             return
 
@@ -161,15 +222,13 @@ class EncodeState:
 
         # create the raw mask of used bits for numeric objects
         used_mask_raw = used_mask
-        if base_data_type in [DataType.A_INT32, DataType.A_UINT32
-                             ] and (self.cursor_bit_position != 0 or
-                                    (self.cursor_bit_position + bit_length) % 8 != 0):
-            if used_mask is None:
-                tmp = (1 << bit_length) - 1
-            else:
-                tmp = int.from_bytes(used_mask, "big")
-            tmp <<= self.cursor_bit_position
 
+        if used_mask_raw is None:
+            used_mask_raw = ((1 << bit_length) - 1).to_bytes((bit_length + 7) // 8, "big")
+
+        if self.cursor_bit_position != 0:
+            tmp = int.from_bytes(used_mask_raw, "big")
+            tmp <<= self.cursor_bit_position
             used_mask_raw = tmp.to_bytes((self.cursor_bit_position + bit_length + 7) // 8, "big")
 
         # apply byte order to numeric objects
@@ -177,9 +236,7 @@ class EncodeState:
                 DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32, DataType.A_FLOAT64
         ]:
             coded = coded[::-1]
-
-            if used_mask_raw is not None:
-                used_mask_raw = used_mask_raw[::-1]
+            used_mask_raw = used_mask_raw[::-1]
 
         self.cursor_bit_position = 0
         self.emplace_bytes(coded, obj_used_mask=used_mask_raw)
