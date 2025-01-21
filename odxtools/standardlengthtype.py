@@ -81,7 +81,11 @@ class StandardLengthType(DiagCodedType):
         if self.is_condensed:
             # if a condensed bitmask is specified, the number of bits
             # set to one in the bit mask are used in the PDU
-            bit_sz = self.bit_mask.bit_count()
+
+            # TODO: this is pretty slow. replace it by
+            # `self.bit_mask.bit_count()` once we require python >=
+            # 3.10.
+            bit_sz = bin(self.bit_mask).count("1")
             used_mask = (1 << bit_sz) - 1
 
             return used_mask.to_bytes((bit_sz + 7) // 8, endianness)
@@ -176,7 +180,10 @@ class StandardLengthType(DiagCodedType):
 
     def get_static_bit_length(self) -> Optional[int]:
         if self.bit_mask is not None and self.is_condensed:
-            return self.bit_mask.bit_count()
+            # TODO: this is pretty slow. replace it by
+            # `self.bit_mask.bit_count()` once we require python >=
+            # 3.10.
+            return bin(self.bit_mask).count("1")
 
         return self.bit_length
 
