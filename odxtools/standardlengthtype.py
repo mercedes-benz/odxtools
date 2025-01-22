@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import List, Literal, Optional
 from xml.etree import ElementTree
 
-from typing_extensions import override
+from typing_extensions import SupportsBytes, override
 
 from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
@@ -91,8 +91,8 @@ class StandardLengthType(DiagCodedType):
             return used_mask.to_bytes((bit_sz + 7) // 8, endianness)
 
         sz: int
-        if isinstance(internal_value, (bytes, bytearray)):
-            sz = len(internal_value)
+        if isinstance(internal_value, (bytearray, SupportsBytes)):
+            sz = len(bytes(internal_value))
         else:
             sz = (odxrequire(self.get_static_bit_length()) + 7) // 8
 
@@ -107,7 +107,7 @@ class StandardLengthType(DiagCodedType):
 
         if self.is_condensed:
             int_value: int
-            if isinstance(internal_value, bytes):
+            if isinstance(internal_value, (bytearray, SupportsBytes)):
                 int_value = int.from_bytes(internal_value, 'big')
             elif isinstance(internal_value, int):
                 int_value = internal_value
@@ -126,17 +126,17 @@ class StandardLengthType(DiagCodedType):
 
                 mask_bit += 1
 
-            if isinstance(internal_value, bytes):
+            if isinstance(internal_value, (bytearray, SupportsBytes)):
                 return result.to_bytes(len(internal_value), 'big')
 
             return result
 
         if isinstance(internal_value, int):
             return internal_value & self.bit_mask
-        if isinstance(internal_value, bytes):
+        if isinstance(internal_value, (bytearray, SupportsBytes)):
             int_value = int.from_bytes(internal_value, 'big')
             int_value &= self.bit_mask
-            return int_value.to_bytes(len(internal_value), 'big')
+            return int_value.to_bytes(len(bytes(internal_value)), 'big')
 
         odxraise(f'Can not apply a bit_mask on a value of type {type(internal_value)}')
         return internal_value
@@ -146,7 +146,7 @@ class StandardLengthType(DiagCodedType):
             return raw_value
         if self.is_condensed:
             int_value: int
-            if isinstance(raw_value, bytes):
+            if isinstance(raw_value, (bytearray, SupportsBytes)):
                 int_value = int.from_bytes(raw_value, 'big')
             elif isinstance(raw_value, int):
                 int_value = raw_value
@@ -164,13 +164,13 @@ class StandardLengthType(DiagCodedType):
 
                 mask_bit += 1
 
-            if isinstance(raw_value, bytes):
+            if isinstance(raw_value, (bytearray, SupportsBytes)):
                 return result.to_bytes(len(raw_value), 'big')
 
             return result
         if isinstance(raw_value, int):
             return raw_value & self.bit_mask
-        if isinstance(raw_value, bytes):
+        if isinstance(raw_value, (bytearray, SupportsBytes)):
             int_value = int.from_bytes(raw_value, 'big')
             int_value &= self.bit_mask
             return int_value
