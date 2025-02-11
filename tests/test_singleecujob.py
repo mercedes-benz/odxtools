@@ -94,7 +94,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     is_highlow_byte_order_raw=None,
                 ),
                 physical_type=PhysicalType(
-                    DataType.A_UNICODE2STRING, display_radix=None, precision=None),
+                    base_data_type=DataType.A_UNICODE2STRING, display_radix=None, precision=None),
                 compu_method=TexttableCompuMethod(
                     category=CompuCategory.TEXTTABLE,
                     compu_phys_to_internal=None,
@@ -153,7 +153,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     is_highlow_byte_order_raw=None,
                 ),
                 physical_type=PhysicalType(
-                    DataType.A_UNICODE2STRING, display_radix=None, precision=None),
+                    base_data_type=DataType.A_UNICODE2STRING, display_radix=None, precision=None),
                 compu_method=LinearCompuMethod(
                     category=CompuCategory.LINEAR,
                     compu_internal_to_phys=CompuInternalToPhys(
@@ -199,7 +199,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     is_highlow_byte_order_raw=None,
                 ),
                 physical_type=PhysicalType(
-                    DataType.A_UNICODE2STRING, display_radix=None, precision=None),
+                    base_data_type=DataType.A_UNICODE2STRING, display_radix=None, precision=None),
                 compu_method=LinearCompuMethod(
                     category=CompuCategory.LINEAR,
                     compu_internal_to_phys=CompuInternalToPhys(

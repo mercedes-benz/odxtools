@@ -59,7 +59,8 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=uint8_dct,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             linked_dtc_dops_raw=[],
             compu_method=ident_compu_method,
             dtcs_raw=[
@@ -89,7 +90,8 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=uint8_dct,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=ident_compu_method,
             unit_ref=None,
             sdgs=[],
@@ -105,7 +107,8 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=uint8_dct,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=ident_compu_method,
             unit_ref=None,
             sdgs=[],

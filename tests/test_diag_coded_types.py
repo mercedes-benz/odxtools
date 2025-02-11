@@ -210,7 +210,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
                     admin_data=None,
                     diag_coded_type=diagcodedtypes["certificateClient"],
                     physical_type=PhysicalType(
-                        DataType.A_BYTEFIELD, display_radix=None, precision=None),
+                        base_data_type=DataType.A_BYTEFIELD, display_radix=None, precision=None),
                     compu_method=compumethods["bytes_passthrough"],
                     unit_ref=None,
                     sdgs=[],
@@ -513,7 +513,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     admin_data=None,
                     diag_coded_type=diagcodedtypes["uint8"],
                     physical_type=PhysicalType(
-                        DataType.A_UINT32, display_radix=None, precision=None),
+                        base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
                     compu_method=compumethods["multiply_with_8"],
                     unit_ref=None,
                     sdgs=[],
@@ -530,7 +530,7 @@ class TestParamLengthInfoType(unittest.TestCase):
                     admin_data=None,
                     diag_coded_type=diagcodedtypes["length_key_id_to_lengthOfCertificateClient"],
                     physical_type=PhysicalType(
-                        DataType.A_UINT32, display_radix=None, precision=None),
+                        base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
                     compu_method=compumethods["uint_passthrough"],
                     unit_ref=None,
                     sdgs=[],
