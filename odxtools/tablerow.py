@@ -3,15 +3,21 @@ from dataclasses import dataclass, fields
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 from xml.etree import ElementTree
 
+from .admindata import AdminData
+from .audience import Audience
 from .basicstructure import BasicStructure
 from .dataobjectproperty import DataObjectProperty
 from .dtcdop import DtcDop
 from .element import IdentifiableElement
 from .exceptions import odxassert, odxraise, odxrequire
+from .functionalclass import FunctionalClass
+from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
-from .odxtypes import AtomicOdxType
+from .odxtypes import AtomicOdxType, odxstr_to_bool
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
+from .state import State
+from .statetransition import StateTransition
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -21,18 +27,52 @@ if TYPE_CHECKING:
 @dataclass
 class TableRow(IdentifiableElement):
     """This class represents a TABLE-ROW."""
-    table_ref: OdxLinkRef
     key_raw: str
+    table_ref: OdxLinkRef
+
+    # The spec mandates that either a structure or a non-complex DOP
+    # must be referenced here, i.e., exactly one of the four
+    # attributes below is not None
+    dop_ref: Optional[OdxLinkRef]
+    dop_snref: Optional[str]
     structure_ref: Optional[OdxLinkRef]
     structure_snref: Optional[str]
 
-    # the referenced DOP must be a simple DOP (i.e.,
-    # DataObjectProperty or DtcDop, cf section 7.3.6.11 of the spec)!
-    dop_ref: Optional[OdxLinkRef]
-    dop_snref: Optional[str]
-
-    semantic: Optional[str]
     sdgs: List[SpecialDataGroup]
+    audience: Optional[Audience]
+    functional_class_refs: List[OdxLinkRef]
+    state_transition_refs: List[OdxLinkRef]
+    pre_condition_state_refs: List[OdxLinkRef]
+    admin_data: Optional[AdminData]
+
+    is_executable_raw: Optional[bool]
+    semantic: Optional[str]
+    is_mandatory_raw: Optional[bool]
+    is_final_raw: Optional[bool]
+
+    @property
+    def functional_classes(self) -> NamedItemList[FunctionalClass]:
+        return self._functional_classes
+
+    @property
+    def state_transitions(self) -> NamedItemList[StateTransition]:
+        return self._state_transitions
+
+    @property
+    def pre_condition_states(self) -> NamedItemList[State]:
+        return self._pre_condition_states
+
+    @property
+    def is_executable(self) -> bool:
+        return self.is_executable_raw in (None, True)
+
+    @property
+    def is_mandatory(self) -> bool:
+        return self.is_mandatory_raw is True
+
+    @property
+    def is_final(self) -> bool:
+        return self.is_final_raw is True
 
     def __post_init__(self) -> None:
         self._structure: Optional[BasicStructure] = None
@@ -73,15 +113,49 @@ class TableRow(IdentifiableElement):
             SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
         ]
 
+        audience = None
+        if (audience_elem := et_element.find("AUDIENCE")) is not None:
+            audience = Audience.from_et(audience_elem, doc_frags)
+
+        functional_class_refs = [
+            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF")
+        ]
+
+        state_transition_refs = [
+            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
+        ]
+
+        pre_condition_state_refs = [
+            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF")
+        ]
+
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+
+        is_executable_raw = odxstr_to_bool(et_element.attrib.get("IS-EXECUTABLE"))
+        semantic = et_element.attrib.get("SEMANTIC")
+        is_mandatory_raw = odxstr_to_bool(et_element.attrib.get("IS-MANDATORY"))
+        is_final_raw = odxstr_to_bool(et_element.attrib.get("IS-FINAL"))
+
         return TableRow(
             table_ref=table_ref,
-            semantic=semantic,
             key_raw=key_raw,
             structure_ref=structure_ref,
             structure_snref=structure_snref,
             dop_ref=dop_ref,
             dop_snref=dop_snref,
             sdgs=sdgs,
+            audience=audience,
+            functional_class_refs=functional_class_refs,
+            state_transition_refs=state_transition_refs,
+            pre_condition_state_refs=pre_condition_state_refs,
+            admin_data=admin_data,
+            is_executable_raw=is_executable_raw,
+            semantic=semantic,
+            is_mandatory_raw=is_mandatory_raw,
+            is_final_raw=is_final_raw,
             **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -107,6 +181,15 @@ class TableRow(IdentifiableElement):
 
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
+
+        self._functional_classes = NamedItemList(
+            [odxlinks.resolve(fc_ref, FunctionalClass) for fc_ref in self.functional_class_refs])
+
+        self._state_transitions = NamedItemList(
+            [odxlinks.resolve(st_ref, StateTransition) for st_ref in self.state_transition_refs])
+
+        self._pre_condition_states = NamedItemList(
+            [odxlinks.resolve(pcs_ref, State) for pcs_ref in self.pre_condition_state_refs])
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         # convert the raw key into the proper internal

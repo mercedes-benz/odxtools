@@ -6,6 +6,8 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 {%- import('macros/printDescription.xml.jinja2') as pd %}
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+{%- import('macros/printAudience.xml.jinja2') as paud %}
 
 {%- macro printTable(table) %}
 <TABLE {{-peid.printElementIdAttribs(table)}}
@@ -31,6 +33,33 @@
   <STRUCTURE-REF ID-REF="{{ table_row.structure_ref.ref_id }}" />
   {%- endif %}
   {{- psd.printSpecialDataGroups(table_row.sdgs)|indent(2, first=True) }}
+  {%- if table_row.audience is not none %}
+  {{ paud.printAudience(table_row.audience) | indent(2) }}
+  {%- endif %}
+  {%- if table_row.functional_class_refs %}
+  <FUNCT-CLASS-REFS>
+    {%- for fc_ref in table_row.functional_class_refs %}
+    <FUNCT-CLASS-REF ID-REF="{{ fc_ref.ref_id }}" />
+    {%- endfor %}
+  </FUNCT-CLASS-REFS>
+  {%- endif %}
+  {%- if table_row.state_transition_refs %}
+  <STATE-TRANSITION-REFS>
+    {%- for st_ref in table_row.state_transition_refs %}
+    <STATE-TRANSITION-REF ID-REF="{{ st_ref.ref_id }}" />
+    {%- endfor %}
+  </STATE-TRANSITION-REFS>
+  {%- endif %}
+  {%- if table_row.pre_condition_state_refs %}
+  <PRE-CONDITION-STATE-REFS>
+    {%- for pcs_ref in table_row.pre_condition_state_refs %}
+    <PRE-CONDITION-STATE-REF ID-REF="{{ pcs_ref.ref_id }}" />
+    {%- endfor %}
+  </PRE-CONDITION-STATE-REFS>
+  {%- endif %}
+  {%- if table_row.admin_data is not none %}
+  {{ pad.printAdminData(table_row.admin_data)|indent(2) }}
+  {%- endif %}
  </TABLE-ROW>
  {%- else %}
  <TABLE-ROW-REF ID-REF="{{ table_row.ref_id }}" />
