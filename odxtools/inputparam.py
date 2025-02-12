@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
+from deprecation import deprecated
+
 from .dopbase import DopBase
 from .element import NamedElement
 from .exceptions import odxrequire
@@ -46,4 +48,8 @@ class InputParam(NamedElement):
     @property
     def dop(self) -> DopBase:
         """The data object property describing this parameter."""
+        return self._dop
+
+    @deprecated(details="use .dop")  # type: ignore[misc]
+    def dop_base(self) -> DopBase:
         return self._dop

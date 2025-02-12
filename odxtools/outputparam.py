@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
+from deprecation import deprecated
+
 from .dopbase import DopBase
 from .element import IdentifiableElement
 from .exceptions import odxrequire
@@ -36,4 +38,8 @@ class OutputParam(IdentifiableElement):
 
     @property
     def dop(self) -> DopBase:
+        return self._dop
+
+    @deprecated(details="use .dop")  # type: ignore[misc]
+    def dop_base(self) -> DopBase:
         return self._dop
