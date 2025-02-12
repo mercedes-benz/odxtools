@@ -15,7 +15,7 @@
                  {{-make_xml_attrib("BASE-TYPE-ENCODING", dct.base_type_encoding and dct.base_type_encoding.value)}}
                  {{-make_bool_xml_attrib("IS-HIGHLOW-BYTE-ORDER", dct.is_highlow_byte_order_raw)}}
                  {%- if dct.termination is defined %}
-                 {{-make_xml_attrib("TERMINATION", dct.termination)}}
+                 {{-make_xml_attrib("TERMINATION", dct.termination.value)}}
                  {%- endif %}
                  {#- #} xsi:type="{{dct.dct_type}}">
  {%- if dct.dct_type in ("STANDARD-LENGTH-TYPE", "LEADING-LENGTH-INFO-TYPE") %}

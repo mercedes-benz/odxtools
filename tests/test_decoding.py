@@ -26,7 +26,7 @@ from odxtools.dynenddopref import DynEndDopRef
 from odxtools.endofpdufield import EndOfPduField
 from odxtools.exceptions import DecodeError, DecodeMismatch
 from odxtools.message import Message
-from odxtools.minmaxlengthtype import MinMaxLengthType
+from odxtools.minmaxlengthtype import MinMaxLengthType, Termination
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType, ParameterValueDict
@@ -2581,7 +2581,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
                 base_data_type=DataType.A_BYTEFIELD,
                 min_length=0,
                 max_length=None,
-                termination="END-OF-PDU",
+                termination=Termination.END_OF_PDU,
                 base_type_encoding=None,
                 is_highlow_byte_order_raw=None,
             ),
