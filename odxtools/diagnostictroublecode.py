@@ -15,7 +15,7 @@ from .utils import dataclass_fields_asdict
 @dataclass
 class DiagnosticTroubleCode(IdentifiableElement):
     trouble_code: int
-    text: Optional[str]
+    text: str
     display_trouble_code: Optional[str]
     level: Optional[int]
     is_temporary_raw: Optional[bool]
@@ -46,7 +46,7 @@ class DiagnosticTroubleCode(IdentifiableElement):
 
         return DiagnosticTroubleCode(
             trouble_code=int(odxrequire(et_element.findtext("TROUBLE-CODE"))),
-            text=et_element.findtext("TEXT"),
+            text=odxrequire(et_element.findtext("TEXT")),
             display_trouble_code=display_trouble_code,
             level=level,
             is_temporary_raw=is_temporary_raw,
