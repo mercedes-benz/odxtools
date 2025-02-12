@@ -17,6 +17,15 @@
 {%-  endfor %}
  </NOT-INHERITED-DIAG-COMMS>
 {%- endif %}
+{%- if par.not_inherited_variables %}
+ <NOT-INHERITED-VARIABLES>
+{%-  for nivar in par.not_inherited_variables %}
+  <NOT-INHERITED-VARIABLE>
+   <DIAG-VARIABLE-SNREF SHORT-NAME="{{nivar}}"/>
+  </NOT-INHERITED-VARIABLE>
+{%-  endfor %}
+ </NOT-INHERITED-VARIABLES>
+{%- endif %}
 {%- if par.not_inherited_dops %}
  <NOT-INHERITED-DOPS>
 {%-  for nidop in par.not_inherited_dops %}
@@ -25,6 +34,24 @@
   </NOT-INHERITED-DOP>
 {%-  endfor %}
  </NOT-INHERITED-DOPS>
+{%- endif %}
+{%- if par.not_inherited_tables %}
+ <NOT-INHERITED-TABLES>
+{%-  for nitable in par.not_inherited_tables %}
+  <NOT-INHERITED-TABLE>
+   <TABLE-SNREF SHORT-NAME="{{nitable}}"/>
+  </NOT-INHERITED-TABLE>
+{%-  endfor %}
+ </NOT-INHERITED-TABLES>
+{%- endif %}
+{%- if par.not_inherited_global_neg_responses %}
+ <NOT-INHERITED-GLOBAL-NEG-RESPONSES>
+{%-  for nignr in par.not_inherited_global_neg_responses %}
+  <NOT-INHERITED-GLOBAL-NEG-RESPONSE>
+   <GLOBAL-NEG-RESPONSE-SNREF SHORT-NAME="{{nignr}}"/>
+  </NOT-INHERITED-GLOBAL-NEG-RESPONSE>
+{%-  endfor %}
+ </NOT-INHERITED-GLOBAL-NEG-RESPONSES>
 {%- endif %}
 </PARENT-REF>
 {%- endmacro -%}
