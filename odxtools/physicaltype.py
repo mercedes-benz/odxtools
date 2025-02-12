@@ -74,4 +74,5 @@ class PhysicalType:
         precision_str = et_element.findtext("PRECISION")
         precision = int(precision_str) if precision_str is not None else None
 
-        return PhysicalType(base_data_type, display_radix=display_radix, precision=precision)
+        return PhysicalType(
+            base_data_type=base_data_type, display_radix=display_radix, precision=precision)

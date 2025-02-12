@@ -503,7 +503,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
@@ -519,7 +520,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
@@ -535,7 +537,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
@@ -551,7 +554,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
@@ -567,7 +571,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=OdxLinkRef.from_id(somersault_units["second"].odx_id),
             sdgs=[],
@@ -583,7 +588,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=OdxLinkRef.from_id(somersault_units["celsius"].odx_id),
             sdgs=[],
@@ -599,7 +605,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
@@ -616,7 +623,7 @@ somersault_dops = {
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
             physical_type=PhysicalType(
-                DataType.A_UNICODE2STRING, display_radix=None, precision=None),
+                base_data_type=DataType.A_UNICODE2STRING, display_radix=None, precision=None),
             compu_method=somersault_compumethods["boolean"],
             unit_ref=None,
             sdgs=[],
@@ -632,7 +639,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
@@ -648,7 +656,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint16"],
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
@@ -664,7 +673,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["float32"],
-            physical_type=PhysicalType(DataType.A_FLOAT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_FLOAT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["float_passthrough"],
             unit_ref=None,
             sdgs=[],
@@ -680,7 +690,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["int8"],
-            physical_type=PhysicalType(DataType.A_INT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_INT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["int_passthrough"],
             unit_ref=None,
             sdgs=[],
@@ -696,7 +707,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["uint8"],
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["uint_passthrough"],
             unit_ref=None,
             sdgs=[],
@@ -712,7 +724,8 @@ somersault_dops = {
             description=None,
             admin_data=None,
             diag_coded_type=somersault_diagcodedtypes["float32"],
-            physical_type=PhysicalType(DataType.A_FLOAT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_FLOAT32, display_radix=None, precision=None),
             compu_method=somersault_compumethods["float_passthrough"],
             unit_ref=None,
             sdgs=[],

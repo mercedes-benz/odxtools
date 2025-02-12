@@ -524,7 +524,8 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_type,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=compu_method,
             unit_ref=None,
             sdgs=[],
@@ -586,7 +587,8 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_type,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=IdenticalCompuMethod(
                 category=CompuCategory.IDENTICAL,
                 compu_internal_to_phys=None,
@@ -776,7 +778,8 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_type,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=IdenticalCompuMethod(
                 category=CompuCategory.IDENTICAL,
                 compu_internal_to_phys=None,
@@ -844,7 +847,8 @@ class TestEncodeRequest(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=dct,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=IdenticalCompuMethod(
                 category=CompuCategory.IDENTICAL,
                 compu_internal_to_phys=None,

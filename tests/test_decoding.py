@@ -405,7 +405,8 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_type,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=IdenticalCompuMethod(
                 category=CompuCategory.IDENTICAL,
                 compu_internal_to_phys=None,
@@ -785,7 +786,8 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_type_4,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=compu_method,
             unit_ref=None,
             sdgs=[],
@@ -988,7 +990,8 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_type,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=compu_method,
             unit_ref=None,
             sdgs=[],
@@ -1244,7 +1247,8 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_type_4,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=compu_method,
             unit_ref=None,
             sdgs=[],
@@ -1259,7 +1263,8 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_endmarker_type,
-            physical_type=PhysicalType(DataType.A_BYTEFIELD, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_BYTEFIELD, display_radix=None, precision=None),
             compu_method=compu_method_bytefield,
             unit_ref=None,
             sdgs=[],
@@ -1625,7 +1630,8 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_type_4,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=compu_method,
             unit_ref=None,
             sdgs=[],
@@ -1870,7 +1876,8 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_type_4,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=compu_method,
             unit_ref=None,
             sdgs=[],
@@ -2113,7 +2120,8 @@ class TestDecoding(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_type,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=compu_method,
             unit_ref=None,
             sdgs=[],
@@ -2507,7 +2515,8 @@ class TestDecoding(unittest.TestCase):
             admin_data=None,
             diag_coded_type=diag_coded_type,
             linked_dtc_dops_raw=[],
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=compu_method,
             dtcs_raw=[dtc1, dtc2],
             sdgs=[],
@@ -2585,7 +2594,8 @@ class TestDecodingAndEncoding(unittest.TestCase):
                 base_type_encoding=None,
                 is_highlow_byte_order_raw=None,
             ),
-            physical_type=PhysicalType(DataType.A_BYTEFIELD, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_BYTEFIELD, display_radix=None, precision=None),
             compu_method=IdenticalCompuMethod(
                 category=CompuCategory.IDENTICAL,
                 compu_internal_to_phys=None,
@@ -2745,7 +2755,8 @@ class TestDecodingAndEncoding(unittest.TestCase):
             description=None,
             admin_data=None,
             diag_coded_type=diag_coded_type,
-            physical_type=PhysicalType(DataType.A_INT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_INT32, display_radix=None, precision=None),
             compu_method=LinearCompuMethod(
                 category=CompuCategory.LINEAR,
                 compu_internal_to_phys=CompuInternalToPhys(

@@ -117,7 +117,8 @@ class TestUnitSpec(unittest.TestCase):
             long_name=None,
             description=None,
             diag_coded_type=dct,
-            physical_type=PhysicalType(DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(
+                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
             compu_method=IdenticalCompuMethod(
                 category=CompuCategory.IDENTICAL,
                 compu_internal_to_phys=None,
