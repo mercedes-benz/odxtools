@@ -8,7 +8,7 @@ from .complexcomparam import ComplexComparam
 from .dataobjectproperty import DataObjectProperty
 from .nameditemlist import NamedItemList
 from .odxcategory import OdxCategory
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .unitspec import UnitSpec
 from .utils import dataclass_fields_asdict
@@ -19,19 +19,17 @@ if TYPE_CHECKING:
 
 @dataclass
 class ComparamSubset(OdxCategory):
-    # mandatory in ODX 2.2, but non-existent in ODX 2.0
-    category: Optional[str]
-
     comparams: NamedItemList[Comparam]
     complex_comparams: NamedItemList[ComplexComparam]
     data_object_props: NamedItemList[DataObjectProperty]
     unit_spec: Optional[UnitSpec]
+    category: Optional[str]  # mandatory in ODX 2.2, but non-existent in ODX 2.0
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "ComparamSubset":
 
-        cat = OdxCategory.category_from_et(et_element, doc_frags, doc_type="COMPARAM-SUBSET")
+        cat = OdxCategory.category_from_et(et_element, doc_frags, doc_type=DocType.COMPARAM_SUBSET)
         doc_frags = cat.odx_id.doc_fragments
         kwargs = dataclass_fields_asdict(cat)
 

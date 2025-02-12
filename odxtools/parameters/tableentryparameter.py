@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Optional
+from enum import Enum
+from typing import TYPE_CHECKING, List, Optional, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..exceptions import odxrequire
+from ..exceptions import odxraise, odxrequire
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
@@ -17,9 +18,14 @@ if TYPE_CHECKING:
     from ..tablerow import TableRow
 
 
+class RowFragment(Enum):
+    KEY = "KEY"
+    STRUCT = "STRUCT"
+
+
 @dataclass
 class TableEntryParameter(Parameter):
-    target: str
+    target: RowFragment
     table_row_ref: OdxLinkRef
 
     @staticmethod
@@ -29,7 +35,12 @@ class TableEntryParameter(Parameter):
 
         kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
 
-        target = odxrequire(et_element.findtext("TARGET"))
+        target_str = odxrequire(et_element.findtext("TARGET"))
+        try:
+            target = RowFragment(target_str)
+        except ValueError:
+            odxraise(f"Encountered unknown target '{target_str}'")
+            target = cast(RowFragment, None)
         table_row_ref = odxrequire(OdxLinkRef.from_et(et_element.find("TABLE-ROW-REF"), doc_frags))
 
         return TableEntryParameter(target=target, table_row_ref=table_row_ref, **kwargs)

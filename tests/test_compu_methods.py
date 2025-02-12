@@ -21,13 +21,13 @@ from odxtools.compumethods.ratfunccompumethod import RatFuncCompuMethod
 from odxtools.compumethods.scaleratfunccompumethod import ScaleRatFuncCompuMethod
 from odxtools.compumethods.tabintpcompumethod import TabIntpCompuMethod
 from odxtools.exceptions import DecodeError, EncodeError, OdxError
-from odxtools.odxlink import OdxDocFragment
+from odxtools.odxlink import DocType, OdxDocFragment
 from odxtools.odxtypes import DataType
 from odxtools.progcode import ProgCode
 from odxtools.writepdxfile import (get_parent_container_name, jinja2_odxraise_helper,
                                    make_bool_xml_attrib, make_xml_attrib)
 
-doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
+doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
 
 
 class TestLinearCompuMethod(unittest.TestCase):

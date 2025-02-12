@@ -15,7 +15,7 @@ from ..exceptions import odxassert, odxraise, odxrequire
 from ..functionalclass import FunctionalClass
 from ..library import Library
 from ..nameditemlist import NamedItemList
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..request import Request
 from ..response import Response
 from ..singleecujob import SingleEcuJob
@@ -81,7 +81,7 @@ class DiagLayerRaw(IdentifiableElement):
 
         # extend the applicable ODX "document fragments" for the diag layer objects
         doc_frags = copy(doc_frags)
-        doc_frags.append(OdxDocFragment(short_name, "LAYER"))
+        doc_frags.append(OdxDocFragment(short_name, DocType.LAYER))
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = None

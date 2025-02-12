@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
+from enum import Enum
+from typing import List, Optional, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -15,11 +16,17 @@ from .odxtypes import AtomicOdxType, DataType
 from .utils import dataclass_fields_asdict
 
 
+class Termination(Enum):
+    END_OF_PDU = "END-OF-PDU"
+    ZERO = "ZERO"
+    HEX_FF = "HEX-FF"
+
+
 @dataclass
 class MinMaxLengthType(DiagCodedType):
     min_length: int
     max_length: Optional[int]
-    termination: str
+    termination: Termination
 
     @property
     def dct_type(self) -> DctType:
@@ -35,7 +42,13 @@ class MinMaxLengthType(DiagCodedType):
         max_length = None
         if et_element.find("MAX-LENGTH") is not None:
             max_length = int(odxrequire(et_element.findtext("MAX-LENGTH")))
-        termination = odxrequire(et_element.get("TERMINATION"))
+
+        termination_str = odxrequire(et_element.get("TERMINATION"))
+        try:
+            termination = Termination(termination_str)
+        except ValueError:
+            termination = cast(Termination, None)
+            odxraise(f"Encountered unknown termination type '{termination_str}'")
 
         return MinMaxLengthType(
             min_length=min_length, max_length=max_length, termination=termination, **kwargs)
@@ -49,23 +62,18 @@ class MinMaxLengthType(DiagCodedType):
                 DataType.A_UNICODE2STRING,
                 DataType.A_UTF8STRING,
             ], f"A min-max length type cannot have the base data type {self.base_data_type}.")
-        odxassert(self.termination in [
-            "ZERO",
-            "HEX-FF",
-            "END-OF-PDU",
-        ], f"A min-max length type cannot have the termination {self.termination}")
 
     def __termination_sequence(self) -> bytes:
         """Returns the termination byte sequence if it isn't defined."""
         # The termination sequence is actually not specified by ASAM
         # for A_BYTEFIELD but I assume it is only one byte.
         termination_sequence = b''
-        if self.termination == "ZERO":
+        if self.termination == Termination.ZERO:
             if self.base_data_type not in [DataType.A_UNICODE2STRING]:
                 termination_sequence = bytes([0x0])
             else:
                 termination_sequence = bytes([0x0, 0x0])
-        elif self.termination == "HEX-FF":
+        elif self.termination == Termination.HEX_FF:
             if self.base_data_type not in [DataType.A_UNICODE2STRING]:
                 termination_sequence = bytes([0xFF])
             else:
@@ -121,7 +129,7 @@ class MinMaxLengthType(DiagCodedType):
         # encountered within the encoded value.
 
         odxassert(
-            self.termination != "END-OF-PDU" or encode_state.is_end_of_pdu,
+            self.termination != Termination.END_OF_PDU or encode_state.is_end_of_pdu,
             "Encountered a MIN-MAX-LENGTH type with END-OF-PDU termination "
             "which is not located at the end of the PDU")
         if encode_state.is_end_of_pdu or data_length == self.max_length:
@@ -153,7 +161,7 @@ class MinMaxLengthType(DiagCodedType):
         if self.max_length is not None:
             max_terminator_pos = min(max_terminator_pos, orig_cursor_pos + self.max_length)
 
-        if self.termination != "END-OF-PDU":
+        if self.termination != Termination.END_OF_PDU:
             # The parameter either ends after the maximum length, at
             # the end of the PDU or if a termination sequence is
             # found.

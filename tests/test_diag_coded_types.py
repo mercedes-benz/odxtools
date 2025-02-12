@@ -22,9 +22,9 @@ from odxtools.encodestate import EncodeState
 from odxtools.encoding import Encoding
 from odxtools.exceptions import DecodeError, EncodeError, OdxError, odxrequire
 from odxtools.leadinglengthinfotype import LeadingLengthInfoType
-from odxtools.minmaxlengthtype import MinMaxLengthType
+from odxtools.minmaxlengthtype import MinMaxLengthType, Termination
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.lengthkeyparameter import LengthKeyParameter
@@ -34,7 +34,7 @@ from odxtools.physicaltype import PhysicalType
 from odxtools.request import Request
 from odxtools.standardlengthtype import StandardLengthType
 
-doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
+doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
 
 
 class TestLeadingLengthInfoType(unittest.TestCase):
@@ -680,7 +680,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             base_type_encoding=None,
             min_length=1,
             max_length=4,
-            termination="HEX-FF",
+            termination=Termination.HEX_FF,
             is_highlow_byte_order_raw=None,
         )
         state = DecodeState(bytes([0x12, 0xFF, 0x34, 0x56, 0xFF]), cursor_byte_position=1)
@@ -695,7 +695,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             base_type_encoding=None,
             min_length=2,
             max_length=4,
-            termination="HEX-FF",
+            termination=Termination.HEX_FF,
             is_highlow_byte_order_raw=None,
         )
         state = DecodeState(bytes([0x12, 0xFF]), cursor_byte_position=1)
@@ -703,7 +703,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
     def test_decode_min_max_length_type_end_of_pdu(self) -> None:
         """If the PDU ends before max length is reached, the extracted value ends at the end of the PDU."""
-        for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
+        for termination in [Termination.END_OF_PDU, Termination.HEX_FF, Termination.ZERO]:
             dct = MinMaxLengthType(
                 base_data_type=DataType.A_BYTEFIELD,
                 base_type_encoding=None,
@@ -719,7 +719,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
     def test_decode_min_max_length_type_max_length(self) -> None:
         """If the max length is smaller than the end of PDU, the extracted value ends after max length."""
-        for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
+        for termination in [Termination.END_OF_PDU, Termination.HEX_FF, Termination.ZERO]:
             dct = MinMaxLengthType(
                 base_data_type=DataType.A_BYTEFIELD,
                 base_type_encoding=None,
@@ -739,7 +739,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             base_type_encoding=None,
             min_length=1,
             max_length=4,
-            termination="HEX-FF",
+            termination=Termination.HEX_FF,
             is_highlow_byte_order_raw=None,
         )
         state = EncodeState(is_end_of_pdu=False)
@@ -752,7 +752,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             base_type_encoding=None,
             min_length=2,
             max_length=4,
-            termination="ZERO",
+            termination=Termination.ZERO,
             is_highlow_byte_order_raw=None,
         )
         state = EncodeState(is_end_of_pdu=False)
@@ -761,7 +761,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
     def test_encode_min_max_length_type_end_of_pdu(self) -> None:
         """If the parameter is at the end of the PDU, no termination char is added."""
-        for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
+        for termination in [Termination.END_OF_PDU, Termination.HEX_FF, Termination.ZERO]:
             dct = MinMaxLengthType(
                 base_data_type=DataType.A_BYTEFIELD,
                 base_type_encoding=None,
@@ -774,7 +774,7 @@ class TestMinMaxLengthType(unittest.TestCase):
             dct.encode_into_pdu(bytes([0x34, 0x56, 0x78, 0x9A]), state)
             self.assertEqual(state.coded_message.hex(), "3456789a")
 
-            if termination == "END-OF-PDU":
+            if termination == Termination.END_OF_PDU:
                 state = EncodeState(coded_message=bytearray(), is_end_of_pdu=False)
                 self.assertRaises(OdxError, dct.encode_into_pdu, bytes([0x34, 0x56, 0x78, 0x9A]),
                                   state)
@@ -785,7 +785,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
     def test_encode_min_max_length_type_min_length(self) -> None:
         """If the internal value is smaller than min length, an EncodeError must be raised."""
-        for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
+        for termination in [Termination.END_OF_PDU, Termination.HEX_FF, Termination.ZERO]:
             dct = MinMaxLengthType(
                 base_data_type=DataType.A_BYTEFIELD,
                 base_type_encoding=None,
@@ -806,7 +806,7 @@ class TestMinMaxLengthType(unittest.TestCase):
 
     def test_encode_min_max_length_type_max_length(self) -> None:
         """If the internal value is larger than max length, an EncodeError must be raised."""
-        for termination in ["END-OF-PDU", "HEX-FF", "ZERO"]:
+        for termination in [Termination.END_OF_PDU, Termination.HEX_FF, Termination.ZERO]:
             dct = MinMaxLengthType(
                 base_data_type=DataType.A_BYTEFIELD,
                 base_type_encoding=None,
@@ -843,7 +843,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     base_type_encoding=None,
                     min_length=2,
                     max_length=10,
-                    termination="ZERO",
+                    termination=Termination.ZERO,
                     is_highlow_byte_order_raw=None,
                 ),
         }
@@ -878,7 +878,7 @@ class TestMinMaxLengthType(unittest.TestCase):
                     admin_data=None,
                     diag_coded_type=diagcodedtypes["certificateClient"],
                     physical_type=PhysicalType(
-                        DataType.A_BYTEFIELD, display_radix=None, precision=None),
+                        base_data_type=DataType.A_BYTEFIELD, display_radix=None, precision=None),
                     compu_method=compumethods["bytes_passthrough"],
                     unit_ref=None,
                     sdgs=[],
@@ -1018,14 +1018,14 @@ class TestMinMaxLengthType(unittest.TestCase):
             base_type_encoding=Encoding.ISO_8859_1,
             min_length=8,
             max_length=16,
-            termination="ZERO",
+            termination=Termination.ZERO,
             is_highlow_byte_order_raw=None,
         )
 
         # diag-coded-type requires xsi namespace
         diagcodedtype_odx = f"""
         <ODX xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-            <DIAG-CODED-TYPE BASE-TYPE-ENCODING="{expected.base_type_encoding and expected.base_type_encoding.value}" BASE-DATA-TYPE="{expected.base_data_type.value}" TERMINATION="{expected.termination}" xsi:type="MIN-MAX-LENGTH-TYPE">
+            <DIAG-CODED-TYPE BASE-TYPE-ENCODING="{expected.base_type_encoding and expected.base_type_encoding.value}" BASE-DATA-TYPE="{expected.base_data_type.value}" TERMINATION="{expected.termination.value}" xsi:type="MIN-MAX-LENGTH-TYPE">
                 <MIN-LENGTH>{expected.min_length}</MIN-LENGTH>
                 <MAX-LENGTH>{expected.max_length}</MAX-LENGTH>
             </DIAG-CODED-TYPE>

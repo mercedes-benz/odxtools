@@ -19,7 +19,7 @@ from odxtools.multiplexercase import MultiplexerCase
 from odxtools.multiplexerdefaultcase import MultiplexerDefaultCase
 from odxtools.multiplexerswitchkey import MultiplexerSwitchKey
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.parameters.physicalconstantparameter import PhysicalConstantParameter
 from odxtools.parameters.valueparameter import ValueParameter
@@ -30,7 +30,7 @@ from odxtools.table import Table
 from odxtools.tablerow import TableRow
 
 # the document fragment which is used throughout the test
-doc_frags = [OdxDocFragment("DiagDataDictionarySpecTest", "CONTAINER")]
+doc_frags = [OdxDocFragment("DiagDataDictionarySpecTest", DocType.CONTAINER)]
 
 
 class TestDiagDataDictionarySpec(unittest.TestCase):

@@ -8,7 +8,7 @@ from .companydata import CompanyData
 from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
@@ -32,7 +32,7 @@ class OdxCategory(IdentifiableElement):
 
     @staticmethod
     def category_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
-                         doc_type: str) -> "OdxCategory":
+                         doc_type: DocType) -> "OdxCategory":
 
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
         # create the current ODX "document fragment" (description of the

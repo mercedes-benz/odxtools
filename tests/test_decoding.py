@@ -26,9 +26,9 @@ from odxtools.dynenddopref import DynEndDopRef
 from odxtools.endofpdufield import EndOfPduField
 from odxtools.exceptions import DecodeError, DecodeMismatch
 from odxtools.message import Message
-from odxtools.minmaxlengthtype import MinMaxLengthType
+from odxtools.minmaxlengthtype import MinMaxLengthType, Termination
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType, ParameterValueDict
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.matchingrequestparameter import MatchingRequestParameter
@@ -44,7 +44,7 @@ from odxtools.standardlengthtype import StandardLengthType
 from odxtools.staticfield import StaticField
 from odxtools.structure import Structure
 
-doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
+doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
 
 
 class TestIdentifyingService(unittest.TestCase):
@@ -2590,7 +2590,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
                 base_data_type=DataType.A_BYTEFIELD,
                 min_length=0,
                 max_length=None,
-                termination="END-OF-PDU",
+                termination=Termination.END_OF_PDU,
                 base_type_encoding=None,
                 is_highlow_byte_order_raw=None,
             ),

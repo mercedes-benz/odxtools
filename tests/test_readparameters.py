@@ -2,12 +2,12 @@
 import unittest
 from xml.etree import ElementTree
 
-from odxtools.odxlink import OdxDocFragment
+from odxtools.odxlink import DocType, OdxDocFragment
 from odxtools.odxtypes import DataType
 from odxtools.parameters.createanyparameter import create_any_parameter_from_et
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
 
-doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
+doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
 
 
 class TestReadNrcParam(unittest.TestCase):

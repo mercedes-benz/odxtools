@@ -31,7 +31,7 @@ from odxtools.inputparam import InputParam
 from odxtools.library import Library
 from odxtools.nameditemlist import NamedItemList
 from odxtools.negoutputparam import NegOutputParam
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.outputparam import OutputParam
 from odxtools.physicaltype import PhysicalType
@@ -40,7 +40,7 @@ from odxtools.singleecujob import SingleEcuJob
 from odxtools.standardlengthtype import StandardLengthType
 from odxtools.writepdxfile import jinja2_odxraise_helper, make_bool_xml_attrib, make_xml_attrib
 
-doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
+doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
 
 
 class TestSingleEcuJob(unittest.TestCase):

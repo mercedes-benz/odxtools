@@ -5,9 +5,9 @@ import pytest
 
 from odxtools.createecuvariantpatterns import create_ecu_variant_patterns_from_et
 from odxtools.exceptions import OdxError
-from odxtools.odxlink import OdxDocFragment
+from odxtools.odxlink import DocType, OdxDocFragment
 
-doc_frags = [OdxDocFragment(doc_name="pytest", doc_type="WinneThePoh")]
+doc_frags = [OdxDocFragment(doc_name="pytest", doc_type=DocType.CONTAINER)]
 
 
 @pytest.fixture()
