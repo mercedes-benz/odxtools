@@ -137,6 +137,7 @@ class HierarchyElement(DiagLayer):
                 unit_groups=NamedItemList(unit_groups),
                 units=NamedItemList([]),
                 physical_dimensions=NamedItemList([]),
+                admin_data=None,
                 sdgs=[])
         else:
             # locally defined unit spec and inherited unit groups
@@ -144,6 +145,7 @@ class HierarchyElement(DiagLayer):
                 unit_groups=NamedItemList(unit_groups),
                 units=local_unit_spec.units,
                 physical_dimensions=local_unit_spec.physical_dimensions,
+                admin_data=None,
                 sdgs=[])
         ############
 

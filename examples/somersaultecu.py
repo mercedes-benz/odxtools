@@ -2286,6 +2286,7 @@ somersault_base_diag_data_dictionary_spec = DiagDataDictionarySpec(
         [x for x in somersault_dops.values() if x.short_name != "schroedinger_dop"] +
         [somersault_dops["schroedinger_base"]]),
     unit_spec=UnitSpec(
+        admin_data=None,
         unit_groups=NamedItemList(somersault_unit_groups.values()),
         units=NamedItemList(somersault_units.values()),
         physical_dimensions=NamedItemList(somersault_physical_dimensions.values()),
