@@ -29,12 +29,11 @@ class OutputParam(IdentifiableElement):
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._dop_base = odxlinks.resolve(self.dop_base_ref, DopBase)
+        self._dop = odxlinks.resolve(self.dop_base_ref, DopBase)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
 
     @property
-    def dop_base(self) -> DopBase:
-        """The data object property describing this parameter."""
-        return self._dop_base
+    def dop(self) -> DopBase:
+        return self._dop
