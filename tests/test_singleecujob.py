@@ -70,6 +70,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 short_name="extensiveTask",
                 long_name=None,
                 description=None,
+                admin_data=None,
             ),
             specialAudience=AdditionalAudience(
                 odx_id=OdxLinkId("ID.specialAudience", doc_frags),

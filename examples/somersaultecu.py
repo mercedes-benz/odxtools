@@ -260,6 +260,7 @@ somersault_functional_classes = {
             short_name="flip",
             long_name="Flip",
             description=None,
+            admin_data=None,
         ),
     "session":
         FunctionalClass(
@@ -268,6 +269,7 @@ somersault_functional_classes = {
             short_name="session",
             long_name="Session",
             description=None,
+            admin_data=None,
         ),
 }
 
