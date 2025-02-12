@@ -1,19 +1,27 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
 from .odxlink import OdxDocFragment
+from .odxtypes import odxstr_to_bool
 from .utils import dataclass_fields_asdict
 
 
 @dataclass
 class Structure(BasicStructure):
+    is_visible_raw: Optional[bool]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Structure":
         """Read a STRUCTURE element from XML."""
         kwargs = dataclass_fields_asdict(BasicStructure.from_et(et_element, doc_frags))
 
-        return Structure(**kwargs)
+        is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
+
+        return Structure(is_visible_raw=is_visible_raw, **kwargs)
+
+    @property
+    def is_visible(self) -> bool:
+        return self.is_visible_raw in (True, None)

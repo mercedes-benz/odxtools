@@ -1094,7 +1094,8 @@ somersault_structures = {
             oid=None,
             odx_id=OdxLinkId("somersault.struct.recall.forward_flips_grudgingly_done", doc_frags),
             parameters=somersault_positive_responses["forward_flips_grudgingly_done"].parameters,
-            byte_size=None),
+            byte_size=None,
+            is_visible_raw=None),
     "forward_flips_happily_done":
         Structure(
             short_name="forward_flips_happily_done_recall",
@@ -1105,7 +1106,8 @@ somersault_structures = {
             oid=None,
             odx_id=OdxLinkId("somersault.struct.recall.forward_flips_happily_done", doc_frags),
             parameters=somersault_positive_responses["forward_flips_happily_done"].parameters,
-            byte_size=None),
+            byte_size=None,
+            is_visible_raw=None),
     "backward_flips_grudgingly_done":
         Structure(
             short_name="backward_flips_grudgingly_done_recall",
@@ -1116,7 +1118,8 @@ somersault_structures = {
             oid=None,
             odx_id=OdxLinkId("somersault.struct.recall.backward_flips_grudgingly_done", doc_frags),
             parameters=somersault_positive_responses["backward_flips_grudgingly_done"].parameters,
-            byte_size=None),
+            byte_size=None,
+            is_visible_raw=None),
 }
 
 # this is a hack to get around a catch-22: we need to specify the
