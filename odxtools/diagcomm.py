@@ -119,7 +119,7 @@ class DiagComm(IdentifiableElement):
                 odxraise(f"Encountered unknown diagnostic class type '{diagnostic_class_str}'")
 
         is_mandatory_raw = odxstr_to_bool(et_element.get("IS-MANDATORY"))
-        is_executable_raw = odxstr_to_bool(et_element.get("IS-MANDATORY"))
+        is_executable_raw = odxstr_to_bool(et_element.get("IS-EXECUTABLE"))
         is_final_raw = odxstr_to_bool(et_element.get("IS-FINAL"))
 
         return DiagComm(
