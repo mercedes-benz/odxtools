@@ -28,7 +28,7 @@ from odxtools.exceptions import DecodeError, DecodeMismatch
 from odxtools.message import Message
 from odxtools.minmaxlengthtype import MinMaxLengthType
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType, ParameterValueDict
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.matchingrequestparameter import MatchingRequestParameter
@@ -44,7 +44,7 @@ from odxtools.standardlengthtype import StandardLengthType
 from odxtools.staticfield import StaticField
 from odxtools.structure import Structure
 
-doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
+doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
 
 
 class TestIdentifyingService(unittest.TestCase):

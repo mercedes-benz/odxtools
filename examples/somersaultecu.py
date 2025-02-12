@@ -43,7 +43,7 @@ from odxtools.exceptions import odxrequire
 from odxtools.functionalclass import FunctionalClass
 from odxtools.modification import Modification
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkId, OdxLinkRef
+from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.matchingrequestparameter import MatchingRequestParameter
@@ -90,12 +90,12 @@ SID: Any = IntEnum("SID", tmp)  # type: ignore[misc]
 dlc_short_name = "somersault"
 
 # document fragment for everything except the communication parameters
-doc_frags = [OdxDocFragment(dlc_short_name, "CONTAINER")]
+doc_frags = [OdxDocFragment(dlc_short_name, DocType.CONTAINER)]
 
 # document fragments for communication parameters
-cp_dwcan_doc_frags = [OdxDocFragment("ISO_11898_2_DWCAN", "COMPARAM-SUBSET")]
-cp_iso15765_2_doc_frags = [OdxDocFragment("ISO_15765_2", "COMPARAM-SUBSET")]
-cp_iso15765_3_doc_frags = [OdxDocFragment("ISO_15765_3", "COMPARAM-SUBSET")]
+cp_dwcan_doc_frags = [OdxDocFragment("ISO_11898_2_DWCAN", DocType.COMPARAM_SUBSET)]
+cp_iso15765_2_doc_frags = [OdxDocFragment("ISO_15765_2", DocType.COMPARAM_SUBSET)]
+cp_iso15765_3_doc_frags = [OdxDocFragment("ISO_15765_3", DocType.COMPARAM_SUBSET)]
 
 ##################
 # Base variant of Somersault ECU
@@ -2345,8 +2345,9 @@ somersault_protocol_raw = ProtocolRaw(
     additional_audiences=NamedItemList(),
     sdgs=[],
     parent_refs=[],
-    comparam_spec_ref=OdxLinkRef("CPS_ISO_15765_3_on_ISO_15765_2",
-                                 [OdxDocFragment("ISO_15765_3_on_ISO_15765_2", "COMPARAM-SPEC")]),
+    comparam_spec_ref=OdxLinkRef("CPS_ISO_15765_3_on_ISO_15765_2", [
+        OdxDocFragment("ISO_15765_3_on_ISO_15765_2", DocType.COMPARAM_SPEC)
+    ]),
     comparam_refs=somersault_comparam_refs,
     libraries=NamedItemList(),
     prot_stack_snref=None,

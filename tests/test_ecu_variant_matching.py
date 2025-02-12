@@ -14,11 +14,11 @@ from odxtools.ecuvariantpattern import EcuVariantPattern
 from odxtools.exceptions import OdxError
 from odxtools.matchingparameter import MatchingParameter
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.request import Request
 from odxtools.response import Response, ResponseType
 
-doc_frags = [OdxDocFragment(doc_name="pytest", doc_type="WinneThePoh")]
+doc_frags = [OdxDocFragment(doc_name="pytest", doc_type=DocType.CONTAINER)]
 
 odxlinks = OdxLinkDatabase()
 

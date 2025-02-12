@@ -27,7 +27,7 @@ from odxtools.environmentdata import EnvironmentData
 from odxtools.environmentdatadescription import EnvironmentDataDescription
 from odxtools.exceptions import EncodeError, OdxError
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
@@ -40,7 +40,7 @@ from odxtools.response import Response, ResponseType
 from odxtools.snrefcontext import SnRefContext
 from odxtools.standardlengthtype import StandardLengthType
 
-doc_frags = [OdxDocFragment("UnitTest", "WinneThePoh")]
+doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
 
 
 class TestEncodeRequest(unittest.TestCase):

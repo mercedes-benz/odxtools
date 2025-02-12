@@ -5,7 +5,7 @@ from xml.etree import ElementTree
 
 from .nameditemlist import NamedItemList
 from .odxcategory import OdxCategory
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .protstack import ProtStack
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
@@ -16,12 +16,13 @@ if TYPE_CHECKING:
 
 @dataclass
 class ComparamSpec(OdxCategory):
+
     prot_stacks: NamedItemList[ProtStack]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ComparamSpec":
 
-        cat = OdxCategory.category_from_et(et_element, doc_frags, doc_type="COMPARAM-SPEC")
+        cat = OdxCategory.category_from_et(et_element, doc_frags, doc_type=DocType.COMPARAM_SPEC)
         doc_frags = cat.odx_id.doc_fragments
         kwargs = dataclass_fields_asdict(cat)
 

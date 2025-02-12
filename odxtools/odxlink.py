@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
+from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Type, TypeVar, overload
 from xml.etree import ElementTree
 
@@ -8,10 +9,22 @@ from .exceptions import OdxWarning, odxassert, odxraise, odxrequire
 from .nameditemlist import OdxNamed, TNamed
 
 
+class DocType(Enum):
+    FLASH = "FLASH"
+    CONTAINER = "CONTAINER"
+    LAYER = "LAYER"
+    MULTIPLE_ECU_JOB_SPEC = "MULTIPLE-ECU-JOB-SPEC"
+    COMPARAM_SPEC = "COMPARAM-SPEC"
+    VEHICLE_INFO_SPEC = "VEHICLE-INFO-SPEC"
+    COMPARAM_SUBSET = "COMPARAM-SUBSET"
+    ECU_CONFIG = "ECU-CONFIG"
+    FUNCTION_DICTIONARY_SPEC = "FUNCTION-DICTIONARY-SPEC"
+
+
 @dataclass(frozen=True)
 class OdxDocFragment:
     doc_name: str
-    doc_type: str
+    doc_type: DocType
 
 
 @dataclass(frozen=True)
@@ -109,18 +122,25 @@ class OdxLinkRef:
             odxraise(f"Tag {et.tag} is not a ODXLINK reference")
             return None
 
-        doc_ref = et.attrib.get("DOCREF")
-        doc_type = et.attrib.get("DOCTYPE")
+        docref = et.attrib.get("DOCREF")
+        doctype_attr = et.attrib.get("DOCTYPE")
 
-        odxassert((doc_ref is not None and doc_type is not None) or
-                  (doc_ref is None and doc_type is None),
+        odxassert((docref is not None and doctype_attr is not None) or
+                  (docref is None and doctype_attr is None),
                   "DOCREF and DOCTYPE must both either be specified or omitted")
+
+        doctype = None
+        if doctype_attr is not None:
+            try:
+                doctype = DocType(doctype_attr)
+            except ValueError:
+                odxraise(f"Encountered unknown document type '{doctype_attr}'")
 
         # if the target document fragment is specified by the
         # reference, use it, else use the document fragment containing
         # the reference.
-        if doc_ref is not None:
-            doc_frags = [OdxDocFragment(doc_ref, odxrequire(doc_type))]
+        if docref is not None:
+            doc_frags = [OdxDocFragment(docref, odxrequire(doctype))]
         else:
             doc_frags = source_doc_frags
 
