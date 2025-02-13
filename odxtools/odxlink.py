@@ -96,6 +96,10 @@ class OdxLinkRef:
     #: The document fragments to which the `ref_id` refers to (in reverse order)
     ref_docs: List[OdxDocFragment]
 
+    # TODO: this is difficult because OdxLinkRef is derived from and
+    # we do not want having to specify it mandatorily
+    #revision: Optional[str] = None
+
     @overload
     @staticmethod
     def from_et(et: None, source_doc_frags: List[OdxDocFragment]) -> None:

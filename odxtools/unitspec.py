@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
+from .admindata import AdminData
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .physicaldimension import PhysicalDimension
@@ -24,7 +25,7 @@ class UnitSpec:
     The following odx elements are not internalized: ADMIN-DATA, SDGS
     """
 
-    # TODO (?): Why are there type errors...
+    admin_data: Optional[AdminData]
     unit_groups: NamedItemList[UnitGroup]
     units: NamedItemList[Unit]
     physical_dimensions: NamedItemList[PhysicalDimension]
@@ -38,6 +39,7 @@ class UnitSpec:
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "UnitSpec":
 
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         unit_groups = NamedItemList([
             UnitGroup.from_et(el, doc_frags) for el in et_element.iterfind("UNIT-GROUPS/UNIT-GROUP")
         ])
@@ -52,6 +54,7 @@ class UnitSpec:
         ]
 
         return UnitSpec(
+            admin_data=admin_data,
             unit_groups=unit_groups,
             units=units,
             physical_dimensions=physical_dimensions,

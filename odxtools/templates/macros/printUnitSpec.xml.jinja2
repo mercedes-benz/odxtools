@@ -4,10 +4,14 @@
 -#}
 
 {%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printUnitSpec(spec) -%}
 <UNIT-SPEC>
+ {%- if spec.admin_data is not none %}
+ {{ pad.printAdminData(spec.admin_data)|indent(1) }}
+ {%- endif %}
  {%- if spec.unit_groups %}
  <UNIT-GROUPS>
  {%- for group in spec.unit_groups %}

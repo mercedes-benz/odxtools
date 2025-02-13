@@ -134,8 +134,8 @@
     {{ pt.printTable(table)|indent(3) }}
     {%- endfor %}
   </TABLES>
-  {{- psd.printSpecialDataGroups(ddds.sdgs)|indent(2, first=True) }}
   {%- endif %}
+  {{- psd.printSpecialDataGroups(ddds.sdgs)|indent(2, first=True) }}
 </DIAG-DATA-DICTIONARY-SPEC>
 {%- endif %}
 {%- if dlr.diag_comms_raw %}

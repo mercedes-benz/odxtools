@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
+from .admindata import AdminData
 from .element import IdentifiableElement
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
@@ -15,13 +16,17 @@ class FunctionalClass(IdentifiableElement):
     Corresponds to FUNCT-CLASS.
     """
 
+    admin_data: Optional[AdminData]
+
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "FunctionalClass":
 
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
-        return FunctionalClass(**kwargs)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+
+        return FunctionalClass(admin_data=admin_data, **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {self.odx_id: self}

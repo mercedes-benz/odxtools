@@ -7,7 +7,8 @@
 {%- import('macros/printParam.xml.jinja2') as pp %}
 
 {%- macro printStructure(st) -%}
-<STRUCTURE {{-peid.printElementIdAttribs(st)}}>
+<STRUCTURE {{-peid.printElementIdAttribs(st)}}
+           {{- make_bool_xml_attrib("IS-VISIBLE", st.is_visible_raw) }}{#- #}>
  {{ peid.printElementIdSubtags(st)|indent(1) }}
 {%- if st.byte_size is not none %}
  <BYTE-SIZE>{{st.byte_size}}</BYTE-SIZE>

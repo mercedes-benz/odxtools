@@ -70,6 +70,7 @@ class TestSingleEcuJob(unittest.TestCase):
                 short_name="extensiveTask",
                 long_name=None,
                 description=None,
+                admin_data=None,
             ),
             specialAudience=AdditionalAudience(
                 odx_id=OdxLinkId("ID.specialAudience", doc_frags),
@@ -510,8 +511,8 @@ class TestSingleEcuJob(unittest.TestCase):
         self.assertEqual(self.context.specialAudience,
                          odxrequire(self.singleecujob_object.audience).enabled_audiences[0])
 
-        self.assertEqual(self.context.inputDOP, self.singleecujob_object.input_params[0].dop_base)
-        self.assertEqual(self.context.outputDOP, self.singleecujob_object.output_params[0].dop_base)
+        self.assertEqual(self.context.inputDOP, self.singleecujob_object.input_params[0].dop)
+        self.assertEqual(self.context.outputDOP, self.singleecujob_object.output_params[0].dop)
         self.assertEqual(self.context.negOutputDOP,
                          self.singleecujob_object.neg_output_params[0].dop)
 

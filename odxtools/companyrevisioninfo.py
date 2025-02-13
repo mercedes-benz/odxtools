@@ -25,7 +25,7 @@ class CompanyRevisionInfo:
 
         company_data_ref = odxrequire(
             OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), doc_frags))
-        revision_label = et_element.findtext("REVISION_LABEL")
+        revision_label = et_element.findtext("REVISION-LABEL")
         state = et_element.findtext("STATE")
 
         return CompanyRevisionInfo(

@@ -5,9 +5,13 @@
 -#}
 
 {%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
 
 {%- macro printFunctionalClass(fc) -%}
 <FUNCT-CLASS {{-peid.printElementIdAttribs(fc)}}>
  {{ peid.printElementIdSubtags(fc)|indent(1) }}
+ {%- if fc.admin_data is not none -%}
+ {{ pad.printAdminData(fc.admin_data)|indent(1) }}
+ {%- endif -%}
 </FUNCT-CLASS>
 {%- endmacro -%}

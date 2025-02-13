@@ -3,18 +3,19 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
+from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 
 
 @dataclass
 class Modification:
-    change: Optional[str]
+    change: str
     reason: Optional[str]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Modification":
-        change = et_element.findtext("CHANGE")
+        change = odxrequire(et_element.findtext("CHANGE"))
         reason = et_element.findtext("REASON")
 
         return Modification(change=change, reason=reason)

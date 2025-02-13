@@ -138,9 +138,4 @@ class ComparamInstance:
 
     @property
     def short_name(self) -> str:
-        if self.spec:
-            return self.spec.short_name
-
-        # ODXLINK IDs allow dots and hyphens, but short names do not.
-        # (This should not happen anyway in a correct PDX...)
-        return self.spec_ref.ref_id.replace(".", "__").replace("-", "_")
+        return self.spec.short_name

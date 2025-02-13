@@ -15,7 +15,7 @@ from .utils import dataclass_fields_asdict
 @dataclass
 class DiagnosticTroubleCode(IdentifiableElement):
     trouble_code: int
-    text: Optional[str]
+    text: str
     display_trouble_code: Optional[str]
     level: Optional[int]
     is_temporary_raw: Optional[bool]
@@ -29,15 +29,11 @@ class DiagnosticTroubleCode(IdentifiableElement):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DiagnosticTroubleCode":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
-        if et_element.find("DISPLAY-TROUBLE-CODE") is not None:
-            display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
-        else:
-            display_trouble_code = None
+        display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
 
+        level = None
         if (level_str := et_element.findtext("LEVEL")) is not None:
             level = int(level_str)
-        else:
-            level = None
 
         is_temporary_raw = odxstr_to_bool(et_element.get("IS-TEMPORARY"))
         sdgs = [
@@ -46,7 +42,7 @@ class DiagnosticTroubleCode(IdentifiableElement):
 
         return DiagnosticTroubleCode(
             trouble_code=int(odxrequire(et_element.findtext("TROUBLE-CODE"))),
-            text=et_element.findtext("TEXT"),
+            text=odxrequire(et_element.findtext("TEXT")),
             display_trouble_code=display_trouble_code,
             level=level,
             is_temporary_raw=is_temporary_raw,
