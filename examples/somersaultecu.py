@@ -1471,6 +1471,7 @@ somersault_tables = {
                     sdgs=[],
                 ),
             ],
+            table_diag_comm_connectors=[],
             sdgs=[],
         )
 }

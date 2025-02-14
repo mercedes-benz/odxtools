@@ -200,6 +200,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     sdgs=[],
                 ),
             ],
+            table_diag_comm_connectors=[],
             sdgs=[],
         )
 
