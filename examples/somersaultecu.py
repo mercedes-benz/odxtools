@@ -1826,6 +1826,7 @@ somersault_services = {
             neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id),
             ],
+            pos_response_suppressible=None,
             functional_class_refs=[
                 OdxLinkRef.from_id(somersault_functional_classes["session"].odx_id),
             ],
@@ -1861,6 +1862,7 @@ somersault_services = {
             neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id),
             ],
+            pos_response_suppressible=None,
             functional_class_refs=[
                 OdxLinkRef.from_id(somersault_functional_classes["session"].odx_id)
             ],
@@ -1908,6 +1910,7 @@ somersault_services = {
             neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["tester_nok"].odx_id),
             ],
+            pos_response_suppressible=None,
             sdgs=[],
         ),
     "set_operation_params":
@@ -1941,6 +1944,7 @@ somersault_services = {
             neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id),
             ],
+            pos_response_suppressible=None,
             sdgs=[],
         ),
     "forward_flips":
@@ -1990,6 +1994,7 @@ somersault_services = {
                 # OdxLinkRef.from_id(somersault_negative_responses["too_dizzy"].odx_id),
                 # OdxLinkRef.from_id(somersault_negative_responses["not_sober"].odx_id),
             ],
+            pos_response_suppressible=None,
             functional_class_refs=[
                 OdxLinkRef.from_id(somersault_functional_classes["flip"].odx_id)
             ],
@@ -2036,6 +2041,7 @@ somersault_services = {
             neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["flips_not_done"].odx_id),
             ],
+            pos_response_suppressible=None,
             functional_class_refs=[
                 OdxLinkRef.from_id(somersault_functional_classes["flip"].odx_id)
             ],
@@ -2082,6 +2088,7 @@ somersault_services = {
             neg_response_refs=[
                 OdxLinkRef.from_id(somersault_negative_responses["general"].odx_id),
             ],
+            pos_response_suppressible=None,
             sdgs=[],
         ),
     "schroedinger":
@@ -2110,6 +2117,7 @@ somersault_services = {
             semantic="ROUTINE",
             pos_response_refs=[],
             neg_response_refs=[],
+            pos_response_suppressible=None,
             functional_class_refs=[],
             sdgs=[],
         ),
@@ -2616,6 +2624,7 @@ somersault_assiduous_services = {
             neg_response_refs=[
                 OdxLinkRef.from_id(somersault_assiduous_negative_responses["fell_over"].odx_id),
             ],
+            pos_response_suppressible=None,
             comparam_refs=[],
             is_cyclic_raw=None,
             is_multiple_raw=None,

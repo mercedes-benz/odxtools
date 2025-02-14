@@ -31,6 +31,71 @@ class TransMode(Enum):
     SEND_OR_RECEIVE = "SEND-OR-RECEIVE"
 
 
+# note that the spec has a typo here: it calls the corresponding
+# XML tag POS-RESPONSE-SUPPRESSABLE...
+@dataclass
+class PosResponseSuppressible:
+    bit_mask: int
+
+    coded_const_snref: Optional[str]
+    coded_const_snpathref: Optional[str]
+
+    value_snref: Optional[str]
+    value_snpathref: Optional[str]
+
+    phys_const_snref: Optional[str]
+    phys_const_snpathref: Optional[str]
+
+    table_key_snref: Optional[str]
+    table_key_snpathref: Optional[str]
+
+    @staticmethod
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "PosResponseSuppressible":
+
+        bit_mask = int(odxrequire(et_element.findtext("BITMASK")))
+
+        coded_const_snref = None
+        if (cc_snref_elem := et_element.find("CODED-CONST-SNREF")) is not None:
+            coded_const_snref = cc_snref_elem.attrib["SHORT-NAME"]
+        coded_const_snpathref = None
+        if (cc_snpathref_elem := et_element.find("CODED-CONST-SNPATHREF")) is not None:
+            coded_const_snpathref = cc_snpathref_elem.attrib["SHORT-NAME-PATH"]
+
+        value_snref = None
+        if (cc_snref_elem := et_element.find("VALUE-SNREF")) is not None:
+            value_snref = cc_snref_elem.attrib["SHORT-NAME"]
+        value_snpathref = None
+        if (cc_snpathref_elem := et_element.find("VALUE-SNPATHREF")) is not None:
+            value_snpathref = cc_snpathref_elem.attrib["SHORT-NAME-PATH"]
+
+        phys_const_snref = None
+        if (cc_snref_elem := et_element.find("PHYS-CONST-SNREF")) is not None:
+            phys_const_snref = cc_snref_elem.attrib["SHORT-NAME"]
+        phys_const_snpathref = None
+        if (cc_snpathref_elem := et_element.find("PHYS-CONST-SNPATHREF")) is not None:
+            phys_const_snpathref = cc_snpathref_elem.attrib["SHORT-NAME-PATH"]
+
+        table_key_snref = None
+        if (cc_snref_elem := et_element.find("TABLE-KEY-SNREF")) is not None:
+            table_key_snref = cc_snref_elem.attrib["SHORT-NAME"]
+        table_key_snpathref = None
+        if (cc_snpathref_elem := et_element.find("TABLE-KEY-SNPATHREF")) is not None:
+            table_key_snpathref = cc_snpathref_elem.attrib["SHORT-NAME-PATH"]
+
+        return PosResponseSuppressible(
+            bit_mask=bit_mask,
+            coded_const_snref=coded_const_snref,
+            coded_const_snpathref=coded_const_snpathref,
+            value_snref=value_snref,
+            value_snpathref=value_snpathref,
+            phys_const_snref=phys_const_snref,
+            phys_const_snpathref=phys_const_snpathref,
+            table_key_snref=table_key_snref,
+            table_key_snpathref=table_key_snpathref,
+        )
+
+
 @dataclass
 class DiagService(DiagComm):
     """Representation of a diagnostic service description.
@@ -42,9 +107,7 @@ class DiagService(DiagComm):
     pos_response_refs: List[OdxLinkRef]
     neg_response_refs: List[OdxLinkRef]
 
-    # note that the spec has a typo here: it calls the corresponding
-    # XML tag POS-RESPONSE-SUPPRESSABLE...
-    # TODO: pos_response_suppressible: Optional[PosResponseSuppressible]
+    pos_response_suppressible: Optional[PosResponseSuppressible]
 
     is_cyclic_raw: Optional[bool]
     is_multiple_raw: Optional[bool]
@@ -73,7 +136,9 @@ class DiagService(DiagComm):
             for el in et_element.iterfind("NEG-RESPONSE-REFS/NEG-RESPONSE-REF")
         ]
 
-        # TODO: POS-RESPONSE-SUPPRESSABLE
+        pos_response_suppressible = None
+        if (prs_elem := et_element.find("POS-RESPONSE-SUPPRESSABLE")) is not None:
+            pos_response_suppressible = PosResponseSuppressible.from_et(prs_elem, doc_frags)
 
         is_cyclic_raw = odxstr_to_bool(et_element.get("IS-CYCLIC"))
         is_multiple_raw = odxstr_to_bool(et_element.get("IS-MULTIPLE"))
@@ -99,6 +164,7 @@ class DiagService(DiagComm):
             request_ref=request_ref,
             pos_response_refs=pos_response_refs,
             neg_response_refs=neg_response_refs,
+            pos_response_suppressible=pos_response_suppressible,
             is_cyclic_raw=is_cyclic_raw,
             is_multiple_raw=is_multiple_raw,
             addressing_raw=addressing_raw,
