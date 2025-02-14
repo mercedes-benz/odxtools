@@ -7,9 +7,26 @@ from .odxlink import OdxDocFragment
 
 
 @dataclass
+class ExternalDoc:
+    description: Optional[str]
+    href: str
+
+    @staticmethod
+    def from_et(et_element: Optional[ElementTree.Element],
+                doc_frags: List[OdxDocFragment]) -> Optional["ExternalDoc"]:
+        if et_element is None:
+            return None
+
+        description = et_element.text
+        href = odxrequire(et_element.get("HREF"))
+
+        return ExternalDoc(description=description, href=href)
+
+
+@dataclass
 class Description:
     text: str
-    external_docs: List[str]
+    external_docs: List[ExternalDoc]
     text_identifier: Optional[str]
 
     @staticmethod
@@ -35,7 +52,7 @@ class Description:
 
         external_docs = \
             [
-                odxrequire(ed.get("HREF")) for ed in et_element.iterfind("EXTERNAL-DOCS/EXTERNAL-DOC")
+                odxrequire(ExternalDoc.from_et(ed, doc_frags)) for ed in et_element.iterfind("EXTERNAL-DOCS/EXTERNAL-DOC")
             ]
         return Description(text=text, text_identifier=text_identifier, external_docs=external_docs)
 

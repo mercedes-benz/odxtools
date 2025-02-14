@@ -193,6 +193,7 @@ flic_flac_service = DiagService(
     neg_response_refs=[
         OdxLinkRef.from_id(somersaultecu.somersault_negative_responses["general"].odx_id),
     ],
+    pos_response_suppressible=None,
     sdgs=[],
 )
 

@@ -88,6 +88,7 @@ def ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> 
         request_ref=OdxLinkRef.from_id(dummy_req.odx_id),
         pos_response_refs=[OdxLinkRef.from_id(dummy_response.odx_id)],
         neg_response_refs=[],
+        pos_response_suppressible=None,
         sdgs=[],
     )
 
@@ -138,6 +139,7 @@ def supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) 
         request_ref=OdxLinkRef.from_id(dummy_req.odx_id),
         pos_response_refs=[OdxLinkRef.from_id(dummy_response.odx_id)],
         neg_response_refs=[],
+        pos_response_suppressible=None,
         sdgs=[],
     )
 

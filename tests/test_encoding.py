@@ -699,6 +699,7 @@ class TestEncodeRequest(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[],
             neg_response_refs=[OdxLinkRef.from_id(resp.odx_id)],
+            pos_response_suppressible=None,
             sdgs=[],
         )
 

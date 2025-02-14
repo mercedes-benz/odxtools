@@ -128,6 +128,7 @@ class TestIdentifyingService(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[],
             neg_response_refs=[],
+            pos_response_suppressible=None,
             sdgs=[],
         )
 
@@ -206,6 +207,7 @@ class TestIdentifyingService(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req2.odx_id),
             pos_response_refs=[OdxLinkRef.from_id(resp2.odx_id)],
             neg_response_refs=[],
+            pos_response_suppressible=None,
             sdgs=[],
         )
 
@@ -333,6 +335,7 @@ class TestDecoding(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[],
             neg_response_refs=[],
+            pos_response_suppressible=None,
             sdgs=[],
         )
         ecu_variant_raw = EcuVariantRaw(
@@ -517,6 +520,7 @@ class TestDecoding(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[],
             neg_response_refs=[OdxLinkRef.from_id(resp.odx_id)],
+            pos_response_suppressible=None,
             sdgs=[],
         )
 
@@ -688,6 +692,7 @@ class TestDecoding(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[],
             neg_response_refs=[],
+            pos_response_suppressible=None,
             sdgs=[],
         )
         ecu_variant_raw = EcuVariantRaw(
@@ -894,6 +899,7 @@ class TestDecoding(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[],
             neg_response_refs=[],
+            pos_response_suppressible=None,
             sdgs=[],
         )
         ecu_variant_raw = EcuVariantRaw(
@@ -1115,6 +1121,7 @@ class TestDecoding(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[],
             neg_response_refs=[],
+            pos_response_suppressible=None,
             sdgs=[],
         )
         ecu_variant_raw = EcuVariantRaw(
@@ -1441,6 +1448,7 @@ class TestDecoding(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[],
             neg_response_refs=[],
+            pos_response_suppressible=None,
             sdgs=[],
         )
         service_eopdu = DiagService(
@@ -1469,6 +1477,7 @@ class TestDecoding(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req_end_of_pdu.odx_id),
             pos_response_refs=[],
             neg_response_refs=[],
+            pos_response_suppressible=None,
             sdgs=[],
         )
         ecu_variant_raw = EcuVariantRaw(
@@ -1756,6 +1765,7 @@ class TestDecoding(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[],
             neg_response_refs=[],
+            pos_response_suppressible=None,
             sdgs=[],
         )
         ecu_variant_raw = EcuVariantRaw(
@@ -2000,6 +2010,7 @@ class TestDecoding(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[],
             neg_response_refs=[],
+            pos_response_suppressible=None,
             sdgs=[],
         )
         ecu_variant_raw = EcuVariantRaw(
@@ -2190,6 +2201,7 @@ class TestDecoding(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[],
             neg_response_refs=[],
+            pos_response_suppressible=None,
             sdgs=[],
         )
         ecu_variant_raw = EcuVariantRaw(
@@ -2401,6 +2413,7 @@ class TestDecoding(unittest.TestCase):
             request_ref=OdxLinkRef.from_id(req.odx_id),
             pos_response_refs=[OdxLinkRef.from_id(pos_response.odx_id)],
             neg_response_refs=[OdxLinkRef.from_id(neg_response.odx_id)],
+            pos_response_suppressible=None,
             sdgs=[],
         )
         ecu_variant_raw = EcuVariantRaw(
