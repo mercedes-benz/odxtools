@@ -137,15 +137,14 @@ class DataObjectProperty(DopBase):
         if self.compu_method.is_valid_internal_value(internal):
             return self.compu_method.convert_internal_to_physical(internal)
 
-        default_value = self.compu_method.compu_internal_to_phys.compu_default_value
+        default_value = getattr(self.compu_method.compu_internal_to_phys, "compu_default_value",
+                                None)
         if default_value is not None:
-            return default_value.value
+            return str(default_value)
 
         # TODO: How to prevent this?
-        raise DecodeError(
-            f"DOP {self.short_name} could not convert the coded value "
-            f"{repr(internal)} to physical type {self.physical_type.base_data_type}."
-        )
+        raise DecodeError(f"DOP {self.short_name} could not convert the coded value "
+                          f"{repr(internal)} to physical type {self.physical_type.base_data_type}.")
 
     def is_valid_physical_value(self, physical_value: ParameterValue) -> bool:
         return self.compu_method.is_valid_physical_value(cast(AtomicOdxType, physical_value))
