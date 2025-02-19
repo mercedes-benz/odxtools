@@ -65,6 +65,20 @@
  <TABLE-ROW-REF ID-REF="{{ table_row.ref_id }}" />
  {%- endif %}
 {%- endfor %}
+ {%- if table_diag_comm_connectors %}
+ <TABLE-DIAG-COMM-CONNECTORS>
+ {%- for tdcc in table_diag_comm_connectors %}
+  <TABLE-DIAG-COMM-CONNECTOR>
+   <SEMANTIC>{{tdcc.semantic}}</SEMANTIC>
+   {%- if tdcc.diag_comm_ref %}
+   <DIAG-COMM-REF ID-REF="{{ tdcc.diag_comm_ref.ref_id }}" />
+   {%- elif tdcc.diag_comm_snref %}
+   <DIAG-COMM-SNREF SHORT-NAME="{{ tdcc.diag_comm_snref }}" />
+   {%- endif %}
+  </TABLE-DIAG-COMM-CONNECTOR>
+ {%- endfor %}
+ </TABLE-DIAG-COMM-CONNECTORS>
+ {%- endif %}
  {{- psd.printSpecialDataGroups(table.sdgs)|indent(1, first=True) }}
 </TABLE>
 {%- endmacro -%}

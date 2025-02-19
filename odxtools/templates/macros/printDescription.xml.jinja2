@@ -9,7 +9,11 @@
 {%- if desc.external_docs %}
 <EXTERNAL-DOCS>
  {%- for ed in desc.external_docs %}
- <EXTERNAL-DOC HREF="{{ed}}" />
+ {%- if ed.description is none %}}
+ <EXTERNAL-DOC HREF="{{ed.href}}" />
+ {%- else %}}
+ <EXTERNAL-DOC HREF="{{ed.href}}">{{ed.description}}</EXTERNAL-DOC>
+ {%- endif %}}
  {%- endfor %}
 </EXTERNAL-DOCS>
 {%- endif -%}

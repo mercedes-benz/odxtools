@@ -5,14 +5,52 @@ from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .dataobjectproperty import DataObjectProperty
+from .diagcomm import DiagComm
 from .element import IdentifiableElement
-from .exceptions import odxassert
+from .exceptions import odxassert, odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .tablerow import TableRow
 from .utils import dataclass_fields_asdict
+
+
+@dataclass
+class TableDiagCommConnector:
+    semantic: str
+
+    diag_comm_ref: Optional[OdxLinkRef]
+    diag_comm_snref: Optional[str]
+
+    @property
+    def diag_comm(self) -> DiagComm:
+        return self._diag_comm
+
+    @staticmethod
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "TableDiagCommConnector":
+
+        semantic = odxrequire(et_element.findtext("SEMANTIC"))
+        diag_comm_ref = OdxLinkRef.from_et(et_element.find("DIAG-COMM-REF"), doc_frags)
+        diag_comm_snref = None
+        if (dc_snref_elem := et_element.find("DIAG-COMM-SNREF")) is not None:
+            diag_comm_snref = odxrequire(dc_snref_elem.get("SHORT-NAME"))
+
+        return TableDiagCommConnector(
+            semantic=semantic, diag_comm_ref=diag_comm_ref, diag_comm_snref=diag_comm_snref)
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        if self.diag_comm_ref is not None:
+            self._diag_comm = odxlinks.resolve(self.diag_comm_ref, DiagComm)
+
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        if self.diag_comm_snref is not None:
+            dl = odxrequire(context.diag_layer)
+            self._diag_comm = resolve_snref(self.diag_comm_snref, dl.diag_comms, DiagComm)
 
 
 @dataclass
@@ -24,7 +62,7 @@ class Table(IdentifiableElement):
     admin_data: Optional[AdminData]
     key_dop_ref: Optional[OdxLinkRef]
     table_rows_raw: List[Union[TableRow, OdxLinkRef]]
-    # TODO: table_diag_comm_connectors
+    table_diag_comm_connectors: List[TableDiagCommConnector]
     sdgs: List[SpecialDataGroup]
 
     @staticmethod
@@ -47,6 +85,10 @@ class Table(IdentifiableElement):
             elif sub_elem.tag == "TABLE-ROW-REF":
                 table_rows_raw.append(OdxLinkRef.from_et(sub_elem, doc_frags))
 
+        table_diag_comm_connectors = [
+            TableDiagCommConnector.from_et(dcc_elem, doc_frags) for dcc_elem in et_element.iterfind(
+                "TABLE-DIAG-COMM-CONNECTORS/TABLE-DIAG-COMM-CONNECTOR")
+        ]
         sdgs = [
             SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
         ]
@@ -58,6 +100,7 @@ class Table(IdentifiableElement):
             admin_data=admin_data,
             key_dop_ref=key_dop_ref,
             table_rows_raw=table_rows_raw,
+            table_diag_comm_connectors=table_diag_comm_connectors,
             sdgs=sdgs,
             **kwargs)
 
@@ -77,6 +120,9 @@ class Table(IdentifiableElement):
         for table_row_wrapper in self.table_rows_raw:
             if isinstance(table_row_wrapper, TableRow):
                 result.update(table_row_wrapper._build_odxlinks())
+
+        for dcc in self.table_diag_comm_connectors:
+            result.update(dcc._build_odxlinks())
 
         return result
 
@@ -98,7 +144,13 @@ class Table(IdentifiableElement):
 
         self._table_rows = NamedItemList(table_rows)
 
+        for dcc in self.table_diag_comm_connectors:
+            dcc._resolve_odxlinks(odxlinks)
+
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         for table_row_wrapper in self.table_rows_raw:
             if isinstance(table_row_wrapper, TableRow):
                 table_row_wrapper._resolve_snrefs(context)
+
+        for dcc in self.table_diag_comm_connectors:
+            dcc._resolve_snrefs(context)

@@ -6,6 +6,36 @@
 {%- import('macros/printDiagComm.xml.jinja2') as pdc %}
 {%- import('macros/printComparamRef.xml.jinja2') as pcom %}
 
+{%- macro printPosResponseSuppressible(prs) -%}
+<POS-RESPONSE-SUPPRESSABLE>
+  <BIT-MASK>{{ hex(prs.bit_mask).lower() }}</BIT-MASK>
+  {%- if prs.coded_const_snref is not none %}
+  <CODED-CONST-SNREF SHORT-NAME="{{ prs.coded_const_snref }}" />
+  {%- endif %}
+  {%- if prs.coded_const_snpathref is not none %}
+  <CODED-CONST-SNPATHREF SHORT-PATH-NAME="{{ prs.coded_const_snpathref }}" />
+  {%- endif %}
+  {%- if prs.value_snref is not none %}
+  <VALUE-SNREF SHORT-NAME="{{ prs.value_snref }}" />
+  {%- endif %}
+  {%- if prs.value_snpathref is not none %}
+  <VALUE-SNPATHREF SHORT-PATH-NAME="{{ prs.value_snpathref }}" />
+  {%- endif %}
+  {%- if prs.phys_const_snref is not none %}
+  <PHYS-CONST-SNREF SHORT-NAME="{{ prs.phys_const_snref }}" />
+  {%- endif %}
+  {%- if prs.phys_const_snpathref is not none %}
+  <PHYS-CONST-SNPATHREF SHORT-PATH-NAME="{{ prs.phys_const_snpathref }}" />
+  {%- endif %}
+  {%- if prs.table_key_snref is not none %}
+  <TABLE-KEY-SNREF SHORT-NAME="{{ prs.table_key_snref }}" />
+  {%- endif %}
+  {%- if prs.table_key_snpathref is not none %}
+  <TABLE-KEY-SNPATHREF SHORT-PATH-NAME="{{ prs.table_key_snpathref }}" />
+  {%- endif %}
+</POS-RESPONSE-SUPPRESSABLE>
+{%- endmacro -%}
+
 {%- macro printService(service) -%}
 <DIAG-SERVICE {{pdc.printDiagCommAttribs(service) | indent(1) }}
  {{-make_bool_xml_attrib("IS-CYCLIC", service.is_cyclic_raw)}}
