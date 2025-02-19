@@ -143,7 +143,6 @@ class DataObjectProperty(DopBase):
         if default_value is not None:
             return str(default_value)
 
-        # TODO: How to prevent this?
         odxraise(f"DOP {self.short_name} could not convert the coded value "
                  f"{repr(internal)} to physical type {self.physical_type.base_data_type}.")
 
