@@ -143,8 +143,10 @@ class DataObjectProperty(DopBase):
             return str(default_value)
 
         # TODO: How to prevent this?
-        raise DecodeError(f"DOP {self.short_name} could not convert the coded value "
+        odxraise(f"DOP {self.short_name} could not convert the coded value "
                           f"{repr(internal)} to physical type {self.physical_type.base_data_type}.")
+
+        return None
 
     def is_valid_physical_value(self, physical_value: ParameterValue) -> bool:
         return self.compu_method.is_valid_physical_value(cast(AtomicOdxType, physical_value))
