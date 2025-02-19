@@ -10,7 +10,7 @@ from .decodestate import DecodeState
 from .diagcodedtype import DiagCodedType
 from .dopbase import DopBase
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, odxraise, odxrequire
+from .exceptions import EncodeError, odxraise, odxrequire
 from .internalconstr import InternalConstr
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType, ParameterValue
@@ -136,11 +136,17 @@ class DataObjectProperty(DopBase):
 
         if self.compu_method.is_valid_internal_value(internal):
             return self.compu_method.convert_internal_to_physical(internal)
-        else:
-            # TODO: How to prevent this?
-            raise DecodeError(
-                f"DOP {self.short_name} could not convert the coded value "
-                f" {repr(internal)} to physical type {self.physical_type.base_data_type}.")
+
+        internal_to_phys = self.compu_method.compu_internal_to_phys
+        default_value = internal_to_phys.compu_default_value if internal_to_phys else None
+
+        if default_value is not None:
+            return str(default_value)
+
+        odxraise(f"DOP {self.short_name} could not convert the coded value "
+                 f"{repr(internal)} to physical type {self.physical_type.base_data_type}.")
+
+        return None
 
     def is_valid_physical_value(self, physical_value: ParameterValue) -> bool:
         return self.compu_method.is_valid_physical_value(cast(AtomicOdxType, physical_value))
