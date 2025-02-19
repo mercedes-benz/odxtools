@@ -137,8 +137,9 @@ class DataObjectProperty(DopBase):
         if self.compu_method.is_valid_internal_value(internal):
             return self.compu_method.convert_internal_to_physical(internal)
 
-        default_value = getattr(self.compu_method.compu_internal_to_phys, "compu_default_value",
-                                None)
+        internal_to_phys = self.compu_method.compu_internal_to_phys
+        default_value = internal_to_phys.compu_default_value if internal_to_phys else None
+
         if default_value is not None:
             return str(default_value)
 
