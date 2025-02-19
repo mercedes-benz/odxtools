@@ -10,7 +10,7 @@ from .decodestate import DecodeState
 from .diagcodedtype import DiagCodedType
 from .dopbase import DopBase
 from .encodestate import EncodeState
-from .exceptions import DecodeError, EncodeError, odxraise, odxrequire
+from .exceptions import EncodeError, odxraise, odxrequire
 from .internalconstr import InternalConstr
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType, ParameterValue
@@ -144,7 +144,7 @@ class DataObjectProperty(DopBase):
 
         # TODO: How to prevent this?
         odxraise(f"DOP {self.short_name} could not convert the coded value "
-                          f"{repr(internal)} to physical type {self.physical_type.base_data_type}.")
+                 f"{repr(internal)} to physical type {self.physical_type.base_data_type}.")
 
         return None
 
