@@ -140,8 +140,8 @@ class DataObjectProperty(DopBase):
         internal_to_phys = self.compu_method.compu_internal_to_phys
         default_value = internal_to_phys.compu_default_value if internal_to_phys else None
 
-        if default_value is not None:
-            return str(default_value.value)
+        if default_value and default_value.value is not None:
+            return default_value.value
 
         odxraise(f"DOP {self.short_name} could not convert the coded value "
                  f"{repr(internal)} to physical type {self.physical_type.base_data_type}.")
