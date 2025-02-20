@@ -103,7 +103,9 @@ class DecodeState:
 
         # Deal with raw byte fields, ...
         if base_data_type == DataType.A_BYTEFIELD:
-            odxassert(base_type_encoding in (None, Encoding.NONE, Encoding.BCD_P, Encoding.BCD_UP))
+            odxassert(
+                base_type_encoding in (None, Encoding.NONE, Encoding.BCD_P, Encoding.BCD_UP),
+                f"Illegal encoding '{base_type_encoding}' for A_BYTEFIELD")
 
             # note that we do not ensure that BCD-encoded byte fields
             # only represent "legal" values
@@ -149,28 +151,19 @@ class DecodeState:
                 odxraise(f"Illegal encoding ({base_type_encoding}) specified for "
                          f"{base_data_type.value}")
 
-                internal_value = raw_value
+                if base_type_encoding == Encoding.BCD_P:
+                    internal_value = self.__decode_bcd_p(raw_value)
+                elif base_type_encoding == Encoding.BCD_UP:
+                    internal_value = self.__decode_bcd_up(raw_value)
+                else:
+                    internal_value = raw_value
 
         # ... unsigned integers, ...
         elif base_data_type == DataType.A_UINT32:
             if base_type_encoding == Encoding.BCD_P:
-                # packed BCD
-                tmp2 = raw_value
-                internal_value = 0
-                factor = 1
-                while tmp2 > 0:
-                    internal_value += (tmp2 & 0xf) * factor
-                    factor *= 10
-                    tmp2 >>= 4
+                internal_value = self.__decode_bcd_p(raw_value)
             elif base_type_encoding == Encoding.BCD_UP:
-                # unpacked BCD
-                tmp2 = raw_value
-                internal_value = 0
-                factor = 1
-                while tmp2 > 0:
-                    internal_value += (tmp2 & 0xf) * factor
-                    factor *= 10
-                    tmp2 >>= 8
+                internal_value = self.__decode_bcd_up(raw_value)
             elif base_type_encoding in (None, Encoding.NONE):
                 # no encoding
                 internal_value = raw_value
@@ -193,3 +186,27 @@ class DecodeState:
         self.cursor_bit_position = 0
 
         return internal_value
+
+    @staticmethod
+    def __decode_bcd_p(value: int) -> int:
+        # packed BCD
+        result = 0
+        factor = 1
+        while value > 0:
+            result += (value & 0xf) * factor
+            factor *= 10
+            value >>= 4
+
+        return result
+
+    @staticmethod
+    def __decode_bcd_up(value: int) -> int:
+        # unpacked BCD
+        result = 0
+        factor = 1
+        while value > 0:
+            result += (value & 0xf) * factor
+            factor *= 10
+            value >>= 8
+
+        return result

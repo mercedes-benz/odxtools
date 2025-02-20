@@ -101,17 +101,26 @@ class EncodeState:
                 odxraise(f"{internal_value!r} is not a bytefield", EncodeError)
                 return
 
-            odxassert(base_type_encoding in (None, Encoding.NONE, Encoding.BCD_P, Encoding.BCD_UP))
+            odxassert(
+                base_type_encoding in (None, Encoding.NONE, Encoding.BCD_P, Encoding.BCD_UP),
+                f"Illegal encoding '{base_type_encoding}' for A_BYTEFIELD")
 
             # note that we do not ensure that BCD-encoded byte fields
             # only represent "legal" values
             raw_value = bytes(internal_value)
 
+            if 8 * len(raw_value) > bit_length:
+                odxraise(
+                    f"The value '{internal_value!r}' cannot be encoded using "
+                    f"{bit_length} bits.", EncodeError)
+                raw_value = raw_value[0:bit_length // 8]
+
         # ... string types, ...
         elif base_data_type in (DataType.A_UTF8STRING, DataType.A_ASCIISTRING,
                                 DataType.A_UNICODE2STRING):
             if not isinstance(internal_value, str):
-                odxraise(f"The internal value {internal_value!r} is not a string", EncodeError)
+                odxraise(f"The internal value '{internal_value!r}' is not a string", EncodeError)
+                internal_value = str(internal_value)
 
             str_encoding = get_string_encoding(base_data_type, base_type_encoding,
                                                is_highlow_byte_order)
@@ -122,9 +131,9 @@ class EncodeState:
 
             if 8 * len(raw_value) > bit_length:
                 odxraise(
-                    f"The internal representation {raw_value!r} is too large "
-                    f"to be encoded. The maximum number of bytes is {(bit_length + 7)//8}.",
-                    EncodeError)
+                    f"The value '{internal_value!r}' cannot be encoded using "
+                    f"{bit_length} bits.", EncodeError)
+                raw_value = raw_value[0:bit_length // 8]
 
         # ... signed integers, ...
         elif base_data_type == DataType.A_INT32:
@@ -132,6 +141,7 @@ class EncodeState:
                 odxraise(
                     f"Internal value must be of integer type, not {type(internal_value).__name__}",
                     EncodeError)
+                internal_value = int(internal_value)
 
             if base_type_encoding == Encoding.ONEC:
                 # one-complement
@@ -154,34 +164,35 @@ class EncodeState:
                 else:
                     raw_value = (1 << (bit_length - 1)) + abs(internal_value)
             else:
-                odxraise(f"Illegal encoding ({base_type_encoding}) specified for "
-                         f"{base_data_type.value}")
+                odxraise(
+                    f"Illegal encoding ({base_type_encoding and base_type_encoding.value}) specified for "
+                    f"{base_data_type.value}")
 
-                raw_value = internal_value
+                if base_type_encoding == Encoding.BCD_P:
+                    raw_value = self.__encode_bcd_p(abs(internal_value))
+                elif base_type_encoding == Encoding.BCD_UP:
+                    raw_value = self.__encode_bcd_up(abs(internal_value))
+                else:
+                    raw_value = internal_value
+
+            if raw_value.bit_length() > bit_length:
+                odxraise(
+                    f"The value '{internal_value!r}' cannot be encoded using "
+                    f"{bit_length} bits.", EncodeError)
+                raw_value &= (1 << bit_length) - 1
 
         # ... unsigned integers, ...
         elif base_data_type == DataType.A_UINT32:
             if not isinstance(internal_value, int) or internal_value < 0:
                 odxraise(f"Internal value must be a positive integer, not {internal_value!r}")
+                internal_value = abs(int(internal_value))
 
             if base_type_encoding == Encoding.BCD_P:
                 # packed BCD
-                tmp2 = internal_value
-                raw_value = 0
-                shift = 0
-                while tmp2 > 0:
-                    raw_value |= (tmp2 % 10) << shift
-                    shift += 4
-                    tmp2 //= 10
+                raw_value = self.__encode_bcd_p(internal_value)
             elif base_type_encoding == Encoding.BCD_UP:
                 # unpacked BCD
-                tmp2 = internal_value
-                raw_value = 0
-                shift = 0
-                while tmp2 > 0:
-                    raw_value |= (tmp2 % 10) << shift
-                    shift += 8
-                    tmp2 //= 10
+                raw_value = self.__encode_bcd_up(internal_value)
             elif base_type_encoding in (None, Encoding.NONE):
                 # no encoding
                 raw_value = internal_value
@@ -190,6 +201,12 @@ class EncodeState:
                          f"{base_data_type.value}")
 
                 raw_value = internal_value
+
+            if raw_value.bit_length() > bit_length:
+                odxraise(
+                    f"The value '{internal_value!r}' cannot be encoded using "
+                    f"{bit_length} bits.", EncodeError)
+                raw_value &= (1 << bit_length) - 1
 
         # ... and others (floating point values)
         else:
@@ -210,7 +227,7 @@ class EncodeState:
             self.emplace_bytes(b'')
             return
 
-        char = base_data_type.bitstruct_format_letter
+        format_char = base_data_type.bitstruct_format_letter
         padding = (8 - ((bit_length + self.cursor_bit_position) % 8)) % 8
         odxassert((0 <= padding and padding < 8 and
                    (padding + bit_length + self.cursor_bit_position) % 8 == 0),
@@ -218,7 +235,7 @@ class EncodeState:
         left_pad = f"p{padding}" if padding > 0 else ""
 
         # actually encode the value
-        coded = bitstruct.pack(f"{left_pad}{char}{bit_length}", raw_value)
+        coded = bitstruct.pack(f"{left_pad}{format_char}{bit_length}", raw_value)
 
         # create the raw mask of used bits for numeric objects
         used_mask_raw = used_mask
@@ -290,3 +307,25 @@ class EncodeState:
                 self.used_mask[pos + i] |= obj_used_mask[i]
 
         self.cursor_byte_position += len(new_data)
+
+    @staticmethod
+    def __encode_bcd_p(value: int) -> int:
+        result = 0
+        shift = 0
+        while value > 0:
+            result |= (value % 10) << shift
+            shift += 4
+            value //= 10
+
+        return result
+
+    @staticmethod
+    def __encode_bcd_up(value: int) -> int:
+        result = 0
+        shift = 0
+        while value > 0:
+            result |= (value % 10) << shift
+            shift += 8
+            value //= 10
+
+        return result
