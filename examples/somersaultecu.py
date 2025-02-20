@@ -260,6 +260,7 @@ somersault_functional_classes = {
             short_name="flip",
             long_name="Flip",
             description=None,
+            admin_data=None,
         ),
     "session":
         FunctionalClass(
@@ -268,6 +269,7 @@ somersault_functional_classes = {
             short_name="session",
             long_name="Session",
             description=None,
+            admin_data=None,
         ),
 }
 
@@ -1094,7 +1096,8 @@ somersault_structures = {
             oid=None,
             odx_id=OdxLinkId("somersault.struct.recall.forward_flips_grudgingly_done", doc_frags),
             parameters=somersault_positive_responses["forward_flips_grudgingly_done"].parameters,
-            byte_size=None),
+            byte_size=None,
+            is_visible_raw=None),
     "forward_flips_happily_done":
         Structure(
             short_name="forward_flips_happily_done_recall",
@@ -1105,7 +1108,8 @@ somersault_structures = {
             oid=None,
             odx_id=OdxLinkId("somersault.struct.recall.forward_flips_happily_done", doc_frags),
             parameters=somersault_positive_responses["forward_flips_happily_done"].parameters,
-            byte_size=None),
+            byte_size=None,
+            is_visible_raw=None),
     "backward_flips_grudgingly_done":
         Structure(
             short_name="backward_flips_grudgingly_done_recall",
@@ -1116,7 +1120,8 @@ somersault_structures = {
             oid=None,
             odx_id=OdxLinkId("somersault.struct.recall.backward_flips_grudgingly_done", doc_frags),
             parameters=somersault_positive_responses["backward_flips_grudgingly_done"].parameters,
-            byte_size=None),
+            byte_size=None,
+            is_visible_raw=None),
 }
 
 # this is a hack to get around a catch-22: we need to specify the
@@ -2292,6 +2297,7 @@ somersault_base_diag_data_dictionary_spec = DiagDataDictionarySpec(
         [x for x in somersault_dops.values() if x.short_name != "schroedinger_dop"] +
         [somersault_dops["schroedinger_base"]]),
     unit_spec=UnitSpec(
+        admin_data=None,
         unit_groups=NamedItemList(somersault_unit_groups.values()),
         units=NamedItemList(somersault_units.values()),
         physical_dimensions=NamedItemList(somersault_physical_dimensions.values()),

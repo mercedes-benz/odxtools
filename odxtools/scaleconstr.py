@@ -25,8 +25,8 @@ class ScaleConstr:
 
     short_label: Optional[str]
     description: Optional[Description]
-    lower_limit: Optional[Limit]
-    upper_limit: Optional[Limit]
+    lower_limit: Limit
+    upper_limit: Limit
     validity: ValidType
     value_type: DataType
 
@@ -37,9 +37,9 @@ class ScaleConstr:
         description = Description.from_et(et_element.find("DESC"), doc_frags)
 
         lower_limit = Limit.limit_from_et(
-            et_element.find("LOWER-LIMIT"), doc_frags, value_type=value_type)
+            odxrequire(et_element.find("LOWER-LIMIT")), doc_frags, value_type=value_type)
         upper_limit = Limit.limit_from_et(
-            et_element.find("UPPER-LIMIT"), doc_frags, value_type=value_type)
+            odxrequire(et_element.find("UPPER-LIMIT")), doc_frags, value_type=value_type)
 
         validity_str = odxrequire(et_element.get("VALIDITY"))
         try:

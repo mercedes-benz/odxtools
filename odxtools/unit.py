@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
-from .exceptions import odxassert, odxrequire
+from .exceptions import odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .physicaldimension import PhysicalDimension
 from .snrefcontext import SnRefContext
@@ -57,8 +57,12 @@ class Unit(IdentifiableElement):
     offset_si_to_unit: Optional[float]
     physical_dimension_ref: Optional[OdxLinkRef]
 
+    @property
+    def physical_dimension(self) -> Optional[PhysicalDimension]:
+        return self._physical_dimension
+
     def __post_init__(self) -> None:
-        self._physical_dimension = None
+        self._physical_dimension: Optional[PhysicalDimension] = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Unit":
@@ -84,21 +88,13 @@ class Unit(IdentifiableElement):
             physical_dimension_ref=physical_dimension_ref,
             **kwargs)
 
-    @property
-    def physical_dimension(self) -> Optional[PhysicalDimension]:
-        return self._physical_dimension
-
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         if self.physical_dimension_ref:
-            self._physical_dimension = odxlinks.resolve(self.physical_dimension_ref)
-
-            odxassert(
-                isinstance(self._physical_dimension, PhysicalDimension),
-                f"The physical_dimension_ref must be resolved to a PhysicalDimension."
-                f" {self.physical_dimension_ref} referenced {self._physical_dimension}")
+            self._physical_dimension = odxlinks.resolve(self.physical_dimension_ref,
+                                                        PhysicalDimension)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass

@@ -54,6 +54,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
         dop = odxrequire(self.dop)
         if not isinstance(dop, DataObjectProperty):
             odxraise("The type of PHYS-CONST parameters must be a simple DOP")
+            return
         base_data_type = dop.physical_type.base_data_type
         self._physical_constant_value = base_data_type.from_string(self.physical_constant_value_raw)
 

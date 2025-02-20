@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -61,8 +61,8 @@ class DiagComm(IdentifiableElement):
     audience: Optional[Audience]
     protocol_snrefs: List[str]
     related_diag_comm_refs: List[RelatedDiagCommRef]
-    pre_condition_state_refs: Iterable[OdxLinkRef]
-    state_transition_refs: Iterable[OdxLinkRef]
+    pre_condition_state_refs: List[OdxLinkRef]
+    state_transition_refs: List[OdxLinkRef]
 
     # attributes
     semantic: Optional[str]
@@ -119,7 +119,7 @@ class DiagComm(IdentifiableElement):
                 odxraise(f"Encountered unknown diagnostic class type '{diagnostic_class_str}'")
 
         is_mandatory_raw = odxstr_to_bool(et_element.get("IS-MANDATORY"))
-        is_executable_raw = odxstr_to_bool(et_element.get("IS-MANDATORY"))
+        is_executable_raw = odxstr_to_bool(et_element.get("IS-EXECUTABLE"))
         is_final_raw = odxstr_to_bool(et_element.get("IS-FINAL"))
 
         return DiagComm(

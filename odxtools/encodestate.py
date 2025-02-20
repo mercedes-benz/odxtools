@@ -157,7 +157,7 @@ class EncodeState:
                 odxraise(f"Illegal encoding ({base_type_encoding}) specified for "
                          f"{base_data_type.value}")
 
-                internal_value = raw_value
+                raw_value = internal_value
 
         # ... unsigned integers, ...
         elif base_data_type == DataType.A_UINT32:
@@ -189,7 +189,7 @@ class EncodeState:
                 odxraise(f"Illegal encoding ({base_type_encoding}) specified for "
                          f"{base_data_type.value}")
 
-                internal_value = raw_value
+                raw_value = internal_value
 
         # ... and others (floating point values)
         else:

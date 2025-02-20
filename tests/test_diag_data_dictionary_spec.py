@@ -265,6 +265,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             short_name="mux_case1_struct",
             long_name=None,
             description=None,
+            is_visible_raw=None,
             admin_data=None,
             sdgs=[],
             parameters=NamedItemList([
@@ -305,6 +306,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             long_name=None,
             description=None,
             admin_data=None,
+            is_visible_raw=None,
             sdgs=[],
             parameters=NamedItemList([
                 ValueParameter(

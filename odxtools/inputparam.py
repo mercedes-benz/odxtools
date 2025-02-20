@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
+from deprecation import deprecated
+
 from .dopbase import DopBase
 from .element import NamedElement
 from .exceptions import odxrequire
@@ -38,12 +40,16 @@ class InputParam(NamedElement):
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._dop_base = odxlinks.resolve(self.dop_base_ref, DopBase)
+        self._dop = odxlinks.resolve(self.dop_base_ref, DopBase)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
 
     @property
-    def dop_base(self) -> DopBase:
+    def dop(self) -> DopBase:
         """The data object property describing this parameter."""
-        return self._dop_base
+        return self._dop
+
+    @deprecated(details="use .dop")  # type: ignore[misc]
+    def dop_base(self) -> DopBase:
+        return self._dop
