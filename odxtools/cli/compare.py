@@ -27,23 +27,7 @@ from dataclasses import dataclass
 
 # name of the tool
 _odxtools_tool_name_ = "compare"
-"""
-VariantName = str
 
-VariantType = str
-NewServices = List[DiagService]
-DeletedServices = List[DiagService]
-RenamedServices = List[List[Union[str, DiagService]]]
-ServicesWithParamChanges = List[List[Union[str, DiagService]]]
-
-SpecsServiceDict = Dict[str, Union[VariantName, VariantType, NewServices, DeletedServices,
-                                   RenamedServices, ServicesWithParamChanges]]
-
-NewVariants = List[DiagLayer]
-DeletedVariants = List[DiagLayer]
-
-SpecsChangesVariants = Dict[str, Union[NewVariants, DeletedVariants, SpecsServiceDict]]
-"""
 
 
 class SpecsServiceDict(TypedDict):
@@ -58,8 +42,6 @@ class SpecsChangesVariants(TypedDict):
     new_variants : List[str]
     deleted_variants : List[str]
     service_changes : SpecsServiceDict
-#class extract_service_tabulation_data(TypedDict):
-#    table: RichTable
 
 
 @dataclass
