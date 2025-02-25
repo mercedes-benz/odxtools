@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
 from copy import copy
 from enum import Enum
-from typing import Dict, Generator, List, Optional, Tuple
+from typing import Dict, Generator, List, Optional, Tuple, Union
 
+from .diaglayers.basevariant import BaseVariant
 from .diaglayers.ecuvariant import EcuVariant
 from .exceptions import DecodeError, odxraise
 from .matchingparameter import MatchingParameter
@@ -24,7 +25,9 @@ class VariantMatcher:
         NO_MATCH = 1
         MATCH = 2
 
-    def __init__(self, variant_candidates: List[EcuVariant], use_cache: bool = True):
+    def __init__(self,
+                 variant_candidates: Union[List[EcuVariant], List[BaseVariant]],
+                 use_cache: bool = True):
 
         self.variant_candidates = variant_candidates
         self.use_cache = use_cache
@@ -32,7 +35,7 @@ class VariantMatcher:
         self._recent_ident_response: Optional[bytes] = None
 
         self._state = VariantMatcher.State.PENDING
-        self._matching_variant: Optional[EcuVariant] = None
+        self._matching_variant: Optional[Union[EcuVariant, BaseVariant]] = None
 
     def request_loop(self) -> Generator[Tuple[bool, bytes], None, None]:
         """The request loop yielding tuples of byte sequences of
@@ -44,18 +47,25 @@ class VariantMatcher:
         of the ECU is then required to be passed to the matcher using
         the `evaluate()` method.
         """
+        from .basevariantpattern import BaseVariantPattern
         from .ecuvariantpattern import EcuVariantPattern
+        from .matchingbasevariantparameter import MatchingBaseVariantParameter
 
         if not self.is_pending():
             return
 
         self._matching_variant = None
         for variant in self.variant_candidates:
-            variant_patterns: List[EcuVariantPattern]
+            variant_patterns: Union[List[EcuVariantPattern], List[BaseVariantPattern]]
             if isinstance(variant, EcuVariant):
                 variant_patterns = variant.ecu_variant_patterns
+            elif isinstance(variant, BaseVariant):
+                if variant.base_variant_pattern is None:
+                    variant_patterns = []
+                else:
+                    variant_patterns = [variant.base_variant_pattern]
             else:
-                odxraise(f"Only EcuVariant is supported "
+                odxraise(f"Only EcuVariant and BaseVariant are supported "
                          f"for pattern matching, not {type(self).__name__}")
                 self._state = VariantMatcher.State.NO_MATCH
                 return
@@ -69,7 +79,10 @@ class VariantMatcher:
                     if self.use_cache and req_bytes in self.req_resp_cache:
                         resp_values = copy(self.req_resp_cache[req_bytes])
                     else:
-                        yield True, req_bytes
+                        if isinstance(matching_param, MatchingBaseVariantParameter):
+                            yield matching_param.use_physical_addressing, req_bytes
+                        else:
+                            yield True, req_bytes
                         resp_values = self._get_ident_response()
                         self._update_cache(req_bytes, copy(resp_values))
 
@@ -115,13 +128,13 @@ class VariantMatcher:
         return self._state == VariantMatcher.State.MATCH
 
     @property
-    def matching_variant(self) -> Optional[EcuVariant]:
+    def matching_variant(self) -> Optional[Union[EcuVariant, BaseVariant]]:
         """Returns the matched, i.e., active ecu variant if such a variant has been found."""
         return self._matching_variant
 
     def _ident_response_matches(
         self,
-        variant: EcuVariant,
+        variant: Union[EcuVariant, BaseVariant],
         matching_param: MatchingParameter,
         response_bytes: bytes,
     ) -> bool:

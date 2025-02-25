@@ -563,6 +563,7 @@ class TestDecoding(unittest.TestCase):
             diag_variables_raw=[],
             variable_groups=NamedItemList(),
             libraries=NamedItemList(),
+            base_variant_pattern=None,
             dyn_defined_spec=None,
             sub_components=NamedItemList(),
         )

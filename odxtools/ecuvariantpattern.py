@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List
+from typing import List, Union
 from xml.etree import ElementTree
 
 from typing_extensions import override
 
 from .exceptions import odxassert
+from .matchingbasevariantparameter import MatchingBaseVariantParameter
 from .matchingparameter import MatchingParameter
 from .odxlink import OdxDocFragment
 from .variantpattern import VariantPattern
@@ -19,7 +20,8 @@ class EcuVariantPattern(VariantPattern):
     matching_parameters: List[MatchingParameter]
 
     @override
-    def get_matching_parameters(self) -> List[MatchingParameter]:
+    def get_matching_parameters(
+            self) -> Union[List[MatchingParameter], List[MatchingBaseVariantParameter]]:
         return self.matching_parameters
 
     @staticmethod

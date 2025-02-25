@@ -6,6 +6,7 @@
 {%- import('macros/printHierarchyElement.xml.jinja2') as phe %}
 {%- import('macros/printComparamRef.xml.jinja2') as pcom %}
 {%- import('macros/printParentRef.xml.jinja2') as pparref %}
+{%- import('macros/printBaseVariantPattern.xml.jinja2') as pbvp %}
 
 {%- macro printBaseVariant(base_variant) -%}
 <BASE-VARIANT {{- phe.printHierarchyElementAttribs(base_variant) -}}>
@@ -29,18 +30,12 @@
   {%- endif %}
 
   {%- if dlr.dyn_defined_spec %}
-  {{ pdynspec.printPrintDefinedSpec(dlr.dyn_defined_spec)|indent(4) }}
+  {{ pdynspec.printPrintDefinedSpec(dlr.dyn_defined_spec)|indent(2) }}
   {%- endif %}
 
-{#
-  {%- if dlr.base_variant_patterns %}
-  <BASE-VARIANT-PATTERNS>
-    {%- for vp in dlr.base_variant_patterns -%}
-    {{ pvpat.printBaseVariantPattern(vp)|indent(4) }}
-    {%- endfor -%}
-  </BASE-VARIANT-PATTERNS>
+  {%- if dlr.base_variant_pattern is not none %}
+  {{ pbvp.printBaseVariantPattern(dlr.base_variant_pattern)|indent(2) }}
   {%- endif %}
-#}
 
   {%- if dlr.parent_refs %}
   <PARENT-REFS>
