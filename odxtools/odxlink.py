@@ -199,6 +199,7 @@ class OdxLinkDatabase:
                     OdxWarning,
                     stacklevel=1,
                 )
+
                 continue
 
             # locate an object exhibiting with the referenced local ID
@@ -212,7 +213,40 @@ class OdxLinkDatabase:
         odxraise(
             f"ODXLINK reference {ref} could not be resolved for any "
             f"of the document fragments {ref.ref_docs}", KeyError)
-        return None
+        return self.resolve_no_docref(ref, expected_type)
+
+    @overload
+    def resolve_no_docref(self, ref: OdxLinkRef, expected_type: None = None) -> Any:
+        ...
+
+    @overload
+    def resolve_no_docref(self, ref: OdxLinkRef, expected_type: Type[T]) -> T:
+        ...
+
+    def resolve_no_docref(self, ref: OdxLinkRef, expected_type: Any = None) -> Any:
+        """This is identical to `resolve()`, but it ignores the
+        DOCREF attribute of the reference object.
+
+        If an `expected_type` is not specified, the first referenced
+        object that can be resolved is returned, if the parameter is
+        set, the first referenced object which exhibits this type is
+        returned.
+        """
+
+        result: Any = None
+        for doc_frag_db in self._db.values():
+            if (obj := doc_frag_db.get(ref.ref_id)) is not None:
+                if expected_type is None:
+                    return obj
+                elif isinstance(obj, expected_type):
+                    return obj
+                if result is None:
+                    result = obj
+
+        odxraise(f"Reference {ref.ref_id} cannot be resolved to type {expected_type} "
+                 f"(resolved object is of type {type(result).__name__})")
+
+        return result
 
     @overload
     def resolve_lenient(self, ref: OdxLinkRef, expected_type: None = None) -> Any:
