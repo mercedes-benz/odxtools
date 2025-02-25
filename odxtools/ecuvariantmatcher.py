@@ -14,7 +14,7 @@ class EcuVariantMatcher(VariantMatcher):
     ```python
 
     # initialize the matcher with a list of ecu variants
-    matcher = EcuVariantMatcher(ecu_variant_candidates=[...], use_cache=use_cache)
+    matcher = EcuVariantMatcher(candidates=[...], use_cache=use_cache)
 
     # run the request loop to obtain responses for every request
     for _, encoded_request in matcher.request_loop():
@@ -28,5 +28,5 @@ class EcuVariantMatcher(VariantMatcher):
     ```
     """
 
-    def __init__(self, ecu_variant_candidates: List[EcuVariant], use_cache: bool = True):
-        super().__init__(ecu_variant_candidates, use_cache)
+    def __init__(self, candidates: List[EcuVariant], use_cache: bool = True):
+        super().__init__(candidates, use_cache)

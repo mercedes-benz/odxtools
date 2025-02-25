@@ -719,7 +719,7 @@ def test_base_variant_matching(
 ) -> None:
 
     matcher = BaseVariantMatcher(
-        base_variant_candidates=base_variants,
+        candidates=base_variants,
         use_cache=use_cache,
     )
     has_physical_addressing = False
@@ -783,7 +783,7 @@ def test_ecu_variant_matching(
     expected_variant: str,
 ) -> None:
     matcher = EcuVariantMatcher(
-        ecu_variant_candidates=ecu_variants,
+        candidates=ecu_variants,
         use_cache=use_cache,
     )
     for use_physical_addressing, req in matcher.request_loop():
@@ -805,7 +805,7 @@ def test_no_match(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
     }
 
     matcher = EcuVariantMatcher(
-        ecu_variant_candidates=ecu_variants,
+        candidates=ecu_variants,
         use_cache=use_cache,
     )
     for use_physical_addressing, req in matcher.request_loop():
@@ -820,7 +820,7 @@ def test_no_match(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
 # test if pending matchers reject the has_match() or active variant query
 def test_no_request_loop(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
     matcher = EcuVariantMatcher(
-        ecu_variant_candidates=ecu_variants,
+        candidates=ecu_variants,
         use_cache=use_cache,
     )
     with pytest.raises(RuntimeError):
@@ -832,7 +832,7 @@ def test_no_request_loop(ecu_variants: List[EcuVariant], use_cache: bool) -> Non
 # test if runs of the request loop without calling `evaluate(...)` are rejected
 def test_request_loop_misuse(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
     matcher = EcuVariantMatcher(
-        ecu_variant_candidates=ecu_variants,
+        candidates=ecu_variants,
         use_cache=use_cache,
     )
     with pytest.raises(RuntimeError):
@@ -851,7 +851,7 @@ def test_request_loop_idempotency(ecu_variants: List[EcuVariant], use_cache: boo
     }
 
     matcher = EcuVariantMatcher(
-        ecu_variant_candidates=ecu_variants,
+        candidates=ecu_variants,
         use_cache=use_cache,
     )
 
@@ -880,7 +880,7 @@ def test_unresolvable_snpathref(ecu_variants: List[EcuVariant], use_cache: bool)
     }
 
     matcher = EcuVariantMatcher(
-        ecu_variant_candidates=ecu_variants,
+        candidates=ecu_variants,
         use_cache=use_cache,
     )
 
