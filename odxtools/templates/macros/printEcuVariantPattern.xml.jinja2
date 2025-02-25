@@ -1,18 +1,19 @@
+
 {#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
  #
  # SPDX-License-Identifier: MIT
 -#}
 
-{%- import('macros/printElementId.xml.jinja2') as peid %}
-{%- import('macros/printState.xml.jinja2') as ps %}
-{%- import('macros/printStateTransition.xml.jinja2') as pst %}
-
 {%- macro printMatchingParameter(mp) -%}
 <MATCHING-PARAMETER>
   <EXPECTED-VALUE>{{mp.expected_value | e}}</EXPECTED-VALUE>
   <DIAG-COMM-SNREF SHORT-NAME="{{mp.diag_comm_snref}}" />
-  {#- TODO: OUT-PARAM-IF-SNPATHREF #}
-  <OUT-PARAM-IF-SNREF SHORT-NAME="{{mp.out_param_if}}" />
+  {%- if mp.out_param_if_snref is not none %}
+  <OUT-PARAM-IF-SNREF SHORT-NAME="{{mp.out_param_if_snref}}" />
+  {%- endif %}
+  {%- if mp.out_param_if_snpathref is not none %}
+  <OUT-PARAM-IF-SNPATHREF SHORT-NAME-PATH="{{mp.out_param_if_snpathref}}" />
+  {%- endif %}
 </MATCHING-PARAMETER>
 {%- endmacro -%}
 

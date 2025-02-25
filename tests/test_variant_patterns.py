@@ -3,7 +3,7 @@ from xml.etree import ElementTree
 
 import pytest
 
-from odxtools.createecuvariantpatterns import create_ecu_variant_patterns_from_et
+from odxtools.ecuvariantpattern import EcuVariantPattern
 from odxtools.exceptions import OdxError
 from odxtools.odxlink import DocType, OdxDocFragment
 
@@ -56,13 +56,20 @@ def invalid_evp_et() -> ElementTree.Element:
 
 
 def test_create_evp_from_et(valid_evp_et: ElementTree.Element) -> None:
-    ecu_variant_patterns = create_ecu_variant_patterns_from_et(valid_evp_et, doc_frags)
+    ecu_variant_patterns = [
+        EcuVariantPattern.from_et(elem, doc_frags)
+        for elem in valid_evp_et.iterfind("ECU-VARIANT-PATTERN")
+    ]
     assert len(ecu_variant_patterns) == 2
-    assert ecu_variant_patterns[0].matching_parameters[0].is_match(str(0xFFFF))
-    assert ecu_variant_patterns[1].matching_parameters[0].is_match(str(0xFF))
-    assert ecu_variant_patterns[1].matching_parameters[1].is_match("supplier_A")
+    assert ecu_variant_patterns[0].matching_parameters[0].matches({"Id": 0xFFFF})
+    assert ecu_variant_patterns[1].matching_parameters[0].matches({"Value": 0xFF})
+    assert ecu_variant_patterns[1].matching_parameters[1].matches(
+        {"name": {
+            "english": "supplier_A"
+        }})
 
 
 def test_create_invalid_evp_from_et(invalid_evp_et: ElementTree.Element) -> None:
     with pytest.raises(OdxError):
-        _ = create_ecu_variant_patterns_from_et(invalid_evp_et, doc_frags)
+        for x in invalid_evp_et.iterfind("ECU-VARIANT-PATTERN"):
+            EcuVariantPattern.from_et(x, doc_frags)

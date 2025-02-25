@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .diagnostictroublecode import DiagnosticTroubleCode
@@ -10,7 +10,6 @@ from .element import IdentifiableElement, NamedElement
 from .environmentdata import EnvironmentData
 from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxraise, odxrequire
-from .matchingparameter import MatchingParameter
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .parameters.parameter import Parameter
@@ -19,14 +18,18 @@ from .table import Table
 from .tablerow import TableRow
 from .utils import dataclass_fields_asdict
 
+if TYPE_CHECKING:
+    from .matchingparameter import MatchingParameter
+
 
 @dataclass
 class SubComponentPattern:
-    matching_parameters: List[MatchingParameter]
+    matching_parameters: List["MatchingParameter"]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "SubComponentPattern":
+        from .matchingparameter import MatchingParameter
 
         matching_parameters = [
             MatchingParameter.from_et(el, doc_frags)
