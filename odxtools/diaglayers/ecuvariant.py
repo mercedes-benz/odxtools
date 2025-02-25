@@ -41,6 +41,13 @@ class EcuVariant(HierarchyElement):
 
     @property
     def base_variant(self) -> Optional[BaseVariant]:
+        """Return the base variant for the ECU variant
+
+        The ODX specification allows at a single base variant for each
+        ECU variant, cf checker rule 50 of appendix B.2 of the
+        specification document.
+
+        """
         for pr in self.ecu_variant_raw.parent_refs:
             if isinstance(pr.layer, BaseVariant):
                 return pr.layer
