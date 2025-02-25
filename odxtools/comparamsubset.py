@@ -29,11 +29,15 @@ class ComparamSubset(OdxCategory):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "ComparamSubset":
 
-        cat = OdxCategory.category_from_et(et_element, doc_frags, doc_type=DocType.COMPARAM_SUBSET)
+        category = et_element.get("CATEGORY")
+
+        # In ODX 2.0, COMPARAM-SPEC is used, whereas in ODX 2.2, it refers to something else and has been replaced by COMPARAM-SUBSET.
+        # - If 'category' is missing (ODX 2.0), use COMPARAM_SPEC,
+        # - else (ODX 2.2), use COMPARAM_SUBSET.
+        doc_type = DocType.COMPARAM_SUBSET if category else DocType.COMPARAM_SPEC
+        cat = OdxCategory.category_from_et(et_element, doc_frags, doc_type=doc_type)
         doc_frags = cat.odx_id.doc_fragments
         kwargs = dataclass_fields_asdict(cat)
-
-        category = et_element.get("CATEGORY")
 
         data_object_props = NamedItemList([
             DataObjectProperty.from_et(el, doc_frags)
