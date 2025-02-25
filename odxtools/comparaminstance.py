@@ -139,3 +139,4 @@ class ComparamInstance:
     @property
     def short_name(self) -> str:
         return self.spec.short_name
+        
