@@ -14,6 +14,7 @@ from ..nameditemlist import NamedItemList
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from ..parentref import ParentRef
 from ..variablegroup import HasVariableGroups, VariableGroup
+from .basevariant import BaseVariant
 from .diaglayer import DiagLayer
 from .ecuvariantraw import EcuVariantRaw
 from .hierarchyelement import HierarchyElement
@@ -37,6 +38,21 @@ class EcuVariant(HierarchyElement):
     @property
     def parent_refs(self) -> List[ParentRef]:
         return self.ecu_variant_raw.parent_refs
+
+    @property
+    def base_variant(self) -> Optional[BaseVariant]:
+        """Return the base variant for the ECU variant
+
+        The ODX specification allows at a single base variant for each
+        ECU variant, cf checker rule 50 of appendix B.2 of the
+        specification document.
+
+        """
+        for pr in self.ecu_variant_raw.parent_refs:
+            if isinstance(pr.layer, BaseVariant):
+                return pr.layer
+
+        return None
 
     @property
     def ecu_variant_patterns(self) -> List[EcuVariantPattern]:
