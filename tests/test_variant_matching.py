@@ -4,7 +4,6 @@ from typing import Any, Dict, List
 
 import pytest
 
-from odxtools.basevariantmatcher import BaseVariantMatcher
 from odxtools.basevariantpattern import BaseVariantPattern
 from odxtools.database import Database
 from odxtools.diaglayers.basevariant import BaseVariant
@@ -13,7 +12,6 @@ from odxtools.diaglayers.diaglayertype import DiagLayerType
 from odxtools.diaglayers.ecuvariant import EcuVariant
 from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
 from odxtools.diagservice import DiagService
-from odxtools.ecuvariantmatcher import EcuVariantMatcher
 from odxtools.ecuvariantpattern import EcuVariantPattern
 from odxtools.exceptions import OdxError, odxrequire
 from odxtools.matchingbasevariantparameter import MatchingBaseVariantParameter
@@ -22,6 +20,7 @@ from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.request import Request
 from odxtools.response import Response, ResponseType
+from odxtools.variantmatcher import VariantMatcher
 
 doc_frags = [OdxDocFragment(doc_name="pytest", doc_type=DocType.CONTAINER)]
 
@@ -718,8 +717,8 @@ def test_base_variant_matching(
     expected_variant: str,
 ) -> None:
 
-    matcher = BaseVariantMatcher(
-        candidates=base_variants,
+    matcher = VariantMatcher(
+        variant_candidates=base_variants,
         use_cache=use_cache,
     )
     has_physical_addressing = False
@@ -782,8 +781,8 @@ def test_ecu_variant_matching(
     req_resp_mapping: Dict[bytes, bytes],
     expected_variant: str,
 ) -> None:
-    matcher = EcuVariantMatcher(
-        candidates=ecu_variants,
+    matcher = VariantMatcher(
+        variant_candidates=ecu_variants,
         use_cache=use_cache,
     )
     for use_physical_addressing, req in matcher.request_loop():
@@ -804,8 +803,8 @@ def test_no_match(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
         }}),
     }
 
-    matcher = EcuVariantMatcher(
-        candidates=ecu_variants,
+    matcher = VariantMatcher(
+        variant_candidates=ecu_variants,
         use_cache=use_cache,
     )
     for use_physical_addressing, req in matcher.request_loop():
@@ -819,8 +818,8 @@ def test_no_match(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if pending matchers reject the has_match() or active variant query
 def test_no_request_loop(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
-    matcher = EcuVariantMatcher(
-        candidates=ecu_variants,
+    matcher = VariantMatcher(
+        variant_candidates=ecu_variants,
         use_cache=use_cache,
     )
     with pytest.raises(RuntimeError):
@@ -831,8 +830,8 @@ def test_no_request_loop(ecu_variants: List[EcuVariant], use_cache: bool) -> Non
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if runs of the request loop without calling `evaluate(...)` are rejected
 def test_request_loop_misuse(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
-    matcher = EcuVariantMatcher(
-        candidates=ecu_variants,
+    matcher = VariantMatcher(
+        variant_candidates=ecu_variants,
         use_cache=use_cache,
     )
     with pytest.raises(RuntimeError):
@@ -850,8 +849,8 @@ def test_request_loop_idempotency(ecu_variants: List[EcuVariant], use_cache: boo
         }}),
     }
 
-    matcher = EcuVariantMatcher(
-        candidates=ecu_variants,
+    matcher = VariantMatcher(
+        variant_candidates=ecu_variants,
         use_cache=use_cache,
     )
 
@@ -879,8 +878,8 @@ def test_unresolvable_snpathref(ecu_variants: List[EcuVariant], use_cache: bool)
         b"\x22\x20\x00": as_bytes({"name": "supplier_C"}),
     }
 
-    matcher = EcuVariantMatcher(
-        candidates=ecu_variants,
+    matcher = VariantMatcher(
+        variant_candidates=ecu_variants,
         use_cache=use_cache,
     )
 
