@@ -15,6 +15,36 @@ class VariantMatcher:
     base variants according to their ECU-VARIANT-PATTERNs or
     BASE-VARIANT-PATTERNs according to ISO 22901-1.
 
+        Usage (example):
+
+    ```python
+
+    # initialize the matcher with a list of base or ECU variants
+    matcher = VariantMatcher(candidates=[...], use_cache=use_cache)
+
+    # run the request loop to obtain responses for every request
+    for use_physical_addressing, encoded_request in matcher.request_loop():
+        if use_physical_addressing:
+            resp = send_to_ecu_using_physical_addressing(encoded_request)
+        else:
+            resp = send_to_ecu_using_functional_addressing(encoded_request)
+        matcher.evaluate(resp)
+
+    # result
+    if matcher.has_match():
+        if isinstance(matcher.matching_variant, BaseVariant):
+            print(f"Match found for base variant "
+                  f"{matcher.matching_variant.short_name}")
+        elif isinstance(matcher.matching_variant, EcuVariant):
+            print(f"Match found for ECU variant "
+                  f"{matcher.matching_variant.short_name}")
+        else:
+            print(f"Match found for unknown diag layer type "
+                  f"{type(matcher.matching_variant).__name__}")
+    else:
+        print("No matching base- or ECU variant found")
+    ```
+
     TODO: Note that only patterns that exclusivly reference diagnostic
     services (i.e., no single-ECU jobs) in their matching parameters
     are currently supported.
