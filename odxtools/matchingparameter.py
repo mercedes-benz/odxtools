@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, SupportsBytes, cast
+from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from .diaglayers.diaglayer import DiagLayer
@@ -10,6 +10,7 @@ from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, resolve_snref
 from .odxtypes import ParameterValue, ParameterValueDict
 from .snrefcontext import SnRefContext
+from .utils import BytesTypes
 
 
 @dataclass
@@ -104,7 +105,7 @@ class MatchingParameter:
                 # allow a slight tolerance if the expected value is
                 # floating point
                 return abs(float(self.expected_value) - parameter_value) < 1e-8
-            elif isinstance(parameter_value, (bytearray, SupportsBytes)):
+            elif isinstance(parameter_value, BytesTypes):
                 return parameter_value.hex().upper() == self.expected_value.upper()
             elif isinstance(parameter_value, DiagnosticTroubleCode):
                 # TODO: what happens if non-numerical DTCs like
