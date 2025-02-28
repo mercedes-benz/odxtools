@@ -10,8 +10,7 @@ from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .encoding import get_string_encoding
-from .exceptions import (DecodeError, EncodeError, odxassert, odxraise,
-                         odxrequire)
+from .exceptions import (DecodeError, EncodeError, odxassert, odxraise, odxrequire)
 from .odxlink import OdxDocFragment
 from .odxtypes import AtomicOdxType, DataType
 from .utils import BytesTypes, dataclass_fields_asdict

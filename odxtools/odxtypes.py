@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from enum import Enum
-from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, Optional,
-                    Tuple, Type, Union, overload)
+from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, Optional, Tuple, Type, Union,
+                    overload)
 from xml.etree import ElementTree
 
 from .exceptions import odxassert, odxraise, odxrequire
