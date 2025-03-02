@@ -3,10 +3,14 @@ import dataclasses
 import re
 from typing import TYPE_CHECKING, Any, Dict, Optional
 
+from typing_extensions import SupportsBytes
+
 if TYPE_CHECKING:
     from .database import Database
     from .diaglayers.diaglayer import DiagLayer
     from .snrefcontext import SnRefContext
+
+BytesTypes = (bytearray, bytes, SupportsBytes)
 
 
 def retarget_snrefs(database: "Database",

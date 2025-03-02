@@ -5,6 +5,7 @@ from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, Optional, Tupl
 from xml.etree import ElementTree
 
 from .exceptions import odxassert, odxraise, odxrequire
+from .utils import BytesTypes
 
 if TYPE_CHECKING:
     from odxtools.diagnostictroublecode import DiagnosticTroubleCode
@@ -135,8 +136,8 @@ def compare_odx_values(a: AtomicOdxType, b: AtomicOdxType) -> int:
 
     # bytefields are treated like long integers: to pad the shorter
     # object with zeros and treat the results like strings.
-    if isinstance(a, (bytes, bytearray)):
-        if not isinstance(b, (bytes, bytearray)):
+    if isinstance(a, BytesTypes):
+        if not isinstance(b, BytesTypes):
             odxraise()
 
         obj_len = max(len(a), len(b))
@@ -237,7 +238,7 @@ class DataType(Enum):
             return True
         elif expected_type is float and isinstance(value, (int, float)):
             return True
-        elif self == DataType.A_BYTEFIELD and isinstance(value, (bytearray, bytes)):
+        elif self == DataType.A_BYTEFIELD and isinstance(value, BytesTypes):
             return True
         else:
             return False
