@@ -1,0 +1,18 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- macro printPreConditionStateRef(ps_ref) -%}
+<PRE-CONDITION-STATE-REF ID-REF="{{ps_ref.ref_id}}">
+  {%- if ps_ref.value is not none %}
+  <VALUE>{{ ps_ref.value }}</VALUE>
+  {%- endif %}
+  {%- if ps_ref.in_param_if_snref is not none %}
+  <IN-PARAM-IF-SNREF SHORT-NAME="{{ ps_ref.in_param_if_snref }}" />
+  {%- endif %}
+  {%- if ps_ref.in_param_if_snpathref is not none %}
+  <IN-PARAM-IF-SNPATHREF SHORT-NAME-PATH="{{ ps_ref.in_param_if_snpathref }}" />
+  {%- endif %}
+</PRE-CONDITION-STATE-REF>
+{%- endmacro -%}

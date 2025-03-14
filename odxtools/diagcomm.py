@@ -12,10 +12,12 @@ from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
+from .preconditionstateref import PreConditionStateRef
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .state import State
 from .statetransition import StateTransition
+from .statetransitionref import StateTransitionRef
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -61,8 +63,8 @@ class DiagComm(IdentifiableElement):
     audience: Optional[Audience]
     protocol_snrefs: List[str]
     related_diag_comm_refs: List[RelatedDiagCommRef]
-    pre_condition_state_refs: List[OdxLinkRef]
-    state_transition_refs: List[OdxLinkRef]
+    pre_condition_state_refs: List[PreConditionStateRef]
+    state_transition_refs: List[StateTransitionRef]
 
     # attributes
     semantic: Optional[str]
@@ -100,12 +102,12 @@ class DiagComm(IdentifiableElement):
         ]
 
         pre_condition_state_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            PreConditionStateRef.from_et(el, doc_frags)
             for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF")
         ]
 
         state_transition_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            StateTransitionRef.from_et(el, doc_frags)
             for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
         ]
 
@@ -182,6 +184,12 @@ class DiagComm(IdentifiableElement):
         if self.audience is not None:
             result.update(self.audience._build_odxlinks())
 
+        for st_ref in self.state_transition_refs:
+            result.update(st_ref._build_odxlinks())
+
+        for pc_ref in self.pre_condition_state_refs:
+            result.update(pc_ref._build_odxlinks())
+
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -193,6 +201,12 @@ class DiagComm(IdentifiableElement):
 
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
+
+        for st_ref in self.state_transition_refs:
+            st_ref._resolve_odxlinks(odxlinks)
+
+        for pc_ref in self.pre_condition_state_refs:
+            pc_ref._resolve_odxlinks(odxlinks)
 
         self._related_diag_comms = NamedItemList(
             [odxlinks.resolve(dc_ref, DiagComm) for dc_ref in self.related_diag_comm_refs])
@@ -212,6 +226,12 @@ class DiagComm(IdentifiableElement):
 
         for sdg in self.sdgs:
             sdg._resolve_snrefs(context)
+
+        for st_ref in self.state_transition_refs:
+            st_ref._resolve_snrefs(context)
+
+        for pc_ref in self.pre_condition_state_refs:
+            pc_ref._resolve_snrefs(context)
 
         if TYPE_CHECKING:
             diag_layer = odxrequire(context.diag_layer)
