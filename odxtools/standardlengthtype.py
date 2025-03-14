@@ -10,8 +10,8 @@ from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment
-from .odxtypes import AtomicOdxType, DataType, odxstr_to_bool
-from .utils import BytesTypes, dataclass_fields_asdict
+from .odxtypes import AtomicOdxType, BytesTypes, DataType, odxstr_to_bool
+from .utils import dataclass_fields_asdict
 
 
 @dataclass

@@ -8,9 +8,8 @@ from .diagnostictroublecode import DiagnosticTroubleCode
 from .diagservice import DiagService
 from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, resolve_snref
-from .odxtypes import ParameterValue, ParameterValueDict
+from .odxtypes import BytesTypes, ParameterValue, ParameterValueDict
 from .snrefcontext import SnRefContext
-from .utils import BytesTypes
 
 
 @dataclass
