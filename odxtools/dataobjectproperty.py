@@ -13,11 +13,11 @@ from .encodestate import EncodeState
 from .exceptions import EncodeError, odxraise, odxrequire
 from .internalconstr import InternalConstr
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import AtomicOdxType, ParameterValue
+from .odxtypes import AtomicOdxType, BytesTypes, ParameterValue
 from .physicaltype import PhysicalType
 from .snrefcontext import SnRefContext
 from .unit import Unit
-from .utils import BytesTypes, dataclass_fields_asdict
+from .utils import dataclass_fields_asdict
 
 
 @dataclass

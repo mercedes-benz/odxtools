@@ -5,8 +5,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 from .encoding import Encoding, get_string_encoding
 from .exceptions import EncodeError, OdxWarning, odxassert, odxraise
-from .odxtypes import AtomicOdxType, DataType, ParameterValue
-from .utils import BytesTypes
+from .odxtypes import AtomicOdxType, BytesTypes, DataType, ParameterValue
 
 try:
     import bitstruct.c as bitstruct
