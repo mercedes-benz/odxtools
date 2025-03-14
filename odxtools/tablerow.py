@@ -14,6 +14,7 @@ from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import AtomicOdxType, odxstr_to_bool
+from .preconditionstateref import PreConditionStateRef
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .state import State
@@ -42,7 +43,7 @@ class TableRow(IdentifiableElement):
     audience: Optional[Audience]
     functional_class_refs: List[OdxLinkRef]
     state_transition_refs: List[OdxLinkRef]
-    pre_condition_state_refs: List[OdxLinkRef]
+    pre_condition_state_refs: List[PreConditionStateRef]
     admin_data: Optional[AdminData]
 
     is_executable_raw: Optional[bool]
@@ -128,7 +129,7 @@ class TableRow(IdentifiableElement):
         ]
 
         pre_condition_state_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            PreConditionStateRef.from_et(el, doc_frags)
             for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF")
         ]
 

@@ -7,6 +7,8 @@
 {%- import('macros/printAdminData.xml.jinja2') as pad %}
 {%- import('macros/printAudience.xml.jinja2') as paud %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printPreConditionStateRef.xml.jinja2') as ppcsr %}
+{%- import('macros/printStateTransitionRef.xml.jinja2') as pstr %}
 
 {%- macro printDiagCommAttribs(dc) -%}
 {{-peid.printElementIdAttribs(dc)}}
@@ -16,7 +18,6 @@
 {{-make_bool_xml_attrib("IS-EXECUTABLE", dc.is_executable_raw)}}
 {{-make_bool_xml_attrib("IS-FINAL", dc.is_final_raw)}}
 {%- endmacro -%}
-
 
 {%- macro printDiagCommSubtags(dc) -%}
  {{ peid.printElementIdSubtags(dc)|indent(1) }}
@@ -53,15 +54,15 @@
  {%- if dc.pre_condition_state_refs %}
  <PRE-CONDITION-STATE-REFS>
   {%- for ps_ref in dc.pre_condition_state_refs %}
-  <PRE-CONDITION-STATE-REF ID-REF="{{ps_ref.ref_id}}" />
+  {{ ppcsr.printPreConditionStateRef(ps_ref)|indent(2) }}
   {%- endfor %}
  </PRE-CONDITION-STATE-REFS>
  {%- endif%}
  {%- if dc.state_transition_refs %}
  <STATE-TRANSITION-REFS>
-   {%- for st_ref in dc.state_transition_refs %}
-   <STATE-TRANSITION-REF ID-REF="{{st_ref.ref_id}}" />
-   {%- endfor %}
+  {%- for st_ref in dc.state_transition_refs %}
+  {{ pstr.printStateTransitionRef(st_ref)|indent(2) }}
+  {%- endfor %}
  </STATE-TRANSITION-REFS>
  {%- endif%}
 {%- endmacro -%}
