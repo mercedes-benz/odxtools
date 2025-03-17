@@ -1,11 +1,10 @@
 # SPDX-License-Identifier: MIT
 from enum import Enum
-from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, Optional, Tuple, Type, Union,
-                    overload)
+from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, Optional, SupportsBytes, Tuple,
+                    Type, Union, overload)
 from xml.etree import ElementTree
 
 from .exceptions import odxassert, odxraise, odxrequire
-from .utils import BytesTypes
 
 if TYPE_CHECKING:
     from odxtools.diagnostictroublecode import DiagnosticTroubleCode
@@ -17,7 +16,8 @@ def bytefield_to_bytearray(bytefield: str) -> bytearray:
     return bytearray([int(x, 16) for x in bytes_string])
 
 
-AtomicOdxType = Union[str, int, float, bytes]
+BytesTypes = (bytearray, bytes, SupportsBytes)
+AtomicOdxType = Union[str, int, float, bytearray, bytes]
 
 # dictionary mapping short names to a Parameter that needs to be
 # specified. Complex parameters (structures) may contain

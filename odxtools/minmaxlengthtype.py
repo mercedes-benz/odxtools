@@ -12,8 +12,8 @@ from .encodestate import EncodeState
 from .encoding import get_string_encoding
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment
-from .odxtypes import AtomicOdxType, DataType
-from .utils import BytesTypes, dataclass_fields_asdict
+from .odxtypes import AtomicOdxType, BytesTypes, DataType
+from .utils import dataclass_fields_asdict
 
 
 class Termination(Enum):

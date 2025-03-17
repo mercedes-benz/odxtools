@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -14,6 +14,9 @@ from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 from .tablekeyparameter import TableKeyParameter
+
+if TYPE_CHECKING:
+    from ..table import Table
 
 
 @dataclass
@@ -68,6 +71,10 @@ class TableStructParameter(Parameter):
     @property
     def table_key(self) -> TableKeyParameter:
         return self._table_key
+
+    @property
+    def table(self) -> "Table":
+        return self._table_key.table
 
     @property
     @override
