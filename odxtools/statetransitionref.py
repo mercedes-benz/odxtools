@@ -62,10 +62,9 @@ def _resolve_in_param_helper(
             return None, None
 
         if TYPE_CHECKING:
-            tr = resolve_snref(inner_param_value[0], inner_param.table_key.table.table_rows,
-                               TableRow)
+            tr = resolve_snref(inner_param_value[0], inner_param.table.table_rows, TableRow)
         else:
-            tr = resolve_snref(inner_param_value[0], inner_param.table_key.table.table_rows)
+            tr = resolve_snref(inner_param_value[0], inner_param.table.table_rows)
 
         if tr.structure is None:
             odxraise("Table row must reference a structure")
