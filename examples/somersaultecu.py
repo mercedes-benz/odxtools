@@ -1848,7 +1848,7 @@ somersault_services = {
                     in_param_if_snpathref=None,
                 ),
                 # note that the standard does not allow to specify
-                # relations other than equivalence for the specied
+                # relations other than equivalence for the specified
                 # value (larger-than would be more appropriate here...)
                 PreConditionStateRef(
                     ref_id="charts.angry.states.in_bed",
