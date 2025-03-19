@@ -100,7 +100,7 @@ class PreConditionStateRef(OdxLinkRef):
             _resolve_in_param(self.in_param_if_snref, self.in_param_if_snpathref, params, param_value_dict)
 
         if param is None:
-            # The referenced parameter does not exist. TODO: is this an error?
+            # The referenced parameter does not exist.
             return False
         elif not isinstance(
                 param,
