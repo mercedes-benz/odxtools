@@ -2525,9 +2525,10 @@ somersault_lazy_ecu_raw = EcuVariantRaw(
             oid=None,
             short_name="annoyed_chart",
             long_name=None,
-            description=None,  #Description("State chart for a day where the ECU is grumpy",
-            #      external_docs=[],
-            #      text_identifier=None),
+            description=Description(
+                "<p>State chart for a day where the ECU is grumpy</p>",
+                external_docs=[],
+                text_identifier=None),
             states=NamedItemList([
                 State(
                     odx_id=OdxLinkId("charts.annoyed.states.in_bed", doc_frags),
@@ -2627,9 +2628,10 @@ somersault_lazy_ecu_raw = EcuVariantRaw(
             oid=None,
             short_name="angry_chart",
             long_name=None,
-            description=None,  # Description("State chart for a day where the ECU has a hissy fit",
-            #      external_docs=[],
-            #      text_identifier=None),
+            description=Description(
+                "<p>State chart for a day where the ECU has a hissy fit</p>",
+                external_docs=[],
+                text_identifier=None),
             states=NamedItemList([
                 State(
                     odx_id=OdxLinkId("charts.angry.states.in_bed", doc_frags),
