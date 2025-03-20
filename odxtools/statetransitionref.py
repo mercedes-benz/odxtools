@@ -47,10 +47,10 @@ def _resolve_in_param_helper(
     path_chunks: List[str],
 ) -> Tuple[Optional[Parameter], Optional[ParameterValue]]:
 
-    inner_param = resolve_snref(path_chunks[0], params, Parameter)
-    inner_param_value = param_dict.get(path_chunks[0])
+    inner_param = resolve_snref(path_chunks[0], params, Parameter, lenient=True)
     if inner_param is None:
         return None, None
+    inner_param_value = param_dict.get(path_chunks[0])
 
     if len(path_chunks) == 1:
         return inner_param, inner_param_value

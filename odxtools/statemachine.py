@@ -145,6 +145,18 @@ class StateMachine:
         # ask the calling code to send the request to the ECU and
         # report back the reply
         raw_resp = yield raw_req
+
+        decoded_req_params = service.request.decode(raw_req)
+        for stransref in service.state_transition_refs:
+            # check if the state transition applies for the
+            # request. Note that the ODX specification is unclear
+            # about which kind of parameters are relevant for
+            # STATE-TRANSITION-REF
+            if stransref.execute(self, service.request.parameters, decoded_req_params):
+                self.succeeded = True
+                yield b''
+                return
+
         if raw_resp is None:
             raise RuntimeError("The calling code must send back a reply")
         elif isinstance(raw_resp, (bytes, bytearray)):

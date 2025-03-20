@@ -277,24 +277,40 @@ class OdxLinkDatabase:
 @overload
 def resolve_snref(target_short_name: str,
                   items: Iterable[OdxNamed],
-                  expected_type: None = None) -> Any:
+                  expected_type: None = None,
+                  *,
+                  lenient: None = None) -> Any:
     """Resolve a short name reference given a sequence of candidate objects"""
     ...
 
 
 @overload
-def resolve_snref(target_short_name: str, items: Iterable[OdxNamed],
-                  expected_type: Type[TNamed]) -> TNamed:
+def resolve_snref(target_short_name: str,
+                  items: Iterable[OdxNamed],
+                  expected_type: Type[TNamed],
+                  *,
+                  lenient: None = None) -> TNamed:
+    ...
+
+
+@overload
+def resolve_snref(target_short_name: str,
+                  items: Iterable[OdxNamed],
+                  expected_type: Type[TNamed],
+                  *,
+                  lenient: bool = True) -> Optional[TNamed]:
     ...
 
 
 def resolve_snref(target_short_name: str,
                   items: Iterable[OdxNamed],
-                  expected_type: Any = None) -> Any:
+                  expected_type: Any = None,
+                  lenient: Optional[bool] = None) -> Any:
     candidates = [x for x in items if x.short_name == target_short_name]
 
     if not candidates:
-        odxraise(f"Cannot resolve short name reference to '{target_short_name}'")
+        if not lenient:
+            odxraise(f"Cannot resolve short name reference to '{target_short_name}'")
         return None
     elif len(candidates) > 1:
         odxraise(f"Cannot uniquely resolve short name reference to '{target_short_name}'")
