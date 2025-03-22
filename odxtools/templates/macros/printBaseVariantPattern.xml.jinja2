@@ -1,0 +1,32 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- macro printMatchingBaseVariantParameter(mbvp) -%}
+<MATCHING-BASE-VARIANT-PARAMETER>
+  <EXPECTED-VALUE>{{mbvp.expected_value | e}}</EXPECTED-VALUE>
+  {%- if mbvp.use_physical_addressing_raw is true %}
+  <USE-PHYSICAL-ADDRESSING>true</USE-PHYSICAL-ADDRESSING>
+  {%- elif mbvp.use_physical_addressing_raw is false %}
+  <USE-PHYSICAL-ADDRESSING>false</USE-PHYSICAL-ADDRESSING>
+  {%- endif %}
+  <DIAG-COMM-SNREF SHORT-NAME="{{mbvp.diag_comm_snref}}" />
+  {%- if mbvp.out_param_if_snref is not none %}
+  <OUT-PARAM-IF-SNREF SHORT-NAME="{{mbvp.out_param_if_snref}}" />
+  {%- endif %}
+  {%- if mbvp.out_param_if_snpathref is not none %}
+  <OUT-PARAM-IF-SNPATHREF SHORT-NAME-PATH="{{mbvp.out_param_if_snpathref}}" />
+  {%- endif %}
+</MATCHING-BASE-VARIANT-PARAMETER>
+{%- endmacro -%}
+
+{%- macro printBaseVariantPattern(vp) -%}
+<BASE-VARIANT-PATTERN>
+ <MATCHING-BASE-VARIANT-PARAMETERS>
+  {%- for mbvp in vp.matching_base_variant_parameters %}
+  {{ printMatchingBaseVariantParameter(mbvp) | indent(2) }}
+  {%- endfor %}
+ </MATCHING-BASE-VARIANT-PARAMETERS>
+</BASE-VARIANT-PATTERN>
+{%- endmacro -%}

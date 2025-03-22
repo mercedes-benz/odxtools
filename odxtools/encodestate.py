@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Dict, List, Optional, SupportsBytes, Tuple
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 from .encoding import Encoding, get_string_encoding
 from .exceptions import EncodeError, OdxWarning, odxassert, odxraise
-from .odxtypes import AtomicOdxType, DataType, ParameterValue
+from .odxtypes import AtomicOdxType, BytesTypes, DataType, ParameterValue
 
 try:
     import bitstruct.c as bitstruct
@@ -97,7 +97,7 @@ class EncodeState:
 
         # Deal with raw byte fields, ...
         if base_data_type == DataType.A_BYTEFIELD:
-            if not isinstance(internal_value, (bytes, bytearray, SupportsBytes)):
+            if not isinstance(internal_value, BytesTypes):
                 odxraise(f"{internal_value!r} is not a bytefield", EncodeError)
                 return
 
