@@ -33,7 +33,7 @@ _odxtools_tool_name_ = "compare"
 class ServiceSpecs:
     diag_layer: str
     diag_layer_type: str
-    new_services: List[DiagService]  # List of new service names
+    new_services: List[DiagService]  # List of new service name
     deleted_services: List[DiagService]  # List of deleted services
     renamed_service: list  # type: ignore[type-arg]
     changed_name_of_service: List[Tuple[str, DiagService]] 
