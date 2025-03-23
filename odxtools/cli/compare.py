@@ -35,13 +35,8 @@ class ServiceSpecs:
     diag_layer_type: str
     new_services: List[DiagService]  # List of new service names
     deleted_services: List[DiagService]  # List of deleted services
-    # renamed_service: List[Tuple[str, DiagService]]  # List of (old_name, DiagService)
-
     renamed_service: list  # type: ignore[type-arg]
-    # List of (old_name, DiagService)
-    changed_name_of_service: List[Tuple[str, DiagService]]  # Similar to renamed_service
-    # changed_parameters_of_service: List[Tuple[DiagService, List[Union[str, int, float]]]]
-    # changed_parameters_of_service: List[Tuple[str, List[str]]]
+    changed_name_of_service: List[Tuple[str, DiagService]] 
     changed_parameters_of_service: list[Any, Any, DiagService]  # type: ignore[type-arg]
 
 
