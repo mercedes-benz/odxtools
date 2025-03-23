@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
+from ..basevariantpattern import BaseVariantPattern
 from ..diagvariable import DiagVariable
 from ..dyndefinedspec import DynDefinedSpec
 from ..exceptions import odxraise
@@ -23,7 +24,7 @@ class BaseVariantRaw(HierarchyElementRaw):
     diag_variables_raw: List[Union[DiagVariable, OdxLinkRef]]
     variable_groups: NamedItemList[VariableGroup]
     dyn_defined_spec: Optional[DynDefinedSpec]
-    # TODO: base_variant_pattern: Optional[BaseVariantPattern]
+    base_variant_pattern: Optional[BaseVariantPattern]
     parent_refs: List[ParentRef]
 
     @property
@@ -63,6 +64,10 @@ class BaseVariantRaw(HierarchyElementRaw):
         if (dds_elem := et_element.find("DYN-DEFINED-SPEC")) is not None:
             dyn_defined_spec = DynDefinedSpec.from_et(dds_elem, doc_frags)
 
+        base_variant_pattern = None
+        if (bvp_elem := et_element.find("BASE-VARIANT-PATTERN")) is not None:
+            base_variant_pattern = BaseVariantPattern.from_et(bvp_elem, doc_frags)
+
         parent_refs = [
             ParentRef.from_et(pr_elem, doc_frags)
             for pr_elem in et_element.iterfind("PARENT-REFS/PARENT-REF")
@@ -72,6 +77,7 @@ class BaseVariantRaw(HierarchyElementRaw):
             diag_variables_raw=diag_variables_raw,
             variable_groups=variable_groups,
             dyn_defined_spec=dyn_defined_spec,
+            base_variant_pattern=base_variant_pattern,
             parent_refs=parent_refs,
             **kwargs)
 

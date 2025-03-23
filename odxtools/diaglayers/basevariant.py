@@ -6,6 +6,7 @@ from xml.etree import ElementTree
 
 from typing_extensions import override
 
+from ..basevariantpattern import BaseVariantPattern
 from ..diagvariable import DiagVariable
 from ..dyndefinedspec import DynDefinedSpec
 from ..exceptions import odxassert
@@ -37,6 +38,10 @@ class BaseVariant(HierarchyElement):
     @property
     def dyn_defined_spec(self) -> Optional[DynDefinedSpec]:
         return self.base_variant_raw.dyn_defined_spec
+
+    @property
+    def base_variant_pattern(self) -> Optional[BaseVariantPattern]:
+        return self.base_variant_raw.base_variant_pattern
 
     @property
     def parent_refs(self) -> List[ParentRef]:

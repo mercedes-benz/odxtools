@@ -20,7 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.12"
+          python-version: "3"
 
       - name: Setup up YaPF formatting linter
         run: |
@@ -38,7 +38,7 @@ jobs:
       matrix:
         # restrict the matrix to the oldest and the latest Python
         # version being supported by odxtools
-        python-version: ["3.8", "3.12"]
+        python-version: ["3.8", "3"]
 
     steps:
       - uses: actions/checkout@v3
@@ -73,7 +73,7 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         # restrict the matrix to the oldest and the latest Python
         # version being supported by odxtools
-        python-version: ["3.8", "3.12"]
+        python-version: ["3.8", "3"]
 
         # due to the slow windows runners, we refrain from testing every python
         # version on windows-latest

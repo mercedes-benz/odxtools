@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from enum import Enum
-from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, Optional, Tuple, Type, Union,
-                    overload)
+from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, Optional, SupportsBytes, Tuple,
+                    Type, Union, overload)
 from xml.etree import ElementTree
 
 from .exceptions import odxassert, odxraise, odxrequire
@@ -16,7 +16,8 @@ def bytefield_to_bytearray(bytefield: str) -> bytearray:
     return bytearray([int(x, 16) for x in bytes_string])
 
 
-AtomicOdxType = Union[str, int, float, bytes]
+BytesTypes = (bytearray, bytes, SupportsBytes)
+AtomicOdxType = Union[str, int, float, bytearray, bytes]
 
 # dictionary mapping short names to a Parameter that needs to be
 # specified. Complex parameters (structures) may contain
@@ -135,8 +136,8 @@ def compare_odx_values(a: AtomicOdxType, b: AtomicOdxType) -> int:
 
     # bytefields are treated like long integers: to pad the shorter
     # object with zeros and treat the results like strings.
-    if isinstance(a, (bytes, bytearray)):
-        if not isinstance(b, (bytes, bytearray)):
+    if isinstance(a, BytesTypes):
+        if not isinstance(b, BytesTypes):
             odxraise()
 
         obj_len = max(len(a), len(b))
@@ -237,7 +238,7 @@ class DataType(Enum):
             return True
         elif expected_type is float and isinstance(value, (int, float)):
             return True
-        elif self == DataType.A_BYTEFIELD and isinstance(value, (bytearray, bytes)):
+        elif self == DataType.A_BYTEFIELD and isinstance(value, BytesTypes):
             return True
         else:
             return False

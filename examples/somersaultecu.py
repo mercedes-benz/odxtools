@@ -2419,6 +2419,7 @@ somersault_base_variant_raw = BaseVariantRaw(
     variable_groups=NamedItemList(),
     libraries=NamedItemList(),
     sub_components=NamedItemList(),
+    base_variant_pattern=None,
     dyn_defined_spec=None)
 somersault_base_variant = BaseVariant(diag_layer_raw=somersault_base_variant_raw)
 

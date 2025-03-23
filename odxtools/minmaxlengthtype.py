@@ -12,7 +12,7 @@ from .encodestate import EncodeState
 from .encoding import get_string_encoding
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment
-from .odxtypes import AtomicOdxType, DataType
+from .odxtypes import AtomicOdxType, BytesTypes, DataType
 from .utils import dataclass_fields_asdict
 
 
@@ -83,7 +83,7 @@ class MinMaxLengthType(DiagCodedType):
     @override
     def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:
 
-        if not isinstance(internal_value, (bytes, str, bytearray)):
+        if not isinstance(internal_value, (str, BytesTypes)):
             odxraise("MinMaxLengthType is currently only implemented for strings and byte arrays",
                      EncodeError)
 
