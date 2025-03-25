@@ -8,6 +8,8 @@
 {%- import('macros/printDescription.xml.jinja2') as pd %}
 {%- import('macros/printAdminData.xml.jinja2') as pad %}
 {%- import('macros/printAudience.xml.jinja2') as paud %}
+{%- import('macros/printPreConditionStateRef.xml.jinja2') as ppcsr %}
+{%- import('macros/printStateTransitionRef.xml.jinja2') as pstr %}
 
 {%- macro printTable(table) %}
 <TABLE {{-peid.printElementIdAttribs(table)}}
@@ -46,14 +48,14 @@
   {%- if table_row.state_transition_refs %}
   <STATE-TRANSITION-REFS>
     {%- for st_ref in table_row.state_transition_refs %}
-    <STATE-TRANSITION-REF ID-REF="{{ st_ref.ref_id }}" />
+    {{ pstr.printStateTransitionRef(st_ref)|indent(4) }}
     {%- endfor %}
   </STATE-TRANSITION-REFS>
   {%- endif %}
   {%- if table_row.pre_condition_state_refs %}
   <PRE-CONDITION-STATE-REFS>
     {%- for pcs_ref in table_row.pre_condition_state_refs %}
-    <PRE-CONDITION-STATE-REF ID-REF="{{ pcs_ref.ref_id }}" />
+    {{ ppcsr.printPreConditionStateRef(ps_ref)|indent(4) }}
     {%- endfor %}
   </PRE-CONDITION-STATE-REFS>
   {%- endif %}
