@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
@@ -15,11 +15,13 @@ from .parameters.tablekeyparameter import TableKeyParameter
 from .parameters.tablestructparameter import TableStructParameter
 from .parameters.valueparameter import ValueParameter
 from .snrefcontext import SnRefContext
+from .state import State
 from .statemachine import StateMachine
 from .statetransition import StateTransition
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
+    from .preconditionstateref import PreConditionStateRef
     from .statemachine import StateMachine
     from .tablerow import TableRow
 
@@ -86,6 +88,64 @@ def _resolve_in_param_helper(
     return _resolve_in_param_helper(inner_param_list, inner_param_value, path_chunks[1:])
 
 
+def _check_applies(ref: Union["StateTransitionRef",
+                              "PreConditionStateRef"], state_machine: "StateMachine",
+                   params: List[Parameter], param_value_dict: ParameterValueDict) -> bool:
+    if state_machine.active_state != ref.state:
+        # if the active state of the state machine is not the
+        # specified one, the precondition does not apply
+        return False
+
+    if ref.in_param_if_snref is None and ref.in_param_if_snpathref is None:
+        # no parameter given -> only the specified state is relevant
+        return True
+
+    param, param_value = \
+        _resolve_in_param(ref.in_param_if_snref, ref.in_param_if_snpathref, params, param_value_dict)
+
+    if param is None:
+        # The referenced parameter does not exist.
+        return False
+    elif not isinstance(
+            param,
+        (CodedConstParameter, PhysicalConstantParameter, TableKeyParameter, ValueParameter)):
+        # see checker rule 194 in section B.2 of the spec
+        odxraise(f"Parameter referenced by state transition ref is of "
+                 f"invalid type {type(param).__name__}")
+        return False
+    elif isinstance(param, (CodedConstParameter, PhysicalConstantParameter,
+                            TableKeyParameter)) and ref.value is not None:
+        # see checker rule 193 in section B.2 of the spec. Why can
+        # no values for constant parameters be specified? (This
+        # seems to be rather inconvenient...)
+        odxraise(f"No value may be specified for state transitions referencing "
+                 f"parameters of type {type(param).__name__}")
+        return False
+    elif isinstance(param, ValueParameter):
+        # see checker rule 193 in section B.2 of the spec
+        if ref.value is None:
+            odxraise(f"An expected VALUE must be specified for preconditions "
+                     f"referencing VALUE parameters")
+            return False
+
+        if param_value is None:
+            param_value = param.physical_default_value
+            if param_value is None:
+                odxraise(f"No value can be determined for parameter {param.short_name}")
+                return False
+
+        if param.dop is None or not isinstance(param.dop, DataObjectProperty):
+            odxraise(f"Parameter {param.short_name} uses a non-simple DOP")
+            return False
+
+        expected_value = param.dop.physical_type.base_data_type.from_string(ref.value)
+
+        if expected_value != param_value:
+            return False
+
+    return True
+
+
 @dataclass
 class StateTransitionRef(OdxLinkRef):
     """Describes a state transition that is to be potentially taken if
@@ -103,6 +163,10 @@ class StateTransitionRef(OdxLinkRef):
     @property
     def state_transition(self) -> StateTransition:
         return self._state_transition
+
+    @property
+    def state(self) -> State:
+        return self.state_transition.source_state
 
     @staticmethod
     def from_et(  # type: ignore[override]
@@ -157,63 +221,11 @@ class StateTransitionRef(OdxLinkRef):
         from the ECU, whilst we assume that they are the parameters of
         the request for PRE-CONDITION-STATE-REFs.
 
+        Returns:
+            ``True´` if the state transition was taken, else ``False``
         """
-
-        # check if the finite state machine is in the referenced source state
-        st = self.state_transition
-        if st.source_state != state_machine.active_state:
-            return False
-
-        if self.in_param_if_snref is None and self.in_param_if_snpathref is None:
-            # if there is no dependence on a parameter, take the state
-            # transition
-            state_machine.active_state = st.target_state
+        if _check_applies(self, state_machine, params, param_value_dict):
+            state_machine.active_state = self.state_transition.target_state
             return True
 
-        # retrieve the referenced parameter and compare it to the
-        # requisite value
-        param, param_value = _resolve_in_param(self.in_param_if_snref, self.in_param_if_snpathref,
-                                               params, param_value_dict)
-
-        if param is None:
-            # The referenced parameter does not exist.
-            return False
-        elif not isinstance(
-                param,
-            (CodedConstParameter, PhysicalConstantParameter, TableKeyParameter, ValueParameter)):
-            # see checker rule 194 in section B.2 of the spec
-            odxraise(f"Parameter referenced by state transition ref is of "
-                     f"invalid type {type(param).__name__}")
-            return False
-        elif isinstance(param, (CodedConstParameter, PhysicalConstantParameter,
-                                TableKeyParameter)) and self.value is not None:
-            # see checker rule 193 in section B.2 of the spec. Why can
-            # no values for constant parameters be specified? (This
-            # seems to be rather inconvenient...)
-            odxraise(f"No value may be specified for state transitions referencing "
-                     f"parameters of type {type(param).__name__}")
-            return False
-        elif isinstance(param, ValueParameter):
-            # see checker rule 193 in section B.2 of the spec
-            if self.value is None:
-                odxraise(f"An expected VALUE must be specified for state "
-                         f"transitions referencing VALUE parameters")
-                return False
-
-            if param_value is None:
-                param_value = param.physical_default_value
-                if param_value is None:
-                    odxraise(f"No value can be determined for parameter {param.short_name}")
-                    return False
-
-            if param.dop is None or not isinstance(param.dop, DataObjectProperty):
-                odxraise(f"Non-simple DOP specified for parameter {param.short_name}")
-                return False
-
-            expected_value = param.dop.physical_type.base_data_type.from_string(self.value)
-
-            if expected_value != param_value:
-                return False
-
-        state_machine.active_state = st.target_state
-        return True
+        return False
