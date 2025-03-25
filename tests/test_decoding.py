@@ -43,6 +43,7 @@ from odxtools.snrefcontext import SnRefContext
 from odxtools.standardlengthtype import StandardLengthType
 from odxtools.staticfield import StaticField
 from odxtools.structure import Structure
+from odxtools.text import Text
 
 doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
 
@@ -2505,7 +2506,7 @@ class TestDecoding(unittest.TestCase):
             long_name=None,
             description=None,
             trouble_code=0x34,
-            text="Error encountered",
+            text=Text.from_string("Error encountered"),
             display_trouble_code="P34",
             level=None,
             is_temporary_raw=None,
@@ -2519,7 +2520,7 @@ class TestDecoding(unittest.TestCase):
             long_name=None,
             description=None,
             trouble_code=0x56,
-            text="Crashed into wall",
+            text=Text.from_string("Crashed into wall"),
             display_trouble_code="P56",
             level=None,
             is_temporary_raw=None,
