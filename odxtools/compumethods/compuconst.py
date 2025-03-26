@@ -13,6 +13,10 @@ class CompuConst:
 
     data_type: DataType
 
+    @property
+    def value(self) -> Optional[AtomicOdxType]:
+        return self._value
+
     @staticmethod
     def compuvalue_from_et(et_element: ElementTree.Element, *, data_type: DataType) -> "CompuConst":
 
@@ -25,7 +29,3 @@ class CompuConst:
         self._value: Optional[AtomicOdxType] = self.vt
         if self.v is not None:
             self._value = self.data_type.from_string(self.v)
-
-    @property
-    def value(self) -> Optional[AtomicOdxType]:
-        return self._value

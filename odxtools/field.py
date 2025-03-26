@@ -21,19 +21,14 @@ class Field(ComplexDop):
     env_data_desc_snref: Optional[str]
     is_visible_raw: Optional[bool]
 
-    def __post_init__(self) -> None:
-        self._structure: Optional[BasicStructure] = None
-        self._env_data_desc: Optional[EnvironmentDataDescription] = None
-        num_struct_refs = 0 if self.structure_ref is None else 1
-        num_struct_refs += 0 if self.structure_snref is None else 1
+    @property
+    def structure(self) -> BasicStructure:
+        """may be a Structure or a env-data-desc"""
+        return odxrequire(self._structure, "EnvironmentDataDescription is not supported")
 
-        num_edd_refs = 0 if self.env_data_desc_ref is None else 1
-        num_edd_refs += 0 if self.env_data_desc_snref is None else 1
-
-        odxassert(
-            num_struct_refs + num_edd_refs == 1,
-            "FIELDs need to specify exactly one reference to a "
-            "structure or an environment data description")
+    @property
+    def is_visible(self) -> bool:
+        return self.is_visible_raw in (None, True)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Field":
@@ -58,17 +53,19 @@ class Field(ComplexDop):
             is_visible_raw=is_visible_raw,
             **kwargs)
 
-    @property
-    def is_visible(self) -> bool:
-        return self.is_visible_raw in (None, True)
+    def __post_init__(self) -> None:
+        self._structure: Optional[BasicStructure] = None
+        self._env_data_desc: Optional[EnvironmentDataDescription] = None
+        num_struct_refs = 0 if self.structure_ref is None else 1
+        num_struct_refs += 0 if self.structure_snref is None else 1
 
-    @property
-    def structure(self) -> BasicStructure:
-        """may be a Structure or a env-data-desc"""
-        return odxrequire(self._structure, "EnvironmentDataDescription is not supported")
+        num_edd_refs = 0 if self.env_data_desc_ref is None else 1
+        num_edd_refs += 0 if self.env_data_desc_snref is None else 1
 
-    def get_static_bit_length(self) -> Optional[int]:
-        return None
+        odxassert(
+            num_struct_refs + num_edd_refs == 1,
+            "FIELDs need to specify exactly one reference to a "
+            "structure or an environment data description")
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         """Recursively resolve any odxlinks references"""
@@ -89,3 +86,6 @@ class Field(ComplexDop):
         if self.env_data_desc_snref is not None:
             self._env_data_desc = resolve_snref(self.env_data_desc_snref, ddds.env_data_descs,
                                                 EnvironmentDataDescription)
+
+    def get_static_bit_length(self) -> Optional[int]:
+        return None

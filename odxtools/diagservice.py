@@ -102,17 +102,54 @@ class DiagService(DiagComm):
     """
 
     comparam_refs: List[ComparamInstance]
-
     request_ref: OdxLinkRef
     pos_response_refs: List[OdxLinkRef]
     neg_response_refs: List[OdxLinkRef]
-
     pos_response_suppressible: Optional[PosResponseSuppressible]
 
     is_cyclic_raw: Optional[bool]
     is_multiple_raw: Optional[bool]
     addressing_raw: Optional[Addressing]
     transmission_mode_raw: Optional[TransMode]
+
+    @property
+    def comparams(self) -> NamedItemList[ComparamInstance]:
+        return self._comparams
+
+    @property
+    def request(self) -> Optional[Request]:
+        return self._request
+
+    @property
+    def positive_responses(self) -> NamedItemList[Response]:
+        return self._positive_responses
+
+    @property
+    def negative_responses(self) -> NamedItemList[Response]:
+        return self._negative_responses
+
+    @property
+    def is_cyclic(self) -> bool:
+        return self.is_cyclic_raw is True
+
+    @property
+    def is_multiple(self) -> bool:
+        return self.is_multiple_raw is True
+
+    @property
+    def addressing(self) -> Addressing:
+        return self.addressing_raw or Addressing.PHYSICAL
+
+    @property
+    def transmission_mode(self) -> TransMode:
+        return self.transmission_mode_raw or TransMode.SEND_AND_RECEIVE
+
+    @property
+    def free_parameters(self) -> List[Parameter]:
+        """Return the list of parameters which can be freely specified by
+        the user when encoding the service's request.
+        """
+        return self.request.free_parameters if self.request is not None else []
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagService":
@@ -171,54 +208,6 @@ class DiagService(DiagComm):
             transmission_mode_raw=transmission_mode_raw,
             **kwargs)
 
-    @property
-    def request(self) -> Optional[Request]:
-        return self._request
-
-    @property
-    def free_parameters(self) -> List[Parameter]:
-        """Return the list of parameters which can be freely specified by
-        the user when encoding the service's request.
-        """
-        return self.request.free_parameters if self.request is not None else []
-
-    def print_free_parameters_info(self) -> None:
-        """Return a human readable description of the service's
-        request's free parameters.
-        """
-        if self.request is None:
-            return
-
-        self.request.print_free_parameters_info()
-
-    @property
-    def positive_responses(self) -> NamedItemList[Response]:
-        return self._positive_responses
-
-    @property
-    def negative_responses(self) -> NamedItemList[Response]:
-        return self._negative_responses
-
-    @property
-    def comparams(self) -> NamedItemList[ComparamInstance]:
-        return self._comparams
-
-    @property
-    def addressing(self) -> Addressing:
-        return self.addressing_raw or Addressing.PHYSICAL
-
-    @property
-    def transmission_mode(self) -> TransMode:
-        return self.transmission_mode_raw or TransMode.SEND_AND_RECEIVE
-
-    @property
-    def is_cyclic(self) -> bool:
-        return self.is_cyclic_raw is True
-
-    @property
-    def is_multiple(self) -> bool:
-        return self.is_multiple_raw is True
-
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
@@ -255,6 +244,15 @@ class DiagService(DiagComm):
         self._comparams = NamedItemList(self.comparam_refs)
 
         context.diag_service = None
+
+    def print_free_parameters_info(self) -> None:
+        """Return a human readable description of the service's
+        request's free parameters.
+        """
+        if self.request is None:
+            return
+
+        self.request.print_free_parameters_info()
 
     def decode_message(self, raw_message: bytes) -> Message:
         request_prefix = b''

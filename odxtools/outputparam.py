@@ -18,10 +18,19 @@ class OutputParam(IdentifiableElement):
     dop_base_ref: OdxLinkRef
     semantic: Optional[str]
 
+    @property
+    def dop(self) -> DopBase:
+        return self._dop
+
+    @deprecated(details="use .dop")  # type: ignore[misc]
+    def dop_base(self) -> DopBase:
+        return self._dop
+
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "OutputParam":
 
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+
         dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
         semantic = et_element.get("SEMANTIC")
 
@@ -35,11 +44,3 @@ class OutputParam(IdentifiableElement):
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
-
-    @property
-    def dop(self) -> DopBase:
-        return self._dop
-
-    @deprecated(details="use .dop")  # type: ignore[misc]
-    def dop_base(self) -> DopBase:
-        return self._dop

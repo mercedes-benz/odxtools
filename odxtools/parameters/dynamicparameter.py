@@ -16,15 +16,6 @@ from .parameter import Parameter, ParameterType
 @dataclass
 class DynamicParameter(Parameter):
 
-    @staticmethod
-    @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DynamicParameter":
-
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
-
-        return DynamicParameter(**kwargs)
-
     @property
     @override
     def parameter_type(self) -> ParameterType:
@@ -39,6 +30,15 @@ class DynamicParameter(Parameter):
     @override
     def is_settable(self) -> bool:
         raise NotImplementedError(".is_settable for a DynamicParameter")
+
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "DynamicParameter":
+
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+
+        return DynamicParameter(**kwargs)
 
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],

@@ -23,6 +23,14 @@ class DynamicEndmarkerField(Field):
 
     dyn_end_dop_ref: DynEndDopRef
 
+    @property
+    def dyn_end_dop(self) -> DataObjectProperty:
+        return self._dyn_end_dop
+
+    @property
+    def termination_value(self) -> AtomicOdxType:
+        return self._termination_value
+
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DynamicEndmarkerField":
@@ -51,14 +59,6 @@ class DynamicEndmarkerField(Field):
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         super()._resolve_snrefs(context)
-
-    @property
-    def dyn_end_dop(self) -> DataObjectProperty:
-        return self._dyn_end_dop
-
-    @property
-    def termination_value(self) -> AtomicOdxType:
-        return self._termination_value
 
     @override
     def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:

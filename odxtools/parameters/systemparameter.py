@@ -29,17 +29,6 @@ PREDEFINED_SYSPARAM_VALUES = [
 class SystemParameter(ParameterWithDOP):
     sysparam: str
 
-    @staticmethod
-    @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "SystemParameter":
-
-        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
-
-        sysparam = odxrequire(et_element.get("SYSPARAM"))
-
-        return SystemParameter(sysparam=sysparam, **kwargs)
-
     @property
     @override
     def parameter_type(self) -> ParameterType:
@@ -57,6 +46,16 @@ class SystemParameter(ParameterWithDOP):
     @override
     def is_settable(self) -> bool:
         return True
+
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "SystemParameter":
+        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
+
+        sysparam = odxrequire(et_element.get("SYSPARAM"))
+
+        return SystemParameter(sysparam=sysparam, **kwargs)
 
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],

@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 from xml.etree import ElementTree
 
 from .diagcomm import DiagClassType, DiagComm
-from .exceptions import odxraise, odxrequire
+from .exceptions import odxassert, odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .snrefcontext import SnRefContext
@@ -50,17 +50,20 @@ class DynIdDefModeInfo:
 
         clear_dyn_def_message_ref = OdxLinkRef.from_et(
             et_element.find("CLEAR-DYN-DEF-MESSAGE-REF"), doc_frags)
+        clear_dyn_def_message_snref = None
         if (snref_elem := et_element.find("CLEAR-DYN-DEF-MESSAGE-SNREF")) is not None:
-            clear_dyn_def_message_snref = snref_elem.attrib["SHORT-NAME"]
+            clear_dyn_def_message_snref = odxrequire(snref_elem.attrib.get("SHORT-NAME"))
 
         read_dyn_def_message_ref = OdxLinkRef.from_et(
             et_element.find("READ-DYN-DEF-MESSAGE-REF"), doc_frags)
+        read_dyn_def_message_snref = None
         if (snref_elem := et_element.find("READ-DYN-DEF-MESSAGE-SNREF")) is not None:
-            read_dyn_def_message_snref = snref_elem.attrib["SHORT-NAME"]
+            read_dyn_def_message_snref = odxrequire(snref_elem.attrib.get("SHORT-NAME"))
 
         dyn_def_message_ref = OdxLinkRef.from_et(et_element.find("DYN-DEF-MESSAGE-REF"), doc_frags)
+        dyn_def_message_snref = None
         if (snref_elem := et_element.find("DYN-DEF-MESSAGE-SNREF")) is not None:
-            dyn_def_message_snref = snref_elem.attrib["SHORT-NAME"]
+            dyn_def_message_snref = odxrequire(snref_elem.attrib.get("SHORT-NAME"))
 
         supported_dyn_ids = [
             bytes.fromhex(odxrequire(x.text))
@@ -89,14 +92,23 @@ class DynIdDefModeInfo:
             selection_table_refs=selection_table_refs,
         )
 
+    def __post_init__(self) -> None:
+        odxassert(
+            self.clear_dyn_def_message_ref is not None or
+            self.clear_dyn_def_message_snref is not None,
+            "A CLEAR-DYN-DEF-MESSAGE must be specified")
+        odxassert(
+            self.read_dyn_def_message_ref is not None or
+            self.read_dyn_def_message_snref is not None, "A READ-DYN-DEF-MESSAGE must be specified")
+        odxassert(self.dyn_def_message_ref is not None or self.dyn_def_message_snref is not None,
+                  "A DYN-DEF-MESSAGE must be specified")
+
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result: Dict[OdxLinkId, Any] = {}
 
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._selection_tables = NamedItemList[Table]()
-
         if self.clear_dyn_def_message_ref is not None:
             self._clear_dyn_def_message = odxlinks.resolve(self.clear_dyn_def_message_ref, DiagComm)
 
@@ -106,7 +118,8 @@ class DynIdDefModeInfo:
         if self.dyn_def_message_ref is not None:
             self._dyn_def_message = odxlinks.resolve(self.dyn_def_message_ref, DiagComm)
 
-        # resolve the selection tables referenced using ODXLINK
+        # resolve the selection tables that are referenced via ODXLINK
+        self._selection_tables = NamedItemList[Table]()
         for x in self.selection_table_refs:
             if isinstance(x, OdxLinkRef):
                 self._selection_tables.append(odxlinks.resolve(x, Table))
@@ -141,9 +154,9 @@ class DynIdDefModeInfo:
                      f"DYN-DEF-MESSAGE)")
 
         # resolve the remaining selection tables that are referenced via SNREF
+        ddd_spec = odxrequire(diag_layer.diag_data_dictionary_spec)
         for i, x in enumerate(self.selection_table_refs):
             if isinstance(x, str):
-                ddd_spec = odxrequire(diag_layer.diag_data_dictionary_spec)
                 self._selection_tables.insert(i, resolve_snref(x, ddd_spec.tables, Table))
 
 

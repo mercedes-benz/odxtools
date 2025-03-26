@@ -31,7 +31,6 @@ class ProgCode:
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
         code_file = odxrequire(et_element.findtext("CODE-FILE"))
-
         encryption = et_element.findtext("ENCRYPTION")
         syntax = odxrequire(et_element.findtext("SYNTAX"))
         revision = odxrequire(et_element.findtext("REVISION"))
@@ -44,9 +43,9 @@ class ProgCode:
 
         return ProgCode(
             code_file=code_file,
+            encryption=encryption,
             syntax=syntax,
             revision=revision,
-            encryption=encryption,
             entrypoint=entrypoint,
             library_refs=library_refs,
         )

@@ -33,12 +33,12 @@
 {%- if param.byte_length is defined and param.byte_length is not none %}
  <BYTE-LENGTH>{{param.byte_length}}</BYTE-LENGTH>
 {%- endif %}
-{%- if param.coded_value is defined %}
- <CODED-VALUE>{{param.coded_value}}</CODED-VALUE>
-{%- elif param.coded_values is defined %}
+{%- if param.coded_value_raw is defined %}
+ <CODED-VALUE>{{param.coded_value_raw}}</CODED-VALUE>
+{%- elif param.coded_values_raw is defined %}
  <CODED-VALUES>
- {%- for coded_value in param.coded_values %}
-  <CODED-VALUE>{{coded_value}}</CODED-VALUE>
+ {%- for coded_value_raw in param.coded_values_raw %}
+  <CODED-VALUE>{{coded_value_raw}}</CODED-VALUE>
  {%- endfor %}
  </CODED-VALUES>
 {%- endif %}

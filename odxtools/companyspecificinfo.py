@@ -31,6 +31,9 @@ class CompanySpecificInfo:
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
 
+        for rd in self.related_docs:
+            result.update(rd._build_odxlinks())
+
         for sdg in self.sdgs:
             result.update(sdg._build_odxlinks())
 

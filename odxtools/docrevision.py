@@ -17,10 +17,10 @@ class DocRevision:
     Representation of a single revision of the relevant object.
     """
 
-    date: str
     team_member_ref: Optional[OdxLinkRef]
     revision_label: Optional[str]
     state: Optional[str]
+    date: str
     tool: Optional[str]
     company_revision_infos: List[CompanyRevisionInfo]
     modifications: List[Modification]
@@ -38,13 +38,13 @@ class DocRevision:
         date = odxrequire(et_element.findtext("DATE"))
         tool = et_element.findtext("TOOL")
 
-        crilist = [
+        company_revision_infos = [
             CompanyRevisionInfo.from_et(cri_elem, doc_frags)
             for cri_elem in et_element.iterfind("COMPANY-REVISION-INFOS/"
                                                 "COMPANY-REVISION-INFO")
         ]
 
-        modlist = [
+        modifications = [
             Modification.from_et(mod_elem, doc_frags)
             for mod_elem in et_element.iterfind("MODIFICATIONS/MODIFICATION")
         ]
@@ -55,8 +55,8 @@ class DocRevision:
             state=state,
             date=date,
             tool=tool,
-            company_revision_infos=crilist,
-            modifications=modlist,
+            company_revision_infos=company_revision_infos,
+            modifications=modifications,
         )
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

@@ -15,7 +15,7 @@ class TeamMember(IdentifiableElement):
     roles: List[str]
     department: Optional[str]
     address: Optional[str]
-    zip: Optional[str]
+    zipcode: Optional[str]  # the tag for this is "ZIP", but `zip` is a keyword in python
     city: Optional[str]
     phone: Optional[str]
     fax: Optional[str]
@@ -24,11 +24,11 @@ class TeamMember(IdentifiableElement):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "TeamMember":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
-        roles = [odxrequire(role_elem.text) for role_elem in et_element.iterfind("ROLES/ROLE")]
 
+        roles = [odxrequire(role_elem.text) for role_elem in et_element.iterfind("ROLES/ROLE")]
         department = et_element.findtext("DEPARTMENT")
         address = et_element.findtext("ADDRESS")
-        zip = et_element.findtext("ZIP")
+        zipcode = et_element.findtext("ZIP")
         city = et_element.findtext("CITY")
         phone = et_element.findtext("PHONE")
         fax = et_element.findtext("FAX")
@@ -38,7 +38,7 @@ class TeamMember(IdentifiableElement):
             roles=roles,
             department=department,
             address=address,
-            zip=zip,
+            zipcode=zipcode,
             city=city,
             phone=phone,
             fax=fax,

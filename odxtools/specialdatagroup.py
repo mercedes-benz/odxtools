@@ -11,6 +11,7 @@ from .specialdatagroupcaption import SpecialDataGroupCaption
 
 @dataclass
 class SpecialDataGroup:
+    """This corresponds to the SDG XML tag"""
     sdg_caption: Optional[SpecialDataGroupCaption]
     sdg_caption_ref: Optional[OdxLinkRef]
     values: List[Union["SpecialDataGroup", SpecialData]]

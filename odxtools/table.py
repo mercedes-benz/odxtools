@@ -32,6 +32,7 @@ class TableDiagCommConnector:
                 doc_frags: List[OdxDocFragment]) -> "TableDiagCommConnector":
 
         semantic = odxrequire(et_element.findtext("SEMANTIC"))
+
         diag_comm_ref = OdxLinkRef.from_et(et_element.find("DIAG-COMM-REF"), doc_frags)
         diag_comm_snref = None
         if (dc_snref_elem := et_element.find("DIAG-COMM-SNREF")) is not None:
@@ -56,7 +57,6 @@ class TableDiagCommConnector:
 @dataclass
 class Table(IdentifiableElement):
     """This class represents a TABLE."""
-    semantic: Optional[str]
     key_label: Optional[str]
     struct_label: Optional[str]
     admin_data: Optional[AdminData]
@@ -64,13 +64,23 @@ class Table(IdentifiableElement):
     table_rows_raw: List[Union[TableRow, OdxLinkRef]]
     table_diag_comm_connectors: List[TableDiagCommConnector]
     sdgs: List[SpecialDataGroup]
+    semantic: Optional[str]
+
+    @property
+    def key_dop(self) -> Optional[DataObjectProperty]:
+        """The key data object property associated with this table."""
+        return self._key_dop
+
+    @property
+    def table_rows(self) -> NamedItemList[TableRow]:
+        """The table rows (both local and referenced) in this table."""
+        return self._table_rows
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Table":
         """Reads a TABLE."""
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         odx_id = kwargs["odx_id"]
-        semantic = et_element.get("SEMANTIC")
         key_label = et_element.findtext("KEY-LABEL")
         struct_label = et_element.findtext("STRUCT-LABEL")
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
@@ -92,9 +102,9 @@ class Table(IdentifiableElement):
         sdgs = [
             SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
         ]
+        semantic = et_element.get("SEMANTIC")
 
         return Table(
-            semantic=semantic,
             key_label=key_label,
             struct_label=struct_label,
             admin_data=admin_data,
@@ -102,17 +112,8 @@ class Table(IdentifiableElement):
             table_rows_raw=table_rows_raw,
             table_diag_comm_connectors=table_diag_comm_connectors,
             sdgs=sdgs,
+            semantic=semantic,
             **kwargs)
-
-    @property
-    def key_dop(self) -> Optional[DataObjectProperty]:
-        """The key data object property associated with this table."""
-        return self._key_dop
-
-    @property
-    def table_rows(self) -> NamedItemList[TableRow]:
-        """The table rows (both local and referenced) in this table."""
-        return self._table_rows
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
@@ -123,6 +124,9 @@ class Table(IdentifiableElement):
 
         for dcc in self.table_diag_comm_connectors:
             result.update(dcc._build_odxlinks())
+
+        for sdg in self.sdgs:
+            result.update(sdg._build_odxlinks())
 
         return result
 
@@ -147,6 +151,9 @@ class Table(IdentifiableElement):
         for dcc in self.table_diag_comm_connectors:
             dcc._resolve_odxlinks(odxlinks)
 
+        for sdg in self.sdgs:
+            sdg._resolve_odxlinks(odxlinks)
+
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         for table_row_wrapper in self.table_rows_raw:
             if isinstance(table_row_wrapper, TableRow):
@@ -154,3 +161,6 @@ class Table(IdentifiableElement):
 
         for dcc in self.table_diag_comm_connectors:
             dcc._resolve_snrefs(context)
+
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(context)

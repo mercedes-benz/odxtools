@@ -89,7 +89,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(doggy.roles, ["gymnast", "tracker"])
         self.assertEqual(doggy.department, "sniffers")
         self.assertEqual(doggy.address, "Some road")
-        self.assertEqual(doggy.zip, "12345")
+        self.assertEqual(doggy.zipcode, "12345")
         self.assertEqual(doggy.city, "New Dogsville")
         self.assertEqual(doggy.phone, "+0 1234/5678-9")
         self.assertEqual(doggy.fax, "+0 1234/5678-0")

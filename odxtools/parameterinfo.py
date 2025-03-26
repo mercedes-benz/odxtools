@@ -73,7 +73,7 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
     of = StringIO()
     for param in param_list:
         if isinstance(param, CodedConstParameter):
-            of.write(f"{q}{param.short_name}{q}: const = {param._coded_value_str}\n")
+            of.write(f"{q}{param.short_name}{q}: const = {param.coded_value_raw}\n")
             continue
         elif isinstance(param, MatchingRequestParameter):
             of.write(f"{q}{param.short_name}{q}: <matches request>\n")

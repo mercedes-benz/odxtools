@@ -18,17 +18,6 @@ from .parameter import Parameter, ParameterType
 class ReservedParameter(Parameter):
     bit_length: int
 
-    @staticmethod
-    @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ReservedParameter":
-
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
-
-        bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))
-
-        return ReservedParameter(bit_length=bit_length, **kwargs)
-
     @property
     @override
     def parameter_type(self) -> ParameterType:
@@ -43,6 +32,16 @@ class ReservedParameter(Parameter):
     @override
     def is_settable(self) -> bool:
         return False
+
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "ReservedParameter":
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+
+        bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))
+
+        return ReservedParameter(bit_length=bit_length, **kwargs)
 
     @override
     def get_static_bit_length(self) -> Optional[int]:

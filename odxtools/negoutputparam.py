@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 from xml.etree import ElementTree
 
 from .dopbase import DopBase
@@ -15,8 +15,10 @@ from .utils import dataclass_fields_asdict
 class NegOutputParam(NamedElement):
     dop_base_ref: OdxLinkRef
 
-    def __post_init__(self) -> None:
-        self._dop: Optional[DopBase] = None
+    @property
+    def dop(self) -> DopBase:
+        """The data object property describing this parameter."""
+        return self._dop
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -31,12 +33,7 @@ class NegOutputParam(NamedElement):
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._dop = odxlinks.resolve(self.dop_base_ref)
+        self._dop = odxlinks.resolve(self.dop_base_ref, DopBase)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
-
-    @property
-    def dop(self) -> Optional[DopBase]:
-        """The data object property describing this parameter."""
-        return self._dop

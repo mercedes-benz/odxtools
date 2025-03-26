@@ -21,6 +21,14 @@ class StandardLengthType(DiagCodedType):
     bit_mask: Optional[int]
     is_condensed_raw: Optional[bool]
 
+    @property
+    def dct_type(self) -> DctType:
+        return "STANDARD-LENGTH-TYPE"
+
+    @property
+    def is_condensed(self) -> bool:
+        return self.is_condensed_raw is True
+
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
@@ -42,14 +50,6 @@ class StandardLengthType(DiagCodedType):
 
         return StandardLengthType(
             bit_length=bit_length, bit_mask=bit_mask, is_condensed_raw=is_condensed_raw, **kwargs)
-
-    @property
-    def dct_type(self) -> DctType:
-        return "STANDARD-LENGTH-TYPE"
-
-    @property
-    def is_condensed(self) -> bool:
-        return self.is_condensed_raw is True
 
     def __post_init__(self) -> None:
         if self.bit_mask is not None:

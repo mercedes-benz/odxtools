@@ -26,6 +26,14 @@ class ComparamInstance:
     prot_stack_snref: Optional[str]
     spec_ref: OdxLinkRef
 
+    @property
+    def spec(self) -> BaseComparam:
+        return self._spec
+
+    @property
+    def short_name(self) -> str:
+        return self.spec.short_name
+
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "ComparamInstance":
@@ -44,13 +52,13 @@ class ComparamInstance:
 
         description = Description.from_et(et_element.find("DESC"), doc_frags)
 
-        prot_stack_snref = None
-        if (psnref_elem := et_element.find("PROT-STACK-SNREF")) is not None:
-            prot_stack_snref = psnref_elem.get("SHORT-NAME")
-
         protocol_snref = None
         if (psnref_elem := et_element.find("PROTOCOL-SNREF")) is not None:
             protocol_snref = psnref_elem.get("SHORT-NAME")
+
+        prot_stack_snref = None
+        if (psnref_elem := et_element.find("PROT-STACK-SNREF")) is not None:
+            prot_stack_snref = psnref_elem.get("SHORT-NAME")
 
         return ComparamInstance(
             value=value,
@@ -68,10 +76,6 @@ class ComparamInstance:
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
-
-    @property
-    def spec(self) -> BaseComparam:
-        return self._spec
 
     def get_value(self) -> str:
         """Retrieve the value of a simple communication parameter
@@ -135,7 +139,3 @@ class ComparamInstance:
             odxraise()
 
         return result
-
-    @property
-    def short_name(self) -> str:
-        return self.spec.short_name
