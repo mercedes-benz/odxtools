@@ -28,6 +28,7 @@ from odxtools.standardlengthtype import StandardLengthType
 from odxtools.structure import Structure
 from odxtools.table import Table
 from odxtools.tablerow import TableRow
+from odxtools.text import Text
 
 # the document fragment which is used throughout the test
 doc_frags = [OdxDocFragment("DiagDataDictionarySpecTest", DocType.CONTAINER)]
@@ -71,7 +72,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
                     long_name=None,
                     description=None,
                     trouble_code=0x10,
-                    text="Something exploded.",
+                    text=Text.from_string("Something exploded."),
                     display_trouble_code="X10",
                     level=None,
                     is_temporary_raw=None,

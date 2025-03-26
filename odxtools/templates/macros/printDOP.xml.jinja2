@@ -136,7 +136,7 @@
   {%- if dtc.display_trouble_code is not none   %}
    <DISPLAY-TROUBLE-CODE>{{dtc.display_trouble_code}}</DISPLAY-TROUBLE-CODE>
   {%- endif %}
-   <TEXT>{{dtc.text|e}}</TEXT>
+   <TEXT {{- make_xml_attrib("TI", dtc.text.text_identifier) }}>{{dtc.text|e}}</TEXT>
   {%- if not dtc.level is none   %}
    <LEVEL>{{dtc.level}}</LEVEL>
   {%- endif %}

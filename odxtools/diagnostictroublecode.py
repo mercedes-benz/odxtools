@@ -9,13 +9,14 @@ from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
+from .text import Text
 from .utils import dataclass_fields_asdict
 
 
 @dataclass
 class DiagnosticTroubleCode(IdentifiableElement):
     trouble_code: int
-    text: str
+    text: Text
     display_trouble_code: Optional[str]
     level: Optional[int]
     is_temporary_raw: Optional[bool]
@@ -30,7 +31,7 @@ class DiagnosticTroubleCode(IdentifiableElement):
                 doc_frags: List[OdxDocFragment]) -> "DiagnosticTroubleCode":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
-
+        text = Text.from_et(odxrequire(et_element.find("TEXT")), doc_frags)
         level = None
         if (level_str := et_element.findtext("LEVEL")) is not None:
             level = int(level_str)
@@ -42,7 +43,7 @@ class DiagnosticTroubleCode(IdentifiableElement):
 
         return DiagnosticTroubleCode(
             trouble_code=int(odxrequire(et_element.findtext("TROUBLE-CODE"))),
-            text=odxrequire(et_element.findtext("TEXT")),
+            text=text,
             display_trouble_code=display_trouble_code,
             level=level,
             is_temporary_raw=is_temporary_raw,
