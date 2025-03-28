@@ -39,6 +39,7 @@ from odxtools.request import Request
 from odxtools.response import Response, ResponseType
 from odxtools.snrefcontext import SnRefContext
 from odxtools.standardlengthtype import StandardLengthType
+from odxtools.text import Text
 
 doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
 
@@ -898,7 +899,7 @@ class TestEncodeRequest(unittest.TestCase):
                     long_name=None,
                     description=None,
                     trouble_code=0x112233,
-                    text="The first trouble is the deepest",
+                    text=Text.from_string("The first trouble is the deepest"),
                     display_trouble_code="Z123",
                     level=None,
                     is_temporary_raw=None,
@@ -910,7 +911,7 @@ class TestEncodeRequest(unittest.TestCase):
                     long_name=None,
                     description=None,
                     trouble_code=0x445566,
-                    text="",
+                    text=Text.from_string(""),
                     display_trouble_code="Y456",
                     level=None,
                     is_temporary_raw=None,
@@ -922,7 +923,7 @@ class TestEncodeRequest(unittest.TestCase):
                     long_name=None,
                     description=None,
                     trouble_code=0xf00de5,
-                    text="",
+                    text=Text.from_string(""),
                     display_trouble_code="SCREW",
                     level=None,
                     is_temporary_raw=None,

@@ -14,10 +14,10 @@ from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import AtomicOdxType, odxstr_to_bool
+from .preconditionstateref import PreConditionStateRef
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
-from .state import State
-from .statetransition import StateTransition
+from .statetransitionref import StateTransitionRef
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -41,8 +41,8 @@ class TableRow(IdentifiableElement):
     sdgs: List[SpecialDataGroup]
     audience: Optional[Audience]
     functional_class_refs: List[OdxLinkRef]
-    state_transition_refs: List[OdxLinkRef]
-    pre_condition_state_refs: List[OdxLinkRef]
+    state_transition_refs: List[StateTransitionRef]
+    pre_condition_state_refs: List[PreConditionStateRef]
     admin_data: Optional[AdminData]
 
     is_executable_raw: Optional[bool]
@@ -53,14 +53,6 @@ class TableRow(IdentifiableElement):
     @property
     def functional_classes(self) -> NamedItemList[FunctionalClass]:
         return self._functional_classes
-
-    @property
-    def state_transitions(self) -> NamedItemList[StateTransition]:
-        return self._state_transitions
-
-    @property
-    def pre_condition_states(self) -> NamedItemList[State]:
-        return self._pre_condition_states
 
     @property
     def is_executable(self) -> bool:
@@ -123,12 +115,12 @@ class TableRow(IdentifiableElement):
         ]
 
         state_transition_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            StateTransitionRef.from_et(el, doc_frags)
             for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
         ]
 
         pre_condition_state_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            PreConditionStateRef.from_et(el, doc_frags)
             for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF")
         ]
 
@@ -161,6 +153,12 @@ class TableRow(IdentifiableElement):
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
+        for st_ref in self.state_transition_refs:
+            result.update(st_ref._build_odxlinks())
+
+        for pc_ref in self.pre_condition_state_refs:
+            result.update(pc_ref._build_odxlinks())
+
         for sdg in self.sdgs:
             result.update(sdg._build_odxlinks())
 
@@ -179,17 +177,17 @@ class TableRow(IdentifiableElement):
         else:
             self._table = odxlinks.resolve(self.table_ref)
 
+        for st_ref in self.state_transition_refs:
+            st_ref._resolve_odxlinks(odxlinks)
+
+        for pc_ref in self.pre_condition_state_refs:
+            pc_ref._resolve_odxlinks(odxlinks)
+
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
         self._functional_classes = NamedItemList(
             [odxlinks.resolve(fc_ref, FunctionalClass) for fc_ref in self.functional_class_refs])
-
-        self._state_transitions = NamedItemList(
-            [odxlinks.resolve(st_ref, StateTransition) for st_ref in self.state_transition_refs])
-
-        self._pre_condition_states = NamedItemList(
-            [odxlinks.resolve(pcs_ref, State) for pcs_ref in self.pre_condition_state_refs])
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         # convert the raw key into the proper internal
@@ -217,6 +215,12 @@ class TableRow(IdentifiableElement):
         if self.dop_snref is not None:
             self._dop = resolve_snref(self.dop_snref, ddd_spec.data_object_props,
                                       DataObjectProperty)
+
+        for st_ref in self.state_transition_refs:
+            st_ref._resolve_snrefs(context)
+
+        for pc_ref in self.pre_condition_state_refs:
+            pc_ref._resolve_snrefs(context)
 
         for sdg in self.sdgs:
             sdg._resolve_snrefs(context)
