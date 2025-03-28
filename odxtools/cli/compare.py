@@ -50,7 +50,6 @@ class ServiceDiff:
 class SpecsChangesVariants:
     new_diagnostic_layers: List[DiagLayer] = field(default_factory=list)
     deleted_diagnostic_layers: List[DiagLayer] = field(default_factory=list)
-    # service_changes: Dict[str, ServiceDiff] = field(default_factory=dict)
     service_changes: Dict[str, Union[List[DiagLayer], List[DiagLayer],
                                      ServiceDiff]] = field(default_factory=dict)
 
@@ -466,7 +465,6 @@ class Comparison(Display):
 
                     # compare request, pos. response and neg. response parameters of diagnostic services
                     detailed_information = self.compare_services(service1, service2)
-                    # detailed_information = [[infotext1, table1, infotext2, table2, ...], changed_params]
 
                     # add information about changed diagnostic service parameters to dicitionary
                     if detailed_information[1]:  # check whether string "changed_params" is empty
