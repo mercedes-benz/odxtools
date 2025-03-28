@@ -3,6 +3,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, List, Optional
 
 if TYPE_CHECKING:
+    from .comparamspec import ComparamSpec
+    from .comparamsubset import ComparamSubset
     from .database import Database
     from .diaglayers.diaglayer import DiagLayer
     from .diagservice import DiagService
@@ -21,6 +23,8 @@ class SnRefContext:
 
     database: Optional["Database"] = None
     diag_layer: Optional["DiagLayer"] = None
+    comparam_spec: Optional["ComparamSpec"] = None
+    comparam_subset: Optional["ComparamSubset"] = None
     diag_service: Optional["DiagService"] = None
     single_ecu_job: Optional["SingleEcuJob"] = None
     request: Optional["Request"] = None

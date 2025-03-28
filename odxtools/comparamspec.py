@@ -51,7 +51,11 @@ class ComparamSpec(OdxCategory):
         super()._finalize_init(database, odxlinks)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
+        context.comparam_spec = self
+
         super()._resolve_snrefs(context)
 
         for ps in self.prot_stacks:
             ps._resolve_snrefs(context)
+
+        context.comparam_spec = None

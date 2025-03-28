@@ -98,6 +98,8 @@ class ComparamSubset(OdxCategory):
         super()._finalize_init(database, odxlinks)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
+        context.comparam_subset = self
+
         super()._resolve_snrefs(context)
 
         for dop in self.data_object_props:
@@ -111,3 +113,5 @@ class ComparamSubset(OdxCategory):
 
         if self.unit_spec:
             self.unit_spec._resolve_snrefs(context)
+
+        context.comparam_subset = None
