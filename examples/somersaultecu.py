@@ -54,12 +54,17 @@ from odxtools.parameters.valueparameter import ValueParameter
 from odxtools.parentref import ParentRef
 from odxtools.physicaldimension import PhysicalDimension
 from odxtools.physicaltype import PhysicalType
+from odxtools.preconditionstateref import PreConditionStateRef
 from odxtools.progcode import ProgCode
 from odxtools.relateddoc import RelatedDoc
 from odxtools.request import Request
 from odxtools.response import Response, ResponseType
 from odxtools.singleecujob import SingleEcuJob
 from odxtools.standardlengthtype import StandardLengthType
+from odxtools.state import State
+from odxtools.statechart import StateChart
+from odxtools.statetransition import StateTransition
+from odxtools.statetransitionref import StateTransitionRef
 from odxtools.structure import Structure
 from odxtools.table import Table
 from odxtools.tablerow import TableRow
@@ -1518,6 +1523,19 @@ somersault_requests = {
                     bit_position=None,
                     sdgs=[],
                 ),
+                ValueParameter(
+                    oid=None,
+                    short_name="bribe",
+                    long_name=None,
+                    semantic=None,
+                    description=None,
+                    physical_default_value_raw="0",
+                    byte_position=2,
+                    dop_ref=OdxLinkRef("somersault.DOP.uint8", doc_frags),
+                    dop_snref=None,
+                    bit_position=None,
+                    sdgs=[],
+                ),
             ],
         ),
     "stop_session":
@@ -1821,8 +1839,48 @@ somersault_services = {
             addressing_raw=None,
             transmission_mode_raw=None,
             audience=None,
-            pre_condition_state_refs=[],
-            state_transition_refs=[],
+            pre_condition_state_refs=[
+                PreConditionStateRef(
+                    ref_id="charts.annoyed.states.in_bed",
+                    ref_docs=doc_frags,
+                    value=None,
+                    in_param_if_snref=None,
+                    in_param_if_snpathref=None,
+                ),
+                # note that the standard does not allow to specify
+                # relations other than equivalence for the specified
+                # value (larger-than would be more appropriate here...)
+                PreConditionStateRef(
+                    ref_id="charts.angry.states.in_bed",
+                    ref_docs=doc_frags,
+                    value="1",
+                    in_param_if_snref="bribe",
+                    in_param_if_snpathref=None,
+                ),
+            ],
+            state_transition_refs=[
+                StateTransitionRef(
+                    ref_id="charts.annoyed.transitions.get_up",
+                    ref_docs=doc_frags,
+                    value="false",
+                    in_param_if_snref="can_do_backward_flips",
+                    in_param_if_snpathref=None,
+                ),
+                StateTransitionRef(
+                    ref_id="charts.annoyed.transitions.get_up_to_park",
+                    ref_docs=doc_frags,
+                    value="true",
+                    in_param_if_snref="can_do_backward_flips",
+                    in_param_if_snpathref=None,
+                ),
+                StateTransitionRef(
+                    ref_id="charts.angry.transitions.get_up",
+                    ref_docs=doc_frags,
+                    value=None,
+                    in_param_if_snref=None,
+                    in_param_if_snpathref=None,
+                ),
+            ],
             request_ref=OdxLinkRef.from_id(somersault_requests["start_session"].odx_id),
             semantic="SESSION",
             pos_response_refs=[
@@ -1858,7 +1916,22 @@ somersault_services = {
             transmission_mode_raw=None,
             audience=None,
             pre_condition_state_refs=[],
-            state_transition_refs=[],
+            state_transition_refs=[
+                StateTransitionRef(
+                    ref_id="charts.angry.transitions.go_to_bed",
+                    ref_docs=doc_frags,
+                    value=None,
+                    in_param_if_snref=None,
+                    in_param_if_snpathref=None,
+                ),
+                StateTransitionRef(
+                    ref_id="charts.annoyed.transitions.go_to_bed",
+                    ref_docs=doc_frags,
+                    value=None,
+                    in_param_if_snref=None,
+                    in_param_if_snpathref=None,
+                ),
+            ],
             semantic="SESSION",
             request_ref=OdxLinkRef.from_id(somersault_requests["stop_session"].odx_id),
             pos_response_refs=[
@@ -2445,7 +2518,212 @@ somersault_lazy_ecu_raw = EcuVariantRaw(
     negative_responses=NamedItemList(),
     global_negative_responses=NamedItemList(),
     import_refs=[],
-    state_charts=NamedItemList(),
+    state_charts=NamedItemList([
+        StateChart(
+            semantic="annoyed",
+            odx_id=OdxLinkId("charts.annoyed.chart", doc_frags),
+            oid=None,
+            short_name="annoyed_chart",
+            long_name=None,
+            description=Description(
+                "<p>State chart for a day where the ECU is grumpy</p>",
+                external_docs=[],
+                text_identifier=None),
+            states=NamedItemList([
+                State(
+                    odx_id=OdxLinkId("charts.annoyed.states.in_bed", doc_frags),
+                    oid=None,
+                    short_name="in_bed",
+                    long_name=None,
+                    description=None,
+                ),
+                State(
+                    odx_id=OdxLinkId("charts.annoyed.states.on_street", doc_frags),
+                    oid=None,
+                    short_name="on_street",
+                    long_name=None,
+                    description=None,
+                ),
+                State(
+                    odx_id=OdxLinkId("charts.annoyed.states.in_park", doc_frags),
+                    oid=None,
+                    short_name="in_park",
+                    long_name=None,
+                    description=None,
+                ),
+                State(
+                    odx_id=OdxLinkId("charts.annoyed.states.at_lunch", doc_frags),
+                    oid=None,
+                    short_name="at_lunch",
+                    long_name=None,
+                    description=None,
+                ),
+            ]),
+            start_state_snref="in_bed",
+            state_transitions=[
+                StateTransition(
+                    odx_id=OdxLinkId("charts.annoyed.transitions.get_up", doc_frags),
+                    oid=None,
+                    short_name="get_up",
+                    long_name=None,
+                    description=None,
+                    source_snref="in_bed",
+                    target_snref="on_street",
+                    external_access_method=None,
+                ),
+                StateTransition(
+                    odx_id=OdxLinkId("charts.annoyed.transitions.get_up_to_park", doc_frags),
+                    oid=None,
+                    short_name="get_up_to_park",
+                    long_name=None,
+                    description=None,
+                    source_snref="in_bed",
+                    target_snref="in_park",
+                    external_access_method=None,
+                ),
+                StateTransition(
+                    odx_id=OdxLinkId("charts.annoyed.transitions.go_to_bed", doc_frags),
+                    oid=None,
+                    short_name="go_to_bed",
+                    long_name=None,
+                    description=None,
+                    source_snref="on_street",
+                    target_snref="in_bed",
+                    external_access_method=None,
+                ),
+                StateTransition(
+                    odx_id=OdxLinkId("charts.annoyed.transitions.move", doc_frags),
+                    oid=None,
+                    short_name="move",
+                    long_name=None,
+                    description=None,
+                    source_snref="on_street",
+                    target_snref="in_park",
+                    external_access_method=None,
+                ),
+                StateTransition(
+                    odx_id=OdxLinkId("charts.annoyed.transitions.stumble", doc_frags),
+                    oid=None,
+                    short_name="stumble",
+                    long_name=None,
+                    description=None,
+                    source_snref="on_street",
+                    target_snref="at_lunch",
+                    external_access_method=None,
+                ),
+                StateTransition(
+                    odx_id=OdxLinkId("charts.annoyed.transitions.caffeinated", doc_frags),
+                    oid=None,
+                    short_name="caffeinated",
+                    long_name=None,
+                    description=None,
+                    source_snref="at_lunch",
+                    target_snref="in_park",
+                    external_access_method=None,
+                ),
+            ]),
+        StateChart(
+            semantic="angry",
+            odx_id=OdxLinkId("charts.angry.chart", doc_frags),
+            oid=None,
+            short_name="angry_chart",
+            long_name=None,
+            description=Description(
+                "<p>State chart for a day where the ECU has a hissy fit</p>",
+                external_docs=[],
+                text_identifier=None),
+            states=NamedItemList([
+                State(
+                    odx_id=OdxLinkId("charts.angry.states.in_bed", doc_frags),
+                    oid=None,
+                    short_name="in_bed",
+                    long_name=None,
+                    description=None,
+                ),
+                State(
+                    odx_id=OdxLinkId("charts.angry.states.on_street", doc_frags),
+                    oid=None,
+                    short_name="on_street",
+                    long_name=None,
+                    description=None,
+                ),
+                State(
+                    odx_id=OdxLinkId("charts.angry.states.in_park", doc_frags),
+                    oid=None,
+                    short_name="in_park",
+                    long_name=None,
+                    description=None,
+                ),
+                State(
+                    odx_id=OdxLinkId("charts.angry.states.at_lunch", doc_frags),
+                    oid=None,
+                    short_name="at_lunch",
+                    long_name=None,
+                    description=None,
+                ),
+                State(
+                    odx_id=OdxLinkId("charts.angry.states.in_hospital", doc_frags),
+                    oid=None,
+                    short_name="in_hospital",
+                    long_name=None,
+                    description=None,
+                ),
+            ]),
+            start_state_snref="in_bed",
+            state_transitions=[
+                StateTransition(
+                    odx_id=OdxLinkId("charts.angry.transitions.get_up", doc_frags),
+                    oid=None,
+                    short_name="get_up",
+                    long_name=None,
+                    description=None,
+                    source_snref="in_bed",
+                    target_snref="on_street",
+                    external_access_method=None,
+                ),
+                StateTransition(
+                    odx_id=OdxLinkId("charts.angry.transitions.go_to_bed", doc_frags),
+                    oid=None,
+                    short_name="go_to_bed",
+                    long_name=None,
+                    description=None,
+                    source_snref="on_street",
+                    target_snref="in_bed",
+                    external_access_method=None,
+                ),
+                StateTransition(
+                    odx_id=OdxLinkId("charts.angry.transitions.move", doc_frags),
+                    oid=None,
+                    short_name="move",
+                    long_name=None,
+                    description=None,
+                    source_snref="on_street",
+                    target_snref="in_park",
+                    external_access_method=None,
+                ),
+                StateTransition(
+                    odx_id=OdxLinkId("charts.angry.transitions.stumble", doc_frags),
+                    oid=None,
+                    short_name="stumble",
+                    long_name=None,
+                    description=None,
+                    source_snref="on_street",
+                    target_snref="at_lunch",
+                    external_access_method=None,
+                ),
+                StateTransition(
+                    odx_id=OdxLinkId("charts.angry.transitions.caffeinated", doc_frags),
+                    oid=None,
+                    short_name="caffeinated",
+                    long_name=None,
+                    description=None,
+                    source_snref="at_lunch",
+                    target_snref="in_park",
+                    external_access_method=None,
+                ),
+            ],
+        ),
+    ]),
     additional_audiences=NamedItemList(),
     sdgs=[],
     parent_refs=[

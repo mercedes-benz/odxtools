@@ -1,0 +1,18 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- macro printStateTransitionRef(st_ref) -%}
+<STATE-TRANSITION-REF ID-REF="{{st_ref.ref_id}}">
+  {%- if st_ref.value is not none %}
+  <VALUE>{{ st_ref.value }}</VALUE>
+  {%- endif %}
+  {%- if st_ref.in_param_if_snref is not none %}
+  <IN-PARAM-IF-SNREF SHORT-NAME="{{ st_ref.in_param_if_snref }}" />
+  {%- endif %}
+  {%- if st_ref.in_param_if_snpathref is not none %}
+  <IN-PARAM-IF-SNPATHREF SHORT-NAME-PATH="{{ st_ref.in_param_if_snpathref }}" />
+  {%- endif %}
+</STATE-TRANSITION-REF>
+{%- endmacro -%}
