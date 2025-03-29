@@ -88,15 +88,15 @@ class DiagLayerRaw(IdentifiableElement):
         if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:
             admin_data = AdminData.from_et(admin_data_elem, doc_frags)
 
-        company_datas = [
+        company_datas = NamedItemList([
             CompanyData.from_et(cd_el, doc_frags)
             for cd_el in et_element.iterfind("COMPANY-DATAS/COMPANY-DATA")
-        ]
+        ])
 
-        functional_classes = [
+        functional_classes = NamedItemList([
             FunctionalClass.from_et(fc_el, doc_frags)
             for fc_el in et_element.iterfind("FUNCT-CLASSS/FUNCT-CLASS")
-        ]
+        ])
 
         diag_data_dictionary_spec = None
         if (ddds_elem := et_element.find("DIAG-DATA-DICTIONARY-SPEC")) is not None:
@@ -141,24 +141,23 @@ class DiagLayerRaw(IdentifiableElement):
             for el in et_element.iterfind("IMPORT-REFS/IMPORT-REF")
         ]
 
-        state_charts = [
+        state_charts = NamedItemList([
             StateChart.from_et(el, doc_frags)
             for el in et_element.iterfind("STATE-CHARTS/STATE-CHART")
-        ]
+        ])
 
-        additional_audiences = [
+        additional_audiences = NamedItemList([
             AdditionalAudience.from_et(el, doc_frags)
             for el in et_element.iterfind("ADDITIONAL-AUDIENCES/ADDITIONAL-AUDIENCE")
-        ]
+        ])
 
-        libraries = [
-            Library.from_et(el, doc_frags) for el in et_element.iterfind("LIBRARYS/LIBRARY")
-        ]
-
-        sub_components = [
+        sub_components = NamedItemList([
             SubComponent.from_et(el, doc_frags)
             for el in et_element.iterfind("SUB-COMPONENTS/SUB-COMPONENT")
-        ]
+        ])
+
+        libraries = NamedItemList(
+            [Library.from_et(el, doc_frags) for el in et_element.iterfind("LIBRARYS/LIBRARY")])
 
         sdgs = [
             SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
@@ -168,19 +167,19 @@ class DiagLayerRaw(IdentifiableElement):
         return DiagLayerRaw(
             variant_type=variant_type,
             admin_data=admin_data,
-            company_datas=NamedItemList(company_datas),
-            functional_classes=NamedItemList(functional_classes),
+            company_datas=company_datas,
+            functional_classes=functional_classes,
             diag_data_dictionary_spec=diag_data_dictionary_spec,
             diag_comms_raw=diag_comms_raw,
             requests=requests,
             positive_responses=positive_responses,
             negative_responses=negative_responses,
-            global_negative_responses=NamedItemList(global_negative_responses),
+            global_negative_responses=global_negative_responses,
             import_refs=import_refs,
-            state_charts=NamedItemList(state_charts),
-            additional_audiences=NamedItemList(additional_audiences),
-            libraries=NamedItemList(libraries),
-            sub_components=NamedItemList(sub_components),
+            state_charts=state_charts,
+            additional_audiences=additional_audiences,
+            sub_components=sub_components,
+            libraries=libraries,
             sdgs=sdgs,
             **kwargs)
 
@@ -213,10 +212,10 @@ class DiagLayerRaw(IdentifiableElement):
             odxlinks.update(state_chart._build_odxlinks())
         for additional_audience in self.additional_audiences:
             odxlinks.update(additional_audience._build_odxlinks())
-        for library in self.libraries:
-            odxlinks.update(library._build_odxlinks())
         for sub_comp in self.sub_components:
             odxlinks.update(sub_comp._build_odxlinks())
+        for library in self.libraries:
+            odxlinks.update(library._build_odxlinks())
         for sdg in self.sdgs:
             odxlinks.update(sdg._build_odxlinks())
 
@@ -269,10 +268,10 @@ class DiagLayerRaw(IdentifiableElement):
             state_chart._resolve_odxlinks(odxlinks)
         for additional_audience in self.additional_audiences:
             additional_audience._resolve_odxlinks(odxlinks)
-        for library in self.libraries:
-            library._resolve_odxlinks(odxlinks)
         for sub_component in self.sub_components:
             sub_component._resolve_odxlinks(odxlinks)
+        for library in self.libraries:
+            library._resolve_odxlinks(odxlinks)
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
@@ -303,9 +302,9 @@ class DiagLayerRaw(IdentifiableElement):
             state_chart._resolve_snrefs(context)
         for additional_audience in self.additional_audiences:
             additional_audience._resolve_snrefs(context)
-        for library in self.libraries:
-            library._resolve_snrefs(context)
         for sub_component in self.sub_components:
             sub_component._resolve_snrefs(context)
+        for library in self.libraries:
+            library._resolve_snrefs(context)
         for sdg in self.sdgs:
             sdg._resolve_snrefs(context)

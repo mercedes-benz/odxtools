@@ -46,6 +46,7 @@ class DiagVariable(IdentifiableElement):
     table_row_snref: Optional[str]
 
     sdgs: List[SpecialDataGroup]
+
     is_read_before_write_raw: Optional[bool]
 
     @property
@@ -91,6 +92,7 @@ class DiagVariable(IdentifiableElement):
         sdgs = [
             SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
         ]
+
         is_read_before_write_raw = odxstr_to_bool(et_element.get("IS-READ-BEFORE-WRITE"))
 
         return DiagVariable(
@@ -119,25 +121,22 @@ class DiagVariable(IdentifiableElement):
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        if self.admin_data is not None:
+            self.admin_data._resolve_odxlinks(odxlinks)
+
         self._variable_group = None
         if self.variable_group_ref is not None:
             self._variable_group = odxlinks.resolve(self.variable_group_ref, VariableGroup)
 
-        if self.admin_data is not None:
-            self.admin_data._resolve_odxlinks(odxlinks)
+        for cr in self.comm_relations:
+            cr._resolve_odxlinks(odxlinks)
 
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
-        for cr in self.comm_relations:
-            cr._resolve_odxlinks(odxlinks)
-
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         if self.admin_data is not None:
             self.admin_data._resolve_snrefs(context)
-
-        for sdg in self.sdgs:
-            sdg._resolve_snrefs(context)
 
         for cr in self.comm_relations:
             cr._resolve_snrefs(context)
@@ -149,3 +148,6 @@ class DiagVariable(IdentifiableElement):
             self._table = resolve_snref(self.table_snref, ddds.tables, Table)
             self._table_row = resolve_snref(
                 odxrequire(self.table_row_snref), self._table.table_rows, TableRow)
+
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(context)

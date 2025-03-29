@@ -28,16 +28,16 @@ class LinkedDtcDop:
     dtc_dop_ref: OdxLinkRef
 
     @property
+    def not_inherited_dtcs(self) -> NamedItemList[DiagnosticTroubleCode]:
+        return self._not_inherited_dtcs
+
+    @property
     def dtc_dop(self) -> "DtcDop":
         return self._dtc_dop
 
     @property
     def short_name(self) -> str:
         return self._dtc_dop.short_name
-
-    @property
-    def not_inherited_dtcs(self) -> NamedItemList[DiagnosticTroubleCode]:
-        return self._not_inherited_dtcs
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "LinkedDtcDop":
@@ -79,8 +79,17 @@ class DtcDop(DopBase):
     linked_dtc_dops_raw: List[LinkedDtcDop]
     is_visible_raw: Optional[bool]
 
-    def __post_init__(self) -> None:
-        self._init_finished = False
+    @property
+    def dtcs(self) -> NamedItemList[DiagnosticTroubleCode]:
+        return self._dtcs
+
+    @property
+    def linked_dtc_dops(self) -> NamedItemList[LinkedDtcDop]:
+        return self._linked_dtc_dops
+
+    @property
+    def is_visible(self) -> bool:
+        return self.is_visible_raw is True
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DtcDop":
@@ -121,17 +130,8 @@ class DtcDop(DopBase):
             is_visible_raw=is_visible_raw,
             **kwargs)
 
-    @property
-    def dtcs(self) -> NamedItemList[DiagnosticTroubleCode]:
-        return self._dtcs
-
-    @property
-    def linked_dtc_dops(self) -> NamedItemList[LinkedDtcDop]:
-        return self._linked_dtc_dops
-
-    @property
-    def is_visible(self) -> bool:
-        return self.is_visible_raw is True
+    def __post_init__(self) -> None:
+        self._init_finished = False
 
     @override
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

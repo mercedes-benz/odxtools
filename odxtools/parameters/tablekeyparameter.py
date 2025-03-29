@@ -38,7 +38,6 @@ class TableKeyParameter(Parameter):
     @override
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "TableKeyParameter":
-
         kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
 
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
@@ -201,7 +200,6 @@ class TableKeyParameter(Parameter):
         encode_state.cursor_bit_position = 0
 
     def encode_value_into_pdu(self, encode_state: EncodeState) -> None:
-
         key_dop = self.table.key_dop
         if key_dop is None:
             odxraise(

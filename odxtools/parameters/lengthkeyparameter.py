@@ -28,29 +28,10 @@ class LengthKeyParameter(ParameterWithDOP):
 
     odx_id: OdxLinkId
 
-    @staticmethod
-    @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "LengthKeyParameter":
-
-        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
-
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
-
-        return LengthKeyParameter(odx_id=odx_id, **kwargs)
-
     @property
     @override
     def parameter_type(self) -> ParameterType:
         return "LENGTH-KEY"
-
-    @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result = super()._build_odxlinks()
-
-        result[self.odx_id] = self
-
-        return result
 
     @property
     @override
@@ -64,6 +45,25 @@ class LengthKeyParameter(ParameterWithDOP):
         # be because they can be implicitly determined by the length
         # of the corresponding field
         return True
+
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "LengthKeyParameter":
+
+        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
+
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+
+        return LengthKeyParameter(odx_id=odx_id, **kwargs)
+
+    @override
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = super()._build_odxlinks()
+
+        result[self.odx_id] = self
+
+        return result
 
     @override
     @final

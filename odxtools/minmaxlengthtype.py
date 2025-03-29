@@ -24,8 +24,8 @@ class Termination(Enum):
 
 @dataclass
 class MinMaxLengthType(DiagCodedType):
-    min_length: int
     max_length: Optional[int]
+    min_length: int
     termination: Termination
 
     @property
@@ -38,12 +38,12 @@ class MinMaxLengthType(DiagCodedType):
                 doc_frags: List[OdxDocFragment]) -> "MinMaxLengthType":
         kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
 
-        min_length = int(odxrequire(et_element.findtext("MIN-LENGTH")))
         max_length = None
         if et_element.find("MAX-LENGTH") is not None:
             max_length = int(odxrequire(et_element.findtext("MAX-LENGTH")))
+        min_length = int(odxrequire(et_element.findtext("MIN-LENGTH")))
 
-        termination_str = odxrequire(et_element.get("TERMINATION"))
+        termination_str = odxrequire(et_element.attrib.get("TERMINATION"))
         try:
             termination = Termination(termination_str)
         except ValueError:
@@ -51,7 +51,7 @@ class MinMaxLengthType(DiagCodedType):
             odxraise(f"Encountered unknown termination type '{termination_str}'")
 
         return MinMaxLengthType(
-            min_length=min_length, max_length=max_length, termination=termination, **kwargs)
+            max_length=max_length, min_length=min_length, termination=termination, **kwargs)
 
     def __post_init__(self) -> None:
         odxassert(self.max_length is None or self.min_length <= self.max_length)

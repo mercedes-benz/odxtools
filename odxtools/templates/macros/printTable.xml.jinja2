@@ -22,17 +22,19 @@
  {%- if hasattr(table_row, "key") %}
  <TABLE-ROW {{-peid.printElementIdAttribs(table_row)}}
             {{-make_xml_attrib("SEMANTIC", table_row.semantic)}}>
-  <SHORT-NAME>{{table_row.short_name}}</SHORT-NAME>
-  {%- if table_row.long_name %}
-  <LONG-NAME>{{table_row.long_name|e}}</LONG-NAME>
-  {%- endif %}
-  {{ pd.printDescription(table_row.description) }}
+  {{-peid.printElementIdSubtags(table_row)}}
   <KEY>{{table_row.key|e}}</KEY>
-  {%- if table_row.dop_ref %}
+  {%- if table_row.dop_ref is not none %}
   <DATA-OBJECT-PROP-REF ID-REF="{{ table_row.dop_ref.ref_id }}" />
   {%- endif %}
-  {%- if table_row.structure_ref %}
+  {%- if table_row.dop_snref is not none %}
+  <DATA-OBJECT-PROP-SNREF SHORT-NAME="{{ table_row.dop_snref }}" />
+  {%- endif %}
+  {%- if table_row.structure_ref is not none %}
   <STRUCTURE-REF ID-REF="{{ table_row.structure_ref.ref_id }}" />
+  {%- endif %}
+  {%- if table_row.structure_snref is not none %}
+  <STRUCTURE-SNREF SHORT-NAME="{{ table_row.structure_snref }}" />
   {%- endif %}
   {{- psd.printSpecialDataGroups(table_row.sdgs)|indent(2, first=True) }}
   {%- if table_row.audience is not none %}

@@ -28,11 +28,29 @@ class TableEntryParameter(Parameter):
     target: RowFragment
     table_row_ref: OdxLinkRef
 
+    @property
+    @override
+    def parameter_type(self) -> ParameterType:
+        return "TABLE-ENTRY"
+
+    @property
+    @override
+    def is_required(self) -> bool:
+        raise NotImplementedError("TableEntryParameter.is_required is not implemented yet.")
+
+    @property
+    @override
+    def is_settable(self) -> bool:
+        raise NotImplementedError("TableEntryParameter.is_settable is not implemented yet.")
+
+    @property
+    def table_row(self) -> "TableRow":
+        return self._table_row
+
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "TableEntryParameter":
-
         kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
 
         target_str = odxrequire(et_element.findtext("TARGET"))
@@ -54,29 +72,10 @@ class TableEntryParameter(Parameter):
         else:
             self._table_row = odxlinks.resolve(self.table_row_ref)
 
-    @property
-    @override
-    def parameter_type(self) -> ParameterType:
-        return "TABLE-ENTRY"
-
-    @property
-    @override
-    def is_required(self) -> bool:
-        raise NotImplementedError("TableEntryParameter.is_required is not implemented yet.")
-
-    @property
-    @override
-    def is_settable(self) -> bool:
-        raise NotImplementedError("TableEntryParameter.is_settable is not implemented yet.")
-
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
                                     encode_state: EncodeState) -> None:
         raise NotImplementedError("Encoding a TableEntryParameter is not implemented yet.")
-
-    @property
-    def table_row(self) -> "TableRow":
-        return self._table_row
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

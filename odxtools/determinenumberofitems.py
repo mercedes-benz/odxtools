@@ -18,6 +18,10 @@ class DetermineNumberOfItems:
     bit_position: Optional[int]
     dop_ref: OdxLinkRef
 
+    @property
+    def dop(self) -> DataObjectProperty:
+        return self._dop
+
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DetermineNumberOfItems":
@@ -40,7 +44,3 @@ class DetermineNumberOfItems:
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
-
-    @property
-    def dop(self) -> DataObjectProperty:
-        return self._dop

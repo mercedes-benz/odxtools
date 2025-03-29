@@ -5,7 +5,6 @@ from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .audience import Audience
-from .basicstructure import BasicStructure
 from .dataobjectproperty import DataObjectProperty
 from .dtcdop import DtcDop
 from .element import IdentifiableElement
@@ -18,6 +17,7 @@ from .preconditionstateref import PreConditionStateRef
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .statetransitionref import StateTransitionRef
+from .structure import Structure
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -27,8 +27,8 @@ if TYPE_CHECKING:
 @dataclass
 class TableRow(IdentifiableElement):
     """This class represents a TABLE-ROW."""
-    key_raw: str
     table_ref: OdxLinkRef
+    key_raw: str
 
     # The spec mandates that either a structure or a non-complex DOP
     # must be referenced here, i.e., exactly one of the four
@@ -51,6 +51,26 @@ class TableRow(IdentifiableElement):
     is_final_raw: Optional[bool]
 
     @property
+    def table(self) -> "Table":
+        return self._table
+
+    # the value of the key expressed in the type represented by the
+    # referenced DOP
+    @property
+    def key(self) -> Optional[AtomicOdxType]:
+        return self._key
+
+    @property
+    def dop(self) -> Optional[DataObjectProperty]:
+        """The data object property object resolved by dop_ref."""
+        return self._dop
+
+    @property
+    def structure(self) -> Optional[Structure]:
+        """The structure associated with this table row."""
+        return self._structure
+
+    @property
     def functional_classes(self) -> NamedItemList[FunctionalClass]:
         return self._functional_classes
 
@@ -66,21 +86,6 @@ class TableRow(IdentifiableElement):
     def is_final(self) -> bool:
         return self.is_final_raw is True
 
-    def __post_init__(self) -> None:
-        self._structure: Optional[BasicStructure] = None
-        self._dop: Optional[DataObjectProperty] = None
-
-        n = sum([0 if x is None else 1 for x in (self.structure_ref, self.structure_snref)])
-        odxassert(
-            n <= 1,
-            f"Table row {self.short_name}: The structure can either be defined using ODXLINK or SNREF but not both."
-        )
-        n = sum([0 if x is None else 1 for x in (self.dop_ref, self.dop_snref)])
-        odxassert(
-            n <= 1,
-            f"Table row {self.short_name}: The dop can either be defined using ODXLINK or SNREF but not both."
-        )
-
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> Any:
         raise RuntimeError(
@@ -91,16 +96,19 @@ class TableRow(IdentifiableElement):
                          table_ref: OdxLinkRef) -> "TableRow":
         """Reads a TABLE-ROW."""
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
-        semantic = et_element.get("SEMANTIC")
+
         key_raw = odxrequire(et_element.findtext("KEY"))
-        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
-        structure_snref: Optional[str] = None
-        if (structure_snref_elem := et_element.find("STRUCTURE-SNREF")) is not None:
-            structure_snref = structure_snref_elem.attrib["SHORT-NAME"]
+
         dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
         dop_snref: Optional[str] = None
         if (dop_snref_elem := et_element.find("DATA-OBJECT-PROP-SNREF")) is not None:
             dop_snref = dop_snref_elem.attrib["SHORT-NAME"]
+
+        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
+        structure_snref: Optional[str] = None
+        if (structure_snref_elem := et_element.find("STRUCTURE-SNREF")) is not None:
+            structure_snref = structure_snref_elem.attrib["SHORT-NAME"]
+
         sdgs = [
             SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
         ]
@@ -134,10 +142,10 @@ class TableRow(IdentifiableElement):
         return TableRow(
             table_ref=table_ref,
             key_raw=key_raw,
-            structure_ref=structure_ref,
-            structure_snref=structure_snref,
             dop_ref=dop_ref,
             dop_snref=dop_snref,
+            structure_ref=structure_ref,
+            structure_snref=structure_snref,
             sdgs=sdgs,
             audience=audience,
             functional_class_refs=functional_class_refs,
@@ -150,8 +158,30 @@ class TableRow(IdentifiableElement):
             is_final_raw=is_final_raw,
             **kwargs)
 
+    def __post_init__(self) -> None:
+        self._dop: Optional[DataObjectProperty] = None
+        self._structure: Optional[Structure] = None
+
+        n = sum([0 if x is None else 1 for x in (self.dop_ref, self.dop_snref)])
+        odxassert(
+            n <= 1,
+            f"Table row {self.short_name}: The dop can either be defined using ODXLINK or SNREF but not both."
+        )
+
+        n = sum([0 if x is None else 1 for x in (self.structure_ref, self.structure_snref)])
+        odxassert(
+            n <= 1,
+            f"Table row {self.short_name}: The structure can either be defined using ODXLINK or SNREF but not both."
+        )
+
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
+
+        for sdg in self.sdgs:
+            result.update(sdg._build_odxlinks())
+
+        if self.audience is not None:
+            result.update(self.audience._build_odxlinks())
 
         for st_ref in self.state_transition_refs:
             result.update(st_ref._build_odxlinks())
@@ -159,35 +189,35 @@ class TableRow(IdentifiableElement):
         for pc_ref in self.pre_condition_state_refs:
             result.update(pc_ref._build_odxlinks())
 
-        for sdg in self.sdgs:
-            result.update(sdg._build_odxlinks())
-
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        if self.structure_ref is not None:
-            self._structure = odxlinks.resolve(self.structure_ref, BasicStructure)
-        if self.dop_ref is not None:
-            self._dop = odxlinks.resolve(self.dop_ref)
-            if not isinstance(self._dop, (DataObjectProperty, DtcDop)):
-                odxraise("The DOP-REF of TABLE-ROWs must reference a simple DOP!")
-
         if TYPE_CHECKING:
             self._table = odxlinks.resolve(self.table_ref, Table)
         else:
             self._table = odxlinks.resolve(self.table_ref)
+
+        if self.dop_ref is not None:
+            self._dop = odxlinks.resolve(self.dop_ref)
+            if not isinstance(self._dop, (DataObjectProperty, DtcDop)):
+                odxraise("The DOP-REF of TABLE-ROWs must reference a simple DOP!")
+        if self.structure_ref is not None:
+            self._structure = odxlinks.resolve(self.structure_ref, Structure)
+
+        for sdg in self.sdgs:
+            sdg._resolve_odxlinks(odxlinks)
+
+        if self.audience is not None:
+            self.audience._resolve_odxlinks(odxlinks)
+
+        self._functional_classes = NamedItemList(
+            [odxlinks.resolve(fc_ref, FunctionalClass) for fc_ref in self.functional_class_refs])
 
         for st_ref in self.state_transition_refs:
             st_ref._resolve_odxlinks(odxlinks)
 
         for pc_ref in self.pre_condition_state_refs:
             pc_ref._resolve_odxlinks(odxlinks)
-
-        for sdg in self.sdgs:
-            sdg._resolve_odxlinks(odxlinks)
-
-        self._functional_classes = NamedItemList(
-            [odxlinks.resolve(fc_ref, FunctionalClass) for fc_ref in self.functional_class_refs])
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         # convert the raw key into the proper internal
@@ -210,40 +240,23 @@ class TableRow(IdentifiableElement):
         ddd_spec = odxrequire(context.diag_layer).diag_data_dictionary_spec
 
         if self.structure_snref is not None:
-            self._structure = resolve_snref(self.structure_snref, ddd_spec.structures,
-                                            BasicStructure)
+            self._structure = resolve_snref(self.structure_snref, ddd_spec.structures, Structure)
         if self.dop_snref is not None:
-            self._dop = resolve_snref(self.dop_snref, ddd_spec.data_object_props,
-                                      DataObjectProperty)
+            self._dop = resolve_snref(self.dop_snref, ddd_spec.data_object_props)
+            if not isinstance(self._dop, (DataObjectProperty, DtcDop)):
+                odxraise("The DOP-SNREF of TABLE-ROWs must reference a simple DOP!")
+
+        if self.audience is not None:
+            self.audience._resolve_snrefs(context)
+
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(context)
 
         for st_ref in self.state_transition_refs:
             st_ref._resolve_snrefs(context)
 
         for pc_ref in self.pre_condition_state_refs:
             pc_ref._resolve_snrefs(context)
-
-        for sdg in self.sdgs:
-            sdg._resolve_snrefs(context)
-
-    @property
-    def table(self) -> "Table":
-        return self._table
-
-    # the value of the key expressed in the type represented by the
-    # referenced DOP
-    @property
-    def key(self) -> Optional[AtomicOdxType]:
-        return self._key
-
-    @property
-    def structure(self) -> Optional[BasicStructure]:
-        """The structure associated with this table row."""
-        return self._structure
-
-    @property
-    def dop(self) -> Optional[DataObjectProperty]:
-        """The data object property object resolved by dop_ref."""
-        return self._dop
 
     def __reduce__(self) -> Tuple[Any, ...]:
         """This ensures that the object can be correctly reconstructed during unpickling."""

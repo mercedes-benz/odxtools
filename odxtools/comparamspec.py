@@ -22,9 +22,10 @@ class ComparamSpec(OdxCategory):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ComparamSpec":
 
-        cat = OdxCategory.category_from_et(et_element, doc_frags, doc_type=DocType.COMPARAM_SPEC)
-        doc_frags = cat.odx_id.doc_fragments
-        kwargs = dataclass_fields_asdict(cat)
+        base_obj = OdxCategory.category_from_et(
+            et_element, doc_frags, doc_type=DocType.COMPARAM_SPEC)
+        doc_frags = base_obj.odx_id.doc_fragments
+        kwargs = dataclass_fields_asdict(base_obj)
 
         prot_stacks = NamedItemList([
             ProtStack.from_et(dl_element, doc_frags)

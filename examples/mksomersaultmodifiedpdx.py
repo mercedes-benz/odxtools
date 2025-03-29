@@ -116,7 +116,7 @@ flic_flac_request = Request(
             description=None,
             diag_coded_type=somersaultecu.somersault_diagcodedtypes["uint8"],
             byte_position=0,
-            coded_value=FLIC_FLAC_SID,
+            coded_value_raw=str(FLIC_FLAC_SID),
             bit_position=None,
             sdgs=[],
         )
@@ -142,7 +142,7 @@ flic_flac_positive_response = Response(
             description=None,
             diag_coded_type=somersaultecu.somersault_diagcodedtypes["uint8"],
             byte_position=0,
-            coded_value=uds.positive_response_id(FLIC_FLAC_SID),
+            coded_value_raw=str(uds.positive_response_id(FLIC_FLAC_SID)),
             bit_position=None,
             sdgs=[],
         ),

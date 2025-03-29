@@ -37,6 +37,12 @@ class ParentRef:
                                           "NOT-INHERITED-DIAG-COMM/"
                                           "DIAG-COMM-SNREF")
         ]
+        not_inherited_variables = [
+            odxrequire(el.get("SHORT-NAME"))
+            for el in et_element.iterfind("NOT-INHERITED-VARIABLES/"
+                                          "NOT-INHERITED-VARIABLE/"
+                                          "DIAG-VARIABLE-SNREF")
+        ]
         not_inherited_dops = [
             odxrequire(el.get("SHORT-NAME")) for el in et_element.iterfind("NOT-INHERITED-DOPS/"
                                                                            "NOT-INHERITED-DOP/"
@@ -47,13 +53,6 @@ class ParentRef:
                                                                            "NOT-INHERITED-TABLE/"
                                                                            "TABLE-SNREF")
         ]
-        not_inherited_variables = [
-            odxrequire(el.get("SHORT-NAME"))
-            for el in et_element.iterfind("NOT-INHERITED-VARIABLES/"
-                                          "NOT-INHERITED-VARIABLE/"
-                                          "DIAG-VARIABLE-SNREF")
-        ]
-
         not_inherited_global_neg_responses = [
             odxrequire(el.get("SHORT-NAME"))
             for el in et_element.iterfind("NOT-INHERITED-GLOBAL-NEG-RESPONSES/"

@@ -21,9 +21,31 @@ if TYPE_CHECKING:
 
 @dataclass
 class TableStructParameter(Parameter):
-
     table_key_ref: Optional[OdxLinkRef]
     table_key_snref: Optional[str]
+
+    @property
+    @override
+    def parameter_type(self) -> ParameterType:
+        return "TABLE-STRUCT"
+
+    @property
+    def table(self) -> "Table":
+        return self._table_key.table
+
+    @property
+    def table_key(self) -> TableKeyParameter:
+        return self._table_key
+
+    @property
+    @override
+    def is_required(self) -> bool:
+        return True
+
+    @property
+    @override
+    def is_settable(self) -> bool:
+        return True
 
     @staticmethod
     @override
@@ -44,11 +66,6 @@ class TableStructParameter(Parameter):
         if self.table_key_ref is None and self.table_key_snref is None:
             odxraise("Either table_key_ref or table_key_snref must be defined.")
 
-    @property
-    @override
-    def parameter_type(self) -> ParameterType:
-        return "TABLE-STRUCT"
-
     @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
@@ -67,24 +84,6 @@ class TableStructParameter(Parameter):
         if self.table_key_snref is not None:
             self._table_key = resolve_snref(self.table_key_snref, odxrequire(context.parameters),
                                             TableKeyParameter)
-
-    @property
-    def table_key(self) -> TableKeyParameter:
-        return self._table_key
-
-    @property
-    def table(self) -> "Table":
-        return self._table_key.table
-
-    @property
-    @override
-    def is_required(self) -> bool:
-        return True
-
-    @property
-    @override
-    def is_settable(self) -> bool:
-        return True
 
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],

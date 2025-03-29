@@ -18,12 +18,16 @@ from .utils import dataclass_fields_asdict
 class SingleEcuJob(DiagComm):
     """A single ECU job is a diagnostic communication primitive.
 
-    A single ECU job is more complex than a diagnostic service and is not provided natively by the ECU.
-    In particular, the job is defined in external programs which are referenced by the attribute `.prog_codes`.
+    A single ECU job is more complex than a diagnostic service and is
+    not provided natively by the ECU.  In particular, the job is
+    defined in external programs which are referenced by the attribute
+    `.prog_codes`.
 
-    In contrast to "multiple ECU jobs", a single ECU job only does service calls to a single ECU.
+    In contrast to "multiple ECU jobs", a single ECU job only involves
+    calls to services provided by a single ECU.
 
-    Single ECU jobs are defined in section 7.3.5.7 of the ASAM MCD-2 standard.
+    Single ECU jobs are defined in section 7.3.5.7 of the ASAM MCD-2
+    standard.
     """
 
     prog_codes: List[ProgCode]

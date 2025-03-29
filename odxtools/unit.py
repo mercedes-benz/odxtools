@@ -61,9 +61,6 @@ class Unit(IdentifiableElement):
     def physical_dimension(self) -> Optional[PhysicalDimension]:
         return self._physical_dimension
 
-    def __post_init__(self) -> None:
-        self._physical_dimension: Optional[PhysicalDimension] = None
-
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Unit":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
@@ -92,6 +89,7 @@ class Unit(IdentifiableElement):
         return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        self._physical_dimension: Optional[PhysicalDimension] = None
         if self.physical_dimension_ref:
             self._physical_dimension = odxlinks.resolve(self.physical_dimension_ref,
                                                         PhysicalDimension)

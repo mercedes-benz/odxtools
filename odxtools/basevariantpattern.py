@@ -19,11 +19,6 @@ class BaseVariantPattern(VariantPattern):
     """
     matching_base_variant_parameters: List[MatchingBaseVariantParameter]
 
-    @override
-    def get_matching_parameters(
-            self) -> Union[List[MatchingParameter], List[MatchingBaseVariantParameter]]:
-        return self.matching_base_variant_parameters
-
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "BaseVariantPattern":
@@ -36,3 +31,8 @@ class BaseVariantPattern(VariantPattern):
 
         odxassert(len(matching_base_variant_parameters) > 0)  # required by ISO 22901-1 Figure 141
         return BaseVariantPattern(matching_base_variant_parameters=matching_base_variant_parameters)
+
+    @override
+    def get_matching_parameters(
+            self) -> Union[List[MatchingParameter], List[MatchingBaseVariantParameter]]:
+        return self.matching_base_variant_parameters

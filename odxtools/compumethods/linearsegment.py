@@ -32,6 +32,14 @@ class LinearSegment:
     internal_type: DataType
     physical_type: DataType
 
+    @property
+    def physical_lower_limit(self) -> Optional[Limit]:
+        return self._physical_lower_limit
+
+    @property
+    def physical_upper_limit(self) -> Optional[Limit]:
+        return self._physical_upper_limit
+
     @staticmethod
     def from_compu_scale(scale: CompuScale, *, internal_type: DataType,
                          physical_type: DataType) -> "LinearSegment":
@@ -63,14 +71,6 @@ class LinearSegment:
             inverse_value=inverse_value,
             internal_type=internal_type,
             physical_type=physical_type)
-
-    @property
-    def physical_lower_limit(self) -> Optional[Limit]:
-        return self._physical_lower_limit
-
-    @property
-    def physical_upper_limit(self) -> Optional[Limit]:
-        return self._physical_upper_limit
 
     def __post_init__(self) -> None:
         self.__compute_physical_limits()

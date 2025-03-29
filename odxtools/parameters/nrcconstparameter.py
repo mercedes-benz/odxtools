@@ -34,8 +34,31 @@ class NrcConstParameter(Parameter):
 
     """
 
+    coded_values_raw: List[str]
     diag_coded_type: DiagCodedType
-    coded_values: List[AtomicOdxType]
+
+    @property
+    @override
+    def parameter_type(self) -> ParameterType:
+        return "NRC-CONST"
+
+    @property
+    @override
+    def is_required(self) -> bool:
+        return False
+
+    @property
+    @override
+    def is_settable(self) -> bool:
+        return False
+
+    @property
+    def internal_data_type(self) -> DataType:
+        return self.diag_coded_type.base_data_type
+
+    @property
+    def coded_values(self) -> List[AtomicOdxType]:
+        return self._coded_values
 
     @staticmethod
     @override
@@ -44,20 +67,19 @@ class NrcConstParameter(Parameter):
 
         kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
 
+        coded_values_raw = [
+            odxrequire(x.text) for x in et_element.iterfind("CODED-VALUES/CODED-VALUE")
+        ]
         dct_elem = odxrequire(et_element.find("DIAG-CODED-TYPE"))
         diag_coded_type = create_any_diag_coded_type_from_et(dct_elem, doc_frags)
-        coded_values = [
-            diag_coded_type.base_data_type.from_string(odxrequire(val.text))
-            for val in et_element.iterfind("CODED-VALUES/CODED-VALUE")
-        ]
 
         return NrcConstParameter(
-            diag_coded_type=diag_coded_type, coded_values=coded_values, **kwargs)
+            coded_values_raw=coded_values_raw, diag_coded_type=diag_coded_type, **kwargs)
 
-    @property
-    @override
-    def parameter_type(self) -> ParameterType:
-        return "NRC-CONST"
+    def __post_init__(self) -> None:
+        self._coded_values = [
+            self.diag_coded_type.base_data_type.from_string(val) for val in self.coded_values_raw
+        ]
 
     @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -70,20 +92,6 @@ class NrcConstParameter(Parameter):
     @override
     def get_static_bit_length(self) -> Optional[int]:
         return self.diag_coded_type.get_static_bit_length()
-
-    @property
-    def internal_data_type(self) -> DataType:
-        return self.diag_coded_type.base_data_type
-
-    @property
-    @override
-    def is_required(self) -> bool:
-        return False
-
-    @property
-    @override
-    def is_settable(self) -> bool:
-        return False
 
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],

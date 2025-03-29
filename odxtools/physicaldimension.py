@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
@@ -41,24 +41,24 @@ class PhysicalDimension(IdentifiableElement):
     )
     ```
     """
-    length_exp: int
-    mass_exp: int
-    time_exp: int
-    current_exp: int
-    temperature_exp: int
-    molar_amount_exp: int
-    luminous_intensity_exp: int
+    length_exp: Optional[int]
+    mass_exp: Optional[int]
+    time_exp: Optional[int]
+    current_exp: Optional[int]
+    temperature_exp: Optional[int]
+    molar_amount_exp: Optional[int]
+    luminous_intensity_exp: Optional[int]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "PhysicalDimension":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
-        def read_optional_int(element: ElementTree.Element, name: str) -> int:
-            if val_str := element.findtext(name):
+        def read_optional_int(element: ElementTree.Element, name: str) -> Optional[int]:
+            if (val_str := element.findtext(name)) is not None:
                 return int(val_str)
             else:
-                return 0
+                return None
 
         length_exp = read_optional_int(et_element, "LENGTH-EXP")
         mass_exp = read_optional_int(et_element, "MASS-EXP")
