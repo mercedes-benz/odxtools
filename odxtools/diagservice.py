@@ -53,7 +53,7 @@ class PosResponseSuppressible:
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "PosResponseSuppressible":
 
-        bit_mask = int(odxrequire(et_element.findtext("BITMASK")))
+        bit_mask = int(odxrequire(et_element.findtext("BIT-MASK")))
 
         coded_const_snref = None
         if (cc_snref_elem := et_element.find("CODED-CONST-SNREF")) is not None:
