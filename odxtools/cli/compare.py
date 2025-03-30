@@ -32,8 +32,9 @@ _odxtools_tool_name_ = "compare"
 @dataclass
 class ChangedParameterDetails:
     service: DiagService  # The service whose parameters changed
-    changed_parameters: List[Any] = field(default_factory=list)  # List of changed parameter names
-    change_details: List[Any] = field(default_factory=list)  # Detailed change information
+    changed_parameters: List[DiagService] = field(
+        default_factory=list)  # List of changed parameter names
+    change_details: List[DiagService] = field(default_factory=list)  # Detailed change information
 
 
 @dataclass
@@ -50,8 +51,7 @@ class ServiceDiff:
 class SpecsChangesVariants:
     new_diagnostic_layers: List[DiagLayer] = field(default_factory=list)
     deleted_diagnostic_layers: List[DiagLayer] = field(default_factory=list)
-    service_changes: Dict[str, Union[List[DiagLayer], List[DiagLayer],
-                                     ServiceDiff]] = field(default_factory=dict)
+    service_changes: Dict[str, Union[List[DiagLayer], ServiceDiff]] = field(default_factory=dict)
 
 
 class Display:
@@ -276,7 +276,7 @@ class Comparison(Display):
 
         return {"Property": property, "Old Value": old, "New Value": new}
 
-    def compare_services(self, service1: DiagService, service2: DiagService) -> List[ServiceDiff]:
+    def compare_services(self, service1: DiagService, service2: DiagService) -> List[DiagService]:
         # compares request, positive response and negative response parameters of two diagnostic services
 
         information: List[Union[str, Dict[str, Any]]] = [
@@ -444,7 +444,6 @@ class Comparison(Display):
                 if rq_prefix is None or rq_prefix not in dl2_request_prefixes:
                     # TODO: this will not work in cases where the constant
                     # prefix of a request was modified...
-                    #  service_spec.NewServices.append(service1)
 
                     service_spec.new_services.append(service1)
             # check whether names of diagnostic services have changed
@@ -531,7 +530,6 @@ class Comparison(Display):
                     # compare diagnostic services of both diagnostic layers
                     # save diagnostic service changes in dictionary (empty if no changes)
                     service_spec: ServiceDiff = self.compare_diagnostic_layers(dl1, dl2)
-                    # if isinstance(service_spec, ServiceDiff):
                     if changes_variants.service_changes is not None:
                         # adds information about diagnostic service changes to return variable (changes_variants)
                         changes_variants.service_changes.update({dl1.short_name: service_spec})
