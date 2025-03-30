@@ -28,13 +28,14 @@ class UnitGroup(NamedElement):
     unit_refs: List[OdxLinkRef]
     oid: Optional[str]
 
-    def __post_init__(self) -> None:
-        self._units = NamedItemList[Unit]()
+    @property
+    def units(self) -> NamedItemList[Unit]:
+        return self._units
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "UnitGroup":
-        oid = et_element.get("OID")
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+
         category_str = odxrequire(et_element.findtext("CATEGORY"))
         try:
             category = UnitGroupCategory(category_str)
@@ -42,10 +43,11 @@ class UnitGroup(NamedElement):
             category = cast(UnitGroupCategory, None)
             odxraise(f"Encountered unknown unit group category '{category_str}'")
 
-        unit_refs: List[OdxLinkRef] = [
+        unit_refs = [
             odxrequire(OdxLinkRef.from_et(el, doc_frags))
             for el in et_element.iterfind("UNIT-REFS/UNIT-REF")
         ]
+        oid = et_element.get("OID")
 
         return UnitGroup(category=category, unit_refs=unit_refs, oid=oid, **kwargs)
 
@@ -57,7 +59,3 @@ class UnitGroup(NamedElement):
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
-
-    @property
-    def units(self) -> NamedItemList[Unit]:
-        return self._units

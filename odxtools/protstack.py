@@ -19,6 +19,10 @@ class ProtStack(IdentifiableElement):
     physical_link_type: str
     comparam_subset_refs: List[OdxLinkRef]
 
+    @property
+    def comparam_subsets(self) -> NamedItemList[ComparamSubset]:
+        return self._comparam_subsets
+
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ProtStack":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
@@ -47,7 +51,3 @@ class ProtStack(IdentifiableElement):
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
-
-    @property
-    def comparam_subsets(self) -> NamedItemList[ComparamSubset]:
-        return self._comparam_subsets

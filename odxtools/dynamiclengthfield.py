@@ -26,11 +26,13 @@ class DynamicLengthField(Field):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DynamicLengthField":
         kwargs = dataclass_fields_asdict(Field.from_et(et_element, doc_frags))
+
         offset = int(odxrequire(et_element.findtext('OFFSET')))
         determine_number_of_items = DetermineNumberOfItems.from_et(
             odxrequire(et_element.find('DETERMINE-NUMBER-OF-ITEMS')),
             doc_frags,
         )
+
         return DynamicLengthField(
             offset=offset, determine_number_of_items=determine_number_of_items, **kwargs)
 

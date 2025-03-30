@@ -19,8 +19,26 @@ from .parameterwithdop import ParameterWithDOP
 
 @dataclass
 class PhysicalConstantParameter(ParameterWithDOP):
-
     physical_constant_value_raw: str
+
+    @property
+    @override
+    def parameter_type(self) -> ParameterType:
+        return "PHYS-CONST"
+
+    @property
+    @override
+    def is_required(self) -> bool:
+        return False
+
+    @property
+    @override
+    def is_settable(self) -> bool:
+        return False
+
+    @property
+    def physical_constant_value(self) -> ParameterValue:
+        return self._physical_constant_value
 
     @staticmethod
     @override
@@ -33,11 +51,6 @@ class PhysicalConstantParameter(ParameterWithDOP):
 
         return PhysicalConstantParameter(
             physical_constant_value_raw=physical_constant_value_raw, **kwargs)
-
-    @property
-    @override
-    def parameter_type(self) -> ParameterType:
-        return "PHYS-CONST"
 
     @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -57,20 +70,6 @@ class PhysicalConstantParameter(ParameterWithDOP):
             return
         base_data_type = dop.physical_type.base_data_type
         self._physical_constant_value = base_data_type.from_string(self.physical_constant_value_raw)
-
-    @property
-    def physical_constant_value(self) -> ParameterValue:
-        return self._physical_constant_value
-
-    @property
-    @override
-    def is_required(self) -> bool:
-        return False
-
-    @property
-    @override
-    def is_settable(self) -> bool:
-        return False
 
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],

@@ -18,9 +18,9 @@ class AdditionalAudience(IdentifiableElement):
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "AdditionalAudience":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
-        return AdditionalAudience(
-            **dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags)))
+        return AdditionalAudience(**kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         return {self.odx_id: self}

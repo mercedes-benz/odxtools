@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -44,18 +44,6 @@ class EnvironmentDataDescription(ComplexDop):
     env_datas: NamedItemList[EnvironmentData]
     env_data_refs: List[OdxLinkRef]
 
-    @property
-    def param(self) -> Parameter:
-        # the parameter referenced via SNREF cannot be resolved here
-        # because the relevant list of parameters depends on the
-        # concrete codec object processed, whilst an environment data
-        # description object can be featured in an arbitrary number of
-        # responses. Instead, lookup of the appropriate parameter is
-        # done within the encode and decode methods.
-        odxraise("The parameter of ENV-DATA-DESC objects cannot be resolved "
-                 "because it depends on the context")
-        return cast(None, Parameter)
-
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "EnvironmentDataDescription":
@@ -74,20 +62,20 @@ class EnvironmentDataDescription(ComplexDop):
         # situation is reversed. This means that we will create one
         # empty and one non-empty list here. (Which is which depends
         # on the version of the standard used by the file.)
-        env_data_refs = [
-            odxrequire(OdxLinkRef.from_et(env_data_ref, doc_frags))
-            for env_data_ref in et_element.iterfind("ENV-DATA-REFS/ENV-DATA-REF")
-        ]
         env_datas = NamedItemList([
             EnvironmentData.from_et(env_data_elem, doc_frags)
             for env_data_elem in et_element.iterfind("ENV-DATAS/ENV-DATA")
         ])
+        env_data_refs = [
+            odxrequire(OdxLinkRef.from_et(env_data_ref, doc_frags))
+            for env_data_ref in et_element.iterfind("ENV-DATA-REFS/ENV-DATA-REF")
+        ]
 
         return EnvironmentDataDescription(
             param_snref=param_snref,
             param_snpathref=param_snpathref,
-            env_data_refs=env_data_refs,
             env_datas=env_datas,
+            env_data_refs=env_data_refs,
             **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -103,7 +91,8 @@ class EnvironmentDataDescription(ComplexDop):
         # ODX 2.0 specifies environment data objects here, ODX 2.2
         # uses references
         if self.env_data_refs:
-            self.env_datas = NamedItemList([odxlinks.resolve(x) for x in self.env_data_refs])
+            self.env_datas = NamedItemList(
+                [odxlinks.resolve(x, EnvironmentData) for x in self.env_data_refs])
         else:
             for ed in self.env_datas:
                 ed._resolve_odxlinks(odxlinks)
@@ -221,7 +210,7 @@ class EnvironmentDataDescription(ComplexDop):
             if not isinstance(dop, (DataObjectProperty, DtcDop)):
                 odxraise(f"The DOP of the parameter referenced by environment data descriptions "
                          f"must use either be DataObjectProperty or a DtcDop (encountered "
-                         f"{type(param).__name__} for parameter '{self.param.short_name}' "
+                         f"{type(param).__name__} for parameter '{param.short_name}' "
                          f"of ENV-DATA-DESC '{self.short_name}')")
                 return 0
 

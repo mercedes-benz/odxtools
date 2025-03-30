@@ -44,9 +44,7 @@
          {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}{#- #}
           CPUSAGE="{{cp.cpusage.value}}">
   {{ peid.printElementIdSubtags(cp)|indent(1) }}
-  {%- if cp.physical_default_value is not none %}
-  <PHYSICAL-DEFAULT-VALUE>{{cp.physical_default_value | e}}</PHYSICAL-DEFAULT-VALUE>
-  {%- endif %}
+  <PHYSICAL-DEFAULT-VALUE>{{cp.physical_default_value_raw}}</PHYSICAL-DEFAULT-VALUE>
  <DATA-OBJECT-PROP-REF ID-REF="{{cp.dop_ref.ref_id}}" />
 </COMPARAM>
 {%- endmacro %}
@@ -55,9 +53,9 @@
 <COMPLEX-COMPARAM {{-peid.printElementIdAttribs(cp)}}
                   PARAM-CLASS="{{cp.param_class}}"
                   CPTYPE="{{cp.cptype.value}}"
-                 {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}{#- #}
+                  {{make_xml_attrib("DISPLAY-LEVEL", cp.display_level)}}{#- #}
                   CPUSAGE="{{cp.cpusage.value}}"
-                 {{make_bool_xml_attrib("ALLOW-MULTIPLE-VALUES", cp.allow_multiple_values_raw)}}
+                  {{make_bool_xml_attrib("ALLOW-MULTIPLE-VALUES", cp.allow_multiple_values_raw)}}
                   {#- #}>
  {{ peid.printElementIdSubtags(cp)|indent(1) }}
  {%- for sub_cp in cp.subparams %}

@@ -15,25 +15,35 @@ from .utils import dataclass_fields_asdict
 
 @dataclass
 class InputParam(NamedElement):
+    physical_default_value: Optional[str]
     dop_base_ref: OdxLinkRef
     oid: Optional[str]
     semantic: Optional[str]
-    physical_default_value: Optional[str]
+
+    @property
+    def dop(self) -> DopBase:
+        """The data object property describing this parameter."""
+        return self._dop
+
+    @deprecated(details="use .dop")  # type: ignore[misc]
+    def dop_base(self) -> DopBase:
+        return self._dop
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "InputParam":
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
-        dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
-        physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
 
-        semantic = et_element.get("SEMANTIC")
+        physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
+        dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
+
         oid = et_element.get("OID")
+        semantic = et_element.get("SEMANTIC")
 
         return InputParam(
-            dop_base_ref=dop_base_ref,
             physical_default_value=physical_default_value,
-            semantic=semantic,
+            dop_base_ref=dop_base_ref,
             oid=oid,
+            semantic=semantic,
             **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -44,12 +54,3 @@ class InputParam(NamedElement):
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
-
-    @property
-    def dop(self) -> DopBase:
-        """The data object property describing this parameter."""
-        return self._dop
-
-    @deprecated(details="use .dop")  # type: ignore[misc]
-    def dop_base(self) -> DopBase:
-        return self._dop

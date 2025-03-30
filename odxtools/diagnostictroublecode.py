@@ -16,11 +16,12 @@ from .utils import dataclass_fields_asdict
 @dataclass
 class DiagnosticTroubleCode(IdentifiableElement):
     trouble_code: int
-    text: Text
     display_trouble_code: Optional[str]
+    text: Text
     level: Optional[int]
-    is_temporary_raw: Optional[bool]
     sdgs: List[SpecialDataGroup]
+
+    is_temporary_raw: Optional[bool]
 
     @property
     def is_temporary(self) -> bool:
@@ -30,31 +31,32 @@ class DiagnosticTroubleCode(IdentifiableElement):
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DiagnosticTroubleCode":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+
+        trouble_code = int(odxrequire(et_element.findtext("TROUBLE-CODE")))
         display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
         text = Text.from_et(odxrequire(et_element.find("TEXT")), doc_frags)
         level = None
         if (level_str := et_element.findtext("LEVEL")) is not None:
             level = int(level_str)
-
-        is_temporary_raw = odxstr_to_bool(et_element.get("IS-TEMPORARY"))
         sdgs = [
             SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
         ]
 
+        is_temporary_raw = odxstr_to_bool(et_element.attrib.get("IS-TEMPORARY"))
+
         return DiagnosticTroubleCode(
-            trouble_code=int(odxrequire(et_element.findtext("TROUBLE-CODE"))),
+            trouble_code=trouble_code,
             text=text,
             display_trouble_code=display_trouble_code,
             level=level,
-            is_temporary_raw=is_temporary_raw,
             sdgs=sdgs,
+            is_temporary_raw=is_temporary_raw,
             **kwargs)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result: Dict[OdxLinkId, Any] = {}
 
-        if self.odx_id is not None:
-            result[self.odx_id] = self
+        result[self.odx_id] = self
 
         for sdg in self.sdgs:
             result.update(sdg._build_odxlinks())

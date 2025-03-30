@@ -21,11 +21,9 @@ class Limit:
     value_type: Optional[DataType]
     interval_type: Optional[IntervalType]
 
-    def __post_init__(self) -> None:
-        self._value: Optional[AtomicOdxType] = None
-
-        if self.value_type is not None:
-            self.set_value_type(self.value_type)
+    @property
+    def value(self) -> Optional[AtomicOdxType]:
+        return self._value
 
     @staticmethod
     @overload
@@ -57,14 +55,16 @@ class Limit:
 
         return Limit(value_raw=value_raw, interval_type=interval_type, value_type=value_type)
 
+    def __post_init__(self) -> None:
+        self._value: Optional[AtomicOdxType] = None
+
+        if self.value_type is not None:
+            self.set_value_type(self.value_type)
+
     def set_value_type(self, value_type: DataType) -> None:
         self.value_type = value_type
         if self.value_raw is not None:
             self._value = value_type.from_string(self.value_raw)
-
-    @property
-    def value(self) -> Optional[AtomicOdxType]:
-        return self._value
 
     def complies_to_upper(self, value: AtomicOdxType) -> bool:
         """Checks if the value is in the range w.r.t. the upper limit.

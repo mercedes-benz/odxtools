@@ -16,30 +16,26 @@ class Audience:
     disabled_audience_refs: List[OdxLinkRef]
 
     is_supplier_raw: Optional[bool]
+    is_development_raw: Optional[bool]
+    is_manufacturing_raw: Optional[bool]
+    is_aftersales_raw: Optional[bool]
+    is_aftermarket_raw: Optional[bool]
 
     @property
     def is_supplier(self) -> bool:
         return self.is_supplier_raw in [None, True]
 
-    is_development_raw: Optional[bool]
-
     @property
     def is_development(self) -> bool:
         return self.is_development_raw in [None, True]
-
-    is_manufacturing_raw: Optional[bool]
 
     @property
     def is_manufacturing(self) -> bool:
         return self.is_manufacturing_raw in [None, True]
 
-    is_aftersales_raw: Optional[bool]
-
     @property
     def is_aftersales(self) -> bool:
         return self.is_aftersales_raw in [None, True]
-
-    is_aftermarket_raw: Optional[bool]
 
     @property
     def is_aftermarket(self) -> bool:
@@ -66,11 +62,11 @@ class Audience:
             for ref in et_element.iterfind("DISABLED-AUDIENCE-REFS/"
                                            "DISABLED-AUDIENCE-REF")
         ]
-        is_supplier_raw = odxstr_to_bool(et_element.get("IS-SUPPLIER"))
-        is_development_raw = odxstr_to_bool(et_element.get("IS-DEVELOPMENT"))
-        is_manufacturing_raw = odxstr_to_bool(et_element.get("IS-MANUFACTURING"))
-        is_aftersales_raw = odxstr_to_bool(et_element.get("IS-AFTERSALES"))
-        is_aftermarket_raw = odxstr_to_bool(et_element.get("IS-AFTERMARKET"))
+        is_supplier_raw = odxstr_to_bool(et_element.attrib.get("IS-SUPPLIER"))
+        is_development_raw = odxstr_to_bool(et_element.attrib.get("IS-DEVELOPMENT"))
+        is_manufacturing_raw = odxstr_to_bool(et_element.attrib.get("IS-MANUFACTURING"))
+        is_aftersales_raw = odxstr_to_bool(et_element.attrib.get("IS-AFTERSALES"))
+        is_aftermarket_raw = odxstr_to_bool(et_element.attrib.get("IS-AFTERMARKET"))
 
         return Audience(
             enabled_audience_refs=enabled_audience_refs,

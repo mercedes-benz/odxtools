@@ -23,10 +23,10 @@ class CompanyData(IdentifiableElement):
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "CompanyData":
 
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+
         roles = []
         if (roles_elem := et_element.find("ROLES")) is not None:
             roles = [odxrequire(role.text) for role in roles_elem.iterfind("ROLE")]
-
         team_members = [
             TeamMember.from_et(tm, doc_frags)
             for tm in et_element.iterfind("TEAM-MEMBERS/TEAM-MEMBER")
@@ -46,7 +46,6 @@ class CompanyData(IdentifiableElement):
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
-        # team members
         for tm in self.team_members:
             result.update(tm._build_odxlinks())
 

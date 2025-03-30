@@ -22,8 +22,9 @@ class MultiplexerCase(NamedElement):
     lower_limit: Limit
     upper_limit: Limit
 
-    def __post_init__(self) -> None:
-        self._structure: Optional[Structure]
+    @property
+    def structure(self) -> Optional[Structure]:
+        return self._structure
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -77,7 +78,3 @@ class MultiplexerCase(NamedElement):
     def applies(self, value: AtomicOdxType) -> bool:
         return self.lower_limit.complies_to_lower(value) \
             and self.upper_limit.complies_to_upper(value)
-
-    @property
-    def structure(self) -> Optional[Structure]:
-        return self._structure

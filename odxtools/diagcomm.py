@@ -73,6 +73,38 @@ class DiagComm(IdentifiableElement):
     is_executable_raw: Optional[bool]
     is_final_raw: Optional[bool]
 
+    @property
+    def functional_classes(self) -> NamedItemList[FunctionalClass]:
+        return self._functional_classes
+
+    @property
+    def protocols(self) -> NamedItemList["Protocol"]:
+        return self._protocols
+
+    @property
+    def related_diag_comms(self) -> NamedItemList["DiagComm"]:
+        return self._related_diag_comms
+
+    @property
+    def pre_condition_states(self) -> NamedItemList[State]:
+        return self._pre_condition_states
+
+    @property
+    def state_transitions(self) -> NamedItemList[StateTransition]:
+        return self._state_transitions
+
+    @property
+    def is_mandatory(self) -> bool:
+        return self.is_mandatory_raw is True
+
+    @property
+    def is_executable(self) -> bool:
+        return self.is_executable_raw in (None, True)
+
+    @property
+    def is_final(self) -> bool:
+        return self.is_final_raw is True
+
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagComm":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
@@ -111,18 +143,18 @@ class DiagComm(IdentifiableElement):
             for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
         ]
 
-        semantic = et_element.get("SEMANTIC")
+        semantic = et_element.attrib.get("SEMANTIC")
 
         diagnostic_class: Optional[DiagClassType] = None
-        if (diagnostic_class_str := et_element.get("DIAGNOSTIC-CLASS")) is not None:
+        if (diagnostic_class_str := et_element.attrib.get("DIAGNOSTIC-CLASS")) is not None:
             try:
                 diagnostic_class = DiagClassType(diagnostic_class_str)
             except ValueError:
                 odxraise(f"Encountered unknown diagnostic class type '{diagnostic_class_str}'")
 
-        is_mandatory_raw = odxstr_to_bool(et_element.get("IS-MANDATORY"))
-        is_executable_raw = odxstr_to_bool(et_element.get("IS-EXECUTABLE"))
-        is_final_raw = odxstr_to_bool(et_element.get("IS-FINAL"))
+        is_mandatory_raw = odxstr_to_bool(et_element.attrib.get("IS-MANDATORY"))
+        is_executable_raw = odxstr_to_bool(et_element.attrib.get("IS-EXECUTABLE"))
+        is_final_raw = odxstr_to_bool(et_element.attrib.get("IS-FINAL"))
 
         return DiagComm(
             admin_data=admin_data,
@@ -140,38 +172,6 @@ class DiagComm(IdentifiableElement):
             is_final_raw=is_final_raw,
             **kwargs)
 
-    @property
-    def functional_classes(self) -> NamedItemList[FunctionalClass]:
-        return self._functional_classes
-
-    @property
-    def protocols(self) -> NamedItemList["Protocol"]:
-        return self._protocols
-
-    @property
-    def related_diag_comms(self) -> NamedItemList["DiagComm"]:
-        return self._related_diag_comms
-
-    @property
-    def pre_condition_states(self) -> NamedItemList[State]:
-        return self._pre_condition_states
-
-    @property
-    def state_transitions(self) -> NamedItemList[StateTransition]:
-        return self._state_transitions
-
-    @property
-    def is_mandatory(self) -> bool:
-        return self.is_mandatory_raw is True
-
-    @property
-    def is_executable(self) -> bool:
-        return self.is_executable_raw in (None, True)
-
-    @property
-    def is_final(self) -> bool:
-        return self.is_final_raw is True
-
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
@@ -184,11 +184,11 @@ class DiagComm(IdentifiableElement):
         if self.audience is not None:
             result.update(self.audience._build_odxlinks())
 
-        for st_ref in self.state_transition_refs:
-            result.update(st_ref._build_odxlinks())
-
         for pc_ref in self.pre_condition_state_refs:
             result.update(pc_ref._build_odxlinks())
+
+        for st_ref in self.state_transition_refs:
+            result.update(st_ref._build_odxlinks())
 
         return result
 
@@ -202,11 +202,11 @@ class DiagComm(IdentifiableElement):
         for sdg in self.sdgs:
             sdg._resolve_odxlinks(odxlinks)
 
-        for st_ref in self.state_transition_refs:
-            st_ref._resolve_odxlinks(odxlinks)
-
         for pc_ref in self.pre_condition_state_refs:
             pc_ref._resolve_odxlinks(odxlinks)
+
+        for st_ref in self.state_transition_refs:
+            st_ref._resolve_odxlinks(odxlinks)
 
         self._related_diag_comms = NamedItemList(
             [odxlinks.resolve(dc_ref, DiagComm) for dc_ref in self.related_diag_comm_refs])
@@ -227,11 +227,11 @@ class DiagComm(IdentifiableElement):
         for sdg in self.sdgs:
             sdg._resolve_snrefs(context)
 
-        for st_ref in self.state_transition_refs:
-            st_ref._resolve_snrefs(context)
-
         for pc_ref in self.pre_condition_state_refs:
             pc_ref._resolve_snrefs(context)
+
+        for st_ref in self.state_transition_refs:
+            st_ref._resolve_snrefs(context)
 
         if TYPE_CHECKING:
             diag_layer = odxrequire(context.diag_layer)

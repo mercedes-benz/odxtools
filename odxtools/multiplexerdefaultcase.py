@@ -17,8 +17,9 @@ class MultiplexerDefaultCase(NamedElement):
     structure_ref: Optional[OdxLinkRef]
     structure_snref: Optional[str]
 
-    def __post_init__(self) -> None:
-        self._structure: Optional[Structure]
+    @property
+    def structure(self) -> Optional[Structure]:
+        return self._structure
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
@@ -46,7 +47,3 @@ class MultiplexerDefaultCase(NamedElement):
         if self.structure_snref:
             ddds = odxrequire(context.diag_layer).diag_data_dictionary_spec
             self._structure = resolve_snref(self.structure_snref, ddds.structures, Structure)
-
-    @property
-    def structure(self) -> Optional[Structure]:
-        return self._structure

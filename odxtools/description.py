@@ -27,6 +27,7 @@ class ExternalDoc:
 class Description:
     text: str
     external_docs: List[ExternalDoc]
+
     text_identifier: Optional[str]
 
     @staticmethod
@@ -48,12 +49,13 @@ class Description:
 
         text = "\n".join(stripped_lines).strip()
 
-        text_identifier = et_element.get("TI")
-
         external_docs = \
             [
                 odxrequire(ExternalDoc.from_et(ed, doc_frags)) for ed in et_element.iterfind("EXTERNAL-DOCS/EXTERNAL-DOC")
             ]
+
+        text_identifier = et_element.attrib.get("TI")
+
         return Description(text=text, text_identifier=text_identifier, external_docs=external_docs)
 
     @staticmethod

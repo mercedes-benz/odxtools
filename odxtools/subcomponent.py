@@ -9,7 +9,7 @@ from .dtcdop import DtcDop
 from .element import IdentifiableElement, NamedElement
 from .environmentdata import EnvironmentData
 from .environmentdatadescription import EnvironmentDataDescription
-from .exceptions import odxraise, odxrequire
+from .exceptions import odxassert, odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .parameters.parameter import Parameter
@@ -37,6 +37,21 @@ class SubComponentPattern:
         ]
 
         return SubComponentPattern(matching_parameters=matching_parameters)
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = {}
+        for mp in self.matching_parameters:
+            result.update(mp._build_odxlinks())
+
+        return result
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        for mp in self.matching_parameters:
+            mp._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        for mp in self.matching_parameters:
+            mp._resolve_snrefs(context)
 
 
 @dataclass
@@ -72,16 +87,18 @@ class SubComponentParamConnector(IdentifiableElement):
             if elem.tag != "OUT-PARAM-IF-SNREF":
                 odxraise("Currently, only SNREFS are supported for OUT-PARAM-IF-REFS")
                 continue
-
-            out_param_if_refs.append(odxrequire(elem.get("SHORT-NAME")))
+            else:
+                odxassert(elem.tag == "OUT-PARAM-IF-SNREF")
+                out_param_if_refs.append(odxrequire(elem.attrib.get("SHORT-NAME")))
 
         in_param_if_refs = []
         for elem in et_element.find("IN-PARAM-IF-REFS") or []:
             if elem.tag != "IN-PARAM-IF-SNREF":
                 odxraise("Currently, only SNREFS are supported for IN-PARAM-IF-REFS")
                 continue
-
-            in_param_if_refs.append(odxrequire(elem.get("SHORT-NAME")))
+            else:
+                odxassert(elem.tag == "IN-PARAM-IF-SNREF")
+                in_param_if_refs.append(odxrequire(elem.attrib.get("SHORT-NAME")))
 
         return SubComponentParamConnector(
             diag_comm_snref=diag_comm_snref,
@@ -106,13 +123,19 @@ class SubComponentParamConnector(IdentifiableElement):
         if not self._service.positive_responses:
             odxraise()
             return
-        request = odxrequire(service.request)
-        response = service.positive_responses[0]
 
+        request = odxrequire(service.request)
         in_param_ifs = []
         for x in self.in_param_if_refs:
             in_param_ifs.append(resolve_snref(x, request.parameters, Parameter))
 
+        # TODO: The output parameters are probably part of a response
+        # (?). If so, they cannot be resolved ahead of time because
+        # the service in question can have multiple responses
+        # associated with it and each of these has its own set of
+        # parameters. In the meantime, we simply use the first
+        # positive response specified.
+        response = service.positive_responses[0]
         out_param_ifs = []
         for x in self.out_param_if_refs:
             out_param_ifs.append(resolve_snref(x, response.parameters, Parameter))
@@ -235,7 +258,7 @@ class SubComponent(IdentifiableElement):
 
     """
 
-    #sub_component_patterns: NamedItemList[SubComponentPattern]
+    sub_component_patterns: List[SubComponentPattern]
     sub_component_param_connectors: NamedItemList[SubComponentParamConnector]
     table_row_connectors: NamedItemList[TableRowConnector]
     env_data_connectors: NamedItemList[EnvDataConnector]
@@ -249,6 +272,10 @@ class SubComponent(IdentifiableElement):
 
         semantic = et_element.get("SEMANTIC")
 
+        sub_component_patterns = [
+            SubComponentPattern.from_et(el, doc_frags)
+            for el in et_element.iterfind("SUB-COMPONENT-PATTERNS/SUB-COMPONENT-PATTERN")
+        ]
         sub_component_param_connectors = [
             SubComponentParamConnector.from_et(el, doc_frags) for el in et_element.iterfind(
                 "SUB-COMPONENT-PARAM-CONNECTORS/SUB-COMPONENT-PARAM-CONNECTOR")
@@ -268,6 +295,7 @@ class SubComponent(IdentifiableElement):
 
         return SubComponent(
             semantic=semantic,
+            sub_component_patterns=sub_component_patterns,
             sub_component_param_connectors=NamedItemList(sub_component_param_connectors),
             table_row_connectors=NamedItemList(table_row_connectors),
             env_data_connectors=NamedItemList(env_data_connectors),
@@ -277,15 +305,51 @@ class SubComponent(IdentifiableElement):
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         result = {}
 
+        for scp in self.sub_component_patterns:
+            result.update(scp._build_odxlinks())
+
+        for scpc in self.sub_component_param_connectors:
+            result.update(scpc._build_odxlinks())
+
+        for trc in self.table_row_connectors:
+            result.update(trc._build_odxlinks())
+
+        for edc in self.env_data_connectors:
+            result.update(edc._build_odxlinks())
+
         for dtc_conn in self.dtc_connectors:
             result.update(dtc_conn._build_odxlinks())
 
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        for scp in self.sub_component_patterns:
+            scp._resolve_odxlinks(odxlinks)
+
+        for scpc in self.sub_component_param_connectors:
+            scpc._resolve_odxlinks(odxlinks)
+
+        for trc in self.table_row_connectors:
+            trc._resolve_odxlinks(odxlinks)
+
+        for edc in self.env_data_connectors:
+            edc._resolve_odxlinks(odxlinks)
+
         for dtc_conn in self.dtc_connectors:
             dtc_conn._resolve_odxlinks(odxlinks)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
+        for scp in self.sub_component_patterns:
+            scp._resolve_snrefs(context)
+
+        for scpc in self.sub_component_param_connectors:
+            scpc._resolve_snrefs(context)
+
+        for trc in self.table_row_connectors:
+            trc._resolve_snrefs(context)
+
+        for edc in self.env_data_connectors:
+            edc._resolve_snrefs(context)
+
         for dtc_conn in self.dtc_connectors:
             dtc_conn._resolve_snrefs(context)

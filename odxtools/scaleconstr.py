@@ -35,7 +35,6 @@ class ScaleConstr:
                              value_type: DataType) -> "ScaleConstr":
         short_label = et_element.findtext("SHORT-LABEL")
         description = Description.from_et(et_element.find("DESC"), doc_frags)
-
         lower_limit = Limit.limit_from_et(
             odxrequire(et_element.find("LOWER-LIMIT")), doc_frags, value_type=value_type)
         upper_limit = Limit.limit_from_et(
