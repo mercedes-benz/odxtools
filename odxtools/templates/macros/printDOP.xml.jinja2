@@ -17,6 +17,9 @@
                  {%- if dct.termination is defined %}
                  {{-make_xml_attrib("TERMINATION", dct.termination.value)}}
                  {%- endif %}
+                 {%- if dct.is_condensed_raw is defined %}
+                 {{-make_bool_xml_attrib("CONDENSED", dct.is_condensed_raw)}}
+                 {%- endif %}
                  {#- #} xsi:type="{{dct.dct_type}}">
  {%- if dct.dct_type in ("STANDARD-LENGTH-TYPE", "LEADING-LENGTH-INFO-TYPE") %}
  <BIT-LENGTH>{{dct.bit_length}}</BIT-LENGTH>

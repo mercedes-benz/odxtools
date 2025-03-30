@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .admindata import AdminData
-from .basicstructure import BasicStructure
 from .dataobjectproperty import DataObjectProperty
 from .dopbase import DopBase
 from .dtcdop import DtcDop
@@ -14,7 +13,6 @@ from .dynamiclengthfield import DynamicLengthField
 from .endofpdufield import EndOfPduField
 from .environmentdata import EnvironmentData
 from .environmentdatadescription import EnvironmentDataDescription
-from .exceptions import odxraise
 from .multiplexer import Multiplexer
 from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
@@ -32,7 +30,7 @@ class DiagDataDictionarySpec:
     dtc_dops: NamedItemList[DtcDop]
     env_data_descs: NamedItemList[EnvironmentDataDescription]
     data_object_props: NamedItemList[DataObjectProperty]
-    structures: NamedItemList[BasicStructure]
+    structures: NamedItemList[Structure]
     static_fields: NamedItemList[StaticField]
     dynamic_length_fields: NamedItemList[DynamicLengthField]
     dynamic_endmarker_fields: NamedItemList[DynamicEndmarkerField]
@@ -42,6 +40,99 @@ class DiagDataDictionarySpec:
     unit_spec: Optional[UnitSpec]
     tables: NamedItemList[Table]
     sdgs: List[SpecialDataGroup]
+
+    @staticmethod
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "DiagDataDictionarySpec":
+        admin_data = None
+        if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:
+            admin_data = AdminData.from_et(admin_data_elem, doc_frags)
+
+        dtc_dops = NamedItemList([
+            DtcDop.from_et(dtc_dop_elem, doc_frags)
+            for dtc_dop_elem in et_element.iterfind("DTC-DOPS/DTC-DOP")
+        ])
+
+        env_data_descs = NamedItemList([
+            EnvironmentDataDescription.from_et(env_data_desc_element, doc_frags)
+            for env_data_desc_element in et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC")
+        ])
+
+        data_object_props = NamedItemList([
+            DataObjectProperty.from_et(dop_element, doc_frags)
+            for dop_element in et_element.iterfind("DATA-OBJECT-PROPS/DATA-OBJECT-PROP")
+        ])
+
+        structures = NamedItemList([
+            Structure.from_et(structure_element, doc_frags)
+            for structure_element in et_element.iterfind("STRUCTURES/STRUCTURE")
+        ])
+
+        static_fields = NamedItemList([
+            StaticField.from_et(dl_element, doc_frags)
+            for dl_element in et_element.iterfind("STATIC-FIELDS/STATIC-FIELD")
+        ])
+
+        dynamic_length_fields = NamedItemList([
+            DynamicLengthField.from_et(dl_element, doc_frags)
+            for dl_element in et_element.iterfind("DYNAMIC-LENGTH-FIELDS/DYNAMIC-LENGTH-FIELD")
+        ])
+
+        dynamic_endmarker_fields = NamedItemList([
+            DynamicEndmarkerField.from_et(dl_element, doc_frags) for dl_element in
+            et_element.iterfind("DYNAMIC-ENDMARKER-FIELDS/DYNAMIC-ENDMARKER-FIELD")
+        ])
+
+        end_of_pdu_fields = NamedItemList([
+            EndOfPduField.from_et(eofp_element, doc_frags)
+            for eofp_element in et_element.iterfind("END-OF-PDU-FIELDS/END-OF-PDU-FIELD")
+        ])
+
+        muxs = NamedItemList([
+            Multiplexer.from_et(mux_element, doc_frags)
+            for mux_element in et_element.iterfind("MUXS/MUX")
+        ])
+
+        env_data_elements = chain(
+            et_element.iterfind("ENV-DATAS/ENV-DATA"),
+            # ODX 2.0.0 says ENV-DATA-DESC could contain a list of ENV-DATAS
+            et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC/ENV-DATAS/ENV-DATA"),
+        )
+        env_datas = NamedItemList([
+            EnvironmentData.from_et(env_data_element, doc_frags)
+            for env_data_element in env_data_elements
+        ])
+
+        if (spec_elem := et_element.find("UNIT-SPEC")) is not None:
+            unit_spec = UnitSpec.from_et(spec_elem, doc_frags)
+        else:
+            unit_spec = None
+
+        tables = NamedItemList([
+            Table.from_et(table_element, doc_frags)
+            for table_element in et_element.iterfind("TABLES/TABLE")
+        ])
+
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
+
+        return DiagDataDictionarySpec(
+            admin_data=admin_data,
+            dtc_dops=dtc_dops,
+            env_data_descs=env_data_descs,
+            data_object_props=data_object_props,
+            structures=structures,
+            static_fields=static_fields,
+            dynamic_length_fields=dynamic_length_fields,
+            dynamic_endmarker_fields=dynamic_endmarker_fields,
+            end_of_pdu_fields=end_of_pdu_fields,
+            muxs=muxs,
+            env_datas=env_datas,
+            unit_spec=unit_spec,
+            tables=tables,
+            sdgs=sdgs,
+        )
 
     def __post_init__(self) -> None:
         self._all_data_object_properties: NamedItemList[DopBase] = NamedItemList(
@@ -57,101 +148,6 @@ class DiagDataDictionarySpec:
                 self.muxs,
                 self.env_datas,
             ))
-
-    @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DiagDataDictionarySpec":
-        admin_data = None
-        if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:
-            admin_data = AdminData.from_et(admin_data_elem, doc_frags)
-
-        dtc_dops = []
-        for dtc_dop_elem in et_element.iterfind("DTC-DOPS/DTC-DOP"):
-            dtc_dop = DtcDop.from_et(dtc_dop_elem, doc_frags)
-            if not isinstance(dtc_dop, DtcDop):
-                odxraise()
-            dtc_dops.append(dtc_dop)
-
-        env_data_descs = [
-            EnvironmentDataDescription.from_et(env_data_desc_element, doc_frags)
-            for env_data_desc_element in et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC")
-        ]
-
-        data_object_props = [
-            DataObjectProperty.from_et(dop_element, doc_frags)
-            for dop_element in et_element.iterfind("DATA-OBJECT-PROPS/DATA-OBJECT-PROP")
-        ]
-
-        structures = [
-            Structure.from_et(structure_element, doc_frags)
-            for structure_element in et_element.iterfind("STRUCTURES/STRUCTURE")
-        ]
-
-        static_fields = [
-            StaticField.from_et(dl_element, doc_frags)
-            for dl_element in et_element.iterfind("STATIC-FIELDS/STATIC-FIELD")
-        ]
-
-        dynamic_length_fields = [
-            DynamicLengthField.from_et(dl_element, doc_frags)
-            for dl_element in et_element.iterfind("DYNAMIC-LENGTH-FIELDS/DYNAMIC-LENGTH-FIELD")
-        ]
-
-        dynamic_endmarker_fields = [
-            DynamicEndmarkerField.from_et(dl_element, doc_frags) for dl_element in
-            et_element.iterfind("DYNAMIC-ENDMARKER-FIELDS/DYNAMIC-ENDMARKER-FIELD")
-        ]
-
-        end_of_pdu_fields = [
-            EndOfPduField.from_et(eofp_element, doc_frags)
-            for eofp_element in et_element.iterfind("END-OF-PDU-FIELDS/END-OF-PDU-FIELD")
-        ]
-
-        muxs = [
-            Multiplexer.from_et(mux_element, doc_frags)
-            for mux_element in et_element.iterfind("MUXS/MUX")
-        ]
-
-        env_data_elements = chain(
-            et_element.iterfind("ENV-DATAS/ENV-DATA"),
-            # ODX 2.0.0 says ENV-DATA-DESC could contain a list of ENV-DATAS
-            et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC/ENV-DATAS/ENV-DATA"),
-        )
-        env_datas = [
-            EnvironmentData.from_et(env_data_element, doc_frags)
-            for env_data_element in env_data_elements
-        ]
-
-        if (spec_elem := et_element.find("UNIT-SPEC")) is not None:
-            unit_spec = UnitSpec.from_et(spec_elem, doc_frags)
-        else:
-            unit_spec = None
-
-        tables = [
-            Table.from_et(table_element, doc_frags)
-            for table_element in et_element.iterfind("TABLES/TABLE")
-        ]
-
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
-
-        return DiagDataDictionarySpec(
-            admin_data=admin_data,
-            dtc_dops=NamedItemList(dtc_dops),
-            env_data_descs=NamedItemList(env_data_descs),
-            data_object_props=NamedItemList(data_object_props),
-            structures=NamedItemList(structures),
-            static_fields=NamedItemList(static_fields),
-            dynamic_length_fields=NamedItemList(dynamic_length_fields),
-            dynamic_endmarker_fields=NamedItemList(dynamic_endmarker_fields),
-            end_of_pdu_fields=NamedItemList(end_of_pdu_fields),
-            muxs=NamedItemList(muxs),
-            env_datas=NamedItemList(env_datas),
-            unit_spec=unit_spec,
-            tables=NamedItemList(tables),
-            sdgs=sdgs,
-        )
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         # note that DataDictionarySpec objects do not exhibit an ODXLINK id.

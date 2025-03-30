@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -20,8 +20,27 @@ from .parameter import Parameter, ParameterType
 @dataclass
 class CodedConstParameter(Parameter):
 
+    coded_value_raw: str
     diag_coded_type: DiagCodedType
-    coded_value: AtomicOdxType
+
+    @property
+    @override
+    def parameter_type(self) -> ParameterType:
+        return "CODED-CONST"
+
+    @property
+    @override
+    def is_required(self) -> bool:
+        return False
+
+    @property
+    @override
+    def is_settable(self) -> bool:
+        return False
+
+    @property
+    def coded_value(self) -> AtomicOdxType:
+        return self._coded_value
 
     @staticmethod
     @override
@@ -30,18 +49,16 @@ class CodedConstParameter(Parameter):
 
         kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
 
+        coded_value_raw = odxrequire(et_element.findtext("CODED-VALUE"))
         dct_elem = odxrequire(et_element.find("DIAG-CODED-TYPE"))
         diag_coded_type = create_any_diag_coded_type_from_et(dct_elem, doc_frags)
-        coded_value = diag_coded_type.base_data_type.from_string(
-            odxrequire(et_element.findtext("CODED-VALUE")))
 
         return CodedConstParameter(
-            diag_coded_type=diag_coded_type, coded_value=coded_value, **kwargs)
+            coded_value_raw=coded_value_raw, diag_coded_type=diag_coded_type, **kwargs)
 
-    @property
-    @override
-    def parameter_type(self) -> ParameterType:
-        return "CODED-CONST"
+    def __post_init__(self) -> None:
+        self._coded_value = cast(
+            AtomicOdxType, self.diag_coded_type.base_data_type.from_string(self.coded_value_raw))
 
     @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -58,16 +75,6 @@ class CodedConstParameter(Parameter):
     @property
     def internal_data_type(self) -> DataType:
         return self.diag_coded_type.base_data_type
-
-    @property
-    @override
-    def is_required(self) -> bool:
-        return False
-
-    @property
-    @override
-    def is_settable(self) -> bool:
-        return False
 
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
@@ -91,7 +98,7 @@ class CodedConstParameter(Parameter):
             warnings.warn(
                 f"Coded constant parameter does not match! "
                 f"The parameter {self.short_name} expected coded "
-                f"value {str(self._coded_value_str)} but got {str(coded_val)} "
+                f"value {str(self.coded_value)} but got {str(coded_val)} "
                 f"at byte position {decode_state.cursor_byte_position} "
                 f"in coded message {decode_state.coded_message.hex()}.",
                 DecodeError,
@@ -100,12 +107,6 @@ class CodedConstParameter(Parameter):
 
         return coded_val
 
-    @property
-    def _coded_value_str(self) -> str:
-        if isinstance(self.coded_value, bytes):
-            return self.coded_value.hex()
-        return str(self.coded_value)
-
     def get_description_of_valid_values(self) -> str:
         """return a human-understandable description of valid physical values"""
-        return f"Constant internal value: {self._coded_value_str}"
+        return f"Constant internal value: {str(self.coded_value)}"

@@ -9,18 +9,10 @@ from .snrefcontext import SnRefContext
 
 @dataclass
 class SpecialData:
+    """This corresponds to the SD XML tag"""
     semantic_info: Optional[str]  # the "SI" attribute
     text_identifier: Optional[str]  # the "TI" attribute, specifies the language used
     value: str
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        return {}
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        pass
-
-    def _resolve_snrefs(self, context: SnRefContext) -> None:
-        pass
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SpecialData":
@@ -30,3 +22,12 @@ class SpecialData:
 
         return SpecialData(
             semantic_info=semantic_info, text_identifier=text_identifier, value=value)
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        return {}
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        pass
+
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        pass

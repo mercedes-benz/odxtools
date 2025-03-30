@@ -42,61 +42,16 @@ class Parameter(NamedElement):
     non-positionable parameter types.
 
     """
+    sdgs: List[SpecialDataGroup]
+    semantic: Optional[str]
     oid: Optional[str]
     byte_position: Optional[int]
     bit_position: Optional[int]
-    semantic: Optional[str]
-    sdgs: List[SpecialDataGroup]
-
-    @staticmethod
-    @override
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Parameter":
-
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
-
-        oid = et_element.get("OID")
-        semantic = et_element.get("SEMANTIC")
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
-
-        byte_position_str = et_element.findtext("BYTE-POSITION")
-        bit_position_str = et_element.findtext("BIT-POSITION")
-
-        byte_position = int(byte_position_str) if byte_position_str is not None else None
-        bit_position = int(bit_position_str) if bit_position_str is not None else None
-
-        return Parameter(
-            oid=oid,
-            byte_position=byte_position,
-            bit_position=bit_position,
-            semantic=semantic,
-            sdgs=sdgs,
-            **kwargs)
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result = {}
-
-        for sdg in self.sdgs:
-            result.update(sdg._build_odxlinks())
-
-        return result
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        for sdg in self.sdgs:
-            sdg._resolve_odxlinks(odxlinks)
-
-    def _resolve_snrefs(self, context: SnRefContext) -> None:
-        for sdg in self.sdgs:
-            sdg._resolve_snrefs(context)
 
     @property
     def parameter_type(self) -> ParameterType:
         raise NotImplementedError(
             ".parameter_type is not implemented by the concrete parameter class")
-
-    def get_static_bit_length(self) -> Optional[int]:
-        return None
 
     @property
     def is_required(self) -> bool:
@@ -120,6 +75,49 @@ class Parameter(NamedElement):
         specified.
         """
         raise NotImplementedError(".is_settable is not implemented by the concrete parameter class")
+
+    @staticmethod
+    @override
+    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Parameter":
+
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+
+        sdgs = [
+            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
+        ]
+        semantic = et_element.attrib.get("SEMANTIC")
+        oid = et_element.attrib.get("OID")
+        byte_position_str = et_element.findtext("BYTE-POSITION")
+        byte_position = int(byte_position_str) if byte_position_str is not None else None
+        bit_position_str = et_element.findtext("BIT-POSITION")
+        bit_position = int(bit_position_str) if bit_position_str is not None else None
+
+        return Parameter(
+            sdgs=sdgs,
+            semantic=semantic,
+            oid=oid,
+            byte_position=byte_position,
+            bit_position=bit_position,
+            **kwargs)
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = {}
+
+        for sdg in self.sdgs:
+            result.update(sdg._build_odxlinks())
+
+        return result
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        for sdg in self.sdgs:
+            sdg._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        for sdg in self.sdgs:
+            sdg._resolve_snrefs(context)
+
+    def get_static_bit_length(self) -> Optional[int]:
+        return None
 
     @final
     def encode_into_pdu(self, physical_value: Optional[ParameterValue],

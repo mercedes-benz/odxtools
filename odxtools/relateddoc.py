@@ -11,20 +11,19 @@ from .xdoc import XDoc
 
 @dataclass
 class RelatedDoc:
-    description: Optional[Description]
     xdoc: Optional[XDoc]
+    description: Optional[Description]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "RelatedDoc":
-        description = Description.from_et(et_element.find("DESC"), doc_frags)
-
         xdoc: Optional[XDoc] = None
         if (xdoc_elem := et_element.find("XDOC")) is not None:
             xdoc = XDoc.from_et(xdoc_elem, doc_frags)
+        description = Description.from_et(et_element.find("DESC"), doc_frags)
 
         return RelatedDoc(
-            description=description,
             xdoc=xdoc,
+            description=description,
         )
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:

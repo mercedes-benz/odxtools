@@ -77,7 +77,7 @@ class CommRelation:
             warnings.warn("SNPATHREFs are not supported by odxtools yet", OdxWarning, stacklevel=1)
 
         value_type_raw = None
-        if (value_type_str := et_element.get("VALUE-TYPE")) is not None:
+        if (value_type_str := et_element.attrib.get("VALUE-TYPE")) is not None:
             try:
                 value_type_raw = CommRelationValueType(value_type_str)
             except ValueError:
@@ -109,6 +109,7 @@ class CommRelation:
         if not isinstance(service, DiagService):
             odxraise(f"DIAG-VARIABLE references non-service {type(service).__name__} "
                      f"diagnostic communication")
+            return
 
         self._in_param_if = None
         if self.in_param_if_snref is not None:

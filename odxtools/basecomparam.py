@@ -29,9 +29,8 @@ class Usage(Enum):
 class BaseComparam(IdentifiableElement):
     param_class: str
     cptype: StandardizationLevel
-    # Required in ODX 2.2, missing in ODX 2.0
-    cpusage: Optional[Usage]
     display_level: Optional[int]
+    cpusage: Optional[Usage]  # Required in ODX 2.2, missing in ODX 2.0
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "BaseComparam":

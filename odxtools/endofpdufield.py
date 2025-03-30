@@ -17,29 +17,27 @@ from .utils import dataclass_fields_asdict
 @dataclass
 class EndOfPduField(Field):
     """End of PDU fields are structures that are repeated until the end of the PDU"""
-    min_number_of_items: Optional[int]
     max_number_of_items: Optional[int]
+    min_number_of_items: Optional[int]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "EndOfPduField":
         kwargs = dataclass_fields_asdict(Field.from_et(et_element, doc_frags))
 
-        if (min_n_str := et_element.findtext("MIN-NUMBER-OF-ITEMS")) is not None:
-            min_number_of_items = int(min_n_str)
-        else:
-            min_number_of_items = None
         if (max_n_str := et_element.findtext("MAX-NUMBER-OF-ITEMS")) is not None:
             max_number_of_items = int(max_n_str)
         else:
             max_number_of_items = None
+        if (min_n_str := et_element.findtext("MIN-NUMBER-OF-ITEMS")) is not None:
+            min_number_of_items = int(min_n_str)
+        else:
+            min_number_of_items = None
 
-        eopf = EndOfPduField(
-            min_number_of_items=min_number_of_items,
+        return EndOfPduField(
             max_number_of_items=max_number_of_items,
+            min_number_of_items=min_number_of_items,
             **kwargs)
-
-        return eopf
 
     @override
     def encode_into_pdu(self, physical_value: Optional[ParameterValue],

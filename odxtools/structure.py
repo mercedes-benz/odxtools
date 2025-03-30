@@ -13,6 +13,10 @@ from .utils import dataclass_fields_asdict
 class Structure(BasicStructure):
     is_visible_raw: Optional[bool]
 
+    @property
+    def is_visible(self) -> bool:
+        return self.is_visible_raw in (True, None)
+
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Structure":
         """Read a STRUCTURE element from XML."""
@@ -21,7 +25,3 @@ class Structure(BasicStructure):
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
 
         return Structure(is_visible_raw=is_visible_raw, **kwargs)
-
-    @property
-    def is_visible(self) -> bool:
-        return self.is_visible_raw in (True, None)

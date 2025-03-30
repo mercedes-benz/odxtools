@@ -34,12 +34,15 @@ class Multiplexer(ComplexDop):
     cases: NamedItemList[MultiplexerCase]
     is_visible_raw: Optional[bool]
 
+    @property
+    def is_visible(self) -> bool:
+        return self.is_visible_raw is True
+
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Multiplexer":
         """Reads a Multiplexer from Diag Layer."""
-        base_obj = ComplexDop.from_et(et_element, doc_frags)
-        kwargs = dataclass_fields_asdict(base_obj)
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
 
         byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
         switch_key = MultiplexerSwitchKey.from_et(
@@ -55,16 +58,45 @@ class Multiplexer(ComplexDop):
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
 
         return Multiplexer(
-            is_visible_raw=is_visible_raw,
             byte_position=byte_position,
             switch_key=switch_key,
             default_case=default_case,
             cases=cases,
+            is_visible_raw=is_visible_raw,
             **kwargs)
 
-    @property
-    def is_visible(self) -> bool:
-        return self.is_visible_raw is True
+    @override
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        odxlinks = super()._build_odxlinks()
+
+        odxlinks.update(self.switch_key._build_odxlinks())
+        if self.default_case is not None:
+            odxlinks.update(self.default_case._build_odxlinks())
+
+        return odxlinks
+
+    @override
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        super()._resolve_odxlinks(odxlinks)
+
+        self.switch_key._resolve_odxlinks(odxlinks)
+        if self.default_case is not None:
+            self.default_case._resolve_odxlinks(odxlinks)
+
+        for mux_case in self.cases:
+            mux_case._mux_case_resolve_odxlinks(
+                odxlinks, key_physical_type=self.switch_key.dop.physical_type.base_data_type)
+
+    @override
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        super()._resolve_snrefs(context)
+
+        self.switch_key._resolve_snrefs(context)
+        if self.default_case is not None:
+            self.default_case._resolve_snrefs(context)
+
+        for mux_case in self.cases:
+            mux_case._resolve_snrefs(context)
 
     def _get_case_limits(self, case: MultiplexerCase) -> Tuple[AtomicOdxType, AtomicOdxType]:
         key_type = self.switch_key.dop.physical_type.base_data_type
@@ -203,36 +235,3 @@ class Multiplexer(ComplexDop):
         decode_state.origin_byte_position = orig_origin
 
         return result
-
-    @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        odxlinks = super()._build_odxlinks()
-
-        odxlinks.update(self.switch_key._build_odxlinks())
-        if self.default_case is not None:
-            odxlinks.update(self.default_case._build_odxlinks())
-
-        return odxlinks
-
-    @override
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        super()._resolve_odxlinks(odxlinks)
-
-        self.switch_key._resolve_odxlinks(odxlinks)
-        if self.default_case is not None:
-            self.default_case._resolve_odxlinks(odxlinks)
-
-        for mux_case in self.cases:
-            mux_case._mux_case_resolve_odxlinks(
-                odxlinks, key_physical_type=self.switch_key.dop.physical_type.base_data_type)
-
-    @override
-    def _resolve_snrefs(self, context: SnRefContext) -> None:
-        super()._resolve_snrefs(context)
-
-        self.switch_key._resolve_snrefs(context)
-        if self.default_case is not None:
-            self.default_case._resolve_snrefs(context)
-
-        for mux_case in self.cases:
-            mux_case._resolve_snrefs(context)

@@ -39,6 +39,11 @@ class PhysicalType:
     PhysicalType(DataType.A_FLOAT64, precision=2)
     """
 
+    precision: Optional[int]
+    """Number of digits after the decimal point to display to the user
+    The precision is only applicable if the base data type is A_FLOAT32 or A_FLOAT64.
+    """
+
     base_data_type: DataType
 
     display_radix: Optional[Radix]
@@ -46,18 +51,11 @@ class PhysicalType:
     The display radix is only applicable if the base data type is A_UINT32.
     """
 
-    precision: Optional[int]
-    """Number of digits after the decimal point to display to the user
-    The precision is only applicable if the base data type is A_FLOAT32 or A_FLOAT64.
-    """
-
-    def __post_init__(self) -> None:
-        self.base_data_type = DataType(self.base_data_type)
-        if self.display_radix is not None:
-            self.display_radix = Radix(self.display_radix)
-
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "PhysicalType":
+        precision_str = et_element.findtext("PRECISION")
+        precision = int(precision_str) if precision_str is not None else None
+
         base_data_type_str = et_element.get("BASE-DATA-TYPE")
         if base_data_type_str not in DataType.__members__:
             odxraise(f"Encountered unknown base data type '{base_data_type_str}'")
@@ -71,8 +69,5 @@ class PhysicalType:
         else:
             display_radix = None
 
-        precision_str = et_element.findtext("PRECISION")
-        precision = int(precision_str) if precision_str is not None else None
-
         return PhysicalType(
-            base_data_type=base_data_type, display_radix=display_radix, precision=precision)
+            precision=precision, base_data_type=base_data_type, display_radix=display_radix)

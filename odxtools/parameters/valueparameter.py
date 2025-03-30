@@ -20,8 +20,24 @@ from .parameterwithdop import ParameterWithDOP
 class ValueParameter(ParameterWithDOP):
     physical_default_value_raw: Optional[str]
 
-    def __post_init__(self) -> None:
-        self._physical_default_value: Optional[AtomicOdxType] = None
+    @property
+    @override
+    def parameter_type(self) -> ParameterType:
+        return "VALUE"
+
+    @property
+    def physical_default_value(self) -> Optional[AtomicOdxType]:
+        return self._physical_default_value
+
+    @property
+    @override
+    def is_required(self) -> bool:
+        return self._physical_default_value is None
+
+    @property
+    @override
+    def is_settable(self) -> bool:
+        return True
 
     @staticmethod
     @override
@@ -34,10 +50,8 @@ class ValueParameter(ParameterWithDOP):
 
         return ValueParameter(physical_default_value_raw=physical_default_value_raw, **kwargs)
 
-    @property
-    @override
-    def parameter_type(self) -> ParameterType:
-        return "VALUE"
+    def __post_init__(self) -> None:
+        self._physical_default_value: Optional[AtomicOdxType] = None
 
     @override
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
@@ -59,20 +73,6 @@ class ValueParameter(ParameterWithDOP):
             base_data_type = dop.physical_type.base_data_type
             self._physical_default_value = base_data_type.from_string(
                 self.physical_default_value_raw)
-
-    @property
-    def physical_default_value(self) -> Optional[AtomicOdxType]:
-        return self._physical_default_value
-
-    @property
-    @override
-    def is_required(self) -> bool:
-        return self._physical_default_value is None
-
-    @property
-    @override
-    def is_settable(self) -> bool:
-        return True
 
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],

@@ -43,6 +43,9 @@ class AdminData:
         for cdi in self.company_doc_infos:
             result.update(cdi._build_odxlinks())
 
+        for dr in self.doc_revisions:
+            result.update(dr._build_odxlinks())
+
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

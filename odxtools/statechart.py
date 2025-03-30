@@ -30,6 +30,7 @@ class StateChart(IdentifiableElement):
     @staticmethod
     def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "StateChart":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+
         semantic: str = odxrequire(et_element.findtext("SEMANTIC"))
 
         state_transitions = [
@@ -54,15 +55,18 @@ class StateChart(IdentifiableElement):
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
         odxlinks = {self.odx_id: self}
 
-        for st in self.states:
-            odxlinks.update(st._build_odxlinks())
-
         for strans in self.state_transitions:
             odxlinks.update(strans._build_odxlinks())
+
+        for st in self.states:
+            odxlinks.update(st._build_odxlinks())
 
         return odxlinks
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        for strans in self.state_transitions:
+            strans._resolve_odxlinks(odxlinks)
+
         for st in self.states:
             st._resolve_odxlinks(odxlinks)
 
@@ -77,10 +81,10 @@ class StateChart(IdentifiableElement):
         # does that mean?
         self._start_state = resolve_snref(self.start_state_snref, self.states, State)
 
-        for st in self.states:
-            st._resolve_snrefs(context)
-
         for strans in self.state_transitions:
             strans._resolve_snrefs(context)
+
+        for st in self.states:
+            st._resolve_snrefs(context)
 
         context.state_chart = None

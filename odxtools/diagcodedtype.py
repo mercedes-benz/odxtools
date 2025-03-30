@@ -22,21 +22,24 @@ DctType = Literal[
 
 @dataclass
 class DiagCodedType:
-
-    base_data_type: DataType
     base_type_encoding: Optional[Encoding]
+    base_data_type: DataType
+
     is_highlow_byte_order_raw: Optional[bool]
+
+    @property
+    def dct_type(self) -> DctType:
+        odxraise(f"Class {type(self).__name__} does not override required method "
+                 f"dct_type()", NotImplementedError)
+        return cast(DctType, None)
+
+    @property
+    def is_highlow_byte_order(self) -> bool:
+        return self.is_highlow_byte_order_raw in [None, True]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "DiagCodedType":
-        base_data_type_str = odxrequire(et_element.get("BASE-DATA-TYPE"))
-        try:
-            base_data_type = DataType(base_data_type_str)
-        except ValueError:
-            odxraise(f"Unknown base data type {base_data_type_str}")
-            base_data_type = cast(DataType, None)
-
         base_type_encoding = None
         if (base_type_encoding_str := et_element.get("BASE-TYPE-ENCODING")) is not None:
             try:
@@ -44,11 +47,18 @@ class DiagCodedType:
             except ValueError:
                 odxraise(f"Encountered unknown BASE-TYPE-ENCODING '{base_type_encoding_str}'")
 
+        base_data_type_str = odxrequire(et_element.get("BASE-DATA-TYPE"))
+        try:
+            base_data_type = DataType(base_data_type_str)
+        except ValueError:
+            odxraise(f"Unknown base data type {base_data_type_str}")
+            base_data_type = cast(DataType, None)
+
         is_highlow_byte_order_raw = odxstr_to_bool(et_element.get("IS-HIGHLOW-BYTE-ORDER"))
 
         return DiagCodedType(
-            base_data_type=base_data_type,
             base_type_encoding=base_type_encoding,
+            base_data_type=base_data_type,
             is_highlow_byte_order_raw=is_highlow_byte_order_raw)
 
     def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:  # noqa: B027
@@ -64,16 +74,6 @@ class DiagCodedType:
 
     def get_static_bit_length(self) -> Optional[int]:
         return None
-
-    @property
-    def dct_type(self) -> DctType:
-        odxraise(f"Class {type(self).__name__} does not override required method "
-                 f"dct_type()", NotImplementedError)
-        return cast(DctType, None)
-
-    @property
-    def is_highlow_byte_order(self) -> bool:
-        return self.is_highlow_byte_order_raw in [None, True]
 
     def _minimal_byte_length_of(self, internal_value: Union[bytes, str]) -> int:
         """Helper method to get the minimal byte length.

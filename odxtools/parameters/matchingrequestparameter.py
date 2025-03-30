@@ -19,6 +19,21 @@ class MatchingRequestParameter(Parameter):
     request_byte_position: int
     byte_length: int
 
+    @property
+    @override
+    def parameter_type(self) -> ParameterType:
+        return "MATCHING-REQUEST-PARAM"
+
+    @property
+    @override
+    def is_required(self) -> bool:
+        return False
+
+    @property
+    @override
+    def is_settable(self) -> bool:
+        return False
+
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
@@ -32,24 +47,9 @@ class MatchingRequestParameter(Parameter):
         return MatchingRequestParameter(
             request_byte_position=request_byte_position, byte_length=byte_length, **kwargs)
 
-    @property
-    @override
-    def parameter_type(self) -> ParameterType:
-        return "MATCHING-REQUEST-PARAM"
-
     @override
     def get_static_bit_length(self) -> Optional[int]:
         return 8 * self.byte_length
-
-    @property
-    @override
-    def is_required(self) -> bool:
-        return False
-
-    @property
-    @override
-    def is_settable(self) -> bool:
-        return False
 
     @override
     def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],

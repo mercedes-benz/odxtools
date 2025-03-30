@@ -23,6 +23,10 @@ class LeadingLengthInfoType(DiagCodedType):
     #: object.
     bit_length: int
 
+    @property
+    def dct_type(self) -> DctType:
+        return "LEADING-LENGTH-INFO-TYPE"
+
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
@@ -45,10 +49,6 @@ class LeadingLengthInfoType(DiagCodedType):
             ],
             f"A leading length info type cannot have the base data type {self.base_data_type.name}."
         )
-
-    @property
-    def dct_type(self) -> DctType:
-        return "LEADING-LENGTH-INFO-TYPE"
 
     @override
     def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:

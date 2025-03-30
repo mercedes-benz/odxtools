@@ -29,32 +29,8 @@ class BasicStructure(ComplexDop):
     data objects. All structure-like objects adhere to the
     `CompositeCodec` type protocol.
     """
-    parameters: NamedItemList[Parameter]
     byte_size: Optional[int]
-
-    @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "BasicStructure":
-        """Read a BASIC-STRUCTURE."""
-        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
-
-        parameters = NamedItemList([
-            create_any_parameter_from_et(et_parameter, doc_frags)
-            for et_parameter in et_element.iterfind("PARAMS/PARAM")
-        ])
-
-        byte_size_str = et_element.findtext("BYTE-SIZE")
-        byte_size = int(byte_size_str) if byte_size_str is not None else None
-
-        return BasicStructure(parameters=parameters, byte_size=byte_size, **kwargs)
-
-    def get_static_bit_length(self) -> Optional[int]:
-        # Explicit size was specified, so we do not need to look at
-        # the list of parameters
-        if self.byte_size is not None:
-            return 8 * self.byte_size
-
-        return composite_codec_get_static_bit_length(self)
+    parameters: NamedItemList[Parameter]
 
     @property
     def required_parameters(self) -> List[Parameter]:
@@ -63,6 +39,52 @@ class BasicStructure(ComplexDop):
     @property
     def free_parameters(self) -> List[Parameter]:
         return composite_codec_get_free_parameters(self)
+
+    @staticmethod
+    def from_et(et_element: ElementTree.Element,
+                doc_frags: List[OdxDocFragment]) -> "BasicStructure":
+        """Read a BASIC-STRUCTURE."""
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
+
+        byte_size_str = et_element.findtext("BYTE-SIZE")
+        byte_size = int(byte_size_str) if byte_size_str is not None else None
+        parameters = NamedItemList([
+            create_any_parameter_from_et(et_parameter, doc_frags)
+            for et_parameter in et_element.iterfind("PARAMS/PARAM")
+        ])
+
+        return BasicStructure(byte_size=byte_size, parameters=parameters, **kwargs)
+
+    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+        result = super()._build_odxlinks()
+
+        for param in self.parameters:
+            result.update(param._build_odxlinks())
+
+        return result
+
+    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
+        super()._resolve_odxlinks(odxlinks)
+
+        for param in self.parameters:
+            param._resolve_odxlinks(odxlinks)
+
+    def _resolve_snrefs(self, context: SnRefContext) -> None:
+        context.parameters = self.parameters
+
+        super()._resolve_snrefs(context)
+        for param in self.parameters:
+            param._resolve_snrefs(context)
+
+        context.parameters = None
+
+    def get_static_bit_length(self) -> Optional[int]:
+        # Explicit size was specified, so we do not need to look at
+        # the list of parameters
+        if self.byte_size is not None:
+            return 8 * self.byte_size
+
+        return composite_codec_get_static_bit_length(self)
 
     def print_free_parameters_info(self) -> None:
         """Return a human readable description of the structure's
@@ -109,26 +131,3 @@ class BasicStructure(ComplexDop):
             decode_state.cursor_byte_position = orig_pos + self.byte_size
 
         return result
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result = super()._build_odxlinks()
-
-        for param in self.parameters:
-            result.update(param._build_odxlinks())
-
-        return result
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        super()._resolve_odxlinks(odxlinks)
-
-        for param in self.parameters:
-            param._resolve_odxlinks(odxlinks)
-
-    def _resolve_snrefs(self, context: SnRefContext) -> None:
-        context.parameters = self.parameters
-
-        super()._resolve_snrefs(context)
-        for param in self.parameters:
-            param._resolve_snrefs(context)
-
-        context.parameters = None
