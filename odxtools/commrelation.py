@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from enum import Enum
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
+from .commrelationvaluetype import CommRelationValueType
 from .description import Description
 from .diagcomm import DiagComm
 from .diagservice import DiagService
@@ -12,13 +12,6 @@ from .exceptions import OdxWarning, odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .parameters.parameter import Parameter
 from .snrefcontext import SnRefContext
-
-
-class CommRelationValueType(Enum):
-    CURRENT = "CURRENT"
-    STORED = "STORED"
-    STATIC = "STATIC"
-    SUBSTITUTED = "SUBSTITUTED"
 
 
 @dataclass

@@ -1,18 +1,12 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
 from typing import List, Optional, overload
 from xml.etree import ElementTree
 
 from ..exceptions import odxraise
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType, compare_odx_values
-
-
-class IntervalType(Enum):
-    OPEN = "OPEN"
-    CLOSED = "CLOSED"
-    INFINITE = "INFINITE"
+from .intervaltype import IntervalType
 
 
 @dataclass

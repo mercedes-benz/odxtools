@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
 from typing import TYPE_CHECKING, List, Optional, cast
 from xml.etree import ElementTree
 
@@ -13,14 +12,10 @@ from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
+from .rowfragment import RowFragment
 
 if TYPE_CHECKING:
     from ..tablerow import TableRow
-
-
-class RowFragment(Enum):
-    KEY = "KEY"
-    STRUCT = "STRUCT"
 
 
 @dataclass

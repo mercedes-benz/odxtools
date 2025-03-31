@@ -5,9 +5,11 @@ from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
 from .admindata import AdminData
-from .codec import (composite_codec_decode_from_pdu, composite_codec_encode_into_pdu,
-                    composite_codec_get_coded_const_prefix, composite_codec_get_free_parameters,
-                    composite_codec_get_required_parameters, composite_codec_get_static_bit_length)
+from .compositecodec import (composite_codec_decode_from_pdu, composite_codec_encode_into_pdu,
+                             composite_codec_get_coded_const_prefix,
+                             composite_codec_get_free_parameters,
+                             composite_codec_get_required_parameters,
+                             composite_codec_get_static_bit_length)
 from .decodestate import DecodeState
 from .element import IdentifiableElement
 from .encodestate import EncodeState

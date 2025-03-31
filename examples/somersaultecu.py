@@ -18,9 +18,10 @@ from odxtools.companyspecificinfo import CompanySpecificInfo
 from odxtools.comparaminstance import ComparamInstance
 from odxtools.comparamspec import ComparamSpec
 from odxtools.comparamsubset import ComparamSubset
+from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.compuconst import CompuConst
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
-from odxtools.compumethods.compumethod import CompuCategory, CompuMethod
+from odxtools.compumethods.compumethod import CompuMethod
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.limit import Limit
@@ -70,7 +71,8 @@ from odxtools.table import Table
 from odxtools.tablerow import TableRow
 from odxtools.teammember import TeamMember
 from odxtools.unit import Unit
-from odxtools.unitgroup import UnitGroup, UnitGroupCategory
+from odxtools.unitgroup import UnitGroup
+from odxtools.unitgroupcategory import UnitGroupCategory
 from odxtools.unitspec import UnitSpec
 from odxtools.xdoc import XDoc
 

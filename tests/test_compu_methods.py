@@ -7,15 +7,16 @@ from xml.etree import ElementTree
 import jinja2
 
 import odxtools
+from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.compucodecompumethod import CompuCodeCompuMethod
 from odxtools.compumethods.compuconst import CompuConst
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
-from odxtools.compumethods.compumethod import CompuCategory
 from odxtools.compumethods.compuphystointernal import CompuPhysToInternal
 from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.createanycompumethod import create_any_compu_method_from_et
-from odxtools.compumethods.limit import IntervalType, Limit
+from odxtools.compumethods.intervaltype import IntervalType
+from odxtools.compumethods.limit import Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.compumethods.ratfunccompumethod import RatFuncCompuMethod
 from odxtools.compumethods.scaleratfunccompumethod import ScaleRatFuncCompuMethod

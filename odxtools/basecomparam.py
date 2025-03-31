@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
 from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
@@ -8,21 +7,9 @@ from .element import IdentifiableElement
 from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
+from .standardizationlevel import StandardizationLevel
+from .usage import Usage
 from .utils import dataclass_fields_asdict
-
-
-class StandardizationLevel(Enum):
-    STANDARD = "STANDARD"
-    OEM_SPECIFIC = "OEM-SPECIFIC"
-    OPTIONAL = "OPTIONAL"
-    OEM_OPTIONAL = "OEM-OPTIONAL"
-
-
-class Usage(Enum):
-    ECU_SOFTWARE = "ECU-SOFTWARE"
-    ECU_COMM = "ECU-COMM"
-    APPLICATION = "APPLICATION"
-    TESTER = "TESTER"
 
 
 @dataclass

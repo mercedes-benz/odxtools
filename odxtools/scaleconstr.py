@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
 from typing import List, Optional
 from xml.etree import ElementTree
 
@@ -9,13 +8,7 @@ from .description import Description
 from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment
 from .odxtypes import DataType
-
-
-class ValidType(Enum):
-    VALID = "VALID"
-    NOT_VALID = "NOT-VALID"
-    NOT_DEFINED = "NOT-DEFINED"
-    NOT_AVAILABLE = "NOT-AVAILABLE"
+from .validtype import ValidType
 
 
 @dataclass

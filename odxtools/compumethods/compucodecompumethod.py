@@ -8,7 +8,8 @@ from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..progcode import ProgCode
 from ..utils import dataclass_fields_asdict
-from .compumethod import CompuCategory, CompuMethod
+from .compucategory import CompuCategory
+from .compumethod import CompuMethod
 
 
 @dataclass

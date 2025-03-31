@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
 from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .audience import Audience
+from .diagclasstype import DiagClassType
 from .element import IdentifiableElement
 from .exceptions import odxraise, odxrequire
 from .functionalclass import FunctionalClass
@@ -13,6 +13,7 @@ from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
 from .preconditionstateref import PreConditionStateRef
+from .relateddiagcommref import RelatedDiagCommRef
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .state import State
@@ -22,30 +23,6 @@ from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
     from .diaglayers.protocol import Protocol
-
-
-class DiagClassType(Enum):
-    STARTCOMM = "STARTCOMM"
-    STOPCOMM = "STOPCOMM"
-    VARIANTIDENTIFICATION = "VARIANTIDENTIFICATION"
-    READ_DYN_DEFINED_MESSAGE = "READ-DYN-DEFINED-MESSAGE"
-    DYN_DEF_MESSAGE = "DYN-DEF-MESSAGE"
-    CLEAR_DYN_DEF_MESSAGE = "CLEAR-DYN-DEF-MESSAGE"
-
-
-@dataclass
-class RelatedDiagCommRef(OdxLinkRef):
-    relation_type: str
-
-    @staticmethod
-    def from_et(  # type: ignore[override]
-            et_element: ElementTree.Element,
-            doc_frags: List[OdxDocFragment]) -> "RelatedDiagCommRef":
-        kwargs = dataclass_fields_asdict(odxrequire(OdxLinkRef.from_et(et_element, doc_frags)))
-
-        relation_type = odxrequire(et_element.findtext("RELATION-TYPE"))
-
-        return RelatedDiagCommRef(relation_type=relation_type, **kwargs)
 
 
 @dataclass

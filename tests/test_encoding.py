@@ -4,8 +4,8 @@ import unittest
 from datetime import datetime
 from typing import List
 
+from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
-from odxtools.compumethods.compumethod import CompuCategory
 from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
@@ -34,7 +34,8 @@ from odxtools.parameters.nrcconstparameter import NrcConstParameter
 from odxtools.parameters.parameter import Parameter
 from odxtools.parameters.systemparameter import SystemParameter
 from odxtools.parameters.valueparameter import ValueParameter
-from odxtools.physicaltype import PhysicalType, Radix
+from odxtools.physicaltype import PhysicalType
+from odxtools.radix import Radix
 from odxtools.request import Request
 from odxtools.response import Response, ResponseType
 from odxtools.snrefcontext import SnRefContext

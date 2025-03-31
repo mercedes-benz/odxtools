@@ -2,7 +2,7 @@
 import unittest
 from xml.etree import ElementTree
 
-from odxtools.compumethods.compumethod import CompuCategory
+from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.database import Database
 from odxtools.dataobjectproperty import DataObjectProperty

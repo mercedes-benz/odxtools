@@ -7,8 +7,9 @@ from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import dataclass_fields_asdict
-from .compumethod import CompuCategory, CompuMethod
-from .limit import IntervalType
+from .compucategory import CompuCategory
+from .compumethod import CompuMethod
+from .intervaltype import IntervalType
 from .linearsegment import LinearSegment
 
 

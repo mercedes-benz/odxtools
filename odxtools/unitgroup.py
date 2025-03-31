@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
 from typing import Any, Dict, List, Optional, cast
 from xml.etree import ElementTree
 
@@ -10,12 +9,8 @@ from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 from .unit import Unit
+from .unitgroupcategory import UnitGroupCategory
 from .utils import dataclass_fields_asdict
-
-
-class UnitGroupCategory(Enum):
-    COUNTRY = "COUNTRY"
-    EQUIV_UNITS = "EQUIV-UNITS"
 
 
 @dataclass
