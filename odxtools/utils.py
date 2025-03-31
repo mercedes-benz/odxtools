@@ -2,11 +2,38 @@
 import dataclasses
 import re
 from typing import TYPE_CHECKING, Any, Dict, Optional
+from xml.etree import ElementTree
+
+from .exceptions import odxraise
 
 if TYPE_CHECKING:
     from .database import Database
     from .diaglayers.diaglayer import DiagLayer
     from .snrefcontext import SnRefContext
+
+
+def read_hex_binary(et_element: Optional[ElementTree.Element]) -> Optional[int]:
+    """Convert the contents of an xsd:hexBinary to a `bytes` object"""
+    if et_element is None:
+        return None
+
+    if (bytes_str := et_element.text) is None:
+        odxraise(f"Element {et_element.tag} has no content")
+        return None
+
+    # The XSD uses the type xsd:hexBinary and xsd:hexBinary allows for
+    # leading/trailing whitespace and empty strings whilst `int(x,
+    # 16)` raises an exception if one of these things happen.
+    bytes_str = bytes_str.strip()
+    if len(bytes_str) == 0:
+        return 0
+
+    try:
+        return int(bytes_str, 16)
+    except Exception as e:
+        odxraise(f"Caught exception while parsing hex string `{bytes_str}`"
+                 f" of {et_element.tag}: {e}")
+        return None
 
 
 def retarget_snrefs(database: "Database",

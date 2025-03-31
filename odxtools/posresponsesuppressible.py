@@ -5,6 +5,7 @@ from xml.etree import ElementTree
 
 from .exceptions import odxrequire
 from .odxlink import OdxDocFragment
+from .utils import read_hex_binary
 
 
 # note that the spec has a typo here: it calls the corresponding
@@ -29,7 +30,7 @@ class PosResponseSuppressible:
     def from_et(et_element: ElementTree.Element,
                 doc_frags: List[OdxDocFragment]) -> "PosResponseSuppressible":
 
-        bit_mask = int(odxrequire(et_element.findtext("BIT-MASK")))
+        bit_mask = odxrequire(read_hex_binary(et_element.find("BIT-MASK")))
 
         coded_const_snref = None
         if (cc_snref_elem := et_element.find("CODED-CONST-SNREF")) is not None:

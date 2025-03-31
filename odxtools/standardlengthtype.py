@@ -11,7 +11,7 @@ from .encodestate import EncodeState
 from .exceptions import odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment
 from .odxtypes import AtomicOdxType, BytesTypes, DataType, odxstr_to_bool
-from .utils import dataclass_fields_asdict
+from .utils import dataclass_fields_asdict, read_hex_binary
 
 
 @dataclass
@@ -36,16 +36,7 @@ class StandardLengthType(DiagCodedType):
         kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
 
         bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))
-        bit_mask = None
-        if (bit_mask_str := et_element.findtext("BIT-MASK")) is not None:
-            # The XSD uses the type xsd:hexBinary
-            # xsd:hexBinary allows for leading/trailing whitespace, empty strings, and it only allows an even
-            # number of hex digits, while some of the examples shown in the  ODX specification exhibit an
-            # odd number of hex digits.
-            # This causes a validation paradox, so we try to be flexible
-            bit_mask_str = bit_mask_str.strip()
-            if len(bit_mask_str):
-                bit_mask = int(bit_mask_str, 16)
+        bit_mask = read_hex_binary(et_element.find("BIT-MASK"))
         is_condensed_raw = odxstr_to_bool(et_element.get("IS-CONDENSED"))
 
         return StandardLengthType(
