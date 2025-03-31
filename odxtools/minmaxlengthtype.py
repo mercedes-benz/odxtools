@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
 from typing import List, Optional, cast
 from xml.etree import ElementTree
 
@@ -13,13 +12,8 @@ from .encoding import get_string_encoding
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from .odxlink import OdxDocFragment
 from .odxtypes import AtomicOdxType, BytesTypes, DataType
+from .termination import Termination
 from .utils import dataclass_fields_asdict
-
-
-class Termination(Enum):
-    END_OF_PDU = "END-OF-PDU"
-    ZERO = "ZERO"
-    HEX_FF = "HEX-FF"
 
 
 @dataclass

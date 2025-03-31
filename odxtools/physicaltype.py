@@ -1,19 +1,12 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import IntEnum
 from typing import List, Optional
 from xml.etree import ElementTree
 
 from .exceptions import odxraise
 from .odxlink import OdxDocFragment
 from .odxtypes import DataType
-
-
-class Radix(IntEnum):
-    HEX = 16
-    DEC = 10
-    BIN = 2
-    OCT = 8
+from .radix import Radix
 
 
 @dataclass

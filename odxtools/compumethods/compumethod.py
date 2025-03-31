@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
 from typing import Any, Dict, List, Optional
 from xml.etree import ElementTree
 
@@ -8,19 +7,9 @@ from ..exceptions import odxraise
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType, DataType
 from ..snrefcontext import SnRefContext
+from .compucategory import CompuCategory
 from .compuinternaltophys import CompuInternalToPhys
 from .compuphystointernal import CompuPhysToInternal
-
-
-class CompuCategory(Enum):
-    IDENTICAL = "IDENTICAL"
-    LINEAR = "LINEAR"
-    SCALE_LINEAR = "SCALE-LINEAR"
-    TEXTTABLE = "TEXTTABLE"
-    COMPUCODE = "COMPUCODE"
-    TAB_INTP = "TAB-INTP"
-    RAT_FUNC = "RAT-FUNC"
-    SCALE_RAT_FUNC = "SCALE-RAT-FUNC"
 
 
 @dataclass

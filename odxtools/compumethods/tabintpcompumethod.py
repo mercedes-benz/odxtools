@@ -7,8 +7,10 @@ from ..exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequi
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import dataclass_fields_asdict
-from .compumethod import CompuCategory, CompuMethod
-from .limit import IntervalType, Limit
+from .compucategory import CompuCategory
+from .compumethod import CompuMethod
+from .intervaltype import IntervalType
+from .limit import Limit
 
 
 @dataclass

@@ -3,7 +3,7 @@ import unittest
 from copy import copy
 
 from examples import somersaultecu
-from odxtools.compumethods.compumethod import CompuCategory
+from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.compumethods.limit import Limit
 from odxtools.dataobjectproperty import DataObjectProperty

@@ -3,8 +3,8 @@ import unittest
 from xml.etree import ElementTree
 
 import odxtools.uds as uds
+from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
-from odxtools.compumethods.compumethod import CompuCategory
 from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
@@ -22,7 +22,7 @@ from odxtools.encodestate import EncodeState
 from odxtools.encoding import Encoding
 from odxtools.exceptions import DecodeError, EncodeError, OdxError, odxrequire
 from odxtools.leadinglengthinfotype import LeadingLengthInfoType
-from odxtools.minmaxlengthtype import MinMaxLengthType, Termination
+from odxtools.minmaxlengthtype import MinMaxLengthType
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
@@ -33,6 +33,7 @@ from odxtools.paramlengthinfotype import ParamLengthInfoType
 from odxtools.physicaltype import PhysicalType
 from odxtools.request import Request
 from odxtools.standardlengthtype import StandardLengthType
+from odxtools.termination import Termination
 
 doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
 

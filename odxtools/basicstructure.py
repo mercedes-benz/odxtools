@@ -5,10 +5,11 @@ from xml.etree import ElementTree
 
 from typing_extensions import override
 
-from .codec import (composite_codec_decode_from_pdu, composite_codec_encode_into_pdu,
-                    composite_codec_get_free_parameters, composite_codec_get_required_parameters,
-                    composite_codec_get_static_bit_length)
 from .complexdop import ComplexDop
+from .compositecodec import (composite_codec_decode_from_pdu, composite_codec_encode_into_pdu,
+                             composite_codec_get_free_parameters,
+                             composite_codec_get_required_parameters,
+                             composite_codec_get_static_bit_length)
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, odxraise
