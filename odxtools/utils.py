@@ -13,13 +13,15 @@ if TYPE_CHECKING:
 
 
 def read_hex_binary(et_element: Optional[ElementTree.Element]) -> Optional[int]:
-    """Convert the contents of an xsd:hexBinary to a `bytes` object"""
+    """Convert the contents of an xsd:hexBinary to an integer
+    """
     if et_element is None:
         return None
 
     if (bytes_str := et_element.text) is None:
-        odxraise(f"Element {et_element.tag} has no content")
-        return None
+        # tag exists but is immediately terminated ("<FOO />"). we
+        # treat this like an empty string.
+        return 0
 
     # The XSD uses the type xsd:hexBinary and xsd:hexBinary allows for
     # leading/trailing whitespace and empty strings whilst `int(x,
