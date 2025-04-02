@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .comparamsubset import ComparamSubset
@@ -17,14 +17,14 @@ class ProtStack(IdentifiableElement):
     # mandatory in ODX 2.2, but non existent in ODX 2.0
     pdu_protocol_type: str
     physical_link_type: str
-    comparam_subset_refs: List[OdxLinkRef]
+    comparam_subset_refs: list[OdxLinkRef]
 
     @property
     def comparam_subsets(self) -> NamedItemList[ComparamSubset]:
         return self._comparam_subsets
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ProtStack":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "ProtStack":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         pdu_protocol_type = odxrequire(et_element.findtext("PDU-PROTOCOL-TYPE"))
@@ -41,7 +41,7 @@ class ProtStack(IdentifiableElement):
             comparam_subset_refs=comparam_subset_refs,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
         return result
 

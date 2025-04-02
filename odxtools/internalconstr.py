@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from .compumethods.limit import Limit
@@ -16,14 +15,14 @@ class InternalConstr:
 
     # TODO: Enforce the internal and physical constraints.
 
-    lower_limit: Optional[Limit]
-    upper_limit: Optional[Limit]
-    scale_constrs: List[ScaleConstr]
+    lower_limit: Limit | None
+    upper_limit: Limit | None
+    scale_constrs: list[ScaleConstr]
 
     value_type: DataType
 
     @staticmethod
-    def constr_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def constr_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
                        value_type: DataType) -> "InternalConstr":
 
         lower_limit = Limit.limit_from_et(

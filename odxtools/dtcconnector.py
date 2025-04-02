@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .diagnostictroublecode import DiagnosticTroubleCode
@@ -26,7 +26,7 @@ class DtcConnector(NamedElement):
         return self._dtc
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DtcConnector":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DtcConnector":
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
 
         dtc_dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DTC-DOP-REF"), doc_frags))
@@ -35,7 +35,7 @@ class DtcConnector(NamedElement):
 
         return DtcConnector(dtc_dop_ref=dtc_dop_ref, dtc_snref=dtc_snref, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

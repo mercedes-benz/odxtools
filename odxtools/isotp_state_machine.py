@@ -4,9 +4,10 @@
 import asyncio
 import re
 import sys
+from collections.abc import AsyncGenerator, Iterable
 from enum import IntEnum
 from io import TextIOBase
-from typing import AsyncGenerator, Iterable, List, Optional, TextIO, Tuple, Union
+from typing import TextIO
 
 import bitstruct
 import can
@@ -32,7 +33,7 @@ class IsoTpStateMachine:
     can_fd_log_frame_re = re.compile(
         "\\([0-9.]*\\) *([a-zA-Z0-9_-]*) ([0-9A-Fa-f]+)##[0-9A-Fa-f]([0-9A-Fa-f]+)")
 
-    def __init__(self, can_rx_ids: Union[int, List[int]]):
+    def __init__(self, can_rx_ids: int | list[int]):
         if isinstance(can_rx_ids, int):
             can_rx_ids = [can_rx_ids]
 
@@ -40,10 +41,10 @@ class IsoTpStateMachine:
         assert isinstance(self._can_rx_ids, list)
 
         self._telegram_specified_len = [0] * len(can_rx_ids)
-        self._telegram_data: List[Optional[bytearray]] = [None] * len(can_rx_ids)
+        self._telegram_data: list[bytearray | None] = [None] * len(can_rx_ids)
         self._telegram_last_rx_fragment_idx = [0] * len(can_rx_ids)
 
-    def decode_rx_frame(self, rx_id: int, data: bytes) -> Iterable[Tuple[int, bytes]]:
+    def decode_rx_frame(self, rx_id: int, data: bytes) -> Iterable[tuple[int, bytes]]:
         """Handle the ISO-TP state transitions caused by a CAN frame.
 
         E.g., add some data to a telegram, etc. Returns a generator of
@@ -114,8 +115,8 @@ class IsoTpStateMachine:
         else:
             self.on_frame_type_error(telegram_idx, frame_type)
 
-    async def read_telegrams(self, bus: Union[can.BusABC,
-                                              TextIO]) -> AsyncGenerator[Tuple[int, bytes], None]:
+    async def read_telegrams(self,
+                             bus: can.BusABC | TextIO) -> AsyncGenerator[tuple[int, bytes], None]:
         """This is equivalent to the :py:meth:`file.readlines()` method, but
         it yields ISO-TP telegrams instead of lines.
 
@@ -184,7 +185,7 @@ class IsoTpStateMachine:
         """
         return self._can_rx_ids[telegram_idx]
 
-    def telegram_data(self, telegram_idx: int) -> Optional[bytes]:
+    def telegram_data(self, telegram_idx: int) -> bytes | None:
         """Given a Telegram index, returns the data received for this telegram
         so far.
 
@@ -233,8 +234,8 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
 
     def __init__(self,
                  can_bus: can.BusABC,
-                 can_rx_ids: List[int],
-                 can_tx_ids: List[int],
+                 can_rx_ids: list[int],
+                 can_tx_ids: list[int],
                  padding_size: int = 0,
                  padding_value: int = 0xAA):
         self._can_bus = can_bus
@@ -251,8 +252,8 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         assert len(self._can_rx_ids) == len(self._can_tx_ids)
         assert set(self._can_rx_ids).isdisjoint(set(self._can_tx_ids))  # correct?
 
-        self._block_size: List[Optional[int]] = [None] * len(self._can_rx_ids)
-        self._frames_received: List[Optional[int]] = [None] * len(self._can_rx_ids)
+        self._block_size: list[int | None] = [None] * len(self._can_rx_ids)
+        self._frames_received: list[int | None] = [None] * len(self._can_rx_ids)
 
     def can_tx_id(self, telegram_idx: int) -> int:
         """Given a Telegram index, returns the CAN ID for sending data.

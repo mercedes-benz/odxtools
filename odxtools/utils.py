@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import dataclasses
 import re
-from typing import TYPE_CHECKING, Any, Dict, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from xml.etree import ElementTree
 
 from .exceptions import odxraise
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from .snrefcontext import SnRefContext
 
 
-def read_hex_binary(et_element: Optional[ElementTree.Element]) -> Optional[int]:
+def read_hex_binary(et_element: ElementTree.Element | None) -> int | None:
     """Convert the contents of an xsd:hexBinary to an integer
     """
     if et_element is None:
@@ -76,7 +76,7 @@ def retarget_snrefs(database: "Database",
             retarget_snrefs(database, pr.layer, context)
 
 
-def dataclass_fields_asdict(obj: Any) -> Dict[str, Any]:
+def dataclass_fields_asdict(obj: Any) -> dict[str, Any]:
     """Extract all attributes from a dataclass object that are fields.
 
     This is a non-recursive version of `dataclasses.asdict()`. Its

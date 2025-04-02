@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .diagnostictroublecode import DiagnosticTroubleCode
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 @dataclass
 class LinkedDtcDop:
-    not_inherited_dtc_snrefs: List[str]
+    not_inherited_dtc_snrefs: list[str]
     dtc_dop_ref: OdxLinkRef
 
     @property
@@ -31,7 +31,7 @@ class LinkedDtcDop:
         return self._dtc_dop.short_name
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "LinkedDtcDop":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "LinkedDtcDop":
         not_inherited_dtc_snrefs = [
             odxrequire(el.get("SHORT-NAME"))
             for el in et_element.iterfind("NOT-INHERITED-DTC-SNREFS/"
@@ -43,7 +43,7 @@ class LinkedDtcDop:
         return LinkedDtcDop(
             not_inherited_dtc_snrefs=not_inherited_dtc_snrefs, dtc_dop_ref=dtc_dop_ref)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

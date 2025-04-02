@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional, overload
+from typing import Optional, overload
 from xml.etree import ElementTree
 
 from .exceptions import odxraise, odxrequire
@@ -14,18 +14,18 @@ class DynEndDopRef(OdxLinkRef):
 
     @staticmethod
     @overload
-    def from_et(et_element: None, source_doc_frags: List[OdxDocFragment]) -> None:
+    def from_et(et_element: None, source_doc_frags: list[OdxDocFragment]) -> None:
         ...
 
     @staticmethod
     @overload
     def from_et(et_element: ElementTree.Element,
-                source_doc_frags: List[OdxDocFragment]) -> "DynEndDopRef":
+                source_doc_frags: list[OdxDocFragment]) -> "DynEndDopRef":
         ...
 
     @staticmethod
-    def from_et(et_element: Optional[ElementTree.Element],
-                source_doc_frags: List[OdxDocFragment]) -> Optional["DynEndDopRef"]:
+    def from_et(et_element: ElementTree.Element | None,
+                source_doc_frags: list[OdxDocFragment]) -> Optional["DynEndDopRef"]:
 
         if et_element is None:
             odxraise("Mandatory DYN-END-DOP-REF tag is missing")

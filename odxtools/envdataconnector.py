@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import NamedElement
@@ -27,7 +27,7 @@ class EnvDataConnector(NamedElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "EnvDataConnector":
+                doc_frags: list[OdxDocFragment]) -> "EnvDataConnector":
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
 
         env_data_desc_ref = odxrequire(
@@ -38,7 +38,7 @@ class EnvDataConnector(NamedElement):
         return EnvDataConnector(
             env_data_desc_ref=env_data_desc_ref, env_data_snref=env_data_snref, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

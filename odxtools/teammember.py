@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
@@ -12,17 +12,17 @@ from .utils import dataclass_fields_asdict
 
 @dataclass
 class TeamMember(IdentifiableElement):
-    roles: List[str]
-    department: Optional[str]
-    address: Optional[str]
-    zipcode: Optional[str]  # the tag for this is "ZIP", but `zip` is a keyword in python
-    city: Optional[str]
-    phone: Optional[str]
-    fax: Optional[str]
-    email: Optional[str]
+    roles: list[str]
+    department: str | None
+    address: str | None
+    zipcode: str | None  # the tag for this is "ZIP", but `zip` is a keyword in python
+    city: str | None
+    phone: str | None
+    fax: str | None
+    email: str | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "TeamMember":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "TeamMember":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         roles = [odxrequire(role_elem.text) for role_elem in et_element.iterfind("ROLES/ROLE")]
@@ -45,7 +45,7 @@ class TeamMember(IdentifiableElement):
             email=email,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         return result

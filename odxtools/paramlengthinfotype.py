@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, cast
+from typing import TYPE_CHECKING, Any, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -33,7 +33,7 @@ class ParamLengthInfoType(DiagCodedType):
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ParamLengthInfoType":
+                doc_frags: list[OdxDocFragment]) -> "ParamLengthInfoType":
         kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
 
         length_key_ref = odxrequire(
@@ -41,7 +41,7 @@ class ParamLengthInfoType(DiagCodedType):
 
         return ParamLengthInfoType(length_key_ref=length_key_ref, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -74,6 +74,8 @@ class ParamLengthInfoType(DiagCodedType):
             elif self.base_data_type in [DataType.A_UNICODE2STRING]:
                 bit_length = 16 * len(cast(str, internal_value))
             elif self.base_data_type in [DataType.A_INT32, DataType.A_UINT32]:
+                if not isinstance(internal_value, int):
+                    odxraise()
                 bit_length = int(internal_value).bit_length()
                 if self.base_data_type == DataType.A_INT32:
                     bit_length += 1

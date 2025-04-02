@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .diagservice import DiagService
@@ -18,8 +18,8 @@ class SubComponentParamConnector(IdentifiableElement):
     diag_comm_snref: str
 
     # TODO: we currently only support SNREFs, not SNPATHREFs
-    out_param_if_refs: List[str]
-    in_param_if_refs: List[str]
+    out_param_if_refs: list[str]
+    in_param_if_refs: list[str]
 
     @property
     def service(self) -> DiagService:
@@ -35,7 +35,7 @@ class SubComponentParamConnector(IdentifiableElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "SubComponentParamConnector":
+                doc_frags: list[OdxDocFragment]) -> "SubComponentParamConnector":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         diag_comm_snref = odxrequire(
@@ -65,7 +65,7 @@ class SubComponentParamConnector(IdentifiableElement):
             in_param_if_refs=in_param_if_refs,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

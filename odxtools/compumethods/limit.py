@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional, overload
+from typing import Optional, overload
 from xml.etree import ElementTree
 
 from ..exceptions import odxraise
@@ -11,29 +11,29 @@ from .intervaltype import IntervalType
 
 @dataclass
 class Limit:
-    value_raw: Optional[str]
-    value_type: Optional[DataType]
-    interval_type: Optional[IntervalType]
+    value_raw: str | None
+    value_type: DataType | None
+    interval_type: IntervalType | None
 
     @property
-    def value(self) -> Optional[AtomicOdxType]:
+    def value(self) -> AtomicOdxType | None:
         return self._value
 
     @staticmethod
     @overload
-    def limit_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment],
-                      value_type: Optional[DataType]) -> "Limit":
+    def limit_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment],
+                      value_type: DataType | None) -> "Limit":
         ...
 
     @staticmethod
     @overload
-    def limit_from_et(et_element: None, doc_frags: List[OdxDocFragment],
-                      value_type: Optional[DataType]) -> None:
+    def limit_from_et(et_element: None, doc_frags: list[OdxDocFragment],
+                      value_type: DataType | None) -> None:
         ...
 
     @staticmethod
-    def limit_from_et(et_element: Optional[ElementTree.Element], doc_frags: List[OdxDocFragment],
-                      value_type: Optional[DataType]) -> Optional["Limit"]:
+    def limit_from_et(et_element: ElementTree.Element | None, doc_frags: list[OdxDocFragment],
+                      value_type: DataType | None) -> Optional["Limit"]:
 
         if et_element is None:
             return None
@@ -50,7 +50,7 @@ class Limit:
         return Limit(value_raw=value_raw, interval_type=interval_type, value_type=value_type)
 
     def __post_init__(self) -> None:
-        self._value: Optional[AtomicOdxType] = None
+        self._value: AtomicOdxType | None = None
 
         if self.value_type is not None:
             self.set_value_type(self.value_type)

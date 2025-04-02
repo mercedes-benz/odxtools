@@ -5,7 +5,7 @@ import pathlib
 from enum import IntEnum
 from io import BytesIO
 from itertools import chain
-from typing import Any, Dict
+from typing import Any
 from xml.etree import ElementTree
 
 import odxtools.uds as uds
@@ -440,7 +440,7 @@ somersault_unit_groups = {
 }
 
 # computation methods
-somersault_compumethods: Dict[str, CompuMethod] = {
+somersault_compumethods: dict[str, CompuMethod] = {
     "int_passthrough":
         IdenticalCompuMethod(
             category=CompuCategory.IDENTICAL,

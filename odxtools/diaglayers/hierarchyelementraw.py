@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from ..comparaminstance import ComparamInstance
@@ -17,11 +17,11 @@ class HierarchyElementRaw(DiagLayerRaw):
     This class represents the data present in the XML, not the "logical" view.
     """
 
-    comparam_refs: List[ComparamInstance]
+    comparam_refs: list[ComparamInstance]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "HierarchyElementRaw":
+                doc_frags: list[OdxDocFragment]) -> "HierarchyElementRaw":
         # objects contained by diagnostic layers exibit an additional
         # document fragment for the diag layer, so we use the document
         # fragments of the odx id of the diag layer for IDs of
@@ -37,7 +37,7 @@ class HierarchyElementRaw(DiagLayerRaw):
 
         return HierarchyElementRaw(comparam_refs=comparam_refs, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         for comparam_ref in self.comparam_refs:

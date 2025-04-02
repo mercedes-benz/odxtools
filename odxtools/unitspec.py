@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -25,11 +25,11 @@ class UnitSpec:
     The following odx elements are not internalized: ADMIN-DATA, SDGS
     """
 
-    admin_data: Optional[AdminData]
+    admin_data: AdminData | None
     unit_groups: NamedItemList[UnitGroup]
     units: NamedItemList[Unit]
     physical_dimensions: NamedItemList[PhysicalDimension]
-    sdgs: List[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup]
 
     def __post_init__(self) -> None:
         self.unit_groups = NamedItemList(self.unit_groups)
@@ -37,7 +37,7 @@ class UnitSpec:
         self.physical_dimensions = NamedItemList(self.physical_dimensions)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "UnitSpec":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "UnitSpec":
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         unit_groups = NamedItemList([
@@ -60,8 +60,8 @@ class UnitSpec:
             physical_dimensions=physical_dimensions,
             sdgs=sdgs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        odxlinks: Dict[OdxLinkId, Any] = {}
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
+        odxlinks: dict[OdxLinkId, Any] = {}
         for unit in self.units:
             odxlinks.update(unit._build_odxlinks())
         for dim in self.physical_dimensions:

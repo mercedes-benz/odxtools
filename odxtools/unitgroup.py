@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from .element import NamedElement
@@ -20,15 +20,15 @@ class UnitGroup(NamedElement):
     There are two categories of groups: COUNTRY and EQUIV-UNITS.
     """
     category: UnitGroupCategory
-    unit_refs: List[OdxLinkRef]
-    oid: Optional[str]
+    unit_refs: list[OdxLinkRef]
+    oid: str | None
 
     @property
     def units(self) -> NamedItemList[Unit]:
         return self._units
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "UnitGroup":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "UnitGroup":
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
 
         category_str = odxrequire(et_element.findtext("CATEGORY"))
@@ -46,7 +46,7 @@ class UnitGroup(NamedElement):
 
         return UnitGroup(category=category, unit_refs=unit_refs, oid=oid, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

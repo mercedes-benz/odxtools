@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 import typing
-from typing import List, Optional, runtime_checkable
+from typing import runtime_checkable
 
 from .codec import Codec
 from .decodestate import DecodeState
@@ -22,20 +22,20 @@ class CompositeCodec(Codec, typing.Protocol):
     """
 
     @property
-    def parameters(self) -> List[Parameter]:
+    def parameters(self) -> list[Parameter]:
         return []
 
     @property
-    def required_parameters(self) -> List[Parameter]:
+    def required_parameters(self) -> list[Parameter]:
         return []
 
     @property
-    def free_parameters(self) -> List[Parameter]:
+    def free_parameters(self) -> list[Parameter]:
         return []
 
 
 # some helper functions useful for composite codec objects
-def composite_codec_get_static_bit_length(codec: CompositeCodec) -> Optional[int]:
+def composite_codec_get_static_bit_length(codec: CompositeCodec) -> int | None:
     """Compute the length of a composite codec object in bits
 
     This is basically the sum of the lengths of all parameters. If the
@@ -59,7 +59,7 @@ def composite_codec_get_static_bit_length(codec: CompositeCodec) -> Optional[int
     return byte_length * 8
 
 
-def composite_codec_get_required_parameters(codec: CompositeCodec) -> List[Parameter]:
+def composite_codec_get_required_parameters(codec: CompositeCodec) -> list[Parameter]:
     """Return the list of parameters which are required to be
     specified for encoding the composite codec object
 
@@ -68,7 +68,7 @@ def composite_codec_get_required_parameters(codec: CompositeCodec) -> List[Param
     return [p for p in codec.parameters if p.is_required]
 
 
-def composite_codec_get_free_parameters(codec: CompositeCodec) -> List[Parameter]:
+def composite_codec_get_free_parameters(codec: CompositeCodec) -> list[Parameter]:
     """Return the list of parameters which can be freely specified by
     the user when encoding the composite codec object
 
@@ -84,7 +84,7 @@ def composite_codec_get_coded_const_prefix(codec: CompositeCodec,
 
     for param in codec.parameters:
         if (isinstance(param, MatchingRequestParameter) and param.request_byte_position < len(request_prefix)) or \
-            isinstance(param, (CodedConstParameter, PhysicalConstantParameter)):
+            isinstance(param, CodedConstParameter|PhysicalConstantParameter) :
             param.encode_into_pdu(physical_value=None, encode_state=encode_state)
         else:
             break
@@ -92,7 +92,7 @@ def composite_codec_get_coded_const_prefix(codec: CompositeCodec,
     return encode_state.coded_message
 
 
-def composite_codec_encode_into_pdu(codec: CompositeCodec, physical_value: Optional[ParameterValue],
+def composite_codec_encode_into_pdu(codec: CompositeCodec, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
     from .parameters.lengthkeyparameter import LengthKeyParameter
     from .parameters.tablekeyparameter import TableKeyParameter
@@ -132,7 +132,7 @@ def composite_codec_encode_into_pdu(codec: CompositeCodec, physical_value: Optio
             # the ODX is located last in the PDU...
             encode_state.is_end_of_pdu = orig_is_end_of_pdu
 
-        if isinstance(param, (LengthKeyParameter, TableKeyParameter)):
+        if isinstance(param, LengthKeyParameter | TableKeyParameter):
             # At this point, we encode a placeholder value for length-
             # and table keys, since these can be specified
             # implicitly (i.e., by means of parameters that use
@@ -159,7 +159,7 @@ def composite_codec_encode_into_pdu(codec: CompositeCodec, physical_value: Optio
     # because we allow these to be defined implicitly (i.e. they
     # are defined by their respective users)
     for param in codec.parameters:
-        if not isinstance(param, (LengthKeyParameter, TableKeyParameter)):
+        if not isinstance(param, LengthKeyParameter | TableKeyParameter):
             # the current parameter is neither a length- nor a table key
             continue
 

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .companydata import CompanyData
@@ -14,21 +14,21 @@ from .teammember import TeamMember
 @dataclass
 class CompanyDocInfo:
     company_data_ref: OdxLinkRef
-    team_member_ref: Optional[OdxLinkRef]
-    doc_label: Optional[str]
-    sdgs: List[SpecialDataGroup]
+    team_member_ref: OdxLinkRef | None
+    doc_label: str | None
+    sdgs: list[SpecialDataGroup]
 
     @property
     def company_data(self) -> CompanyData:
         return self._company_data
 
     @property
-    def team_member(self) -> Optional[TeamMember]:
+    def team_member(self) -> TeamMember | None:
         return self._team_member
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "CompanyDocInfo":
+                doc_frags: list[OdxDocFragment]) -> "CompanyDocInfo":
         # the company data reference is mandatory
         company_data_ref = odxrequire(
             OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), doc_frags))
@@ -45,7 +45,7 @@ class CompanyDocInfo:
             sdgs=sdgs,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {}
 
         for sdg in self.sdgs:
@@ -56,7 +56,7 @@ class CompanyDocInfo:
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._company_data = odxlinks.resolve(self.company_data_ref, CompanyData)
 
-        self._team_member: Optional[TeamMember] = None
+        self._team_member: TeamMember | None = None
         if self.team_member_ref is not None:
             self._team_member = odxlinks.resolve(self.team_member_ref, TeamMember)
 

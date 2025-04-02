@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Union
 from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
@@ -12,14 +12,14 @@ from .specialdatagroupcaption import SpecialDataGroupCaption
 @dataclass
 class SpecialDataGroup:
     """This corresponds to the SDG XML tag"""
-    sdg_caption: Optional[SpecialDataGroupCaption]
-    sdg_caption_ref: Optional[OdxLinkRef]
-    values: List[Union["SpecialDataGroup", SpecialData]]
-    semantic_info: Optional[str]  # the "SI" attribute
+    sdg_caption: SpecialDataGroupCaption | None
+    sdg_caption_ref: OdxLinkRef | None
+    values: list[Union["SpecialDataGroup", SpecialData]]
+    semantic_info: str | None  # the "SI" attribute
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "SpecialDataGroup":
+                doc_frags: list[OdxDocFragment]) -> "SpecialDataGroup":
 
         sdg_caption = None
         if caption_elem := et_element.find("SDG-CAPTION"):
@@ -31,9 +31,9 @@ class SpecialDataGroup:
 
         semantic_info = et_element.get("SI")
 
-        values: List[Union[SpecialData, SpecialDataGroup]] = []
+        values: list[SpecialData | SpecialDataGroup] = []
         for value_elem in et_element:
-            next_entry: Optional[Union[SpecialData, SpecialDataGroup]] = None
+            next_entry: SpecialData | SpecialDataGroup | None = None
             if value_elem.tag == "SDG":
                 next_entry = SpecialDataGroup.from_et(value_elem, doc_frags)
             elif value_elem.tag == "SD":
@@ -49,7 +49,7 @@ class SpecialDataGroup:
             values=values,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {}
 
         if self.sdg_caption_ref is None and self.sdg_caption is not None:

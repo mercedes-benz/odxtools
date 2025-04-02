@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -19,17 +19,17 @@ from .utils import dataclass_fields_asdict
 @dataclass
 class Table(IdentifiableElement):
     """This class represents a TABLE."""
-    key_label: Optional[str]
-    struct_label: Optional[str]
-    admin_data: Optional[AdminData]
-    key_dop_ref: Optional[OdxLinkRef]
-    table_rows_raw: List[Union[TableRow, OdxLinkRef]]
-    table_diag_comm_connectors: List[TableDiagCommConnector]
-    sdgs: List[SpecialDataGroup]
-    semantic: Optional[str]
+    key_label: str | None
+    struct_label: str | None
+    admin_data: AdminData | None
+    key_dop_ref: OdxLinkRef | None
+    table_rows_raw: list[TableRow | OdxLinkRef]
+    table_diag_comm_connectors: list[TableDiagCommConnector]
+    sdgs: list[SpecialDataGroup]
+    semantic: str | None
 
     @property
-    def key_dop(self) -> Optional[DataObjectProperty]:
+    def key_dop(self) -> DataObjectProperty | None:
         """The key data object property associated with this table."""
         return self._key_dop
 
@@ -39,7 +39,7 @@ class Table(IdentifiableElement):
         return self._table_rows
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Table":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Table":
         """Reads a TABLE."""
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         odx_id = kwargs["odx_id"]
@@ -48,7 +48,7 @@ class Table(IdentifiableElement):
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         key_dop_ref = OdxLinkRef.from_et(et_element.find("KEY-DOP-REF"), doc_frags)
 
-        table_rows_raw: List[Union[OdxLinkRef, TableRow]] = []
+        table_rows_raw: list[OdxLinkRef | TableRow] = []
         for sub_elem in et_element:
             if sub_elem.tag == "TABLE-ROW":
                 table_rows_raw.append(
@@ -77,7 +77,7 @@ class Table(IdentifiableElement):
             semantic=semantic,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         for table_row_wrapper in self.table_rows_raw:
@@ -93,7 +93,7 @@ class Table(IdentifiableElement):
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._key_dop: Optional[DataObjectProperty] = None
+        self._key_dop: DataObjectProperty | None = None
         if self.key_dop_ref is not None:
             self._key_dop = odxlinks.resolve(self.key_dop_ref, DataObjectProperty)
 

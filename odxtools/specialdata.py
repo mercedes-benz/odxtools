@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
@@ -10,12 +10,12 @@ from .snrefcontext import SnRefContext
 @dataclass
 class SpecialData:
     """This corresponds to the SD XML tag"""
-    semantic_info: Optional[str]  # the "SI" attribute
-    text_identifier: Optional[str]  # the "TI" attribute, specifies the language used
+    semantic_info: str | None  # the "SI" attribute
+    text_identifier: str | None  # the "TI" attribute, specifies the language used
     value: str
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SpecialData":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "SpecialData":
         semantic_info = et_element.get("SI")
         text_identifier = et_element.get("TI")
         value = et_element.text or ""
@@ -23,7 +23,7 @@ class SpecialData:
         return SpecialData(
             semantic_info=semantic_info, text_identifier=text_identifier, value=value)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

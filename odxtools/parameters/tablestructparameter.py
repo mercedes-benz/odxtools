@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Any, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -21,8 +21,8 @@ if TYPE_CHECKING:
 
 @dataclass
 class TableStructParameter(Parameter):
-    table_key_ref: Optional[OdxLinkRef]
-    table_key_snref: Optional[str]
+    table_key_ref: OdxLinkRef | None
+    table_key_snref: str | None
 
     @property
     @override
@@ -50,7 +50,7 @@ class TableStructParameter(Parameter):
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "TableStructParameter":
+                doc_frags: list[OdxDocFragment]) -> "TableStructParameter":
 
         kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
 
@@ -67,7 +67,7 @@ class TableStructParameter(Parameter):
             odxraise("Either table_key_ref or table_key_snref must be defined.")
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
     @override
@@ -86,10 +86,10 @@ class TableStructParameter(Parameter):
                                             TableKeyParameter)
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
 
-        if not isinstance(physical_value, (tuple, list)) or \
+        if not isinstance(physical_value, tuple|list) or \
            len(physical_value) != 2 or \
            not isinstance(physical_value[0], str):
             odxraise(

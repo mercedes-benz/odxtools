@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 from xml.etree import ElementTree
 
 from ..diagvariable import DiagVariable
@@ -18,11 +18,11 @@ from .hierarchyelementraw import HierarchyElementRaw
 
 @dataclass
 class EcuVariantRaw(HierarchyElementRaw):
-    diag_variables_raw: List[Union[DiagVariable, OdxLinkRef]]
+    diag_variables_raw: list[DiagVariable | OdxLinkRef]
     variable_groups: NamedItemList[VariableGroup]
-    ecu_variant_patterns: List[EcuVariantPattern]
-    dyn_defined_spec: Optional[DynDefinedSpec]
-    parent_refs: List[ParentRef]
+    ecu_variant_patterns: list[EcuVariantPattern]
+    dyn_defined_spec: DynDefinedSpec | None
+    parent_refs: list[ParentRef]
 
     @property
     def diag_variables(self) -> NamedItemList[DiagVariable]:
@@ -30,7 +30,7 @@ class EcuVariantRaw(HierarchyElementRaw):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "EcuVariantRaw":
+                doc_frags: list[OdxDocFragment]) -> "EcuVariantRaw":
         # objects contained by diagnostic layers exibit an additional
         # document fragment for the diag layer, so we use the document
         # fragments of the odx id of the diag layer for IDs of
@@ -39,10 +39,10 @@ class EcuVariantRaw(HierarchyElementRaw):
         kwargs = dataclass_fields_asdict(her)
         doc_frags = her.odx_id.doc_fragments
 
-        diag_variables_raw: List[Union[DiagVariable, OdxLinkRef]] = []
+        diag_variables_raw: list[DiagVariable | OdxLinkRef] = []
         if (dv_elems := et_element.find("DIAG-VARIABLES")) is not None:
             for dv_proxy_elem in dv_elems:
-                dv_proxy: Union[OdxLinkRef, DiagVariable]
+                dv_proxy: OdxLinkRef | DiagVariable
                 if dv_proxy_elem.tag == "DIAG-VARIABLE-REF":
                     dv_proxy = OdxLinkRef.from_et(dv_proxy_elem, doc_frags)
                 elif dv_proxy_elem.tag == "DIAG-VARIABLE":
@@ -81,7 +81,7 @@ class EcuVariantRaw(HierarchyElementRaw):
             parent_refs=parent_refs,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         for dv_proxy in self.diag_variables_raw:

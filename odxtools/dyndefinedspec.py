@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .dyniddefmodeinfo import DynIdDefModeInfo
@@ -10,19 +10,19 @@ from .snrefcontext import SnRefContext
 
 @dataclass
 class DynDefinedSpec:
-    dyn_id_def_mode_infos: List[DynIdDefModeInfo]
+    dyn_id_def_mode_infos: list[DynIdDefModeInfo]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DynDefinedSpec":
+                doc_frags: list[OdxDocFragment]) -> "DynDefinedSpec":
         dyn_id_def_mode_infos = [
             DynIdDefModeInfo.from_et(x, doc_frags)
             for x in et_element.iterfind("DYN-ID-DEF-MODE-INFOS/DYN-ID-DEF-MODE-INFO")
         ]
         return DynDefinedSpec(dyn_id_def_mode_infos=dyn_id_def_mode_infos)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result: Dict[OdxLinkId, Any] = {}
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
+        result: dict[OdxLinkId, Any] = {}
 
         for didmi in self.dyn_id_def_mode_infos:
             result.update(didmi._build_odxlinks())

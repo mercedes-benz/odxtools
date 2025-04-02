@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 from xml.etree import ElementTree
 
 from typing_extensions import final, override
@@ -42,11 +42,11 @@ class Parameter(NamedElement):
     non-positionable parameter types.
 
     """
-    sdgs: List[SpecialDataGroup]
-    semantic: Optional[str]
-    oid: Optional[str]
-    byte_position: Optional[int]
-    bit_position: Optional[int]
+    sdgs: list[SpecialDataGroup]
+    semantic: str | None
+    oid: str | None
+    byte_position: int | None
+    bit_position: int | None
 
     @property
     def parameter_type(self) -> ParameterType:
@@ -78,7 +78,7 @@ class Parameter(NamedElement):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Parameter":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Parameter":
 
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
 
@@ -100,7 +100,7 @@ class Parameter(NamedElement):
             bit_position=bit_position,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {}
 
         for sdg in self.sdgs:
@@ -116,11 +116,11 @@ class Parameter(NamedElement):
         for sdg in self.sdgs:
             sdg._resolve_snrefs(context)
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return None
 
     @final
-    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_into_pdu(self, physical_value: ParameterValue | None,
                         encode_state: EncodeState) -> None:
         """Convert a physical value into its encoded form and place it
         into the PDU
@@ -140,7 +140,7 @@ class Parameter(NamedElement):
 
         encode_state.cursor_bit_position = 0
 
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         """Method which actually encodes the parameter
 

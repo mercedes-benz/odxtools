@@ -6,7 +6,7 @@
 # modified programatically. Note that this is pretty hacky...
 import argparse
 from copy import deepcopy
-from typing import List, TypeVar
+from typing import TypeVar
 
 import odxtools
 import odxtools.uds as uds
@@ -25,7 +25,7 @@ from odxtools.response import Response, ResponseType
 T = TypeVar("T")
 
 
-def find_named_object(item_list: List[T], name: str) -> T:
+def find_named_object(item_list: list[T], name: str) -> T:
     for x in item_list:
         if getattr(x, "short_name", None) == name:
             return x

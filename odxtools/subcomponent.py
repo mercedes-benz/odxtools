@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .dtcconnector import DtcConnector
@@ -25,16 +25,16 @@ class SubComponent(IdentifiableElement):
 
     """
 
-    sub_component_patterns: List[SubComponentPattern]
+    sub_component_patterns: list[SubComponentPattern]
     sub_component_param_connectors: NamedItemList[SubComponentParamConnector]
     table_row_connectors: NamedItemList[TableRowConnector]
     env_data_connectors: NamedItemList[EnvDataConnector]
     dtc_connectors: NamedItemList[DtcConnector]
 
-    semantic: Optional[str]
+    semantic: str | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SubComponent":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "SubComponent":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         semantic = et_element.get("SEMANTIC")
@@ -69,7 +69,7 @@ class SubComponent(IdentifiableElement):
             dtc_connectors=NamedItemList(dtc_connectors),
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {}
 
         for scp in self.sub_component_patterns:

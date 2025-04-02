@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .basecomparam import BaseComparam
@@ -27,7 +27,7 @@ class Comparam(BaseComparam):
         return self._dop
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Comparam":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Comparam":
         kwargs = dataclass_fields_asdict(BaseComparam.from_et(et_element, doc_frags))
 
         physical_default_value_raw = odxrequire(et_element.findtext("PHYSICAL-DEFAULT-VALUE"))
@@ -36,7 +36,7 @@ class Comparam(BaseComparam):
         return Comparam(
             dop_ref=dop_ref, physical_default_value_raw=physical_default_value_raw, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

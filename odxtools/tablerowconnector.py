@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import NamedElement
@@ -27,7 +27,7 @@ class TableRowConnector(NamedElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "TableRowConnector":
+                doc_frags: list[OdxDocFragment]) -> "TableRowConnector":
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
 
         table_ref = odxrequire(OdxLinkRef.from_et(et_element.find("TABLE-REF"), doc_frags))
@@ -36,7 +36,7 @@ class TableRowConnector(NamedElement):
 
         return TableRowConnector(table_ref=table_ref, table_row_snref=table_row_snref, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass, fields
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -33,22 +33,22 @@ class TableRow(IdentifiableElement):
     # The spec mandates that either a structure or a non-complex DOP
     # must be referenced here, i.e., exactly one of the four
     # attributes below is not None
-    dop_ref: Optional[OdxLinkRef]
-    dop_snref: Optional[str]
-    structure_ref: Optional[OdxLinkRef]
-    structure_snref: Optional[str]
+    dop_ref: OdxLinkRef | None
+    dop_snref: str | None
+    structure_ref: OdxLinkRef | None
+    structure_snref: str | None
 
-    sdgs: List[SpecialDataGroup]
-    audience: Optional[Audience]
-    functional_class_refs: List[OdxLinkRef]
-    state_transition_refs: List[StateTransitionRef]
-    pre_condition_state_refs: List[PreConditionStateRef]
-    admin_data: Optional[AdminData]
+    sdgs: list[SpecialDataGroup]
+    audience: Audience | None
+    functional_class_refs: list[OdxLinkRef]
+    state_transition_refs: list[StateTransitionRef]
+    pre_condition_state_refs: list[PreConditionStateRef]
+    admin_data: AdminData | None
 
-    is_executable_raw: Optional[bool]
-    semantic: Optional[str]
-    is_mandatory_raw: Optional[bool]
-    is_final_raw: Optional[bool]
+    is_executable_raw: bool | None
+    semantic: str | None
+    is_mandatory_raw: bool | None
+    is_final_raw: bool | None
 
     @property
     def table(self) -> "Table":
@@ -57,16 +57,16 @@ class TableRow(IdentifiableElement):
     # the value of the key expressed in the type represented by the
     # referenced DOP
     @property
-    def key(self) -> Optional[AtomicOdxType]:
+    def key(self) -> AtomicOdxType | None:
         return self._key
 
     @property
-    def dop(self) -> Optional[DataObjectProperty]:
+    def dop(self) -> DataObjectProperty | None:
         """The data object property object resolved by dop_ref."""
         return self._dop
 
     @property
-    def structure(self) -> Optional[Structure]:
+    def structure(self) -> Structure | None:
         """The structure associated with this table row."""
         return self._structure
 
@@ -87,12 +87,12 @@ class TableRow(IdentifiableElement):
         return self.is_final_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> Any:
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> Any:
         raise RuntimeError(
             "Calling TableRow.from_et() is not allowed. Use TableRow.tablerow_from_et().")
 
     @staticmethod
-    def tablerow_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def tablerow_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
                          table_ref: OdxLinkRef) -> "TableRow":
         """Reads a TABLE-ROW."""
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
@@ -100,12 +100,12 @@ class TableRow(IdentifiableElement):
         key_raw = odxrequire(et_element.findtext("KEY"))
 
         dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
-        dop_snref: Optional[str] = None
+        dop_snref: str | None = None
         if (dop_snref_elem := et_element.find("DATA-OBJECT-PROP-SNREF")) is not None:
             dop_snref = dop_snref_elem.attrib["SHORT-NAME"]
 
         structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
-        structure_snref: Optional[str] = None
+        structure_snref: str | None = None
         if (structure_snref_elem := et_element.find("STRUCTURE-SNREF")) is not None:
             structure_snref = structure_snref_elem.attrib["SHORT-NAME"]
 
@@ -159,8 +159,8 @@ class TableRow(IdentifiableElement):
             **kwargs)
 
     def __post_init__(self) -> None:
-        self._dop: Optional[DataObjectProperty] = None
-        self._structure: Optional[Structure] = None
+        self._dop: DataObjectProperty | None = None
+        self._structure: Structure | None = None
 
         n = sum([0 if x is None else 1 for x in (self.dop_ref, self.dop_snref)])
         odxassert(
@@ -174,7 +174,7 @@ class TableRow(IdentifiableElement):
             f"Table row {self.short_name}: The structure can either be defined using ODXLINK or SNREF but not both."
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         for sdg in self.sdgs:
@@ -199,7 +199,7 @@ class TableRow(IdentifiableElement):
 
         if self.dop_ref is not None:
             self._dop = odxlinks.resolve(self.dop_ref)
-            if not isinstance(self._dop, (DataObjectProperty, DtcDop)):
+            if not isinstance(self._dop, DataObjectProperty | DtcDop):
                 odxraise("The DOP-REF of TABLE-ROWs must reference a simple DOP!")
         if self.structure_ref is not None:
             self._structure = odxlinks.resolve(self.structure_ref, Structure)
@@ -243,7 +243,7 @@ class TableRow(IdentifiableElement):
             self._structure = resolve_snref(self.structure_snref, ddd_spec.structures, Structure)
         if self.dop_snref is not None:
             self._dop = resolve_snref(self.dop_snref, ddd_spec.data_object_props)
-            if not isinstance(self._dop, (DataObjectProperty, DtcDop)):
+            if not isinstance(self._dop, DataObjectProperty | DtcDop):
                 odxraise("The DOP-SNREF of TABLE-ROWs must reference a simple DOP!")
 
         if self.audience is not None:
@@ -258,7 +258,7 @@ class TableRow(IdentifiableElement):
         for pc_ref in self.pre_condition_state_refs:
             pc_ref._resolve_snrefs(context)
 
-    def __reduce__(self) -> Tuple[Any, ...]:
+    def __reduce__(self) -> tuple[Any, ...]:
         """This ensures that the object can be correctly reconstructed during unpickling."""
         state = self.__dict__.copy()
         return self.__class__, tuple([getattr(self, x.name) for x in fields(self)]), state

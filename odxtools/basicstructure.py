@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -30,20 +30,20 @@ class BasicStructure(ComplexDop):
     data objects. All structure-like objects adhere to the
     `CompositeCodec` type protocol.
     """
-    byte_size: Optional[int]
+    byte_size: int | None
     parameters: NamedItemList[Parameter]
 
     @property
-    def required_parameters(self) -> List[Parameter]:
+    def required_parameters(self) -> list[Parameter]:
         return composite_codec_get_required_parameters(self)
 
     @property
-    def free_parameters(self) -> List[Parameter]:
+    def free_parameters(self) -> list[Parameter]:
         return composite_codec_get_free_parameters(self)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "BasicStructure":
+                doc_frags: list[OdxDocFragment]) -> "BasicStructure":
         """Read a BASIC-STRUCTURE."""
         kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
 
@@ -56,7 +56,7 @@ class BasicStructure(ComplexDop):
 
         return BasicStructure(byte_size=byte_size, parameters=parameters, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         for param in self.parameters:
@@ -79,7 +79,7 @@ class BasicStructure(ComplexDop):
 
         context.parameters = None
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         # Explicit size was specified, so we do not need to look at
         # the list of parameters
         if self.byte_size is not None:
@@ -96,7 +96,7 @@ class BasicStructure(ComplexDop):
         print(parameter_info(self.free_parameters), end="")
 
     @override
-    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_into_pdu(self, physical_value: ParameterValue | None,
                         encode_state: EncodeState) -> None:
         orig_pos = encode_state.cursor_byte_position
 

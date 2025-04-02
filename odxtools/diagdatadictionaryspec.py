@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from itertools import chain
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -26,7 +26,7 @@ from .unitspec import UnitSpec
 
 @dataclass
 class DiagDataDictionarySpec:
-    admin_data: Optional[AdminData]
+    admin_data: AdminData | None
     dtc_dops: NamedItemList[DtcDop]
     env_data_descs: NamedItemList[EnvironmentDataDescription]
     data_object_props: NamedItemList[DataObjectProperty]
@@ -37,13 +37,13 @@ class DiagDataDictionarySpec:
     end_of_pdu_fields: NamedItemList[EndOfPduField]
     muxs: NamedItemList[Multiplexer]
     env_datas: NamedItemList[EnvironmentData]
-    unit_spec: Optional[UnitSpec]
+    unit_spec: UnitSpec | None
     tables: NamedItemList[Table]
-    sdgs: List[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DiagDataDictionarySpec":
+                doc_frags: list[OdxDocFragment]) -> "DiagDataDictionarySpec":
         admin_data = None
         if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:
             admin_data = AdminData.from_et(admin_data_elem, doc_frags)
@@ -149,7 +149,7 @@ class DiagDataDictionarySpec:
                 self.env_datas,
             ))
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         # note that DataDictionarySpec objects do not exhibit an ODXLINK id.
         odxlinks = {}
 

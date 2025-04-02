@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
@@ -12,11 +12,11 @@ if TYPE_CHECKING:
 
 @dataclass
 class SubComponentPattern:
-    matching_parameters: List["MatchingParameter"]
+    matching_parameters: list["MatchingParameter"]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "SubComponentPattern":
+                doc_frags: list[OdxDocFragment]) -> "SubComponentPattern":
         from .matchingparameter import MatchingParameter
 
         matching_parameters = [
@@ -26,7 +26,7 @@ class SubComponentPattern:
 
         return SubComponentPattern(matching_parameters=matching_parameters)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {}
         for mp in self.matching_parameters:
             result.update(mp._build_odxlinks())

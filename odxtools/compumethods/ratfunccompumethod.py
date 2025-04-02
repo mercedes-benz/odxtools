@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional, cast
+from typing import cast
 from xml.etree import ElementTree
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
@@ -30,11 +30,11 @@ class RatFuncCompuMethod(CompuMethod):
         return self._int_to_phys_segment
 
     @property
-    def phys_to_int_segment(self) -> Optional[RatFuncSegment]:
+    def phys_to_int_segment(self) -> RatFuncSegment | None:
         return self._phys_to_int_segment
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
                              internal_type: DataType,
                              physical_type: DataType) -> "RatFuncCompuMethod":
         cm = CompuMethod.compu_method_from_et(

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -39,12 +39,12 @@ class Response(IdentifiableElement):
 
     response_type: ResponseType
 
-    admin_data: Optional[AdminData]
+    admin_data: AdminData | None
     parameters: NamedItemList[Parameter]
-    sdgs: List[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Response":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Response":
         """Reads a response."""
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
@@ -70,7 +70,7 @@ class Response(IdentifiableElement):
             sdgs=sdgs,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         if self.admin_data is not None:
@@ -110,7 +110,7 @@ class Response(IdentifiableElement):
         context.response = None
         context.parameters = None
 
-    def encode(self, coded_request: Optional[bytes] = None, **kwargs: ParameterValue) -> bytearray:
+    def encode(self, coded_request: bytes | None = None, **kwargs: ParameterValue) -> bytearray:
         encode_state = EncodeState(triggering_request=coded_request, is_end_of_pdu=True)
 
         self.encode_into_pdu(physical_value=kwargs, encode_state=encode_state)
@@ -126,22 +126,22 @@ class Response(IdentifiableElement):
 
         return cast(ParameterValueDict, param_values)
 
-    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_into_pdu(self, physical_value: ParameterValue | None,
                         encode_state: EncodeState) -> None:
         composite_codec_encode_into_pdu(self, physical_value, encode_state)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         return composite_codec_decode_from_pdu(self, decode_state)
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return composite_codec_get_static_bit_length(self)
 
     @property
-    def required_parameters(self) -> List[Parameter]:
+    def required_parameters(self) -> list[Parameter]:
         return composite_codec_get_required_parameters(self)
 
     @property
-    def free_parameters(self) -> List[Parameter]:
+    def free_parameters(self) -> list[Parameter]:
         return composite_codec_get_free_parameters(self)
 
     def print_free_parameters_info(self) -> None:

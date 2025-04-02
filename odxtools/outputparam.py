@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from deprecation import deprecated
@@ -16,7 +16,7 @@ from .utils import dataclass_fields_asdict
 @dataclass
 class OutputParam(IdentifiableElement):
     dop_base_ref: OdxLinkRef
-    semantic: Optional[str]
+    semantic: str | None
 
     @property
     def dop(self) -> DopBase:
@@ -27,7 +27,7 @@ class OutputParam(IdentifiableElement):
         return self._dop
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "OutputParam":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "OutputParam":
 
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
@@ -36,7 +36,7 @@ class OutputParam(IdentifiableElement):
 
         return OutputParam(dop_base_ref=dop_base_ref, semantic=semantic, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

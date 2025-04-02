@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from .exceptions import odxraise
@@ -32,20 +31,20 @@ class PhysicalType:
     PhysicalType(DataType.A_FLOAT64, precision=2)
     """
 
-    precision: Optional[int]
+    precision: int | None
     """Number of digits after the decimal point to display to the user
     The precision is only applicable if the base data type is A_FLOAT32 or A_FLOAT64.
     """
 
     base_data_type: DataType
 
-    display_radix: Optional[Radix]
+    display_radix: Radix | None
     """The display radix defines how integers are displayed to the user.
     The display radix is only applicable if the base data type is A_UINT32.
     """
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "PhysicalType":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "PhysicalType":
         precision_str = et_element.findtext("PRECISION")
         precision = int(precision_str) if precision_str is not None else None
 

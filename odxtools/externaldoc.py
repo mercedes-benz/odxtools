@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Optional
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
@@ -8,12 +8,12 @@ from .odxlink import OdxDocFragment
 
 @dataclass
 class ExternalDoc:
-    description: Optional[str]
+    description: str | None
     href: str
 
     @staticmethod
-    def from_et(et_element: Optional[ElementTree.Element],
-                doc_frags: List[OdxDocFragment]) -> Optional["ExternalDoc"]:
+    def from_et(et_element: ElementTree.Element | None,
+                doc_frags: list[OdxDocFragment]) -> Optional["ExternalDoc"]:
         if et_element is None:
             return None
 

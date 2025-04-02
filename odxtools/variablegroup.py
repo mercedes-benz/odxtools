@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import typing
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, runtime_checkable
+from typing import TYPE_CHECKING, runtime_checkable
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement, NamedElement
@@ -26,7 +26,7 @@ class VariableGroup(IdentifiableElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "VariableGroup":
+                doc_frags: list[OdxDocFragment]) -> "VariableGroup":
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
 
         return VariableGroup(**kwargs)

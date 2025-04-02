@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
@@ -15,7 +14,7 @@ class RelatedDiagCommRef(OdxLinkRef):
     @staticmethod
     def from_et(  # type: ignore[override]
             et_element: ElementTree.Element,
-            doc_frags: List[OdxDocFragment]) -> "RelatedDiagCommRef":
+            doc_frags: list[OdxDocFragment]) -> "RelatedDiagCommRef":
         kwargs = dataclass_fields_asdict(odxrequire(OdxLinkRef.from_et(et_element, doc_frags)))
 
         relation_type = odxrequire(et_element.findtext("RELATION-TYPE"))

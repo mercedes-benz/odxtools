@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -34,7 +34,7 @@ class NrcConstParameter(Parameter):
 
     """
 
-    coded_values_raw: List[str]
+    coded_values_raw: list[str]
     diag_coded_type: DiagCodedType
 
     @property
@@ -57,13 +57,13 @@ class NrcConstParameter(Parameter):
         return self.diag_coded_type.base_data_type
 
     @property
-    def coded_values(self) -> List[AtomicOdxType]:
+    def coded_values(self) -> list[AtomicOdxType]:
         return self._coded_values
 
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "NrcConstParameter":
+                doc_frags: list[OdxDocFragment]) -> "NrcConstParameter":
 
         kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
 
@@ -82,7 +82,7 @@ class NrcConstParameter(Parameter):
         ]
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         result.update(self.diag_coded_type._build_odxlinks())
@@ -90,11 +90,11 @@ class NrcConstParameter(Parameter):
         return result
 
     @override
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return self.diag_coded_type.get_static_bit_length()
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         # NRC-CONST parameters are not encoding any value on its
         # own. instead, it is supposed to overlap with a value

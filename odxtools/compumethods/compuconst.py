@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Optional
 from xml.etree import ElementTree
 
 from ..odxtypes import AtomicOdxType, DataType
@@ -8,13 +7,13 @@ from ..odxtypes import AtomicOdxType, DataType
 
 @dataclass
 class CompuConst:
-    v: Optional[str]
-    vt: Optional[str]
+    v: str | None
+    vt: str | None
 
     data_type: DataType
 
     @property
-    def value(self) -> Optional[AtomicOdxType]:
+    def value(self) -> AtomicOdxType | None:
         return self._value
 
     @staticmethod
@@ -26,6 +25,6 @@ class CompuConst:
         return CompuConst(v=v, vt=vt, data_type=data_type)
 
     def __post_init__(self) -> None:
-        self._value: Optional[AtomicOdxType] = self.vt
+        self._value: AtomicOdxType | None = self.vt
         if self.v is not None:
             self._value = self.data_type.from_string(self.v)
