@@ -8,7 +8,8 @@
 
 {%- macro printPosResponseSuppressible(prs) -%}
 <POS-RESPONSE-SUPPRESSABLE>
-  <BIT-MASK>{{ hex(prs.bit_mask).lower() }}</BIT-MASK>
+  {%- set num_nibbles = (prs.bit_mask.bit_length() + 7) // 8 * 2 %}
+  <BIT-MASK>{{ ("%%0%dX" | format(num_nibbles | int)) | format(prs.bit_mask | int) }}</BIT-MASK>
   {%- if prs.coded_const_snref is not none %}
   <CODED-CONST-SNREF SHORT-NAME="{{ prs.coded_const_snref }}" />
   {%- endif %}
