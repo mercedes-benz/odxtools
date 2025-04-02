@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
@@ -53,21 +53,21 @@ class Unit(IdentifiableElement):
     ```
     """
     display_name: str
-    factor_si_to_unit: Optional[float]
-    offset_si_to_unit: Optional[float]
-    physical_dimension_ref: Optional[OdxLinkRef]
+    factor_si_to_unit: float | None
+    offset_si_to_unit: float | None
+    physical_dimension_ref: OdxLinkRef | None
 
     @property
-    def physical_dimension(self) -> Optional[PhysicalDimension]:
+    def physical_dimension(self) -> PhysicalDimension | None:
         return self._physical_dimension
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Unit":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Unit":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         display_name = odxrequire(et_element.findtext("DISPLAY-NAME"))
 
-        def read_optional_float(element: ElementTree.Element, name: str) -> Optional[float]:
+        def read_optional_float(element: ElementTree.Element, name: str) -> float | None:
             if (elem_str := element.findtext(name)) is not None:
                 return float(elem_str)
             else:
@@ -85,11 +85,11 @@ class Unit(IdentifiableElement):
             physical_dimension_ref=physical_dimension_ref,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._physical_dimension: Optional[PhysicalDimension] = None
+        self._physical_dimension: PhysicalDimension | None = None
         if self.physical_dimension_ref:
             self._physical_dimension = odxlinks.resolve(self.physical_dimension_ref,
                                                         PhysicalDimension)

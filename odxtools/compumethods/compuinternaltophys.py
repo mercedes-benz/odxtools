@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
@@ -13,13 +13,13 @@ from .compuscale import CompuScale
 
 @dataclass
 class CompuInternalToPhys:
-    compu_scales: List[CompuScale]
-    prog_code: Optional[ProgCode]
-    compu_default_value: Optional[CompuDefaultValue]
+    compu_scales: list[CompuScale]
+    prog_code: ProgCode | None
+    compu_default_value: CompuDefaultValue | None
 
     @staticmethod
     def compu_internal_to_phys_from_et(et_element: ElementTree.Element,
-                                       doc_frags: List[OdxDocFragment], *, internal_type: DataType,
+                                       doc_frags: list[OdxDocFragment], *, internal_type: DataType,
                                        physical_type: DataType) -> "CompuInternalToPhys":
         compu_scales = [
             CompuScale.compuscale_from_et(
@@ -39,7 +39,7 @@ class CompuInternalToPhys:
         return CompuInternalToPhys(
             compu_scales=compu_scales, prog_code=prog_code, compu_default_value=compu_default_value)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {}
 
         if self.prog_code is not None:

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional, cast
+from typing import cast
 from xml.etree import ElementTree
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
@@ -20,21 +20,21 @@ class CompuCodeCompuMethod(CompuMethod):
     """
 
     @property
-    def internal_to_phys_code(self) -> Optional[ProgCode]:
+    def internal_to_phys_code(self) -> ProgCode | None:
         if self.compu_internal_to_phys is None:
             return None
 
         return self.compu_internal_to_phys.prog_code
 
     @property
-    def phys_to_internal_code(self) -> Optional[ProgCode]:
+    def phys_to_internal_code(self) -> ProgCode | None:
         if self.compu_phys_to_internal is None:
             return None
 
         return self.compu_phys_to_internal.prog_code
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
                              internal_type: DataType,
                              physical_type: DataType) -> "CompuCodeCompuMethod":
         cm = CompuMethod.compu_method_from_et(

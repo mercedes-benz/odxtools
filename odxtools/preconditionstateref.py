@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .exceptions import odxassert, odxrequire
@@ -21,10 +21,10 @@ class PreConditionStateRef(OdxLinkRef):
     """
     This class represents the PRE-CONDITION-STATE-REF XML tag.
     """
-    value: Optional[str]
+    value: str | None
 
-    in_param_if_snref: Optional[str]
-    in_param_if_snpathref: Optional[str]
+    in_param_if_snref: str | None
+    in_param_if_snpathref: str | None
 
     @property
     def state(self) -> "State":
@@ -33,7 +33,7 @@ class PreConditionStateRef(OdxLinkRef):
     @staticmethod
     def from_et(  # type: ignore[override]
             et_element: ElementTree.Element,
-            doc_frags: List[OdxDocFragment]) -> "PreConditionStateRef":
+            doc_frags: list[OdxDocFragment]) -> "PreConditionStateRef":
         kwargs = dataclass_fields_asdict(OdxLinkRef.from_et(et_element, doc_frags))
 
         value = et_element.findtext("VALUE")
@@ -57,7 +57,7 @@ class PreConditionStateRef(OdxLinkRef):
             odxassert(self.in_param_if_snref is not None or self.in_param_if_snref is not None,
                       "If VALUE is specified, a parameter must be referenced")
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -66,7 +66,7 @@ class PreConditionStateRef(OdxLinkRef):
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
 
-    def applies(self, state_machine: "StateMachine", params: List[Parameter],
+    def applies(self, state_machine: "StateMachine", params: list[Parameter],
                 param_value_dict: ParameterValueDict) -> bool:
         """Given a state machine, evaluate whether the precondition is fulfilled or not
 

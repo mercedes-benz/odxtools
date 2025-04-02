@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -37,7 +36,7 @@ class MatchingRequestParameter(Parameter):
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "MatchingRequestParameter":
+                doc_frags: list[OdxDocFragment]) -> "MatchingRequestParameter":
 
         kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
 
@@ -48,11 +47,11 @@ class MatchingRequestParameter(Parameter):
             request_byte_position=request_byte_position, byte_length=byte_length, **kwargs)
 
     @override
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return 8 * self.byte_length
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         if encode_state.triggering_request is None:
             odxraise(

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import NamedElement
@@ -11,15 +11,15 @@ from .utils import dataclass_fields_asdict
 
 @dataclass
 class XDoc(NamedElement):
-    number: Optional[str]
-    state: Optional[str]
-    date: Optional[str]
-    publisher: Optional[str]
-    url: Optional[str]
-    position: Optional[str]
+    number: str | None
+    state: str | None
+    date: str | None
+    publisher: str | None
+    url: str | None
+    position: str | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "XDoc":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "XDoc":
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
         number = et_element.findtext("NUMBER")
         state = et_element.findtext("STATE")
@@ -37,7 +37,7 @@ class XDoc(NamedElement):
             position=position,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

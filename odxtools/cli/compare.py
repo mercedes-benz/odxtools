@@ -3,7 +3,7 @@
 
 import argparse
 import os
-from typing import Any, Dict, List, Optional, Set, Union, cast
+from typing import Any, cast
 
 from rich import print as rich_print
 from rich.padding import Padding as RichPadding
@@ -29,18 +29,18 @@ _odxtools_tool_name_ = "compare"
 
 VariantName = str
 VariantType = str
-NewServices = List[DiagService]
-DeletedServices = List[DiagService]
-RenamedServices = List[List[Union[str, DiagService]]]
-ServicesWithParamChanges = List[List[Union[str, DiagService]]]
+NewServices = list[DiagService]
+DeletedServices = list[DiagService]
+RenamedServices = list[list[str | DiagService]]
+ServicesWithParamChanges = list[list[str | DiagService]]
 
-SpecsServiceDict = Dict[str, Union[VariantName, VariantType, NewServices, DeletedServices,
-                                   RenamedServices, ServicesWithParamChanges]]
+SpecsServiceDict = dict[str, VariantName | VariantType | NewServices | DeletedServices
+                        | RenamedServices | ServicesWithParamChanges]
 
-NewVariants = List[DiagLayer]
-DeletedVariants = List[DiagLayer]
+NewVariants = list[DiagLayer]
+DeletedVariants = list[DiagLayer]
 
-SpecsChangesVariants = Dict[str, Union[NewVariants, DeletedVariants, SpecsServiceDict]]
+SpecsChangesVariants = dict[str, NewVariants | DeletedVariants | SpecsServiceDict]
 
 
 class Display:
@@ -71,13 +71,13 @@ class Display:
                 f"Changed diagnostic services for diagnostic layer '{service_dict['diag_layer']}' ({service_dict['diag_layer_type']}):"
             )
         if service_dict["new_services"]:
-            assert isinstance(service_dict["new_services"], List)
+            assert isinstance(service_dict["new_services"], list)
             rich_print()
             rich_print(" [blue]New services[/blue]")
             rich_print(extract_service_tabulation_data(
                 service_dict["new_services"]))  # type: ignore[arg-type]
         if service_dict["deleted_services"]:
-            assert isinstance(service_dict["deleted_services"], List)
+            assert isinstance(service_dict["deleted_services"], list)
             rich_print()
             rich_print(" [blue]Deleted services[/blue]")
             rich_print(extract_service_tabulation_data(
@@ -123,7 +123,7 @@ class Display:
                             show_lines=True)
                         for header in detailed_info:
                             table.add_column(header)
-                        rows = zip(*detailed_info.values())
+                        rows = zip(*detailed_info.values(), strict=False)
                         for row in rows:
                             table.add_row(*map(str, row))
 
@@ -159,9 +159,9 @@ class Display:
 
 
 class Comparison(Display):
-    databases: List[Database] = []  # storage of database objects
-    diagnostic_layers: List[DiagLayer] = []  # storage of DiagLayer objects
-    diagnostic_layer_names: Set[str] = set()  # storage of diagnostic layer names
+    databases: list[Database] = []  # storage of database objects
+    diagnostic_layers: list[DiagLayer] = []  # storage of DiagLayer objects
+    diagnostic_layer_names: set[str] = set()  # storage of diagnostic layer names
 
     db_indicator_1: int
     db_indicator_2: int
@@ -169,7 +169,7 @@ class Comparison(Display):
     def __init__(self) -> None:
         pass
 
-    def compare_parameters(self, param1: Parameter, param2: Parameter) -> Dict[str, Any]:
+    def compare_parameters(self, param1: Parameter, param2: Parameter) -> dict[str, Any]:
         # checks whether properties of param1 and param2 differ
         # checked properties: Name, Byte Position, Bit Length, Semantic, Parameter Type, Value (Coded, Constant, Default etc.), Data Type, Data Object Property (Name, Physical Data Type, Unit)
 
@@ -177,8 +177,8 @@ class Comparison(Display):
         old = []
         new = []
 
-        def append_list(property_name: str, new_property_value: Optional[AtomicOdxType],
-                        old_property_value: Optional[AtomicOdxType]) -> None:
+        def append_list(property_name: str, new_property_value: AtomicOdxType | None,
+                        old_property_value: AtomicOdxType | None) -> None:
             property.append(property_name)
             old.append(old_property_value)
             new.append(new_property_value)
@@ -277,10 +277,10 @@ class Comparison(Display):
         return {"Property": property, "Old Value": old, "New Value": new}
 
     def compare_services(self, service1: DiagService,
-                         service2: DiagService) -> List[SpecsServiceDict]:
+                         service2: DiagService) -> list[SpecsServiceDict]:
         # compares request, positive response and negative response parameters of two diagnostic services
 
-        information: List[Union[str, Dict[str, Any]]] = [
+        information: list[str | dict[str, Any]] = [
         ]  # information = [infotext1, table1, infotext2, table2, ...]
         changed_params = ""
 
@@ -438,10 +438,10 @@ class Comparison(Display):
 
         # extract the constant prefixes for the requests of all
         # services (used for duck-typed rename detection)
-        dl1_request_prefixes: List[Optional[bytes]] = [
+        dl1_request_prefixes: list[bytes | None] = [
             None if s.request is None else s.request.coded_const_prefix() for s in dl1.services
         ]
-        dl2_request_prefixes: List[Optional[bytes]] = [
+        dl2_request_prefixes: list[bytes | None] = [
             None if s.request is None else s.request.coded_const_prefix() for s in dl2.services
         ]
 
@@ -449,7 +449,7 @@ class Comparison(Display):
         for service1 in dl1.services:
 
             # check for added diagnostic services
-            rq_prefix: Optional[bytes] = None
+            rq_prefix: bytes | None = None
             if service1.request is not None:
                 rq_prefix = service1.request.coded_const_prefix()
 

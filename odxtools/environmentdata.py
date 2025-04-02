@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
@@ -20,12 +19,12 @@ class EnvironmentData(BasicStructure):
     sense, it is quite similar to NRC-CONST parameters.)
     """
 
-    all_value: Optional[bool]
-    dtc_values: List[int]
+    all_value: bool | None
+    dtc_values: list[int]
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "EnvironmentData":
+                doc_frags: list[OdxDocFragment]) -> "EnvironmentData":
         """Reads Environment Data from Diag Layer."""
         kwargs = dataclass_fields_asdict(BasicStructure.from_et(et_element, doc_frags))
 

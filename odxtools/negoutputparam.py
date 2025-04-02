@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .dopbase import DopBase
@@ -22,14 +22,14 @@ class NegOutputParam(NamedElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "NegOutputParam":
+                doc_frags: list[OdxDocFragment]) -> "NegOutputParam":
 
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
         dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
 
         return NegOutputParam(dop_base_ref=dop_base_ref, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

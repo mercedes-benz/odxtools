@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Iterable
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Optional, Union, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -28,19 +29,19 @@ class EcuVariant(HierarchyElement):
         return cast(EcuVariantRaw, self.diag_layer_raw)
 
     @property
-    def diag_variables_raw(self) -> List[Union[DiagVariable, OdxLinkRef]]:
+    def diag_variables_raw(self) -> list[DiagVariable | OdxLinkRef]:
         return self.ecu_variant_raw.diag_variables_raw
 
     @property
-    def dyn_defined_spec(self) -> Optional[DynDefinedSpec]:
+    def dyn_defined_spec(self) -> DynDefinedSpec | None:
         return self.ecu_variant_raw.dyn_defined_spec
 
     @property
-    def parent_refs(self) -> List[ParentRef]:
+    def parent_refs(self) -> list[ParentRef]:
         return self.ecu_variant_raw.parent_refs
 
     @property
-    def base_variant(self) -> Optional[BaseVariant]:
+    def base_variant(self) -> BaseVariant | None:
         """Return the base variant for the ECU variant
 
         The ODX specification allows at a single base variant for each
@@ -55,7 +56,7 @@ class EcuVariant(HierarchyElement):
         return None
 
     @property
-    def ecu_variant_patterns(self) -> List[EcuVariantPattern]:
+    def ecu_variant_patterns(self) -> list[EcuVariantPattern]:
         return self.ecu_variant_raw.ecu_variant_patterns
 
     #######
@@ -74,7 +75,7 @@ class EcuVariant(HierarchyElement):
     #######
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "EcuVariant":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "EcuVariant":
         ecu_variant_raw = EcuVariantRaw.from_et(et_element, doc_frags)
 
         return EcuVariant(diag_layer_raw=ecu_variant_raw)
@@ -87,7 +88,7 @@ class EcuVariant(HierarchyElement):
             "The raw diagnostic layer passed to EcuVariant "
             "must be a EcuVariantRaw")
 
-    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
         """Create a deep copy of the ECU variant
 
         Note that the copied diagnostic layer is not fully
@@ -120,7 +121,7 @@ class EcuVariant(HierarchyElement):
 
             return dl.diag_layer_raw.diag_variables
 
-        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_variables
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
@@ -134,7 +135,7 @@ class EcuVariant(HierarchyElement):
 
             return dl.diag_layer_raw.variable_groups
 
-        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)

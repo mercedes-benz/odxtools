@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Union
 from xml.etree import ElementTree
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
@@ -37,11 +36,11 @@ class TabIntpCompuMethod(CompuMethod):
     """
 
     @property
-    def internal_points(self) -> List[Union[float, int]]:
+    def internal_points(self) -> list[float | int]:
         return self._internal_points
 
     @property
-    def physical_points(self) -> List[Union[float, int]]:
+    def physical_points(self) -> list[float | int]:
         return self._physical_points
 
     @property
@@ -61,7 +60,7 @@ class TabIntpCompuMethod(CompuMethod):
         return self._physical_upper_limit
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
                              internal_type: DataType,
                              physical_type: DataType) -> "TabIntpCompuMethod":
         cm = CompuMethod.compu_method_from_et(
@@ -74,16 +73,16 @@ class TabIntpCompuMethod(CompuMethod):
         odxassert(self.category == CompuCategory.TAB_INTP,
                   "TabIntpCompuMethod must exibit TAB-INTP category")
 
-        self._internal_points: List[Union[int, float]] = []
-        self._physical_points: List[Union[int, float]] = []
+        self._internal_points: list[int | float] = []
+        self._physical_points: list[int | float] = []
         for scale in odxrequire(self.compu_internal_to_phys).compu_scales:
             internal_point = odxrequire(scale.lower_limit).value
             physical_point = odxrequire(scale.compu_const).value
 
-            if not isinstance(internal_point, (float, int)):
+            if not isinstance(internal_point, float | int):
                 odxraise("The type of values of tab-intp compumethods must "
                          "either int or float")
-            if not isinstance(physical_point, (float, int)):
+            if not isinstance(physical_point, float | int):
                 odxraise("The type of values of tab-intp compumethods must "
                          "either int or float")
 
@@ -130,10 +129,8 @@ class TabIntpCompuMethod(CompuMethod):
             ], "Physical data type of TAB-INTP compumethod must be one of"
             " [A_INT32, A_UINT32, A_FLOAT32, A_FLOAT64]")
 
-    def __piecewise_linear_interpolate(self, x: Union[int, float],
-                                       range_samples: List[Union[int, float]],
-                                       domain_samples: List[Union[int,
-                                                                  float]]) -> Union[float, None]:
+    def __piecewise_linear_interpolate(self, x: int | float, range_samples: list[int | float],
+                                       domain_samples: list[int | float]) -> float | None:
         for i in range(0, len(range_samples) - 1):
             if (x0 := range_samples[i]) <= x and x <= (x1 := range_samples[i + 1]):
                 y0 = domain_samples[i]
@@ -143,13 +140,13 @@ class TabIntpCompuMethod(CompuMethod):
         return None
 
     def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> AtomicOdxType:
-        if not isinstance(physical_value, (int, float)):
+        if not isinstance(physical_value, int | float):
             odxraise("The type of values of tab-intp compumethods must "
                      "either int or float", EncodeError)
             return None
 
         odxassert(
-            isinstance(physical_value, (int, float)),
+            isinstance(physical_value, int | float),
             "Only integers and floats can be piecewise linearly interpolated", EncodeError)
         result = self.__piecewise_linear_interpolate(physical_value, self._physical_points,
                                                      self._internal_points)
@@ -164,14 +161,14 @@ class TabIntpCompuMethod(CompuMethod):
         return res
 
     def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> AtomicOdxType:
-        if not isinstance(internal_value, (int, float)):
+        if not isinstance(internal_value, int | float):
             odxraise(
                 "The internal type of values of tab-intp compumethods must "
                 "either int or float", EncodeError)
             return None
 
         odxassert(
-            isinstance(internal_value, (int, float)),
+            isinstance(internal_value, int | float),
             "Only integers and floats can be piecewise linearly interpolated", DecodeError)
 
         result = self.__piecewise_linear_interpolate(internal_value, self._internal_points,
@@ -188,14 +185,14 @@ class TabIntpCompuMethod(CompuMethod):
         return res
 
     def is_valid_physical_value(self, physical_value: AtomicOdxType) -> bool:
-        if not isinstance(physical_value, (int, float)):
+        if not isinstance(physical_value, int | float):
             return False
 
         return min(self.physical_points) <= physical_value and physical_value <= max(
             self.physical_points)
 
     def is_valid_internal_value(self, internal_value: AtomicOdxType) -> bool:
-        if not isinstance(internal_value, (int, float)):
+        if not isinstance(internal_value, int | float):
             return False
 
         return min(self.internal_points) <= internal_value and internal_value <= max(

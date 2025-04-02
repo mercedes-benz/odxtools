@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Union, cast
+from typing import cast
 from xml.etree import ElementTree
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
@@ -21,11 +21,11 @@ class ScaleLinearCompuMethod(CompuMethod):
     """
 
     @property
-    def segments(self) -> List[LinearSegment]:
+    def segments(self) -> list[LinearSegment]:
         return self._segments
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
                              internal_type: DataType,
                              physical_type: DataType) -> "ScaleLinearCompuMethod":
         cm = CompuMethod.compu_method_from_et(
@@ -35,7 +35,7 @@ class ScaleLinearCompuMethod(CompuMethod):
         return ScaleLinearCompuMethod(**kwargs)
 
     def __post_init__(self) -> None:
-        self._segments: List[LinearSegment] = []
+        self._segments: list[LinearSegment] = []
 
         odxassert(self.category == CompuCategory.SCALE_LINEAR,
                   "ScaleLinearCompuMethod must exibit SCALE-LINEAR category")
@@ -100,7 +100,7 @@ class ScaleLinearCompuMethod(CompuMethod):
                 self._is_invertible = False
                 break
 
-            if not isinstance(x, (int, float)):
+            if not isinstance(x, int | float):
                 odxraise("Linear segments must use int or float for all quantities")
 
             # the respective function value at the interval's
@@ -111,7 +111,7 @@ class ScaleLinearCompuMethod(CompuMethod):
                 self._is_invertible = False
                 break
 
-    def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> Union[float, int]:
+    def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> float | int:
         if not self._is_invertible:
             odxraise(
                 f"Trying to encode value {physical_value!r} using a non-invertible "
@@ -128,7 +128,7 @@ class ScaleLinearCompuMethod(CompuMethod):
 
         return seg.convert_physical_to_internal(physical_value)
 
-    def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> Union[float, int]:
+    def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> float | int:
         applicable_segments = [
             seg for seg in self._segments if seg.internal_applies(internal_value)
         ]

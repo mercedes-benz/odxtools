@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional, cast
+from typing import cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -18,7 +18,7 @@ from .utils import dataclass_fields_asdict
 
 @dataclass
 class MinMaxLengthType(DiagCodedType):
-    max_length: Optional[int]
+    max_length: int | None
     min_length: int
     termination: Termination
 
@@ -29,7 +29,7 @@ class MinMaxLengthType(DiagCodedType):
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "MinMaxLengthType":
+                doc_frags: list[OdxDocFragment]) -> "MinMaxLengthType":
         kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
 
         max_length = None
@@ -77,7 +77,7 @@ class MinMaxLengthType(DiagCodedType):
     @override
     def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:
 
-        if not isinstance(internal_value, (str, BytesTypes)):
+        if not isinstance(internal_value, str | BytesTypes):
             odxraise("MinMaxLengthType is currently only implemented for strings and byte arrays",
                      EncodeError)
 

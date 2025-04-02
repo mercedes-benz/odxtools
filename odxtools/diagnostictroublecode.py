@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
@@ -16,12 +16,12 @@ from .utils import dataclass_fields_asdict
 @dataclass
 class DiagnosticTroubleCode(IdentifiableElement):
     trouble_code: int
-    display_trouble_code: Optional[str]
+    display_trouble_code: str | None
     text: Text
-    level: Optional[int]
-    sdgs: List[SpecialDataGroup]
+    level: int | None
+    sdgs: list[SpecialDataGroup]
 
-    is_temporary_raw: Optional[bool]
+    is_temporary_raw: bool | None
 
     @property
     def is_temporary(self) -> bool:
@@ -29,7 +29,7 @@ class DiagnosticTroubleCode(IdentifiableElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DiagnosticTroubleCode":
+                doc_frags: list[OdxDocFragment]) -> "DiagnosticTroubleCode":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         trouble_code = int(odxrequire(et_element.findtext("TROUBLE-CODE")))
@@ -53,8 +53,8 @@ class DiagnosticTroubleCode(IdentifiableElement):
             is_temporary_raw=is_temporary_raw,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result: Dict[OdxLinkId, Any] = {}
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
+        result: dict[OdxLinkId, Any] = {}
 
         result[self.odx_id] = self
 

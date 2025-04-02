@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
@@ -14,21 +13,21 @@ from .utils import read_hex_binary
 class PosResponseSuppressible:
     bit_mask: int
 
-    coded_const_snref: Optional[str]
-    coded_const_snpathref: Optional[str]
+    coded_const_snref: str | None
+    coded_const_snpathref: str | None
 
-    value_snref: Optional[str]
-    value_snpathref: Optional[str]
+    value_snref: str | None
+    value_snpathref: str | None
 
-    phys_const_snref: Optional[str]
-    phys_const_snpathref: Optional[str]
+    phys_const_snref: str | None
+    phys_const_snpathref: str | None
 
-    table_key_snref: Optional[str]
-    table_key_snpathref: Optional[str]
+    table_key_snref: str | None
+    table_key_snpathref: str | None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "PosResponseSuppressible":
+                doc_frags: list[OdxDocFragment]) -> "PosResponseSuppressible":
 
         bit_mask = odxrequire(read_hex_binary(et_element.find("BIT-MASK")))
 

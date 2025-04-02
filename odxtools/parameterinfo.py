@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import textwrap
+from collections.abc import Iterable
 from io import StringIO
-from typing import Iterable
 
 from .compumethods.compucodecompumethod import CompuCodeCompuMethod
 from .compumethods.identicalcompumethod import IdenticalCompuMethod

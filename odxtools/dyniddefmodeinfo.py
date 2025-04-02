@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 from xml.etree import ElementTree
 
 from .diagclasstype import DiagClassType
@@ -16,17 +16,17 @@ from .table import Table
 class DynIdDefModeInfo:
     def_mode: str
 
-    clear_dyn_def_message_ref: Optional[OdxLinkRef]
-    clear_dyn_def_message_snref: Optional[str]
+    clear_dyn_def_message_ref: OdxLinkRef | None
+    clear_dyn_def_message_snref: str | None
 
-    read_dyn_def_message_ref: Optional[OdxLinkRef]
-    read_dyn_def_message_snref: Optional[str]
+    read_dyn_def_message_ref: OdxLinkRef | None
+    read_dyn_def_message_snref: str | None
 
-    dyn_def_message_ref: Optional[OdxLinkRef]
-    dyn_def_message_snref: Optional[str]
+    dyn_def_message_ref: OdxLinkRef | None
+    dyn_def_message_snref: str | None
 
-    supported_dyn_ids: List[bytes]
-    selection_table_refs: List[Union[OdxLinkRef, str]]
+    supported_dyn_ids: list[bytes]
+    selection_table_refs: list[OdxLinkRef | str]
 
     @property
     def clear_dyn_def_message(self) -> DiagComm:
@@ -46,7 +46,7 @@ class DynIdDefModeInfo:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DynIdDefModeInfo":
+                doc_frags: list[OdxDocFragment]) -> "DynIdDefModeInfo":
         def_mode = odxrequire(et_element.findtext("DEF-MODE"))
 
         clear_dyn_def_message_ref = OdxLinkRef.from_et(
@@ -71,7 +71,7 @@ class DynIdDefModeInfo:
             for x in et_element.iterfind("SUPPORTED-DYN-IDS/SUPPORTED-DYN-ID")
         ]
 
-        selection_table_refs: List[Union[OdxLinkRef, str]] = []
+        selection_table_refs: list[OdxLinkRef | str] = []
         if (st_elems := et_element.find("SELECTION-TABLE-REFS")) is not None:
             for st_elem in st_elems:
                 if st_elem.tag == "SELECTION-TABLE-REF":
@@ -104,8 +104,8 @@ class DynIdDefModeInfo:
         odxassert(self.dyn_def_message_ref is not None or self.dyn_def_message_snref is not None,
                   "A DYN-DEF-MESSAGE must be specified")
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result: Dict[OdxLinkId, Any] = {}
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
+        result: dict[OdxLinkId, Any] = {}
 
         return result
 

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 from .encoding import Encoding, get_string_encoding
 from .exceptions import EncodeError, OdxWarning, odxassert, odxraise
@@ -41,20 +41,20 @@ class EncodeState:
     cursor_bit_position: int = 0
 
     #: If encoding a response: request that triggered the response
-    triggering_request: Optional[bytes] = None
+    triggering_request: bytes | None = None
 
     #: Mapping from the short name of a length-key parameter to bit
     #: lengths (specified by LengthKeyParameter)
-    length_keys: Dict[str, int] = field(default_factory=dict)
+    length_keys: dict[str, int] = field(default_factory=dict)
 
     #: Mapping from the short name of a table-key parameter to the
     #: short name of the corresponding row of the table (specified by
     #: TableKeyParameter)
-    table_keys: Dict[str, str] = field(default_factory=dict)
+    table_keys: dict[str, str] = field(default_factory=dict)
 
     #: The cursor position where a given length- or table key is located
     #: in the PDU
-    key_pos: Dict[str, int] = field(default_factory=dict)
+    key_pos: dict[str, int] = field(default_factory=dict)
 
     #: Flag whether we are currently the last parameter of the PDU
     #: (needed for MinMaxLengthType, EndOfPduField, etc.)
@@ -63,7 +63,7 @@ class EncodeState:
     #: list of parameters that have been encoded so far. The journal
     #: is used by some types of parameters which depend on the values of
     #: other parameters; e.g., environment data description parameters
-    journal: List[Tuple["Parameter", Optional[ParameterValue]]] = field(default_factory=list)
+    journal: list[tuple["Parameter", ParameterValue | None]] = field(default_factory=list)
 
     #: If this is True, specifying unknown parameters for encoding
     #: will raise an OdxError exception in strict mode.
@@ -87,9 +87,9 @@ class EncodeState:
         internal_value: AtomicOdxType,
         bit_length: int,
         base_data_type: DataType,
-        base_type_encoding: Optional[Encoding],
+        base_type_encoding: Encoding | None,
         is_highlow_byte_order: bool,
-        used_mask: Optional[bytes],
+        used_mask: bytes | None,
     ) -> None:
         """Convert the internal_value to bytes and emplace this into the PDU"""
 
@@ -220,7 +220,7 @@ class EncodeState:
                 odxraise(f"Illegal bit length for a float64 object ({bit_length})")
                 bit_length = 64
 
-            raw_value = float(internal_value)
+            raw_value = float(internal_value)  # type: ignore[arg-type]
 
         # If the bit length is zero, encode an empty value
         if bit_length == 0:
@@ -260,8 +260,8 @@ class EncodeState:
 
     def emplace_bytes(self,
                       new_data: bytes,
-                      obj_name: Optional[str] = None,
-                      obj_used_mask: Optional[bytes] = None) -> None:
+                      obj_name: str | None = None,
+                      obj_used_mask: bytes | None = None) -> None:
         if self.cursor_bit_position != 0:
             odxraise("EncodeState.emplace_bytes can only be called "
                      "for a bit position of 0!", RuntimeError)

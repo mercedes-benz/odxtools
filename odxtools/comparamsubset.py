@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .comparam import Comparam
@@ -22,12 +22,12 @@ class ComparamSubset(OdxCategory):
     comparams: NamedItemList[Comparam]
     complex_comparams: NamedItemList[ComplexComparam]
     data_object_props: NamedItemList[DataObjectProperty]
-    unit_spec: Optional[UnitSpec]
-    category: Optional[str]  # mandatory in ODX 2.2, but non-existent in ODX 2.0
+    unit_spec: UnitSpec | None
+    category: str | None  # mandatory in ODX 2.2, but non-existent in ODX 2.0
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ComparamSubset":
+                doc_frags: list[OdxDocFragment]) -> "ComparamSubset":
 
         category_attrib = et_element.attrib.get("CATEGORY")
 
@@ -64,7 +64,7 @@ class ComparamSubset(OdxCategory):
             unit_spec=unit_spec,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
 
         for comparam in self.comparams:

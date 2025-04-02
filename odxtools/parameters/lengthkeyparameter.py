@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import final, override
@@ -49,7 +49,7 @@ class LengthKeyParameter(ParameterWithDOP):
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "LengthKeyParameter":
+                doc_frags: list[OdxDocFragment]) -> "LengthKeyParameter":
 
         kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
 
@@ -58,7 +58,7 @@ class LengthKeyParameter(ParameterWithDOP):
         return LengthKeyParameter(odx_id=odx_id, **kwargs)
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         result[self.odx_id] = self
@@ -67,7 +67,7 @@ class LengthKeyParameter(ParameterWithDOP):
 
     @override
     @final
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         # if you get this exception, you ought to use
         # `.encode_placeholder_into_pdu()` followed by (after the
@@ -75,7 +75,7 @@ class LengthKeyParameter(ParameterWithDOP):
         # `.encode_value_into_pdu()`.
         raise RuntimeError("_encode_positioned_into_pdu() cannot be called for length keys.")
 
-    def encode_placeholder_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_placeholder_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
 
         if physical_value is not None:

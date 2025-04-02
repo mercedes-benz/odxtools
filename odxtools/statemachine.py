@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Generator
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Generator, Union
+from typing import TYPE_CHECKING, Any
 
 from .exceptions import odxraise
 from .odxtypes import ParameterValueDict
@@ -97,7 +98,7 @@ class StateMachine:
         self._active_state = state_chart.start_state
 
     def execute(self, service: "DiagService", **service_params: Any
-               ) -> Generator[bytes, Union[bytes, bytearray, ParameterValueDict], None]:
+               ) -> Generator[bytes, bytes | bytearray | ParameterValueDict, None]:
         """Run a diagnostic service and update the state machine
         depending on the outcome.
 
@@ -159,7 +160,7 @@ class StateMachine:
 
         if raw_resp is None:
             raise RuntimeError("The calling code must send back a reply")
-        elif isinstance(raw_resp, (bytes, bytearray)):
+        elif isinstance(raw_resp, bytes | bytearray):
             for decoded_resp_msg in self.diag_layer.decode_response(raw_resp, raw_req):
                 for stransref in service.state_transition_refs:
                     # we only execute the first applicable state

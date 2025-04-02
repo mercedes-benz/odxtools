@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
@@ -11,14 +10,14 @@ from .utils import dataclass_fields_asdict
 
 @dataclass
 class Structure(BasicStructure):
-    is_visible_raw: Optional[bool]
+    is_visible_raw: bool | None
 
     @property
     def is_visible(self) -> bool:
         return self.is_visible_raw in (True, None)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Structure":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Structure":
         """Read a STRUCTURE element from XML."""
         kwargs = dataclass_fields_asdict(BasicStructure.from_et(et_element, doc_frags))
 

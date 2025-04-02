@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import final, override
@@ -26,18 +26,18 @@ class TableKeyParameter(Parameter):
 
     # the spec mandates that exactly one of the two attributes must
     # be non-None
-    table_ref: Optional[OdxLinkRef]
-    table_snref: Optional[str]
+    table_ref: OdxLinkRef | None
+    table_snref: str | None
 
     # the spec mandates that exactly one of the two attributes must
     # be non-None
-    table_row_ref: Optional[OdxLinkRef]
-    table_row_snref: Optional[str]
+    table_row_ref: OdxLinkRef | None
+    table_row_snref: str | None
 
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "TableKeyParameter":
+                doc_frags: list[OdxDocFragment]) -> "TableKeyParameter":
         kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
 
         odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
@@ -62,7 +62,7 @@ class TableKeyParameter(Parameter):
 
     def __post_init__(self) -> None:
         self._table: Table
-        self._table_row: Optional[TableRow] = None
+        self._table_row: TableRow | None = None
 
     @property
     @override
@@ -70,7 +70,7 @@ class TableKeyParameter(Parameter):
         return "TABLE-KEY"
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         result[self.odx_id] = self
@@ -143,7 +143,7 @@ class TableKeyParameter(Parameter):
 
     @override
     @final
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         # if you get this exception, you ought to use
         # `.encode_placeholder_into_pdu()` followed by (after the
@@ -151,7 +151,7 @@ class TableKeyParameter(Parameter):
         # `.encode_value_into_pdu()`.
         raise RuntimeError("_encode_positioned_into_pdu() cannot be called for table keys.")
 
-    def encode_placeholder_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_placeholder_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
 
         if physical_value is not None:

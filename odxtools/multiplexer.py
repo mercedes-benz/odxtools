@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -30,9 +30,9 @@ class Multiplexer(ComplexDop):
 
     byte_position: int
     switch_key: MultiplexerSwitchKey
-    default_case: Optional[MultiplexerDefaultCase]
+    default_case: MultiplexerDefaultCase | None
     cases: NamedItemList[MultiplexerCase]
-    is_visible_raw: Optional[bool]
+    is_visible_raw: bool | None
 
     @property
     def is_visible(self) -> bool:
@@ -40,7 +40,7 @@ class Multiplexer(ComplexDop):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Multiplexer":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Multiplexer":
         """Reads a Multiplexer from Diag Layer."""
         kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
 
@@ -66,7 +66,7 @@ class Multiplexer(ComplexDop):
             **kwargs)
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
 
         odxlinks.update(self.switch_key._build_odxlinks())
@@ -98,7 +98,7 @@ class Multiplexer(ComplexDop):
         for mux_case in self.cases:
             mux_case._resolve_snrefs(context)
 
-    def _get_case_limits(self, case: MultiplexerCase) -> Tuple[AtomicOdxType, AtomicOdxType]:
+    def _get_case_limits(self, case: MultiplexerCase) -> tuple[AtomicOdxType, AtomicOdxType]:
         key_type = self.switch_key.dop.physical_type.base_data_type
         lower_limit = key_type.make_from(case.lower_limit.value)
         upper_limit = key_type.make_from(case.upper_limit.value)
@@ -118,7 +118,7 @@ class Multiplexer(ComplexDop):
         orig_origin = encode_state.origin_byte_position
         encode_state.origin_byte_position = encode_state.cursor_byte_position
 
-        if isinstance(physical_value, (list, tuple)) and len(physical_value) == 2:
+        if isinstance(physical_value, list | tuple) and len(physical_value) == 2:
             case_spec, case_value = physical_value
         elif isinstance(physical_value, dict) and len(physical_value) == 1:
             case_spec, case_value = next(iter(physical_value.items()))
@@ -127,8 +127,8 @@ class Multiplexer(ComplexDop):
                 f"Values of multiplexer parameters must be defined as a "
                 f"(case_name, content_value) tuple instead of as '{physical_value!r}'")
 
-        mux_case: Union[MultiplexerCase, MultiplexerDefaultCase]
-        applicable_cases: List[Union[MultiplexerCase, MultiplexerDefaultCase]]
+        mux_case: MultiplexerCase | MultiplexerDefaultCase
+        applicable_cases: list[MultiplexerCase | MultiplexerDefaultCase]
 
         if isinstance(case_spec, str):
             applicable_cases = [x for x in self.cases if x.short_name == case_spec]
@@ -147,7 +147,7 @@ class Multiplexer(ComplexDop):
         elif isinstance(case_spec, int):
             applicable_cases = []
             for x in self.cases:
-                lower, upper = cast(Tuple[int, int], self._get_case_limits(x))
+                lower, upper = cast(tuple[int, int], self._get_case_limits(x))
                 if lower <= case_spec and case_spec <= upper:
                     applicable_cases.append(x)
 
@@ -208,7 +208,7 @@ class Multiplexer(ComplexDop):
         # relatively to the byte position of the MUX."
         decode_state.cursor_byte_position = decode_state.origin_byte_position + self.byte_position
 
-        applicable_case: Optional[Union[MultiplexerCase, MultiplexerDefaultCase]] = None
+        applicable_case: MultiplexerCase | MultiplexerDefaultCase | None = None
         for mux_case in self.cases:
             lower, upper = self._get_case_limits(mux_case)
             if lower <= key_value and key_value <= upper:  # type: ignore[operator]

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Generator
 from copy import copy
 from enum import Enum
-from typing import Dict, Generator, List, Optional, Tuple, Union
 
 from .diaglayers.basevariant import BaseVariant
 from .diaglayers.ecuvariant import EcuVariant
@@ -56,18 +56,18 @@ class VariantMatcher:
         MATCH = 2
 
     def __init__(self,
-                 variant_candidates: Union[List[EcuVariant], List[BaseVariant]],
+                 variant_candidates: list[EcuVariant] | list[BaseVariant],
                  use_cache: bool = True):
 
         self.variant_candidates = variant_candidates
         self.use_cache = use_cache
-        self.req_resp_cache: Dict[bytes, bytes] = {}
-        self._recent_ident_response: Optional[bytes] = None
+        self.req_resp_cache: dict[bytes, bytes] = {}
+        self._recent_ident_response: bytes | None = None
 
         self._state = VariantMatcher.State.PENDING
-        self._matching_variant: Optional[Union[EcuVariant, BaseVariant]] = None
+        self._matching_variant: EcuVariant | BaseVariant | None = None
 
-    def request_loop(self) -> Generator[Tuple[bool, bytes], None, None]:
+    def request_loop(self) -> Generator[tuple[bool, bytes], None, None]:
         """The request loop yielding tuples of byte sequences of
         requests and the whether physical addressing ought to be used
         to send them
@@ -86,7 +86,7 @@ class VariantMatcher:
 
         self._matching_variant = None
         for variant in self.variant_candidates:
-            variant_patterns: Union[List[EcuVariantPattern], List[BaseVariantPattern]]
+            variant_patterns: list[EcuVariantPattern] | list[BaseVariantPattern]
             if isinstance(variant, EcuVariant):
                 variant_patterns = variant.ecu_variant_patterns
             elif isinstance(variant, BaseVariant):
@@ -158,13 +158,13 @@ class VariantMatcher:
         return self._state == VariantMatcher.State.MATCH
 
     @property
-    def matching_variant(self) -> Optional[Union[EcuVariant, BaseVariant]]:
+    def matching_variant(self) -> EcuVariant | BaseVariant | None:
         """Returns the matched, i.e., active ecu variant if such a variant has been found."""
         return self._matching_variant
 
     def _ident_response_matches(
         self,
-        variant: Union[EcuVariant, BaseVariant],
+        variant: EcuVariant | BaseVariant,
         matching_param: MatchingParameter,
         response_bytes: bytes,
     ) -> bool:
@@ -175,7 +175,7 @@ class VariantMatcher:
 
         # ISO 22901 requires that snref or snpathref is resolvable in
         # at least one POS-RESPONSE or NEG-RESPONSE
-        all_responses: List[Response] = []
+        all_responses: list[Response] = []
         all_responses.extend(service.positive_responses)
         all_responses.extend(service.negative_responses)
         all_responses.extend(variant.global_negative_responses)

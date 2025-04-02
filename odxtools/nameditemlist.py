@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MIT
 import abc
 import typing
+from collections.abc import Collection, Iterable
 from copy import deepcopy
 from keyword import iskeyword
-from typing import (Any, Collection, Dict, Iterable, List, Optional, SupportsIndex, Tuple, TypeVar,
-                    Union, cast, overload, runtime_checkable)
+from typing import Any, SupportsIndex, TypeVar, cast, overload, runtime_checkable
 
 from .exceptions import odxraise
 
@@ -21,7 +21,7 @@ T = TypeVar("T")
 TNamed = TypeVar("TNamed", bound=OdxNamed)
 
 
-class ItemAttributeList(List[T]):
+class ItemAttributeList(list[T]):
     """A list that provides direct access to its items as named attributes.
 
     This is a hybrid between a list and a user-defined object: One can
@@ -35,8 +35,8 @@ class ItemAttributeList(List[T]):
     returned by the item-to-name function are valid identifiers in python.
     """
 
-    def __init__(self, input_list: Optional[Iterable[T]] = None) -> None:
-        self._item_dict: Dict[str, T] = {}
+    def __init__(self, input_list: Iterable[T] | None = None) -> None:
+        self._item_dict: dict[str, T] = {}
 
         if input_list is not None:
             for item in input_list:
@@ -121,10 +121,10 @@ class ItemAttributeList(List[T]):
     def values(self) -> Collection[T]:
         return self._item_dict.values()
 
-    def items(self) -> Collection[Tuple[str, T]]:
+    def items(self) -> Collection[tuple[str, T]]:
         return self._item_dict.items()
 
-    def __dir__(self) -> Dict[str, Any]:
+    def __dir__(self) -> dict[str, Any]:
         result = dict(self.__dict__)
         result.update(self._item_dict)
         return result
@@ -138,11 +138,11 @@ class ItemAttributeList(List[T]):
         ...
 
     @overload
-    def __getitem__(self, key: slice) -> List[T]:
+    def __getitem__(self, key: slice) -> list[T]:
         ...
 
-    def __getitem__(self, key: Union[SupportsIndex, str, slice]) -> Union[T, List[T]]:
-        if isinstance(key, (SupportsIndex, slice)):
+    def __getitem__(self, key: SupportsIndex | str | slice) -> T | list[T]:
+        if isinstance(key, SupportsIndex | slice):
             return super().__getitem__(key)
         else:
             return self._item_dict[key]
@@ -153,13 +153,13 @@ class ItemAttributeList(List[T]):
 
         return self._item_dict[key]
 
-    def get(self, key: Union[int, str], default: Optional[T] = None) -> Optional[T]:
+    def get(self, key: int | str, default: T | None = None) -> T | None:
         if isinstance(key, int):
             if 0 <= key and key < len(self):
                 return super().__getitem__(key)
             return default
         else:
-            return cast(Optional[T], self._item_dict.get(key, default))
+            return cast(T | None, self._item_dict.get(key, default))
 
     def __eq__(self, other: object) -> bool:
         """
@@ -179,7 +179,7 @@ class ItemAttributeList(List[T]):
     def __copy__(self) -> Any:
         return self.__class__(list(self))
 
-    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result
@@ -189,7 +189,7 @@ class ItemAttributeList(List[T]):
 
         return result
 
-    def __reduce__(self) -> Tuple[Any, ...]:
+    def __reduce__(self) -> tuple[Any, ...]:
         """Support for Python's pickle protocol.
         This method ensures that the object can be reconstructed with its current state,
         using its class and the list of items it contains.

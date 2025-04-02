@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
 import re
 import warnings
+from collections.abc import Callable, Iterable
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import cached_property
-from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Tuple, TypeVar,
-                    Union, cast)
+from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 from xml.etree import ElementTree
 
 from ..additionalaudience import AdditionalAudience
@@ -47,7 +47,7 @@ class HierarchyElement(DiagLayer):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "HierarchyElement":
+                doc_frags: list[OdxDocFragment]) -> "HierarchyElement":
         hierarchy_element_raw = HierarchyElementRaw.from_et(et_element, doc_frags)
 
         return HierarchyElement(diag_layer_raw=hierarchy_element_raw)
@@ -62,7 +62,7 @@ class HierarchyElement(DiagLayer):
             "The raw diagnostic layer passed to HierarchyElement "
             "must be a HierarchyElementRaw")
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         return result
@@ -73,7 +73,7 @@ class HierarchyElement(DiagLayer):
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         super()._resolve_snrefs(context)
 
-    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
         """Create a deep copy of the hierarchy element
 
         Note that the copied diagnostic layer is not fully
@@ -121,13 +121,13 @@ class HierarchyElement(DiagLayer):
         unit_groups = self._compute_available_unit_groups()
 
         # convenience variable for the locally-defined unit spec
-        local_unit_spec: Optional[UnitSpec]
+        local_unit_spec: UnitSpec | None
         if self.diag_layer_raw.diag_data_dictionary_spec is not None:
             local_unit_spec = self.diag_layer_raw.diag_data_dictionary_spec.unit_spec
         else:
             local_unit_spec = None
 
-        unit_spec: Optional[UnitSpec]
+        unit_spec: UnitSpec | None
         if local_unit_spec is None and not unit_groups:
             # no locally defined unit spec and no inherited unit groups
             unit_spec = None
@@ -188,8 +188,8 @@ class HierarchyElement(DiagLayer):
         tables = self._compute_available_ddd_spec_items(
             lambda ddd_spec: ddd_spec.tables, lambda parent_ref: parent_ref.not_inherited_tables)
 
-        ddds_admin_data: Optional[AdminData] = None
-        ddds_sdgs: List[SpecialDataGroup] = []
+        ddds_admin_data: AdminData | None = None
+        ddds_sdgs: list[SpecialDataGroup] = []
         if self.diag_layer_raw.diag_data_dictionary_spec:
             ddds_admin_data = self.diag_layer_raw.diag_data_dictionary_spec.admin_data
             ddds_sdgs = self.diag_layer_raw.diag_data_dictionary_spec.sdgs
@@ -291,7 +291,7 @@ class HierarchyElement(DiagLayer):
 
         local_objects = get_local_objects(self)
         local_object_short_names = {x.short_name for x in local_objects}
-        result_dict: Dict[str, Tuple[TNamed, DiagLayer]] = {}
+        result_dict: dict[str, tuple[TNamed, DiagLayer]] = {}
 
         # populate the result dictionary with the inherited objects
         for parent_ref in self._get_parent_refs_sorted_by_priority(reverse=True):
@@ -361,7 +361,7 @@ class HierarchyElement(DiagLayer):
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[DiagComm]:
             return dl._get_local_diag_comms(odxlinks)
 
-        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_diag_comms
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
@@ -372,7 +372,7 @@ class HierarchyElement(DiagLayer):
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[Response]:
             return dl.diag_layer_raw.global_negative_responses
 
-        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_global_neg_responses
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
@@ -380,7 +380,7 @@ class HierarchyElement(DiagLayer):
     def _compute_available_ddd_spec_items(
         self,
         include: Callable[[DiagDataDictionarySpec], Iterable[TNamed]],
-        exclude: Callable[["ParentRef"], List[str]],
+        exclude: Callable[["ParentRef"], list[str]],
     ) -> NamedItemList[TNamed]:
 
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[TNamed]:
@@ -396,7 +396,7 @@ class HierarchyElement(DiagLayer):
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[FunctionalClass]:
             return dl.diag_layer_raw.functional_classes
 
-        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
@@ -406,7 +406,7 @@ class HierarchyElement(DiagLayer):
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[AdditionalAudience]:
             return dl.diag_layer_raw.additional_audiences
 
-        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
@@ -416,7 +416,7 @@ class HierarchyElement(DiagLayer):
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[StateChart]:
             return dl.diag_layer_raw.state_charts
 
-        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
@@ -426,7 +426,7 @@ class HierarchyElement(DiagLayer):
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[UnitGroup]:
             return dl._get_local_unit_groups()
 
-        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
@@ -502,7 +502,7 @@ class HierarchyElement(DiagLayer):
     #####
     # <communication parameter handling>
     #####
-    def _compute_available_commmunication_parameters(self) -> List[ComparamInstance]:
+    def _compute_available_commmunication_parameters(self) -> list[ComparamInstance]:
         """Compute the list of communication parameters that apply to
         the diagnostic layer
 
@@ -526,7 +526,7 @@ class HierarchyElement(DiagLayer):
         without a specified protocol are taken as fallbacks...
 
         """
-        com_params_dict: Dict[Tuple[str, Optional[str]], ComparamInstance] = {}
+        com_params_dict: dict[tuple[str, str | None], ComparamInstance] = {}
 
         # Look in parent refs for inherited communication
         # parameters. First fetch the communication parameters from
@@ -564,7 +564,7 @@ class HierarchyElement(DiagLayer):
         """
         from .protocol import Protocol
 
-        result_dict: Dict[str, Protocol] = {}
+        result_dict: dict[str, Protocol] = {}
 
         for parent_ref in getattr(self, "parent_refs", []):
             for prot in getattr(parent_ref.layer, "protocols", []):
@@ -579,15 +579,15 @@ class HierarchyElement(DiagLayer):
         self,
         cp_short_name: str,
         *,
-        protocol: Optional[Union[str, "Protocol"]] = None,
-    ) -> Optional[ComparamInstance]:
+        protocol: Union[str, "Protocol"] | None = None,
+    ) -> ComparamInstance | None:
         """Find a specific communication parameter according to some criteria.
 
         Setting a given parameter to `None` means "don't care"."""
 
         from .protocol import Protocol
 
-        protocol_name: Optional[str]
+        protocol_name: str | None
         if isinstance(protocol, Protocol):
             protocol_name = protocol.short_name
         else:
@@ -611,8 +611,7 @@ class HierarchyElement(DiagLayer):
         return cps[0]
 
     def get_max_can_payload_size(self,
-                                 protocol: Optional[Union[str,
-                                                          "Protocol"]] = None) -> Optional[int]:
+                                 protocol: Union[str, "Protocol"] | None = None) -> int | None:
         """Return the maximum size of a CAN frame payload that can be
         transmitted in bytes.
 
@@ -642,13 +641,13 @@ class HierarchyElement(DiagLayer):
         # unexpected format of parameter value
         return 8
 
-    def uses_can(self, protocol: Optional[Union[str, "Protocol"]] = None) -> bool:
+    def uses_can(self, protocol: Union[str, "Protocol"] | None = None) -> bool:
         """
         Check if CAN ought to be used as the link layer protocol.
         """
         return self.get_can_receive_id(protocol=protocol) is not None
 
-    def uses_can_fd(self, protocol: Optional[Union[str, "Protocol"]] = None) -> bool:
+    def uses_can_fd(self, protocol: Union[str, "Protocol"] | None = None) -> bool:
         """Check if CAN-FD ought to be used.
 
         If the ECU is not using CAN-FD for the specified protocol, `False`
@@ -667,7 +666,7 @@ class HierarchyElement(DiagLayer):
 
         return "CANFD" in com_param.value
 
-    def get_can_baudrate(self, protocol: Optional[Union[str, "Protocol"]] = None) -> Optional[int]:
+    def get_can_baudrate(self, protocol: Union[str, "Protocol"] | None = None) -> int | None:
         """Baudrate of the CAN bus which is used by the ECU [bits/s]
 
         If the ECU is not using CAN for the specified protocol, None
@@ -684,8 +683,7 @@ class HierarchyElement(DiagLayer):
 
         return int(val)
 
-    def get_can_fd_baudrate(self,
-                            protocol: Optional[Union[str, "Protocol"]] = None) -> Optional[int]:
+    def get_can_fd_baudrate(self, protocol: Union[str, "Protocol"] | None = None) -> int | None:
         """Data baudrate of the CAN bus which is used by the ECU [bits/s]
 
         If the ECU is not using CAN-FD for the specified protocol,
@@ -704,8 +702,7 @@ class HierarchyElement(DiagLayer):
 
         return int(val)
 
-    def get_can_receive_id(self,
-                           protocol: Optional[Union[str, "Protocol"]] = None) -> Optional[int]:
+    def get_can_receive_id(self, protocol: Union[str, "Protocol"] | None = None) -> int | None:
         """CAN ID to which the ECU listens for diagnostic messages"""
         com_param = self.get_comparam("CP_UniqueRespIdTable", protocol=protocol)
         if com_param is None:
@@ -724,7 +721,7 @@ class HierarchyElement(DiagLayer):
 
         return int(result)
 
-    def get_can_send_id(self, protocol: Optional[Union[str, "Protocol"]] = None) -> Optional[int]:
+    def get_can_send_id(self, protocol: Union[str, "Protocol"] | None = None) -> int | None:
         """CAN ID to which the ECU sends replies to diagnostic messages"""
 
         # this hopefully resolves to the 'CP_UniqueRespIdTable'
@@ -749,8 +746,7 @@ class HierarchyElement(DiagLayer):
 
         return int(result)
 
-    def get_can_func_req_id(self,
-                            protocol: Optional[Union[str, "Protocol"]] = None) -> Optional[int]:
+    def get_can_func_req_id(self, protocol: Union[str, "Protocol"] | None = None) -> int | None:
         """CAN Functional Request Id."""
         com_param = self.get_comparam("CP_CanFuncReqId", protocol=protocol)
         if com_param is None:
@@ -764,8 +760,7 @@ class HierarchyElement(DiagLayer):
         return int(result)
 
     def get_doip_logical_ecu_address(self,
-                                     protocol: Optional[Union[str,
-                                                              "Protocol"]] = None) -> Optional[int]:
+                                     protocol: Union[str, "Protocol"] | None = None) -> int | None:
         """Return the address of the ECU when using functional addressing.
 
         The parameter protocol is used to distinguish between
@@ -796,8 +791,8 @@ class HierarchyElement(DiagLayer):
         return int(ecu_addr)
 
     def get_doip_logical_gateway_address(self,
-                                         protocol: Optional[Union[str, "Protocol"]] = None
-                                        ) -> Optional[int]:
+                                         protocol: Union[str, "Protocol"] | None = None
+                                        ) -> int | None:
         """The logical gateway address for the diagnosis over IP transport protocol"""
 
         # retrieve CP_DoIPLogicalGatewayAddress from the
@@ -814,8 +809,8 @@ class HierarchyElement(DiagLayer):
         return int(result)
 
     def get_doip_logical_tester_address(self,
-                                        protocol: Optional[Union[str, "Protocol"]] = None
-                                       ) -> Optional[int]:
+                                        protocol: Union[str, "Protocol"] | None = None
+                                       ) -> int | None:
         """DoIp logical gateway address"""
 
         # retrieve CP_DoIPLogicalTesterAddress from the
@@ -832,8 +827,8 @@ class HierarchyElement(DiagLayer):
         return int(result)
 
     def get_doip_logical_functional_address(self,
-                                            protocol: Optional[Union[str, "Protocol"]] = None
-                                           ) -> Optional[int]:
+                                            protocol: Union[str, "Protocol"] | None = None
+                                           ) -> int | None:
         """The logical functional DoIP address of the ECU."""
 
         # retrieve CP_DoIPLogicalFunctionalAddress from the
@@ -853,8 +848,8 @@ class HierarchyElement(DiagLayer):
         return int(result)
 
     def get_doip_routing_activation_timeout(self,
-                                            protocol: Optional[Union[str, "Protocol"]] = None
-                                           ) -> Optional[float]:
+                                            protocol: Union[str, "Protocol"] | None = None
+                                           ) -> float | None:
         """The timout for the DoIP routing activation request in seconds"""
 
         # retrieve CP_DoIPRoutingActivationTimeout from the
@@ -871,8 +866,8 @@ class HierarchyElement(DiagLayer):
         return float(result) / 1e6
 
     def get_doip_routing_activation_type(self,
-                                         protocol: Optional[Union[str, "Protocol"]] = None
-                                        ) -> Optional[int]:
+                                         protocol: Union[str, "Protocol"] | None = None
+                                        ) -> int | None:
         """The DoIP routing activation type
 
         The number returned has the following meaning:
@@ -897,8 +892,7 @@ class HierarchyElement(DiagLayer):
         return int(result)
 
     def get_tester_present_time(self,
-                                protocol: Optional[Union[str,
-                                                         "Protocol"]] = None) -> Optional[float]:
+                                protocol: Union[str, "Protocol"] | None = None) -> float | None:
         """Timeout on inactivity in seconds.
 
         This is defined by the communication parameter "CP_TesterPresentTime".

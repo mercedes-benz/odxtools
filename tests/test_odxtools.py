@@ -2,7 +2,6 @@
 import pickle
 import unittest
 from dataclasses import dataclass
-from typing import List
 
 import odxtools
 import odxtools.exceptions
@@ -166,7 +165,7 @@ class TestNamedItemList(unittest.TestCase):
 
         # ensure that mypy accepts NamedItemList objecs where List
         # objects are expected
-        def bar(x: List[X]) -> None:
+        def bar(x: list[X]) -> None:
             pass
 
         bar(foo)

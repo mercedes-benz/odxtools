@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
 import warnings
+from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Iterable, List, Optional, Type, TypeVar, overload
+from typing import Any, Optional, TypeVar, overload
 from xml.etree import ElementTree
 
 from .exceptions import OdxWarning, odxassert, odxraise, odxrequire
@@ -44,7 +45,7 @@ class OdxLinkId:
 
     #: The name and type of the document fragment to which the
     #: `local_id` is relative to
-    doc_fragments: List[OdxDocFragment]
+    doc_fragments: list[OdxDocFragment]
 
     def __hash__(self) -> int:
         # we do not hash about the document fragment here, because
@@ -68,7 +69,7 @@ class OdxLinkId:
 
     @staticmethod
     def from_et(et: ElementTree.Element,
-                doc_fragments: List[OdxDocFragment]) -> Optional["OdxLinkId"]:
+                doc_fragments: list[OdxDocFragment]) -> Optional["OdxLinkId"]:
         """Construct an OdxLinkId for a given XML node (ElementTree object).
 
         Returns None if the given XML node does not exhibit an ID.
@@ -94,7 +95,7 @@ class OdxLinkRef:
     ref_id: str
 
     #: The document fragments to which the `ref_id` refers to (in reverse order)
-    ref_docs: List[OdxDocFragment]
+    ref_docs: list[OdxDocFragment]
 
     # TODO: this is difficult because OdxLinkRef is derived from and
     # we do not want having to specify it mandatorily
@@ -102,17 +103,17 @@ class OdxLinkRef:
 
     @overload
     @staticmethod
-    def from_et(et: None, source_doc_frags: List[OdxDocFragment]) -> None:
+    def from_et(et: None, source_doc_frags: list[OdxDocFragment]) -> None:
         ...
 
     @overload
     @staticmethod
-    def from_et(et: ElementTree.Element, source_doc_frags: List[OdxDocFragment]) -> "OdxLinkRef":
+    def from_et(et: ElementTree.Element, source_doc_frags: list[OdxDocFragment]) -> "OdxLinkRef":
         ...
 
     @staticmethod
-    def from_et(et: Optional[ElementTree.Element],
-                source_doc_frags: List[OdxDocFragment]) -> Optional["OdxLinkRef"]:
+    def from_et(et: ElementTree.Element | None,
+                source_doc_frags: list[OdxDocFragment]) -> Optional["OdxLinkRef"]:
         """Construct an OdxLinkRef for a given XML node (ElementTree object).
 
         Returns None if the given XML node does not represent a reference.
@@ -170,17 +171,17 @@ class OdxLinkDatabase:
     """
 
     def __init__(self) -> None:
-        self._db: Dict[OdxDocFragment, Dict[str, Any]] = {}
+        self._db: dict[OdxDocFragment, dict[str, Any]] = {}
 
     @overload
     def resolve(self, ref: OdxLinkRef, expected_type: None = None) -> Any:
         ...
 
     @overload
-    def resolve(self, ref: OdxLinkRef, expected_type: Type[T]) -> T:
+    def resolve(self, ref: OdxLinkRef, expected_type: type[T]) -> T:
         ...
 
-    def resolve(self, ref: OdxLinkRef, expected_type: Optional[Any] = None) -> Any:
+    def resolve(self, ref: OdxLinkRef, expected_type: Any | None = None) -> Any:
         """
         Resolve a reference to an object
 
@@ -219,12 +220,10 @@ class OdxLinkDatabase:
         ...
 
     @overload
-    def resolve_lenient(self, ref: OdxLinkRef, expected_type: Type[T]) -> Optional[T]:
+    def resolve_lenient(self, ref: OdxLinkRef, expected_type: type[T]) -> T | None:
         ...
 
-    def resolve_lenient(self,
-                        ref: OdxLinkRef,
-                        expected_type: Optional[Any] = None) -> Optional[Any]:
+    def resolve_lenient(self, ref: OdxLinkRef, expected_type: Any | None = None) -> Any | None:
         """
         Resolve a reference to an object
 
@@ -254,7 +253,7 @@ class OdxLinkDatabase:
 
         return None
 
-    def update(self, new_entries: Dict[OdxLinkId, Any], *, overwrite: bool = True) -> None:
+    def update(self, new_entries: dict[OdxLinkId, Any], *, overwrite: bool = True) -> None:
         """
         Add a bunch of new objects to the ODXLINK database.
 
@@ -287,7 +286,7 @@ def resolve_snref(target_short_name: str,
 @overload
 def resolve_snref(target_short_name: str,
                   items: Iterable[OdxNamed],
-                  expected_type: Type[TNamed],
+                  expected_type: type[TNamed],
                   *,
                   lenient: None = None) -> TNamed:
     ...
@@ -296,16 +295,16 @@ def resolve_snref(target_short_name: str,
 @overload
 def resolve_snref(target_short_name: str,
                   items: Iterable[OdxNamed],
-                  expected_type: Type[TNamed],
+                  expected_type: type[TNamed],
                   *,
-                  lenient: bool = True) -> Optional[TNamed]:
+                  lenient: bool = True) -> TNamed | None:
     ...
 
 
 def resolve_snref(target_short_name: str,
                   items: Iterable[OdxNamed],
                   expected_type: Any = None,
-                  lenient: Optional[bool] = None) -> Any:
+                  lenient: bool | None = None) -> Any:
     candidates = [x for x in items if x.short_name == target_short_name]
 
     if not candidates:

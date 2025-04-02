@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from ..exceptions import odxraise
@@ -31,14 +31,14 @@ class CompuMethod:
     """
 
     category: CompuCategory
-    compu_internal_to_phys: Optional[CompuInternalToPhys]
-    compu_phys_to_internal: Optional[CompuPhysToInternal]
+    compu_internal_to_phys: CompuInternalToPhys | None
+    compu_phys_to_internal: CompuPhysToInternal | None
 
     physical_type: DataType
     internal_type: DataType
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
                              internal_type: DataType, physical_type: DataType) -> "CompuMethod":
         cat_text = et_element.findtext("CATEGORY")
         if cat_text is None:
@@ -67,7 +67,7 @@ class CompuMethod:
             physical_type=physical_type,
             internal_type=internal_type)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {}
 
         if self.compu_internal_to_phys is not None:

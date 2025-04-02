@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .nameditemlist import NamedItemList
@@ -20,7 +20,7 @@ class ComparamSpec(OdxCategory):
     prot_stacks: NamedItemList[ProtStack]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ComparamSpec":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "ComparamSpec":
 
         base_obj = OdxCategory.category_from_et(
             et_element, doc_frags, doc_type=DocType.COMPARAM_SPEC)
@@ -34,7 +34,7 @@ class ComparamSpec(OdxCategory):
 
         return ComparamSpec(prot_stacks=prot_stacks, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
 
         for ps in self.prot_stacks:

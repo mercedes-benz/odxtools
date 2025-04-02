@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from .odxlink import OdxDocFragment
@@ -8,10 +7,10 @@ from .odxlink import OdxDocFragment
 @dataclass
 class Text:
     text: str
-    text_identifier: Optional[str]
+    text_identifier: str | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Text":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Text":
         # Extract the contents of the tag as a string.
         raw_string = et_element.text or ""
         for e in et_element:

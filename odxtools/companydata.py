@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .companyspecificinfo import CompanySpecificInfo
@@ -15,12 +15,12 @@ from .utils import dataclass_fields_asdict
 
 @dataclass
 class CompanyData(IdentifiableElement):
-    roles: List[str]
+    roles: list[str]
     team_members: NamedItemList[TeamMember]
-    company_specific_info: Optional[CompanySpecificInfo]
+    company_specific_info: CompanySpecificInfo | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "CompanyData":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "CompanyData":
 
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
@@ -43,7 +43,7 @@ class CompanyData(IdentifiableElement):
             **kwargs,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         for tm in self.team_members:

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 from .encoding import Encoding, get_string_encoding
 from .exceptions import DecodeError, odxassert, odxraise, strict_mode
@@ -41,22 +41,22 @@ class DecodeState:
     cursor_bit_position: int = 0
 
     #: values of the length key parameters decoded so far
-    length_keys: Dict[str, int] = field(default_factory=dict)
+    length_keys: dict[str, int] = field(default_factory=dict)
 
     #: values of the table key parameters decoded so far
-    table_keys: Dict[str, "TableRow"] = field(default_factory=dict)
+    table_keys: dict[str, "TableRow"] = field(default_factory=dict)
 
     #: List of parameters that have been decoded so far. The journal
     #: is used by some types of parameters which depend on the values of
     #: other parameters; i.e., environment data description parameters
-    journal: List[Tuple["Parameter", Optional[ParameterValue]]] = field(default_factory=list)
+    journal: list[tuple["Parameter", ParameterValue | None]] = field(default_factory=list)
 
     def extract_atomic_value(
         self,
         *,
         bit_length: int,
         base_data_type: DataType,
-        base_type_encoding: Optional[Encoding],
+        base_type_encoding: Encoding | None,
         is_highlow_byte_order: bool,
     ) -> AtomicOdxType:
         """Extract an internal value from a blob of raw bytes.

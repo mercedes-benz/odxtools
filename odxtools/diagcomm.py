@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -34,21 +34,21 @@ class DiagComm(IdentifiableElement):
 
     """
 
-    admin_data: Optional[AdminData]
-    sdgs: List[SpecialDataGroup]
-    functional_class_refs: List[OdxLinkRef]
-    audience: Optional[Audience]
-    protocol_snrefs: List[str]
-    related_diag_comm_refs: List[RelatedDiagCommRef]
-    pre_condition_state_refs: List[PreConditionStateRef]
-    state_transition_refs: List[StateTransitionRef]
+    admin_data: AdminData | None
+    sdgs: list[SpecialDataGroup]
+    functional_class_refs: list[OdxLinkRef]
+    audience: Audience | None
+    protocol_snrefs: list[str]
+    related_diag_comm_refs: list[RelatedDiagCommRef]
+    pre_condition_state_refs: list[PreConditionStateRef]
+    state_transition_refs: list[StateTransitionRef]
 
     # attributes
-    semantic: Optional[str]
-    diagnostic_class: Optional[DiagClassType]
-    is_mandatory_raw: Optional[bool]
-    is_executable_raw: Optional[bool]
-    is_final_raw: Optional[bool]
+    semantic: str | None
+    diagnostic_class: DiagClassType | None
+    is_mandatory_raw: bool | None
+    is_executable_raw: bool | None
+    is_final_raw: bool | None
 
     @property
     def functional_classes(self) -> NamedItemList[FunctionalClass]:
@@ -83,7 +83,7 @@ class DiagComm(IdentifiableElement):
         return self.is_final_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagComm":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DiagComm":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
@@ -122,7 +122,7 @@ class DiagComm(IdentifiableElement):
 
         semantic = et_element.attrib.get("SEMANTIC")
 
-        diagnostic_class: Optional[DiagClassType] = None
+        diagnostic_class: DiagClassType | None = None
         if (diagnostic_class_str := et_element.attrib.get("DIAGNOSTIC-CLASS")) is not None:
             try:
                 diagnostic_class = DiagClassType(diagnostic_class_str)
@@ -149,7 +149,7 @@ class DiagComm(IdentifiableElement):
             is_final_raw=is_final_raw,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         if self.admin_data is not None:

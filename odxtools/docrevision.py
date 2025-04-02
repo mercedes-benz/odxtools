@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .companyrevisioninfo import CompanyRevisionInfo
@@ -17,20 +17,20 @@ class DocRevision:
     Representation of a single revision of the relevant object.
     """
 
-    team_member_ref: Optional[OdxLinkRef]
-    revision_label: Optional[str]
-    state: Optional[str]
+    team_member_ref: OdxLinkRef | None
+    revision_label: str | None
+    state: str | None
     date: str
-    tool: Optional[str]
-    company_revision_infos: List[CompanyRevisionInfo]
-    modifications: List[Modification]
+    tool: str | None
+    company_revision_infos: list[CompanyRevisionInfo]
+    modifications: list[Modification]
 
     @property
-    def team_member(self) -> Optional[TeamMember]:
+    def team_member(self) -> TeamMember | None:
         return self._team_member
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DocRevision":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DocRevision":
 
         team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), doc_frags)
         revision_label = et_element.findtext("REVISION-LABEL")
@@ -59,11 +59,11 @@ class DocRevision:
             modifications=modifications,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._team_member: Optional[TeamMember] = None
+        self._team_member: TeamMember | None = None
         if self.team_member_ref is not None:
             self._team_member = odxlinks.resolve(self.team_member_ref, TeamMember)
 

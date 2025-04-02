@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Iterable, Iterator
 from io import StringIO
-from typing import Dict, Iterable, Iterator, Optional
 
 from . import obd, uds
 from .diagservice import DiagService
@@ -21,7 +21,7 @@ class ServiceBinner:
     """
 
     def __init__(self, services: Iterable[DiagService]):
-        service_groups: Dict[Optional[int], NamedItemList[DiagService]] = {}
+        service_groups: dict[int | None, NamedItemList[DiagService]] = {}
         for service in services:
             SID = self.__extract_sid(service)
 
@@ -32,7 +32,7 @@ class ServiceBinner:
 
         self._service_groups = service_groups
 
-    def __extract_sid(self, service: DiagService) -> Optional[int]:
+    def __extract_sid(self, service: DiagService) -> int | None:
         # diagnostic services without requests are possible; just like
         # aircraft without wings...
         if service.request is None:
@@ -96,10 +96,10 @@ class ServiceBinner:
 
         return result.getvalue()
 
-    def __iter__(self) -> Iterator[Optional[int]]:
+    def __iter__(self) -> Iterator[int | None]:
         return iter(self._service_groups)
 
-    def __getitem__(self, sid: Optional[int]) -> NamedItemList[DiagService]:
+    def __getitem__(self, sid: int | None) -> NamedItemList[DiagService]:
         if sid is None:
             return self._service_groups.get(sid, NamedItemList())
 

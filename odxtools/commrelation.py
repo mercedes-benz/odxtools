@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .commrelationvaluetype import CommRelationValueType
@@ -16,26 +16,26 @@ from .snrefcontext import SnRefContext
 
 @dataclass
 class CommRelation:
-    description: Optional[Description]
+    description: Description | None
     relation_type: str
-    diag_comm_ref: Optional[OdxLinkRef]
-    diag_comm_snref: Optional[str]
-    in_param_if_snref: Optional[str]
+    diag_comm_ref: OdxLinkRef | None
+    diag_comm_snref: str | None
+    in_param_if_snref: str | None
     #in_param_if_snpathref: Optional[str] # TODO
-    out_param_if_snref: Optional[str]
+    out_param_if_snref: str | None
     #out_param_if_snpathref: Optional[str] # TODO
-    value_type_raw: Optional[CommRelationValueType]
+    value_type_raw: CommRelationValueType | None
 
     @property
     def diag_comm(self) -> DiagComm:
         return self._diag_comm
 
     @property
-    def in_param_if(self) -> Optional[Parameter]:
+    def in_param_if(self) -> Parameter | None:
         return self._in_param_if
 
     @property
-    def out_param_if(self) -> Optional[Parameter]:
+    def out_param_if(self) -> Parameter | None:
         return self._out_param_if
 
     @property
@@ -46,7 +46,7 @@ class CommRelation:
         return self.value_type_raw
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "CommRelation":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "CommRelation":
         description = Description.from_et(et_element.find("DESC"), doc_frags)
         relation_type = odxrequire(et_element.findtext("RELATION-TYPE"))
 
@@ -85,7 +85,7 @@ class CommRelation:
             out_param_if_snref=out_param_if_snref,
             value_type_raw=value_type_raw)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

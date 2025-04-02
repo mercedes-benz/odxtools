@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Union
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -17,16 +16,16 @@ class EcuVariantPattern(VariantPattern):
     """ECU variant patterns are variant patterns used to identify the
     concrete variant of an ECU.
     """
-    matching_parameters: List[MatchingParameter]
+    matching_parameters: list[MatchingParameter]
 
     @override
-    def get_matching_parameters(
-            self) -> Union[List[MatchingParameter], List[MatchingBaseVariantParameter]]:
+    def get_matching_parameters(self
+                               ) -> list[MatchingParameter] | list[MatchingBaseVariantParameter]:
         return self.matching_parameters
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "EcuVariantPattern":
+                doc_frags: list[OdxDocFragment]) -> "EcuVariantPattern":
 
         matching_parameters = [
             MatchingParameter.from_et(mp_el, doc_frags)

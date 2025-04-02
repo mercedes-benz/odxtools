@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional, Union
 
 from ..exceptions import odxraise, odxrequire
 from ..odxtypes import AtomicOdxType, DataType
@@ -14,11 +13,11 @@ class RatFuncSegment:
     """
     value_type: DataType
 
-    numerator_coeffs: List[Union[int, float]]
-    denominator_coeffs: List[Union[int, float]]
+    numerator_coeffs: list[int | float]
+    denominator_coeffs: list[int | float]
 
-    lower_limit: Optional[Limit]
-    upper_limit: Optional[Limit]
+    lower_limit: Limit | None
+    upper_limit: Limit | None
 
     @staticmethod
     def from_compu_scale(scale: CompuScale, value_type: DataType) -> "RatFuncSegment":
@@ -39,8 +38,8 @@ class RatFuncSegment:
             upper_limit=upper_limit,
             value_type=scale.range_type)
 
-    def convert(self, value: AtomicOdxType) -> Union[float, int]:
-        if not isinstance(value, (int, float)):
+    def convert(self, value: AtomicOdxType) -> float | int:
+        if not isinstance(value, int | float):
             odxraise(f"Internal values of linear compumethods must "
                      f"either be int or float (is: {type(value).__name__})")
 
@@ -70,7 +69,7 @@ class RatFuncSegment:
         # Do type checks
         expected_type = self.value_type.python_type
         if issubclass(expected_type, float):
-            if not isinstance(value, (int, float)):
+            if not isinstance(value, int | float):
                 return False
         else:
             if not isinstance(value, expected_type):

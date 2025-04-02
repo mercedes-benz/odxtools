@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .diagcomm import DiagComm
@@ -13,8 +13,8 @@ from .snrefcontext import SnRefContext
 class TableDiagCommConnector:
     semantic: str
 
-    diag_comm_ref: Optional[OdxLinkRef]
-    diag_comm_snref: Optional[str]
+    diag_comm_ref: OdxLinkRef | None
+    diag_comm_snref: str | None
 
     @property
     def diag_comm(self) -> DiagComm:
@@ -22,7 +22,7 @@ class TableDiagCommConnector:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "TableDiagCommConnector":
+                doc_frags: list[OdxDocFragment]) -> "TableDiagCommConnector":
 
         semantic = odxrequire(et_element.findtext("SEMANTIC"))
 
@@ -34,7 +34,7 @@ class TableDiagCommConnector:
         return TableDiagCommConnector(
             semantic=semantic, diag_comm_ref=diag_comm_ref, diag_comm_snref=diag_comm_snref)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

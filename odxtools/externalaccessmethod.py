@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
@@ -15,7 +14,7 @@ class ExternalAccessMethod(IdentifiableElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ExternalAccessMethod":
+                doc_frags: list[OdxDocFragment]) -> "ExternalAccessMethod":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         method = odxrequire(et_element.findtext("METHOD"))

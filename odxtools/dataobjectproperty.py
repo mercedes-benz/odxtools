@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from .compumethods.compumethod import CompuMethod
@@ -37,20 +37,20 @@ class DataObjectProperty(DopBase):
     #: The type of the value in the physical world
     physical_type: PhysicalType
 
-    internal_constr: Optional[InternalConstr]
+    internal_constr: InternalConstr | None
 
     #: The unit associated with physical values (e.g. 'm/s^2')
-    unit_ref: Optional[OdxLinkRef]
+    unit_ref: OdxLinkRef | None
 
-    physical_constr: Optional[InternalConstr]
+    physical_constr: InternalConstr | None
 
     @property
-    def unit(self) -> Optional[Unit]:
+    def unit(self) -> Unit | None:
         return self._unit
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DataObjectProperty":
+                doc_frags: list[OdxDocFragment]) -> "DataObjectProperty":
         """Reads a DATA-OBJECT-PROP."""
         kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, doc_frags))
 
@@ -83,7 +83,7 @@ class DataObjectProperty(DopBase):
             physical_constr=physical_constr,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
         result.update(self.compu_method._build_odxlinks())
         result.update(self.diag_coded_type._build_odxlinks())
@@ -96,7 +96,7 @@ class DataObjectProperty(DopBase):
         self.compu_method._resolve_odxlinks(odxlinks)
         self.diag_coded_type._resolve_odxlinks(odxlinks)
 
-        self._unit: Optional[Unit] = None
+        self._unit: Unit | None = None
         if self.unit_ref:
             self._unit = odxlinks.resolve(self.unit_ref, Unit)
 
@@ -106,7 +106,7 @@ class DataObjectProperty(DopBase):
         self.compu_method._resolve_snrefs(context)
         self.diag_coded_type._resolve_snrefs(context)
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return self.diag_coded_type.get_static_bit_length()
 
     def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:
@@ -118,7 +118,7 @@ class DataObjectProperty(DopBase):
                 f"The value {repr(physical_value)} of type {type(physical_value).__name__}"
                 f" is not a valid.")
 
-        if not isinstance(physical_value, (int, float, str, BytesTypes)):
+        if not isinstance(physical_value, int | float | str | BytesTypes):
             odxraise(f"Invalid type '{type(physical_value).__name__}' for physical value. "
                      f"(Expect atomic type!)")
         internal_value = self.compu_method.convert_physical_to_internal(physical_value)

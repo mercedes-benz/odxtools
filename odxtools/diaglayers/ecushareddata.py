@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Union, cast
+from typing import TYPE_CHECKING, Any, cast
 from xml.etree import ElementTree
 
 from ..diagvariable import DiagVariable
@@ -27,7 +27,7 @@ class EcuSharedData(DiagLayer):
         return cast(EcuSharedDataRaw, self.diag_layer_raw)
 
     @property
-    def diag_variables_raw(self) -> List[Union[OdxLinkRef, DiagVariable]]:
+    def diag_variables_raw(self) -> list[OdxLinkRef | DiagVariable]:
         return self.ecu_shared_data_raw.diag_variables_raw
 
     @property
@@ -40,7 +40,7 @@ class EcuSharedData(DiagLayer):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "EcuSharedData":
+                doc_frags: list[OdxDocFragment]) -> "EcuSharedData":
         ecu_shared_data_raw = EcuSharedDataRaw.from_et(et_element, doc_frags)
 
         return EcuSharedData(diag_layer_raw=ecu_shared_data_raw)
@@ -78,7 +78,7 @@ class EcuSharedData(DiagLayer):
         self._resolve_snrefs(context)
         context.diag_layer = None
 
-    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
         """Create a deep copy of the protocol layer
 
         Note that the copied diagnostic layer is not fully
