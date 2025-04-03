@@ -4,7 +4,8 @@ from typing import Any
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 
 
@@ -14,7 +15,7 @@ class Modification:
     reason: str | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Modification":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Modification":
         change = odxrequire(et_element.findtext("CHANGE"))
         reason = et_element.findtext("REASON")
 

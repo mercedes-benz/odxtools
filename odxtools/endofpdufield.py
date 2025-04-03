@@ -9,7 +9,7 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import EncodeError, odxassert, odxraise
 from .field import Field
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .odxtypes import ParameterValue
 from .utils import dataclass_fields_asdict
 
@@ -21,9 +21,8 @@ class EndOfPduField(Field):
     min_number_of_items: int | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "EndOfPduField":
-        kwargs = dataclass_fields_asdict(Field.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EndOfPduField":
+        kwargs = dataclass_fields_asdict(Field.from_et(et_element, context))
 
         if (max_n_str := et_element.findtext("MAX-NUMBER-OF-ITEMS")) is not None:
             max_number_of_items = int(max_n_str)

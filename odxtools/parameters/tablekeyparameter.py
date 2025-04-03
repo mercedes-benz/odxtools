@@ -8,7 +8,8 @@ from typing_extensions import final, override
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from ..odxtypes import ParameterValue
 from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
@@ -36,18 +37,17 @@ class TableKeyParameter(Parameter):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "TableKeyParameter":
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "TableKeyParameter":
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, context))
 
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, context))
 
-        table_ref = OdxLinkRef.from_et(et_element.find("TABLE-REF"), doc_frags)
+        table_ref = OdxLinkRef.from_et(et_element.find("TABLE-REF"), context)
         table_snref = None
         if (table_snref_elem := et_element.find("TABLE-SNREF")) is not None:
             table_snref = odxrequire(table_snref_elem.get("SHORT-NAME"))
 
-        table_row_ref = OdxLinkRef.from_et(et_element.find("TABLE-ROW-REF"), doc_frags)
+        table_row_ref = OdxLinkRef.from_et(et_element.find("TABLE-ROW-REF"), context)
         table_row_snref = None
         if (table_row_snref_elem := et_element.find("TABLE-ROW-SNREF")) is not None:
             table_row_snref = odxrequire(table_row_snref_elem.get("SHORT-NAME"))

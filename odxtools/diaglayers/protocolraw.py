@@ -5,12 +5,12 @@ from xml.etree import ElementTree
 
 from ..comparamspec import ComparamSpec
 from ..exceptions import odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from ..parentref import ParentRef
 from ..protstack import ProtStack
 from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
-#from .comparaminstance import ComparamInstance
 from .hierarchyelementraw import HierarchyElementRaw
 
 
@@ -36,24 +36,23 @@ class ProtocolRaw(HierarchyElementRaw):
         return self._prot_stack
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "ProtocolRaw":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ProtocolRaw":
         # objects contained by diagnostic layers exibit an additional
         # document fragment for the diag layer, so we use the document
         # fragments of the odx id of the diag layer for IDs of
         # contained objects.
-        her = HierarchyElementRaw.from_et(et_element, doc_frags)
+        her = HierarchyElementRaw.from_et(et_element, context)
         kwargs = dataclass_fields_asdict(her)
-        doc_frags = her.odx_id.doc_fragments
 
         comparam_spec_ref = OdxLinkRef.from_et(
-            odxrequire(et_element.find("COMPARAM-SPEC-REF")), doc_frags)
+            odxrequire(et_element.find("COMPARAM-SPEC-REF")), context)
 
         prot_stack_snref = None
         if (prot_stack_snref_elem := et_element.find("PROT-STACK-SNREF")) is not None:
             prot_stack_snref = odxrequire(prot_stack_snref_elem.get("SHORT-NAME"))
 
         parent_refs = [
-            ParentRef.from_et(pr_el, doc_frags)
+            ParentRef.from_et(pr_el, context)
             for pr_el in et_element.iterfind("PARENT-REFS/PARENT-REF")
         ]
 

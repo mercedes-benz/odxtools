@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .diagcomm import DiagComm
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .snrefcontext import SnRefContext
 
 
@@ -22,11 +23,11 @@ class TableDiagCommConnector:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "TableDiagCommConnector":
+                context: OdxDocContext) -> "TableDiagCommConnector":
 
         semantic = odxrequire(et_element.findtext("SEMANTIC"))
 
-        diag_comm_ref = OdxLinkRef.from_et(et_element.find("DIAG-COMM-REF"), doc_frags)
+        diag_comm_ref = OdxLinkRef.from_et(et_element.find("DIAG-COMM-REF"), context)
         diag_comm_snref = None
         if (dc_snref_elem := et_element.find("DIAG-COMM-SNREF")) is not None:
             diag_comm_snref = odxrequire(dc_snref_elem.get("SHORT-NAME"))

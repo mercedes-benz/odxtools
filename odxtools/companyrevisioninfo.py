@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .companydata import CompanyData
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 
 
@@ -20,11 +21,10 @@ class CompanyRevisionInfo:
         return self._company_data
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "CompanyRevisionInfo":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "CompanyRevisionInfo":
 
         company_data_ref = odxrequire(
-            OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), doc_frags))
+            OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), context))
         revision_label = et_element.findtext("REVISION-LABEL")
         state = et_element.findtext("STATE")
 

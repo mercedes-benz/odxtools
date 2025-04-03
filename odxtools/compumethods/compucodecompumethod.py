@@ -4,7 +4,7 @@ from typing import cast
 from xml.etree import ElementTree
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import AtomicOdxType, DataType
 from ..progcode import ProgCode
 from ..utils import dataclass_fields_asdict
@@ -34,11 +34,11 @@ class CompuCodeCompuMethod(CompuMethod):
         return self.compu_phys_to_internal.prog_code
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                              internal_type: DataType,
                              physical_type: DataType) -> "CompuCodeCompuMethod":
         cm = CompuMethod.compu_method_from_et(
-            et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
+            et_element, context, internal_type=internal_type, physical_type=physical_type)
         kwargs = dataclass_fields_asdict(cm)
 
         return CompuCodeCompuMethod(**kwargs)

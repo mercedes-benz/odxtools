@@ -4,7 +4,8 @@ from typing import Any
 from xml.etree import ElementTree
 
 from .dyniddefmodeinfo import DynIdDefModeInfo
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 
 
@@ -13,10 +14,9 @@ class DynDefinedSpec:
     dyn_id_def_mode_infos: list[DynIdDefModeInfo]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "DynDefinedSpec":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DynDefinedSpec":
         dyn_id_def_mode_infos = [
-            DynIdDefModeInfo.from_et(x, doc_frags)
+            DynIdDefModeInfo.from_et(x, context)
             for x in et_element.iterfind("DYN-ID-DEF-MODE-INFOS/DYN-ID-DEF-MODE-INFO")
         ]
         return DynDefinedSpec(dyn_id_def_mode_infos=dyn_id_def_mode_infos)

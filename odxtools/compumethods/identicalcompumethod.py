@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from xml.etree import ElementTree
 
 from ..exceptions import odxassert
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import dataclass_fields_asdict
 from .compumethod import CompuMethod
@@ -17,11 +17,11 @@ class IdenticalCompuMethod(CompuMethod):
     """
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                              internal_type: DataType,
                              physical_type: DataType) -> "IdenticalCompuMethod":
         cm = CompuMethod.compu_method_from_et(
-            et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
+            et_element, context, internal_type=internal_type, physical_type=physical_type)
         kwargs = dataclass_fields_asdict(cm)
 
         odxassert(

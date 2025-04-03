@@ -6,7 +6,8 @@ from xml.etree import ElementTree
 from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .externalaccessmethod import ExternalAccessMethod
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, resolve_snref
 from .snrefcontext import SnRefContext
 from .state import State
 from .utils import dataclass_fields_asdict
@@ -30,10 +31,9 @@ class StateTransition(IdentifiableElement):
         return self._target_state
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "StateTransition":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "StateTransition":
 
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         source_snref_elem = odxrequire(et_element.find("SOURCE-SNREF"))
         source_snref = odxrequire(source_snref_elem.attrib["SHORT-NAME"])
@@ -43,7 +43,7 @@ class StateTransition(IdentifiableElement):
 
         external_access_method = None
         if (eam_elem := et_element.find("EXTERNAL-ACCESS-METHOD")) is not None:
-            external_access_method = ExternalAccessMethod.from_et(eam_elem, doc_frags)
+            external_access_method = ExternalAccessMethod.from_et(eam_elem, context)
         return StateTransition(
             source_snref=source_snref,
             target_snref=target_snref,

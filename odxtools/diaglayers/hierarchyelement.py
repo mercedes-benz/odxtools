@@ -17,7 +17,8 @@ from ..diagservice import DiagService
 from ..exceptions import OdxWarning, odxassert, odxraise
 from ..functionalclass import FunctionalClass
 from ..nameditemlist import NamedItemList, OdxNamed
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..parentref import ParentRef
 from ..response import Response
 from ..singleecujob import SingleEcuJob
@@ -46,9 +47,8 @@ class HierarchyElement(DiagLayer):
         return cast(HierarchyElementRaw, self.diag_layer_raw)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "HierarchyElement":
-        hierarchy_element_raw = HierarchyElementRaw.from_et(et_element, doc_frags)
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "HierarchyElement":
+        hierarchy_element_raw = HierarchyElementRaw.from_et(et_element, context)
 
         return HierarchyElement(diag_layer_raw=hierarchy_element_raw)
 

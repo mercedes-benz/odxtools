@@ -9,7 +9,8 @@ from .comparam import Comparam
 from .complexcomparam import ComplexComparam, ComplexValue, create_complex_value_from_et
 from .description import Description
 from .exceptions import OdxWarning, odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 
 
@@ -35,9 +36,8 @@ class ComparamInstance:
         return self.spec.short_name
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "ComparamInstance":
-        spec_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ComparamInstance":
+        spec_ref = odxrequire(OdxLinkRef.from_et(et_element, context))
 
         # ODX standard v2.0.0 defined only VALUE. ODX v2.0.1 decided
         # to break things and change it to a choice between SIMPLE-VALUE
@@ -50,7 +50,7 @@ class ComparamInstance:
         else:
             value = create_complex_value_from_et(odxrequire(et_element.find("COMPLEX-VALUE")))
 
-        description = Description.from_et(et_element.find("DESC"), doc_frags)
+        description = Description.from_et(et_element.find("DESC"), context)
 
         protocol_snref = None
         if (psnref_elem := et_element.find("PROTOCOL-SNREF")) is not None:

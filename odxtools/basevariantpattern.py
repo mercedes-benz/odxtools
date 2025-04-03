@@ -7,7 +7,7 @@ from typing_extensions import override
 from .exceptions import odxassert
 from .matchingbasevariantparameter import MatchingBaseVariantParameter
 from .matchingparameter import MatchingParameter
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .variantpattern import VariantPattern
 
 
@@ -19,11 +19,10 @@ class BaseVariantPattern(VariantPattern):
     matching_base_variant_parameters: list[MatchingBaseVariantParameter]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "BaseVariantPattern":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "BaseVariantPattern":
 
         matching_base_variant_parameters = [
-            MatchingBaseVariantParameter.from_et(mbvp_el, doc_frags)
+            MatchingBaseVariantParameter.from_et(mbvp_el, context)
             for mbvp_el in et_element.iterfind("MATCHING-BASE-VARIANT-PARAMETERS/"
                                                "MATCHING-BASE-VARIANT-PARAMETER")
         ]

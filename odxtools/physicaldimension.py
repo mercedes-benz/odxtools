@@ -4,7 +4,8 @@ from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -50,9 +51,8 @@ class PhysicalDimension(IdentifiableElement):
     luminous_intensity_exp: int | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "PhysicalDimension":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "PhysicalDimension":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         def read_optional_int(element: ElementTree.Element, name: str) -> int | None:
             if (val_str := element.findtext(name)) is not None:

@@ -10,7 +10,8 @@ from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
 from ..exceptions import DecodeMismatch, EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkId
 from ..odxtypes import AtomicOdxType, DataType, ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
@@ -62,16 +63,15 @@ class NrcConstParameter(Parameter):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "NrcConstParameter":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "NrcConstParameter":
 
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, context))
 
         coded_values_raw = [
             odxrequire(x.text) for x in et_element.iterfind("CODED-VALUES/CODED-VALUE")
         ]
         dct_elem = odxrequire(et_element.find("DIAG-CODED-TYPE"))
-        diag_coded_type = create_any_diag_coded_type_from_et(dct_elem, doc_frags)
+        diag_coded_type = create_any_diag_coded_type_from_et(dct_elem, context)
 
         return NrcConstParameter(
             coded_values_raw=coded_values_raw, diag_coded_type=diag_coded_type, **kwargs)

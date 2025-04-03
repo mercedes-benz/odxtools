@@ -7,7 +7,8 @@ from .diagcomm import DiagComm
 from .inputparam import InputParam
 from .nameditemlist import NamedItemList
 from .negoutputparam import NegOutputParam
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .outputparam import OutputParam
 from .progcode import ProgCode
 from .snrefcontext import SnRefContext
@@ -36,24 +37,24 @@ class SingleEcuJob(DiagComm):
     neg_output_params: NamedItemList[NegOutputParam]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "SingleEcuJob":
-        kwargs = dataclass_fields_asdict(DiagComm.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SingleEcuJob":
+        kwargs = dataclass_fields_asdict(DiagComm.from_et(et_element, context))
 
         prog_codes = [
-            ProgCode.from_et(pc_elem, doc_frags)
+            ProgCode.from_et(pc_elem, context)
             for pc_elem in et_element.iterfind("PROG-CODES/PROG-CODE")
         ]
 
         input_params = NamedItemList([
-            InputParam.from_et(el, doc_frags)
+            InputParam.from_et(el, context)
             for el in et_element.iterfind("INPUT-PARAMS/INPUT-PARAM")
         ])
         output_params = NamedItemList([
-            OutputParam.from_et(el, doc_frags)
+            OutputParam.from_et(el, context)
             for el in et_element.iterfind("OUTPUT-PARAMS/OUTPUT-PARAM")
         ])
         neg_output_params = NamedItemList([
-            NegOutputParam.from_et(el, doc_frags)
+            NegOutputParam.from_et(el, context)
             for el in et_element.iterfind("NEG-OUTPUT-PARAMS/NEG-OUTPUT-PARAM")
         ])
 

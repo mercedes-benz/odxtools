@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -22,8 +23,8 @@ class TeamMember(IdentifiableElement):
     email: str | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "TeamMember":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "TeamMember":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         roles = [odxrequire(role_elem.text) for role_elem in et_element.iterfind("ROLES/ROLE")]
         department = et_element.findtext("DEPARTMENT")

@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .element import NamedElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .snrefcontext import SnRefContext
 from .structure import Structure
 from .utils import dataclass_fields_asdict
@@ -23,11 +24,11 @@ class MultiplexerDefaultCase(NamedElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "MultiplexerDefaultCase":
+                context: OdxDocContext) -> "MultiplexerDefaultCase":
         """Reads a default case for a multiplexer."""
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
-        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
+        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), context)
         structure_snref = None
         if (structure_snref_elem := et_element.find("STRUCTURE-SNREF")) is not None:
             structure_snref = odxrequire(structure_snref_elem.get("SHORT-NAME"))

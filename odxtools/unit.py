@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .physicaldimension import PhysicalDimension
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
@@ -62,8 +63,8 @@ class Unit(IdentifiableElement):
         return self._physical_dimension
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Unit":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Unit":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         display_name = odxrequire(et_element.findtext("DISPLAY-NAME"))
 
@@ -76,7 +77,7 @@ class Unit(IdentifiableElement):
         factor_si_to_unit = read_optional_float(et_element, "FACTOR-SI-TO-UNIT")
         offset_si_to_unit = read_optional_float(et_element, "OFFSET-SI-TO-UNIT")
         physical_dimension_ref = OdxLinkRef.from_et(
-            et_element.find("PHYSICAL-DIMENSION-REF"), doc_frags)
+            et_element.find("PHYSICAL-DIMENSION-REF"), context)
 
         return Unit(
             display_name=display_name,

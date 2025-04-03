@@ -11,7 +11,8 @@ from .determinenumberofitems import DetermineNumberOfItems
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from .field import Field
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
@@ -24,14 +25,13 @@ class DynamicLengthField(Field):
     determine_number_of_items: DetermineNumberOfItems
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "DynamicLengthField":
-        kwargs = dataclass_fields_asdict(Field.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DynamicLengthField":
+        kwargs = dataclass_fields_asdict(Field.from_et(et_element, context))
 
         offset = int(odxrequire(et_element.findtext('OFFSET')))
         determine_number_of_items = DetermineNumberOfItems.from_et(
             odxrequire(et_element.find('DETERMINE-NUMBER-OF-ITEMS')),
-            doc_frags,
+            context,
         )
 
         return DynamicLengthField(

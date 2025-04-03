@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .companydocinfo import CompanyDocInfo
 from .docrevision import DocRevision
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 
 
@@ -17,7 +18,7 @@ class AdminData:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element | None,
-                doc_frags: list[OdxDocFragment]) -> Optional["AdminData"]:
+                context: OdxDocContext) -> Optional["AdminData"]:
 
         if et_element is None:
             return None
@@ -25,12 +26,12 @@ class AdminData:
         language = et_element.findtext("LANGUAGE")
 
         company_doc_infos = [
-            CompanyDocInfo.from_et(cdi_elem, doc_frags)
+            CompanyDocInfo.from_et(cdi_elem, context)
             for cdi_elem in et_element.iterfind("COMPANY-DOC-INFOS/COMPANY-DOC-INFO")
         ]
 
         doc_revisions = [
-            DocRevision.from_et(dr_elem, doc_frags)
+            DocRevision.from_et(dr_elem, context)
             for dr_elem in et_element.iterfind("DOC-REVISIONS/DOC-REVISION")
         ]
 

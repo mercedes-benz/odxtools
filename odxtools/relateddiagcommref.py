@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkRef
 from .utils import dataclass_fields_asdict
 
 
@@ -13,9 +14,8 @@ class RelatedDiagCommRef(OdxLinkRef):
 
     @staticmethod
     def from_et(  # type: ignore[override]
-            et_element: ElementTree.Element,
-            doc_frags: list[OdxDocFragment]) -> "RelatedDiagCommRef":
-        kwargs = dataclass_fields_asdict(odxrequire(OdxLinkRef.from_et(et_element, doc_frags)))
+            et_element: ElementTree.Element, context: OdxDocContext) -> "RelatedDiagCommRef":
+        kwargs = dataclass_fields_asdict(odxrequire(OdxLinkRef.from_et(et_element, context)))
 
         relation_type = odxrequire(et_element.findtext("RELATION-TYPE"))
 

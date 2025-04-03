@@ -6,7 +6,7 @@ from xml.etree import ElementTree
 
 from ..comparamspec import ComparamSpec
 from ..exceptions import odxassert
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..protstack import ProtStack
 from .hierarchyelement import HierarchyElement
 from .protocolraw import ProtocolRaw
@@ -33,8 +33,8 @@ class Protocol(HierarchyElement):
         return self.protocol_raw.prot_stack
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Protocol":
-        protocol_raw = ProtocolRaw.from_et(et_element, doc_frags)
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Protocol":
+        protocol_raw = ProtocolRaw.from_et(et_element, context)
 
         return Protocol(diag_layer_raw=protocol_raw)
 

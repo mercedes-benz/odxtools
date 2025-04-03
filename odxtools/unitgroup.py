@@ -6,7 +6,8 @@ from xml.etree import ElementTree
 from .element import NamedElement
 from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 from .unit import Unit
 from .unitgroupcategory import UnitGroupCategory
@@ -28,8 +29,8 @@ class UnitGroup(NamedElement):
         return self._units
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "UnitGroup":
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "UnitGroup":
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
         category_str = odxrequire(et_element.findtext("CATEGORY"))
         try:
@@ -39,7 +40,7 @@ class UnitGroup(NamedElement):
             odxraise(f"Encountered unknown unit group category '{category_str}'")
 
         unit_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            odxrequire(OdxLinkRef.from_et(el, context))
             for el in et_element.iterfind("UNIT-REFS/UNIT-REF")
         ]
         oid = et_element.get("OID")

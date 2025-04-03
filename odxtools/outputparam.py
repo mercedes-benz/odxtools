@@ -8,7 +8,8 @@ from deprecation import deprecated
 from .dopbase import DopBase
 from .element import IdentifiableElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -27,11 +28,11 @@ class OutputParam(IdentifiableElement):
         return self._dop
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "OutputParam":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "OutputParam":
 
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
-        dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
+        dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), context))
         semantic = et_element.get("SEMANTIC")
 
         return OutputParam(dop_base_ref=dop_base_ref, semantic=semantic, **kwargs)

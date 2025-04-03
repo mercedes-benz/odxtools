@@ -2,14 +2,14 @@ from xml.etree import ElementTree
 
 from .comparam import Comparam
 from .complexcomparam import ComplexComparam
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 
 
 def create_any_comparam_from_et(et_element: ElementTree.Element,
-                                doc_frags: list[OdxDocFragment]) -> Comparam | ComplexComparam:
+                                context: OdxDocContext) -> Comparam | ComplexComparam:
     if et_element.tag == "COMPARAM":
-        return Comparam.from_et(et_element, doc_frags)
+        return Comparam.from_et(et_element, context)
     elif et_element.tag == "COMPLEX-COMPARAM":
-        return ComplexComparam.from_et(et_element, doc_frags)
+        return ComplexComparam.from_et(et_element, context)
 
     raise RuntimeError(f"Unhandled communication parameter type {et_element.tag}")

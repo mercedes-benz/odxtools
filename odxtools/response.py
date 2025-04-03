@@ -15,7 +15,8 @@ from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .exceptions import odxraise
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue, ParameterValueDict
 from .parameters.createanyparameter import create_any_parameter_from_et
 from .parameters.parameter import Parameter
@@ -44,9 +45,9 @@ class Response(IdentifiableElement):
     sdgs: list[SpecialDataGroup]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Response":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Response":
         """Reads a response."""
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         try:
             response_type = ResponseType(et_element.tag)
@@ -54,14 +55,12 @@ class Response(IdentifiableElement):
             response_type = cast(ResponseType, None)
             odxraise(f"Encountered unknown response type '{et_element.tag}'")
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
         parameters = NamedItemList([
-            create_any_parameter_from_et(et_parameter, doc_frags)
+            create_any_parameter_from_et(et_parameter, context)
             for et_parameter in et_element.iterfind("PARAMS/PARAM")
         ])
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         return Response(
             response_type=response_type,

@@ -8,7 +8,8 @@ from .dataobjectproperty import DataObjectProperty
 from .element import IdentifiableElement
 from .exceptions import odxassert
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .tablediagcommconnector import TableDiagCommConnector
@@ -39,31 +40,29 @@ class Table(IdentifiableElement):
         return self._table_rows
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Table":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Table":
         """Reads a TABLE."""
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
         odx_id = kwargs["odx_id"]
         key_label = et_element.findtext("KEY-LABEL")
         struct_label = et_element.findtext("STRUCT-LABEL")
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        key_dop_ref = OdxLinkRef.from_et(et_element.find("KEY-DOP-REF"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
+        key_dop_ref = OdxLinkRef.from_et(et_element.find("KEY-DOP-REF"), context)
 
         table_rows_raw: list[OdxLinkRef | TableRow] = []
         for sub_elem in et_element:
             if sub_elem.tag == "TABLE-ROW":
                 table_rows_raw.append(
                     TableRow.tablerow_from_et(
-                        sub_elem, doc_frags, table_ref=OdxLinkRef.from_id(odx_id)))
+                        sub_elem, context, table_ref=OdxLinkRef.from_id(odx_id)))
             elif sub_elem.tag == "TABLE-ROW-REF":
-                table_rows_raw.append(OdxLinkRef.from_et(sub_elem, doc_frags))
+                table_rows_raw.append(OdxLinkRef.from_et(sub_elem, context))
 
         table_diag_comm_connectors = [
-            TableDiagCommConnector.from_et(dcc_elem, doc_frags) for dcc_elem in et_element.iterfind(
+            TableDiagCommConnector.from_et(dcc_elem, context) for dcc_elem in et_element.iterfind(
                 "TABLE-DIAG-COMM-CONNECTORS/TABLE-DIAG-COMM-CONNECTOR")
         ]
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
         semantic = et_element.get("SEMANTIC")
 
         return Table(

@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .physicaldimension import PhysicalDimension
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
@@ -37,21 +38,19 @@ class UnitSpec:
         self.physical_dimensions = NamedItemList(self.physical_dimensions)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "UnitSpec":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "UnitSpec":
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
         unit_groups = NamedItemList([
-            UnitGroup.from_et(el, doc_frags) for el in et_element.iterfind("UNIT-GROUPS/UNIT-GROUP")
+            UnitGroup.from_et(el, context) for el in et_element.iterfind("UNIT-GROUPS/UNIT-GROUP")
         ])
         units = NamedItemList(
-            [Unit.from_et(el, doc_frags) for el in et_element.iterfind("UNITS/UNIT")])
+            [Unit.from_et(el, context) for el in et_element.iterfind("UNITS/UNIT")])
         physical_dimensions = NamedItemList([
-            PhysicalDimension.from_et(el, doc_frags)
+            PhysicalDimension.from_et(el, context)
             for el in et_element.iterfind("PHYSICAL-DIMENSIONS/PHYSICAL-DIMENSION")
         ])
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         return UnitSpec(
             admin_data=admin_data,

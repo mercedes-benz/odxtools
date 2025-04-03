@@ -6,7 +6,8 @@ from xml.etree import ElementTree
 from .exceptions import odxraise, odxrequire
 from .library import Library
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 
 
@@ -29,7 +30,7 @@ class ProgCode:
         return self._libraries
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "ProgCode":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ProgCode":
         code_file = odxrequire(et_element.findtext("CODE-FILE"))
         encryption = et_element.findtext("ENCRYPTION")
         syntax = odxrequire(et_element.findtext("SYNTAX"))
@@ -37,7 +38,7 @@ class ProgCode:
         entrypoint = et_element.findtext("ENTRYPOINT")
 
         library_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            odxrequire(OdxLinkRef.from_et(el, context))
             for el in et_element.iterfind("LIBRARY-REFS/LIBRARY-REF")
         ]
 

@@ -14,7 +14,8 @@ from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .exceptions import odxraise
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue, ParameterValueDict
 from .parameters.createanyparameter import create_any_parameter_from_et
 from .parameters.parameter import Parameter
@@ -42,17 +43,15 @@ class Request(IdentifiableElement):
         return composite_codec_get_free_parameters(self)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Request":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Request":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
         parameters = NamedItemList([
-            create_any_parameter_from_et(et_parameter, doc_frags)
+            create_any_parameter_from_et(et_parameter, context)
             for et_parameter in et_element.iterfind("PARAMS/PARAM")
         ])
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         return Request(admin_data=admin_data, parameters=parameters, sdgs=sdgs, **kwargs)
 

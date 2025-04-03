@@ -7,7 +7,8 @@ from .admindata import AdminData
 from .decodestate import DecodeState
 from .element import IdentifiableElement
 from .encodestate import EncodeState
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
@@ -28,17 +29,15 @@ class DopBase(IdentifiableElement):
     sdgs: list[SpecialDataGroup]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DopBase":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DopBase":
 
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         admin_data = None
         if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:
-            admin_data = AdminData.from_et(admin_data_elem, doc_frags)
+            admin_data = AdminData.from_et(admin_data_elem, context)
 
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         return DopBase(admin_data=admin_data, sdgs=sdgs, **kwargs)
 

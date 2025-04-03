@@ -11,7 +11,8 @@ from .element import IdentifiableElement
 from .exceptions import odxassert, odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import AtomicOdxType, odxstr_to_bool
 from .preconditionstateref import PreConditionStateRef
 from .snrefcontext import SnRefContext
@@ -87,52 +88,50 @@ class TableRow(IdentifiableElement):
         return self.is_final_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> Any:
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> Any:
         raise RuntimeError(
             "Calling TableRow.from_et() is not allowed. Use TableRow.tablerow_from_et().")
 
     @staticmethod
-    def tablerow_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
+    def tablerow_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                          table_ref: OdxLinkRef) -> "TableRow":
         """Reads a TABLE-ROW."""
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         key_raw = odxrequire(et_element.findtext("KEY"))
 
-        dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
+        dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), context)
         dop_snref: str | None = None
         if (dop_snref_elem := et_element.find("DATA-OBJECT-PROP-SNREF")) is not None:
             dop_snref = dop_snref_elem.attrib["SHORT-NAME"]
 
-        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
+        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), context)
         structure_snref: str | None = None
         if (structure_snref_elem := et_element.find("STRUCTURE-SNREF")) is not None:
             structure_snref = structure_snref_elem.attrib["SHORT-NAME"]
 
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         audience = None
         if (audience_elem := et_element.find("AUDIENCE")) is not None:
-            audience = Audience.from_et(audience_elem, doc_frags)
+            audience = Audience.from_et(audience_elem, context)
 
         functional_class_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            odxrequire(OdxLinkRef.from_et(el, context))
             for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF")
         ]
 
         state_transition_refs = [
-            StateTransitionRef.from_et(el, doc_frags)
+            StateTransitionRef.from_et(el, context)
             for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
         ]
 
         pre_condition_state_refs = [
-            PreConditionStateRef.from_et(el, doc_frags)
+            PreConditionStateRef.from_et(el, context)
             for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF")
         ]
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
 
         is_executable_raw = odxstr_to_bool(et_element.attrib.get("IS-EXECUTABLE"))
         semantic = et_element.attrib.get("SEMANTIC")

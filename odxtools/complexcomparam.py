@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .basecomparam import BaseComparam
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
@@ -34,9 +35,8 @@ class ComplexComparam(BaseComparam):
         return self.allow_multiple_values_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "ComplexComparam":
-        kwargs = dataclass_fields_asdict(BaseComparam.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ComplexComparam":
+        kwargs = dataclass_fields_asdict(BaseComparam.from_et(et_element, context))
 
         # to avoid a cyclic import, create_any_comparam_from_et cannot
         # be imported globally. TODO: figure out if this has
@@ -61,7 +61,7 @@ class ComplexComparam(BaseComparam):
             if elems[i].tag not in ("COMPARAM", "COMPLEX-COMPARAM"):
                 break
 
-            subparam = create_any_comparam_from_et(elems[i], doc_frags)
+            subparam = create_any_comparam_from_et(elems[i], context)
             subparams.append(subparam)
             i += 1
 

@@ -7,7 +7,7 @@ from typing_extensions import override
 from .exceptions import odxassert
 from .matchingbasevariantparameter import MatchingBaseVariantParameter
 from .matchingparameter import MatchingParameter
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .variantpattern import VariantPattern
 
 
@@ -24,11 +24,10 @@ class EcuVariantPattern(VariantPattern):
         return self.matching_parameters
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "EcuVariantPattern":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EcuVariantPattern":
 
         matching_parameters = [
-            MatchingParameter.from_et(mp_el, doc_frags)
+            MatchingParameter.from_et(mp_el, context)
             for mp_el in et_element.iterfind("MATCHING-PARAMETERS/"
                                              "MATCHING-PARAMETER")
         ]

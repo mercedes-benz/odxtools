@@ -4,7 +4,8 @@ from typing import Optional, overload
 from xml.etree import ElementTree
 
 from .exceptions import odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkRef
 from .utils import dataclass_fields_asdict
 
 
@@ -14,24 +15,23 @@ class DynEndDopRef(OdxLinkRef):
 
     @staticmethod
     @overload
-    def from_et(et_element: None, source_doc_frags: list[OdxDocFragment]) -> None:
+    def from_et(et_element: None, context: OdxDocContext) -> None:
         ...
 
     @staticmethod
     @overload
-    def from_et(et_element: ElementTree.Element,
-                source_doc_frags: list[OdxDocFragment]) -> "DynEndDopRef":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DynEndDopRef":
         ...
 
     @staticmethod
     def from_et(et_element: ElementTree.Element | None,
-                source_doc_frags: list[OdxDocFragment]) -> Optional["DynEndDopRef"]:
+                context: OdxDocContext) -> Optional["DynEndDopRef"]:
 
         if et_element is None:
             odxraise("Mandatory DYN-END-DOP-REF tag is missing")
             return None
 
-        kwargs = dataclass_fields_asdict(OdxLinkRef.from_et(et_element, source_doc_frags))
+        kwargs = dataclass_fields_asdict(OdxLinkRef.from_et(et_element, context))
 
         termination_value_raw = odxrequire(et_element.findtext("TERMINATION-VALUE"))
 

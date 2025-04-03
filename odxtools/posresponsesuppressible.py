@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .utils import read_hex_binary
 
 
@@ -27,7 +27,7 @@ class PosResponseSuppressible:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "PosResponseSuppressible":
+                context: OdxDocContext) -> "PosResponseSuppressible":
 
         bit_mask = odxrequire(read_hex_binary(et_element.find("BIT-MASK")))
 

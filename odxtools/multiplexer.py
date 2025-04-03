@@ -13,7 +13,8 @@ from .multiplexercase import MultiplexerCase
 from .multiplexerdefaultcase import MultiplexerDefaultCase
 from .multiplexerswitchkey import MultiplexerSwitchKey
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import AtomicOdxType, ParameterValue, odxstr_to_bool
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
@@ -40,20 +41,20 @@ class Multiplexer(ComplexDop):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Multiplexer":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Multiplexer":
         """Reads a Multiplexer from Diag Layer."""
-        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, context))
 
         byte_position = int(et_element.findtext("BYTE-POSITION", "0"))
         switch_key = MultiplexerSwitchKey.from_et(
-            odxrequire(et_element.find("SWITCH-KEY")), doc_frags)
+            odxrequire(et_element.find("SWITCH-KEY")), context)
 
         default_case = None
         if (dc_elem := et_element.find("DEFAULT-CASE")) is not None:
-            default_case = MultiplexerDefaultCase.from_et(dc_elem, doc_frags)
+            default_case = MultiplexerDefaultCase.from_et(dc_elem, context)
 
         cases = NamedItemList(
-            [MultiplexerCase.from_et(el, doc_frags) for el in et_element.iterfind("CASES/CASE")])
+            [MultiplexerCase.from_et(el, context) for el in et_element.iterfind("CASES/CASE")])
 
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
 

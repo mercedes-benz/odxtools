@@ -14,7 +14,8 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, odxraise
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue
 from .parameters.createanyparameter import create_any_parameter_from_et
 from .parameters.parameter import Parameter
@@ -42,15 +43,14 @@ class BasicStructure(ComplexDop):
         return composite_codec_get_free_parameters(self)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "BasicStructure":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "BasicStructure":
         """Read a BASIC-STRUCTURE."""
-        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, context))
 
         byte_size_str = et_element.findtext("BYTE-SIZE")
         byte_size = int(byte_size_str) if byte_size_str is not None else None
         parameters = NamedItemList([
-            create_any_parameter_from_et(et_parameter, doc_frags)
+            create_any_parameter_from_et(et_parameter, context)
             for et_parameter in et_element.iterfind("PARAMS/PARAM")
         ])
 

@@ -6,7 +6,8 @@ from .basicstructure import BasicStructure
 from .complexdop import ComplexDop
 from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxassert, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
@@ -30,15 +31,15 @@ class Field(ComplexDop):
         return self.is_visible_raw in (None, True)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Field":
-        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Field":
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, context))
 
-        structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
+        structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), context)
         structure_snref = None
         if (edsnr_elem := et_element.find("BASIC-STRUCTURE-SNREF")) is not None:
             structure_snref = edsnr_elem.get("SHORT-NAME")
 
-        env_data_desc_ref = OdxLinkRef.from_et(et_element.find("ENV-DATA-DESC-REF"), doc_frags)
+        env_data_desc_ref = OdxLinkRef.from_et(et_element.find("ENV-DATA-DESC-REF"), context)
         env_data_desc_snref = None
         if (edsnr_elem := et_element.find("ENV-DATA-DESC-SNREF")) is not None:
             env_data_desc_snref = edsnr_elem.get("SHORT-NAME")

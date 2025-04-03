@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .companydata import CompanyData
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .teammember import TeamMember
@@ -27,16 +28,13 @@ class CompanyDocInfo:
         return self._team_member
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "CompanyDocInfo":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "CompanyDocInfo":
         # the company data reference is mandatory
         company_data_ref = odxrequire(
-            OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), doc_frags))
-        team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), doc_frags)
+            OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), context))
+        team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), context)
         doc_label = et_element.findtext("DOC-LABEL")
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         return CompanyDocInfo(
             company_data_ref=company_data_ref,

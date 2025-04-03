@@ -6,7 +6,8 @@ from xml.etree import ElementTree
 from .diagnostictroublecode import DiagnosticTroubleCode
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .snrefcontext import SnRefContext
 
 if TYPE_CHECKING:
@@ -31,14 +32,14 @@ class LinkedDtcDop:
         return self._dtc_dop.short_name
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "LinkedDtcDop":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "LinkedDtcDop":
         not_inherited_dtc_snrefs = [
             odxrequire(el.get("SHORT-NAME"))
             for el in et_element.iterfind("NOT-INHERITED-DTC-SNREFS/"
                                           "NOT-INHERITED-DTC-SNREF")
         ]
 
-        dtc_dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DTC-DOP-REF"), doc_frags))
+        dtc_dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DTC-DOP-REF"), context))
 
         return LinkedDtcDop(
             not_inherited_dtc_snrefs=not_inherited_dtc_snrefs, dtc_dop_ref=dtc_dop_ref)

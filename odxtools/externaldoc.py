@@ -3,7 +3,7 @@ from typing import Optional
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 
 
 @dataclass
@@ -13,7 +13,7 @@ class ExternalDoc:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element | None,
-                doc_frags: list[OdxDocFragment]) -> Optional["ExternalDoc"]:
+                context: OdxDocContext) -> Optional["ExternalDoc"]:
         if et_element is None:
             return None
 

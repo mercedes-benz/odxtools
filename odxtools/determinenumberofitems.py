@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .dataobjectproperty import DataObjectProperty
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 
 
@@ -24,11 +25,11 @@ class DetermineNumberOfItems:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "DetermineNumberOfItems":
+                context: OdxDocContext) -> "DetermineNumberOfItems":
         byte_position = int(odxrequire(et_element.findtext("BYTE-POSITION")))
         bit_position_str = et_element.findtext("BIT-POSITION")
         bit_position = int(bit_position_str) if bit_position_str is not None else None
-        dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags))
+        dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), context))
 
         return DetermineNumberOfItems(
             byte_position=byte_position,

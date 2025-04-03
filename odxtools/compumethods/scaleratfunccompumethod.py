@@ -4,7 +4,7 @@ from typing import cast
 from xml.etree import ElementTree
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import dataclass_fields_asdict
 from .compucategory import CompuCategory
@@ -28,11 +28,11 @@ class ScaleRatFuncCompuMethod(CompuMethod):
         return self._phys_to_int_segments
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                              internal_type: DataType,
                              physical_type: DataType) -> "ScaleRatFuncCompuMethod":
         cm = CompuMethod.compu_method_from_et(
-            et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
+            et_element, context, internal_type=internal_type, physical_type=physical_type)
         kwargs = dataclass_fields_asdict(cm)
 
         return ScaleRatFuncCompuMethod(**kwargs)

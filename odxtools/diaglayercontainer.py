@@ -12,7 +12,8 @@ from .diaglayers.functionalgroup import FunctionalGroup
 from .diaglayers.protocol import Protocol
 from .nameditemlist import NamedItemList
 from .odxcategory import OdxCategory
-from .odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import DocType, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -40,31 +41,29 @@ class DiagLayerContainer(OdxCategory):
         return self.ecu_variants
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "DiagLayerContainer":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DiagLayerContainer":
 
-        cat = OdxCategory.category_from_et(et_element, doc_frags, doc_type=DocType.CONTAINER)
-        doc_frags = cat.odx_id.doc_fragments
+        cat = OdxCategory.category_from_et(et_element, context, doc_type=DocType.CONTAINER)
         kwargs = dataclass_fields_asdict(cat)
 
         protocols = NamedItemList([
-            Protocol.from_et(dl_element, doc_frags)
+            Protocol.from_et(dl_element, context)
             for dl_element in et_element.iterfind("PROTOCOLS/PROTOCOL")
         ])
         functional_groups = NamedItemList([
-            FunctionalGroup.from_et(dl_element, doc_frags)
+            FunctionalGroup.from_et(dl_element, context)
             for dl_element in et_element.iterfind("FUNCTIONAL-GROUPS/FUNCTIONAL-GROUP")
         ])
         ecu_shared_datas = NamedItemList([
-            EcuSharedData.from_et(dl_element, doc_frags)
+            EcuSharedData.from_et(dl_element, context)
             for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")
         ])
         base_variants = NamedItemList([
-            BaseVariant.from_et(dl_element, doc_frags)
+            BaseVariant.from_et(dl_element, context)
             for dl_element in et_element.iterfind("BASE-VARIANTS/BASE-VARIANT")
         ])
         ecu_variants = NamedItemList([
-            EcuVariant.from_et(dl_element, doc_frags)
+            EcuVariant.from_et(dl_element, context)
             for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")
         ])
 

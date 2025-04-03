@@ -15,7 +15,8 @@ from .environmentdata import EnvironmentData
 from .environmentdatadescription import EnvironmentDataDescription
 from .multiplexer import Multiplexer
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .staticfield import StaticField
@@ -43,53 +44,53 @@ class DiagDataDictionarySpec:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "DiagDataDictionarySpec":
+                context: OdxDocContext) -> "DiagDataDictionarySpec":
         admin_data = None
         if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:
-            admin_data = AdminData.from_et(admin_data_elem, doc_frags)
+            admin_data = AdminData.from_et(admin_data_elem, context)
 
         dtc_dops = NamedItemList([
-            DtcDop.from_et(dtc_dop_elem, doc_frags)
+            DtcDop.from_et(dtc_dop_elem, context)
             for dtc_dop_elem in et_element.iterfind("DTC-DOPS/DTC-DOP")
         ])
 
         env_data_descs = NamedItemList([
-            EnvironmentDataDescription.from_et(env_data_desc_element, doc_frags)
+            EnvironmentDataDescription.from_et(env_data_desc_element, context)
             for env_data_desc_element in et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC")
         ])
 
         data_object_props = NamedItemList([
-            DataObjectProperty.from_et(dop_element, doc_frags)
+            DataObjectProperty.from_et(dop_element, context)
             for dop_element in et_element.iterfind("DATA-OBJECT-PROPS/DATA-OBJECT-PROP")
         ])
 
         structures = NamedItemList([
-            Structure.from_et(structure_element, doc_frags)
+            Structure.from_et(structure_element, context)
             for structure_element in et_element.iterfind("STRUCTURES/STRUCTURE")
         ])
 
         static_fields = NamedItemList([
-            StaticField.from_et(dl_element, doc_frags)
+            StaticField.from_et(dl_element, context)
             for dl_element in et_element.iterfind("STATIC-FIELDS/STATIC-FIELD")
         ])
 
         dynamic_length_fields = NamedItemList([
-            DynamicLengthField.from_et(dl_element, doc_frags)
+            DynamicLengthField.from_et(dl_element, context)
             for dl_element in et_element.iterfind("DYNAMIC-LENGTH-FIELDS/DYNAMIC-LENGTH-FIELD")
         ])
 
         dynamic_endmarker_fields = NamedItemList([
-            DynamicEndmarkerField.from_et(dl_element, doc_frags) for dl_element in
+            DynamicEndmarkerField.from_et(dl_element, context) for dl_element in
             et_element.iterfind("DYNAMIC-ENDMARKER-FIELDS/DYNAMIC-ENDMARKER-FIELD")
         ])
 
         end_of_pdu_fields = NamedItemList([
-            EndOfPduField.from_et(eofp_element, doc_frags)
+            EndOfPduField.from_et(eofp_element, context)
             for eofp_element in et_element.iterfind("END-OF-PDU-FIELDS/END-OF-PDU-FIELD")
         ])
 
         muxs = NamedItemList([
-            Multiplexer.from_et(mux_element, doc_frags)
+            Multiplexer.from_et(mux_element, context)
             for mux_element in et_element.iterfind("MUXS/MUX")
         ])
 
@@ -99,23 +100,21 @@ class DiagDataDictionarySpec:
             et_element.iterfind("ENV-DATA-DESCS/ENV-DATA-DESC/ENV-DATAS/ENV-DATA"),
         )
         env_datas = NamedItemList([
-            EnvironmentData.from_et(env_data_element, doc_frags)
+            EnvironmentData.from_et(env_data_element, context)
             for env_data_element in env_data_elements
         ])
 
         if (spec_elem := et_element.find("UNIT-SPEC")) is not None:
-            unit_spec = UnitSpec.from_et(spec_elem, doc_frags)
+            unit_spec = UnitSpec.from_et(spec_elem, context)
         else:
             unit_spec = None
 
         tables = NamedItemList([
-            Table.from_et(table_element, doc_frags)
+            Table.from_et(table_element, context)
             for table_element in et_element.iterfind("TABLES/TABLE")
         ])
 
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         return DiagDataDictionarySpec(
             admin_data=admin_data,

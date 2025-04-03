@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from xml.etree import ElementTree
 
 from .exceptions import odxraise
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .odxtypes import DataType
 from .radix import Radix
 
@@ -44,7 +44,7 @@ class PhysicalType:
     """
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "PhysicalType":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "PhysicalType":
         precision_str = et_element.findtext("PRECISION")
         precision = int(precision_str) if precision_str is not None else None
 

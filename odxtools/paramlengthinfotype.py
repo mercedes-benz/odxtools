@@ -9,7 +9,8 @@ from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import EncodeError, odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType, DataType
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
@@ -32,12 +33,10 @@ class ParamLengthInfoType(DiagCodedType):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "ParamLengthInfoType":
-        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ParamLengthInfoType":
+        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, context))
 
-        length_key_ref = odxrequire(
-            OdxLinkRef.from_et(et_element.find("LENGTH-KEY-REF"), doc_frags))
+        length_key_ref = odxrequire(OdxLinkRef.from_et(et_element.find("LENGTH-KEY-REF"), context))
 
         return ParamLengthInfoType(length_key_ref=length_key_ref, **kwargs)
 

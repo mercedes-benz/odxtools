@@ -10,7 +10,7 @@ from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .encoding import get_string_encoding
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .odxtypes import AtomicOdxType, BytesTypes, DataType
 from .termination import Termination
 from .utils import dataclass_fields_asdict
@@ -28,9 +28,8 @@ class MinMaxLengthType(DiagCodedType):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "MinMaxLengthType":
-        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "MinMaxLengthType":
+        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, context))
 
         max_length = None
         if et_element.find("MAX-LENGTH") is not None:

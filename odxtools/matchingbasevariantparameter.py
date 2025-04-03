@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from xml.etree import ElementTree
 
 from .matchingparameter import MatchingParameter
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .odxtypes import odxstr_to_bool
 from .utils import dataclass_fields_asdict
 
@@ -25,9 +25,9 @@ class MatchingBaseVariantParameter(MatchingParameter):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "MatchingBaseVariantParameter":
+                context: OdxDocContext) -> "MatchingBaseVariantParameter":
 
-        kwargs = dataclass_fields_asdict(MatchingParameter.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(MatchingParameter.from_et(et_element, context))
 
         use_physical_addressing_raw = odxstr_to_bool(et_element.findtext("USE-PHYSICAL-ADDRESSING"))
 

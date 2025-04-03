@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 
 if TYPE_CHECKING:
@@ -15,12 +16,11 @@ class SubComponentPattern:
     matching_parameters: list["MatchingParameter"]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "SubComponentPattern":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SubComponentPattern":
         from .matchingparameter import MatchingParameter
 
         matching_parameters = [
-            MatchingParameter.from_et(el, doc_frags)
+            MatchingParameter.from_et(el, context)
             for el in et_element.iterfind("MATCHING-PARAMETERS/MATCHING-PARAMETER")
         ]
 

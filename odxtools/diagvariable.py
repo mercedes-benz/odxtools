@@ -9,7 +9,8 @@ from .commrelation import CommRelation
 from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
@@ -66,17 +67,17 @@ class DiagVariable(IdentifiableElement):
         return self.is_read_before_write_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DiagVariable":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DiagVariable":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        variable_group_ref = OdxLinkRef.from_et(et_element.find("VARIABLE-GROUP-REF"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
+        variable_group_ref = OdxLinkRef.from_et(et_element.find("VARIABLE-GROUP-REF"), context)
         sw_variables = NamedItemList([
-            SwVariable.from_et(swv_elem, doc_frags)
+            SwVariable.from_et(swv_elem, context)
             for swv_elem in et_element.iterfind("SW-VARIABLES/SW-VARIABLE")
         ])
         comm_relations = [
-            CommRelation.from_et(cr_elem, doc_frags)
+            CommRelation.from_et(cr_elem, context)
             for cr_elem in et_element.iterfind("COMM-RELATIONS/COMM-RELATION")
         ]
 
@@ -89,9 +90,7 @@ class DiagVariable(IdentifiableElement):
             table_row_snref_elem = odxrequire(snref_to_tablerow_elem.find("TABLE-ROW-SNREF"))
             table_row_snref = odxrequire(table_row_snref_elem.attrib.get("SHORT-NAME"))
 
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         is_read_before_write_raw = odxstr_to_bool(et_element.get("IS-READ-BEFORE-WRITE"))
 

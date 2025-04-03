@@ -12,7 +12,8 @@ from ..diagvariable import DiagVariable
 from ..dyndefinedspec import DynDefinedSpec
 from ..exceptions import odxassert
 from ..nameditemlist import NamedItemList
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkRef
 from ..parentref import ParentRef
 from ..variablegroup import VariableGroup
 from .basevariantraw import BaseVariantRaw
@@ -68,8 +69,8 @@ class BaseVariant(HierarchyElement):
     #######
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "BaseVariant":
-        base_variant_raw = BaseVariantRaw.from_et(et_element, doc_frags)
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "BaseVariant":
+        base_variant_raw = BaseVariantRaw.from_et(et_element, context)
 
         return BaseVariant(diag_layer_raw=base_variant_raw)
 

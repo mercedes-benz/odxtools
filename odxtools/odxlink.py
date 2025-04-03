@@ -8,6 +8,7 @@ from xml.etree import ElementTree
 
 from .exceptions import OdxWarning, odxassert, odxraise, odxrequire
 from .nameditemlist import OdxNamed, TNamed
+from .odxdoccontext import OdxDocContext
 
 
 class DocType(Enum):
@@ -68,8 +69,7 @@ class OdxLinkId:
         return f"OdxLinkId('{self.local_id}')"
 
     @staticmethod
-    def from_et(et: ElementTree.Element,
-                doc_fragments: list[OdxDocFragment]) -> Optional["OdxLinkId"]:
+    def from_et(et: ElementTree.Element, context: OdxDocContext) -> Optional["OdxLinkId"]:
         """Construct an OdxLinkId for a given XML node (ElementTree object).
 
         Returns None if the given XML node does not exhibit an ID.
@@ -79,7 +79,7 @@ class OdxLinkId:
         if local_id is None:
             return None
 
-        return OdxLinkId(local_id, doc_fragments)
+        return OdxLinkId(local_id, context.doc_fragments)
 
 
 @dataclass
@@ -103,17 +103,16 @@ class OdxLinkRef:
 
     @overload
     @staticmethod
-    def from_et(et: None, source_doc_frags: list[OdxDocFragment]) -> None:
+    def from_et(et: None, context: OdxDocContext) -> None:
         ...
 
     @overload
     @staticmethod
-    def from_et(et: ElementTree.Element, source_doc_frags: list[OdxDocFragment]) -> "OdxLinkRef":
+    def from_et(et: ElementTree.Element, context: OdxDocContext) -> "OdxLinkRef":
         ...
 
     @staticmethod
-    def from_et(et: ElementTree.Element | None,
-                source_doc_frags: list[OdxDocFragment]) -> Optional["OdxLinkRef"]:
+    def from_et(et: ElementTree.Element | None, context: OdxDocContext) -> Optional["OdxLinkRef"]:
         """Construct an OdxLinkRef for a given XML node (ElementTree object).
 
         Returns None if the given XML node does not represent a reference.
@@ -147,7 +146,7 @@ class OdxLinkRef:
         if docref is not None:
             doc_frags = [OdxDocFragment(docref, odxrequire(doctype))]
         else:
-            doc_frags = source_doc_frags
+            doc_frags = context.doc_fragments
 
         return OdxLinkRef(id_ref, doc_frags)
 

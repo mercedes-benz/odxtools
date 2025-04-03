@@ -10,7 +10,8 @@ from .element import IdentifiableElement
 from .exceptions import odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
 from .preconditionstateref import PreConditionStateRef
 from .relateddiagcommref import RelatedDiagCommRef
@@ -83,22 +84,20 @@ class DiagComm(IdentifiableElement):
         return self.is_final_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DiagComm":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DiagComm":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         functional_class_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            odxrequire(OdxLinkRef.from_et(el, context))
             for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF")
         ]
 
         audience = None
         if (audience_elem := et_element.find("AUDIENCE")) is not None:
-            audience = Audience.from_et(audience_elem, doc_frags)
+            audience = Audience.from_et(audience_elem, context)
 
         protocol_snrefs = [
             odxrequire(el.get("SHORT-NAME"))
@@ -106,17 +105,17 @@ class DiagComm(IdentifiableElement):
         ]
 
         related_diag_comm_refs = [
-            RelatedDiagCommRef.from_et(el, doc_frags)
+            RelatedDiagCommRef.from_et(el, context)
             for el in et_element.iterfind("RELATED-DIAG-COMM-REFS/RELATED-DIAG-COMM-REF")
         ]
 
         pre_condition_state_refs = [
-            PreConditionStateRef.from_et(el, doc_frags)
+            PreConditionStateRef.from_et(el, context)
             for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF")
         ]
 
         state_transition_refs = [
-            StateTransitionRef.from_et(el, doc_frags)
+            StateTransitionRef.from_et(el, context)
             for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
         ]
 
