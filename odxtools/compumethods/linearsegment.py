@@ -54,7 +54,7 @@ class LinearSegment:
         inverse_value: int | float = 0
         if scale.compu_inverse_value is not None:
             x = odxrequire(scale.compu_inverse_value).value
-            if not isinstance(x, int | float):
+            if not isinstance(x, (int, float)):
                 odxraise(f"Non-numeric COMPU-INVERSE-VALUE specified ({x!r})")
             inverse_value = x
 
@@ -75,7 +75,7 @@ class LinearSegment:
         self.__compute_physical_limits()
 
     def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> float | int:
-        if not isinstance(internal_value, int | float):
+        if not isinstance(internal_value, (int, float)):
             odxraise(f"Internal values of linear compumethods must "
                      f"either be int or float (is: {type(internal_value).__name__})")
 
@@ -90,7 +90,7 @@ class LinearSegment:
         return result
 
     def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> float | int:
-        if not isinstance(physical_value, int | float):
+        if not isinstance(physical_value, (int, float)):
             odxraise(f"Physical values of linear compumethods must "
                      f"either be int or float (is: {type(physical_value).__name__})")
 
@@ -151,7 +151,7 @@ class LinearSegment:
         # Do type checks
         expected_type = self.physical_type.python_type
         if issubclass(expected_type, float):
-            if not isinstance(physical_value, int | float):
+            if not isinstance(physical_value, (int, float)):
                 return False
         else:
             if not isinstance(physical_value, expected_type):
@@ -172,7 +172,7 @@ class LinearSegment:
         # Do type checks
         expected_type = self.internal_type.python_type
         if issubclass(expected_type, float):
-            if not isinstance(internal_value, int | float):
+            if not isinstance(internal_value, (int, float)):
                 return False
         else:
             if not isinstance(internal_value, expected_type):

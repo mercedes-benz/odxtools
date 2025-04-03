@@ -214,7 +214,7 @@ def extract_parameter_tabulation_data(parameters: list[Parameter]) -> RichTable:
             value_column.append(str(param.coded_values))
             value_type_column.append('coded values')
             dop_column.append("")
-        elif isinstance(param, PhysicalConstantParameter | SystemParameter | ValueParameter):
+        elif isinstance(param, (PhysicalConstantParameter, SystemParameter, ValueParameter)):
             # this is a hack to make this routine work for parameters
             # which reference DOPs of a type that a is not yet
             # internalized. (all parameter objects of the tested types

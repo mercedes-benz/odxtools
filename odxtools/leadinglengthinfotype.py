@@ -52,7 +52,7 @@ class LeadingLengthInfoType(DiagCodedType):
     @override
     def encode_into_pdu(self, internal_value: AtomicOdxType, encode_state: EncodeState) -> None:
 
-        if not isinstance(internal_value, str | bytes):
+        if not isinstance(internal_value, (str, bytes)):
             odxraise(
                 f"LEADING-LENGTH-INFO types can only be used for strings and byte fields, "
                 f"not {type(internal_value).__name__}", EncodeError)

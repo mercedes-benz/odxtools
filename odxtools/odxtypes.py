@@ -109,8 +109,8 @@ def compare_odx_values(a: AtomicOdxType, b: AtomicOdxType) -> int:
     # specification. (cf section 7.3.6.5)
 
     # numeric values are compared numerically (duh!)
-    if isinstance(a, int | float):
-        if not isinstance(b, int | float):
+    if isinstance(a, (int, float)):
+        if not isinstance(b, (int, float)):
             odxraise()
 
         tmp = a - b
@@ -239,7 +239,7 @@ class DataType(Enum):
         expected_type = self.python_type
         if isinstance(value, expected_type):
             return True
-        elif expected_type is float and isinstance(value, int | float):
+        elif expected_type is float and isinstance(value, (int, float)):
             return True
         elif self == DataType.A_BYTEFIELD and isinstance(value, BytesTypes):
             return True

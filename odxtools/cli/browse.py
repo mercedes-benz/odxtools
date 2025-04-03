@@ -370,7 +370,7 @@ def browse(odxdb: Database) -> None:
 
             codec = answer.get("message_type")
             if codec is not None:
-                assert isinstance(codec, Request | Response)
+                assert isinstance(codec, (Request, Response))
                 table = extract_parameter_tabulation_data(codec.parameters)
                 print(table)
 

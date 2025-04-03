@@ -84,7 +84,7 @@ def composite_codec_get_coded_const_prefix(codec: CompositeCodec,
 
     for param in codec.parameters:
         if (isinstance(param, MatchingRequestParameter) and param.request_byte_position < len(request_prefix)) or \
-            isinstance(param, CodedConstParameter|PhysicalConstantParameter) :
+            isinstance(param, (CodedConstParameter, PhysicalConstantParameter)):
             param.encode_into_pdu(physical_value=None, encode_state=encode_state)
         else:
             break
@@ -132,7 +132,7 @@ def composite_codec_encode_into_pdu(codec: CompositeCodec, physical_value: Param
             # the ODX is located last in the PDU...
             encode_state.is_end_of_pdu = orig_is_end_of_pdu
 
-        if isinstance(param, LengthKeyParameter | TableKeyParameter):
+        if isinstance(param, (LengthKeyParameter, TableKeyParameter)):
             # At this point, we encode a placeholder value for length-
             # and table keys, since these can be specified
             # implicitly (i.e., by means of parameters that use
@@ -159,7 +159,7 @@ def composite_codec_encode_into_pdu(codec: CompositeCodec, physical_value: Param
     # because we allow these to be defined implicitly (i.e. they
     # are defined by their respective users)
     for param in codec.parameters:
-        if not isinstance(param, LengthKeyParameter | TableKeyParameter):
+        if not isinstance(param, (LengthKeyParameter, TableKeyParameter)):
             # the current parameter is neither a length- nor a table key
             continue
 

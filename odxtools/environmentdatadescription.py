@@ -207,7 +207,7 @@ class EnvironmentDataDescription(ComplexDop):
                                           param_value: ParameterValue | None) -> int:
         if isinstance(param, ParameterWithDOP):
             dop = param.dop
-            if not isinstance(dop, DataObjectProperty | DtcDop):
+            if not isinstance(dop, (DataObjectProperty, DtcDop)):
                 odxraise(f"The DOP of the parameter referenced by environment data descriptions "
                          f"must use either be DataObjectProperty or a DtcDop (encountered "
                          f"{type(param).__name__} for parameter '{param.short_name}' "

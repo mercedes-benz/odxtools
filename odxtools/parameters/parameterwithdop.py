@@ -78,7 +78,7 @@ class ParameterWithDOP(Parameter):
 
     @property
     def physical_type(self) -> PhysicalType | None:
-        if isinstance(self.dop, DataObjectProperty | DtcDop):
+        if isinstance(self.dop, (DataObjectProperty, DtcDop)):
             return self.dop.physical_type
         else:
             return None

@@ -118,7 +118,7 @@ class DataObjectProperty(DopBase):
                 f"The value {repr(physical_value)} of type {type(physical_value).__name__}"
                 f" is not a valid.")
 
-        if not isinstance(physical_value, int | float | str | BytesTypes):
+        if not isinstance(physical_value, (int, float, str, BytesTypes)):
             odxraise(f"Invalid type '{type(physical_value).__name__}' for physical value. "
                      f"(Expect atomic type!)")
         internal_value = self.compu_method.convert_physical_to_internal(physical_value)
