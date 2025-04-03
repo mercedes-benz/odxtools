@@ -82,11 +82,12 @@ class Display:
         if service_spec.changed_name_of_service[0]:
             rich_print()
             rich_print(" [blue]Renamed services[/blue]")
-            rich_print(
-                extract_service_tabulation_data([
-                    item for sublist in service_spec.changed_name_of_service for item in sublist
-                    if isinstance(item, DiagService)
-                ]))
+            tmp: List[DiagService] = []
+            for sublist in service_spec.changed_name_of_service:
+                for item in sublist:
+                    if isinstance(item, DiagService):
+                        tmp.append(item)
+            rich_print(extract_service_tabulation_data(tmp))
         if service_spec.changed_parameters_of_service:
             first_change_details = service_spec.changed_parameters_of_service[0]
             if first_change_details:
@@ -96,12 +97,12 @@ class Display:
                     str(param_details.changed_parameters)
                     for param_details in service_spec.changed_parameters_of_service
                 ]
-                table = extract_service_tabulation_data([
+                services = [
                     param_detail.service
                     for param_detail in service_spec.changed_parameters_of_service
-                ],
-                                                        additional_columns=[("Changed Parameters",
-                                                                             changed_param_column)])
+                ]
+                table = extract_service_tabulation_data(
+                    services, additional_columns=[("Changed Parameters", changed_param_column)])
                 rich_print(table)
                 for service_idx, param_detail in enumerate(
                         service_spec.changed_parameters_of_service):
