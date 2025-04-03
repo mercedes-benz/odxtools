@@ -118,7 +118,7 @@ class Multiplexer(ComplexDop):
         orig_origin = encode_state.origin_byte_position
         encode_state.origin_byte_position = encode_state.cursor_byte_position
 
-        if isinstance(physical_value, list | tuple) and len(physical_value) == 2:
+        if isinstance(physical_value, (list, tuple)) and len(physical_value) == 2:
             case_spec, case_value = physical_value
         elif isinstance(physical_value, dict) and len(physical_value) == 1:
             case_spec, case_value = next(iter(physical_value.items()))
