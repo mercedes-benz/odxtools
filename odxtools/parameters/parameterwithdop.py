@@ -19,7 +19,7 @@ from ..utils import dataclass_fields_asdict
 from .parameter import Parameter
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ParameterWithDOP(Parameter):
     dop_ref: OdxLinkRef | None
     dop_snref: str | None

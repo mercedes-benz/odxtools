@@ -27,7 +27,7 @@ from ..utils import dataclass_fields_asdict
 from .diaglayertype import DiagLayerType
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagLayerRaw(IdentifiableElement):
     """This class internalizes all data represented by the DIAG-LAYER
     XML tag and its derivatives.

@@ -8,7 +8,7 @@ from .odxlink import OdxDocFragment
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EnvironmentData(BasicStructure):
     """This class represents Environment Data that describes the
     circumstances in which the error occurred.

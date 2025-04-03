@@ -16,7 +16,7 @@ from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class StaticField(Field):
     """Array of a fixed number of structure objects"""
     fixed_number_of_items: int

@@ -12,7 +12,7 @@ from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ProtStack(IdentifiableElement):
     # mandatory in ODX 2.2, but non existent in ODX 2.0
     pdu_protocol_type: str

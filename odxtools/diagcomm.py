@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from .diaglayers.protocol import Protocol
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagComm(IdentifiableElement):
     """Representation of a diagnostic communication object.
 

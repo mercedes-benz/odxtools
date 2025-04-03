@@ -13,7 +13,7 @@ from .odxtypes import AtomicOdxType, DataType
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class LeadingLengthInfoType(DiagCodedType):
     #: bit length of the length specifier field
     #:

@@ -9,7 +9,7 @@ from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class AdditionalAudience(IdentifiableElement):
     """
     Corresponds to ADDITIONAL-AUDIENCE.

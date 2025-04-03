@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from .matchingparameter import MatchingParameter
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SubComponentPattern:
     matching_parameters: list["MatchingParameter"]
 

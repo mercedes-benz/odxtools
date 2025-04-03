@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from .matchingparameter import MatchingParameter
 
 
-@dataclass
+@dataclass(kw_only=True)
 class VariantPattern:
     """Variant patterns are used to identify the concrete variant of an ECU
 

@@ -9,7 +9,7 @@ from .specialdata import SpecialData
 from .specialdatagroupcaption import SpecialDataGroupCaption
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SpecialDataGroup:
     """This corresponds to the SDG XML tag"""
     sdg_caption: SpecialDataGroupCaption | None

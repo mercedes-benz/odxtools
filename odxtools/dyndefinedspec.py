@@ -8,7 +8,7 @@ from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DynDefinedSpec:
     dyn_id_def_mode_infos: list[DynIdDefModeInfo]
 

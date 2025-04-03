@@ -13,7 +13,7 @@ from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MatchingRequestParameter(Parameter):
     request_byte_position: int
     byte_length: int

@@ -11,7 +11,7 @@ from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Unit(IdentifiableElement):
     """
     A unit consists of an ID, short name and a display name.

@@ -30,7 +30,7 @@ class ResponseType(Enum):
     GLOBAL_NEGATIVE = "GLOBAL-NEG-RESPONSE"
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Response(IdentifiableElement):
     """Represents all information related to an UDS response
 

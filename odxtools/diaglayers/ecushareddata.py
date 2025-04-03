@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from .database import Database
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EcuSharedData(DiagLayer):
     """This is a diagnostic layer for data shared across others
     """

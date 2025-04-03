@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from .database import Database
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagLayerContainer(OdxCategory):
     protocols: NamedItemList[Protocol]
     functional_groups: NamedItemList[FunctionalGroup]

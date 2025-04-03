@@ -7,7 +7,7 @@ from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SpecialData:
     """This corresponds to the SD XML tag"""
     semantic_info: str | None  # the "SI" attribute

@@ -12,7 +12,7 @@ from .hierarchyelement import HierarchyElement
 from .protocolraw import ProtocolRaw
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Protocol(HierarchyElement):
     """This is the class for primitives that are common for a given communication protocol
 

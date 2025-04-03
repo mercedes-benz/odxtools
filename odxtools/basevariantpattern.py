@@ -11,7 +11,7 @@ from .odxlink import OdxDocFragment
 from .variantpattern import VariantPattern
 
 
-@dataclass
+@dataclass(kw_only=True)
 class BaseVariantPattern(VariantPattern):
     """Base variant patterns are variant patterns used to identify the
     base variant of an ECU.

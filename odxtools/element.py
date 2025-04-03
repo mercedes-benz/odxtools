@@ -7,7 +7,7 @@ from .odxlink import OdxDocFragment, OdxLinkId
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class NamedElement:
     short_name: str
     long_name: str | None
@@ -23,7 +23,7 @@ class NamedElement:
         )
 
 
-@dataclass
+@dataclass(kw_only=True)
 class IdentifiableElement(NamedElement):
     odx_id: OdxLinkId
     oid: str | None

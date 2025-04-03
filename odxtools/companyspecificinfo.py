@@ -9,7 +9,7 @@ from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompanySpecificInfo:
     related_docs: list[RelatedDoc]
     sdgs: list[SpecialDataGroup]

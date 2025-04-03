@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from .database import Database
 
 
-@dataclass
+@dataclass(kw_only=True)
 class OdxCategory(IdentifiableElement):
     """This is the base class for all top-level container classes in ODX"""
 

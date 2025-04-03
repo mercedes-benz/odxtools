@@ -11,7 +11,7 @@ from .specialdatagroup import SpecialDataGroup
 from .teammember import TeamMember
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompanyDocInfo:
     company_data_ref: OdxLinkRef
     team_member_ref: OdxLinkRef | None

@@ -16,7 +16,7 @@ from ..variablegroup import VariableGroup
 from .hierarchyelementraw import HierarchyElementRaw
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EcuVariantRaw(HierarchyElementRaw):
     diag_variables_raw: list[DiagVariable | OdxLinkRef]
     variable_groups: NamedItemList[VariableGroup]

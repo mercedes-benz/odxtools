@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from .diagservice import DiagService
 
 
-@dataclass
+@dataclass(kw_only=True)
 class StateMachine:
     """Objects of this class represent the runtime state of a state chart
 

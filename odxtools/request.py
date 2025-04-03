@@ -23,7 +23,7 @@ from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Request(IdentifiableElement):
     """Represents all information related to an UDS request
 

@@ -14,7 +14,7 @@ from .parameters.parameter import Parameter
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CommRelation:
     description: Description | None
     relation_type: str

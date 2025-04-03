@@ -13,7 +13,7 @@ from .statetransition import StateTransition
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class StateChart(IdentifiableElement):
     """
     Corresponds to STATE-CHART.

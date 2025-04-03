@@ -10,7 +10,7 @@ from ..utils import dataclass_fields_asdict
 from .diaglayerraw import DiagLayerRaw
 
 
-@dataclass
+@dataclass(kw_only=True)
 class HierarchyElementRaw(DiagLayerRaw):
     """This is the base class for diagnostic layers that may be involved in value inheritance
 

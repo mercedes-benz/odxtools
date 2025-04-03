@@ -14,7 +14,7 @@ from ..utils import dataclass_fields_asdict
 from .hierarchyelementraw import HierarchyElementRaw
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ProtocolRaw(HierarchyElementRaw):
     """This is the base class for diagnostic layers that describe a
     protocol which can be used to communicate with an ECU

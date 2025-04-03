@@ -13,7 +13,7 @@ from .unit import Unit
 from .unitgroup import UnitGroup
 
 
-@dataclass
+@dataclass(kw_only=True)
 class UnitSpec:
     """
     A unit spec encapsulates three lists:

@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from .database import Database
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ComparamSubset(OdxCategory):
     comparams: NamedItemList[Comparam]
     complex_comparams: NamedItemList[ComplexComparam]

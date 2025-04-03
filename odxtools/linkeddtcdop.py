@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from .dtcdop import DtcDop
 
 
-@dataclass
+@dataclass(kw_only=True)
 class LinkedDtcDop:
     not_inherited_dtc_snrefs: list[str]
     dtc_dop_ref: OdxLinkRef

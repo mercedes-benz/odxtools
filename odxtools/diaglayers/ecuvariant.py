@@ -21,7 +21,7 @@ from .ecuvariantraw import EcuVariantRaw
 from .hierarchyelement import HierarchyElement
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EcuVariant(HierarchyElement):
 
     @property

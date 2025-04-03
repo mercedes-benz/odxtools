@@ -24,7 +24,7 @@ from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EnvironmentDataDescription(ComplexDop):
     """This class represents environment data descriptions
 

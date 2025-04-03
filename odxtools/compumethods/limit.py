@@ -9,7 +9,7 @@ from ..odxtypes import AtomicOdxType, DataType, compare_odx_values
 from .intervaltype import IntervalType
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Limit:
     value_raw: str | None
     value_type: DataType | None

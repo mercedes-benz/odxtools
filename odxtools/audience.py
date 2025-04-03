@@ -10,7 +10,7 @@ from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Audience:
     enabled_audience_refs: list[OdxLinkRef]
     disabled_audience_refs: list[OdxLinkRef]

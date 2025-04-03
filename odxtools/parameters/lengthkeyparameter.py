@@ -15,7 +15,7 @@ from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
 
-@dataclass
+@dataclass(kw_only=True)
 class LengthKeyParameter(ParameterWithDOP):
     """Length Keys specify the bit (!) length of another parameter.
 

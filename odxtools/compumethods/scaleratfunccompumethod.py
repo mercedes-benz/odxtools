@@ -12,7 +12,7 @@ from .compumethod import CompuMethod
 from .ratfuncsegment import RatFuncSegment
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ScaleRatFuncCompuMethod(CompuMethod):
     """A compu method using a piecewise rational function
 

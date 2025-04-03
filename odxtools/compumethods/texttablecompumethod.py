@@ -12,7 +12,7 @@ from .compumethod import CompuMethod
 from .compuscale import CompuScale
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TexttableCompuMethod(CompuMethod):
     """Text table compute methods translate numbers to human readable
     textual descriptions.

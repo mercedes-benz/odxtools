@@ -880,10 +880,8 @@ class TestEncodeRequest(unittest.TestCase):
             oid=None,
             short_name="dtcdop_sn",
             long_name=None,
-            description=Description(
-                "DOP containing all possible diagnostic trouble codes",
-                external_docs=[],
-                text_identifier=None),
+            description=Description.from_string(
+                "DOP containing all possible diagnostic trouble codes"),
             admin_data=None,
             sdgs=[],
             diag_coded_type=dtc_dct,
@@ -1056,8 +1054,7 @@ class TestEncodeRequest(unittest.TestCase):
             oid=None,
             short_name="dtc_info",
             long_name=None,
-            description=Description(
-                "Supplemental info why the error happened", external_docs=[], text_identifier=None),
+            description=Description.from_string("Supplemental info why the error happened"),
             semantic=None,
             dop_ref=OdxLinkRef.from_id(env_data_desc.odx_id),
             dop_snref=None,

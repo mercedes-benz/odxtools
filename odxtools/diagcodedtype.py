@@ -20,7 +20,7 @@ DctType = Literal[
 ]
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagCodedType:
     base_type_encoding: Encoding | None
     base_data_type: DataType

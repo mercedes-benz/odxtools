@@ -13,7 +13,7 @@ from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class InputParam(NamedElement):
     physical_default_value: str | None
     dop_base_ref: OdxLinkRef

@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from ..tablerow import TableRow
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TableEntryParameter(Parameter):
     target: RowFragment
     table_row_ref: OdxLinkRef

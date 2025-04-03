@@ -9,7 +9,7 @@ from .utils import read_hex_binary
 
 # note that the spec has a typo here: it calls the corresponding
 # XML tag POS-RESPONSE-SUPPRESSABLE...
-@dataclass
+@dataclass(kw_only=True)
 class PosResponseSuppressible:
     bit_mask: int
 

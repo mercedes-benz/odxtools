@@ -13,7 +13,7 @@ from .text import Text
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagnosticTroubleCode(IdentifiableElement):
     trouble_code: int
     display_trouble_code: str | None

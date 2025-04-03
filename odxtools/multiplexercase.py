@@ -13,7 +13,7 @@ from .structure import Structure
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MultiplexerCase(NamedElement):
     """This class represents a case which represents a range of keys of a multiplexer."""
 

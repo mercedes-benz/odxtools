@@ -8,7 +8,7 @@ from .odxlink import OdxDocFragment, OdxLinkRef
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DynEndDopRef(OdxLinkRef):
     termination_value_raw: str
 

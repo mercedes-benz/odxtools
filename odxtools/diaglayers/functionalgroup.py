@@ -18,7 +18,7 @@ from .functionalgroupraw import FunctionalGroupRaw
 from .hierarchyelement import HierarchyElement
 
 
-@dataclass
+@dataclass(kw_only=True)
 class FunctionalGroup(HierarchyElement):
     """This is a diagnostic layer for functionality shared between multiple ECU variants
     """

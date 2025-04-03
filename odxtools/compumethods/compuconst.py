@@ -5,7 +5,7 @@ from xml.etree import ElementTree
 from ..odxtypes import AtomicOdxType, DataType
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompuConst:
     v: str | None
     vt: str | None

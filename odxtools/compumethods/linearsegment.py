@@ -7,7 +7,7 @@ from .compuscale import CompuScale
 from .limit import Limit
 
 
-@dataclass
+@dataclass(kw_only=True)
 class LinearSegment:
     """Helper class to represent a segment of a piecewise-linear interpolation.
 

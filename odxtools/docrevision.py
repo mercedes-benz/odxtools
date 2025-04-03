@@ -11,7 +11,7 @@ from .snrefcontext import SnRefContext
 from .teammember import TeamMember
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DocRevision:
     """
     Representation of a single revision of the relevant object.
