@@ -39,7 +39,7 @@ class RatFuncSegment:
             value_type=scale.range_type)
 
     def convert(self, value: AtomicOdxType) -> float | int:
-        if not isinstance(value, int | float):
+        if not isinstance(value, (int, float)):
             odxraise(f"Internal values of linear compumethods must "
                      f"either be int or float (is: {type(value).__name__})")
 
@@ -69,7 +69,7 @@ class RatFuncSegment:
         # Do type checks
         expected_type = self.value_type.python_type
         if issubclass(expected_type, float):
-            if not isinstance(value, int | float):
+            if not isinstance(value, (int, float)):
                 return False
         else:
             if not isinstance(value, expected_type):

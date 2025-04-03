@@ -108,13 +108,13 @@ def _check_applies(ref: Union["StateTransitionRef",
         return False
     elif not isinstance(
             param,
-            CodedConstParameter | PhysicalConstantParameter | TableKeyParameter | ValueParameter):
+        (CodedConstParameter, PhysicalConstantParameter, TableKeyParameter, ValueParameter)):
         # see checker rule 194 in section B.2 of the spec
         odxraise(f"Parameter referenced by state transition ref is of "
                  f"invalid type {type(param).__name__}")
         return False
-    elif isinstance(param, CodedConstParameter | PhysicalConstantParameter
-                    | TableKeyParameter) and ref.value is not None:
+    elif isinstance(param, (CodedConstParameter, PhysicalConstantParameter,
+                            TableKeyParameter)) and ref.value is not None:
         # see checker rule 193 in section B.2 of the spec. Why can
         # no values for constant parameters be specified? (This
         # seems to be rather inconvenient...)

@@ -61,7 +61,7 @@ def print_summary(odxdb: Database,
 
         all_services: list[DiagComm] = sorted(dl.services, key=lambda x: x.short_name)
 
-        if isinstance(dl, BaseVariant | EcuVariant):
+        if isinstance(dl, (BaseVariant, EcuVariant)):
             for proto in dl.protocols:
                 if (can_rx_id := dl.get_can_receive_id(proto.short_name)) is not None:
                     rich.print(

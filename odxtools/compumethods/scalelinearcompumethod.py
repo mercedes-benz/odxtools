@@ -100,7 +100,7 @@ class ScaleLinearCompuMethod(CompuMethod):
                 self._is_invertible = False
                 break
 
-            if not isinstance(x, int | float):
+            if not isinstance(x, (int, float)):
                 odxraise("Linear segments must use int or float for all quantities")
 
             # the respective function value at the interval's

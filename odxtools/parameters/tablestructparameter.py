@@ -89,7 +89,7 @@ class TableStructParameter(Parameter):
     def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
 
-        if not isinstance(physical_value, tuple|list) or \
+        if not isinstance(physical_value, (tuple, list)) or \
            len(physical_value) != 2 or \
            not isinstance(physical_value[0], str):
             odxraise(

@@ -79,10 +79,10 @@ class TabIntpCompuMethod(CompuMethod):
             internal_point = odxrequire(scale.lower_limit).value
             physical_point = odxrequire(scale.compu_const).value
 
-            if not isinstance(internal_point, float | int):
+            if not isinstance(internal_point, (float, int)):
                 odxraise("The type of values of tab-intp compumethods must "
                          "either int or float")
-            if not isinstance(physical_point, float | int):
+            if not isinstance(physical_point, (float, int)):
                 odxraise("The type of values of tab-intp compumethods must "
                          "either int or float")
 
@@ -140,13 +140,13 @@ class TabIntpCompuMethod(CompuMethod):
         return None
 
     def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> AtomicOdxType:
-        if not isinstance(physical_value, int | float):
+        if not isinstance(physical_value, (int, float)):
             odxraise("The type of values of tab-intp compumethods must "
                      "either int or float", EncodeError)
             return None
 
         odxassert(
-            isinstance(physical_value, int | float),
+            isinstance(physical_value, (int, float)),
             "Only integers and floats can be piecewise linearly interpolated", EncodeError)
         result = self.__piecewise_linear_interpolate(physical_value, self._physical_points,
                                                      self._internal_points)
@@ -161,14 +161,14 @@ class TabIntpCompuMethod(CompuMethod):
         return res
 
     def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> AtomicOdxType:
-        if not isinstance(internal_value, int | float):
+        if not isinstance(internal_value, (int, float)):
             odxraise(
                 "The internal type of values of tab-intp compumethods must "
                 "either int or float", EncodeError)
             return None
 
         odxassert(
-            isinstance(internal_value, int | float),
+            isinstance(internal_value, (int, float)),
             "Only integers and floats can be piecewise linearly interpolated", DecodeError)
 
         result = self.__piecewise_linear_interpolate(internal_value, self._internal_points,
@@ -185,14 +185,14 @@ class TabIntpCompuMethod(CompuMethod):
         return res
 
     def is_valid_physical_value(self, physical_value: AtomicOdxType) -> bool:
-        if not isinstance(physical_value, int | float):
+        if not isinstance(physical_value, (int, float)):
             return False
 
         return min(self.physical_points) <= physical_value and physical_value <= max(
             self.physical_points)
 
     def is_valid_internal_value(self, internal_value: AtomicOdxType) -> bool:
-        if not isinstance(internal_value, int | float):
+        if not isinstance(internal_value, (int, float)):
             return False
 
         return min(self.internal_points) <= internal_value and internal_value <= max(

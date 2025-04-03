@@ -199,7 +199,7 @@ class TableRow(IdentifiableElement):
 
         if self.dop_ref is not None:
             self._dop = odxlinks.resolve(self.dop_ref)
-            if not isinstance(self._dop, DataObjectProperty | DtcDop):
+            if not isinstance(self._dop, (DataObjectProperty, DtcDop)):
                 odxraise("The DOP-REF of TABLE-ROWs must reference a simple DOP!")
         if self.structure_ref is not None:
             self._structure = odxlinks.resolve(self.structure_ref, Structure)
@@ -243,7 +243,7 @@ class TableRow(IdentifiableElement):
             self._structure = resolve_snref(self.structure_snref, ddd_spec.structures, Structure)
         if self.dop_snref is not None:
             self._dop = resolve_snref(self.dop_snref, ddd_spec.data_object_props)
-            if not isinstance(self._dop, DataObjectProperty | DtcDop):
+            if not isinstance(self._dop, (DataObjectProperty, DtcDop)):
                 odxraise("The DOP-SNREF of TABLE-ROWs must reference a simple DOP!")
 
         if self.audience is not None:

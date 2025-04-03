@@ -133,7 +133,7 @@ class ComparamInstance:
             return None
 
         result = value_list[idx]
-        if result is None and isinstance(subparam, Comparam | ComplexComparam):
+        if result is None and isinstance(subparam, (Comparam, ComplexComparam)):
             result = subparam.physical_default_value
         if not isinstance(result, str):
             odxraise()

@@ -142,7 +142,7 @@ class ItemAttributeList(list[T]):
         ...
 
     def __getitem__(self, key: SupportsIndex | str | slice) -> T | list[T]:
-        if isinstance(key, SupportsIndex | slice):
+        if isinstance(key, (SupportsIndex, slice)):
             return super().__getitem__(key)
         else:
             return self._item_dict[key]

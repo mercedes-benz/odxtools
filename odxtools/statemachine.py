@@ -160,7 +160,7 @@ class StateMachine:
 
         if raw_resp is None:
             raise RuntimeError("The calling code must send back a reply")
-        elif isinstance(raw_resp, bytes | bytearray):
+        elif isinstance(raw_resp, (bytes, bytearray)):
             for decoded_resp_msg in self.diag_layer.decode_response(raw_resp, raw_req):
                 for stransref in service.state_transition_refs:
                     # we only execute the first applicable state
