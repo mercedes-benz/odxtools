@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from ..comparamspec import ComparamSpec
@@ -24,19 +24,19 @@ class ProtocolRaw(HierarchyElementRaw):
     """
 
     comparam_spec_ref: OdxLinkRef
-    prot_stack_snref: Optional[str]
-    parent_refs: List[ParentRef]
+    prot_stack_snref: str | None
+    parent_refs: list[ParentRef]
 
     @property
     def comparam_spec(self) -> ComparamSpec:
         return self._comparam_spec
 
     @property
-    def prot_stack(self) -> Optional[ProtStack]:
+    def prot_stack(self) -> ProtStack | None:
         return self._prot_stack
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ProtocolRaw":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "ProtocolRaw":
         # objects contained by diagnostic layers exibit an additional
         # document fragment for the diag layer, so we use the document
         # fragments of the odx id of the diag layer for IDs of
@@ -63,7 +63,7 @@ class ProtocolRaw(HierarchyElementRaw):
             parent_refs=parent_refs,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         for parent_ref in self.parent_refs:

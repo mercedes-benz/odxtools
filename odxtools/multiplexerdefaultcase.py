@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import NamedElement
@@ -14,16 +14,16 @@ from .utils import dataclass_fields_asdict
 @dataclass
 class MultiplexerDefaultCase(NamedElement):
     """This class represents a Default Case, which is selected when there are no cases defined in the Multiplexer."""
-    structure_ref: Optional[OdxLinkRef]
-    structure_snref: Optional[str]
+    structure_ref: OdxLinkRef | None
+    structure_snref: str | None
 
     @property
-    def structure(self) -> Optional[Structure]:
+    def structure(self) -> Structure | None:
         return self._structure
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "MultiplexerDefaultCase":
+                doc_frags: list[OdxDocFragment]) -> "MultiplexerDefaultCase":
         """Reads a default case for a multiplexer."""
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
 
@@ -35,7 +35,7 @@ class MultiplexerDefaultCase(NamedElement):
         return MultiplexerDefaultCase(
             structure_ref=structure_ref, structure_snref=structure_snref, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

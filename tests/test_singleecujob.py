@@ -11,9 +11,9 @@ import jinja2
 import odxtools
 from odxtools.additionalaudience import AdditionalAudience
 from odxtools.audience import Audience
+from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.compuconst import CompuConst
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
-from odxtools.compumethods.compumethod import CompuCategory
 from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.limit import Limit

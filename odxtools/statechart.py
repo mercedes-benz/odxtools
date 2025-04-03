@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
@@ -19,7 +19,7 @@ class StateChart(IdentifiableElement):
     Corresponds to STATE-CHART.
     """
     semantic: str
-    state_transitions: List[StateTransition]
+    state_transitions: list[StateTransition]
     start_state_snref: str
     states: NamedItemList[State]
 
@@ -28,7 +28,7 @@ class StateChart(IdentifiableElement):
         return self._start_state
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "StateChart":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "StateChart":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         semantic: str = odxrequire(et_element.findtext("SEMANTIC"))
@@ -52,7 +52,7 @@ class StateChart(IdentifiableElement):
             states=NamedItemList(states),
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         odxlinks = {self.odx_id: self}
 
         for strans in self.state_transitions:

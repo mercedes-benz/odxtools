@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 from enum import IntEnum
 from itertools import chain
-from typing import Optional
 
 import odxtools.obd as obd
 
@@ -82,7 +81,7 @@ _sid_to_name = {
 SID = IntEnum("UdsSID", ((i.name, i.value) for i in chain(obd.SID, UDSSID)))  # type: ignore[misc]
 
 
-def sid_to_name(sid: int) -> Optional[str]:
+def sid_to_name(sid: int) -> str | None:
     if sid in _sid_to_name:
         return _sid_to_name[sid]
     elif 0x81 <= sid and sid <= 0x82:
@@ -142,7 +141,7 @@ def negative_response_id(service_id: int) -> int:
     return NegativeResponseId
 
 
-def is_response_pending(telegram_payload: bytes, request_sid: Optional[int] = None) -> bool:
+def is_response_pending(telegram_payload: bytes, request_sid: int | None = None) -> bool:
     # "response pending" responses exhibit at least three bytes
     if len(telegram_payload) < 3:
         return False

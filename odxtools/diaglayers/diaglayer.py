@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Callable, Iterable
 from copy import copy, deepcopy
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
-from typing import Any, Callable, Dict, Iterable, List, Optional, Union, cast
+from typing import Any, Union, cast
 from xml.etree import ElementTree
 
 from ..admindata import AdminData
@@ -29,7 +30,7 @@ from ..unitgroup import UnitGroup
 from .diaglayerraw import DiagLayerRaw
 from .diaglayertype import DiagLayerType
 
-PrefixTree = Dict[int, Union[List[DiagService], "PrefixTree"]]
+PrefixTree = dict[int, Union[list[DiagService], "PrefixTree"]]
 
 
 @dataclass
@@ -44,7 +45,7 @@ class DiagLayer:
     diag_layer_raw: DiagLayerRaw
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayer":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DiagLayer":
         diag_layer_raw = DiagLayerRaw.from_et(et_element, doc_frags)
 
         # Create DiagLayer
@@ -72,7 +73,7 @@ class DiagLayer:
         else:
             self._diag_data_dictionary_spec = self.diag_layer_raw.diag_data_dictionary_spec
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
         result = self.diag_layer_raw._build_odxlinks()
 
@@ -91,7 +92,7 @@ class DiagLayer:
         # reference. This mechanism can thus be seen as a kind of
         # "poor man's inheritance".
         if self.import_refs:
-            imported_links: Dict[OdxLinkId, Any] = {}
+            imported_links: dict[OdxLinkId, Any] = {}
             for import_ref in self.import_refs:
                 imported_dl = odxlinks.resolve(import_ref, DiagLayer)
 
@@ -168,7 +169,7 @@ class DiagLayer:
         """
         return get_local_objects(self)
 
-    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
         """Create a deep copy of the diagnostic layer
 
         Note that the copied diagnostic layer is not fully
@@ -210,15 +211,15 @@ class DiagLayer:
         return self.diag_layer_raw.short_name
 
     @property
-    def long_name(self) -> Optional[str]:
+    def long_name(self) -> str | None:
         return self.diag_layer_raw.long_name
 
     @property
-    def description(self) -> Optional[Description]:
+    def description(self) -> Description | None:
         return self.diag_layer_raw.description
 
     @property
-    def admin_data(self) -> Optional[AdminData]:
+    def admin_data(self) -> AdminData | None:
         return self.diag_layer_raw.admin_data
 
     @property
@@ -258,7 +259,7 @@ class DiagLayer:
         return self.diag_layer_raw.global_negative_responses
 
     @property
-    def import_refs(self) -> List[OdxLinkRef]:
+    def import_refs(self) -> list[OdxLinkRef]:
         return self.diag_layer_raw.import_refs
 
     @property
@@ -270,7 +271,7 @@ class DiagLayer:
         return self.diag_layer_raw.sub_components
 
     @property
-    def sdgs(self) -> List[SpecialDataGroup]:
+    def sdgs(self) -> list[SpecialDataGroup]:
         return self.diag_layer_raw.sdgs
 
     @property
@@ -359,13 +360,13 @@ class DiagLayer:
         if sub_tree.get(-1) is None:
             sub_tree[-1] = [service]
         else:
-            cast(List[DiagService], sub_tree[-1]).append(service)
+            cast(list[DiagService], sub_tree[-1]).append(service)
 
-    def _find_services_for_uds(self, message: bytes) -> List[DiagService]:
+    def _find_services_for_uds(self, message: bytes) -> list[DiagService]:
         prefix_tree = self._prefix_tree
 
         # Find matching service(s) in prefix tree
-        possible_services: List[DiagService] = []
+        possible_services: list[DiagService] = []
         for b in message:
             if b in prefix_tree:
                 odxassert(isinstance(prefix_tree[b], dict))
@@ -373,11 +374,11 @@ class DiagLayer:
             else:
                 break
             if -1 in prefix_tree:
-                possible_services += cast(List[DiagService], prefix_tree[-1])
+                possible_services += cast(list[DiagService], prefix_tree[-1])
         return possible_services
 
-    def _decode(self, message: bytes, candidate_services: Iterable[DiagService]) -> List[Message]:
-        decoded_messages: List[Message] = []
+    def _decode(self, message: bytes, candidate_services: Iterable[DiagService]) -> list[Message]:
+        decoded_messages: list[Message] = []
 
         for service in candidate_services:
             try:
@@ -415,12 +416,12 @@ class DiagLayer:
 
         return decoded_messages
 
-    def decode(self, message: bytes) -> List[Message]:
+    def decode(self, message: bytes) -> list[Message]:
         candidate_services = self._find_services_for_uds(message)
 
         return self._decode(message, candidate_services)
 
-    def decode_response(self, response: bytes, request: bytes) -> List[Message]:
+    def decode_response(self, response: bytes, request: bytes) -> list[Message]:
         candidate_services = self._find_services_for_uds(request)
         if candidate_services is None:
             raise DecodeError(f"Couldn't find corresponding service for request {request.hex()}.")

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .additionalaudience import AdditionalAudience
@@ -12,14 +12,14 @@ from .snrefcontext import SnRefContext
 
 @dataclass
 class Audience:
-    enabled_audience_refs: List[OdxLinkRef]
-    disabled_audience_refs: List[OdxLinkRef]
+    enabled_audience_refs: list[OdxLinkRef]
+    disabled_audience_refs: list[OdxLinkRef]
 
-    is_supplier_raw: Optional[bool]
-    is_development_raw: Optional[bool]
-    is_manufacturing_raw: Optional[bool]
-    is_aftersales_raw: Optional[bool]
-    is_aftermarket_raw: Optional[bool]
+    is_supplier_raw: bool | None
+    is_development_raw: bool | None
+    is_manufacturing_raw: bool | None
+    is_aftersales_raw: bool | None
+    is_aftermarket_raw: bool | None
 
     @property
     def is_supplier(self) -> bool:
@@ -50,7 +50,7 @@ class Audience:
         return self._disabled_audiences
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Audience":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Audience":
 
         enabled_audience_refs = [
             OdxLinkRef.from_et(ref, doc_frags)
@@ -78,7 +78,7 @@ class Audience:
             is_aftermarket_raw=is_aftermarket_raw,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

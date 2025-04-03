@@ -5,7 +5,7 @@ import mimetypes
 import os
 import time
 import zipfile
-from typing import Any, Dict, Optional
+from typing import Any
 
 import jinja2
 
@@ -14,7 +14,7 @@ import odxtools
 from .database import Database
 from .odxtypes import bool_to_odxstr
 
-odxdatabase: Optional[Database] = None
+odxdatabase: Database | None = None
 
 
 def jinja2_odxraise_helper(msg: str) -> None:
@@ -39,14 +39,14 @@ def get_parent_container_name(dl_short_name: str) -> str:
                        f"container for diagnostic layer '{dl_short_name}'.")
 
 
-def make_xml_attrib(attrib_name: str, attrib_val: Optional[Any]) -> str:
+def make_xml_attrib(attrib_name: str, attrib_val: Any | None) -> str:
     if attrib_val is None:
         return ""
 
     return f' {attrib_name}="{attrib_val}"'
 
 
-def make_bool_xml_attrib(attrib_name: str, attrib_val: Optional[bool]) -> str:
+def make_bool_xml_attrib(attrib_name: str, attrib_val: bool | None) -> str:
     if attrib_val is None:
         return ""
 
@@ -147,7 +147,7 @@ def write_pdx_file(
         jinja_env.globals["make_bool_xml_attrib"] = make_bool_xml_attrib
         jinja_env.globals["get_parent_container_name"] = get_parent_container_name
 
-        vars: Dict[str, Any] = {}
+        vars: dict[str, Any] = {}
         vars["odxtools_version"] = odxtools.__version__
         vars["database"] = database
 

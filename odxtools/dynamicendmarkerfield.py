@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Dict, List, Sequence
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -33,7 +34,7 @@ class DynamicEndmarkerField(Field):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DynamicEndmarkerField":
+                doc_frags: list[OdxDocFragment]) -> "DynamicEndmarkerField":
         kwargs = dataclass_fields_asdict(Field.from_et(et_element, doc_frags))
 
         # ODX 2.0 uses DATA-OBJECT-PROP-REF
@@ -43,7 +44,7 @@ class DynamicEndmarkerField(Field):
 
         return DynamicEndmarkerField(dyn_end_dop_ref=dyn_end_dop_ref, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
         return odxlinks
 
@@ -102,7 +103,7 @@ class DynamicEndmarkerField(Field):
         orig_origin = decode_state.origin_byte_position
         decode_state.origin_byte_position = decode_state.cursor_byte_position
 
-        result: List[ParameterValue] = []
+        result: list[ParameterValue] = []
         while True:
             # check if we're at the end of the PDU
             if decode_state.cursor_byte_position == len(decode_state.coded_message):

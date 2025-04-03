@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional, cast
+from typing import cast
 from xml.etree import ElementTree
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import dataclass_fields_asdict
-from .compumethod import CompuCategory, CompuMethod
+from .compucategory import CompuCategory
+from .compumethod import CompuMethod
 from .ratfuncsegment import RatFuncSegment
 
 
@@ -19,15 +20,15 @@ class ScaleRatFuncCompuMethod(CompuMethod):
     """
 
     @property
-    def int_to_phys_segments(self) -> List[RatFuncSegment]:
+    def int_to_phys_segments(self) -> list[RatFuncSegment]:
         return self._int_to_phys_segments
 
     @property
-    def phys_to_int_segments(self) -> Optional[List[RatFuncSegment]]:
+    def phys_to_int_segments(self) -> list[RatFuncSegment] | None:
         return self._phys_to_int_segments
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
                              internal_type: DataType,
                              physical_type: DataType) -> "ScaleRatFuncCompuMethod":
         cm = CompuMethod.compu_method_from_et(

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
@@ -19,17 +19,17 @@ class Library(IdentifiableElement):
     """
 
     code_file: str
-    encryption: Optional[str]
+    encryption: str | None
     syntax: str
     revision: str
-    entrypoint: Optional[str]
+    entrypoint: str | None
 
     @property
     def code(self) -> bytes:
         return self._code
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Library":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Library":
 
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
@@ -47,7 +47,7 @@ class Library(IdentifiableElement):
             entrypoint=entrypoint,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

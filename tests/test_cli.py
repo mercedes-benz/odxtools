@@ -3,7 +3,6 @@
 import unittest
 from argparse import Namespace
 from types import ModuleType
-from typing import List, Optional
 from unittest.mock import MagicMock, patch
 
 import odxtools.cli.compare as compare
@@ -11,7 +10,7 @@ import odxtools.cli.decode as decode
 import odxtools.cli.find as find
 import odxtools.cli.list as list_tool
 
-browse: Optional[ModuleType]
+browse: ModuleType | None
 try:
     import odxtools.cli.browse as browse
 except ImportError:
@@ -23,9 +22,9 @@ class UtilFunctions:
     @staticmethod
     def run_list_tool(path_to_pdx_file: str = "./examples/somersault.pdx",
                       no_strict: bool = False,
-                      ecu_variants: Optional[List[str]] = None,
+                      ecu_variants: list[str] | None = None,
                       print_neg_responses: bool = False,
-                      ecu_services: Optional[List[str]] = None,
+                      ecu_services: list[str] | None = None,
                       print_params: bool = False,
                       print_dops: bool = False,
                       print_all: bool = False,
@@ -48,7 +47,7 @@ class UtilFunctions:
         data: str,
         decode_data: bool = False,
         path_to_pdx_file: str = "./examples/somersault.pdx",
-        ecu_variants: Optional[List[str]] = None,
+        ecu_variants: list[str] | None = None,
     ) -> None:
         decode_args = Namespace(
             pdx_file=path_to_pdx_file, variants=ecu_variants, data=data, decode=decode_data)
@@ -56,9 +55,9 @@ class UtilFunctions:
         decode.run(decode_args)
 
     @staticmethod
-    def run_find_tool(service_names: List[str],
+    def run_find_tool(service_names: list[str],
                       path_to_pdx_file: str = "./examples/somersault.pdx",
-                      ecu_variants: Optional[List[str]] = None,
+                      ecu_variants: list[str] | None = None,
                       allow_unknown_bit_lengths: bool = False,
                       no_details: bool = False,
                       dump_database: bool = False) -> None:
@@ -75,8 +74,8 @@ class UtilFunctions:
     @staticmethod
     def run_compare_tool(path_to_pdx_file: str = "./examples/somersault.pdx",
                          no_strict: bool = False,
-                         ecu_variants: Optional[List[str]] = None,
-                         database: Optional[List[str]] = None,
+                         ecu_variants: list[str] | None = None,
+                         database: list[str] | None = None,
                          no_details: bool = True) -> None:
 
         compare_args = Namespace(

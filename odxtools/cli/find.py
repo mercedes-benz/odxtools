@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 import argparse
-from typing import Dict, List, Optional
 
 from ..database import Database
 from ..diagservice import DiagService
@@ -24,13 +23,13 @@ def get_display_value(v: ParameterValue) -> str:
 
 
 def print_summary(odxdb: Database,
-                  service_names: List[str],
-                  ecu_variants: Optional[List[str]] = None,
+                  service_names: list[str],
+                  ecu_variants: list[str] | None = None,
                   allow_unknown_bit_lengths: bool = False,
                   print_params: bool = False) -> None:
     ecu_names = ecu_variants if ecu_variants else [ecu.short_name for ecu in odxdb.ecus]
-    service_db: Dict[str, DiagService] = {}
-    service_ecus: Dict[str, List[str]] = {}
+    service_db: dict[str, DiagService] = {}
+    service_ecus: dict[str, list[str]] = {}
     for ecu_name in ecu_names:
         ecu = odxdb.ecus[ecu_name]
         if not ecu:

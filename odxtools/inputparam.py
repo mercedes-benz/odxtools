@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from deprecation import deprecated
@@ -15,10 +15,10 @@ from .utils import dataclass_fields_asdict
 
 @dataclass
 class InputParam(NamedElement):
-    physical_default_value: Optional[str]
+    physical_default_value: str | None
     dop_base_ref: OdxLinkRef
-    oid: Optional[str]
-    semantic: Optional[str]
+    oid: str | None
+    semantic: str | None
 
     @property
     def dop(self) -> DopBase:
@@ -30,7 +30,7 @@ class InputParam(NamedElement):
         return self._dop
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "InputParam":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "InputParam":
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
 
         physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
@@ -46,7 +46,7 @@ class InputParam(NamedElement):
             semantic=semantic,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

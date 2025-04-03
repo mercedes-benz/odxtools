@@ -2,10 +2,9 @@
 import math
 import unittest
 from datetime import datetime
-from typing import List
 
+from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
-from odxtools.compumethods.compumethod import CompuCategory
 from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
@@ -34,7 +33,8 @@ from odxtools.parameters.nrcconstparameter import NrcConstParameter
 from odxtools.parameters.parameter import Parameter
 from odxtools.parameters.systemparameter import SystemParameter
 from odxtools.parameters.valueparameter import ValueParameter
-from odxtools.physicaltype import PhysicalType, Radix
+from odxtools.physicaltype import PhysicalType
+from odxtools.radix import Radix
 from odxtools.request import Request
 from odxtools.response import Response, ResponseType
 from odxtools.snrefcontext import SnRefContext
@@ -360,7 +360,8 @@ class TestEncodeRequest(unittest.TestCase):
             is_highlow_byte_order=True)
         # allow rounding errors due to python's float objects
         # potentially using a different representation
-        self.assertTrue(abs(float(decoded) - (-1.234)) < 1e-6)
+        assert isinstance(decoded, float)
+        self.assertTrue(abs(decoded - (-1.234)) < 1e-6)
 
         # FLOAT32 little-endian
         encode_state = EncodeState()
@@ -381,7 +382,8 @@ class TestEncodeRequest(unittest.TestCase):
             is_highlow_byte_order=False)
         # allow rounding errors due to python's float objects
         # potentially using a different representation
-        self.assertTrue(abs(float(decoded) - (-1.234)) < 1e-6)
+        assert isinstance(decoded, float)
+        self.assertTrue(abs(decoded - (-1.234)) < 1e-6)
 
         # check if NaN can be handled
         encode_state = EncodeState()
@@ -400,7 +402,8 @@ class TestEncodeRequest(unittest.TestCase):
             base_data_type=DataType.A_FLOAT32,
             base_type_encoding=Encoding.NONE,
             is_highlow_byte_order=True)
-        self.assertTrue(math.isnan(float(decoded)))
+        assert isinstance(decoded, float)
+        self.assertTrue(math.isnan(decoded))
 
         # FLOAT64
         encode_state = EncodeState()
@@ -435,7 +438,8 @@ class TestEncodeRequest(unittest.TestCase):
             is_highlow_byte_order=True)
         # allow rounding errors due to python's float objects
         # potentially using a different representation
-        self.assertTrue(abs(float(decoded) - (-1.234)) < 1e-9)
+        assert isinstance(decoded, float)
+        self.assertTrue(abs(decoded - (-1.234)) < 1e-9)
 
     def test_encode_coded_const_reorder(self) -> None:
         diag_coded_type = StandardLengthType(
@@ -1176,7 +1180,7 @@ class TestEncodeRequest(unittest.TestCase):
         self.assertEqual(req.encode().hex(), "123456")
         self.assertEqual(req.get_static_bit_length(), 24)
 
-    def _create_request(self, parameters: List[Parameter]) -> Request:
+    def _create_request(self, parameters: list[Parameter]) -> Request:
         return Request(
             odx_id=OdxLinkId("request_id", doc_frags),
             oid=None,

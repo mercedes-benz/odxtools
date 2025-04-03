@@ -2,8 +2,8 @@
 import pickle
 import unittest
 
+from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
-from odxtools.compumethods.compumethod import CompuCategory
 from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
@@ -26,7 +26,7 @@ from odxtools.dynenddopref import DynEndDopRef
 from odxtools.endofpdufield import EndOfPduField
 from odxtools.exceptions import DecodeError, DecodeMismatch
 from odxtools.message import Message
-from odxtools.minmaxlengthtype import MinMaxLengthType, Termination
+from odxtools.minmaxlengthtype import MinMaxLengthType
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType, ParameterValueDict
@@ -43,6 +43,7 @@ from odxtools.snrefcontext import SnRefContext
 from odxtools.standardlengthtype import StandardLengthType
 from odxtools.staticfield import StaticField
 from odxtools.structure import Structure
+from odxtools.termination import Termination
 from odxtools.text import Text
 
 doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]

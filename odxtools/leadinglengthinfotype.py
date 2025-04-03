@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -30,7 +29,7 @@ class LeadingLengthInfoType(DiagCodedType):
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "LeadingLengthInfoType":
+                doc_frags: list[OdxDocFragment]) -> "LeadingLengthInfoType":
         kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
 
         bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))

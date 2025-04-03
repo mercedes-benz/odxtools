@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -43,7 +43,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "PhysicalConstantParameter":
+                doc_frags: list[OdxDocFragment]) -> "PhysicalConstantParameter":
 
         kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
 
@@ -53,7 +53,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
             physical_constant_value_raw=physical_constant_value_raw, **kwargs)
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
     @override
@@ -72,7 +72,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
         self._physical_constant_value = base_data_type.from_string(self.physical_constant_value_raw)
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         if physical_value is not None and physical_value != self.physical_constant_value:
             odxraise(

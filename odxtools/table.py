@@ -1,73 +1,35 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .dataobjectproperty import DataObjectProperty
-from .diagcomm import DiagComm
 from .element import IdentifiableElement
-from .exceptions import odxassert, odxrequire
+from .exceptions import odxassert
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
+from .tablediagcommconnector import TableDiagCommConnector
 from .tablerow import TableRow
 from .utils import dataclass_fields_asdict
 
 
 @dataclass
-class TableDiagCommConnector:
-    semantic: str
-
-    diag_comm_ref: Optional[OdxLinkRef]
-    diag_comm_snref: Optional[str]
-
-    @property
-    def diag_comm(self) -> DiagComm:
-        return self._diag_comm
-
-    @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "TableDiagCommConnector":
-
-        semantic = odxrequire(et_element.findtext("SEMANTIC"))
-
-        diag_comm_ref = OdxLinkRef.from_et(et_element.find("DIAG-COMM-REF"), doc_frags)
-        diag_comm_snref = None
-        if (dc_snref_elem := et_element.find("DIAG-COMM-SNREF")) is not None:
-            diag_comm_snref = odxrequire(dc_snref_elem.get("SHORT-NAME"))
-
-        return TableDiagCommConnector(
-            semantic=semantic, diag_comm_ref=diag_comm_ref, diag_comm_snref=diag_comm_snref)
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        return {}
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        if self.diag_comm_ref is not None:
-            self._diag_comm = odxlinks.resolve(self.diag_comm_ref, DiagComm)
-
-    def _resolve_snrefs(self, context: SnRefContext) -> None:
-        if self.diag_comm_snref is not None:
-            dl = odxrequire(context.diag_layer)
-            self._diag_comm = resolve_snref(self.diag_comm_snref, dl.diag_comms, DiagComm)
-
-
-@dataclass
 class Table(IdentifiableElement):
     """This class represents a TABLE."""
-    key_label: Optional[str]
-    struct_label: Optional[str]
-    admin_data: Optional[AdminData]
-    key_dop_ref: Optional[OdxLinkRef]
-    table_rows_raw: List[Union[TableRow, OdxLinkRef]]
-    table_diag_comm_connectors: List[TableDiagCommConnector]
-    sdgs: List[SpecialDataGroup]
-    semantic: Optional[str]
+    key_label: str | None
+    struct_label: str | None
+    admin_data: AdminData | None
+    key_dop_ref: OdxLinkRef | None
+    table_rows_raw: list[TableRow | OdxLinkRef]
+    table_diag_comm_connectors: list[TableDiagCommConnector]
+    sdgs: list[SpecialDataGroup]
+    semantic: str | None
 
     @property
-    def key_dop(self) -> Optional[DataObjectProperty]:
+    def key_dop(self) -> DataObjectProperty | None:
         """The key data object property associated with this table."""
         return self._key_dop
 
@@ -77,7 +39,7 @@ class Table(IdentifiableElement):
         return self._table_rows
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Table":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Table":
         """Reads a TABLE."""
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
         odx_id = kwargs["odx_id"]
@@ -86,7 +48,7 @@ class Table(IdentifiableElement):
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
         key_dop_ref = OdxLinkRef.from_et(et_element.find("KEY-DOP-REF"), doc_frags)
 
-        table_rows_raw: List[Union[OdxLinkRef, TableRow]] = []
+        table_rows_raw: list[OdxLinkRef | TableRow] = []
         for sub_elem in et_element:
             if sub_elem.tag == "TABLE-ROW":
                 table_rows_raw.append(
@@ -115,7 +77,7 @@ class Table(IdentifiableElement):
             semantic=semantic,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         for table_row_wrapper in self.table_rows_raw:
@@ -131,7 +93,7 @@ class Table(IdentifiableElement):
         return result
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._key_dop: Optional[DataObjectProperty] = None
+        self._key_dop: DataObjectProperty | None = None
         if self.key_dop_ref is not None:
             self._key_dop = odxlinks.resolve(self.key_dop_ref, DataObjectProperty)
 

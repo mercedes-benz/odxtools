@@ -6,6 +6,7 @@ import os
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Optional, Union
 
+
 from rich import print as rich_print
 from rich.padding import Padding as RichPadding
 from rich.table import Table as RichTable
@@ -69,6 +70,7 @@ class Display:
             rich_print(
                 f"Changed diagnostic services for diagnostic layer '{service_spec.diag_layer}' ({service_spec.diag_layer_type}):"
             )
+
         if service_spec.new_services:
             assert isinstance(service_spec.new_services, List)
             rich_print()
@@ -76,6 +78,7 @@ class Display:
             rich_print(extract_service_tabulation_data(service_spec.new_services))
         if service_spec.deleted_services:
             assert isinstance(service_spec.deleted_services, List)
+
 
             rich_print()
             rich_print(" [blue]Deleted services[/blue]")
@@ -137,6 +140,7 @@ class Display:
                             rich_print()
                     if self.param_detailed:
                         print_service_parameters(service, allow_unknown_bit_lengths=True)
+
 
     def print_database_changes(self, changes_variants: SpecsChangesVariants) -> None:
 

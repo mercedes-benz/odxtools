@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .diagcomm import DiagComm
@@ -30,13 +30,13 @@ class SingleEcuJob(DiagComm):
     standard.
     """
 
-    prog_codes: List[ProgCode]
+    prog_codes: list[ProgCode]
     input_params: NamedItemList[InputParam]
     output_params: NamedItemList[OutputParam]
     neg_output_params: NamedItemList[NegOutputParam]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SingleEcuJob":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "SingleEcuJob":
         kwargs = dataclass_fields_asdict(DiagComm.from_et(et_element, doc_frags))
 
         prog_codes = [
@@ -64,7 +64,7 @@ class SingleEcuJob(DiagComm):
             neg_output_params=neg_output_params,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         for prog_code in self.prog_codes:

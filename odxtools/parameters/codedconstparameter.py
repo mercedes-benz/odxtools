@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -45,7 +45,7 @@ class CodedConstParameter(Parameter):
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "CodedConstParameter":
+                doc_frags: list[OdxDocFragment]) -> "CodedConstParameter":
 
         kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
 
@@ -61,7 +61,7 @@ class CodedConstParameter(Parameter):
             AtomicOdxType, self.diag_coded_type.base_data_type.from_string(self.coded_value_raw))
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         result.update(self.diag_coded_type._build_odxlinks())
@@ -69,7 +69,7 @@ class CodedConstParameter(Parameter):
         return result
 
     @override
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return self.diag_coded_type.get_static_bit_length()
 
     @property
@@ -77,7 +77,7 @@ class CodedConstParameter(Parameter):
         return self.diag_coded_type.base_data_type
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         if physical_value is not None and physical_value != self.coded_value:
             odxraise(

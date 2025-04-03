@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from xml.etree import ElementTree
 
 from .companydocinfo import CompanyDocInfo
@@ -11,13 +11,13 @@ from .snrefcontext import SnRefContext
 
 @dataclass
 class AdminData:
-    language: Optional[str]
-    company_doc_infos: List[CompanyDocInfo]
-    doc_revisions: List[DocRevision]
+    language: str | None
+    company_doc_infos: list[CompanyDocInfo]
+    doc_revisions: list[DocRevision]
 
     @staticmethod
-    def from_et(et_element: Optional[ElementTree.Element],
-                doc_frags: List[OdxDocFragment]) -> Optional["AdminData"]:
+    def from_et(et_element: ElementTree.Element | None,
+                doc_frags: list[OdxDocFragment]) -> Optional["AdminData"]:
 
         if et_element is None:
             return None
@@ -37,8 +37,8 @@ class AdminData:
         return AdminData(
             language=language, company_doc_infos=company_doc_infos, doc_revisions=doc_revisions)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result: Dict[OdxLinkId, Any] = {}
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
+        result: dict[OdxLinkId, Any] = {}
 
         for cdi in self.company_doc_infos:
             result.update(cdi._build_odxlinks())

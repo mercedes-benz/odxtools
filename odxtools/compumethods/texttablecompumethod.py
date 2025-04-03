@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, cast
+from typing import cast
 from xml.etree import ElementTree
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import dataclass_fields_asdict
-from .compumethod import CompuCategory, CompuMethod
+from .compucategory import CompuCategory
+from .compumethod import CompuMethod
 from .compuscale import CompuScale
 
 
@@ -21,7 +22,7 @@ class TexttableCompuMethod(CompuMethod):
     """
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
                              internal_type: DataType,
                              physical_type: DataType) -> "TexttableCompuMethod":
         cm = CompuMethod.compu_method_from_et(
@@ -94,7 +95,7 @@ class TexttableCompuMethod(CompuMethod):
         scales = []
         if (citp := self.compu_internal_to_phys) is not None:
             scales = citp.compu_scales
-        matching_scales: List[CompuScale] = [x for x in scales if x.applies(internal_value)]
+        matching_scales: list[CompuScale] = [x for x in scales if x.applies(internal_value)]
 
         if len(matching_scales) == 0:
             if self._compu_physical_default_value is None:

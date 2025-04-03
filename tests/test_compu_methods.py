@@ -7,15 +7,16 @@ from xml.etree import ElementTree
 import jinja2
 
 import odxtools
+from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.compucodecompumethod import CompuCodeCompuMethod
 from odxtools.compumethods.compuconst import CompuConst
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
-from odxtools.compumethods.compumethod import CompuCategory
 from odxtools.compumethods.compuphystointernal import CompuPhysToInternal
 from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.createanycompumethod import create_any_compu_method_from_et
-from odxtools.compumethods.limit import IntervalType, Limit
+from odxtools.compumethods.intervaltype import IntervalType
+from odxtools.compumethods.limit import Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.compumethods.ratfunccompumethod import RatFuncCompuMethod
 from odxtools.compumethods.scaleratfunccompumethod import ScaleRatFuncCompuMethod
@@ -484,7 +485,9 @@ class TestRatFuncCompuMethod(unittest.TestCase):
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_FLOAT32)
 
-        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(2.5)) - 28.5) < 1e-5)
+        phys_val = compu_method.convert_internal_to_physical(2.5)
+        assert isinstance(phys_val, float)
+        self.assertTrue(abs(phys_val - 28.5) < 1e-5)
 
         # out of range
         with self.assertRaises(DecodeError):
@@ -558,13 +561,18 @@ class TestRatFuncCompuMethod(unittest.TestCase):
 
         self.assertEqual(compu_method.convert_internal_to_physical(2), 4)
         self.assertEqual(compu_method.convert_internal_to_physical(2.5), 6.25)
-        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(3)) - 9) < 1e-8)
+        phys_val = compu_method.convert_internal_to_physical(3)
+        assert isinstance(phys_val, float)
+        self.assertTrue(abs(phys_val - 9) < 1e-8)
 
         # note that the inverse values are pretty inaccurate because
-        # the Taylor series was cut off way quite early.
-        self.assertTrue(abs(float(compu_method.convert_physical_to_internal(4)) - 1.375) < 1e-4)
-        self.assertTrue(
-            abs(float(compu_method.convert_physical_to_internal(6.25)) - 0.17969) < 1e-4)
+        # the Taylor series was cut off quite early.
+        int_val = compu_method.convert_physical_to_internal(4)
+        assert isinstance(int_val, float)
+        self.assertTrue(abs(int_val - 1.375) < 1e-4)
+        int_val = compu_method.convert_physical_to_internal(6.25)
+        assert isinstance(int_val, float)
+        self.assertTrue(abs(int_val - 0.17969) < 1e-4)
         self.assertEqual(compu_method.convert_physical_to_internal(9), -3)
 
         # ensure that we stay in bounds
@@ -609,7 +617,9 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_FLOAT32)
 
-        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(2.5)) - 28.5) < 1e-5)
+        phys_val = compu_method.convert_internal_to_physical(2.5)
+        assert isinstance(phys_val, float)
+        self.assertTrue(abs(phys_val - 28.5) < 1e-5)
 
         # out of range
         with self.assertRaises(DecodeError):
@@ -725,16 +735,25 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
 
         self.assertEqual(compu_method.convert_internal_to_physical(2), 4)
         self.assertEqual(compu_method.convert_internal_to_physical(2.5), 6.25)
-        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(3)) - 9) < 1e-8)
+        phys_val = compu_method.convert_internal_to_physical(3)
+        assert isinstance(phys_val, float)
+        self.assertTrue(abs(phys_val - 9) < 1e-8)
 
-        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(4)) - 22) < 1e-8)
-        self.assertTrue(abs(float(compu_method.convert_physical_to_internal(22)) - 4) < 1e-8)
+        phys_val = compu_method.convert_internal_to_physical(4)
+        assert isinstance(phys_val, float)
+        self.assertTrue(abs(phys_val - 22) < 1e-8)
+        int_val = compu_method.convert_physical_to_internal(22)
+        assert isinstance(int_val, float)
+        self.assertTrue(abs(int_val - 4) < 1e-8)
 
         # note that the inverse values are pretty inaccurate because
         # the Taylor series was cut off way quite early.
-        self.assertTrue(abs(float(compu_method.convert_physical_to_internal(4)) - 1.375) < 1e-4)
-        self.assertTrue(
-            abs(float(compu_method.convert_physical_to_internal(6.25)) - 0.17969) < 1e-4)
+        int_val = compu_method.convert_physical_to_internal(4)
+        assert isinstance(int_val, float)
+        self.assertTrue(abs(int_val - 1.375) < 1e-4)
+        int_val = compu_method.convert_physical_to_internal(6.25)
+        assert isinstance(int_val, float)
+        self.assertTrue(abs(int_val - 0.17969) < 1e-4)
         self.assertEqual(compu_method.convert_physical_to_internal(9), -3)
 
         # make sure that we stay in bounds

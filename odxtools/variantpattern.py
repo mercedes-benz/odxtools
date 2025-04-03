@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING
 from xml.etree import ElementTree
 
 from .exceptions import odxraise
@@ -26,7 +26,7 @@ class VariantPattern:
     """
 
     def get_matching_parameters(
-            self) -> Union[List["MatchingParameter"], List["MatchingBaseVariantParameter"]]:
+            self) -> list["MatchingParameter"] | list["MatchingBaseVariantParameter"]:
         odxraise(
             f"VariantPattern subclass `{type(self).__name__}` does not "
             f"implement `.get_match_parameters()`", RuntimeError)
@@ -34,5 +34,5 @@ class VariantPattern:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "VariantPattern":
+                doc_frags: list[OdxDocFragment]) -> "VariantPattern":
         return VariantPattern()

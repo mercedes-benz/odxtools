@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -21,17 +21,17 @@ if TYPE_CHECKING:
 class OdxCategory(IdentifiableElement):
     """This is the base class for all top-level container classes in ODX"""
 
-    admin_data: Optional[AdminData]
+    admin_data: AdminData | None
     company_datas: NamedItemList[CompanyData]
-    sdgs: List[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "OdxCategory":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "OdxCategory":
         raise Exception("Calling `._from_et()` is not allowed for OdxCategory. "
                         "Use `OdxCategory.category_from_et()`!")
 
     @staticmethod
-    def category_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def category_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
                          doc_type: DocType) -> "OdxCategory":
 
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
@@ -51,7 +51,7 @@ class OdxCategory(IdentifiableElement):
 
         return OdxCategory(admin_data=admin_data, company_datas=company_datas, sdgs=sdgs, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         if self.admin_data is not None:

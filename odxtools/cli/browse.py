@@ -2,7 +2,7 @@
 import argparse
 import logging
 import sys
-from typing import List, Optional, Union, cast
+from typing import cast
 
 import InquirerPy.prompt as IP_prompt
 
@@ -66,7 +66,7 @@ def _validate_string_value(input: str, parameter: Parameter) -> bool:
         return input != ""
 
 
-def prompt_single_parameter_value(parameter: Parameter) -> Optional[AtomicOdxType]:
+def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
     if not isinstance(parameter, ValueParameter):
         odxraise("Only the value of ValueParameters can be queried")
     if parameter.physical_type is None:
@@ -113,7 +113,7 @@ def prompt_single_parameter_value(parameter: Parameter) -> Optional[AtomicOdxTyp
         return cast(str, answer.get(parameter.short_name))
 
 
-def encode_message_interactively(codec: Union[Request, Response],
+def encode_message_interactively(codec: Request | Response,
                                  ask_user_confirmation: bool = False) -> None:
     if sys.__stdin__ is None or sys.__stdout__ is None or not sys.__stdin__.isatty(
     ) or not sys.__stdout__.isatty():
@@ -168,7 +168,7 @@ def encode_message_interactively(codec: Union[Request, Response],
             if (inner_params := getattr(dop := getattr(param, "dop", None), "parameters",
                                         None)) is not None:
                 assert isinstance(dop, DopBase)
-                inner_params = cast(List[Parameter], inner_params)
+                inner_params = cast(list[Parameter], inner_params)
                 # param refers to a complex DOP, i.e., the required
                 # value is a key-value dict
                 print(
@@ -201,8 +201,8 @@ def encode_message_interactively(codec: Union[Request, Response],
 
 
 def encode_message_from_string_values(
-    sub_service: Union[Request, Response],
-    parameter_values: Optional[ParameterValueDict] = None,
+    sub_service: Request | Response,
+    parameter_values: ParameterValueDict | None = None,
 ) -> None:
     if parameter_values is None:
         parameter_values = {}
@@ -243,7 +243,7 @@ def encode_message_from_string_values(
             inner_params = getattr(dop, "parameters", None)
             assert isinstance(dop, ComplexDop)
             assert isinstance(inner_params, list)
-            inner_params = cast(List[Parameter], inner_params)
+            inner_params = cast(list[Parameter], inner_params)
 
             typed_dict = parameter_value.copy()
             for inner_param_sn, inner_param_value in parameter_value.items():
@@ -316,7 +316,7 @@ def browse(odxdb: Database) -> None:
             )
 
         while True:
-            services: List[DiagService] = [
+            services: list[DiagService] = [
                 s for s in variant.services if isinstance(s, DiagService)
             ]
             # Select a service of the ECU

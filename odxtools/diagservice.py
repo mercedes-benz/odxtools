@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
+from .addressing import Addressing
 from .comparaminstance import ComparamInstance
 from .diagcomm import DiagComm
 from .exceptions import DecodeError, DecodeMismatch, odxassert, odxraise, odxrequire
@@ -12,88 +12,12 @@ from .nameditemlist import NamedItemList
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValue, odxstr_to_bool
 from .parameters.parameter import Parameter
+from .posresponsesuppressible import PosResponseSuppressible
 from .request import Request
 from .response import Response
 from .snrefcontext import SnRefContext
+from .transmode import TransMode
 from .utils import dataclass_fields_asdict
-
-
-class Addressing(Enum):
-    FUNCTIONAL = "FUNCTIONAL"
-    PHYSICAL = "PHYSICAL"
-    FUNCTIONAL_OR_PHYSICAL = "FUNCTIONAL-OR-PHYSICAL"
-
-
-class TransMode(Enum):
-    SEND_ONLY = "SEND-ONLY"
-    RECEIVE_ONLY = "RECEIVE-ONLY"
-    SEND_AND_RECEIVE = "SEND-AND-RECEIVE"
-    SEND_OR_RECEIVE = "SEND-OR-RECEIVE"
-
-
-# note that the spec has a typo here: it calls the corresponding
-# XML tag POS-RESPONSE-SUPPRESSABLE...
-@dataclass
-class PosResponseSuppressible:
-    bit_mask: int
-
-    coded_const_snref: Optional[str]
-    coded_const_snpathref: Optional[str]
-
-    value_snref: Optional[str]
-    value_snpathref: Optional[str]
-
-    phys_const_snref: Optional[str]
-    phys_const_snpathref: Optional[str]
-
-    table_key_snref: Optional[str]
-    table_key_snpathref: Optional[str]
-
-    @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "PosResponseSuppressible":
-
-        bit_mask = int(odxrequire(et_element.findtext("BIT-MASK")))
-
-        coded_const_snref = None
-        if (cc_snref_elem := et_element.find("CODED-CONST-SNREF")) is not None:
-            coded_const_snref = cc_snref_elem.attrib["SHORT-NAME"]
-        coded_const_snpathref = None
-        if (cc_snpathref_elem := et_element.find("CODED-CONST-SNPATHREF")) is not None:
-            coded_const_snpathref = cc_snpathref_elem.attrib["SHORT-NAME-PATH"]
-
-        value_snref = None
-        if (cc_snref_elem := et_element.find("VALUE-SNREF")) is not None:
-            value_snref = cc_snref_elem.attrib["SHORT-NAME"]
-        value_snpathref = None
-        if (cc_snpathref_elem := et_element.find("VALUE-SNPATHREF")) is not None:
-            value_snpathref = cc_snpathref_elem.attrib["SHORT-NAME-PATH"]
-
-        phys_const_snref = None
-        if (cc_snref_elem := et_element.find("PHYS-CONST-SNREF")) is not None:
-            phys_const_snref = cc_snref_elem.attrib["SHORT-NAME"]
-        phys_const_snpathref = None
-        if (cc_snpathref_elem := et_element.find("PHYS-CONST-SNPATHREF")) is not None:
-            phys_const_snpathref = cc_snpathref_elem.attrib["SHORT-NAME-PATH"]
-
-        table_key_snref = None
-        if (cc_snref_elem := et_element.find("TABLE-KEY-SNREF")) is not None:
-            table_key_snref = cc_snref_elem.attrib["SHORT-NAME"]
-        table_key_snpathref = None
-        if (cc_snpathref_elem := et_element.find("TABLE-KEY-SNPATHREF")) is not None:
-            table_key_snpathref = cc_snpathref_elem.attrib["SHORT-NAME-PATH"]
-
-        return PosResponseSuppressible(
-            bit_mask=bit_mask,
-            coded_const_snref=coded_const_snref,
-            coded_const_snpathref=coded_const_snpathref,
-            value_snref=value_snref,
-            value_snpathref=value_snpathref,
-            phys_const_snref=phys_const_snref,
-            phys_const_snpathref=phys_const_snpathref,
-            table_key_snref=table_key_snref,
-            table_key_snpathref=table_key_snpathref,
-        )
 
 
 @dataclass
@@ -101,23 +25,23 @@ class DiagService(DiagComm):
     """Representation of a diagnostic service description.
     """
 
-    comparam_refs: List[ComparamInstance]
+    comparam_refs: list[ComparamInstance]
     request_ref: OdxLinkRef
-    pos_response_refs: List[OdxLinkRef]
-    neg_response_refs: List[OdxLinkRef]
-    pos_response_suppressible: Optional[PosResponseSuppressible]
+    pos_response_refs: list[OdxLinkRef]
+    neg_response_refs: list[OdxLinkRef]
+    pos_response_suppressible: PosResponseSuppressible | None
 
-    is_cyclic_raw: Optional[bool]
-    is_multiple_raw: Optional[bool]
-    addressing_raw: Optional[Addressing]
-    transmission_mode_raw: Optional[TransMode]
+    is_cyclic_raw: bool | None
+    is_multiple_raw: bool | None
+    addressing_raw: Addressing | None
+    transmission_mode_raw: TransMode | None
 
     @property
     def comparams(self) -> NamedItemList[ComparamInstance]:
         return self._comparams
 
     @property
-    def request(self) -> Optional[Request]:
+    def request(self) -> Request | None:
         return self._request
 
     @property
@@ -145,14 +69,14 @@ class DiagService(DiagComm):
         return self.transmission_mode_raw or TransMode.SEND_AND_RECEIVE
 
     @property
-    def free_parameters(self) -> List[Parameter]:
+    def free_parameters(self) -> list[Parameter]:
         """Return the list of parameters which can be freely specified by
         the user when encoding the service's request.
         """
         return self.request.free_parameters if self.request is not None else []
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagService":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DiagService":
 
         kwargs = dataclass_fields_asdict(DiagComm.from_et(et_element, doc_frags))
 
@@ -180,7 +104,7 @@ class DiagService(DiagComm):
         is_cyclic_raw = odxstr_to_bool(et_element.get("IS-CYCLIC"))
         is_multiple_raw = odxstr_to_bool(et_element.get("IS-MULTIPLE"))
 
-        addressing_raw: Optional[Addressing] = None
+        addressing_raw: Addressing | None = None
         if (addressing_raw_str := et_element.get("ADDRESSING")) is not None:
             try:
                 addressing_raw = Addressing(addressing_raw_str)
@@ -188,7 +112,7 @@ class DiagService(DiagComm):
                 addressing_raw = cast(Addressing, None)
                 odxraise(f"Encountered unknown addressing type '{addressing_raw_str}'")
 
-        transmission_mode_raw: Optional[TransMode] = None
+        transmission_mode_raw: TransMode | None = None
         if (transmission_mode_raw_str := et_element.get("TRANSMISSION-MODE")) is not None:
             try:
                 transmission_mode_raw = TransMode(transmission_mode_raw_str)
@@ -208,7 +132,7 @@ class DiagService(DiagComm):
             transmission_mode_raw=transmission_mode_raw,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         for cpr in self.comparam_refs:
@@ -256,20 +180,20 @@ class DiagService(DiagComm):
 
     def decode_message(self, raw_message: bytes) -> Message:
         request_prefix = b''
-        candidate_coding_objects: List[Union[Request, Response]] = [
+        candidate_coding_objects: list[Request | Response] = [
             *self.positive_responses, *self.negative_responses
         ]
         if self.request is not None:
             request_prefix = self.request.coded_const_prefix()
             candidate_coding_objects.append(self.request)
 
-        coding_objects: List[Union[Request, Response]] = []
+        coding_objects: list[Request | Response] = []
         for candidate_coding_object in candidate_coding_objects:
             prefix = candidate_coding_object.coded_const_prefix(request_prefix=request_prefix)
             if len(raw_message) >= len(prefix) and prefix == raw_message[:len(prefix)]:
                 coding_objects.append(candidate_coding_object)
 
-        result_list: List[Message] = []
+        result_list: list[Message] = []
         for coding_object in coding_objects:
             try:
                 result_list.append(

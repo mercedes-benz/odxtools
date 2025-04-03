@@ -20,14 +20,14 @@ maintainers = [
     {name = "Ayoub Kaanich", email = "kayoub5@live.com"},
 ]
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 keywords = ['can', 'can bus', 'DoIP', 'odx', 'pdx', 'obd', 'uds', 'automotive', 'diagnostics']
 classifiers = [
     'Programming Language :: Python :: 3',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
     'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
     'Intended Audience :: Developers',
@@ -54,7 +54,6 @@ browse-tool = [
 
 test = [
      "mypy >= 1.5",
-     "types-tabulate >= 0.9.0.3", # Libary stubs for "tabulate" (mypy)
      "ruff >= 0.0.290",
      "pytest >= 7.4",
      "coverage >= 7.3",
@@ -103,6 +102,7 @@ lint.select = [
 lint.ignore = [
     "E501",  # line too long
     "F541",  # f-string-missing-placeholders
+    "UP038",  # non-pep604-isinstance (deprecated)
 ]
 
 exclude = [

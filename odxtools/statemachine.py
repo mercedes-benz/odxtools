@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Generator
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Generator, Union
+from typing import TYPE_CHECKING, Any
 
 from .exceptions import odxraise
 from .odxtypes import ParameterValueDict
@@ -97,7 +98,7 @@ class StateMachine:
         self._active_state = state_chart.start_state
 
     def execute(self, service: "DiagService", **service_params: Any
-               ) -> Generator[bytes, Union[bytes, bytearray, ParameterValueDict], None]:
+               ) -> Generator[bytes, bytes | bytearray | ParameterValueDict, None]:
         """Run a diagnostic service and update the state machine
         depending on the outcome.
 

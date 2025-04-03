@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Literal, Optional, Union, cast
+from typing import Any, Literal, cast
 from xml.etree import ElementTree
 
 from .decodestate import DecodeState
@@ -22,10 +22,10 @@ DctType = Literal[
 
 @dataclass
 class DiagCodedType:
-    base_type_encoding: Optional[Encoding]
+    base_type_encoding: Encoding | None
     base_data_type: DataType
 
-    is_highlow_byte_order_raw: Optional[bool]
+    is_highlow_byte_order_raw: bool | None
 
     @property
     def dct_type(self) -> DctType:
@@ -39,7 +39,7 @@ class DiagCodedType:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DiagCodedType":
+                doc_frags: list[OdxDocFragment]) -> "DiagCodedType":
         base_type_encoding = None
         if (base_type_encoding_str := et_element.get("BASE-TYPE-ENCODING")) is not None:
             try:
@@ -61,7 +61,7 @@ class DiagCodedType:
             base_data_type=base_data_type,
             is_highlow_byte_order_raw=is_highlow_byte_order_raw)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:  # noqa: B027
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:  # noqa: B027
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:  # noqa: B027
@@ -72,10 +72,10 @@ class DiagCodedType:
         """Recursively resolve any short-name references"""
         pass
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return None
 
-    def _minimal_byte_length_of(self, internal_value: Union[bytes, str]) -> int:
+    def _minimal_byte_length_of(self, internal_value: bytes | str) -> int:
         """Helper method to get the minimal byte length.
         (needed for LeadingLength- and MinMaxLengthType)
         """

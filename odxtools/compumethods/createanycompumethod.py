@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-from typing import List
 from xml.etree import ElementTree
 
 from ..exceptions import odxraise, odxrequire
@@ -17,7 +16,7 @@ from .texttablecompumethod import TexttableCompuMethod
 
 
 def create_any_compu_method_from_et(et_element: ElementTree.Element,
-                                    doc_frags: List[OdxDocFragment], *, internal_type: DataType,
+                                    doc_frags: list[OdxDocFragment], *, internal_type: DataType,
                                     physical_type: DataType) -> CompuMethod:
     compu_category = odxrequire(et_element.findtext("CATEGORY"))
 

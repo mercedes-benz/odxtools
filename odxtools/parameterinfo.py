@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
 import textwrap
+from collections.abc import Iterable
 from io import StringIO
-from typing import Iterable
 
 from .compumethods.compucodecompumethod import CompuCodeCompuMethod
 from .compumethods.identicalcompumethod import IdenticalCompuMethod
-from .compumethods.limit import IntervalType
+from .compumethods.intervaltype import IntervalType
 from .compumethods.linearcompumethod import LinearCompuMethod
 from .compumethods.linearsegment import LinearSegment
 from .compumethods.ratfunccompumethod import RatFuncCompuMethod

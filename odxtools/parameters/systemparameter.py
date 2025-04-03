@@ -2,7 +2,6 @@
 import getpass
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -50,7 +49,7 @@ class SystemParameter(ParameterWithDOP):
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "SystemParameter":
+                doc_frags: list[OdxDocFragment]) -> "SystemParameter":
         kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
 
         sysparam = odxrequire(et_element.get("SYSPARAM"))
@@ -58,7 +57,7 @@ class SystemParameter(ParameterWithDOP):
         return SystemParameter(sysparam=sysparam, **kwargs)
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         if physical_value is None:
             # determine the value to be encoded automatically

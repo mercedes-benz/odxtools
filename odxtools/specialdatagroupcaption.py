@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
@@ -14,12 +14,12 @@ class SpecialDataGroupCaption(IdentifiableElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "SpecialDataGroupCaption":
+                doc_frags: list[OdxDocFragment]) -> "SpecialDataGroupCaption":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         return SpecialDataGroupCaption(**kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         result[self.odx_id] = self

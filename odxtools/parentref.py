@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
@@ -16,18 +16,18 @@ if TYPE_CHECKING:
 @dataclass
 class ParentRef:
     layer_ref: OdxLinkRef
-    not_inherited_diag_comms: List[str]  # short_name references
-    not_inherited_variables: List[str]  # short_name references
-    not_inherited_dops: List[str]  # short_name references
-    not_inherited_tables: List[str]  # short_name references
-    not_inherited_global_neg_responses: List[str]  # short_name references
+    not_inherited_diag_comms: list[str]  # short_name references
+    not_inherited_variables: list[str]  # short_name references
+    not_inherited_dops: list[str]  # short_name references
+    not_inherited_tables: list[str]  # short_name references
+    not_inherited_global_neg_responses: list[str]  # short_name references
 
     @property
     def layer(self) -> "DiagLayer":
         return self._layer
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ParentRef":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "ParentRef":
 
         layer_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
 
@@ -69,7 +69,7 @@ class ParentRef:
             not_inherited_global_neg_responses=not_inherited_global_neg_responses,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -81,7 +81,7 @@ class ParentRef:
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
 
-    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result

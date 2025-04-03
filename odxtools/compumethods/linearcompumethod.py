@@ -1,13 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, cast
+from typing import cast
 from xml.etree import ElementTree
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
 from ..odxlink import OdxDocFragment
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import dataclass_fields_asdict
-from .compumethod import CompuCategory, CompuMethod
+from .compucategory import CompuCategory
+from .compumethod import CompuMethod
 from .linearsegment import LinearSegment
 
 
@@ -29,7 +30,7 @@ class LinearCompuMethod(CompuMethod):
         return self._segment
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
                              internal_type: DataType,
                              physical_type: DataType) -> "LinearCompuMethod":
         cm = CompuMethod.compu_method_from_et(

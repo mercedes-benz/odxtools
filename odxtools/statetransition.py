@@ -1,28 +1,15 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxrequire
+from .externalaccessmethod import ExternalAccessMethod
 from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, resolve_snref
 from .snrefcontext import SnRefContext
 from .state import State
 from .utils import dataclass_fields_asdict
-
-
-@dataclass
-class ExternalAccessMethod(IdentifiableElement):
-    method: str
-
-    @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ExternalAccessMethod":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
-
-        method = odxrequire(et_element.findtext("METHOD"))
-
-        return ExternalAccessMethod(method=method, **kwargs)
 
 
 @dataclass
@@ -32,7 +19,7 @@ class StateTransition(IdentifiableElement):
     """
     source_snref: str
     target_snref: str
-    external_access_method: Optional[ExternalAccessMethod]
+    external_access_method: ExternalAccessMethod | None
 
     @property
     def source_state(self) -> State:
@@ -44,7 +31,7 @@ class StateTransition(IdentifiableElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "StateTransition":
+                doc_frags: list[OdxDocFragment]) -> "StateTransition":
 
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
@@ -63,7 +50,7 @@ class StateTransition(IdentifiableElement):
             external_access_method=external_access_method,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

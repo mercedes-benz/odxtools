@@ -1,12 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from .admindata import AdminData
-from .codec import (composite_codec_decode_from_pdu, composite_codec_encode_into_pdu,
-                    composite_codec_get_coded_const_prefix, composite_codec_get_free_parameters,
-                    composite_codec_get_required_parameters, composite_codec_get_static_bit_length)
+from .compositecodec import (composite_codec_decode_from_pdu, composite_codec_encode_into_pdu,
+                             composite_codec_get_coded_const_prefix,
+                             composite_codec_get_free_parameters,
+                             composite_codec_get_required_parameters,
+                             composite_codec_get_static_bit_length)
 from .decodestate import DecodeState
 from .element import IdentifiableElement
 from .encodestate import EncodeState
@@ -27,20 +29,20 @@ class Request(IdentifiableElement):
 
     This class implements the `CompositeCodec` interface.
     """
-    admin_data: Optional[AdminData]
+    admin_data: AdminData | None
     parameters: NamedItemList[Parameter]
-    sdgs: List[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup]
 
     @property
-    def required_parameters(self) -> List[Parameter]:
+    def required_parameters(self) -> list[Parameter]:
         return composite_codec_get_required_parameters(self)
 
     @property
-    def free_parameters(self) -> List[Parameter]:
+    def free_parameters(self) -> list[Parameter]:
         return composite_codec_get_free_parameters(self)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Request":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Request":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
@@ -54,7 +56,7 @@ class Request(IdentifiableElement):
 
         return Request(admin_data=admin_data, parameters=parameters, sdgs=sdgs, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         if self.admin_data is not None:
@@ -94,7 +96,7 @@ class Request(IdentifiableElement):
         context.request = None
         context.parameters = None
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return composite_codec_get_static_bit_length(self)
 
     def print_free_parameters_info(self) -> None:
@@ -121,7 +123,7 @@ class Request(IdentifiableElement):
 
         return cast(ParameterValueDict, param_values)
 
-    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_into_pdu(self, physical_value: ParameterValue | None,
                         encode_state: EncodeState) -> None:
         composite_codec_encode_into_pdu(self, physical_value, encode_state)
 

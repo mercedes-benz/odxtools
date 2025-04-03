@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .diaglayers.basevariant import BaseVariant
@@ -41,7 +41,7 @@ class DiagLayerContainer(OdxCategory):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DiagLayerContainer":
+                doc_frags: list[OdxDocFragment]) -> "DiagLayerContainer":
 
         cat = OdxCategory.category_from_et(et_element, doc_frags, doc_type=DocType.CONTAINER)
         doc_frags = cat.odx_id.doc_fragments
@@ -85,7 +85,7 @@ class DiagLayerContainer(OdxCategory):
             self.ecu_variants,
         ),)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         for protocol in self.protocols:
@@ -132,5 +132,5 @@ class DiagLayerContainer(OdxCategory):
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         super()._resolve_snrefs(context)
 
-    def __getitem__(self, key: Union[int, str]) -> DiagLayer:
+    def __getitem__(self, key: int | str) -> DiagLayer:
         return self.diag_layers[key]

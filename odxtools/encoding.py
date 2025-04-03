@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from enum import Enum
-from typing import Optional
 
 from .exceptions import odxraise
 from .odxtypes import DataType
@@ -23,8 +22,8 @@ class Encoding(Enum):
     NONE = "NONE"
 
 
-def get_string_encoding(base_data_type: DataType, base_type_encoding: Optional[Encoding],
-                        is_highlow_byte_order: bool) -> Optional[str]:
+def get_string_encoding(base_data_type: DataType, base_type_encoding: Encoding | None,
+                        is_highlow_byte_order: bool) -> str | None:
     """If the encoding is for a string, return the value for
     `str.encode()`/`str.decode()` to convert the string object
     to/from a byte array

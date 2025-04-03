@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import typing
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, runtime_checkable
+from typing import Any, runtime_checkable
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -33,32 +33,32 @@ class DiagVariable(IdentifiableElement):
     """Representation of a diagnostic variable
     """
 
-    admin_data: Optional[AdminData]
-    variable_group_ref: Optional[OdxLinkRef]
-    sw_variables: List[SwVariable]
+    admin_data: AdminData | None
+    variable_group_ref: OdxLinkRef | None
+    sw_variables: list[SwVariable]
 
     # a diag variable must specify either COMM-RELATIONS or a
     # reference to a table row
-    comm_relations: List[CommRelation]
+    comm_relations: list[CommRelation]
 
     # these are nested inside the SNREF-TO-TABLEROW tag
-    table_snref: Optional[str]
-    table_row_snref: Optional[str]
+    table_snref: str | None
+    table_row_snref: str | None
 
-    sdgs: List[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup]
 
-    is_read_before_write_raw: Optional[bool]
+    is_read_before_write_raw: bool | None
 
     @property
-    def table(self) -> Optional[Table]:
+    def table(self) -> Table | None:
         return self._table
 
     @property
-    def table_row(self) -> Optional[TableRow]:
+    def table_row(self) -> TableRow | None:
         return self._table_row
 
     @property
-    def variable_group(self) -> Optional[VariableGroup]:
+    def variable_group(self) -> VariableGroup | None:
         return self._variable_group
 
     @property
@@ -66,7 +66,7 @@ class DiagVariable(IdentifiableElement):
         return self.is_read_before_write_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagVariable":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DiagVariable":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
@@ -106,7 +106,7 @@ class DiagVariable(IdentifiableElement):
             is_read_before_write_raw=is_read_before_write_raw,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         if self.admin_data is not None:

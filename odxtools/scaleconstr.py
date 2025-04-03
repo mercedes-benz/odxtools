@@ -1,7 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from .compumethods.limit import Limit
@@ -9,13 +7,7 @@ from .description import Description
 from .exceptions import odxraise, odxrequire
 from .odxlink import OdxDocFragment
 from .odxtypes import DataType
-
-
-class ValidType(Enum):
-    VALID = "VALID"
-    NOT_VALID = "NOT-VALID"
-    NOT_DEFINED = "NOT-DEFINED"
-    NOT_AVAILABLE = "NOT-AVAILABLE"
+from .validtype import ValidType
 
 
 @dataclass
@@ -23,15 +15,15 @@ class ScaleConstr:
     """This class represents a SCALE-CONSTR.
     """
 
-    short_label: Optional[str]
-    description: Optional[Description]
+    short_label: str | None
+    description: Description | None
     lower_limit: Limit
     upper_limit: Limit
     validity: ValidType
     value_type: DataType
 
     @staticmethod
-    def scale_constr_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def scale_constr_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
                              value_type: DataType) -> "ScaleConstr":
         short_label = et_element.findtext("SHORT-LABEL")
         description = Description.from_et(et_element.find("DESC"), doc_frags)

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
@@ -41,20 +41,20 @@ class PhysicalDimension(IdentifiableElement):
     )
     ```
     """
-    length_exp: Optional[int]
-    mass_exp: Optional[int]
-    time_exp: Optional[int]
-    current_exp: Optional[int]
-    temperature_exp: Optional[int]
-    molar_amount_exp: Optional[int]
-    luminous_intensity_exp: Optional[int]
+    length_exp: int | None
+    mass_exp: int | None
+    time_exp: int | None
+    current_exp: int | None
+    temperature_exp: int | None
+    molar_amount_exp: int | None
+    luminous_intensity_exp: int | None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "PhysicalDimension":
+                doc_frags: list[OdxDocFragment]) -> "PhysicalDimension":
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
-        def read_optional_int(element: ElementTree.Element, name: str) -> Optional[int]:
+        def read_optional_int(element: ElementTree.Element, name: str) -> int | None:
             if (val_str := element.findtext(name)) is not None:
                 return int(val_str)
             else:
@@ -78,7 +78,7 @@ class PhysicalDimension(IdentifiableElement):
             luminous_intensity_exp=luminous_intensity_exp,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

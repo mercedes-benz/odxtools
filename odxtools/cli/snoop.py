@@ -4,7 +4,7 @@
 import argparse
 import asyncio
 import sys
-from typing import Any, List, Optional, Type
+from typing import Any
 
 import can
 
@@ -103,7 +103,7 @@ def handle_telegram(telegram_id: int, payload: bytes) -> None:
               f"({payload!r}, {len(payload)} bytes)")
 
 
-def init_verbose_state_machine(BaseClass: Type[IsoTpStateMachine], *args: Any,
+def init_verbose_state_machine(BaseClass: type[IsoTpStateMachine], *args: Any,
                                **kwargs: Any) -> IsoTpStateMachine:
 
     class InformativeIsoTpDecoder(BaseClass):  # type: ignore[valid-type, misc]
@@ -246,7 +246,7 @@ def run(args: argparse.Namespace) -> None:
 
     protocol_name = args.protocol
     if odx_diag_layer is not None and protocol_name is not None:
-        protocols: Optional[List[Protocol]] = getattr(odx_diag_layer, "protocols", None)
+        protocols: list[Protocol] | None = getattr(odx_diag_layer, "protocols", None)
 
         if protocols is None:
             print(f"ECU variant {odx_diag_layer.short_name} is of type "

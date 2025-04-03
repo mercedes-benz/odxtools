@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Union
+from typing import Any
 from xml.etree import ElementTree
 
 from ..diagvariable import DiagVariable
@@ -18,7 +18,7 @@ class EcuSharedDataRaw(DiagLayerRaw):
     """This is a diagnostic layer for data shared accross others
     """
 
-    diag_variables_raw: List[Union[DiagVariable, OdxLinkRef]]
+    diag_variables_raw: list[DiagVariable | OdxLinkRef]
     variable_groups: NamedItemList[VariableGroup]
 
     @property
@@ -27,7 +27,7 @@ class EcuSharedDataRaw(DiagLayerRaw):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "EcuSharedDataRaw":
+                doc_frags: list[OdxDocFragment]) -> "EcuSharedDataRaw":
         # objects contained by diagnostic layers exibit an additional
         # document fragment for the diag layer, so we use the document
         # fragments of the odx id of the diag layer for IDs of
@@ -36,10 +36,10 @@ class EcuSharedDataRaw(DiagLayerRaw):
         kwargs = dataclass_fields_asdict(dlr)
         doc_frags = dlr.odx_id.doc_fragments
 
-        diag_variables_raw: List[Union[DiagVariable, OdxLinkRef]] = []
+        diag_variables_raw: list[DiagVariable | OdxLinkRef] = []
         if (dv_elems := et_element.find("DIAG-VARIABLES")) is not None:
             for dv_proxy_elem in dv_elems:
-                dv_proxy: Union[OdxLinkRef, DiagVariable]
+                dv_proxy: OdxLinkRef | DiagVariable
                 if dv_proxy_elem.tag == "DIAG-VARIABLE-REF":
                     dv_proxy = OdxLinkRef.from_et(dv_proxy_elem, doc_frags)
                 elif dv_proxy_elem.tag == "DIAG-VARIABLE":
@@ -58,7 +58,7 @@ class EcuSharedDataRaw(DiagLayerRaw):
         return EcuSharedDataRaw(
             diag_variables_raw=diag_variables_raw, variable_groups=variable_groups, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
         for dv_proxy in self.diag_variables_raw:
             if not isinstance(dv_proxy, OdxLinkRef):

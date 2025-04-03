@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from enum import IntEnum
-from typing import Optional
 
 
 class SID(IntEnum):
@@ -47,7 +46,7 @@ _sid_to_name = {
 }
 
 
-def sid_to_name(sid: int) -> Optional[str]:
+def sid_to_name(sid: int) -> str | None:
     if sid in _sid_to_name:
         return _sid_to_name[sid]
 

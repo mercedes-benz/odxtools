@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Iterable
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Union, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -27,7 +28,7 @@ class FunctionalGroup(HierarchyElement):
         return cast(FunctionalGroupRaw, self.diag_layer_raw)
 
     @property
-    def diag_variables_raw(self) -> List[Union[DiagVariable, OdxLinkRef]]:
+    def diag_variables_raw(self) -> list[DiagVariable | OdxLinkRef]:
         return self.functional_group_raw.diag_variables_raw
 
     @property
@@ -39,12 +40,12 @@ class FunctionalGroup(HierarchyElement):
         return self._variable_groups
 
     @property
-    def parent_refs(self) -> List[ParentRef]:
+    def parent_refs(self) -> list[ParentRef]:
         return self.functional_group_raw.parent_refs
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "FunctionalGroup":
+                doc_frags: list[OdxDocFragment]) -> "FunctionalGroup":
         functional_group_raw = FunctionalGroupRaw.from_et(et_element, doc_frags)
 
         return FunctionalGroup(diag_layer_raw=functional_group_raw)
@@ -73,7 +74,7 @@ class FunctionalGroup(HierarchyElement):
 
             return dl.diag_layer_raw.diag_variables  # type: ignore[no-any-return]
 
-        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_variables
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
@@ -87,12 +88,12 @@ class FunctionalGroup(HierarchyElement):
 
             return dl.diag_layer_raw.variable_groups  # type: ignore[no-any-return]
 
-        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
 
-    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
         """Create a deep copy of the functional group layer
 
         Note that the copied diagnostic layer is not fully

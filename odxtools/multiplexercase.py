@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .compumethods.limit import Limit
@@ -17,18 +17,18 @@ from .utils import dataclass_fields_asdict
 class MultiplexerCase(NamedElement):
     """This class represents a case which represents a range of keys of a multiplexer."""
 
-    structure_ref: Optional[OdxLinkRef]
-    structure_snref: Optional[str]
+    structure_ref: OdxLinkRef | None
+    structure_snref: str | None
     lower_limit: Limit
     upper_limit: Limit
 
     @property
-    def structure(self) -> Optional[Structure]:
+    def structure(self) -> Structure | None:
         return self._structure
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "MultiplexerCase":
+                doc_frags: list[OdxDocFragment]) -> "MultiplexerCase":
         """Reads a case for a Multiplexer."""
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
         structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
@@ -54,7 +54,7 @@ class MultiplexerCase(NamedElement):
             upper_limit=upper_limit,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

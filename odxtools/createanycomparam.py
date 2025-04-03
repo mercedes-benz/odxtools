@@ -1,4 +1,3 @@
-from typing import List, Union
 from xml.etree import ElementTree
 
 from .comparam import Comparam
@@ -6,9 +5,8 @@ from .complexcomparam import ComplexComparam
 from .odxlink import OdxDocFragment
 
 
-def create_any_comparam_from_et(
-        et_element: ElementTree.Element,
-        doc_frags: List[OdxDocFragment]) -> Union[Comparam, ComplexComparam]:
+def create_any_comparam_from_et(et_element: ElementTree.Element,
+                                doc_frags: list[OdxDocFragment]) -> Comparam | ComplexComparam:
     if et_element.tag == "COMPARAM":
         return Comparam.from_et(et_element, doc_frags)
     elif et_element.tag == "COMPLEX-COMPARAM":

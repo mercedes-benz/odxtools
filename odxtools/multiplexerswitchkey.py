@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .dataobjectproperty import DataObjectProperty
@@ -15,7 +15,7 @@ class MultiplexerSwitchKey:
     The object that determines the case to be used by a multiplexer
     """
     byte_position: int
-    bit_position: Optional[int]
+    bit_position: int | None
     dop_ref: OdxLinkRef
 
     @property
@@ -24,7 +24,7 @@ class MultiplexerSwitchKey:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "MultiplexerSwitchKey":
+                doc_frags: list[OdxDocFragment]) -> "MultiplexerSwitchKey":
         byte_position = int(odxrequire(et_element.findtext("BYTE-POSITION")))
         bit_position_str = et_element.findtext("BIT-POSITION")
         bit_position = int(bit_position_str) if bit_position_str is not None else None
@@ -36,7 +36,7 @@ class MultiplexerSwitchKey:
             dop_ref=dop_ref,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

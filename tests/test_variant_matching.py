@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 import json
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 
@@ -42,7 +42,7 @@ def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
     )
     odxlinks.update({resp.odx_id: resp})
 
-    def decode(message: bytes) -> Dict[str, Any]:
+    def decode(message: bytes) -> dict[str, Any]:
         msg_str = message.decode(encoding="utf-8")
         msg_dict = json.loads(msg_str)
         assert isinstance(msg_dict, dict)
@@ -540,7 +540,7 @@ def base_variant_3(
 
 @pytest.fixture
 def base_variants(base_variant_1: BaseVariant, base_variant_2: BaseVariant,
-                  base_variant_3: BaseVariant) -> List[BaseVariant]:
+                  base_variant_3: BaseVariant) -> list[BaseVariant]:
     return [base_variant_1, base_variant_2, base_variant_3]
 
 
@@ -676,11 +676,11 @@ def ecu_variant_3(
 
 @pytest.fixture
 def ecu_variants(ecu_variant_1: EcuVariant, ecu_variant_2: EcuVariant,
-                 ecu_variant_3: EcuVariant) -> List[EcuVariant]:
+                 ecu_variant_3: EcuVariant) -> list[EcuVariant]:
     return [ecu_variant_1, ecu_variant_2, ecu_variant_3]
 
 
-def as_bytes(dikt: Dict[str, Any]) -> bytes:
+def as_bytes(dikt: dict[str, Any]) -> bytes:
     return bytes(json.dumps(dikt), "utf-8")
 
 
@@ -711,9 +711,9 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
     ],
 )
 def test_base_variant_matching(
-    base_variants: List[BaseVariant],
+    base_variants: list[BaseVariant],
     use_cache: bool,
-    req_resp_mapping: Dict[bytes, bytes],
+    req_resp_mapping: dict[bytes, bytes],
     expected_variant: str,
 ) -> None:
 
@@ -776,9 +776,9 @@ def test_base_variant_matching(
     ],
 )
 def test_ecu_variant_matching(
-    ecu_variants: List[EcuVariant],
+    ecu_variants: list[EcuVariant],
     use_cache: bool,
-    req_resp_mapping: Dict[bytes, bytes],
+    req_resp_mapping: dict[bytes, bytes],
     expected_variant: str,
 ) -> None:
     matcher = VariantMatcher(
@@ -794,7 +794,7 @@ def test_ecu_variant_matching(
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-def test_no_match(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
+def test_no_match(ecu_variants: list[EcuVariant], use_cache: bool) -> None:
     # stores the responses for each request for the ecu-under-test
     req_resp_mapping = {
         b"\x22\x10\x00": as_bytes({"id": 1000}),
@@ -817,7 +817,7 @@ def test_no_match(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if pending matchers reject the has_match() or active variant query
-def test_no_request_loop(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
+def test_no_request_loop(ecu_variants: list[EcuVariant], use_cache: bool) -> None:
     matcher = VariantMatcher(
         variant_candidates=ecu_variants,
         use_cache=use_cache,
@@ -829,7 +829,7 @@ def test_no_request_loop(ecu_variants: List[EcuVariant], use_cache: bool) -> Non
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if runs of the request loop without calling `evaluate(...)` are rejected
-def test_request_loop_misuse(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
+def test_request_loop_misuse(ecu_variants: list[EcuVariant], use_cache: bool) -> None:
     matcher = VariantMatcher(
         variant_candidates=ecu_variants,
         use_cache=use_cache,
@@ -841,7 +841,7 @@ def test_request_loop_misuse(ecu_variants: List[EcuVariant], use_cache: bool) ->
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if request loop is idempotent, i.e., the matching is the same regardless of how often the request loop is run
-def test_request_loop_idempotency(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
+def test_request_loop_idempotency(ecu_variants: list[EcuVariant], use_cache: bool) -> None:
     req_resp_mapping = {
         b"\x22\x10\x00": as_bytes({"id": 2000}),
         b"\x22\x20\x00": as_bytes({"name": {
@@ -870,7 +870,7 @@ def test_request_loop_idempotency(ecu_variants: List[EcuVariant], use_cache: boo
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-def test_unresolvable_snpathref(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
+def test_unresolvable_snpathref(ecu_variants: list[EcuVariant], use_cache: bool) -> None:
     # stores the responses for each request for the ecu-under-test
     req_resp_mapping = {
         b"\x22\x10\x00": as_bytes({"id": 1000}),

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 import argparse
-from typing import Callable, List, Optional
+from collections.abc import Callable
 
 import rich
 
@@ -32,11 +32,11 @@ def print_summary(odxdb: Database,
                   print_state_transitions: bool = False,
                   print_audiences: bool = False,
                   allow_unknown_bit_lengths: bool = False,
-                  variants: Optional[List[str]] = None,
+                  variants: list[str] | None = None,
                   service_filter: Callable[[DiagComm], bool] = lambda x: True) -> None:
 
     diag_layer_names = [dl.short_name for dl in odxdb.diag_layers]
-    diag_layers: List[DiagLayer] = []
+    diag_layers: list[DiagLayer] = []
 
     if variants is None:
         variants = diag_layer_names
@@ -59,7 +59,7 @@ def print_summary(odxdb: Database,
         rich.print(f"Diagnostic layer: '{dl.short_name}'")
         rich.print(f" Variant Type: {dl.variant_type.value}")
 
-        all_services: List[DiagComm] = sorted(dl.services, key=lambda x: x.short_name)
+        all_services: list[DiagComm] = sorted(dl.services, key=lambda x: x.short_name)
 
         if isinstance(dl, (BaseVariant, EcuVariant)):
             for proto in dl.protocols:
@@ -99,7 +99,7 @@ def print_summary(odxdb: Database,
                     else:
                         rich.print(f" Unidentifiable service: {service}")
         ddd_spec = dl.diag_data_dictionary_spec
-        data_object_properties: List[
+        data_object_properties: list[
             DataObjectProperty] = [] if ddd_spec is None else ddd_spec.data_object_props
         if print_dops and len(data_object_properties) > 0:
             rich.print("\n")
@@ -108,7 +108,7 @@ def print_summary(odxdb: Database,
                     data_object_properties, key=lambda x: (type(x).__name__, x.short_name)):
                 rich.print("  " + str(dop.short_name).replace("\n", "\n  "))
 
-        comparam_refs: List[ComparamInstance] = []
+        comparam_refs: list[ComparamInstance] = []
         if isinstance(dl, HierarchyElement):
             comparam_refs = dl.comparam_refs
 

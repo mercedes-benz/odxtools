@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-from typing import List
 from xml.etree import ElementTree
 
 from ..exceptions import odxraise
@@ -21,7 +20,7 @@ from .valueparameter import ValueParameter
 
 
 def create_any_parameter_from_et(et_element: ElementTree.Element,
-                                 doc_frags: List[OdxDocFragment]) \
+                                 doc_frags: list[OdxDocFragment]) \
                                  -> Parameter:
     parameter_type = et_element.get(f"{xsi}type")
 

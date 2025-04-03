@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -24,11 +24,11 @@ class DopBase(IdentifiableElement):
 
     """
 
-    admin_data: Optional[AdminData]
-    sdgs: List[SpecialDataGroup]
+    admin_data: AdminData | None
+    sdgs: list[SpecialDataGroup]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DopBase":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DopBase":
 
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
 
@@ -42,7 +42,7 @@ class DopBase(IdentifiableElement):
 
         return DopBase(admin_data=admin_data, sdgs=sdgs, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         for sdg in self.sdgs:
@@ -58,7 +58,7 @@ class DopBase(IdentifiableElement):
         for sdg in self.sdgs:
             sdg._resolve_snrefs(context)
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return None
 
     def is_valid_physical_value(self, physical_value: ParameterValue) -> bool:

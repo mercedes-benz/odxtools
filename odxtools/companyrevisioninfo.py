@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .companydata import CompanyData
@@ -12,8 +12,8 @@ from .snrefcontext import SnRefContext
 @dataclass
 class CompanyRevisionInfo:
     company_data_ref: OdxLinkRef
-    revision_label: Optional[str]
-    state: Optional[str]
+    revision_label: str | None
+    state: str | None
 
     @property
     def company_data(self) -> CompanyData:
@@ -21,7 +21,7 @@ class CompanyRevisionInfo:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "CompanyRevisionInfo":
+                doc_frags: list[OdxDocFragment]) -> "CompanyRevisionInfo":
 
         company_data_ref = odxrequire(
             OdxLinkRef.from_et(et_element.find("COMPANY-DATA-REF"), doc_frags))
@@ -31,7 +31,7 @@ class CompanyRevisionInfo:
         return CompanyRevisionInfo(
             company_data_ref=company_data_ref, revision_label=revision_label, state=state)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

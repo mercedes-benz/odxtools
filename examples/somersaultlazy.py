@@ -8,7 +8,7 @@ import asyncio
 import logging
 import random
 from socket import socket
-from typing import List, Optional, Union, cast
+from typing import cast
 
 import isotp
 import isotp.tpsock
@@ -26,19 +26,18 @@ tester_logger = logging.getLogger("somersault_lazy_tester")
 ecu_logger = logging.getLogger("somersault_lazy_ecu")
 
 is_sterile = False
-can_channel: Optional[str] = None
+can_channel: str | None = None
 somersault_lazy_diag_layer = somersaultdatabase.ecus.somersault_lazy
 
 # the raw payload data of the telegrams received by the ECU and by the
 # tester when in sterile mode (unittest without a CAN channel)
-sterile_rx_ecu: List[bytes] = []
-sterile_rx_ecu_event: Optional[asyncio.Event] = None
-sterile_rx_tester: List[bytes] = []
-sterile_rx_tester_event: Optional[asyncio.Event] = None
+sterile_rx_ecu: list[bytes] = []
+sterile_rx_ecu_event: asyncio.Event | None = None
+sterile_rx_tester: list[bytes] = []
+sterile_rx_tester_event: asyncio.Event | None = None
 
 
-def create_isotp_socket(channel: Optional[str], rxid: int,
-                        txid: int) -> Optional[isotp.tpsock.socket]:
+def create_isotp_socket(channel: str | None, rxid: int, txid: int) -> isotp.tpsock.socket | None:
     if is_sterile:
         return None
 
@@ -66,7 +65,7 @@ def create_isotp_socket(channel: Optional[str], rxid: int,
     return result_socket
 
 
-async def ecu_send(isotp_socket: Optional[isotp.tpsock.socket], payload: bytes) -> None:
+async def ecu_send(isotp_socket: isotp.tpsock.socket | None, payload: bytes) -> None:
     """
     ECU sends a message, either in "sterile" or in "live" mode.
     """
@@ -87,7 +86,7 @@ async def ecu_send(isotp_socket: Optional[isotp.tpsock.socket], payload: bytes) 
         await loop.sock_sendall(cast(socket, isotp_socket), payload)
 
 
-async def ecu_recv(isotp_socket: Optional[isotp.tpsock.socket]) -> bytes:
+async def ecu_recv(isotp_socket: isotp.tpsock.socket | None) -> bytes:
     """
     ECU receives a message, either in "sterile" or in "live" mode.
     """
@@ -113,7 +112,7 @@ async def ecu_recv(isotp_socket: Optional[isotp.tpsock.socket]) -> bytes:
         return await loop.sock_recv(cast(socket, isotp_socket), 4095)
 
 
-async def tester_send(isotp_socket: Optional[isotp.tpsock.socket], payload: bytes) -> None:
+async def tester_send(isotp_socket: isotp.tpsock.socket | None, payload: bytes) -> None:
     """
     Tester sends a message, either in "sterile" or in "live" mode.
     """
@@ -133,7 +132,7 @@ async def tester_send(isotp_socket: Optional[isotp.tpsock.socket], payload: byte
         await loop.sock_sendall(cast(socket, isotp_socket), payload)
 
 
-async def tester_recv(isotp_socket: Optional[isotp.tpsock.socket]) -> bytes:
+async def tester_recv(isotp_socket: isotp.tpsock.socket | None) -> bytes:
     """
     Tester receives a message, either in "sterile" or in "live" mode.
     """
@@ -360,9 +359,9 @@ class SomersaultLazyEcu:
                 continue
 
 
-async def tester_await_response(isotp_socket: Optional[isotp.tpsock.socket],
+async def tester_await_response(isotp_socket: isotp.tpsock.socket | None,
                                 raw_message: bytes,
-                                timeout: float = 0.5) -> Union[bytes, ParameterValueDict]:
+                                timeout: float = 0.5) -> bytes | ParameterValueDict:
     # await the answer from the server (be aware that the maximum
     # length of ISO-TP telegrams over the CAN bus is 4095 bytes)
     raw_response = await tester_recv(isotp_socket)

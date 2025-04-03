@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 from copy import copy
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from ..additionalaudience import AdditionalAudience
@@ -36,21 +36,21 @@ class DiagLayerRaw(IdentifiableElement):
     """
 
     variant_type: DiagLayerType
-    admin_data: Optional[AdminData]
+    admin_data: AdminData | None
     company_datas: NamedItemList[CompanyData]
     functional_classes: NamedItemList[FunctionalClass]
-    diag_data_dictionary_spec: Optional[DiagDataDictionarySpec]
-    diag_comms_raw: List[Union[OdxLinkRef, DiagComm]]
+    diag_data_dictionary_spec: DiagDataDictionarySpec | None
+    diag_comms_raw: list[OdxLinkRef | DiagComm]
     requests: NamedItemList[Request]
     positive_responses: NamedItemList[Response]
     negative_responses: NamedItemList[Response]
     global_negative_responses: NamedItemList[Response]
-    import_refs: List[OdxLinkRef]
+    import_refs: list[OdxLinkRef]
     state_charts: NamedItemList[StateChart]
     additional_audiences: NamedItemList[AdditionalAudience]
     sub_components: NamedItemList[SubComponent]
     libraries: NamedItemList[Library]
-    sdgs: List[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup]
 
     @property
     def diag_comms(self) -> NamedItemList[DiagComm]:
@@ -70,7 +70,7 @@ class DiagLayerRaw(IdentifiableElement):
         return self._single_ecu_jobs
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayerRaw":
+    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DiagLayerRaw":
         try:
             variant_type = DiagLayerType(et_element.tag)
         except ValueError:
@@ -102,10 +102,10 @@ class DiagLayerRaw(IdentifiableElement):
         if (ddds_elem := et_element.find("DIAG-DATA-DICTIONARY-SPEC")) is not None:
             diag_data_dictionary_spec = DiagDataDictionarySpec.from_et(ddds_elem, doc_frags)
 
-        diag_comms_raw: List[Union[OdxLinkRef, DiagComm]] = []
+        diag_comms_raw: list[OdxLinkRef | DiagComm] = []
         if (dc_elems := et_element.find("DIAG-COMMS")) is not None:
             for dc_proxy_elem in dc_elems:
-                dc: Union[OdxLinkRef, DiagComm]
+                dc: OdxLinkRef | DiagComm
                 if dc_proxy_elem.tag == "DIAG-COMM-REF":
                     dc = OdxLinkRef.from_et(dc_proxy_elem, doc_frags)
                 elif dc_proxy_elem.tag == "DIAG-SERVICE":
@@ -183,7 +183,7 @@ class DiagLayerRaw(IdentifiableElement):
             sdgs=sdgs,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
         odxlinks = {self.odx_id: self}
 
