@@ -7,7 +7,8 @@ from .dtcconnector import DtcConnector
 from .element import IdentifiableElement
 from .envdataconnector import EnvDataConnector
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .subcomponentparamconnector import SubComponentParamConnector
 from .subcomponentpattern import SubComponentPattern
@@ -34,29 +35,29 @@ class SubComponent(IdentifiableElement):
     semantic: str | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "SubComponent":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SubComponent":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         semantic = et_element.get("SEMANTIC")
 
         sub_component_patterns = [
-            SubComponentPattern.from_et(el, doc_frags)
+            SubComponentPattern.from_et(el, context)
             for el in et_element.iterfind("SUB-COMPONENT-PATTERNS/SUB-COMPONENT-PATTERN")
         ]
         sub_component_param_connectors = [
-            SubComponentParamConnector.from_et(el, doc_frags) for el in et_element.iterfind(
+            SubComponentParamConnector.from_et(el, context) for el in et_element.iterfind(
                 "SUB-COMPONENT-PARAM-CONNECTORS/SUB-COMPONENT-PARAM-CONNECTOR")
         ]
         table_row_connectors = [
-            TableRowConnector.from_et(el, doc_frags)
+            TableRowConnector.from_et(el, context)
             for el in et_element.iterfind("TABLE-ROW-CONNECTORS/TABLE-ROW-CONNECTOR")
         ]
         env_data_connectors = [
-            EnvDataConnector.from_et(el, doc_frags)
+            EnvDataConnector.from_et(el, context)
             for el in et_element.iterfind("ENV-DATA-CONNECTORS/ENV-DATA-CONNECTOR")
         ]
         dtc_connectors = [
-            DtcConnector.from_et(el, doc_frags)
+            DtcConnector.from_et(el, context)
             for el in et_element.iterfind("DTC-CONNECTORS/DTC-CONNECTOR")
         ]
 

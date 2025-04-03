@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from typing import Any, Union
 from xml.etree import ElementTree
 
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 from .specialdata import SpecialData
 from .specialdatagroupcaption import SpecialDataGroupCaption
@@ -18,16 +19,15 @@ class SpecialDataGroup:
     semantic_info: str | None  # the "SI" attribute
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "SpecialDataGroup":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SpecialDataGroup":
 
         sdg_caption = None
         if caption_elem := et_element.find("SDG-CAPTION"):
-            sdg_caption = SpecialDataGroupCaption.from_et(caption_elem, doc_frags)
+            sdg_caption = SpecialDataGroupCaption.from_et(caption_elem, context)
 
         sdg_caption_ref = None
         if (caption_ref_elem := et_element.find("SDG-CAPTION-REF")) is not None:
-            sdg_caption_ref = OdxLinkRef.from_et(caption_ref_elem, doc_frags)
+            sdg_caption_ref = OdxLinkRef.from_et(caption_ref_elem, context)
 
         semantic_info = et_element.get("SI")
 
@@ -35,9 +35,9 @@ class SpecialDataGroup:
         for value_elem in et_element:
             next_entry: SpecialData | SpecialDataGroup | None = None
             if value_elem.tag == "SDG":
-                next_entry = SpecialDataGroup.from_et(value_elem, doc_frags)
+                next_entry = SpecialDataGroup.from_et(value_elem, context)
             elif value_elem.tag == "SD":
-                next_entry = SpecialData.from_et(value_elem, doc_frags)
+                next_entry = SpecialData.from_et(value_elem, context)
 
             if next_entry is not None:
                 values.append(next_entry)

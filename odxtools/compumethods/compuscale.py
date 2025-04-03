@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from xml.etree import ElementTree
 
 from ..description import Description
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import AtomicOdxType, DataType
 from .compuconst import CompuConst
 from .compuinversevalue import CompuInverseValue
@@ -37,15 +37,15 @@ class CompuScale:
     range_type: DataType
 
     @staticmethod
-    def compuscale_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
+    def compuscale_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                            domain_type: DataType, range_type: DataType) -> "CompuScale":
         short_label = et_element.findtext("SHORT-LABEL")
-        description = Description.from_et(et_element.find("DESC"), doc_frags)
+        description = Description.from_et(et_element.find("DESC"), context)
 
         lower_limit = Limit.limit_from_et(
-            et_element.find("LOWER-LIMIT"), doc_frags, value_type=domain_type)
+            et_element.find("LOWER-LIMIT"), context, value_type=domain_type)
         upper_limit = Limit.limit_from_et(
-            et_element.find("UPPER-LIMIT"), doc_frags, value_type=domain_type)
+            et_element.find("UPPER-LIMIT"), context, value_type=domain_type)
 
         compu_inverse_value = None
         if (cive := et_element.find("COMPU-INVERSE-VALUE")) is not None:
@@ -58,7 +58,7 @@ class CompuScale:
         compu_rational_coeffs: CompuRationalCoeffs | None = None
         if (crc_elem := et_element.find("COMPU-RATIONAL-COEFFS")) is not None:
             compu_rational_coeffs = CompuRationalCoeffs.coeffs_from_et(
-                crc_elem, doc_frags, value_type=range_type)
+                crc_elem, context, value_type=range_type)
 
         return CompuScale(
             short_label=short_label,

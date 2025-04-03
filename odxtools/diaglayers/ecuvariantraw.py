@@ -8,7 +8,8 @@ from ..dyndefinedspec import DynDefinedSpec
 from ..ecuvariantpattern import EcuVariantPattern
 from ..exceptions import odxraise
 from ..nameditemlist import NamedItemList
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..parentref import ParentRef
 from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
@@ -29,46 +30,44 @@ class EcuVariantRaw(HierarchyElementRaw):
         return self._diag_variables
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "EcuVariantRaw":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EcuVariantRaw":
         # objects contained by diagnostic layers exibit an additional
         # document fragment for the diag layer, so we use the document
         # fragments of the odx id of the diag layer for IDs of
         # contained objects.
-        her = HierarchyElementRaw.from_et(et_element, doc_frags)
+        her = HierarchyElementRaw.from_et(et_element, context)
         kwargs = dataclass_fields_asdict(her)
-        doc_frags = her.odx_id.doc_fragments
 
         diag_variables_raw: list[DiagVariable | OdxLinkRef] = []
         if (dv_elems := et_element.find("DIAG-VARIABLES")) is not None:
             for dv_proxy_elem in dv_elems:
                 dv_proxy: OdxLinkRef | DiagVariable
                 if dv_proxy_elem.tag == "DIAG-VARIABLE-REF":
-                    dv_proxy = OdxLinkRef.from_et(dv_proxy_elem, doc_frags)
+                    dv_proxy = OdxLinkRef.from_et(dv_proxy_elem, context)
                 elif dv_proxy_elem.tag == "DIAG-VARIABLE":
-                    dv_proxy = DiagVariable.from_et(dv_proxy_elem, doc_frags)
+                    dv_proxy = DiagVariable.from_et(dv_proxy_elem, context)
                 else:
                     odxraise()
 
                 diag_variables_raw.append(dv_proxy)
 
         variable_groups = NamedItemList([
-            VariableGroup.from_et(vg_elem, doc_frags)
+            VariableGroup.from_et(vg_elem, context)
             for vg_elem in et_element.iterfind("VARIABLE-GROUPS/VARIABLE-GROUP")
         ])
 
         ecu_variant_patterns = None
         ecu_variant_patterns = [
-            EcuVariantPattern.from_et(varpat_elem, doc_frags)
+            EcuVariantPattern.from_et(varpat_elem, context)
             for varpat_elem in et_element.iterfind("ECU-VARIANT-PATTERNS/ECU-VARIANT-PATTERN")
         ]
 
         dyn_defined_spec = None
         if (dds_elem := et_element.find("DYN-DEFINED-SPEC")) is not None:
-            dyn_defined_spec = DynDefinedSpec.from_et(dds_elem, doc_frags)
+            dyn_defined_spec = DynDefinedSpec.from_et(dds_elem, context)
 
         parent_refs = [
-            ParentRef.from_et(pr_el, doc_frags)
+            ParentRef.from_et(pr_el, context)
             for pr_el in et_element.iterfind("PARENT-REFS/PARENT-REF")
         ]
 

@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .exceptions import odxassert, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValueDict
 from .parameters.parameter import Parameter
 from .snrefcontext import SnRefContext
@@ -32,9 +33,8 @@ class PreConditionStateRef(OdxLinkRef):
 
     @staticmethod
     def from_et(  # type: ignore[override]
-            et_element: ElementTree.Element,
-            doc_frags: list[OdxDocFragment]) -> "PreConditionStateRef":
-        kwargs = dataclass_fields_asdict(OdxLinkRef.from_et(et_element, doc_frags))
+            et_element: ElementTree.Element, context: OdxDocContext) -> "PreConditionStateRef":
+        kwargs = dataclass_fields_asdict(OdxLinkRef.from_et(et_element, context))
 
         value = et_element.findtext("VALUE")
 

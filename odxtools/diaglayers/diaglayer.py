@@ -17,7 +17,8 @@ from ..exceptions import DecodeError, odxassert, odxraise
 from ..library import Library
 from ..message import Message
 from ..nameditemlist import NamedItemList, TNamed
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..parentref import ParentRef
 from ..request import Request
 from ..response import Response
@@ -45,8 +46,8 @@ class DiagLayer:
     diag_layer_raw: DiagLayerRaw
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DiagLayer":
-        diag_layer_raw = DiagLayerRaw.from_et(et_element, doc_frags)
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DiagLayer":
+        diag_layer_raw = DiagLayerRaw.from_et(et_element, context)
 
         # Create DiagLayer
         return DiagLayer(diag_layer_raw=diag_layer_raw)

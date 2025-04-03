@@ -9,7 +9,8 @@ from .description import Description
 from .diagcomm import DiagComm
 from .diagservice import DiagService
 from .exceptions import OdxWarning, odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .parameters.parameter import Parameter
 from .snrefcontext import SnRefContext
 
@@ -46,11 +47,11 @@ class CommRelation:
         return self.value_type_raw
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "CommRelation":
-        description = Description.from_et(et_element.find("DESC"), doc_frags)
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "CommRelation":
+        description = Description.from_et(et_element.find("DESC"), context)
         relation_type = odxrequire(et_element.findtext("RELATION-TYPE"))
 
-        diag_comm_ref = OdxLinkRef.from_et(et_element.find("DIAG-COMM-REF"), doc_frags)
+        diag_comm_ref = OdxLinkRef.from_et(et_element.find("DIAG-COMM-REF"), context)
         diag_comm_snref = None
         if (diag_comm_snref_elem := et_element.find("DIAG-COMM-SNREF")) is not None:
             diag_comm_snref = odxrequire(diag_comm_snref_elem.get("SHORT-NAME"))

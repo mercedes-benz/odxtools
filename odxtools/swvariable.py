@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from xml.etree import ElementTree
 
 from .element import NamedElement
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .utils import dataclass_fields_asdict
 
 
@@ -13,8 +13,8 @@ class SwVariable(NamedElement):
     oid: str | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "SwVariable":
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SwVariable":
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
         origin = et_element.findtext("ORIGIN")
         oid = et_element.attrib.get("OID")

@@ -4,7 +4,8 @@ from typing import Any
 from xml.etree import ElementTree
 
 from ..exceptions import odxraise
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType, DataType
 from ..snrefcontext import SnRefContext
 from .compucategory import CompuCategory
@@ -38,7 +39,7 @@ class CompuMethod:
     internal_type: DataType
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                              internal_type: DataType, physical_type: DataType) -> "CompuMethod":
         cat_text = et_element.findtext("CATEGORY")
         if cat_text is None:
@@ -54,11 +55,11 @@ class CompuMethod:
         compu_internal_to_phys = None
         if (citp_elem := et_element.find("COMPU-INTERNAL-TO-PHYS")) is not None:
             compu_internal_to_phys = CompuInternalToPhys.compu_internal_to_phys_from_et(
-                citp_elem, doc_frags, internal_type=internal_type, physical_type=physical_type)
+                citp_elem, context, internal_type=internal_type, physical_type=physical_type)
         compu_phys_to_internal = None
         if (cpti_elem := et_element.find("COMPU-PHYS-TO-INTERNAL")) is not None:
             compu_phys_to_internal = CompuPhysToInternal.compu_phys_to_internal_from_et(
-                cpti_elem, doc_frags, internal_type=internal_type, physical_type=physical_type)
+                cpti_elem, context, internal_type=internal_type, physical_type=physical_type)
 
         return CompuMethod(
             category=category,

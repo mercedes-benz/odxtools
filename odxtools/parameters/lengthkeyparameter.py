@@ -8,7 +8,8 @@ from typing_extensions import final, override
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkId
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import ParameterType
@@ -48,12 +49,11 @@ class LengthKeyParameter(ParameterWithDOP):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "LengthKeyParameter":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "LengthKeyParameter":
 
-        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, context))
 
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, context))
 
         return LengthKeyParameter(odx_id=odx_id, **kwargs)
 

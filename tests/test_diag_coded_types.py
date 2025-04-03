@@ -2,6 +2,8 @@
 import unittest
 from xml.etree import ElementTree
 
+from packaging.version import Version
+
 import odxtools.uds as uds
 from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
@@ -24,6 +26,7 @@ from odxtools.exceptions import DecodeError, EncodeError, OdxError, odxrequire
 from odxtools.leadinglengthinfotype import LeadingLengthInfoType
 from odxtools.minmaxlengthtype import MinMaxLengthType
 from odxtools.nameditemlist import NamedItemList
+from odxtools.odxdoccontext import OdxDocContext
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.parameters.codedconstparameter import CodedConstParameter
@@ -1036,7 +1039,8 @@ class TestMinMaxLengthType(unittest.TestCase):
         odx_element = ElementTree.fromstring(diagcodedtype_odx)
         diag_coded_type_element = odxrequire(odx_element.find("DIAG-CODED-TYPE"))
 
-        actual = create_any_diag_coded_type_from_et(diag_coded_type_element, doc_frags)
+        actual = create_any_diag_coded_type_from_et(diag_coded_type_element,
+                                                    OdxDocContext(Version("2.2.0"), doc_frags))
 
         self.assertIsInstance(actual, MinMaxLengthType)
         assert isinstance(actual, MinMaxLengthType)

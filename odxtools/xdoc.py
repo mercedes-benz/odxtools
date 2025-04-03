@@ -4,7 +4,8 @@ from typing import Any
 from xml.etree import ElementTree
 
 from .element import NamedElement
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -19,8 +20,8 @@ class XDoc(NamedElement):
     position: str | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "XDoc":
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "XDoc":
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
         number = et_element.findtext("NUMBER")
         state = et_element.findtext("STATE")
         date = et_element.findtext("DATE")

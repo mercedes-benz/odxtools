@@ -9,7 +9,8 @@ from .diagcomm import DiagComm
 from .exceptions import DecodeError, DecodeMismatch, odxassert, odxraise, odxrequire
 from .message import Message
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValue, odxstr_to_bool
 from .parameters.parameter import Parameter
 from .posresponsesuppressible import PosResponseSuppressible
@@ -76,30 +77,30 @@ class DiagService(DiagComm):
         return self.request.free_parameters if self.request is not None else []
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DiagService":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DiagService":
 
-        kwargs = dataclass_fields_asdict(DiagComm.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(DiagComm.from_et(et_element, context))
 
         comparam_refs = [
-            ComparamInstance.from_et(el, doc_frags)
+            ComparamInstance.from_et(el, context)
             for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")
         ]
 
-        request_ref = odxrequire(OdxLinkRef.from_et(et_element.find("REQUEST-REF"), doc_frags))
+        request_ref = odxrequire(OdxLinkRef.from_et(et_element.find("REQUEST-REF"), context))
 
         pos_response_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            odxrequire(OdxLinkRef.from_et(el, context))
             for el in et_element.iterfind("POS-RESPONSE-REFS/POS-RESPONSE-REF")
         ]
 
         neg_response_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            odxrequire(OdxLinkRef.from_et(el, context))
             for el in et_element.iterfind("NEG-RESPONSE-REFS/NEG-RESPONSE-REF")
         ]
 
         pos_response_suppressible = None
         if (prs_elem := et_element.find("POS-RESPONSE-SUPPRESSABLE")) is not None:
-            pos_response_suppressible = PosResponseSuppressible.from_et(prs_elem, doc_frags)
+            pos_response_suppressible = PosResponseSuppressible.from_et(prs_elem, context)
 
         is_cyclic_raw = odxstr_to_bool(et_element.get("IS-CYCLIC"))
         is_multiple_raw = odxstr_to_bool(et_element.get("IS-MULTIPLE"))

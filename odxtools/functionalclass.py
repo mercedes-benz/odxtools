@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .element import IdentifiableElement
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -19,12 +20,11 @@ class FunctionalClass(IdentifiableElement):
     admin_data: AdminData | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "FunctionalClass":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "FunctionalClass":
 
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
 
         return FunctionalClass(admin_data=admin_data, **kwargs)
 

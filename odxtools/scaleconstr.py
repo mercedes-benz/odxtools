@@ -5,7 +5,7 @@ from xml.etree import ElementTree
 from .compumethods.limit import Limit
 from .description import Description
 from .exceptions import odxraise, odxrequire
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .odxtypes import DataType
 from .validtype import ValidType
 
@@ -23,14 +23,14 @@ class ScaleConstr:
     value_type: DataType
 
     @staticmethod
-    def scale_constr_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
+    def scale_constr_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                              value_type: DataType) -> "ScaleConstr":
         short_label = et_element.findtext("SHORT-LABEL")
-        description = Description.from_et(et_element.find("DESC"), doc_frags)
+        description = Description.from_et(et_element.find("DESC"), context)
         lower_limit = Limit.limit_from_et(
-            odxrequire(et_element.find("LOWER-LIMIT")), doc_frags, value_type=value_type)
+            odxrequire(et_element.find("LOWER-LIMIT")), context, value_type=value_type)
         upper_limit = Limit.limit_from_et(
-            odxrequire(et_element.find("UPPER-LIMIT")), doc_frags, value_type=value_type)
+            odxrequire(et_element.find("UPPER-LIMIT")), context, value_type=value_type)
 
         validity_str = odxrequire(et_element.get("VALIDITY"))
         try:

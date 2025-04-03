@@ -16,7 +16,8 @@ from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from .linkeddtcdop import LinkedDtcDop
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValue, odxstr_to_bool
 from .physicaltype import PhysicalType
 from .snrefcontext import SnRefContext
@@ -47,17 +48,16 @@ class DtcDop(DopBase):
         return self.is_visible_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DtcDop":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DtcDop":
         """Reads a DTC-DOP."""
-        kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, context))
 
         diag_coded_type = create_any_diag_coded_type_from_et(
-            odxrequire(et_element.find("DIAG-CODED-TYPE")), doc_frags)
-        physical_type = PhysicalType.from_et(
-            odxrequire(et_element.find("PHYSICAL-TYPE")), doc_frags)
+            odxrequire(et_element.find("DIAG-CODED-TYPE")), context)
+        physical_type = PhysicalType.from_et(odxrequire(et_element.find("PHYSICAL-TYPE")), context)
         compu_method = create_any_compu_method_from_et(
             odxrequire(et_element.find("COMPU-METHOD")),
-            doc_frags,
+            context,
             internal_type=diag_coded_type.base_data_type,
             physical_type=physical_type.base_data_type,
         )
@@ -65,12 +65,12 @@ class DtcDop(DopBase):
         if (dtcs_elem := et_element.find("DTCS")) is not None:
             for dtc_proxy_elem in dtcs_elem:
                 if dtc_proxy_elem.tag == "DTC":
-                    dtcs_raw.append(DiagnosticTroubleCode.from_et(dtc_proxy_elem, doc_frags))
+                    dtcs_raw.append(DiagnosticTroubleCode.from_et(dtc_proxy_elem, context))
                 elif dtc_proxy_elem.tag == "DTC-REF":
-                    dtcs_raw.append(OdxLinkRef.from_et(dtc_proxy_elem, doc_frags))
+                    dtcs_raw.append(OdxLinkRef.from_et(dtc_proxy_elem, context))
 
         linked_dtc_dops_raw = [
-            LinkedDtcDop.from_et(dtc_ref_elem, doc_frags)
+            LinkedDtcDop.from_et(dtc_ref_elem, context)
             for dtc_ref_elem in et_element.iterfind("LINKED-DTC-DOPS/"
                                                     "LINKED-DTC-DOP")
         ]

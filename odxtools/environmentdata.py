@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .utils import dataclass_fields_asdict
 
 
@@ -23,10 +23,9 @@ class EnvironmentData(BasicStructure):
     dtc_values: list[int]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "EnvironmentData":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EnvironmentData":
         """Reads Environment Data from Diag Layer."""
-        kwargs = dataclass_fields_asdict(BasicStructure.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(BasicStructure.from_et(et_element, context))
 
         all_value_elem = et_element.find("ALL-VALUE")
         all_value = None if all_value_elem is None else True

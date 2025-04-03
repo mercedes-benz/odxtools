@@ -9,7 +9,7 @@ from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import odxassert, odxraise, odxrequire
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .odxtypes import AtomicOdxType, BytesTypes, DataType, odxstr_to_bool
 from .utils import dataclass_fields_asdict, read_hex_binary
 
@@ -31,9 +31,8 @@ class StandardLengthType(DiagCodedType):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "StandardLengthType":
-        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "StandardLengthType":
+        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, context))
 
         bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))
         bit_mask = read_hex_binary(et_element.find("BIT-MASK"))

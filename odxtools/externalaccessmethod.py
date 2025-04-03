@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .utils import dataclass_fields_asdict
 
 
@@ -13,9 +13,8 @@ class ExternalAccessMethod(IdentifiableElement):
     method: str
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "ExternalAccessMethod":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ExternalAccessMethod":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         method = odxrequire(et_element.findtext("METHOD"))
 

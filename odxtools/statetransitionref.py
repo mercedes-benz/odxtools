@@ -6,7 +6,8 @@ from xml.etree import ElementTree
 from .basicstructure import BasicStructure
 from .dataobjectproperty import DataObjectProperty
 from .exceptions import odxassert, odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import ParameterValue, ParameterValueDict
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.parameter import Parameter
@@ -170,9 +171,8 @@ class StateTransitionRef(OdxLinkRef):
 
     @staticmethod
     def from_et(  # type: ignore[override]
-            et_element: ElementTree.Element,
-            doc_frags: list[OdxDocFragment]) -> "StateTransitionRef":
-        kwargs = dataclass_fields_asdict(OdxLinkRef.from_et(et_element, doc_frags))
+            et_element: ElementTree.Element, context: OdxDocContext) -> "StateTransitionRef":
+        kwargs = dataclass_fields_asdict(OdxLinkRef.from_et(et_element, context))
 
         value = et_element.findtext("VALUE")
 

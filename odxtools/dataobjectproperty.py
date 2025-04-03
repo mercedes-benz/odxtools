@@ -12,7 +12,8 @@ from .dopbase import DopBase
 from .encodestate import EncodeState
 from .exceptions import EncodeError, odxraise, odxrequire
 from .internalconstr import InternalConstr
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType, BytesTypes, ParameterValue
 from .physicaltype import PhysicalType
 from .snrefcontext import SnRefContext
@@ -49,30 +50,28 @@ class DataObjectProperty(DopBase):
         return self._unit
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "DataObjectProperty":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DataObjectProperty":
         """Reads a DATA-OBJECT-PROP."""
-        kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, context))
 
         diag_coded_type = create_any_diag_coded_type_from_et(
-            odxrequire(et_element.find("DIAG-CODED-TYPE")), doc_frags)
-        physical_type = PhysicalType.from_et(
-            odxrequire(et_element.find("PHYSICAL-TYPE")), doc_frags)
+            odxrequire(et_element.find("DIAG-CODED-TYPE")), context)
+        physical_type = PhysicalType.from_et(odxrequire(et_element.find("PHYSICAL-TYPE")), context)
         compu_method = create_any_compu_method_from_et(
             odxrequire(et_element.find("COMPU-METHOD")),
-            doc_frags,
+            context,
             internal_type=diag_coded_type.base_data_type,
             physical_type=physical_type.base_data_type,
         )
         internal_constr = None
         if (internal_constr_elem := et_element.find("INTERNAL-CONSTR")) is not None:
             internal_constr = InternalConstr.constr_from_et(
-                internal_constr_elem, doc_frags, value_type=diag_coded_type.base_data_type)
-        unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
+                internal_constr_elem, context, value_type=diag_coded_type.base_data_type)
+        unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), context)
         physical_constr = None
         if (physical_constr_elem := et_element.find("PHYS-CONSTR")) is not None:
             physical_constr = InternalConstr.constr_from_et(
-                physical_constr_elem, doc_frags, value_type=physical_type.base_data_type)
+                physical_constr_elem, context, value_type=physical_type.base_data_type)
 
         return DataObjectProperty(
             compu_method=compu_method,

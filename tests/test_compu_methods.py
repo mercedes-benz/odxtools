@@ -5,6 +5,7 @@ import unittest
 from xml.etree import ElementTree
 
 import jinja2
+from packaging.version import Version
 
 import odxtools
 from odxtools.compumethods.compucategory import CompuCategory
@@ -22,6 +23,7 @@ from odxtools.compumethods.ratfunccompumethod import RatFuncCompuMethod
 from odxtools.compumethods.scaleratfunccompumethod import ScaleRatFuncCompuMethod
 from odxtools.compumethods.tabintpcompumethod import TabIntpCompuMethod
 from odxtools.exceptions import DecodeError, EncodeError, OdxError
+from odxtools.odxdoccontext import OdxDocContext
 from odxtools.odxlink import DocType, OdxDocFragment
 from odxtools.odxtypes import DataType
 from odxtools.progcode import ProgCode
@@ -108,7 +110,7 @@ class TestLinearCompuMethod(unittest.TestCase):
         et_element = ElementTree.fromstring(self.linear_compumethod_xml)
         actual = create_any_compu_method_from_et(
             et_element,
-            doc_frags,
+            OdxDocContext(Version("2.2.0"), doc_frags),
             internal_type=expected.internal_type,
             physical_type=expected.physical_type)
         self.assertIsInstance(actual, LinearCompuMethod)
@@ -888,7 +890,7 @@ class TestTabIntpCompuMethod(unittest.TestCase):
         et_element = ElementTree.fromstring(self.tab_intp_compumethod_xml)
         actual = create_any_compu_method_from_et(
             et_element,
-            doc_frags,
+            OdxDocContext(Version("2.2.0"), doc_frags),
             internal_type=expected.internal_type,
             physical_type=expected.physical_type)
         self.assertIsInstance(actual, TabIntpCompuMethod)

@@ -7,7 +7,8 @@ from .diagclasstype import DiagClassType
 from .diagcomm import DiagComm
 from .exceptions import odxassert, odxraise, odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .snrefcontext import SnRefContext
 from .table import Table
 
@@ -45,23 +46,22 @@ class DynIdDefModeInfo:
         return self._selection_tables
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "DynIdDefModeInfo":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DynIdDefModeInfo":
         def_mode = odxrequire(et_element.findtext("DEF-MODE"))
 
         clear_dyn_def_message_ref = OdxLinkRef.from_et(
-            et_element.find("CLEAR-DYN-DEF-MESSAGE-REF"), doc_frags)
+            et_element.find("CLEAR-DYN-DEF-MESSAGE-REF"), context)
         clear_dyn_def_message_snref = None
         if (snref_elem := et_element.find("CLEAR-DYN-DEF-MESSAGE-SNREF")) is not None:
             clear_dyn_def_message_snref = odxrequire(snref_elem.attrib.get("SHORT-NAME"))
 
         read_dyn_def_message_ref = OdxLinkRef.from_et(
-            et_element.find("READ-DYN-DEF-MESSAGE-REF"), doc_frags)
+            et_element.find("READ-DYN-DEF-MESSAGE-REF"), context)
         read_dyn_def_message_snref = None
         if (snref_elem := et_element.find("READ-DYN-DEF-MESSAGE-SNREF")) is not None:
             read_dyn_def_message_snref = odxrequire(snref_elem.attrib.get("SHORT-NAME"))
 
-        dyn_def_message_ref = OdxLinkRef.from_et(et_element.find("DYN-DEF-MESSAGE-REF"), doc_frags)
+        dyn_def_message_ref = OdxLinkRef.from_et(et_element.find("DYN-DEF-MESSAGE-REF"), context)
         dyn_def_message_snref = None
         if (snref_elem := et_element.find("DYN-DEF-MESSAGE-SNREF")) is not None:
             dyn_def_message_snref = odxrequire(snref_elem.attrib.get("SHORT-NAME"))
@@ -75,7 +75,7 @@ class DynIdDefModeInfo:
         if (st_elems := et_element.find("SELECTION-TABLE-REFS")) is not None:
             for st_elem in st_elems:
                 if st_elem.tag == "SELECTION-TABLE-REF":
-                    selection_table_refs.append(OdxLinkRef.from_et(st_elem, doc_frags))
+                    selection_table_refs.append(OdxLinkRef.from_et(st_elem, context))
                 elif st_elem.tag == "SELECTION-TABLE-SNREF":
                     selection_table_refs.append(odxrequire(st_elem.get("SHORT-NAME")))
                 else:

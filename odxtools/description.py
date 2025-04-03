@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 
 from .exceptions import odxrequire
 from .externaldoc import ExternalDoc
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 
 
 @dataclass
@@ -16,7 +16,7 @@ class Description:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element | None,
-                doc_frags: list[OdxDocFragment]) -> Optional["Description"]:
+                context: OdxDocContext) -> Optional["Description"]:
         if et_element is None:
             return None
 
@@ -35,7 +35,7 @@ class Description:
 
         external_docs = \
             [
-                odxrequire(ExternalDoc.from_et(ed, doc_frags)) for ed in et_element.iterfind("EXTERNAL-DOCS/EXTERNAL-DOC")
+                odxrequire(ExternalDoc.from_et(ed, context)) for ed in et_element.iterfind("EXTERNAL-DOCS/EXTERNAL-DOC")
             ]
 
         text_identifier = et_element.attrib.get("TI")

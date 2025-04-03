@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -29,9 +30,9 @@ class Library(IdentifiableElement):
         return self._code
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Library":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Library":
 
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         code_file = odxrequire(et_element.findtext("CODE-FILE"))
         encryption = et_element.findtext("ENCRYPTION")

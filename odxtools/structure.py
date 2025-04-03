@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .odxtypes import odxstr_to_bool
 from .utils import dataclass_fields_asdict
 
@@ -17,9 +17,9 @@ class Structure(BasicStructure):
         return self.is_visible_raw in (True, None)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Structure":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Structure":
         """Read a STRUCTURE element from XML."""
-        kwargs = dataclass_fields_asdict(BasicStructure.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(BasicStructure.from_et(et_element, context))
 
         is_visible_raw = odxstr_to_bool(et_element.get("IS-VISIBLE"))
 

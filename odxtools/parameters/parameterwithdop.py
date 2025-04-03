@@ -11,7 +11,8 @@ from ..dopbase import DopBase
 from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
 from ..exceptions import odxassert, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from ..odxtypes import AtomicOdxType, ParameterValue
 from ..physicaltype import PhysicalType
 from ..snrefcontext import SnRefContext
@@ -32,12 +33,11 @@ class ParameterWithDOP(Parameter):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "ParameterWithDOP":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ParameterWithDOP":
 
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, context))
 
-        dop_ref = OdxLinkRef.from_et(et_element.find("DOP-REF"), doc_frags)
+        dop_ref = OdxLinkRef.from_et(et_element.find("DOP-REF"), context)
         dop_snref = None
         if (dop_snref_elem := et_element.find("DOP-SNREF")) is not None:
             dop_snref = odxrequire(dop_snref_elem.get("SHORT-NAME"))

@@ -4,7 +4,7 @@ from typing import Optional, overload
 from xml.etree import ElementTree
 
 from ..exceptions import odxraise
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import AtomicOdxType, DataType, compare_odx_values
 from .intervaltype import IntervalType
 
@@ -21,18 +21,18 @@ class Limit:
 
     @staticmethod
     @overload
-    def limit_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment],
+    def limit_from_et(et_element: ElementTree.Element, context: OdxDocContext,
                       value_type: DataType | None) -> "Limit":
         ...
 
     @staticmethod
     @overload
-    def limit_from_et(et_element: None, doc_frags: list[OdxDocFragment],
+    def limit_from_et(et_element: None, context: OdxDocContext,
                       value_type: DataType | None) -> None:
         ...
 
     @staticmethod
-    def limit_from_et(et_element: ElementTree.Element | None, doc_frags: list[OdxDocFragment],
+    def limit_from_et(et_element: ElementTree.Element | None, context: OdxDocContext,
                       value_type: DataType | None) -> Optional["Limit"]:
 
         if et_element is None:

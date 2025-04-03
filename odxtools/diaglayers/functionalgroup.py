@@ -10,7 +10,8 @@ from typing_extensions import override
 from ..diagvariable import DiagVariable
 from ..exceptions import odxassert
 from ..nameditemlist import NamedItemList
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkRef
 from ..parentref import ParentRef
 from ..variablegroup import VariableGroup
 from .diaglayer import DiagLayer
@@ -44,9 +45,8 @@ class FunctionalGroup(HierarchyElement):
         return self.functional_group_raw.parent_refs
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "FunctionalGroup":
-        functional_group_raw = FunctionalGroupRaw.from_et(et_element, doc_frags)
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "FunctionalGroup":
+        functional_group_raw = FunctionalGroupRaw.from_et(et_element, context)
 
         return FunctionalGroup(diag_layer_raw=functional_group_raw)
 

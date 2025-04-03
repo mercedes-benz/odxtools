@@ -10,7 +10,8 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import odxassert, odxraise, odxrequire
 from .field import Field
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
@@ -24,8 +25,8 @@ class StaticField(Field):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "StaticField":
-        kwargs = dataclass_fields_asdict(Field.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "StaticField":
+        kwargs = dataclass_fields_asdict(Field.from_et(et_element, context))
 
         fixed_number_of_items = int(odxrequire(et_element.findtext('FIXED-NUMBER-OF-ITEMS')))
         item_byte_size = int(odxrequire(et_element.findtext('ITEM-BYTE-SIZE')))

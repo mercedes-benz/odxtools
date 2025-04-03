@@ -7,7 +7,8 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .encoding import Encoding
 from .exceptions import odxassert, odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import AtomicOdxType, DataType, odxstr_to_bool
 from .snrefcontext import SnRefContext
 
@@ -38,8 +39,7 @@ class DiagCodedType:
         return self.is_highlow_byte_order_raw in [None, True]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "DiagCodedType":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DiagCodedType":
         base_type_encoding = None
         if (base_type_encoding_str := et_element.get("BASE-TYPE-ENCODING")) is not None:
             try:

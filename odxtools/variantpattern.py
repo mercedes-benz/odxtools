@@ -5,7 +5,7 @@ from xml.etree import ElementTree
 
 from .exceptions import odxraise
 from .matchingparameter import MatchingParameter
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 
 if TYPE_CHECKING:
     from .matchingbasevariantparameter import MatchingBaseVariantParameter
@@ -33,6 +33,5 @@ class VariantPattern:
         return []
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "VariantPattern":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "VariantPattern":
         return VariantPattern()

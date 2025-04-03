@@ -3,7 +3,8 @@ from dataclasses import dataclass
 from typing import Any
 from xml.etree import ElementTree
 
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .relateddoc import RelatedDoc
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
@@ -15,16 +16,13 @@ class CompanySpecificInfo:
     sdgs: list[SpecialDataGroup]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "CompanySpecificInfo":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "CompanySpecificInfo":
         related_docs = [
-            RelatedDoc.from_et(rd, doc_frags)
+            RelatedDoc.from_et(rd, context)
             for rd in et_element.iterfind("RELATED-DOCS/RELATED-DOC")
         ]
 
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         return CompanySpecificInfo(related_docs=related_docs, sdgs=sdgs)
 

@@ -7,7 +7,8 @@ from .diaglayers.diaglayer import DiagLayer
 from .diagnostictroublecode import DiagnosticTroubleCode
 from .diagservice import DiagService
 from .exceptions import odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, resolve_snref
 from .odxtypes import BytesTypes, ParameterValue, ParameterValueDict
 from .snrefcontext import SnRefContext
 
@@ -38,8 +39,7 @@ class MatchingParameter:
     out_param_if_snpathref: str | None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "MatchingParameter":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "MatchingParameter":
 
         expected_value = odxrequire(et_element.findtext("EXPECTED-VALUE"))
         diag_comm_snref = odxrequire(

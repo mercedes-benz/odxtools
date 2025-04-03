@@ -8,6 +8,8 @@ from itertools import chain
 from typing import Any
 from xml.etree import ElementTree
 
+from packaging.version import Version
+
 import odxtools.uds as uds
 from odxtools.additionalaudience import AdditionalAudience
 from odxtools.admindata import AdminData
@@ -44,6 +46,7 @@ from odxtools.exceptions import odxrequire
 from odxtools.functionalclass import FunctionalClass
 from odxtools.modification import Modification
 from odxtools.nameditemlist import NamedItemList
+from odxtools.odxdoccontext import OdxDocContext
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.parameters.codedconstparameter import CodedConstParameter
@@ -75,6 +78,8 @@ from odxtools.unitgroup import UnitGroup
 from odxtools.unitgroupcategory import UnitGroupCategory
 from odxtools.unitspec import UnitSpec
 from odxtools.xdoc import XDoc
+
+ODX_VERSION = Version("2.2.0")
 
 
 class SomersaultSID(IntEnum):
@@ -3020,14 +3025,14 @@ for odx_cs_filename in (
     odx_cs_root = ElementTree.parse(odx_cs_dir / odx_cs_filename).getroot()
     subset = odx_cs_root.find("COMPARAM-SUBSET")
     if subset is not None:
-        comparam_subsets.append(ComparamSubset.from_et(subset, []))
+        comparam_subsets.append(ComparamSubset.from_et(subset, OdxDocContext(ODX_VERSION, [])))
 
 comparam_specs = []
 for odx_c_filename in ("UDSOnCAN_CPS.odx-c",):
     odx_c_root = ElementTree.parse(odx_cs_dir / odx_c_filename).getroot()
     subset = odx_c_root.find("COMPARAM-SPEC")
     if subset is not None:
-        comparam_specs.append(ComparamSpec.from_et(subset, []))
+        comparam_specs.append(ComparamSpec.from_et(subset, OdxDocContext(ODX_VERSION, [])))
 
 # create a database object
 database = Database()

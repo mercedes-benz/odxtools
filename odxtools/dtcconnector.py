@@ -7,7 +7,8 @@ from .diagnostictroublecode import DiagnosticTroubleCode
 from .dtcdop import DtcDop
 from .element import NamedElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -26,10 +27,10 @@ class DtcConnector(NamedElement):
         return self._dtc
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DtcConnector":
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DtcConnector":
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
-        dtc_dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DTC-DOP-REF"), doc_frags))
+        dtc_dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DTC-DOP-REF"), context))
         dtc_snref_el = odxrequire(et_element.find("DTC-SNREF"))
         dtc_snref = odxrequire(dtc_snref_el.get("SHORT-NAME"))
 

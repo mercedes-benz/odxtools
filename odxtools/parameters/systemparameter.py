@@ -8,7 +8,7 @@ from typing_extensions import override
 
 from ..encodestate import EncodeState
 from ..exceptions import odxraise, odxrequire
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import ParameterType
@@ -48,9 +48,8 @@ class SystemParameter(ParameterWithDOP):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "SystemParameter":
-        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SystemParameter":
+        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, context))
 
         sysparam = odxrequire(et_element.get("SYSPARAM"))
 

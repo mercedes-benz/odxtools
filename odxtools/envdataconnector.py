@@ -7,7 +7,8 @@ from .element import NamedElement
 from .environmentdata import EnvironmentData
 from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -26,12 +27,11 @@ class EnvDataConnector(NamedElement):
         return self._env_data
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "EnvDataConnector":
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EnvDataConnector":
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
         env_data_desc_ref = odxrequire(
-            OdxLinkRef.from_et(et_element.find("ENV-DATA-DESC-REF"), doc_frags))
+            OdxLinkRef.from_et(et_element.find("ENV-DATA-DESC-REF"), context))
         env_data_snref_el = odxrequire(et_element.find("ENV-DATA-SNREF"))
         env_data_snref = odxrequire(env_data_snref_el.get("SHORT-NAME"))
 

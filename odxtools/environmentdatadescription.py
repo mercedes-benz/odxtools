@@ -13,7 +13,8 @@ from .encodestate import EncodeState
 from .environmentdata import EnvironmentData
 from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import DataType, ParameterValue, ParameterValueDict
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.parameter import Parameter
@@ -46,9 +47,9 @@ class EnvironmentDataDescription(ComplexDop):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "EnvironmentDataDescription":
+                context: OdxDocContext) -> "EnvironmentDataDescription":
         """Reads Environment Data Description from Diag Layer."""
-        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, context))
 
         param_snref = None
         if (param_snref_elem := et_element.find("PARAM-SNREF")) is not None:
@@ -63,11 +64,11 @@ class EnvironmentDataDescription(ComplexDop):
         # empty and one non-empty list here. (Which is which depends
         # on the version of the standard used by the file.)
         env_datas = NamedItemList([
-            EnvironmentData.from_et(env_data_elem, doc_frags)
+            EnvironmentData.from_et(env_data_elem, context)
             for env_data_elem in et_element.iterfind("ENV-DATAS/ENV-DATA")
         ])
         env_data_refs = [
-            odxrequire(OdxLinkRef.from_et(env_data_ref, doc_frags))
+            odxrequire(OdxLinkRef.from_et(env_data_ref, context))
             for env_data_ref in et_element.iterfind("ENV-DATA-REFS/ENV-DATA-REF")
         ]
 

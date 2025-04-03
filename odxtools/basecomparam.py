@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .standardizationlevel import StandardizationLevel
 from .usage import Usage
@@ -20,8 +21,8 @@ class BaseComparam(IdentifiableElement):
     cpusage: Usage | None  # Required in ODX 2.2, missing in ODX 2.0
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "BaseComparam":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "BaseComparam":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         param_class = odxrequire(et_element.attrib.get("PARAM-CLASS"))
 

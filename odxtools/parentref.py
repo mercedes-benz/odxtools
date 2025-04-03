@@ -5,7 +5,8 @@ from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -27,9 +28,9 @@ class ParentRef:
         return self._layer
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "ParentRef":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ParentRef":
 
-        layer_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
+        layer_ref = odxrequire(OdxLinkRef.from_et(et_element, context))
 
         not_inherited_diag_comms = [
             odxrequire(el.get("SHORT-NAME"))

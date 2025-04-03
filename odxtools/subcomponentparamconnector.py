@@ -7,7 +7,8 @@ from .diagservice import DiagService
 from .element import IdentifiableElement
 from .exceptions import odxassert, odxraise, odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, resolve_snref
 from .parameters.parameter import Parameter
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
@@ -35,8 +36,8 @@ class SubComponentParamConnector(IdentifiableElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "SubComponentParamConnector":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+                context: OdxDocContext) -> "SubComponentParamConnector":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         diag_comm_snref = odxrequire(
             odxrequire(et_element.find("DIAG-COMM-SNREF")).get("SHORT-NAME"))

@@ -12,7 +12,8 @@ from ..dyndefinedspec import DynDefinedSpec
 from ..ecuvariantpattern import EcuVariantPattern
 from ..exceptions import odxassert
 from ..nameditemlist import NamedItemList
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkRef
 from ..parentref import ParentRef
 from ..variablegroup import HasVariableGroups, VariableGroup
 from .basevariant import BaseVariant
@@ -75,8 +76,8 @@ class EcuVariant(HierarchyElement):
     #######
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "EcuVariant":
-        ecu_variant_raw = EcuVariantRaw.from_et(et_element, doc_frags)
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EcuVariant":
+        ecu_variant_raw = EcuVariantRaw.from_et(et_element, context)
 
         return EcuVariant(diag_layer_raw=ecu_variant_raw)
 

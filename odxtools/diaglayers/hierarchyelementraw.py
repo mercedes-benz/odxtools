@@ -4,7 +4,8 @@ from typing import Any
 from xml.etree import ElementTree
 
 from ..comparaminstance import ComparamInstance
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
 from .diaglayerraw import DiagLayerRaw
@@ -20,18 +21,16 @@ class HierarchyElementRaw(DiagLayerRaw):
     comparam_refs: list[ComparamInstance]
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "HierarchyElementRaw":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "HierarchyElementRaw":
         # objects contained by diagnostic layers exibit an additional
         # document fragment for the diag layer, so we use the document
         # fragments of the odx id of the diag layer for IDs of
         # contained objects.
-        dlr = DiagLayerRaw.from_et(et_element, doc_frags)
+        dlr = DiagLayerRaw.from_et(et_element, context)
         kwargs = dataclass_fields_asdict(dlr)
-        doc_frags = dlr.odx_id.doc_fragments
 
         comparam_refs = [
-            ComparamInstance.from_et(el, doc_frags)
+            ComparamInstance.from_et(el, context)
             for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")
         ]
 

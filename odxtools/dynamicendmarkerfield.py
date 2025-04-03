@@ -12,7 +12,8 @@ from .dynenddopref import DynEndDopRef
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from .field import Field
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import AtomicOdxType, ParameterValue
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
@@ -33,14 +34,13 @@ class DynamicEndmarkerField(Field):
         return self._termination_value
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "DynamicEndmarkerField":
-        kwargs = dataclass_fields_asdict(Field.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DynamicEndmarkerField":
+        kwargs = dataclass_fields_asdict(Field.from_et(et_element, context))
 
         # ODX 2.0 uses DATA-OBJECT-PROP-REF
         # ODX 2.2 uses DYN-END-DOP-REF
         dop_ref = et_element.find("DYN-END-DOP-REF") or et_element.find("DATA-OBJECT-PROP-REF")
-        dyn_end_dop_ref = DynEndDopRef.from_et(odxrequire(dop_ref), doc_frags)
+        dyn_end_dop_ref = DynEndDopRef.from_et(odxrequire(dop_ref), context)
 
         return DynamicEndmarkerField(dyn_end_dop_ref=dyn_end_dop_ref, **kwargs)
 

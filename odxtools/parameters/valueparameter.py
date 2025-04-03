@@ -8,7 +8,8 @@ from typing_extensions import override
 from ..dataobjectproperty import DataObjectProperty
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType, ParameterValue
 from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
@@ -41,10 +42,9 @@ class ValueParameter(ParameterWithDOP):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "ValueParameter":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ValueParameter":
 
-        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, context))
 
         physical_default_value_raw = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
 

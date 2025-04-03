@@ -6,7 +6,8 @@ from xml.etree import ElementTree
 from .companyrevisioninfo import CompanyRevisionInfo
 from .exceptions import odxrequire
 from .modification import Modification
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 from .teammember import TeamMember
 
@@ -30,22 +31,22 @@ class DocRevision:
         return self._team_member
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "DocRevision":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DocRevision":
 
-        team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), doc_frags)
+        team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), context)
         revision_label = et_element.findtext("REVISION-LABEL")
         state = et_element.findtext("STATE")
         date = odxrequire(et_element.findtext("DATE"))
         tool = et_element.findtext("TOOL")
 
         company_revision_infos = [
-            CompanyRevisionInfo.from_et(cri_elem, doc_frags)
+            CompanyRevisionInfo.from_et(cri_elem, context)
             for cri_elem in et_element.iterfind("COMPANY-REVISION-INFOS/"
                                                 "COMPANY-REVISION-INFO")
         ]
 
         modifications = [
-            Modification.from_et(mod_elem, doc_frags)
+            Modification.from_et(mod_elem, context)
             for mod_elem in et_element.iterfind("MODIFICATIONS/MODIFICATION")
         ]
 

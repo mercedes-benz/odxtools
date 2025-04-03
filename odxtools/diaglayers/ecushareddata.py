@@ -7,14 +7,15 @@ from xml.etree import ElementTree
 from ..diagvariable import DiagVariable
 from ..exceptions import odxassert
 from ..nameditemlist import NamedItemList
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkRef
 from ..snrefcontext import SnRefContext
 from ..variablegroup import VariableGroup
 from .diaglayer import DiagLayer
 from .ecushareddataraw import EcuSharedDataRaw
 
 if TYPE_CHECKING:
-    from .database import Database
+    from ..database import Database
 
 
 @dataclass
@@ -39,9 +40,8 @@ class EcuSharedData(DiagLayer):
         return self.ecu_shared_data_raw.variable_groups
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "EcuSharedData":
-        ecu_shared_data_raw = EcuSharedDataRaw.from_et(et_element, doc_frags)
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EcuSharedData":
+        ecu_shared_data_raw = EcuSharedDataRaw.from_et(et_element, context)
 
         return EcuSharedData(diag_layer_raw=ecu_shared_data_raw)
 

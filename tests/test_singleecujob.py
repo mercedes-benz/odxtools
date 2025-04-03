@@ -7,6 +7,7 @@ from typing import NamedTuple, cast
 from xml.etree import ElementTree
 
 import jinja2
+from packaging.version import Version
 
 import odxtools
 from odxtools.additionalaudience import AdditionalAudience
@@ -31,6 +32,7 @@ from odxtools.inputparam import InputParam
 from odxtools.library import Library
 from odxtools.nameditemlist import NamedItemList
 from odxtools.negoutputparam import NegOutputParam
+from odxtools.odxdoccontext import OdxDocContext
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.outputparam import OutputParam
@@ -358,7 +360,7 @@ class TestSingleEcuJob(unittest.TestCase):
         expected = self.singleecujob_object
         sample_single_ecu_job_odx = self.singleecujob_odx
         et_element = ElementTree.fromstring(sample_single_ecu_job_odx)
-        sej = SingleEcuJob.from_et(et_element, doc_frags)
+        sej = SingleEcuJob.from_et(et_element, OdxDocContext(Version("2.2.0"), doc_frags))
         self.assertEqual(expected.prog_codes, sej.prog_codes)
         self.assertEqual(expected.output_params, sej.output_params)
         self.assertEqual(expected.neg_output_params, sej.neg_output_params)
@@ -395,7 +397,8 @@ class TestSingleEcuJob(unittest.TestCase):
 
         # Assert equality of objects
         # This tests the idempotency of read-write
-        sej = SingleEcuJob.from_et(ElementTree.fromstring(rawodx), doc_frags)
+        sej = SingleEcuJob.from_et(
+            ElementTree.fromstring(rawodx), OdxDocContext(Version("2.2.0"), doc_frags))
         self.assertEqual(self.singleecujob_object, sej)
 
     def test_default_lists(self) -> None:

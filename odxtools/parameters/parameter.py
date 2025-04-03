@@ -8,7 +8,8 @@ from typing_extensions import final, override
 from ..decodestate import DecodeState
 from ..element import NamedElement
 from ..encodestate import EncodeState
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
 from ..snrefcontext import SnRefContext
 from ..specialdatagroup import SpecialDataGroup
@@ -78,13 +79,11 @@ class Parameter(NamedElement):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Parameter":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Parameter":
 
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
         semantic = et_element.attrib.get("SEMANTIC")
         oid = et_element.attrib.get("OID")
         byte_position_str = et_element.findtext("BYTE-POSITION")

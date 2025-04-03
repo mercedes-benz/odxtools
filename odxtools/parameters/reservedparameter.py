@@ -7,7 +7,7 @@ from typing_extensions import override
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import odxrequire
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import DataType, ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
@@ -34,9 +34,8 @@ class ReservedParameter(Parameter):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "ReservedParameter":
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ReservedParameter":
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, context))
 
         bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))
 

@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .element import NamedElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .snrefcontext import SnRefContext
 from .table import Table
 from .tablerow import TableRow
@@ -26,11 +27,10 @@ class TableRowConnector(NamedElement):
         return self._table_row
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: list[OdxDocFragment]) -> "TableRowConnector":
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "TableRowConnector":
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
-        table_ref = odxrequire(OdxLinkRef.from_et(et_element.find("TABLE-REF"), doc_frags))
+        table_ref = odxrequire(OdxLinkRef.from_et(et_element.find("TABLE-REF"), context))
         table_row_snref_el = odxrequire(et_element.find("TABLE-ROW-SNREF"))
         table_row_snref = odxrequire(table_row_snref_el.get("SHORT-NAME"))
 

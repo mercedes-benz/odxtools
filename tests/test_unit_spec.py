@@ -2,6 +2,8 @@
 import unittest
 from xml.etree import ElementTree
 
+from packaging.version import Version
+
 from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.identicalcompumethod import IdenticalCompuMethod
 from odxtools.database import Database
@@ -12,6 +14,7 @@ from odxtools.diaglayers.ecuvariant import EcuVariant
 from odxtools.diaglayers.ecuvariantraw import EcuVariantRaw
 from odxtools.exceptions import odxrequire
 from odxtools.nameditemlist import NamedItemList
+from odxtools.odxdoccontext import OdxDocContext
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.parameters.codedconstparameter import CodedConstParameter
@@ -84,7 +87,7 @@ class TestUnitSpec(unittest.TestCase):
             </UNIT-SPEC>
         """
         et_element = ElementTree.fromstring(sample_unit_spec_odx)
-        spec = UnitSpec.from_et(et_element, doc_frags)
+        spec = UnitSpec.from_et(et_element, OdxDocContext(Version("2.2.0"), doc_frags))
         self.assertEqual(expected.units, spec.units)
         self.assertEqual(expected.physical_dimensions, spec.physical_dimensions)
         self.assertEqual(expected.unit_groups, spec.unit_groups)

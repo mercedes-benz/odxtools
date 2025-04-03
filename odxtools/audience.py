@@ -5,7 +5,8 @@ from xml.etree import ElementTree
 
 from .additionalaudience import AdditionalAudience
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
 
@@ -50,15 +51,14 @@ class Audience:
         return self._disabled_audiences
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment]) -> "Audience":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Audience":
 
         enabled_audience_refs = [
-            OdxLinkRef.from_et(ref, doc_frags)
-            for ref in et_element.iterfind("ENABLED-AUDIENCE-REFS/"
-                                           "ENABLED-AUDIENCE-REF")
+            OdxLinkRef.from_et(ref, context) for ref in et_element.iterfind("ENABLED-AUDIENCE-REFS/"
+                                                                            "ENABLED-AUDIENCE-REF")
         ]
         disabled_audience_refs = [
-            OdxLinkRef.from_et(ref, doc_frags)
+            OdxLinkRef.from_et(ref, context)
             for ref in et_element.iterfind("DISABLED-AUDIENCE-REFS/"
                                            "DISABLED-AUDIENCE-REF")
         ]

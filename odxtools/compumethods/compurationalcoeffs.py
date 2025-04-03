@@ -4,7 +4,7 @@ from typing import cast
 from xml.etree import ElementTree
 
 from ..exceptions import odxassert, odxrequire
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import DataType
 
 
@@ -16,7 +16,7 @@ class CompuRationalCoeffs:
     denominators: list[int | float]
 
     @staticmethod
-    def coeffs_from_et(et_element: ElementTree.Element, doc_frags: list[OdxDocFragment], *,
+    def coeffs_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                        value_type: DataType) -> "CompuRationalCoeffs":
         odxassert(
             value_type
