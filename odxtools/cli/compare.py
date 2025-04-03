@@ -4,7 +4,7 @@
 import argparse
 import os
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Union
 
 from rich import print as rich_print
 from rich.padding import Padding as RichPadding
@@ -76,6 +76,7 @@ class Display:
             rich_print(extract_service_tabulation_data(service_spec.new_services))
         if service_spec.deleted_services:
             assert isinstance(service_spec.deleted_services, List)
+
             rich_print()
             rich_print(" [blue]Deleted services[/blue]")
             rich_print(extract_service_tabulation_data(service_spec.deleted_services))
@@ -160,9 +161,9 @@ class Display:
 
 
 class Comparison(Display):
-    databases: List[Database] = []  # storage of database objects
-    diagnostic_layers: List[DiagLayer] = []  # storage of DiagLayer objects
-    diagnostic_layer_names: Set[str] = set()  # storage of diagnostic layer names
+    databases: list[Database] = []  # storage of database objects
+    diagnostic_layers: list[DiagLayer] = []  # storage of DiagLayer objects
+    diagnostic_layer_names: set[str] = set()  # storage of diagnostic layer names
 
     db_indicator_1: int
     db_indicator_2: int
@@ -170,7 +171,7 @@ class Comparison(Display):
     def __init__(self) -> None:
         pass
 
-    def compare_parameters(self, param1: Parameter, param2: Parameter) -> Dict[str, Any]:
+    def compare_parameters(self, param1: Parameter, param2: Parameter) -> dict[str, Any]:
         # checks whether properties of param1 and param2 differ
         # checked properties: Name, Byte Position, Bit Length, Semantic, Parameter Type, Value (Coded, Constant, Default etc.), Data Type, Data Object Property (Name, Physical Data Type, Unit)
 
@@ -178,8 +179,8 @@ class Comparison(Display):
         old = []
         new = []
 
-        def append_list(property_name: str, new_property_value: Optional[AtomicOdxType],
-                        old_property_value: Optional[AtomicOdxType]) -> None:
+        def append_list(property_name: str, new_property_value: AtomicOdxType | None,
+                        old_property_value: AtomicOdxType | None) -> None:
             property.append(property_name)
             old.append(old_property_value)
             new.append(new_property_value)
@@ -278,9 +279,10 @@ class Comparison(Display):
         return {"Property": property, "Old Value": old, "New Value": new}
 
     def compare_services(self, service1: DiagService, service2: DiagService) -> List[DiagService]:
+
         # compares request, positive response and negative response parameters of two diagnostic services
 
-        information: List[Union[str, Dict[str, Any]]] = [
+        information: list[str | dict[str, Any]] = [
         ]  # information = [infotext1, table1, infotext2, table2, ...]
         changed_params = ""
 
@@ -429,7 +431,7 @@ class Comparison(Display):
         dl1_request_prefixes: List[Optional[bytes]] = [
             None if s.request is None else s.request.coded_const_prefix() for s in dl1.services
         ]
-        dl2_request_prefixes: List[Optional[bytes]] = [
+        dl2_request_prefixes: list[bytes | None] = [
             None if s.request is None else s.request.coded_const_prefix() for s in dl2.services
         ]
 
@@ -437,7 +439,7 @@ class Comparison(Display):
         for service1 in dl1.services:
 
             # check for added diagnostic services
-            rq_prefix: Optional[bytes] = None
+            rq_prefix: bytes | None = None
             if service1.request is not None:
                 rq_prefix = service1.request.coded_const_prefix()
 
