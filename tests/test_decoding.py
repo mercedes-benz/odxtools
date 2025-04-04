@@ -46,7 +46,7 @@ from odxtools.structure import Structure
 from odxtools.termination import Termination
 from odxtools.text import Text
 
-doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
+doc_frags = (OdxDocFragment("UnitTest", DocType.CONTAINER),)
 
 
 class TestIdentifyingService(unittest.TestCase):

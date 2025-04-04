@@ -38,7 +38,7 @@ from odxtools.request import Request
 from odxtools.standardlengthtype import StandardLengthType
 from odxtools.termination import Termination
 
-doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
+doc_frags = (OdxDocFragment("UnitTest", DocType.CONTAINER),)
 
 
 class TestLeadingLengthInfoType(unittest.TestCase):
@@ -729,8 +729,8 @@ class TestMinMaxLengthType(unittest.TestCase):
         odx_element = ElementTree.fromstring(diagcodedtype_odx)
         diag_coded_type_element = odxrequire(odx_element.find("DIAG-CODED-TYPE"))
 
-        actual = create_any_diag_coded_type_from_et(diag_coded_type_element,
-                                                    OdxDocContext(Version("2.2.0"), doc_frags))
+        actual = create_any_diag_coded_type_from_et(
+            diag_coded_type_element, OdxDocContext(Version("2.2.0"), list(doc_frags)))
 
         self.assertIsInstance(actual, MinMaxLengthType)
         assert isinstance(actual, MinMaxLengthType)

@@ -26,7 +26,7 @@ from odxtools.standardlengthtype import StandardLengthType
 from odxtools.unit import Unit
 from odxtools.unitspec import UnitSpec
 
-doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
+doc_frags = (OdxDocFragment("UnitTest", DocType.CONTAINER),)
 
 
 class TestUnitSpec(unittest.TestCase):
@@ -72,7 +72,7 @@ class TestUnitSpec(unittest.TestCase):
             </UNIT-SPEC>
         """
         et_element = ElementTree.fromstring(sample_unit_spec_odx)
-        spec = UnitSpec.from_et(et_element, OdxDocContext(Version("2.2.0"), doc_frags))
+        spec = UnitSpec.from_et(et_element, OdxDocContext(Version("2.2.0"), list(doc_frags)))
         self.assertEqual(expected.units, spec.units)
         self.assertEqual(expected.physical_dimensions, spec.physical_dimensions)
         self.assertEqual(expected.unit_groups, spec.unit_groups)

@@ -41,7 +41,7 @@ from odxtools.snrefcontext import SnRefContext
 from odxtools.standardlengthtype import StandardLengthType
 from odxtools.text import Text
 
-doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
+doc_frags = (OdxDocFragment("UnitTest", DocType.CONTAINER),)
 
 
 class TestEncodeRequest(unittest.TestCase):
