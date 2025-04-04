@@ -46,7 +46,7 @@ class OdxLinkId:
 
     #: The name and type of the document fragment to which the
     #: `local_id` is relative to
-    doc_fragments: list[OdxDocFragment]
+    doc_fragments: tuple[OdxDocFragment, ...]
 
     def __hash__(self) -> int:
         # we do not hash about the document fragment here, because
@@ -79,7 +79,7 @@ class OdxLinkId:
         if local_id is None:
             return None
 
-        return OdxLinkId(local_id, context.doc_fragments)
+        return OdxLinkId(local_id, tuple(context.doc_fragments))
 
 
 @dataclass
@@ -95,7 +95,7 @@ class OdxLinkRef:
     ref_id: str
 
     #: The document fragments to which the `ref_id` refers to (in reverse order)
-    ref_docs: list[OdxDocFragment]
+    ref_docs: tuple[OdxDocFragment, ...]
 
     # TODO: this is difficult because OdxLinkRef is derived from and
     # we do not want having to specify it mandatorily
@@ -148,7 +148,7 @@ class OdxLinkRef:
         else:
             doc_frags = context.doc_fragments
 
-        return OdxLinkRef(id_ref, doc_frags)
+        return OdxLinkRef(id_ref, tuple(doc_frags))
 
     @staticmethod
     def from_id(odxid: OdxLinkId) -> "OdxLinkRef":

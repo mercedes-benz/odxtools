@@ -102,12 +102,12 @@ SID: Any = IntEnum("SID", tmp)  # type: ignore[misc]
 dlc_short_name = "somersault"
 
 # document fragment for everything except the communication parameters
-doc_frags = [OdxDocFragment(dlc_short_name, DocType.CONTAINER)]
+doc_frags = (OdxDocFragment(dlc_short_name, DocType.CONTAINER),)
 
 # document fragments for communication parameters
-cp_dwcan_doc_frags = [OdxDocFragment("ISO_11898_2_DWCAN", DocType.COMPARAM_SUBSET)]
-cp_iso15765_2_doc_frags = [OdxDocFragment("ISO_15765_2", DocType.COMPARAM_SUBSET)]
-cp_iso15765_3_doc_frags = [OdxDocFragment("ISO_15765_3", DocType.COMPARAM_SUBSET)]
+cp_dwcan_doc_frags = (OdxDocFragment("ISO_11898_2_DWCAN", DocType.COMPARAM_SUBSET),)
+cp_iso15765_2_doc_frags = (OdxDocFragment("ISO_15765_2", DocType.COMPARAM_SUBSET),)
+cp_iso15765_3_doc_frags = (OdxDocFragment("ISO_15765_3", DocType.COMPARAM_SUBSET),)
 
 ##################
 # Base variant of Somersault ECU
@@ -2460,9 +2460,8 @@ somersault_protocol_raw = ProtocolRaw(
     additional_audiences=NamedItemList(),
     sdgs=[],
     parent_refs=[],
-    comparam_spec_ref=OdxLinkRef("CPS_ISO_15765_3_on_ISO_15765_2", [
-        OdxDocFragment("ISO_15765_3_on_ISO_15765_2", DocType.COMPARAM_SPEC)
-    ]),
+    comparam_spec_ref=OdxLinkRef("CPS_ISO_15765_3_on_ISO_15765_2", (OdxDocFragment(
+        "ISO_15765_3_on_ISO_15765_2", DocType.COMPARAM_SPEC),)),
     comparam_refs=somersault_comparam_refs,
     libraries=NamedItemList(),
     prot_stack_snref=None,

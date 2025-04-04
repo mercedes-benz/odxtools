@@ -31,7 +31,7 @@ from odxtools.tablerow import TableRow
 from odxtools.text import Text
 
 # the document fragment which is used throughout the test
-doc_frags = [OdxDocFragment("DiagDataDictionarySpecTest", DocType.CONTAINER)]
+doc_frags = (OdxDocFragment("DiagDataDictionarySpecTest", DocType.CONTAINER),)
 
 
 class TestDiagDataDictionarySpec(unittest.TestCase):
