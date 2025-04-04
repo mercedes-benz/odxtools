@@ -10,7 +10,7 @@ from odxtools.odxtypes import DataType
 from odxtools.parameters.createanyparameter import create_any_parameter_from_et
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
 
-doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
+doc_frags = (OdxDocFragment("UnitTest", DocType.CONTAINER),)
 
 
 class TestReadNrcParam(unittest.TestCase):

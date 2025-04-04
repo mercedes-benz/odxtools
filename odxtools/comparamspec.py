@@ -6,7 +6,7 @@ from xml.etree import ElementTree
 from .nameditemlist import NamedItemList
 from .odxcategory import OdxCategory
 from .odxdoccontext import OdxDocContext
-from .odxlink import DocType, OdxLinkDatabase, OdxLinkId
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .protstack import ProtStack
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
@@ -23,7 +23,7 @@ class ComparamSpec(OdxCategory):
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ComparamSpec":
 
-        base_obj = OdxCategory.category_from_et(et_element, context, doc_type=DocType.COMPARAM_SPEC)
+        base_obj = OdxCategory.from_et(et_element, context)
         kwargs = dataclass_fields_asdict(base_obj)
 
         prot_stacks = NamedItemList([

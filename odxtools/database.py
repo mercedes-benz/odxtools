@@ -21,7 +21,7 @@ from .diaglayers.protocol import Protocol
 from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
 from .odxdoccontext import OdxDocContext
-from .odxlink import OdxLinkDatabase, OdxLinkId
+from .odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 
 
@@ -77,10 +77,6 @@ class Database:
         self.auxiliary_files[str(aux_file_name)] = aux_file_obj
 
     def _process_xml_tree(self, root: ElementTree.Element) -> None:
-        dlcs: list[DiagLayerContainer] = []
-        comparam_subsets: list[ComparamSubset] = []
-        comparam_specs: list[ComparamSpec] = []
-
         # ODX spec version
         model_version = Version(root.attrib.get("MODEL-VERSION", "2.0"))
         if self.model_version is not None and self.model_version != model_version:
@@ -89,31 +85,35 @@ class Database:
 
         self.model_version = model_version
 
-        dlc = root.find("DIAG-LAYER-CONTAINER")
-        if dlc is not None:
-            dlcs.append(DiagLayerContainer.from_et(dlc, OdxDocContext(model_version, [])))
+        child_elements = list(root)
+        if len(child_elements) != 1:
+            odxraise("Each ODX document must contain exactly one category.")
 
-        # In ODX 2.0 there was only COMPARAM-SPEC. In ODX 2.2 the
-        # content of COMPARAM-SPEC was moved to COMPARAM-SUBSET
-        # and COMPARAM-SPEC became a container for PROT-STACKS and
-        # a PROT-STACK references a list of COMPARAM-SUBSET
-        cp_subset = root.find("COMPARAM-SUBSET")
-        if cp_subset is not None:
-            comparam_subsets.append(
-                ComparamSubset.from_et(cp_subset, OdxDocContext(model_version, [])))
+        category_et = child_elements[0]
+        category_sn = odxrequire(category_et.findtext("SHORT-NAME"))
 
-        cp_spec = root.find("COMPARAM-SPEC")
-        if cp_spec is not None:
-            if model_version < Version("2.2"):
-                comparam_subsets.append(
-                    ComparamSubset.from_et(cp_spec, OdxDocContext(model_version, [])))
-            else:  # odx >= 2.2
-                comparam_specs.append(
-                    ComparamSpec.from_et(cp_spec, OdxDocContext(model_version, [])))
-
-        self._diag_layer_containers.extend(dlcs)
-        self._comparam_subsets.extend(comparam_subsets)
-        self._comparam_specs.extend(comparam_specs)
+        match category_et.tag:
+            case "DIAG-LAYER-CONTAINER":
+                context = OdxDocContext(model_version,
+                                        (OdxDocFragment(category_sn, DocType.CONTAINER),))
+                self._diag_layer_containers.append(DiagLayerContainer.from_et(category_et, context))
+            case "COMPARAM-SUBSET":
+                context = OdxDocContext(model_version,
+                                        (OdxDocFragment(category_sn, DocType.COMPARAM_SUBSET),))
+                self._comparam_subsets.append(ComparamSubset.from_et(category_et, context))
+            case "COMPARAM-SPEC":
+                # In ODX 2.0 there was only COMPARAM-SPEC. In ODX 2.2 the
+                # content of COMPARAM-SPEC was moved to COMPARAM-SUBSET
+                # and COMPARAM-SPEC became a container for PROT-STACKS and
+                # a PROT-STACK references a list of COMPARAM-SUBSET
+                if model_version < Version("2.2"):
+                    context = OdxDocContext(model_version,
+                                            (OdxDocFragment(category_sn, DocType.COMPARAM_SUBSET),))
+                    self._comparam_subsets.append(ComparamSubset.from_et(category_et, context))
+                else:
+                    context = OdxDocContext(model_version,
+                                            (OdxDocFragment(category_sn, DocType.COMPARAM_SPEC),))
+                    self._comparam_specs.append(ComparamSpec.from_et(category_et, context))
 
     def refresh(self) -> None:
         # Create wrapper objects
