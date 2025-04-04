@@ -1763,14 +1763,19 @@ for odx_cs_filename in (
     odx_cs_root = ElementTree.parse(odx_cs_dir / odx_cs_filename).getroot()
     subset = odx_cs_root.find("COMPARAM-SUBSET")
     if subset is not None:
-        comparam_subsets.append(ComparamSubset.from_et(subset, OdxDocContext(ODX_VERSION, [])))
+        category_sn = odxrequire(subset.findtext("SHORT-NAME"))
+        context = OdxDocContext(ODX_VERSION,
+                                (OdxDocFragment(category_sn, DocType.COMPARAM_SUBSET),))
+        comparam_subsets.append(ComparamSubset.from_et(subset, context))
 
 comparam_specs = []
 for odx_c_filename in ("UDSOnCAN_CPS.odx-c",):
     odx_c_root = ElementTree.parse(odx_cs_dir / odx_c_filename).getroot()
     subset = odx_c_root.find("COMPARAM-SPEC")
     if subset is not None:
-        comparam_specs.append(ComparamSpec.from_et(subset, OdxDocContext(ODX_VERSION, [])))
+        category_sn = odxrequire(subset.findtext("SHORT-NAME"))
+        context = OdxDocContext(ODX_VERSION, (OdxDocFragment(category_sn, DocType.COMPARAM_SPEC),))
+        comparam_specs.append(ComparamSpec.from_et(subset, context))
 
 # create a database object
 database = Database()

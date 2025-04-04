@@ -10,7 +10,7 @@ from odxtools.exceptions import OdxError
 from odxtools.odxdoccontext import OdxDocContext
 from odxtools.odxlink import DocType, OdxDocFragment
 
-doc_frags = [OdxDocFragment(doc_name="pytest", doc_type=DocType.CONTAINER)]
+doc_frags = (OdxDocFragment(doc_name="pytest", doc_type=DocType.CONTAINER),)
 
 
 @pytest.fixture()

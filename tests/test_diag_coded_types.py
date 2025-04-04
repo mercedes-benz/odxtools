@@ -729,8 +729,8 @@ class TestMinMaxLengthType(unittest.TestCase):
         odx_element = ElementTree.fromstring(diagcodedtype_odx)
         diag_coded_type_element = odxrequire(odx_element.find("DIAG-CODED-TYPE"))
 
-        actual = create_any_diag_coded_type_from_et(
-            diag_coded_type_element, OdxDocContext(Version("2.2.0"), list(doc_frags)))
+        actual = create_any_diag_coded_type_from_et(diag_coded_type_element,
+                                                    OdxDocContext(Version("2.2.0"), doc_frags))
 
         self.assertIsInstance(actual, MinMaxLengthType)
         assert isinstance(actual, MinMaxLengthType)
