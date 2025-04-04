@@ -6,7 +6,7 @@ from .exceptions import odxrequire
 from .odxdoccontext import OdxDocContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ExternalDoc:
     description: str | None
     href: str

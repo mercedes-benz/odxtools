@@ -24,7 +24,7 @@ def create_complex_value_from_et(et_element: ElementTree.Element) -> ComplexValu
     return result
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ComplexComparam(BaseComparam):
     subparams: NamedItemList[BaseComparam]
     physical_default_value: ComplexValue | None

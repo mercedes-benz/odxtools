@@ -10,7 +10,7 @@ from .odxtypes import DataType
 from .validtype import ValidType
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ScaleConstr:
     """This class represents a SCALE-CONSTR.
     """

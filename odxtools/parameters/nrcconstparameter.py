@@ -17,7 +17,7 @@ from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 
 
-@dataclass
+@dataclass(kw_only=True)
 class NrcConstParameter(Parameter):
     """A parameter of type NRC-CONST defines a set of values to be
     matched for a negative response object to apply

@@ -7,7 +7,7 @@ from .externaldoc import ExternalDoc
 from .odxdoccontext import OdxDocContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Description:
     text: str
     external_docs: list[ExternalDoc]

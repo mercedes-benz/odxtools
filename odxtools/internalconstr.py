@@ -8,7 +8,7 @@ from .odxtypes import DataType
 from .scaleconstr import ScaleConstr
 
 
-@dataclass
+@dataclass(kw_only=True)
 class InternalConstr:
     """This class represents INTERNAL-CONSTR objects.
     """

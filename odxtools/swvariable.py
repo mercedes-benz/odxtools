@@ -7,7 +7,7 @@ from .odxdoccontext import OdxDocContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SwVariable(NamedElement):
     origin: str | None
     oid: str | None

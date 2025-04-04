@@ -13,7 +13,7 @@ from .odxtypes import BytesTypes, ParameterValue, ParameterValueDict
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MatchingParameter:
     """According to ISO 22901, a MatchingParameter contains a string
     value identifying the active ECU or base variant. Moreover, it

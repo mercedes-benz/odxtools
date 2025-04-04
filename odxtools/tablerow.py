@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from .table import Table
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TableRow(IdentifiableElement):
     """This class represents a TABLE-ROW."""
     table_ref: OdxLinkRef

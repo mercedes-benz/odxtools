@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from .response import Response
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Message:
     """A diagnostic message with its interpretation.
 

@@ -17,7 +17,7 @@ from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ValueParameter(ParameterWithDOP):
     physical_default_value_raw: str | None
 

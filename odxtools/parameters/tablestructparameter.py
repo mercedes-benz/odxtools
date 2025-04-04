@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from ..table import Table
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TableStructParameter(Parameter):
     table_key_ref: OdxLinkRef | None
     table_key_snref: str | None

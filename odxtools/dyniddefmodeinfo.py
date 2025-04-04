@@ -13,7 +13,7 @@ from .snrefcontext import SnRefContext
 from .table import Table
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DynIdDefModeInfo:
     def_mode: str
 

@@ -12,7 +12,7 @@ from .compucategory import CompuCategory
 from .compumethod import CompuMethod
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompuCodeCompuMethod(CompuMethod):
     """A compu method specifies the tranfer functions using Java bytecode
 

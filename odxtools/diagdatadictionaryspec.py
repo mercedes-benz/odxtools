@@ -25,7 +25,7 @@ from .table import Table
 from .unitspec import UnitSpec
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagDataDictionarySpec:
     admin_data: AdminData | None
     dtc_dops: NamedItemList[DtcDop]

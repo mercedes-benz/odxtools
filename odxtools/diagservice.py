@@ -21,7 +21,7 @@ from .transmode import TransMode
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagService(DiagComm):
     """Representation of a diagnostic service description.
     """

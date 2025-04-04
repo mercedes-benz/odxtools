@@ -21,7 +21,7 @@ from .diaglayer import DiagLayer
 from .hierarchyelement import HierarchyElement
 
 
-@dataclass
+@dataclass(kw_only=True)
 class BaseVariant(HierarchyElement):
     """This is a diagnostic layer for common functionality of an ECU
     """

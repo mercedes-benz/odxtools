@@ -11,7 +11,7 @@ from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ProgCode:
     """A reference to code that is executed by a single ECU job"""
     code_file: str

@@ -20,7 +20,7 @@ if TYPE_CHECKING:
     from ..tablerow import TableRow
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TableKeyParameter(Parameter):
 
     odx_id: OdxLinkId

@@ -21,7 +21,7 @@ class HasVariableGroups(typing.Protocol):
         ...
 
 
-@dataclass
+@dataclass(kw_only=True)
 class VariableGroup(IdentifiableElement):
 
     @staticmethod

@@ -16,7 +16,7 @@ from .termination import Termination
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MinMaxLengthType(DiagCodedType):
     max_length: int | None
     min_length: int

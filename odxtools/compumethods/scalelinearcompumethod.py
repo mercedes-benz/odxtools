@@ -13,7 +13,7 @@ from .intervaltype import IntervalType
 from .linearsegment import LinearSegment
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ScaleLinearCompuMethod(CompuMethod):
     """A piecewise linear compu method which may feature discontinuities.
 

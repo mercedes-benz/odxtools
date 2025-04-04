@@ -8,7 +8,7 @@ from ..odxdoccontext import OdxDocContext
 from ..odxtypes import DataType
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompuRationalCoeffs:
     value_type: DataType
 

@@ -12,7 +12,7 @@ from .intervaltype import IntervalType
 from .limit import Limit
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TabIntpCompuMethod(CompuMethod):
     """A table-based interpolated compu method provides a continuous
     transfer function based on piecewise linear interpolation.

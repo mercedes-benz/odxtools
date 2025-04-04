@@ -9,7 +9,7 @@ from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Modification:
     change: str
     reason: str | None

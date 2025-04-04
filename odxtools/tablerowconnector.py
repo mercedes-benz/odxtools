@@ -13,7 +13,7 @@ from .tablerow import TableRow
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TableRowConnector(NamedElement):
     table_ref: OdxLinkRef
     table_row_snref: str

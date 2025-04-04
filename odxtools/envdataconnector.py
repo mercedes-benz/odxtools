@@ -13,7 +13,7 @@ from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EnvDataConnector(NamedElement):
     env_data_desc_ref: OdxLinkRef
     env_data_snref: str

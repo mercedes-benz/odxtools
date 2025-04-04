@@ -24,7 +24,7 @@ PREDEFINED_SYSPARAM_VALUES = [
 ]
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SystemParameter(ParameterWithDOP):
     sysparam: str
 

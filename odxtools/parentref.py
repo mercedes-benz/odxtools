@@ -14,7 +14,7 @@ if TYPE_CHECKING:
     from .diaglayers.diaglayer import DiagLayer
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ParentRef:
     layer_ref: OdxLinkRef
     not_inherited_diag_comms: list[str]  # short_name references

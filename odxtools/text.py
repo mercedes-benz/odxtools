@@ -4,7 +4,7 @@ from xml.etree import ElementTree
 from .odxdoccontext import OdxDocContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Text:
     text: str
     text_identifier: str | None

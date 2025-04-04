@@ -10,7 +10,7 @@ from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class AdminData:
     language: str | None
     company_doc_infos: list[CompanyDocInfo]

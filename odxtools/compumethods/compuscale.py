@@ -11,7 +11,7 @@ from .compurationalcoeffs import CompuRationalCoeffs
 from .limit import Limit
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompuScale:
     """A COMPU-SCALE represents one value range of a COMPU-METHOD.
     """

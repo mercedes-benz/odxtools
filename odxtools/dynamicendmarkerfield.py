@@ -19,7 +19,7 @@ from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DynamicEndmarkerField(Field):
     """Array of a structure with variable length determined by a termination sequence"""
 

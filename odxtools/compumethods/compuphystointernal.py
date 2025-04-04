@@ -12,7 +12,7 @@ from .compudefaultvalue import CompuDefaultValue
 from .compuscale import CompuScale
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompuPhysToInternal:
     compu_scales: list[CompuScale]
     prog_code: ProgCode | None

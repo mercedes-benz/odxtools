@@ -14,7 +14,7 @@ from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SubComponentParamConnector(IdentifiableElement):
     diag_comm_snref: str
 

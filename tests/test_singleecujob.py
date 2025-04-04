@@ -105,7 +105,7 @@ class TestSingleEcuJob(unittest.TestCase):
                     compu_internal_to_phys=CompuInternalToPhys(
                         compu_scales=[
                             CompuScale(
-                                "yes",
+                                short_label="yes",
                                 lower_limit=Limit(
                                     value_raw="0", value_type=DataType.A_INT32, interval_type=None),
                                 compu_const=CompuConst(
@@ -118,7 +118,7 @@ class TestSingleEcuJob(unittest.TestCase):
                                 range_type=DataType.A_UNICODE2STRING,
                             ),
                             CompuScale(
-                                "no",
+                                short_label="no",
                                 lower_limit=Limit(
                                     value_raw="1", value_type=DataType.A_INT32, interval_type=None),
                                 compu_const=CompuConst(

@@ -29,7 +29,7 @@ class HasDiagVariables(typing.Protocol):
         ...
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagVariable(IdentifiableElement):
     """Representation of a diagnostic variable
     """

@@ -13,7 +13,7 @@ from .state import State
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class StateTransition(IdentifiableElement):
     """
     Corresponds to STATE-TRANSITION.

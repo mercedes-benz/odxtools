@@ -13,7 +13,7 @@ from .usage import Usage
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class BaseComparam(IdentifiableElement):
     param_class: str
     cptype: StandardizationLevel

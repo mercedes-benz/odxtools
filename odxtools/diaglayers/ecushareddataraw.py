@@ -14,7 +14,7 @@ from ..variablegroup import VariableGroup
 from .diaglayerraw import DiagLayerRaw
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EcuSharedDataRaw(DiagLayerRaw):
     """This is a diagnostic layer for data shared accross others
     """

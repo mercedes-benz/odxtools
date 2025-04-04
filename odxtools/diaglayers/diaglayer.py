@@ -34,7 +34,7 @@ from .diaglayertype import DiagLayerType
 PrefixTree = dict[int, Union[list[DiagService], "PrefixTree"]]
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagLayer:
     """This class represents a "logical view" upon a diagnostic layer
     according to the ODX standard.

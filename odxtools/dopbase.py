@@ -15,7 +15,7 @@ from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DopBase(IdentifiableElement):
     """Base class for all (simple and complex) data object properties.
 

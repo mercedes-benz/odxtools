@@ -10,7 +10,7 @@ from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DetermineNumberOfItems:
     """
     The object that determines the number of items of dynamic fields

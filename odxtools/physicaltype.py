@@ -8,7 +8,7 @@ from .odxtypes import DataType
 from .radix import Radix
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PhysicalType:
     """The physical type describes the base data type of a parameter.
 

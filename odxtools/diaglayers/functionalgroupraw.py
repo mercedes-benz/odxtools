@@ -15,7 +15,7 @@ from ..variablegroup import VariableGroup
 from .hierarchyelementraw import HierarchyElementRaw
 
 
-@dataclass
+@dataclass(kw_only=True)
 class FunctionalGroupRaw(HierarchyElementRaw):
     """This is a diagnostic layer for common functionality of an ECU
     """

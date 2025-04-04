@@ -11,7 +11,7 @@ from .odxdoccontext import OdxDocContext
 from .variantpattern import VariantPattern
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EcuVariantPattern(VariantPattern):
     """ECU variant patterns are variant patterns used to identify the
     concrete variant of an ECU.

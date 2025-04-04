@@ -31,7 +31,7 @@ ParameterType = Literal[
 ]
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Parameter(NamedElement):
     """This class corresponds to POSITIONABLE-PARAM in the ODX
     specification

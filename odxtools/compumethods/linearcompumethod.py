@@ -12,7 +12,7 @@ from .compumethod import CompuMethod
 from .linearsegment import LinearSegment
 
 
-@dataclass
+@dataclass(kw_only=True)
 class LinearCompuMethod(CompuMethod):
     """A compu method which does linear interpoation
 

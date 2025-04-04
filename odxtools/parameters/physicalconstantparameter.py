@@ -18,7 +18,7 @@ from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PhysicalConstantParameter(ParameterWithDOP):
     physical_constant_value_raw: str
 

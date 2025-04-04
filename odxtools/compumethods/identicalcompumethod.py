@@ -9,7 +9,7 @@ from ..utils import dataclass_fields_asdict
 from .compumethod import CompuMethod
 
 
-@dataclass
+@dataclass(kw_only=True)
 class IdenticalCompuMethod(CompuMethod):
     """Identical compu methods just pass through the internal value.
 

@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 TNamed = TypeVar("TNamed", bound=OdxNamed)
 
 
-@dataclass
+@dataclass(kw_only=True)
 class HierarchyElement(DiagLayer):
     """This is the base class for diagnostic layers that may be involved in value inheritance
     """

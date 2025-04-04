@@ -10,7 +10,7 @@ from .snrefcontext import SnRefContext
 from .xdoc import XDoc
 
 
-@dataclass
+@dataclass(kw_only=True)
 class RelatedDoc:
     xdoc: XDoc | None
     description: Description | None

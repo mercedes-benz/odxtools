@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from .parameters.lengthkeyparameter import LengthKeyParameter
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ParamLengthInfoType(DiagCodedType):
     length_key_ref: OdxLinkRef
 

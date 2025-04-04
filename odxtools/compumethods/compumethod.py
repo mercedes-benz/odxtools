@@ -13,7 +13,7 @@ from .compuinternaltophys import CompuInternalToPhys
 from .compuphystointernal import CompuPhysToInternal
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompuMethod:
     """A compu method translates between the internal representation
     of a value and their physical representation.

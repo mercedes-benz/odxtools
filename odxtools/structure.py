@@ -8,7 +8,7 @@ from .odxtypes import odxstr_to_bool
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Structure(BasicStructure):
     is_visible_raw: bool | None
 

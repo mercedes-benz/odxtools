@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from .statemachine import StateMachine
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PreConditionStateRef(OdxLinkRef):
     """
     This class represents the PRE-CONDITION-STATE-REF XML tag.

@@ -8,7 +8,7 @@ from .compuconst import CompuConst
 from .compuinversevalue import CompuInverseValue
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompuDefaultValue(CompuConst):
     compu_inverse_value: CompuInverseValue | None
 

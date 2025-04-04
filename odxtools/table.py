@@ -17,7 +17,7 @@ from .tablerow import TableRow
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Table(IdentifiableElement):
     """This class represents a TABLE."""
     key_label: str | None

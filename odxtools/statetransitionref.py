@@ -147,7 +147,7 @@ def _check_applies(ref: Union["StateTransitionRef",
     return True
 
 
-@dataclass
+@dataclass(kw_only=True)
 class StateTransitionRef(OdxLinkRef):
     """Describes a state transition that is to be potentially taken if
     a diagnostic communication is executed

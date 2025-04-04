@@ -8,7 +8,7 @@ from .odxlink import OdxLinkRef
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class RelatedDiagCommRef(OdxLinkRef):
     relation_type: str
 

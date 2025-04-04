@@ -14,7 +14,7 @@ from .odxtypes import ParameterValue
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EndOfPduField(Field):
     """End of PDU fields are structures that are repeated until the end of the PDU"""
     max_number_of_items: int | None

@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from .statechart import StateChart
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SnRefContext:
     """Represents the context for which a short name reference ought
     to be resolved

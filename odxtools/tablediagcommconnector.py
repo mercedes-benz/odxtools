@@ -10,7 +10,7 @@ from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TableDiagCommConnector:
     semantic: str
 

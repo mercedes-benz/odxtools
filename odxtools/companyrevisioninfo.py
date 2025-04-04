@@ -10,7 +10,7 @@ from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompanyRevisionInfo:
     company_data_ref: OdxLinkRef
     revision_label: str | None
