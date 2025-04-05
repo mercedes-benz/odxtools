@@ -31,7 +31,7 @@ from .diaglayer import DiagLayer
 from .hierarchyelementraw import HierarchyElementRaw
 
 if TYPE_CHECKING:
-    from .database import Database
+    from ..database import Database
     from .protocol import Protocol
 
 TNamed = TypeVar("TNamed", bound=OdxNamed)
