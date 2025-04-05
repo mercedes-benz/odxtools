@@ -91,29 +91,29 @@ class Database:
 
         category_et = child_elements[0]
         category_sn = odxrequire(category_et.findtext("SHORT-NAME"))
+        category_tag = category_et.tag
 
-        match category_et.tag:
-            case "DIAG-LAYER-CONTAINER":
-                context = OdxDocContext(model_version,
-                                        (OdxDocFragment(category_sn, DocType.CONTAINER),))
-                self._diag_layer_containers.append(DiagLayerContainer.from_et(category_et, context))
-            case "COMPARAM-SUBSET":
+        if category_tag == "DIAG-LAYER-CONTAINER":
+            context = OdxDocContext(model_version,
+                                    (OdxDocFragment(category_sn, DocType.CONTAINER),))
+            self._diag_layer_containers.append(DiagLayerContainer.from_et(category_et, context))
+        elif category_tag == "COMPARAM-SUBSET":
+            context = OdxDocContext(model_version,
+                                    (OdxDocFragment(category_sn, DocType.COMPARAM_SUBSET),))
+            self._comparam_subsets.append(ComparamSubset.from_et(category_et, context))
+        elif category_tag == "COMPARAM-SPEC":
+            # In ODX 2.0 there was only COMPARAM-SPEC. In ODX 2.2 the
+            # content of COMPARAM-SPEC was moved to COMPARAM-SUBSET
+            # and COMPARAM-SPEC became a container for PROT-STACKS and
+            # a PROT-STACK references a list of COMPARAM-SUBSET
+            if model_version < Version("2.2"):
                 context = OdxDocContext(model_version,
                                         (OdxDocFragment(category_sn, DocType.COMPARAM_SUBSET),))
                 self._comparam_subsets.append(ComparamSubset.from_et(category_et, context))
-            case "COMPARAM-SPEC":
-                # In ODX 2.0 there was only COMPARAM-SPEC. In ODX 2.2 the
-                # content of COMPARAM-SPEC was moved to COMPARAM-SUBSET
-                # and COMPARAM-SPEC became a container for PROT-STACKS and
-                # a PROT-STACK references a list of COMPARAM-SUBSET
-                if model_version < Version("2.2"):
-                    context = OdxDocContext(model_version,
-                                            (OdxDocFragment(category_sn, DocType.COMPARAM_SUBSET),))
-                    self._comparam_subsets.append(ComparamSubset.from_et(category_et, context))
-                else:
-                    context = OdxDocContext(model_version,
-                                            (OdxDocFragment(category_sn, DocType.COMPARAM_SPEC),))
-                    self._comparam_specs.append(ComparamSpec.from_et(category_et, context))
+            else:
+                context = OdxDocContext(model_version,
+                                        (OdxDocFragment(category_sn, DocType.COMPARAM_SPEC),))
+                self._comparam_specs.append(ComparamSpec.from_et(category_et, context))
 
     def refresh(self) -> None:
         # Create wrapper objects
