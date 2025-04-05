@@ -38,7 +38,7 @@ from odxtools.request import Request
 from odxtools.standardlengthtype import StandardLengthType
 from odxtools.termination import Termination
 
-doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
+doc_frags = (OdxDocFragment("UnitTest", DocType.CONTAINER),)
 
 
 class TestLeadingLengthInfoType(unittest.TestCase):

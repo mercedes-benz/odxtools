@@ -8,4 +8,7 @@ if TYPE_CHECKING:
 
 class OdxDocContext(NamedTuple):
     version: Version
-    doc_fragments: list["OdxDocFragment"]
+
+    # the doc_fragments are either tuple(doc_frag(category),)
+    # or tuple(doc_frag(category), doc_frag(diag_layer))
+    doc_fragments: tuple["OdxDocFragment"] | tuple["OdxDocFragment", "OdxDocFragment"]

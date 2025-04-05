@@ -22,7 +22,7 @@ from odxtools.request import Request
 from odxtools.response import Response, ResponseType
 from odxtools.variantmatcher import VariantMatcher
 
-doc_frags = [OdxDocFragment(doc_name="pytest", doc_type=DocType.CONTAINER)]
+doc_frags = (OdxDocFragment(doc_name="pytest", doc_type=DocType.CONTAINER),)
 
 odxlinks = OdxLinkDatabase()
 
