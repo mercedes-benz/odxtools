@@ -30,7 +30,7 @@ class UnitSpec:
     unit_groups: NamedItemList[UnitGroup] = field(default_factory=NamedItemList)
     units: NamedItemList[Unit] = field(default_factory=NamedItemList)
     physical_dimensions: NamedItemList[PhysicalDimension] = field(default_factory=NamedItemList)
-    sdgs: list[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self.unit_groups = NamedItemList(self.unit_groups)

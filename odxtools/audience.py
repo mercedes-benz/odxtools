@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -13,8 +13,8 @@ from .snrefcontext import SnRefContext
 
 @dataclass(kw_only=True)
 class Audience:
-    enabled_audience_refs: list[OdxLinkRef]
-    disabled_audience_refs: list[OdxLinkRef]
+    enabled_audience_refs: list[OdxLinkRef] = field(default_factory=list)
+    disabled_audience_refs: list[OdxLinkRef] = field(default_factory=list)
 
     is_supplier_raw: bool | None = None
     is_development_raw: bool | None = None

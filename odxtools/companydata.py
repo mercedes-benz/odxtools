@@ -16,7 +16,7 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class CompanyData(IdentifiableElement):
-    roles: list[str]
+    roles: list[str] = field(default_factory=list)
     team_members: NamedItemList[TeamMember] = field(default_factory=NamedItemList)
     company_specific_info: CompanySpecificInfo | None = None
 

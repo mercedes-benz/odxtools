@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, cast
 from xml.etree import ElementTree
 
@@ -31,8 +31,8 @@ class DtcDop(DopBase):
     diag_coded_type: DiagCodedType
     physical_type: PhysicalType
     compu_method: CompuMethod
-    dtcs_raw: list[DiagnosticTroubleCode | OdxLinkRef]
-    linked_dtc_dops_raw: list[LinkedDtcDop]
+    dtcs_raw: list[DiagnosticTroubleCode | OdxLinkRef] = field(default_factory=list)
+    linked_dtc_dops_raw: list[LinkedDtcDop] = field(default_factory=list)
     is_visible_raw: bool | None = None
 
     @property

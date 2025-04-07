@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Optional, TypeVar, overload
 from xml.etree import ElementTree
@@ -46,7 +46,7 @@ class OdxLinkId:
 
     #: The name and type of the document fragment to which the
     #: `local_id` is relative to
-    doc_fragments: list[OdxDocFragment]
+    doc_fragments: list[OdxDocFragment] = field(default_factory=list)
 
     def __hash__(self) -> int:
         # we do not hash about the document fragment here, because
@@ -95,7 +95,7 @@ class OdxLinkRef:
     ref_id: str
 
     #: The document fragments to which the `ref_id` refers to (in reverse order)
-    ref_docs: list[OdxDocFragment]
+    ref_docs: list[OdxDocFragment] = field(default_factory=list)
 
     # TODO: this is difficult because OdxLinkRef is derived from and
     # we do not want having to specify it mandatorily

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -25,7 +25,7 @@ class ProtocolRaw(HierarchyElementRaw):
 
     comparam_spec_ref: OdxLinkRef
     prot_stack_snref: str | None = None
-    parent_refs: list[ParentRef]
+    parent_refs: list[ParentRef] = field(default_factory=list)
 
     @property
     def comparam_spec(self) -> ComparamSpec:

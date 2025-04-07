@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -19,8 +19,8 @@ class SubComponentParamConnector(IdentifiableElement):
     diag_comm_snref: str
 
     # TODO: we currently only support SNREFs, not SNPATHREFs
-    out_param_if_refs: list[str]
-    in_param_if_refs: list[str]
+    out_param_if_refs: list[str] = field(default_factory=list)
+    in_param_if_refs: list[str] = field(default_factory=list)
 
     @property
     def service(self) -> DiagService:

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -23,8 +23,8 @@ class DocRevision:
     state: str | None = None
     date: str
     tool: str | None = None
-    company_revision_infos: list[CompanyRevisionInfo]
-    modifications: list[Modification]
+    company_revision_infos: list[CompanyRevisionInfo] = field(default_factory=list)
+    modifications: list[Modification] = field(default_factory=list)
 
     @property
     def team_member(self) -> TeamMember | None:

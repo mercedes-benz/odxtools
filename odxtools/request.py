@@ -32,7 +32,7 @@ class Request(IdentifiableElement):
     """
     admin_data: AdminData | None = None
     parameters: NamedItemList[Parameter] = field(default_factory=NamedItemList)
-    sdgs: list[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @property
     def required_parameters(self) -> list[Parameter]:

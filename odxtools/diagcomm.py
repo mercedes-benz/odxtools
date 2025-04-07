@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
@@ -36,13 +36,13 @@ class DiagComm(IdentifiableElement):
     """
 
     admin_data: AdminData | None = None
-    sdgs: list[SpecialDataGroup]
-    functional_class_refs: list[OdxLinkRef]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
+    functional_class_refs: list[OdxLinkRef] = field(default_factory=list)
     audience: Audience | None = None
-    protocol_snrefs: list[str]
-    related_diag_comm_refs: list[RelatedDiagCommRef]
-    pre_condition_state_refs: list[PreConditionStateRef]
-    state_transition_refs: list[StateTransitionRef]
+    protocol_snrefs: list[str] = field(default_factory=list)
+    related_diag_comm_refs: list[RelatedDiagCommRef] = field(default_factory=list)
+    pre_condition_state_refs: list[PreConditionStateRef] = field(default_factory=list)
+    state_transition_refs: list[StateTransitionRef] = field(default_factory=list)
 
     # attributes
     semantic: str | None = None

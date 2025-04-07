@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from xml.etree import ElementTree
 
 from .compumethods.limit import Limit
@@ -17,7 +17,7 @@ class InternalConstr:
 
     lower_limit: Limit | None = None
     upper_limit: Limit | None = None
-    scale_constrs: list[ScaleConstr]
+    scale_constrs: list[ScaleConstr] = field(default_factory=list)
 
     value_type: DataType
 

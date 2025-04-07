@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -13,7 +13,7 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class TeamMember(IdentifiableElement):
-    roles: list[str]
+    roles: list[str] = field(default_factory=list)
     department: str | None = None
     address: str | None = None
     zipcode: str | None = None  # the tag for this is "ZIP", but `zip` is a keyword in python

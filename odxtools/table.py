@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -24,9 +24,9 @@ class Table(IdentifiableElement):
     struct_label: str | None = None
     admin_data: AdminData | None = None
     key_dop_ref: OdxLinkRef | None = None
-    table_rows_raw: list[TableRow | OdxLinkRef]
-    table_diag_comm_connectors: list[TableDiagCommConnector]
-    sdgs: list[SpecialDataGroup]
+    table_rows_raw: list[TableRow | OdxLinkRef] = field(default_factory=list)
+    table_diag_comm_connectors: list[TableDiagCommConnector] = field(default_factory=list)
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
     semantic: str | None = None
 
     @property

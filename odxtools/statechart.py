@@ -20,7 +20,7 @@ class StateChart(IdentifiableElement):
     Corresponds to STATE-CHART.
     """
     semantic: str
-    state_transitions: list[StateTransition]
+    state_transitions: list[StateTransition] = field(default_factory=list)
     start_state_snref: str
     states: NamedItemList[State] = field(default_factory=NamedItemList)
 

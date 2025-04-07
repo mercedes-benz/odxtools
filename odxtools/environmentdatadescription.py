@@ -43,7 +43,7 @@ class EnvironmentDataDescription(ComplexDop):
     # sub-element of ENV-DATA-DESC, in ODX 2.2 it is not
     # present
     env_datas: NamedItemList[EnvironmentData] = field(default_factory=NamedItemList)
-    env_data_refs: list[OdxLinkRef]
+    env_data_refs: list[OdxLinkRef] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,

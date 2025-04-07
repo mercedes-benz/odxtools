@@ -41,7 +41,7 @@ class DiagDataDictionarySpec:
     env_datas: NamedItemList[EnvironmentData] = field(default_factory=NamedItemList)
     unit_spec: UnitSpec | None = None
     tables: NamedItemList[Table] = field(default_factory=NamedItemList)
-    sdgs: list[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,

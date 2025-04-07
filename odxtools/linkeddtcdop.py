@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 @dataclass(kw_only=True)
 class LinkedDtcDop:
-    not_inherited_dtc_snrefs: list[str]
+    not_inherited_dtc_snrefs: list[str] = field(default_factory=list)
     dtc_dop_ref: OdxLinkRef
 
     @property

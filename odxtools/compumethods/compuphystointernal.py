@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -14,7 +14,7 @@ from .compuscale import CompuScale
 
 @dataclass(kw_only=True)
 class CompuPhysToInternal:
-    compu_scales: list[CompuScale]
+    compu_scales: list[CompuScale] = field(default_factory=list)
     prog_code: ProgCode | None = None
     compu_default_value: CompuDefaultValue | None = None
 

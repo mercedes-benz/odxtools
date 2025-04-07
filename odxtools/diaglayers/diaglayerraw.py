@@ -40,17 +40,17 @@ class DiagLayerRaw(IdentifiableElement):
     company_datas: NamedItemList[CompanyData] = field(default_factory=NamedItemList)
     functional_classes: NamedItemList[FunctionalClass] = field(default_factory=NamedItemList)
     diag_data_dictionary_spec: DiagDataDictionarySpec | None = None
-    diag_comms_raw: list[OdxLinkRef | DiagComm]
+    diag_comms_raw: list[OdxLinkRef | DiagComm] = field(default_factory=list)
     requests: NamedItemList[Request] = field(default_factory=NamedItemList)
     positive_responses: NamedItemList[Response] = field(default_factory=NamedItemList)
     negative_responses: NamedItemList[Response] = field(default_factory=NamedItemList)
     global_negative_responses: NamedItemList[Response] = field(default_factory=NamedItemList)
-    import_refs: list[OdxLinkRef]
+    import_refs: list[OdxLinkRef] = field(default_factory=list)
     state_charts: NamedItemList[StateChart] = field(default_factory=NamedItemList)
     additional_audiences: NamedItemList[AdditionalAudience] = field(default_factory=NamedItemList)
     sub_components: NamedItemList[SubComponent] = field(default_factory=NamedItemList)
     libraries: NamedItemList[Library] = field(default_factory=NamedItemList)
-    sdgs: list[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @property
     def diag_comms(self) -> NamedItemList[DiagComm]:

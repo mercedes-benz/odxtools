@@ -19,11 +19,11 @@ from .hierarchyelementraw import HierarchyElementRaw
 
 @dataclass(kw_only=True)
 class EcuVariantRaw(HierarchyElementRaw):
-    diag_variables_raw: list[DiagVariable | OdxLinkRef]
+    diag_variables_raw: list[DiagVariable | OdxLinkRef] = field(default_factory=list)
     variable_groups: NamedItemList[VariableGroup] = field(default_factory=NamedItemList)
-    ecu_variant_patterns: list[EcuVariantPattern]
+    ecu_variant_patterns: list[EcuVariantPattern] = field(default_factory=list)
     dyn_defined_spec: DynDefinedSpec | None = None
-    parent_refs: list[ParentRef]
+    parent_refs: list[ParentRef] = field(default_factory=list)
 
     @property
     def diag_variables(self) -> NamedItemList[DiagVariable]:

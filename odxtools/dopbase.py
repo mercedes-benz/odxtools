@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -26,7 +26,7 @@ class DopBase(IdentifiableElement):
     """
 
     admin_data: AdminData | None = None
-    sdgs: list[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DopBase":

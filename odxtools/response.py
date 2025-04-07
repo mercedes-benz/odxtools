@@ -42,7 +42,7 @@ class Response(IdentifiableElement):
 
     admin_data: AdminData | None = None
     parameters: NamedItemList[Parameter] = field(default_factory=NamedItemList)
-    sdgs: list[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Response":

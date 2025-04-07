@@ -19,7 +19,7 @@ class EcuSharedDataRaw(DiagLayerRaw):
     """This is a diagnostic layer for data shared accross others
     """
 
-    diag_variables_raw: list[DiagVariable | OdxLinkRef]
+    diag_variables_raw: list[DiagVariable | OdxLinkRef] = field(default_factory=list)
     variable_groups: NamedItemList[VariableGroup] = field(default_factory=NamedItemList)
 
     @property

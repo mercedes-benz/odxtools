@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -16,7 +16,8 @@ class BaseVariantPattern(VariantPattern):
     """Base variant patterns are variant patterns used to identify the
     base variant of an ECU.
     """
-    matching_base_variant_parameters: list[MatchingBaseVariantParameter]
+    matching_base_variant_parameters: list[MatchingBaseVariantParameter] = field(
+        default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "BaseVariantPattern":

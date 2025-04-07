@@ -26,7 +26,7 @@ class SubComponent(IdentifiableElement):
 
     """
 
-    sub_component_patterns: list[SubComponentPattern]
+    sub_component_patterns: list[SubComponentPattern] = field(default_factory=list)
     sub_component_param_connectors: NamedItemList[SubComponentParamConnector] = field(
         default_factory=NamedItemList)
     table_row_connectors: NamedItemList[TableRowConnector] = field(default_factory=NamedItemList)

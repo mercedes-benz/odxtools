@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Union
 from xml.etree import ElementTree
 
@@ -15,7 +15,7 @@ class SpecialDataGroup:
     """This corresponds to the SDG XML tag"""
     sdg_caption: SpecialDataGroupCaption | None = None
     sdg_caption_ref: OdxLinkRef | None = None
-    values: list[Union["SpecialDataGroup", SpecialData]]
+    values: list[Union["SpecialDataGroup", SpecialData]] = field(default_factory=list)
     semantic_info: str | None  # the "SI" attribute
 
     @staticmethod

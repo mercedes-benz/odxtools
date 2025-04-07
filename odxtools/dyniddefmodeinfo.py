@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -26,8 +26,8 @@ class DynIdDefModeInfo:
     dyn_def_message_ref: OdxLinkRef | None = None
     dyn_def_message_snref: str | None = None
 
-    supported_dyn_ids: list[bytes]
-    selection_table_refs: list[OdxLinkRef | str]
+    supported_dyn_ids: list[bytes] = field(default_factory=list)
+    selection_table_refs: list[OdxLinkRef | str] = field(default_factory=list)
 
     @property
     def clear_dyn_def_message(self) -> DiagComm:

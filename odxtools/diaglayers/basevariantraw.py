@@ -22,11 +22,11 @@ class BaseVariantRaw(HierarchyElementRaw):
     """This is a diagnostic layer for common functionality of an ECU
     """
 
-    diag_variables_raw: list[DiagVariable | OdxLinkRef]
+    diag_variables_raw: list[DiagVariable | OdxLinkRef] = field(default_factory=list)
     variable_groups: NamedItemList[VariableGroup] = field(default_factory=NamedItemList)
     dyn_defined_spec: DynDefinedSpec | None = None
     base_variant_pattern: BaseVariantPattern | None = None
-    parent_refs: list[ParentRef]
+    parent_refs: list[ParentRef] = field(default_factory=list)
 
     @property
     def diag_variables(self) -> NamedItemList[DiagVariable]:

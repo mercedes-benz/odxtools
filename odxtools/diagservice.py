@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, cast
 from xml.etree import ElementTree
 
@@ -26,10 +26,10 @@ class DiagService(DiagComm):
     """Representation of a diagnostic service description.
     """
 
-    comparam_refs: list[ComparamInstance]
+    comparam_refs: list[ComparamInstance] = field(default_factory=list)
     request_ref: OdxLinkRef
-    pos_response_refs: list[OdxLinkRef]
-    neg_response_refs: list[OdxLinkRef]
+    pos_response_refs: list[OdxLinkRef] = field(default_factory=list)
+    neg_response_refs: list[OdxLinkRef] = field(default_factory=list)
     pos_response_suppressible: PosResponseSuppressible | None = None
 
     is_cyclic_raw: bool | None = None

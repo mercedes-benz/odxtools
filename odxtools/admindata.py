@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Optional
 from xml.etree import ElementTree
 
@@ -13,8 +13,8 @@ from .snrefcontext import SnRefContext
 @dataclass(kw_only=True)
 class AdminData:
     language: str | None = None
-    company_doc_infos: list[CompanyDocInfo]
-    doc_revisions: list[DocRevision]
+    company_doc_infos: list[CompanyDocInfo] = field(default_factory=list)
+    doc_revisions: list[DocRevision] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element | None,

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 @dataclass(kw_only=True)
 class SubComponentPattern:
-    matching_parameters: list["MatchingParameter"]
+    matching_parameters: list["MatchingParameter"] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SubComponentPattern":

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -18,7 +18,7 @@ class HierarchyElementRaw(DiagLayerRaw):
     This class represents the data present in the XML, not the "logical" view.
     """
 
-    comparam_refs: list[ComparamInstance]
+    comparam_refs: list[ComparamInstance] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "HierarchyElementRaw":

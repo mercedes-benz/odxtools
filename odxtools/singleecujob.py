@@ -31,7 +31,7 @@ class SingleEcuJob(DiagComm):
     standard.
     """
 
-    prog_codes: list[ProgCode]
+    prog_codes: list[ProgCode] = field(default_factory=list)
     input_params: NamedItemList[InputParam] = field(default_factory=NamedItemList)
     output_params: NamedItemList[OutputParam] = field(default_factory=NamedItemList)
     neg_output_params: NamedItemList[NegOutputParam] = field(default_factory=NamedItemList)

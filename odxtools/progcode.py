@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, cast
 from xml.etree import ElementTree
 
@@ -19,7 +19,7 @@ class ProgCode:
     syntax: str
     revision: str
     entrypoint: str | None = None
-    library_refs: list[OdxLinkRef]
+    library_refs: list[OdxLinkRef] = field(default_factory=list)
 
     @property
     def code(self) -> bytes:

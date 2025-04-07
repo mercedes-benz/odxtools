@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
@@ -39,11 +39,11 @@ class TableRow(IdentifiableElement):
     structure_ref: OdxLinkRef | None = None
     structure_snref: str | None = None
 
-    sdgs: list[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
     audience: Audience | None = None
-    functional_class_refs: list[OdxLinkRef]
-    state_transition_refs: list[StateTransitionRef]
-    pre_condition_state_refs: list[PreConditionStateRef]
+    functional_class_refs: list[OdxLinkRef] = field(default_factory=list)
+    state_transition_refs: list[StateTransitionRef] = field(default_factory=list)
+    pre_condition_state_refs: list[PreConditionStateRef] = field(default_factory=list)
     admin_data: AdminData | None = None
 
     is_executable_raw: bool | None = None

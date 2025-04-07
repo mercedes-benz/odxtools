@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Literal
 from xml.etree import ElementTree
 
@@ -43,7 +43,7 @@ class Parameter(NamedElement):
     non-positionable parameter types.
 
     """
-    sdgs: list[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
     semantic: str | None = None
     oid: str | None = None
     byte_position: int | None = None

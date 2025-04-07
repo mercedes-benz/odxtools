@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 import typing
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, runtime_checkable
 from xml.etree import ElementTree
 
@@ -36,17 +36,17 @@ class DiagVariable(IdentifiableElement):
 
     admin_data: AdminData | None = None
     variable_group_ref: OdxLinkRef | None = None
-    sw_variables: list[SwVariable]
+    sw_variables: list[SwVariable] = field(default_factory=list)
 
     # a diag variable must specify either COMM-RELATIONS or a
     # reference to a table row
-    comm_relations: list[CommRelation]
+    comm_relations: list[CommRelation] = field(default_factory=list)
 
     # these are nested inside the SNREF-TO-TABLEROW tag
     table_snref: str | None = None
     table_row_snref: str | None = None
 
-    sdgs: list[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     is_read_before_write_raw: bool | None = None
 

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -20,7 +20,7 @@ class DiagnosticTroubleCode(IdentifiableElement):
     display_trouble_code: str | None = None
     text: Text
     level: int | None = None
-    sdgs: list[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     is_temporary_raw: bool | None = None
 
