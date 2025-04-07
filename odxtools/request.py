@@ -30,7 +30,7 @@ class Request(IdentifiableElement):
 
     This class implements the `CompositeCodec` interface.
     """
-    admin_data: AdminData | None
+    admin_data: AdminData | None = None
     parameters: NamedItemList[Parameter]
     sdgs: list[SpecialDataGroup]
 

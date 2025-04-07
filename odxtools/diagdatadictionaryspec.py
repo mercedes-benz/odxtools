@@ -27,7 +27,7 @@ from .unitspec import UnitSpec
 
 @dataclass(kw_only=True)
 class DiagDataDictionarySpec:
-    admin_data: AdminData | None
+    admin_data: AdminData | None = None
     dtc_dops: NamedItemList[DtcDop]
     env_data_descs: NamedItemList[EnvironmentDataDescription]
     data_object_props: NamedItemList[DataObjectProperty]
@@ -38,7 +38,7 @@ class DiagDataDictionarySpec:
     end_of_pdu_fields: NamedItemList[EndOfPduField]
     muxs: NamedItemList[Multiplexer]
     env_datas: NamedItemList[EnvironmentData]
-    unit_spec: UnitSpec | None
+    unit_spec: UnitSpec | None = None
     tables: NamedItemList[Table]
     sdgs: list[SpecialDataGroup]
 

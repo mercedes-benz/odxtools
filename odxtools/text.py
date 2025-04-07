@@ -7,7 +7,7 @@ from .odxdoccontext import OdxDocContext
 @dataclass(kw_only=True)
 class Text:
     text: str
-    text_identifier: str | None
+    text_identifier: str | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Text":

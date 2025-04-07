@@ -15,8 +15,8 @@ from .utils import dataclass_fields_asdict
 @dataclass(kw_only=True)
 class MultiplexerDefaultCase(NamedElement):
     """This class represents a Default Case, which is selected when there are no cases defined in the Multiplexer."""
-    structure_ref: OdxLinkRef | None
-    structure_snref: str | None
+    structure_ref: OdxLinkRef | None = None
+    structure_snref: str | None = None
 
     @property
     def structure(self) -> Structure | None:

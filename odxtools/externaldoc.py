@@ -8,7 +8,7 @@ from .odxdoccontext import OdxDocContext
 
 @dataclass(kw_only=True)
 class ExternalDoc:
-    description: str | None
+    description: str | None = None
     href: str
 
     @staticmethod

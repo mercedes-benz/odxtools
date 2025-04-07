@@ -16,11 +16,11 @@ class Audience:
     enabled_audience_refs: list[OdxLinkRef]
     disabled_audience_refs: list[OdxLinkRef]
 
-    is_supplier_raw: bool | None
-    is_development_raw: bool | None
-    is_manufacturing_raw: bool | None
-    is_aftersales_raw: bool | None
-    is_aftermarket_raw: bool | None
+    is_supplier_raw: bool | None = None
+    is_development_raw: bool | None = None
+    is_manufacturing_raw: bool | None = None
+    is_aftersales_raw: bool | None = None
+    is_aftermarket_raw: bool | None = None
 
     @property
     def is_supplier(self) -> bool:

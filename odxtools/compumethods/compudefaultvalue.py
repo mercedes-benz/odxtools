@@ -10,7 +10,7 @@ from .compuinversevalue import CompuInverseValue
 
 @dataclass(kw_only=True)
 class CompuDefaultValue(CompuConst):
-    compu_inverse_value: CompuInverseValue | None
+    compu_inverse_value: CompuInverseValue | None = None
 
     @staticmethod
     def compuvalue_from_et(et_element: ElementTree.Element, *,

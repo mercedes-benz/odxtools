@@ -10,7 +10,7 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class Structure(BasicStructure):
-    is_visible_raw: bool | None
+    is_visible_raw: bool | None = None
 
     @property
     def is_visible(self) -> bool:

@@ -23,10 +23,10 @@ DctType = Literal[
 
 @dataclass(kw_only=True)
 class DiagCodedType:
-    base_type_encoding: Encoding | None
+    base_type_encoding: Encoding | None = None
     base_data_type: DataType
 
-    is_highlow_byte_order_raw: bool | None
+    is_highlow_byte_order_raw: bool | None = None
 
     @property
     def dct_type(self) -> DctType:

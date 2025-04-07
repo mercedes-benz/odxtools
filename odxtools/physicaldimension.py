@@ -42,13 +42,13 @@ class PhysicalDimension(IdentifiableElement):
     )
     ```
     """
-    length_exp: int | None
-    mass_exp: int | None
-    time_exp: int | None
-    current_exp: int | None
-    temperature_exp: int | None
-    molar_amount_exp: int | None
-    luminous_intensity_exp: int | None
+    length_exp: int | None = None
+    mass_exp: int | None = None
+    time_exp: int | None = None
+    current_exp: int | None = None
+    temperature_exp: int | None = None
+    molar_amount_exp: int | None = None
+    luminous_intensity_exp: int | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "PhysicalDimension":

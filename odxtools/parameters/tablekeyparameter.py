@@ -27,13 +27,13 @@ class TableKeyParameter(Parameter):
 
     # the spec mandates that exactly one of the two attributes must
     # be non-None
-    table_ref: OdxLinkRef | None
-    table_snref: str | None
+    table_ref: OdxLinkRef | None = None
+    table_snref: str | None = None
 
     # the spec mandates that exactly one of the two attributes must
     # be non-None
-    table_row_ref: OdxLinkRef | None
-    table_row_snref: str | None
+    table_row_ref: OdxLinkRef | None = None
+    table_row_snref: str | None = None
 
     @staticmethod
     @override

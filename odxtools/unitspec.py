@@ -26,7 +26,7 @@ class UnitSpec:
     The following odx elements are not internalized: ADMIN-DATA, SDGS
     """
 
-    admin_data: AdminData | None
+    admin_data: AdminData | None = None
     unit_groups: NamedItemList[UnitGroup]
     units: NamedItemList[Unit]
     physical_dimensions: NamedItemList[PhysicalDimension]

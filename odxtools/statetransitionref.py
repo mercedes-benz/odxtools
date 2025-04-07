@@ -156,10 +156,10 @@ class StateTransitionRef(OdxLinkRef):
     may also be conditional on the observed response of the ECU.
 
     """
-    value: str | None
+    value: str | None = None
 
-    in_param_if_snref: str | None
-    in_param_if_snpathref: str | None
+    in_param_if_snref: str | None = None
+    in_param_if_snpathref: str | None = None
 
     @property
     def state_transition(self) -> StateTransition:

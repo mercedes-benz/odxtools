@@ -30,12 +30,12 @@ class DiagService(DiagComm):
     request_ref: OdxLinkRef
     pos_response_refs: list[OdxLinkRef]
     neg_response_refs: list[OdxLinkRef]
-    pos_response_suppressible: PosResponseSuppressible | None
+    pos_response_suppressible: PosResponseSuppressible | None = None
 
-    is_cyclic_raw: bool | None
-    is_multiple_raw: bool | None
-    addressing_raw: Addressing | None
-    transmission_mode_raw: TransMode | None
+    is_cyclic_raw: bool | None = None
+    is_multiple_raw: bool | None = None
+    addressing_raw: Addressing | None = None
+    transmission_mode_raw: TransMode | None = None
 
     @property
     def comparams(self) -> NamedItemList[ComparamInstance]:

@@ -34,8 +34,8 @@ class DiagVariable(IdentifiableElement):
     """Representation of a diagnostic variable
     """
 
-    admin_data: AdminData | None
-    variable_group_ref: OdxLinkRef | None
+    admin_data: AdminData | None = None
+    variable_group_ref: OdxLinkRef | None = None
     sw_variables: list[SwVariable]
 
     # a diag variable must specify either COMM-RELATIONS or a
@@ -43,12 +43,12 @@ class DiagVariable(IdentifiableElement):
     comm_relations: list[CommRelation]
 
     # these are nested inside the SNREF-TO-TABLEROW tag
-    table_snref: str | None
-    table_row_snref: str | None
+    table_snref: str | None = None
+    table_row_snref: str | None = None
 
     sdgs: list[SpecialDataGroup]
 
-    is_read_before_write_raw: bool | None
+    is_read_before_write_raw: bool | None = None
 
     @property
     def table(self) -> Table | None:

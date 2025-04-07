@@ -19,7 +19,7 @@ from .parameterwithdop import ParameterWithDOP
 
 @dataclass(kw_only=True)
 class ValueParameter(ParameterWithDOP):
-    physical_default_value_raw: str | None
+    physical_default_value_raw: str | None = None
 
     @property
     @override

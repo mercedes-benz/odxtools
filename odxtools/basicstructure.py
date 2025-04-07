@@ -31,7 +31,7 @@ class BasicStructure(ComplexDop):
     data objects. All structure-like objects adhere to the
     `CompositeCodec` type protocol.
     """
-    byte_size: int | None
+    byte_size: int | None = None
     parameters: NamedItemList[Parameter]
 
     @property

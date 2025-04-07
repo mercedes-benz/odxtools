@@ -15,8 +15,8 @@ class InternalConstr:
 
     # TODO: Enforce the internal and physical constraints.
 
-    lower_limit: Limit | None
-    upper_limit: Limit | None
+    lower_limit: Limit | None = None
+    upper_limit: Limit | None = None
     scale_constrs: list[ScaleConstr]
 
     value_type: DataType

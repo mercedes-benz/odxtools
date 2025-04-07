@@ -18,11 +18,11 @@ class DocRevision:
     Representation of a single revision of the relevant object.
     """
 
-    team_member_ref: OdxLinkRef | None
-    revision_label: str | None
-    state: str | None
+    team_member_ref: OdxLinkRef | None = None
+    revision_label: str | None = None
+    state: str | None = None
     date: str
-    tool: str | None
+    tool: str | None = None
     company_revision_infos: list[CompanyRevisionInfo]
     modifications: list[Modification]
 

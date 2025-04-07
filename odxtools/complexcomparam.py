@@ -27,8 +27,8 @@ def create_complex_value_from_et(et_element: ElementTree.Element) -> ComplexValu
 @dataclass(kw_only=True)
 class ComplexComparam(BaseComparam):
     subparams: NamedItemList[BaseComparam]
-    physical_default_value: ComplexValue | None
-    allow_multiple_values_raw: bool | None
+    physical_default_value: ComplexValue | None = None
+    allow_multiple_values_raw: bool | None = None
 
     @property
     def allow_multiple_values(self) -> bool:

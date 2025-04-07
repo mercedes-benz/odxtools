@@ -18,8 +18,8 @@ from .utils import dataclass_fields_asdict
 class MultiplexerCase(NamedElement):
     """This class represents a case which represents a range of keys of a multiplexer."""
 
-    structure_ref: OdxLinkRef | None
-    structure_snref: str | None
+    structure_ref: OdxLinkRef | None = None
+    structure_snref: str | None = None
     lower_limit: Limit
     upper_limit: Limit
 

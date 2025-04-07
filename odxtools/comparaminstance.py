@@ -22,9 +22,9 @@ class ComparamInstance:
     Be aware that the ODX specification calls this class COMPARAM-REF!
     """
     value: str | ComplexValue
-    description: Description | None
-    protocol_snref: str | None
-    prot_stack_snref: str | None
+    description: Description | None = None
+    protocol_snref: str | None = None
+    prot_stack_snref: str | None = None
     spec_ref: OdxLinkRef
 
     @property

@@ -36,10 +36,10 @@ class DiagLayerRaw(IdentifiableElement):
     """
 
     variant_type: DiagLayerType
-    admin_data: AdminData | None
+    admin_data: AdminData | None = None
     company_datas: NamedItemList[CompanyData]
     functional_classes: NamedItemList[FunctionalClass]
-    diag_data_dictionary_spec: DiagDataDictionarySpec | None
+    diag_data_dictionary_spec: DiagDataDictionarySpec | None = None
     diag_comms_raw: list[OdxLinkRef | DiagComm]
     requests: NamedItemList[Request]
     positive_responses: NamedItemList[Response]

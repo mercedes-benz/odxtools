@@ -22,7 +22,7 @@ class UnitGroup(NamedElement):
     """
     category: UnitGroupCategory
     unit_refs: list[OdxLinkRef]
-    oid: str | None
+    oid: str | None = None
 
     @property
     def units(self) -> NamedItemList[Unit]:

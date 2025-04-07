@@ -23,7 +23,7 @@ class ComparamSubset(OdxCategory):
     comparams: NamedItemList[Comparam]
     complex_comparams: NamedItemList[ComplexComparam]
     data_object_props: NamedItemList[DataObjectProperty]
-    unit_spec: UnitSpec | None
+    unit_spec: UnitSpec | None = None
     category: str | None  # mandatory in ODX 2.2, but non-existent in ODX 2.0
 
     @staticmethod

@@ -31,9 +31,9 @@ class Multiplexer(ComplexDop):
 
     byte_position: int
     switch_key: MultiplexerSwitchKey
-    default_case: MultiplexerDefaultCase | None
+    default_case: MultiplexerDefaultCase | None = None
     cases: NamedItemList[MultiplexerCase]
-    is_visible_raw: bool | None
+    is_visible_raw: bool | None = None
 
     @property
     def is_visible(self) -> bool:

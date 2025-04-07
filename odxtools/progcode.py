@@ -15,10 +15,10 @@ from .snrefcontext import SnRefContext
 class ProgCode:
     """A reference to code that is executed by a single ECU job"""
     code_file: str
-    encryption: str | None
+    encryption: str | None = None
     syntax: str
     revision: str
-    entrypoint: str | None
+    entrypoint: str | None = None
     library_refs: list[OdxLinkRef]
 
     @property

@@ -32,7 +32,7 @@ class SubComponent(IdentifiableElement):
     env_data_connectors: NamedItemList[EnvDataConnector]
     dtc_connectors: NamedItemList[DtcConnector]
 
-    semantic: str | None
+    semantic: str | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SubComponent":

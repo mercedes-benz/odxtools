@@ -7,8 +7,8 @@ from ..odxtypes import AtomicOdxType, DataType
 
 @dataclass(kw_only=True)
 class CompuConst:
-    v: str | None
-    vt: str | None
+    v: str | None = None
+    vt: str | None = None
 
     data_type: DataType
 

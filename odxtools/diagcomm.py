@@ -35,21 +35,21 @@ class DiagComm(IdentifiableElement):
 
     """
 
-    admin_data: AdminData | None
+    admin_data: AdminData | None = None
     sdgs: list[SpecialDataGroup]
     functional_class_refs: list[OdxLinkRef]
-    audience: Audience | None
+    audience: Audience | None = None
     protocol_snrefs: list[str]
     related_diag_comm_refs: list[RelatedDiagCommRef]
     pre_condition_state_refs: list[PreConditionStateRef]
     state_transition_refs: list[StateTransitionRef]
 
     # attributes
-    semantic: str | None
-    diagnostic_class: DiagClassType | None
-    is_mandatory_raw: bool | None
-    is_executable_raw: bool | None
-    is_final_raw: bool | None
+    semantic: str | None = None
+    diagnostic_class: DiagClassType | None = None
+    is_mandatory_raw: bool | None = None
+    is_executable_raw: bool | None = None
+    is_final_raw: bool | None = None
 
     @property
     def functional_classes(self) -> NamedItemList[FunctionalClass]:

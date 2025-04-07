@@ -18,7 +18,7 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class MinMaxLengthType(DiagCodedType):
-    max_length: int | None
+    max_length: int | None = None
     min_length: int
     termination: Termination
 

@@ -24,7 +24,7 @@ class ProtocolRaw(HierarchyElementRaw):
     """
 
     comparam_spec_ref: OdxLinkRef
-    prot_stack_snref: str | None
+    prot_stack_snref: str | None = None
     parent_refs: list[ParentRef]
 
     @property

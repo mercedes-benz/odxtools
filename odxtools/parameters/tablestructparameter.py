@@ -22,8 +22,8 @@ if TYPE_CHECKING:
 
 @dataclass(kw_only=True)
 class TableStructParameter(Parameter):
-    table_key_ref: OdxLinkRef | None
-    table_key_snref: str | None
+    table_key_ref: OdxLinkRef | None = None
+    table_key_snref: str | None = None
 
     @property
     @override

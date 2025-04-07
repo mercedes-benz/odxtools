@@ -31,14 +31,14 @@ class PhysicalType:
     PhysicalType(DataType.A_FLOAT64, precision=2)
     """
 
-    precision: int | None
+    precision: int | None = None
     """Number of digits after the decimal point to display to the user
     The precision is only applicable if the base data type is A_FLOAT32 or A_FLOAT64.
     """
 
     base_data_type: DataType
 
-    display_radix: Radix | None
+    display_radix: Radix | None = None
     """The display radix defines how integers are displayed to the user.
     The display radix is only applicable if the base data type is A_UINT32.
     """

@@ -22,7 +22,7 @@ class EcuVariantRaw(HierarchyElementRaw):
     diag_variables_raw: list[DiagVariable | OdxLinkRef]
     variable_groups: NamedItemList[VariableGroup]
     ecu_variant_patterns: list[EcuVariantPattern]
-    dyn_defined_spec: DynDefinedSpec | None
+    dyn_defined_spec: DynDefinedSpec | None = None
     parent_refs: list[ParentRef]
 
     @property

@@ -38,12 +38,12 @@ class DataObjectProperty(DopBase):
     #: The type of the value in the physical world
     physical_type: PhysicalType
 
-    internal_constr: InternalConstr | None
+    internal_constr: InternalConstr | None = None
 
     #: The unit associated with physical values (e.g. 'm/s^2')
-    unit_ref: OdxLinkRef | None
+    unit_ref: OdxLinkRef | None = None
 
-    physical_constr: InternalConstr | None
+    physical_constr: InternalConstr | None = None
 
     @property
     def unit(self) -> Unit | None:

@@ -25,7 +25,7 @@ class DopBase(IdentifiableElement):
 
     """
 
-    admin_data: AdminData | None
+    admin_data: AdminData | None = None
     sdgs: list[SpecialDataGroup]
 
     @staticmethod

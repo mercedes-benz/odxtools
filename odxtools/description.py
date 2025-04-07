@@ -12,7 +12,7 @@ class Description:
     text: str
     external_docs: list[ExternalDoc]
 
-    text_identifier: str | None
+    text_identifier: str | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element | None,

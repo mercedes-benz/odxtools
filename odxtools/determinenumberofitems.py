@@ -16,7 +16,7 @@ class DetermineNumberOfItems:
     The object that determines the number of items of dynamic fields
     """
     byte_position: int
-    bit_position: int | None
+    bit_position: int | None = None
     dop_ref: OdxLinkRef
 
     @property

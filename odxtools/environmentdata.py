@@ -19,7 +19,7 @@ class EnvironmentData(BasicStructure):
     sense, it is quite similar to NRC-CONST parameters.)
     """
 
-    all_value: bool | None
+    all_value: bool | None = None
     dtc_values: list[int]
 
     @staticmethod

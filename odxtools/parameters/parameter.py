@@ -44,10 +44,10 @@ class Parameter(NamedElement):
 
     """
     sdgs: list[SpecialDataGroup]
-    semantic: str | None
-    oid: str | None
-    byte_position: int | None
-    bit_position: int | None
+    semantic: str | None = None
+    oid: str | None = None
+    byte_position: int | None = None
+    bit_position: int | None = None
 
     @property
     def parameter_type(self) -> ParameterType:

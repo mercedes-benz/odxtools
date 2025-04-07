@@ -15,8 +15,8 @@ from .teammember import TeamMember
 @dataclass(kw_only=True)
 class CompanyDocInfo:
     company_data_ref: OdxLinkRef
-    team_member_ref: OdxLinkRef | None
-    doc_label: str | None
+    team_member_ref: OdxLinkRef | None = None
+    doc_label: str | None = None
     sdgs: list[SpecialDataGroup]
 
     @property

@@ -36,8 +36,8 @@ class EnvironmentDataDescription(ComplexDop):
 
     """
 
-    param_snref: str | None
-    param_snpathref: str | None
+    param_snref: str | None = None
+    param_snpathref: str | None = None
 
     # in ODX 2.0.0, ENV-DATAS seems to be a mandatory
     # sub-element of ENV-DATA-DESC, in ODX 2.2 it is not

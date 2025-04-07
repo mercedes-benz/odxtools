@@ -16,7 +16,7 @@ class MultiplexerSwitchKey:
     The object that determines the case to be used by a multiplexer
     """
     byte_position: int
-    bit_position: int | None
+    bit_position: int | None = None
     dop_ref: OdxLinkRef
 
     @property

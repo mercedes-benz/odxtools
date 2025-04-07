@@ -17,7 +17,7 @@ from .utils import dataclass_fields_asdict
 class BaseComparam(IdentifiableElement):
     param_class: str
     cptype: StandardizationLevel
-    display_level: int | None
+    display_level: int | None = None
     cpusage: Usage | None  # Required in ODX 2.2, missing in ODX 2.0
 
     @staticmethod

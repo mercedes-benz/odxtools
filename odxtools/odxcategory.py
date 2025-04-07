@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 class OdxCategory(IdentifiableElement):
     """This is the base class for all top-level container classes in ODX"""
 
-    admin_data: AdminData | None
+    admin_data: AdminData | None = None
     company_datas: NamedItemList[CompanyData]
     sdgs: list[SpecialDataGroup]
 

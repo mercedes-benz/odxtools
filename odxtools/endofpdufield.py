@@ -17,8 +17,8 @@ from .utils import dataclass_fields_asdict
 @dataclass(kw_only=True)
 class EndOfPduField(Field):
     """End of PDU fields are structures that are repeated until the end of the PDU"""
-    max_number_of_items: int | None
-    min_number_of_items: int | None
+    max_number_of_items: int | None = None
+    min_number_of_items: int | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EndOfPduField":

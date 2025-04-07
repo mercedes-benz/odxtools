@@ -17,12 +17,12 @@ from .utils import dataclass_fields_asdict
 @dataclass(kw_only=True)
 class DiagnosticTroubleCode(IdentifiableElement):
     trouble_code: int
-    display_trouble_code: str | None
+    display_trouble_code: str | None = None
     text: Text
-    level: int | None
+    level: int | None = None
     sdgs: list[SpecialDataGroup]
 
-    is_temporary_raw: bool | None
+    is_temporary_raw: bool | None = None
 
     @property
     def is_temporary(self) -> bool:

@@ -12,7 +12,7 @@ from .snrefcontext import SnRefContext
 
 @dataclass(kw_only=True)
 class AdminData:
-    language: str | None
+    language: str | None = None
     company_doc_infos: list[CompanyDocInfo]
     doc_revisions: list[DocRevision]
 

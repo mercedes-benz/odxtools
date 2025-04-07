@@ -13,8 +13,8 @@ from .specialdatagroupcaption import SpecialDataGroupCaption
 @dataclass(kw_only=True)
 class SpecialDataGroup:
     """This corresponds to the SDG XML tag"""
-    sdg_caption: SpecialDataGroupCaption | None
-    sdg_caption_ref: OdxLinkRef | None
+    sdg_caption: SpecialDataGroupCaption | None = None
+    sdg_caption_ref: OdxLinkRef | None = None
     values: list[Union["SpecialDataGroup", SpecialData]]
     semantic_info: str | None  # the "SI" attribute
 

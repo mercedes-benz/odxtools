@@ -33,7 +33,7 @@ class DtcDop(DopBase):
     compu_method: CompuMethod
     dtcs_raw: list[DiagnosticTroubleCode | OdxLinkRef]
     linked_dtc_dops_raw: list[LinkedDtcDop]
-    is_visible_raw: bool | None
+    is_visible_raw: bool | None = None
 
     @property
     def dtcs(self) -> NamedItemList[DiagnosticTroubleCode]:

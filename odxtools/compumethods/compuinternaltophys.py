@@ -15,8 +15,8 @@ from .compuscale import CompuScale
 @dataclass(kw_only=True)
 class CompuInternalToPhys:
     compu_scales: list[CompuScale]
-    prog_code: ProgCode | None
-    compu_default_value: CompuDefaultValue | None
+    prog_code: ProgCode | None = None
+    compu_default_value: CompuDefaultValue | None = None
 
     @staticmethod
     def compu_internal_to_phys_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,

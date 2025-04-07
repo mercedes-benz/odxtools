@@ -15,11 +15,11 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class Field(ComplexDop):
-    structure_ref: OdxLinkRef | None
-    structure_snref: str | None
-    env_data_desc_ref: OdxLinkRef | None
-    env_data_desc_snref: str | None
-    is_visible_raw: bool | None
+    structure_ref: OdxLinkRef | None = None
+    structure_snref: str | None = None
+    env_data_desc_ref: OdxLinkRef | None = None
+    env_data_desc_snref: str | None = None
+    is_visible_raw: bool | None = None
 
     @property
     def structure(self) -> BasicStructure:

@@ -17,7 +17,7 @@ class FunctionalClass(IdentifiableElement):
     Corresponds to FUNCT-CLASS.
     """
 
-    admin_data: AdminData | None
+    admin_data: AdminData | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "FunctionalClass":

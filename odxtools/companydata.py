@@ -18,7 +18,7 @@ from .utils import dataclass_fields_asdict
 class CompanyData(IdentifiableElement):
     roles: list[str]
     team_members: NamedItemList[TeamMember]
-    company_specific_info: CompanySpecificInfo | None
+    company_specific_info: CompanySpecificInfo | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "CompanyData":

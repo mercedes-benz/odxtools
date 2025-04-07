@@ -17,14 +17,14 @@ from .table import Table
 class DynIdDefModeInfo:
     def_mode: str
 
-    clear_dyn_def_message_ref: OdxLinkRef | None
-    clear_dyn_def_message_snref: str | None
+    clear_dyn_def_message_ref: OdxLinkRef | None = None
+    clear_dyn_def_message_snref: str | None = None
 
-    read_dyn_def_message_ref: OdxLinkRef | None
-    read_dyn_def_message_snref: str | None
+    read_dyn_def_message_ref: OdxLinkRef | None = None
+    read_dyn_def_message_snref: str | None = None
 
-    dyn_def_message_ref: OdxLinkRef | None
-    dyn_def_message_snref: str | None
+    dyn_def_message_ref: OdxLinkRef | None = None
+    dyn_def_message_snref: str | None = None
 
     supported_dyn_ids: list[bytes]
     selection_table_refs: list[OdxLinkRef | str]

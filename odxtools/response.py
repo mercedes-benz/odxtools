@@ -40,7 +40,7 @@ class Response(IdentifiableElement):
 
     response_type: ResponseType
 
-    admin_data: AdminData | None
+    admin_data: AdminData | None = None
     parameters: NamedItemList[Parameter]
     sdgs: list[SpecialDataGroup]
 

@@ -16,8 +16,8 @@ class RatFuncSegment:
     numerator_coeffs: list[int | float]
     denominator_coeffs: list[int | float]
 
-    lower_limit: Limit | None
-    upper_limit: Limit | None
+    lower_limit: Limit | None = None
+    upper_limit: Limit | None = None
 
     @staticmethod
     def from_compu_scale(scale: CompuScale, value_type: DataType) -> "RatFuncSegment":

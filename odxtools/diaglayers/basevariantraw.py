@@ -24,8 +24,8 @@ class BaseVariantRaw(HierarchyElementRaw):
 
     diag_variables_raw: list[DiagVariable | OdxLinkRef]
     variable_groups: NamedItemList[VariableGroup]
-    dyn_defined_spec: DynDefinedSpec | None
-    base_variant_pattern: BaseVariantPattern | None
+    dyn_defined_spec: DynDefinedSpec | None = None
+    base_variant_pattern: BaseVariantPattern | None = None
     parent_refs: list[ParentRef]
 
     @property

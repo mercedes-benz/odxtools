@@ -16,10 +16,10 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class InputParam(NamedElement):
-    physical_default_value: str | None
+    physical_default_value: str | None = None
     dop_base_ref: OdxLinkRef
-    oid: str | None
-    semantic: str | None
+    oid: str | None = None
+    semantic: str | None = None
 
     @property
     def dop(self) -> DopBase:

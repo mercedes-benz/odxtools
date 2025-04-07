@@ -22,10 +22,10 @@ class PreConditionStateRef(OdxLinkRef):
     """
     This class represents the PRE-CONDITION-STATE-REF XML tag.
     """
-    value: str | None
+    value: str | None = None
 
-    in_param_if_snref: str | None
-    in_param_if_snpathref: str | None
+    in_param_if_snref: str | None = None
+    in_param_if_snpathref: str | None = None
 
     @property
     def state(self) -> "State":
