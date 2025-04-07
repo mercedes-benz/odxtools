@@ -121,13 +121,13 @@ class HierarchyElement(DiagLayer):
         unit_groups = self._compute_available_unit_groups()
 
         # convenience variable for the locally-defined unit spec
-        local_unit_spec: UnitSpec | None
+        local_unit_spec: UnitSpec | None = None
         if self.diag_layer_raw.diag_data_dictionary_spec is not None:
             local_unit_spec = self.diag_layer_raw.diag_data_dictionary_spec.unit_spec
         else:
             local_unit_spec = None
 
-        unit_spec: UnitSpec | None
+        unit_spec: UnitSpec | None = None
         if local_unit_spec is None and not unit_groups:
             # no locally defined unit spec and no inherited unit groups
             unit_spec = None
@@ -587,7 +587,7 @@ class HierarchyElement(DiagLayer):
 
         from .protocol import Protocol
 
-        protocol_name: str | None
+        protocol_name: str | None = None
         if isinstance(protocol, Protocol):
             protocol_name = protocol.short_name
         else:

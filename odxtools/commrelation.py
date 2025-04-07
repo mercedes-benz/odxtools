@@ -17,15 +17,15 @@ from .snrefcontext import SnRefContext
 
 @dataclass(kw_only=True)
 class CommRelation:
-    description: Description | None
+    description: Description | None = None
     relation_type: str
-    diag_comm_ref: OdxLinkRef | None
-    diag_comm_snref: str | None
-    in_param_if_snref: str | None
-    #in_param_if_snpathref: Optional[str] # TODO
-    out_param_if_snref: str | None
-    #out_param_if_snpathref: Optional[str] # TODO
-    value_type_raw: CommRelationValueType | None
+    diag_comm_ref: OdxLinkRef | None = None
+    diag_comm_snref: str | None = None
+    in_param_if_snref: str | None = None
+    #in_param_if_snpathref: Optional[str] = None # TODO
+    out_param_if_snref: str | None = None
+    #out_param_if_snpathref: Optional[str] = None # TODO
+    value_type_raw: CommRelationValueType | None = None
 
     @property
     def diag_comm(self) -> DiagComm:

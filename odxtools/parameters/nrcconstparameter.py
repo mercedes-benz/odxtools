@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -35,7 +35,7 @@ class NrcConstParameter(Parameter):
 
     """
 
-    coded_values_raw: list[str]
+    coded_values_raw: list[str] = field(default_factory=list)
     diag_coded_type: DiagCodedType
 
     @property

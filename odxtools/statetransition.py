@@ -20,7 +20,7 @@ class StateTransition(IdentifiableElement):
     """
     source_snref: str
     target_snref: str
-    external_access_method: ExternalAccessMethod | None
+    external_access_method: ExternalAccessMethod | None = None
 
     @property
     def source_state(self) -> State:

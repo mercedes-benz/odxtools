@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import chain
 from typing import Any
 from xml.etree import ElementTree
@@ -27,20 +27,21 @@ from .unitspec import UnitSpec
 
 @dataclass(kw_only=True)
 class DiagDataDictionarySpec:
-    admin_data: AdminData | None
-    dtc_dops: NamedItemList[DtcDop]
-    env_data_descs: NamedItemList[EnvironmentDataDescription]
-    data_object_props: NamedItemList[DataObjectProperty]
-    structures: NamedItemList[Structure]
-    static_fields: NamedItemList[StaticField]
-    dynamic_length_fields: NamedItemList[DynamicLengthField]
-    dynamic_endmarker_fields: NamedItemList[DynamicEndmarkerField]
-    end_of_pdu_fields: NamedItemList[EndOfPduField]
-    muxs: NamedItemList[Multiplexer]
-    env_datas: NamedItemList[EnvironmentData]
-    unit_spec: UnitSpec | None
-    tables: NamedItemList[Table]
-    sdgs: list[SpecialDataGroup]
+    admin_data: AdminData | None = None
+    dtc_dops: NamedItemList[DtcDop] = field(default_factory=NamedItemList)
+    env_data_descs: NamedItemList[EnvironmentDataDescription] = field(default_factory=NamedItemList)
+    data_object_props: NamedItemList[DataObjectProperty] = field(default_factory=NamedItemList)
+    structures: NamedItemList[Structure] = field(default_factory=NamedItemList)
+    static_fields: NamedItemList[StaticField] = field(default_factory=NamedItemList)
+    dynamic_length_fields: NamedItemList[DynamicLengthField] = field(default_factory=NamedItemList)
+    dynamic_endmarker_fields: NamedItemList[DynamicEndmarkerField] = field(
+        default_factory=NamedItemList)
+    end_of_pdu_fields: NamedItemList[EndOfPduField] = field(default_factory=NamedItemList)
+    muxs: NamedItemList[Multiplexer] = field(default_factory=NamedItemList)
+    env_datas: NamedItemList[EnvironmentData] = field(default_factory=NamedItemList)
+    unit_spec: UnitSpec | None = None
+    tables: NamedItemList[Table] = field(default_factory=NamedItemList)
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,

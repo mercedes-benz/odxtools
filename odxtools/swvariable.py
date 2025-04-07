@@ -9,8 +9,8 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class SwVariable(NamedElement):
-    origin: str | None
-    oid: str | None
+    origin: str | None = None
+    oid: str | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SwVariable":

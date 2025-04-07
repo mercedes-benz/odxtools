@@ -12,7 +12,7 @@ from .snrefcontext import SnRefContext
 @dataclass(kw_only=True)
 class Modification:
     change: str
-    reason: str | None
+    reason: str | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Modification":

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -20,9 +20,9 @@ class StateChart(IdentifiableElement):
     Corresponds to STATE-CHART.
     """
     semantic: str
-    state_transitions: list[StateTransition]
+    state_transitions: list[StateTransition] = field(default_factory=list)
     start_state_snref: str
-    states: NamedItemList[State]
+    states: NamedItemList[State] = field(default_factory=NamedItemList)
 
     @property
     def start_state(self) -> State:

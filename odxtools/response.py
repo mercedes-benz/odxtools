@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, cast
 from xml.etree import ElementTree
@@ -40,9 +40,9 @@ class Response(IdentifiableElement):
 
     response_type: ResponseType
 
-    admin_data: AdminData | None
-    parameters: NamedItemList[Parameter]
-    sdgs: list[SpecialDataGroup]
+    admin_data: AdminData | None = None
+    parameters: NamedItemList[Parameter] = field(default_factory=NamedItemList)
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Response":

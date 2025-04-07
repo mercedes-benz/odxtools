@@ -16,13 +16,13 @@ class CompuScale:
     """A COMPU-SCALE represents one value range of a COMPU-METHOD.
     """
 
-    short_label: str | None
-    description: Description | None
-    lower_limit: Limit | None
-    upper_limit: Limit | None
-    compu_inverse_value: CompuInverseValue | None
-    compu_const: CompuConst | None
-    compu_rational_coeffs: CompuRationalCoeffs | None
+    short_label: str | None = None
+    description: Description | None = None
+    lower_limit: Limit | None = None
+    upper_limit: Limit | None = None
+    compu_inverse_value: CompuInverseValue | None = None
+    compu_const: CompuConst | None = None
+    compu_rational_coeffs: CompuRationalCoeffs | None = None
 
     # the following two attributes are not specified for COMPU-SCALE
     # tags in the XML, but they are required to do anything useful

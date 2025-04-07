@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
@@ -34,22 +34,22 @@ class TableRow(IdentifiableElement):
     # The spec mandates that either a structure or a non-complex DOP
     # must be referenced here, i.e., exactly one of the four
     # attributes below is not None
-    dop_ref: OdxLinkRef | None
-    dop_snref: str | None
-    structure_ref: OdxLinkRef | None
-    structure_snref: str | None
+    dop_ref: OdxLinkRef | None = None
+    dop_snref: str | None = None
+    structure_ref: OdxLinkRef | None = None
+    structure_snref: str | None = None
 
-    sdgs: list[SpecialDataGroup]
-    audience: Audience | None
-    functional_class_refs: list[OdxLinkRef]
-    state_transition_refs: list[StateTransitionRef]
-    pre_condition_state_refs: list[PreConditionStateRef]
-    admin_data: AdminData | None
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
+    audience: Audience | None = None
+    functional_class_refs: list[OdxLinkRef] = field(default_factory=list)
+    state_transition_refs: list[StateTransitionRef] = field(default_factory=list)
+    pre_condition_state_refs: list[PreConditionStateRef] = field(default_factory=list)
+    admin_data: AdminData | None = None
 
-    is_executable_raw: bool | None
-    semantic: str | None
-    is_mandatory_raw: bool | None
-    is_final_raw: bool | None
+    is_executable_raw: bool | None = None
+    semantic: str | None = None
+    is_mandatory_raw: bool | None = None
+    is_final_raw: bool | None = None
 
     @property
     def table(self) -> "Table":

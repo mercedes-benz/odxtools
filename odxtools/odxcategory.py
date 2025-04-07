@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
@@ -22,9 +22,9 @@ if TYPE_CHECKING:
 class OdxCategory(IdentifiableElement):
     """This is the base class for all top-level container classes in ODX"""
 
-    admin_data: AdminData | None
-    company_datas: NamedItemList[CompanyData]
-    sdgs: list[SpecialDataGroup]
+    admin_data: AdminData | None = None
+    company_datas: NamedItemList[CompanyData] = field(default_factory=NamedItemList)
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "OdxCategory":

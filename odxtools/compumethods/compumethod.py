@@ -32,8 +32,8 @@ class CompuMethod:
     """
 
     category: CompuCategory
-    compu_internal_to_phys: CompuInternalToPhys | None
-    compu_phys_to_internal: CompuPhysToInternal | None
+    compu_internal_to_phys: CompuInternalToPhys | None = None
+    compu_phys_to_internal: CompuPhysToInternal | None = None
 
     physical_type: DataType
     internal_type: DataType

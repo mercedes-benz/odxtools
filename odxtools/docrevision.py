@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -18,13 +18,13 @@ class DocRevision:
     Representation of a single revision of the relevant object.
     """
 
-    team_member_ref: OdxLinkRef | None
-    revision_label: str | None
-    state: str | None
+    team_member_ref: OdxLinkRef | None = None
+    revision_label: str | None = None
+    state: str | None = None
     date: str
-    tool: str | None
-    company_revision_infos: list[CompanyRevisionInfo]
-    modifications: list[Modification]
+    tool: str | None = None
+    company_revision_infos: list[CompanyRevisionInfo] = field(default_factory=list)
+    modifications: list[Modification] = field(default_factory=list)
 
     @property
     def team_member(self) -> TeamMember | None:

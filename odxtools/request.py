@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, cast
 from xml.etree import ElementTree
 
@@ -30,9 +30,9 @@ class Request(IdentifiableElement):
 
     This class implements the `CompositeCodec` interface.
     """
-    admin_data: AdminData | None
-    parameters: NamedItemList[Parameter]
-    sdgs: list[SpecialDataGroup]
+    admin_data: AdminData | None = None
+    parameters: NamedItemList[Parameter] = field(default_factory=NamedItemList)
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @property
     def required_parameters(self) -> list[Parameter]:

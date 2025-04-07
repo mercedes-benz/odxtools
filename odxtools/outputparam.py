@@ -17,7 +17,7 @@ from .utils import dataclass_fields_asdict
 @dataclass(kw_only=True)
 class OutputParam(IdentifiableElement):
     dop_base_ref: OdxLinkRef
-    semantic: str | None
+    semantic: str | None = None
 
     @property
     def dop(self) -> DopBase:

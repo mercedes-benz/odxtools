@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -11,7 +11,7 @@ from .snrefcontext import SnRefContext
 
 @dataclass(kw_only=True)
 class DynDefinedSpec:
-    dyn_id_def_mode_infos: list[DynIdDefModeInfo]
+    dyn_id_def_mode_infos: list[DynIdDefModeInfo] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DynDefinedSpec":

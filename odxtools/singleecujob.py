@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -31,10 +31,10 @@ class SingleEcuJob(DiagComm):
     standard.
     """
 
-    prog_codes: list[ProgCode]
-    input_params: NamedItemList[InputParam]
-    output_params: NamedItemList[OutputParam]
-    neg_output_params: NamedItemList[NegOutputParam]
+    prog_codes: list[ProgCode] = field(default_factory=list)
+    input_params: NamedItemList[InputParam] = field(default_factory=NamedItemList)
+    output_params: NamedItemList[OutputParam] = field(default_factory=NamedItemList)
+    neg_output_params: NamedItemList[NegOutputParam] = field(default_factory=NamedItemList)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SingleEcuJob":

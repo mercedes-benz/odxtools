@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -20,14 +20,14 @@ from .utils import dataclass_fields_asdict
 @dataclass(kw_only=True)
 class Table(IdentifiableElement):
     """This class represents a TABLE."""
-    key_label: str | None
-    struct_label: str | None
-    admin_data: AdminData | None
-    key_dop_ref: OdxLinkRef | None
-    table_rows_raw: list[TableRow | OdxLinkRef]
-    table_diag_comm_connectors: list[TableDiagCommConnector]
-    sdgs: list[SpecialDataGroup]
-    semantic: str | None
+    key_label: str | None = None
+    struct_label: str | None = None
+    admin_data: AdminData | None = None
+    key_dop_ref: OdxLinkRef | None = None
+    table_rows_raw: list[TableRow | OdxLinkRef] = field(default_factory=list)
+    table_diag_comm_connectors: list[TableDiagCommConnector] = field(default_factory=list)
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
+    semantic: str | None = None
 
     @property
     def key_dop(self) -> DataObjectProperty | None:

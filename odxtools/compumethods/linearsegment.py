@@ -23,8 +23,8 @@ class LinearSegment:
     offset: float
     factor: float
     denominator: float
-    internal_lower_limit: Limit | None
-    internal_upper_limit: Limit | None
+    internal_lower_limit: Limit | None = None
+    internal_upper_limit: Limit | None = None
 
     inverse_value: int | float  # value used as inverse if factor is 0
 

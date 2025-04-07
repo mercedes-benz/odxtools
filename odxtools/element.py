@@ -11,8 +11,8 @@ from .utils import dataclass_fields_asdict
 @dataclass(kw_only=True)
 class NamedElement:
     short_name: str
-    long_name: str | None
-    description: Description | None
+    long_name: str | None = None
+    description: Description | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "NamedElement":
@@ -27,7 +27,7 @@ class NamedElement:
 @dataclass(kw_only=True)
 class IdentifiableElement(NamedElement):
     odx_id: OdxLinkId
-    oid: str | None
+    oid: str | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "IdentifiableElement":

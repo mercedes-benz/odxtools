@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -26,11 +26,11 @@ class UnitSpec:
     The following odx elements are not internalized: ADMIN-DATA, SDGS
     """
 
-    admin_data: AdminData | None
-    unit_groups: NamedItemList[UnitGroup]
-    units: NamedItemList[Unit]
-    physical_dimensions: NamedItemList[PhysicalDimension]
-    sdgs: list[SpecialDataGroup]
+    admin_data: AdminData | None = None
+    unit_groups: NamedItemList[UnitGroup] = field(default_factory=NamedItemList)
+    units: NamedItemList[Unit] = field(default_factory=NamedItemList)
+    physical_dimensions: NamedItemList[PhysicalDimension] = field(default_factory=NamedItemList)
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self.unit_groups = NamedItemList(self.unit_groups)

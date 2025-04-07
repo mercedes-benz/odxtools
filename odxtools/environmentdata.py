@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
@@ -19,8 +19,8 @@ class EnvironmentData(BasicStructure):
     sense, it is quite similar to NRC-CONST parameters.)
     """
 
-    all_value: bool | None
-    dtc_values: list[int]
+    all_value: bool | None = None
+    dtc_values: list[int] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EnvironmentData":

@@ -17,7 +17,7 @@ class MatchingBaseVariantParameter(MatchingParameter):
     additional subtag `USE-PHYSICAL-ADDRESSING`.
     """
 
-    use_physical_addressing_raw: bool | None
+    use_physical_addressing_raw: bool | None = None
 
     @property
     def use_physical_addressing(self) -> bool:

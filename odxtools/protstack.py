@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -18,7 +18,7 @@ class ProtStack(IdentifiableElement):
     # mandatory in ODX 2.2, but non existent in ODX 2.0
     pdu_protocol_type: str
     physical_link_type: str
-    comparam_subset_refs: list[OdxLinkRef]
+    comparam_subset_refs: list[OdxLinkRef] = field(default_factory=list)
 
     @property
     def comparam_subsets(self) -> NamedItemList[ComparamSubset]:

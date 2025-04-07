@@ -15,8 +15,8 @@ class ScaleConstr:
     """This class represents a SCALE-CONSTR.
     """
 
-    short_label: str | None
-    description: Description | None
+    short_label: str | None = None
+    description: Description | None = None
     lower_limit: Limit
     upper_limit: Limit
     validity: ValidType

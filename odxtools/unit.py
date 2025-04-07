@@ -54,9 +54,9 @@ class Unit(IdentifiableElement):
     ```
     """
     display_name: str
-    factor_si_to_unit: float | None
-    offset_si_to_unit: float | None
-    physical_dimension_ref: OdxLinkRef | None
+    factor_si_to_unit: float | None = None
+    offset_si_to_unit: float | None = None
+    physical_dimension_ref: OdxLinkRef | None = None
 
     @property
     def physical_dimension(self) -> PhysicalDimension | None:

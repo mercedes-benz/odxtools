@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -12,8 +12,8 @@ from .specialdatagroup import SpecialDataGroup
 
 @dataclass(kw_only=True)
 class CompanySpecificInfo:
-    related_docs: list[RelatedDoc]
-    sdgs: list[SpecialDataGroup]
+    related_docs: list[RelatedDoc] = field(default_factory=list)
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "CompanySpecificInfo":

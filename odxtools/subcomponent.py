@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -26,13 +26,14 @@ class SubComponent(IdentifiableElement):
 
     """
 
-    sub_component_patterns: list[SubComponentPattern]
-    sub_component_param_connectors: NamedItemList[SubComponentParamConnector]
-    table_row_connectors: NamedItemList[TableRowConnector]
-    env_data_connectors: NamedItemList[EnvDataConnector]
-    dtc_connectors: NamedItemList[DtcConnector]
+    sub_component_patterns: list[SubComponentPattern] = field(default_factory=list)
+    sub_component_param_connectors: NamedItemList[SubComponentParamConnector] = field(
+        default_factory=NamedItemList)
+    table_row_connectors: NamedItemList[TableRowConnector] = field(default_factory=NamedItemList)
+    env_data_connectors: NamedItemList[EnvDataConnector] = field(default_factory=NamedItemList)
+    dtc_connectors: NamedItemList[DtcConnector] = field(default_factory=NamedItemList)
 
-    semantic: str | None
+    semantic: str | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SubComponent":

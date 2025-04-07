@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, cast
 from xml.etree import ElementTree
 
@@ -21,8 +21,8 @@ class UnitGroup(NamedElement):
     There are two categories of groups: COUNTRY and EQUIV-UNITS.
     """
     category: UnitGroupCategory
-    unit_refs: list[OdxLinkRef]
-    oid: str | None
+    unit_refs: list[OdxLinkRef] = field(default_factory=list)
+    oid: str | None = None
 
     @property
     def units(self) -> NamedItemList[Unit]:

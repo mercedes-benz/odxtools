@@ -12,12 +12,12 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class XDoc(NamedElement):
-    number: str | None
-    state: str | None
-    date: str | None
-    publisher: str | None
-    url: str | None
-    position: str | None
+    number: str | None = None
+    state: str | None = None
+    date: str | None = None
+    publisher: str | None = None
+    url: str | None = None
+    position: str | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "XDoc":

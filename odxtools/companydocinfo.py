@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -15,9 +15,9 @@ from .teammember import TeamMember
 @dataclass(kw_only=True)
 class CompanyDocInfo:
     company_data_ref: OdxLinkRef
-    team_member_ref: OdxLinkRef | None
-    doc_label: str | None
-    sdgs: list[SpecialDataGroup]
+    team_member_ref: OdxLinkRef | None = None
+    doc_label: str | None = None
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @property
     def company_data(self) -> CompanyData:

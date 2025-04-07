@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, cast
 from xml.etree import ElementTree
 
@@ -15,11 +15,11 @@ from .snrefcontext import SnRefContext
 class ProgCode:
     """A reference to code that is executed by a single ECU job"""
     code_file: str
-    encryption: str | None
+    encryption: str | None = None
     syntax: str
     revision: str
-    entrypoint: str | None
-    library_refs: list[OdxLinkRef]
+    entrypoint: str | None = None
+    library_refs: list[OdxLinkRef] = field(default_factory=list)
 
     @property
     def code(self) -> bytes:

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import chain
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
@@ -23,11 +23,11 @@ if TYPE_CHECKING:
 
 @dataclass(kw_only=True)
 class DiagLayerContainer(OdxCategory):
-    protocols: NamedItemList[Protocol]
-    functional_groups: NamedItemList[FunctionalGroup]
-    ecu_shared_datas: NamedItemList[EcuSharedData]
-    base_variants: NamedItemList[BaseVariant]
-    ecu_variants: NamedItemList[EcuVariant]
+    protocols: NamedItemList[Protocol] = field(default_factory=NamedItemList)
+    functional_groups: NamedItemList[FunctionalGroup] = field(default_factory=NamedItemList)
+    ecu_shared_datas: NamedItemList[EcuSharedData] = field(default_factory=NamedItemList)
+    base_variants: NamedItemList[BaseVariant] = field(default_factory=NamedItemList)
+    ecu_variants: NamedItemList[EcuVariant] = field(default_factory=NamedItemList)
 
     @property
     def diag_layers(self) -> NamedItemList[DiagLayer]:

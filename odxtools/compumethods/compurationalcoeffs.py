@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import cast
 from xml.etree import ElementTree
 
@@ -12,8 +12,8 @@ from ..odxtypes import DataType
 class CompuRationalCoeffs:
     value_type: DataType
 
-    numerators: list[int | float]
-    denominators: list[int | float]
+    numerators: list[int | float] = field(default_factory=list)
+    denominators: list[int | float] = field(default_factory=list)
 
     @staticmethod
     def coeffs_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,

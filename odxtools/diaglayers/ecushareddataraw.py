@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -19,8 +19,8 @@ class EcuSharedDataRaw(DiagLayerRaw):
     """This is a diagnostic layer for data shared accross others
     """
 
-    diag_variables_raw: list[DiagVariable | OdxLinkRef]
-    variable_groups: NamedItemList[VariableGroup]
+    diag_variables_raw: list[DiagVariable | OdxLinkRef] = field(default_factory=list)
+    variable_groups: NamedItemList[VariableGroup] = field(default_factory=NamedItemList)
 
     @property
     def diag_variables(self) -> NamedItemList[DiagVariable]:

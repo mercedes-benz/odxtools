@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -13,14 +13,14 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class TeamMember(IdentifiableElement):
-    roles: list[str]
-    department: str | None
-    address: str | None
-    zipcode: str | None  # the tag for this is "ZIP", but `zip` is a keyword in python
-    city: str | None
-    phone: str | None
-    fax: str | None
-    email: str | None
+    roles: list[str] = field(default_factory=list)
+    department: str | None = None
+    address: str | None = None
+    zipcode: str | None = None  # the tag for this is "ZIP", but `zip` is a keyword in python
+    city: str | None = None
+    phone: str | None = None
+    fax: str | None = None
+    email: str | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "TeamMember":

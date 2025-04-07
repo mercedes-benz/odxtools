@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from ..exceptions import odxraise, odxrequire
 from ..odxtypes import AtomicOdxType, DataType
@@ -13,11 +13,11 @@ class RatFuncSegment:
     """
     value_type: DataType
 
-    numerator_coeffs: list[int | float]
-    denominator_coeffs: list[int | float]
+    numerator_coeffs: list[int | float] = field(default_factory=list)
+    denominator_coeffs: list[int | float] = field(default_factory=list)
 
-    lower_limit: Limit | None
-    upper_limit: Limit | None
+    lower_limit: Limit | None = None
+    upper_limit: Limit | None = None
 
     @staticmethod
     def from_compu_scale(scale: CompuScale, value_type: DataType) -> "RatFuncSegment":

@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 from xml.etree import ElementTree
 
@@ -10,9 +10,9 @@ from .odxdoccontext import OdxDocContext
 @dataclass(kw_only=True)
 class Description:
     text: str
-    external_docs: list[ExternalDoc]
+    external_docs: list[ExternalDoc] = field(default_factory=list)
 
-    text_identifier: str | None
+    text_identifier: str | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element | None,

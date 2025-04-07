@@ -13,17 +13,17 @@ from .utils import read_hex_binary
 class PosResponseSuppressible:
     bit_mask: int
 
-    coded_const_snref: str | None
-    coded_const_snpathref: str | None
+    coded_const_snref: str | None = None
+    coded_const_snpathref: str | None = None
 
-    value_snref: str | None
-    value_snpathref: str | None
+    value_snref: str | None = None
+    value_snpathref: str | None = None
 
-    phys_const_snref: str | None
-    phys_const_snpathref: str | None
+    phys_const_snref: str | None = None
+    phys_const_snpathref: str | None = None
 
-    table_key_snref: str | None
-    table_key_snpathref: str | None
+    table_key_snref: str | None = None
+    table_key_snpathref: str | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,

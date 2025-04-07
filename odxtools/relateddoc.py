@@ -12,8 +12,8 @@ from .xdoc import XDoc
 
 @dataclass(kw_only=True)
 class RelatedDoc:
-    xdoc: XDoc | None
-    description: Description | None
+    xdoc: XDoc | None = None
+    description: Description | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "RelatedDoc":

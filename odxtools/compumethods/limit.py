@@ -11,9 +11,9 @@ from .intervaltype import IntervalType
 
 @dataclass(kw_only=True)
 class Limit:
-    value_raw: str | None
-    value_type: DataType | None
-    interval_type: IntervalType | None
+    value_raw: str | None = None
+    value_type: DataType | None = None
+    interval_type: IntervalType | None = None
 
     @property
     def value(self) -> AtomicOdxType | None:

@@ -35,8 +35,8 @@ class MatchingParameter:
     # or negative response. What it probably actually wants to say is
     # that any response that can possibly be received shall exhibit
     # the referenced parameter.
-    out_param_if_snref: str | None
-    out_param_if_snpathref: str | None
+    out_param_if_snref: str | None = None
+    out_param_if_snpathref: str | None = None
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "MatchingParameter":

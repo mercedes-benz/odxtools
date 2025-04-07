@@ -22,8 +22,8 @@ from .parameter import Parameter
 
 @dataclass(kw_only=True)
 class ParameterWithDOP(Parameter):
-    dop_ref: OdxLinkRef | None
-    dop_snref: str | None
+    dop_ref: OdxLinkRef | None = None
+    dop_snref: str | None = None
 
     @property
     def dop(self) -> DopBase:

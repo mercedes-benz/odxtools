@@ -20,10 +20,10 @@ class Library(IdentifiableElement):
     """
 
     code_file: str
-    encryption: str | None
+    encryption: str | None = None
     syntax: str
     revision: str
-    entrypoint: str | None
+    entrypoint: str | None = None
 
     @property
     def code(self) -> bytes:

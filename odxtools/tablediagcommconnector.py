@@ -14,8 +14,8 @@ from .snrefcontext import SnRefContext
 class TableDiagCommConnector:
     semantic: str
 
-    diag_comm_ref: OdxLinkRef | None
-    diag_comm_snref: str | None
+    diag_comm_ref: OdxLinkRef | None = None
+    diag_comm_snref: str | None = None
 
     @property
     def diag_comm(self) -> DiagComm:

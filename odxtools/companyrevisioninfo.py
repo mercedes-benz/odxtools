@@ -13,8 +13,8 @@ from .snrefcontext import SnRefContext
 @dataclass(kw_only=True)
 class CompanyRevisionInfo:
     company_data_ref: OdxLinkRef
-    revision_label: str | None
-    state: str | None
+    revision_label: str | None = None
+    state: str | None = None
 
     @property
     def company_data(self) -> CompanyData:

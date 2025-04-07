@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
@@ -17,11 +17,12 @@ if TYPE_CHECKING:
 @dataclass(kw_only=True)
 class ParentRef:
     layer_ref: OdxLinkRef
-    not_inherited_diag_comms: list[str]  # short_name references
-    not_inherited_variables: list[str]  # short_name references
-    not_inherited_dops: list[str]  # short_name references
-    not_inherited_tables: list[str]  # short_name references
-    not_inherited_global_neg_responses: list[str]  # short_name references
+    not_inherited_diag_comms: list[str] = field(default_factory=list)  # short_name references
+    not_inherited_variables: list[str] = field(default_factory=list)  # short_name references
+    not_inherited_dops: list[str] = field(default_factory=list)  # short_name references
+    not_inherited_tables: list[str] = field(default_factory=list)  # short_name references
+    not_inherited_global_neg_responses: list[str] = field(
+        default_factory=list)  # short_name references
 
     @property
     def layer(self) -> "DiagLayer":
