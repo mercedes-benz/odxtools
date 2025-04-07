@@ -61,12 +61,6 @@ class TestLinearCompuMethod(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=None,
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_INT32,
                             numerators=[0, 1],
@@ -75,9 +69,7 @@ class TestLinearCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_INT32,
                         range_type=DataType.A_INT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
-            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32,
         )
@@ -142,8 +134,6 @@ class TestLinearCompuMethod(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
                         lower_limit=Limit(
                             value_raw="0",
                             value_type=DataType.A_INT32,
@@ -152,8 +142,6 @@ class TestLinearCompuMethod(unittest.TestCase):
                             value_raw="0",
                             value_type=DataType.A_INT32,
                             interval_type=IntervalType.INFINITE),
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_INT32,
                             numerators=[0, 1],
@@ -162,9 +150,7 @@ class TestLinearCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_INT32,
                         range_type=DataType.A_INT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
-            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32)
 
@@ -177,12 +163,6 @@ class TestLinearCompuMethod(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=None,
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_INT32,
                             numerators=[1, 3],
@@ -191,9 +171,7 @@ class TestLinearCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_INT32,
                         range_type=DataType.A_INT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
-            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32)
 
@@ -211,12 +189,6 @@ class TestLinearCompuMethod(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=None,
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_INT32,
                             numerators=[1, 3],
@@ -225,9 +197,7 @@ class TestLinearCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_INT32,
                         range_type=DataType.A_FLOAT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
-            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_FLOAT32)
 
@@ -245,12 +215,6 @@ class TestLinearCompuMethod(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=None,
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_INT32,
                             numerators=[1, 3],
@@ -259,9 +223,7 @@ class TestLinearCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_INT32,
                         range_type=DataType.A_INT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
-            compu_phys_to_internal=None,
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_INT32)
         self.assertTrue(compu_method.is_valid_internal_value(1.2345))
@@ -279,12 +241,6 @@ class TestLinearCompuMethod(unittest.TestCase):
                 compu_internal_to_phys=CompuInternalToPhys(
                     compu_scales=[
                         CompuScale(
-                            short_label=None,
-                            description=None,
-                            lower_limit=None,
-                            upper_limit=None,
-                            compu_inverse_value=None,
-                            compu_const=None,
                             compu_rational_coeffs=CompuRationalCoeffs(
                                 value_type=DataType.A_INT32,
                                 numerators=[1, 3],
@@ -293,9 +249,7 @@ class TestLinearCompuMethod(unittest.TestCase):
                             domain_type=DataType.A_INT32,
                             range_type=DataType.A_INT32),
                     ],
-                    prog_code=None,
                     compu_default_value=None),
-                compu_phys_to_internal=None,
                 internal_type=DataType.A_ASCIISTRING,
                 physical_type=DataType.A_UNICODE2STRING)
 
@@ -305,14 +259,8 @@ class TestLinearCompuMethod(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="2", value_type=DataType.A_INT32, interval_type=None),
-                        upper_limit=Limit(
-                            value_raw="15", value_type=DataType.A_INT32, interval_type=None),
-                        compu_inverse_value=None,
-                        compu_const=None,
+                        lower_limit=Limit(value_raw="2", value_type=DataType.A_INT32),
+                        upper_limit=Limit(value_raw="15", value_type=DataType.A_INT32),
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_INT32,
                             numerators=[1, 5],
@@ -321,9 +269,7 @@ class TestLinearCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_INT32,
                         range_type=DataType.A_INT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
-            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32)
 
@@ -352,16 +298,11 @@ class TestLinearCompuMethod(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
                         lower_limit=Limit(
                             value_raw="2",
                             value_type=DataType.A_INT32,
                             interval_type=IntervalType.OPEN),
-                        upper_limit=Limit(
-                            value_raw="15", value_type=DataType.A_INT32, interval_type=None),
-                        compu_inverse_value=None,
-                        compu_const=None,
+                        upper_limit=Limit(value_raw="15", value_type=DataType.A_INT32),
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_INT32,
                             numerators=[1, -5],
@@ -370,9 +311,7 @@ class TestLinearCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_INT32,
                         range_type=DataType.A_INT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
-            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32)
 
@@ -385,11 +324,11 @@ class TestLinearCompuMethod(unittest.TestCase):
             compu_method.segment.internal_lower_limit,
             Limit(value_raw="2", value_type=DataType.A_INT32, interval_type=IntervalType.OPEN))
         self.assertEqual(compu_method.segment.internal_upper_limit,
-                         Limit(value_raw="15", value_type=DataType.A_INT32, interval_type=None))
+                         Limit(value_raw="15", value_type=DataType.A_INT32))
         self.assertEqual(compu_method.segment.internal_upper_limit.interval_type, None)
 
         self.assertEqual(compu_method.segment.physical_lower_limit,
-                         Limit(value_raw="-74", value_type=DataType.A_INT32, interval_type=None))
+                         Limit(value_raw="-74", value_type=DataType.A_INT32))
         self.assertEqual(
             compu_method.segment.physical_upper_limit,
             Limit(value_raw="-9", value_type=DataType.A_INT32, interval_type=IntervalType.OPEN))
@@ -422,23 +361,17 @@ class TestCompuCodeCompuMethod(unittest.TestCase):
         compu_method = CompuCodeCompuMethod(
             category=CompuCategory.COMPUCODE,
             compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[],
                 prog_code=ProgCode(
                     code_file="nice_computation.java",
                     syntax="JAVA",
                     revision="1.0",
-                    encryption=None,
-                    entrypoint=None,
                     library_refs=[]),
                 compu_default_value=None),
             compu_phys_to_internal=CompuPhysToInternal(
-                compu_scales=[],
                 prog_code=ProgCode(
                     code_file="nice_inverse_computation.java",
                     syntax="JAVA",
                     revision="1.0",
-                    encryption=None,
-                    entrypoint=None,
                     library_refs=[]),
                 compu_default_value=None),
             internal_type=DataType.A_FLOAT32,
@@ -460,8 +393,6 @@ class TestRatFuncCompuMethod(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
                         lower_limit=Limit(
                             value_raw="2",
                             value_type=DataType.A_FLOAT32,
@@ -470,8 +401,6 @@ class TestRatFuncCompuMethod(unittest.TestCase):
                             value_raw="3",
                             value_type=DataType.A_FLOAT32,
                             interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_FLOAT32,
                             # f(x) = 3.14*(2*x^2 + 4x + 6) / 3.14
@@ -481,9 +410,7 @@ class TestRatFuncCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_FLOAT32,
                         range_type=DataType.A_FLOAT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
-            compu_phys_to_internal=None,
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_FLOAT32)
 
@@ -508,8 +435,6 @@ class TestRatFuncCompuMethod(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
                         lower_limit=Limit(
                             value_raw="2",
                             value_type=DataType.A_FLOAT32,
@@ -518,8 +443,6 @@ class TestRatFuncCompuMethod(unittest.TestCase):
                             value_raw="3",
                             value_type=DataType.A_FLOAT32,
                             interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_FLOAT32,
                             # f(x) = x^2
@@ -529,13 +452,10 @@ class TestRatFuncCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_FLOAT32,
                         range_type=DataType.A_FLOAT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
             compu_phys_to_internal=CompuPhysToInternal(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
                         lower_limit=Limit(
                             value_raw="4",
                             value_type=DataType.A_FLOAT32,
@@ -544,8 +464,6 @@ class TestRatFuncCompuMethod(unittest.TestCase):
                             value_raw="9",
                             value_type=DataType.A_FLOAT32,
                             interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_FLOAT32,
                             # first three terms of Taylor expansion of
@@ -556,7 +474,6 @@ class TestRatFuncCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_FLOAT32,
                         range_type=DataType.A_FLOAT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_FLOAT32)
@@ -592,8 +509,6 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
                         lower_limit=Limit(
                             value_raw="2",
                             value_type=DataType.A_FLOAT32,
@@ -602,8 +517,6 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
                             value_raw="3",
                             value_type=DataType.A_FLOAT32,
                             interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_FLOAT32,
                             # f(x) = 3.14*(2*x^2 + 4x + 6) / 3.14
@@ -613,9 +526,7 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_FLOAT32,
                         range_type=DataType.A_FLOAT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
-            compu_phys_to_internal=None,
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_FLOAT32)
 
@@ -640,8 +551,6 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
                         lower_limit=Limit(
                             value_raw="2",
                             value_type=DataType.A_FLOAT32,
@@ -650,8 +559,6 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
                             value_raw="3",
                             value_type=DataType.A_FLOAT32,
                             interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_FLOAT32,
                             # f(x) = x^2
@@ -661,8 +568,6 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_FLOAT32,
                         range_type=DataType.A_FLOAT32),
                     CompuScale(
-                        short_label=None,
-                        description=None,
                         lower_limit=Limit(
                             value_raw="4",
                             value_type=DataType.A_FLOAT32,
@@ -671,8 +576,6 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
                             value_raw="5",
                             value_type=DataType.A_FLOAT32,
                             interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_FLOAT32,
                             # f(x) = 1.38e-23*(3*x + 10)/1.38e-23
@@ -682,13 +585,10 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_FLOAT32,
                         range_type=DataType.A_FLOAT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
             compu_phys_to_internal=CompuPhysToInternal(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
                         lower_limit=Limit(
                             value_raw="4",
                             value_type=DataType.A_FLOAT32,
@@ -697,8 +597,6 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
                             value_raw="9",
                             value_type=DataType.A_FLOAT32,
                             interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_FLOAT32,
                             # first three terms of Taylor expansion of
@@ -709,8 +607,6 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_FLOAT32,
                         range_type=DataType.A_FLOAT32),
                     CompuScale(
-                        short_label=None,
-                        description=None,
                         lower_limit=Limit(
                             value_raw="22",
                             value_type=DataType.A_FLOAT32,
@@ -719,8 +615,6 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
                             value_raw="25",
                             value_type=DataType.A_FLOAT32,
                             interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_FLOAT32,
                             # f(x) = (x - 10)/3
@@ -730,7 +624,6 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
                         domain_type=DataType.A_FLOAT32,
                         range_type=DataType.A_FLOAT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_FLOAT32)
@@ -793,42 +686,22 @@ class TestTabIntpCompuMethod(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="0", value_type=DataType.A_INT32, interval_type=None),
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=CompuConst(v="-1", vt=None, data_type=DataType.A_INT32),
-                        compu_rational_coeffs=None,
+                        lower_limit=Limit(value_raw="0", value_type=DataType.A_INT32),
+                        compu_const=CompuConst(v="-1", data_type=DataType.A_INT32),
                         domain_type=DataType.A_INT32,
                         range_type=DataType.A_INT32),
                     CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="10", value_type=DataType.A_INT32, interval_type=None),
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=CompuConst(v="1", vt=None, data_type=DataType.A_INT32),
-                        compu_rational_coeffs=None,
+                        lower_limit=Limit(value_raw="10", value_type=DataType.A_INT32),
+                        compu_const=CompuConst(v="1", data_type=DataType.A_INT32),
                         domain_type=DataType.A_INT32,
                         range_type=DataType.A_INT32),
                     CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="30", value_type=DataType.A_INT32, interval_type=None),
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=CompuConst(v="2", vt=None, data_type=DataType.A_INT32),
-                        compu_rational_coeffs=None,
+                        lower_limit=Limit(value_raw="30", value_type=DataType.A_INT32),
+                        compu_const=CompuConst(v="2", data_type=DataType.A_INT32),
                         domain_type=DataType.A_INT32,
                         range_type=DataType.A_INT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
-            compu_phys_to_internal=None,
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_FLOAT32,
         )

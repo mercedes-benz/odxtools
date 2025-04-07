@@ -101,24 +101,13 @@ pr.parameters = NamedItemList(new_params)
 # add a new "flic-flac" service
 flic_flac_request = Request(
     odx_id=OdxLinkId("somersault.RQ.flic_flac", doc_frags),
-    oid=None,
     short_name="RQ_flic_flac",
-    long_name=None,
-    description=None,
-    admin_data=None,
-    sdgs=[],
     parameters=NamedItemList([
         CodedConstParameter(
-            oid=None,
             short_name="sid",
-            long_name=None,
-            semantic=None,
-            description=None,
             diag_coded_type=somersaultecu.somersault_diagcodedtypes["uint8"],
             byte_position=0,
             coded_value_raw=str(FLIC_FLAC_SID),
-            bit_position=None,
-            sdgs=[],
         )
     ]),
 )
@@ -126,38 +115,19 @@ somersault_young_dlr.requests.append(flic_flac_request)
 
 flic_flac_positive_response = Response(
     odx_id=OdxLinkId("somersault.PR.flic_flac", doc_frags),
-    oid=None,
     short_name="PR_flic_flac",
-    long_name=None,
-    description=None,
-    admin_data=None,
-    sdgs=[],
     response_type=ResponseType.POSITIVE,
     parameters=NamedItemList([
         CodedConstParameter(
-            oid=None,
             short_name="sid",
-            long_name=None,
-            semantic=None,
-            description=None,
             diag_coded_type=somersaultecu.somersault_diagcodedtypes["uint8"],
             byte_position=0,
             coded_value_raw=str(uds.positive_response_id(FLIC_FLAC_SID)),
-            bit_position=None,
-            sdgs=[],
         ),
         ValueParameter(
-            oid=None,
             short_name="can_do_backward_flips",
-            long_name=None,
-            semantic=None,
-            description=None,
-            physical_default_value_raw=None,
             byte_position=1,
             dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),
-            dop_snref=None,
-            bit_position=None,
-            sdgs=[],
         ),
     ]),
 )
@@ -165,26 +135,7 @@ somersault_young_dlr.positive_responses.append(flic_flac_positive_response)
 
 flic_flac_service = DiagService(
     odx_id=OdxLinkId("somersault.service.flic_flac", doc_frags),
-    oid=None,
     short_name="flic_flac",
-    long_name=None,
-    description=None,
-    admin_data=None,
-    protocol_snrefs=[],
-    related_diag_comm_refs=[],
-    diagnostic_class=None,
-    is_mandatory_raw=None,
-    is_executable_raw=None,
-    is_final_raw=None,
-    comparam_refs=[],
-    is_cyclic_raw=None,
-    is_multiple_raw=None,
-    addressing_raw=None,
-    transmission_mode_raw=None,
-    audience=None,
-    functional_class_refs=[],
-    pre_condition_state_refs=[],
-    state_transition_refs=[],
     semantic="FUNCTION",
     request_ref=OdxLinkRef.from_id(flic_flac_request.odx_id),
     pos_response_refs=[
@@ -193,8 +144,6 @@ flic_flac_service = DiagService(
     neg_response_refs=[
         OdxLinkRef.from_id(somersaultecu.somersault_negative_responses["general"].odx_id),
     ],
-    pos_response_suppressible=None,
-    sdgs=[],
 )
 
 # create a new list of diagnostic communications that does not include

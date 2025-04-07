@@ -49,44 +49,22 @@ class TestEncodeRequest(unittest.TestCase):
     def test_encode_coded_const_infer_order(self) -> None:
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
             bit_length=8,
-            bit_mask=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
         )
         param1 = CodedConstParameter(
-            oid=None,
             short_name="coded_const_parameter",
-            long_name=None,
-            description=None,
-            semantic=None,
             diag_coded_type=diag_coded_type,
             coded_value_raw=str(0x7D),
             byte_position=0,
-            bit_position=None,
-            sdgs=[],
         )
         param2 = CodedConstParameter(
-            oid=None,
             short_name="coded_const_parameter",
-            long_name=None,
-            description=None,
-            semantic=None,
             diag_coded_type=diag_coded_type,
             coded_value_raw=str(0xAB),
-            byte_position=None,
-            bit_position=None,
-            sdgs=[],
         )
         req = Request(
             odx_id=OdxLinkId("request_id", doc_frags),
-            oid=None,
             short_name="request_sn",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
             parameters=NamedItemList([param1, param2]),
         )
         self.assertEqual(req.encode(), bytearray([0x7D, 0xAB]))
@@ -444,44 +422,23 @@ class TestEncodeRequest(unittest.TestCase):
     def test_encode_coded_const_reorder(self) -> None:
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
             bit_length=8,
-            bit_mask=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
         )
         param1 = CodedConstParameter(
-            oid=None,
             short_name="param1",
-            long_name=None,
-            description=None,
-            semantic=None,
             diag_coded_type=diag_coded_type,
             coded_value_raw=str(0x34),
             byte_position=1,
-            bit_position=None,
-            sdgs=[],
         )
         param2 = CodedConstParameter(
-            oid=None,
             short_name="param2",
-            long_name=None,
-            description=None,
-            semantic=None,
             diag_coded_type=diag_coded_type,
             coded_value_raw=str(0x12),
             byte_position=0,
-            bit_position=None,
-            sdgs=[],
         )
         req = Request(
             odx_id=OdxLinkId("request_id", doc_frags),
-            oid=None,
             short_name="request_sn",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
             parameters=NamedItemList([param1, param2]),
         )
         self.assertEqual(req.encode(), bytearray([0x12, 0x34]))
@@ -490,11 +447,7 @@ class TestEncodeRequest(unittest.TestCase):
         odxlinks = OdxLinkDatabase()
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
             bit_length=8,
-            bit_mask=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
         )
         # This CompuMethod represents the linear function: decode(x) = 2*x + 8 and encode(x) = (x-8)/2
         compu_method = LinearCompuMethod(
@@ -502,12 +455,6 @@ class TestEncodeRequest(unittest.TestCase):
             compu_internal_to_phys=CompuInternalToPhys(
                 compu_scales=[
                     CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=None,
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=None,
                         compu_rational_coeffs=CompuRationalCoeffs(
                             value_type=DataType.A_INT32,
                             numerators=[8, 2],
@@ -516,49 +463,25 @@ class TestEncodeRequest(unittest.TestCase):
                         domain_type=DataType.A_INT32,
                         range_type=DataType.A_INT32),
                 ],
-                prog_code=None,
                 compu_default_value=None),
-            compu_phys_to_internal=None,
             internal_type=DataType.A_UINT32,
             physical_type=DataType.A_UINT32)
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),
-            oid=None,
             short_name="dop_sn",
             long_name="example dop",
-            description=None,
-            admin_data=None,
             diag_coded_type=diag_coded_type,
-            physical_type=PhysicalType(
-                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(base_data_type=DataType.A_UINT32),
             compu_method=compu_method,
-            unit_ref=None,
-            sdgs=[],
-            internal_constr=None,
-            physical_constr=None,
         )
         odxlinks.update({dop.odx_id: dop})
         param1 = ValueParameter(
-            oid=None,
             short_name="value_parameter",
-            long_name=None,
-            description=None,
-            semantic=None,
             dop_ref=OdxLinkRef.from_id(dop.odx_id),
-            dop_snref=None,
-            physical_default_value_raw=None,
-            byte_position=None,
-            bit_position=None,
-            sdgs=[],
         )
         req = Request(
             odx_id=OdxLinkId("request.id", doc_frags),
-            oid=None,
             short_name="request_sn",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
             parameters=NamedItemList([param1]),
         )
 
@@ -578,178 +501,72 @@ class TestEncodeRequest(unittest.TestCase):
     def test_encode_nrc_const(self) -> None:
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
             bit_length=8,
-            bit_mask=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
         )
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),
-            oid=None,
             short_name="dop_sn",
             long_name="example dop",
-            description=None,
-            admin_data=None,
             diag_coded_type=diag_coded_type,
-            physical_type=PhysicalType(
-                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(base_data_type=DataType.A_UINT32),
             compu_method=IdenticalCompuMethod(
                 category=CompuCategory.IDENTICAL,
-                compu_internal_to_phys=None,
-                compu_phys_to_internal=None,
                 internal_type=DataType.A_UINT32,
                 physical_type=DataType.A_UINT32),
-            unit_ref=None,
-            sdgs=[],
-            internal_constr=None,
-            physical_constr=None,
         )
         param1 = CodedConstParameter(
-            oid=None,
             short_name="param1",
-            long_name=None,
-            description=None,
-            semantic=None,
             diag_coded_type=diag_coded_type,
             coded_value_raw=str(0x12),
             byte_position=0,
-            bit_position=None,
-            sdgs=[],
         )
         param2 = NrcConstParameter(
-            oid=None,
             short_name="param2",
-            long_name=None,
-            description=None,
-            semantic=None,
             diag_coded_type=diag_coded_type,
             coded_values_raw=[str(0x34), str(0xAB)],
             byte_position=1,
-            bit_position=None,
-            sdgs=[],
         )
         param3 = ValueParameter(
-            oid=None,
             short_name="param3",
-            long_name=None,
-            description=None,
-            semantic=None,
             dop_ref=OdxLinkRef.from_id(dop.odx_id),
-            dop_snref=None,
-            physical_default_value_raw=None,
             byte_position=1,
-            bit_position=None,
-            sdgs=[],
         )
         resp = Response(
             odx_id=OdxLinkId("response_id", doc_frags),
-            oid=None,
             short_name="response_sn",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
             response_type=ResponseType.POSITIVE,
             parameters=NamedItemList([param1, param2, param3]),
         )
 
         req = Request(
             odx_id=OdxLinkId("request_id", doc_frags),
-            oid=None,
             short_name="request_sn",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
             parameters=NamedItemList([
                 CodedConstParameter(
-                    oid=None,
                     short_name="req_param1",
-                    long_name=None,
-                    description=None,
-                    semantic=None,
                     diag_coded_type=diag_coded_type,
                     coded_value_raw=str(0xB0),
                     byte_position=0,
-                    bit_position=None,
-                    sdgs=[],
                 )
             ]),
         )
 
         service = DiagService(
             odx_id=OdxLinkId("service_id", doc_frags),
-            oid=None,
             short_name="service_sn",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            semantic=None,
-            audience=None,
-            comparam_refs=[],
-            is_cyclic_raw=None,
-            is_multiple_raw=None,
-            addressing_raw=None,
-            transmission_mode_raw=None,
-            functional_class_refs=[],
-            pre_condition_state_refs=[],
-            state_transition_refs=[],
-            protocol_snrefs=[],
-            related_diag_comm_refs=[],
-            diagnostic_class=None,
-            is_mandatory_raw=None,
-            is_executable_raw=None,
-            is_final_raw=None,
             request_ref=OdxLinkRef.from_id(req.odx_id),
-            pos_response_refs=[],
             neg_response_refs=[OdxLinkRef.from_id(resp.odx_id)],
-            pos_response_suppressible=None,
-            sdgs=[],
         )
 
         ecu_variant_raw = EcuVariantRaw(
             variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("dl_id", doc_frags),
-            oid=None,
             short_name="dl_sn",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            company_datas=NamedItemList(),
-            functional_classes=NamedItemList(),
             diag_data_dictionary_spec=DiagDataDictionarySpec(
-                admin_data=None,
-                dtc_dops=NamedItemList(),
-                data_object_props=NamedItemList([dop]),
-                structures=NamedItemList(),
-                static_fields=NamedItemList(),
-                end_of_pdu_fields=NamedItemList(),
-                dynamic_length_fields=NamedItemList(),
-                dynamic_endmarker_fields=NamedItemList(),
-                tables=NamedItemList(),
-                env_data_descs=NamedItemList(),
-                env_datas=NamedItemList(),
-                muxs=NamedItemList(),
-                unit_spec=None,
-                sdgs=[]),
+                data_object_props=NamedItemList([dop]), sdgs=[]),
             diag_comms_raw=[service],
             requests=NamedItemList([req]),
-            positive_responses=NamedItemList(),
             negative_responses=NamedItemList([resp]),
-            global_negative_responses=NamedItemList(),
-            additional_audiences=NamedItemList(),
-            import_refs=[],
-            state_charts=NamedItemList(),
-            sdgs=[],
-            parent_refs=[],
-            comparam_refs=[],
-            ecu_variant_patterns=[],
-            diag_variables_raw=[],
-            variable_groups=NamedItemList(),
-            libraries=NamedItemList(),
-            dyn_defined_spec=None,
-            sub_components=NamedItemList(),
         )
 
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
@@ -770,45 +587,23 @@ class TestEncodeRequest(unittest.TestCase):
     def test_encode_system_parameter(self) -> None:
         diag_coded_type = StandardLengthType(
             base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
             bit_length=16,
-            bit_mask=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
         )
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.year", doc_frags),
-            oid=None,
             short_name="dop_year_sn",
-            long_name=None,
-            description=None,
-            admin_data=None,
             diag_coded_type=diag_coded_type,
-            physical_type=PhysicalType(
-                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(base_data_type=DataType.A_UINT32),
             compu_method=IdenticalCompuMethod(
                 category=CompuCategory.IDENTICAL,
-                compu_internal_to_phys=None,
-                compu_phys_to_internal=None,
                 internal_type=DataType.A_UINT32,
                 physical_type=DataType.A_UINT32),
-            unit_ref=None,
-            sdgs=[],
-            internal_constr=None,
-            physical_constr=None,
         )
         param1 = SystemParameter(
-            oid=None,
             short_name="year_param",
-            long_name=None,
-            description=None,
-            semantic=None,
             dop_ref=OdxLinkRef.from_id(dop.odx_id),
-            dop_snref=None,
             sysparam="YEAR",
             byte_position=0,
-            bit_position=None,
-            sdgs=[],
         )
 
         odxlinks = OdxLinkDatabase()
@@ -839,239 +634,122 @@ class TestEncodeRequest(unittest.TestCase):
     def test_encode_env_data_desc(self) -> None:
         dct = StandardLengthType(
             base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
             bit_length=8,
-            bit_mask=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
         )
         dop = DataObjectProperty(
             odx_id=OdxLinkId("dop.id", doc_frags),
-            oid=None,
             short_name="dop_sn",
             long_name="example dop",
-            description=None,
-            admin_data=None,
             diag_coded_type=dct,
-            physical_type=PhysicalType(
-                base_data_type=DataType.A_UINT32, display_radix=None, precision=None),
+            physical_type=PhysicalType(base_data_type=DataType.A_UINT32),
             compu_method=IdenticalCompuMethod(
                 category=CompuCategory.IDENTICAL,
-                compu_internal_to_phys=None,
-                compu_phys_to_internal=None,
                 internal_type=DataType.A_UINT32,
                 physical_type=DataType.A_UINT32),
-            unit_ref=None,
-            sdgs=[],
-            internal_constr=None,
-            physical_constr=None,
         )
 
         dtc_dct = StandardLengthType(
             base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
             bit_length=24,
-            bit_mask=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
         )
         dtc_dop = DtcDop(
             odx_id=OdxLinkId("dtcdop.id", doc_frags),
-            oid=None,
             short_name="dtcdop_sn",
-            long_name=None,
             description=Description.from_string(
                 "DOP containing all possible diagnostic trouble codes"),
-            admin_data=None,
-            sdgs=[],
             diag_coded_type=dtc_dct,
-            physical_type=PhysicalType(
-                base_data_type=DataType.A_UINT32, display_radix=Radix.HEX, precision=None),
+            physical_type=PhysicalType(base_data_type=DataType.A_UINT32, display_radix=Radix.HEX),
             compu_method=IdenticalCompuMethod(
                 category=CompuCategory.IDENTICAL,
-                compu_internal_to_phys=None,
-                compu_phys_to_internal=None,
                 internal_type=DataType.A_UINT32,
                 physical_type=DataType.A_UINT32),
             dtcs_raw=[
                 DiagnosticTroubleCode(
                     odx_id=OdxLinkId("DTCs.first_trouble", doc_frags),
-                    oid=None,
                     short_name="first_trouble",
-                    long_name=None,
-                    description=None,
                     trouble_code=0x112233,
                     text=Text.from_string("The first trouble is the deepest"),
                     display_trouble_code="Z123",
-                    level=None,
-                    is_temporary_raw=None,
                     sdgs=[]),
                 DiagnosticTroubleCode(
                     odx_id=OdxLinkId("DTCs.follow_up_trouble", doc_frags),
-                    oid=None,
                     short_name="follow_up_trouble",
-                    long_name=None,
-                    description=None,
                     trouble_code=0x445566,
                     text=Text.from_string(""),
                     display_trouble_code="Y456",
-                    level=None,
-                    is_temporary_raw=None,
                     sdgs=[]),
                 DiagnosticTroubleCode(
                     odx_id=OdxLinkId("DTCs.screwed_up_hard", doc_frags),
-                    oid=None,
                     short_name="screwed_up_hard",
-                    long_name=None,
-                    description=None,
                     trouble_code=0xf00de5,
                     text=Text.from_string(""),
                     display_trouble_code="SCREW",
-                    level=None,
-                    is_temporary_raw=None,
                     sdgs=[]),
             ],
-            linked_dtc_dops_raw=[],
-            is_visible_raw=None,
         )
 
         env_data_desc = EnvironmentDataDescription(
             odx_id=OdxLinkId("DTCs.trouble_explanation", doc_frags),
-            oid=None,
             short_name="trouble_explanation",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
             param_snref="DTC",
-            param_snpathref=None,
             env_datas=NamedItemList([
                 EnvironmentData(
                     odx_id=OdxLinkId("DTCs.trouble_explanation.boiler_plate", doc_frags),
-                    oid=None,
                     short_name="boiler_plate",
-                    long_name=None,
-                    description=None,
-                    admin_data=None,
-                    sdgs=[],
-                    byte_size=None,
                     all_value=True,
-                    dtc_values=[],
                     parameters=NamedItemList([
                         CodedConstParameter(
-                            oid=None,
                             short_name="blabla_boiler",
-                            long_name=None,
-                            description=None,
-                            semantic=None,
                             diag_coded_type=dct,
                             coded_value_raw=str(0xee),
                             byte_position=0,
-                            bit_position=None,
-                            sdgs=[],
                         )
                     ])),
                 EnvironmentData(
                     odx_id=OdxLinkId("DTCs.trouble_explanation.reason_for_1", doc_frags),
-                    oid=None,
                     short_name="reason_for_1",
-                    long_name=None,
-                    description=None,
-                    admin_data=None,
-                    sdgs=[],
-                    byte_size=None,
-                    all_value=None,
                     dtc_values=[0x112233],
                     parameters=NamedItemList([
                         CodedConstParameter(
-                            oid=None,
                             short_name="blabla_1",
-                            long_name=None,
-                            description=None,
-                            semantic=None,
                             diag_coded_type=dct,
                             coded_value_raw=str(0x01),
-                            byte_position=None,
-                            bit_position=None,
-                            sdgs=[],
                         )
                     ])),
                 EnvironmentData(
                     odx_id=OdxLinkId("DTCs.trouble_explanation.reason_for_2", doc_frags),
-                    oid=None,
                     short_name="reason_for_2",
-                    long_name=None,
-                    description=None,
-                    admin_data=None,
-                    sdgs=[],
-                    byte_size=None,
-                    all_value=None,
                     dtc_values=[0x445566],
                     parameters=NamedItemList([
                         CodedConstParameter(
-                            oid=None,
                             short_name="blabla_3",
-                            long_name=None,
-                            description=None,
-                            semantic=None,
                             diag_coded_type=dct,
                             coded_value_raw=str(0x03),
                             byte_position=1,
-                            bit_position=None,
-                            sdgs=[],
                         ),
                         CodedConstParameter(
-                            oid=None,
                             short_name="blabla_2",
-                            long_name=None,
-                            description=None,
-                            semantic=None,
                             diag_coded_type=dct,
                             coded_value_raw=str(0x02),
                             byte_position=0,
-                            bit_position=None,
-                            sdgs=[],
                         ),
                     ])),
             ]),
-            env_data_refs=[],
         )
 
         param1 = ValueParameter(
-            oid=None,
             short_name="DTC",
-            long_name=None,
-            description=None,
-            semantic=None,
             dop_ref=OdxLinkRef.from_id(dtc_dop.odx_id),
-            dop_snref=None,
-            physical_default_value_raw=None,
-            byte_position=None,
-            bit_position=None,
-            sdgs=[],
         )
         param2 = ValueParameter(
-            oid=None,
             short_name="dtc_info",
-            long_name=None,
             description=Description.from_string("Supplemental info why the error happened"),
-            semantic=None,
             dop_ref=OdxLinkRef.from_id(env_data_desc.odx_id),
-            dop_snref=None,
-            physical_default_value_raw=None,
-            byte_position=None,
-            bit_position=None,
-            sdgs=[],
         )
 
         resp = Response(
             odx_id=OdxLinkId("DTCs.report_dtc.answer", doc_frags),
-            oid=None,
             short_name="report_dtc_answer",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
             parameters=NamedItemList([param1, param2]),
             response_type=ResponseType.POSITIVE,
         )
@@ -1114,64 +792,35 @@ class TestEncodeRequest(unittest.TestCase):
     def test_encode_overlapping(self) -> None:
         uint24 = StandardLengthType(
             base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
             bit_length=24,
-            bit_mask=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
         )
         uint8 = StandardLengthType(
             base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
             bit_length=8,
-            bit_mask=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
         )
         param1 = CodedConstParameter(
-            oid=None,
             short_name="code",
-            long_name=None,
-            description=None,
-            semantic=None,
             diag_coded_type=uint24,
             coded_value_raw=str(0x123456),
             byte_position=0,
-            bit_position=None,
-            sdgs=[],
         )
         param2 = CodedConstParameter(
-            oid=None,
             short_name="part1",
-            long_name=None,
-            description=None,
-            semantic=None,
             diag_coded_type=uint8,
             coded_value_raw=str(0x23),
             byte_position=0,
             bit_position=4,
-            sdgs=[],
         )
         param3 = CodedConstParameter(
-            oid=None,
             short_name="part2",
-            long_name=None,
-            description=None,
-            semantic=None,
             diag_coded_type=uint8,
             coded_value_raw=str(0x45),
             byte_position=1,
             bit_position=4,
-            sdgs=[],
         )
         req = Request(
             odx_id=OdxLinkId("request_id", doc_frags),
-            oid=None,
             short_name="request_sn",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
             parameters=NamedItemList([param1, param2, param3]),
         )
         self.assertEqual(req.encode().hex(), "123456")
@@ -1180,68 +829,36 @@ class TestEncodeRequest(unittest.TestCase):
     def _create_request(self, parameters: list[Parameter]) -> Request:
         return Request(
             odx_id=OdxLinkId("request_id", doc_frags),
-            oid=None,
             short_name="request_sn",
             parameters=NamedItemList(parameters),
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
         )
 
     def test_bit_mask(self) -> None:
         inner_dct = StandardLengthType(
-            bit_mask=0x3fc,
-            base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
-            bit_length=14)
+            bit_mask=0x3fc, base_data_type=DataType.A_UINT32, bit_length=14)
         outer_dct = StandardLengthType(
-            bit_mask=0xf00f,
-            base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=None,
-            bit_length=16)
+            bit_mask=0xf00f, base_data_type=DataType.A_UINT32, bit_length=16)
 
-        physical_type = PhysicalType(
-            base_data_type=DataType.A_UINT32, display_radix=None, precision=None)
+        physical_type = PhysicalType(base_data_type=DataType.A_UINT32)
         compu_method = IdenticalCompuMethod(
             category=CompuCategory.IDENTICAL,
-            compu_internal_to_phys=None,
-            compu_phys_to_internal=None,
             internal_type=DataType.A_UINT32,
             physical_type=DataType.A_UINT32)
 
         inner_dop = DataObjectProperty(
             odx_id=OdxLinkId('dop.inner', doc_frags),
-            oid=None,
             short_name="inner_dop",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
             diag_coded_type=inner_dct,
             physical_type=physical_type,
             compu_method=compu_method,
-            unit_ref=None,
-            internal_constr=None,
             physical_constr=None)
 
         outer_dop = DataObjectProperty(
             odx_id=OdxLinkId('dop.outer', doc_frags),
-            oid=None,
             short_name="outer_dop",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
             diag_coded_type=outer_dct,
             physical_type=physical_type,
             compu_method=compu_method,
-            unit_ref=None,
-            internal_constr=None,
             physical_constr=None)
 
         odxlinks = OdxLinkDatabase()
@@ -1252,16 +869,10 @@ class TestEncodeRequest(unittest.TestCase):
 
         # Inner
         inner_param = ValueParameter(
-            oid=None,
             short_name="inner_param",
-            long_name=None,
-            description=None,
             byte_position=0,
             bit_position=2,
             dop_ref=OdxLinkRef.from_id(inner_dop.odx_id),
-            dop_snref=None,
-            semantic=None,
-            sdgs=[],
             physical_default_value_raw=None)
         snref_ctx = SnRefContext(parameters=[])
         inner_param._resolve_odxlinks(odxlinks)
@@ -1269,16 +880,9 @@ class TestEncodeRequest(unittest.TestCase):
 
         # Outer
         outer_param = ValueParameter(
-            oid=None,
             short_name="outer_param",
-            long_name=None,
-            description=None,
             byte_position=0,
-            bit_position=None,
             dop_ref=OdxLinkRef.from_id(outer_dop.odx_id),
-            dop_snref=None,
-            semantic=None,
-            sdgs=[],
             physical_default_value_raw=None)
         outer_param._resolve_odxlinks(odxlinks)
         outer_param._resolve_snrefs(snref_ctx)
@@ -1296,37 +900,22 @@ class TestEncodeRequest(unittest.TestCase):
 
     def test_condensed_bit_mask(self) -> None:
         dct = StandardLengthType(
-            bit_mask=0xf00f,
-            base_data_type=DataType.A_UINT32,
-            base_type_encoding=None,
-            is_highlow_byte_order_raw=None,
-            is_condensed_raw=True,
-            bit_length=16)
+            bit_mask=0xf00f, base_data_type=DataType.A_UINT32, is_condensed_raw=True, bit_length=16)
 
         self.assertEqual(dct.get_static_bit_length(), 8)
 
-        physical_type = PhysicalType(
-            base_data_type=DataType.A_UINT32, display_radix=None, precision=None)
+        physical_type = PhysicalType(base_data_type=DataType.A_UINT32)
         compu_method = IdenticalCompuMethod(
             category=CompuCategory.IDENTICAL,
-            compu_internal_to_phys=None,
-            compu_phys_to_internal=None,
             internal_type=DataType.A_UINT32,
             physical_type=DataType.A_UINT32)
 
         dop = DataObjectProperty(
             odx_id=OdxLinkId('dop.inner', doc_frags),
-            oid=None,
             short_name="dop",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            sdgs=[],
             diag_coded_type=dct,
             physical_type=physical_type,
             compu_method=compu_method,
-            unit_ref=None,
-            internal_constr=None,
             physical_constr=None)
 
         odxlinks = OdxLinkDatabase()
@@ -1335,16 +924,10 @@ class TestEncodeRequest(unittest.TestCase):
 
         # Inner
         param = ValueParameter(
-            oid=None,
             short_name="param",
-            long_name=None,
-            description=None,
             byte_position=0,
             bit_position=2,
             dop_ref=OdxLinkRef.from_id(dop.odx_id),
-            dop_snref=None,
-            semantic=None,
-            sdgs=[],
             physical_default_value_raw=None)
         param._resolve_odxlinks(odxlinks)
 
