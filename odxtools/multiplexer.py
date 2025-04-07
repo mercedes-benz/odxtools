@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, cast
 from xml.etree import ElementTree
 
@@ -32,7 +32,7 @@ class Multiplexer(ComplexDop):
     byte_position: int
     switch_key: MultiplexerSwitchKey
     default_case: MultiplexerDefaultCase | None = None
-    cases: NamedItemList[MultiplexerCase]
+    cases: NamedItemList[MultiplexerCase] = field(default_factory=NamedItemList)
     is_visible_raw: bool | None = None
 
     @property

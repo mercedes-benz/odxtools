@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, cast
 from xml.etree import ElementTree
 
@@ -37,19 +37,19 @@ class DiagLayerRaw(IdentifiableElement):
 
     variant_type: DiagLayerType
     admin_data: AdminData | None = None
-    company_datas: NamedItemList[CompanyData]
-    functional_classes: NamedItemList[FunctionalClass]
+    company_datas: NamedItemList[CompanyData] = field(default_factory=NamedItemList)
+    functional_classes: NamedItemList[FunctionalClass] = field(default_factory=NamedItemList)
     diag_data_dictionary_spec: DiagDataDictionarySpec | None = None
     diag_comms_raw: list[OdxLinkRef | DiagComm]
-    requests: NamedItemList[Request]
-    positive_responses: NamedItemList[Response]
-    negative_responses: NamedItemList[Response]
-    global_negative_responses: NamedItemList[Response]
+    requests: NamedItemList[Request] = field(default_factory=NamedItemList)
+    positive_responses: NamedItemList[Response] = field(default_factory=NamedItemList)
+    negative_responses: NamedItemList[Response] = field(default_factory=NamedItemList)
+    global_negative_responses: NamedItemList[Response] = field(default_factory=NamedItemList)
     import_refs: list[OdxLinkRef]
-    state_charts: NamedItemList[StateChart]
-    additional_audiences: NamedItemList[AdditionalAudience]
-    sub_components: NamedItemList[SubComponent]
-    libraries: NamedItemList[Library]
+    state_charts: NamedItemList[StateChart] = field(default_factory=NamedItemList)
+    additional_audiences: NamedItemList[AdditionalAudience] = field(default_factory=NamedItemList)
+    sub_components: NamedItemList[SubComponent] = field(default_factory=NamedItemList)
+    libraries: NamedItemList[Library] = field(default_factory=NamedItemList)
     sdgs: list[SpecialDataGroup]
 
     @property

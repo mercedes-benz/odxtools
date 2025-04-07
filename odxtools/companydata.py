@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -17,7 +17,7 @@ from .utils import dataclass_fields_asdict
 @dataclass(kw_only=True)
 class CompanyData(IdentifiableElement):
     roles: list[str]
-    team_members: NamedItemList[TeamMember]
+    team_members: NamedItemList[TeamMember] = field(default_factory=NamedItemList)
     company_specific_info: CompanySpecificInfo | None = None
 
     @staticmethod

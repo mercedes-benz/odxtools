@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Union
 from xml.etree import ElementTree
 
@@ -26,7 +26,7 @@ def create_complex_value_from_et(et_element: ElementTree.Element) -> ComplexValu
 
 @dataclass(kw_only=True)
 class ComplexComparam(BaseComparam):
-    subparams: NamedItemList[BaseComparam]
+    subparams: NamedItemList[BaseComparam] = field(default_factory=NamedItemList)
     physical_default_value: ComplexValue | None = None
     allow_multiple_values_raw: bool | None = None
 

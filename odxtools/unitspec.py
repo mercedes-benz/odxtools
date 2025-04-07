@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -27,9 +27,9 @@ class UnitSpec:
     """
 
     admin_data: AdminData | None = None
-    unit_groups: NamedItemList[UnitGroup]
-    units: NamedItemList[Unit]
-    physical_dimensions: NamedItemList[PhysicalDimension]
+    unit_groups: NamedItemList[UnitGroup] = field(default_factory=NamedItemList)
+    units: NamedItemList[Unit] = field(default_factory=NamedItemList)
+    physical_dimensions: NamedItemList[PhysicalDimension] = field(default_factory=NamedItemList)
     sdgs: list[SpecialDataGroup]
 
     def __post_init__(self) -> None:

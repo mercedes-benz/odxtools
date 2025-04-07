@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -21,7 +21,7 @@ class FunctionalGroupRaw(HierarchyElementRaw):
     """
 
     diag_variables_raw: list[DiagVariable | OdxLinkRef]
-    variable_groups: NamedItemList[VariableGroup]
+    variable_groups: NamedItemList[VariableGroup] = field(default_factory=NamedItemList)
     parent_refs: list[ParentRef]
 
     @property

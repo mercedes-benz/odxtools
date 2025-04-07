@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -23,7 +23,7 @@ class BaseVariantRaw(HierarchyElementRaw):
     """
 
     diag_variables_raw: list[DiagVariable | OdxLinkRef]
-    variable_groups: NamedItemList[VariableGroup]
+    variable_groups: NamedItemList[VariableGroup] = field(default_factory=NamedItemList)
     dyn_defined_spec: DynDefinedSpec | None = None
     base_variant_pattern: BaseVariantPattern | None = None
     parent_refs: list[ParentRef]

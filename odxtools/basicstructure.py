@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -32,7 +32,7 @@ class BasicStructure(ComplexDop):
     `CompositeCodec` type protocol.
     """
     byte_size: int | None = None
-    parameters: NamedItemList[Parameter]
+    parameters: NamedItemList[Parameter] = field(default_factory=NamedItemList)
 
     @property
     def required_parameters(self) -> list[Parameter]:

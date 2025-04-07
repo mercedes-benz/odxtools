@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 @dataclass(kw_only=True)
 class ComparamSpec(OdxCategory):
 
-    prot_stacks: NamedItemList[ProtStack]
+    prot_stacks: NamedItemList[ProtStack] = field(default_factory=NamedItemList)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ComparamSpec":

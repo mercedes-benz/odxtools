@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -42,7 +42,7 @@ class EnvironmentDataDescription(ComplexDop):
     # in ODX 2.0.0, ENV-DATAS seems to be a mandatory
     # sub-element of ENV-DATA-DESC, in ODX 2.2 it is not
     # present
-    env_datas: NamedItemList[EnvironmentData]
+    env_datas: NamedItemList[EnvironmentData] = field(default_factory=NamedItemList)
     env_data_refs: list[OdxLinkRef]
 
     @staticmethod

@@ -3,7 +3,7 @@ import re
 import warnings
 from collections.abc import Callable, Iterable
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
 from xml.etree import ElementTree
@@ -55,7 +55,8 @@ class HierarchyElement(DiagLayer):
     def __post_init__(self) -> None:
         super().__post_init__()
 
-        self._global_negative_responses: NamedItemList[Response]
+        self._global_negative_responses: NamedItemList[Response] = field(
+            default_factory=NamedItemList)
 
         odxassert(
             isinstance(self.diag_layer_raw, HierarchyElementRaw),

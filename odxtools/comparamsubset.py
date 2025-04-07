@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
@@ -20,9 +20,9 @@ if TYPE_CHECKING:
 
 @dataclass(kw_only=True)
 class ComparamSubset(OdxCategory):
-    comparams: NamedItemList[Comparam]
-    complex_comparams: NamedItemList[ComplexComparam]
-    data_object_props: NamedItemList[DataObjectProperty]
+    comparams: NamedItemList[Comparam] = field(default_factory=NamedItemList)
+    complex_comparams: NamedItemList[ComplexComparam] = field(default_factory=NamedItemList)
+    data_object_props: NamedItemList[DataObjectProperty] = field(default_factory=NamedItemList)
     unit_spec: UnitSpec | None = None
     category: str | None  # mandatory in ODX 2.2, but non-existent in ODX 2.0
 

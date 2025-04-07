@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
@@ -20,7 +20,7 @@ from .hierarchyelementraw import HierarchyElementRaw
 @dataclass(kw_only=True)
 class EcuVariantRaw(HierarchyElementRaw):
     diag_variables_raw: list[DiagVariable | OdxLinkRef]
-    variable_groups: NamedItemList[VariableGroup]
+    variable_groups: NamedItemList[VariableGroup] = field(default_factory=NamedItemList)
     ecu_variant_patterns: list[EcuVariantPattern]
     dyn_defined_spec: DynDefinedSpec | None = None
     parent_refs: list[ParentRef]
