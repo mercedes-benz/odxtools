@@ -296,25 +296,13 @@ somersault_physical_dimensions = {
             short_name="time",
             long_name="Time",
             time_exp=1,
-            length_exp=0,
-            mass_exp=0,
-            current_exp=0,
-            temperature_exp=0,
-            molar_amount_exp=0,
-            luminous_intensity_exp=0,
         ),
     "temperature":
         PhysicalDimension(
             odx_id=OdxLinkId("somersault.PD.temperature", doc_frags),
             short_name="temperature",
             long_name="Temperature",
-            time_exp=0,
-            length_exp=0,
-            mass_exp=0,
-            current_exp=0,
             temperature_exp=1,
-            molar_amount_exp=0,
-            luminous_intensity_exp=0,
         )
 }
 
