@@ -391,19 +391,17 @@ somersault_compumethods: dict[str, CompuMethod] = {
             category=CompuCategory.TEXTTABLE,
             compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
                 CompuScale(
-                    compu_const=CompuConst(v=None, vt="false", data_type=DataType.A_UTF8STRING),
+                    compu_const=CompuConst(vt="false", data_type=DataType.A_UTF8STRING),
                     lower_limit=Limit(value_raw="0", value_type=DataType.A_UINT32),
                     upper_limit=Limit(value_raw="0", value_type=DataType.A_UINT32),
                     domain_type=DataType.A_UINT32,
-                    range_type=DataType.A_UNICODE2STRING,
-                    compu_rational_coeffs=None),
+                    range_type=DataType.A_UNICODE2STRING),
                 CompuScale(
-                    compu_const=CompuConst(v=None, vt="true", data_type=DataType.A_UTF8STRING),
+                    compu_const=CompuConst(vt="true", data_type=DataType.A_UTF8STRING),
                     lower_limit=Limit(value_raw="1", value_type=DataType.A_UINT32),
                     upper_limit=Limit(value_raw="1", value_type=DataType.A_UINT32),
                     domain_type=DataType.A_UINT32,
-                    range_type=DataType.A_UNICODE2STRING,
-                    compu_rational_coeffs=None),
+                    range_type=DataType.A_UNICODE2STRING),
             ]),
             internal_type=DataType.A_UINT32,
             physical_type=DataType.A_UNICODE2STRING,
@@ -713,20 +711,17 @@ somersault_structures = {
         Structure(
             short_name="forward_flips_grudgingly_done_recall",
             odx_id=OdxLinkId("somersault.struct.recall.forward_flips_grudgingly_done", doc_frags),
-            parameters=somersault_positive_responses["forward_flips_grudgingly_done"].parameters,
-            is_visible_raw=None),
+            parameters=somersault_positive_responses["forward_flips_grudgingly_done"].parameters),
     "forward_flips_happily_done":
         Structure(
             short_name="forward_flips_happily_done_recall",
             odx_id=OdxLinkId("somersault.struct.recall.forward_flips_happily_done", doc_frags),
-            parameters=somersault_positive_responses["forward_flips_happily_done"].parameters,
-            is_visible_raw=None),
+            parameters=somersault_positive_responses["forward_flips_happily_done"].parameters),
     "backward_flips_grudgingly_done":
         Structure(
             short_name="backward_flips_grudgingly_done_recall",
             odx_id=OdxLinkId("somersault.struct.recall.backward_flips_grudgingly_done", doc_frags),
-            parameters=somersault_positive_responses["backward_flips_grudgingly_done"].parameters,
-            is_visible_raw=None),
+            parameters=somersault_positive_responses["backward_flips_grudgingly_done"].parameters),
 }
 
 # this is a hack to get around a catch-22: we need to specify the
@@ -1469,8 +1464,7 @@ somersault_base_variant_raw = BaseVariantRaw(
     negative_responses=NamedItemList(somersault_negative_responses.values()),
     global_negative_responses=NamedItemList(somersault_global_negative_responses.values()),
     additional_audiences=NamedItemList(somersault_additional_audiences.values()),
-    parent_refs=[ParentRef(layer_ref=OdxLinkRef.from_id(somersault_protocol.odx_id))],
-    dyn_defined_spec=None)
+    parent_refs=[ParentRef(layer_ref=OdxLinkRef.from_id(somersault_protocol.odx_id))])
 somersault_base_variant = BaseVariant(diag_layer_raw=somersault_base_variant_raw)
 
 ##################

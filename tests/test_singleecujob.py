@@ -113,18 +113,16 @@ class TestSingleEcuJob(unittest.TestCase):
                 physical_type=PhysicalType(base_data_type=DataType.A_UNICODE2STRING),
                 compu_method=LinearCompuMethod(
                     category=CompuCategory.LINEAR,
-                    compu_internal_to_phys=CompuInternalToPhys(
-                        compu_scales=[
-                            CompuScale(
-                                compu_rational_coeffs=CompuRationalCoeffs(
-                                    value_type=DataType.A_INT32,
-                                    numerators=[1, -1],
-                                    denominators=[1],
-                                ),
-                                domain_type=DataType.A_INT32,
-                                range_type=DataType.A_INT32),
-                        ],
-                        compu_default_value=None),
+                    compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                        CompuScale(
+                            compu_rational_coeffs=CompuRationalCoeffs(
+                                value_type=DataType.A_INT32,
+                                numerators=[1, -1],
+                                denominators=[1],
+                            ),
+                            domain_type=DataType.A_INT32,
+                            range_type=DataType.A_INT32),
+                    ]),
                     internal_type=DataType.A_UINT32,
                     physical_type=DataType.A_UINT32),
             ),
@@ -138,18 +136,16 @@ class TestSingleEcuJob(unittest.TestCase):
                 physical_type=PhysicalType(base_data_type=DataType.A_UNICODE2STRING),
                 compu_method=LinearCompuMethod(
                     category=CompuCategory.LINEAR,
-                    compu_internal_to_phys=CompuInternalToPhys(
-                        compu_scales=[
-                            CompuScale(
-                                compu_rational_coeffs=CompuRationalCoeffs(
-                                    value_type=DataType.A_INT32,
-                                    numerators=[1, -1],
-                                    denominators=[1],
-                                ),
-                                domain_type=DataType.A_INT32,
-                                range_type=DataType.A_INT32),
-                        ],
-                        compu_default_value=None),
+                    compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                        CompuScale(
+                            compu_rational_coeffs=CompuRationalCoeffs(
+                                value_type=DataType.A_INT32,
+                                numerators=[1, -1],
+                                denominators=[1],
+                            ),
+                            domain_type=DataType.A_INT32,
+                            range_type=DataType.A_INT32),
+                    ]),
                     internal_type=DataType.A_UINT32,
                     physical_type=DataType.A_UINT32,
                 ),

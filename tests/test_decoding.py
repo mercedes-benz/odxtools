@@ -274,7 +274,7 @@ class TestDecoding(unittest.TestCase):
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             diag_data_dictionary_spec=DiagDataDictionarySpec(
-                data_object_props=NamedItemList([dop]), sdgs=[]),
+                data_object_props=NamedItemList([dop])),
             diag_comms_raw=[service],
             requests=NamedItemList([req]),
             negative_responses=NamedItemList([resp]),
@@ -459,8 +459,7 @@ class TestDecoding(unittest.TestCase):
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             diag_data_dictionary_spec=DiagDataDictionarySpec(
-                data_object_props=NamedItemList([dop]), structures=NamedItemList([struct]),
-                sdgs=[]),
+                data_object_props=NamedItemList([dop]), structures=NamedItemList([struct])),
             diag_comms_raw=[service],
             requests=NamedItemList([req]),
         )
@@ -559,8 +558,7 @@ class TestDecoding(unittest.TestCase):
             diag_data_dictionary_spec=DiagDataDictionarySpec(
                 data_object_props=NamedItemList([dop]),
                 structures=NamedItemList([struct]),
-                static_fields=NamedItemList([static_field]),
-                sdgs=[]),
+                static_fields=NamedItemList([static_field])),
             diag_comms_raw=[service],
             requests=NamedItemList([req]),
         )
@@ -731,8 +729,7 @@ class TestDecoding(unittest.TestCase):
             diag_data_dictionary_spec=DiagDataDictionarySpec(
                 data_object_props=NamedItemList([dop, dyn_end_dop]),
                 structures=NamedItemList([struct]),
-                dynamic_endmarker_fields=NamedItemList([demf]),
-                sdgs=[]),
+                dynamic_endmarker_fields=NamedItemList([demf])),
             diag_comms_raw=[service, service_eopdu],
             requests=NamedItemList([req, req_end_of_pdu]),
         )
@@ -899,8 +896,7 @@ class TestDecoding(unittest.TestCase):
             diag_data_dictionary_spec=DiagDataDictionarySpec(
                 data_object_props=NamedItemList([dop]),
                 structures=NamedItemList([struct]),
-                dynamic_length_fields=NamedItemList([dlf]),
-                sdgs=[]),
+                dynamic_length_fields=NamedItemList([dlf])),
             diag_comms_raw=[service],
             requests=NamedItemList([req]),
         )
@@ -1022,8 +1018,7 @@ class TestDecoding(unittest.TestCase):
             diag_data_dictionary_spec=DiagDataDictionarySpec(
                 data_object_props=NamedItemList([dop]),
                 structures=NamedItemList([struct]),
-                end_of_pdu_fields=NamedItemList([eopf]),
-                sdgs=[]),
+                end_of_pdu_fields=NamedItemList([eopf])),
             diag_comms_raw=[service],
             requests=NamedItemList([req]),
         )
@@ -1063,18 +1058,16 @@ class TestDecoding(unittest.TestCase):
     def test_decode_request_linear_compu_method(self) -> None:
         compu_method = LinearCompuMethod(
             category=CompuCategory.LINEAR,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[1, 5],
-                            denominators=[1],
-                        ),
-                        domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
-                ],
-                compu_default_value=None),
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_INT32,
+                        numerators=[1, 5],
+                        denominators=[1],
+                    ),
+                    domain_type=DataType.A_INT32,
+                    range_type=DataType.A_INT32),
+            ]),
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32,
         )
@@ -1116,7 +1109,7 @@ class TestDecoding(unittest.TestCase):
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             diag_data_dictionary_spec=DiagDataDictionarySpec(
-                data_object_props=NamedItemList([dop]), sdgs=[]),
+                data_object_props=NamedItemList([dop])),
             diag_comms_raw=[service],
             requests=NamedItemList([req]),
         )
@@ -1434,18 +1427,16 @@ class TestDecodingAndEncoding(unittest.TestCase):
             physical_type=PhysicalType(base_data_type=DataType.A_INT32),
             compu_method=LinearCompuMethod(
                 category=CompuCategory.LINEAR,
-                compu_internal_to_phys=CompuInternalToPhys(
-                    compu_scales=[
-                        CompuScale(
-                            compu_rational_coeffs=CompuRationalCoeffs(
-                                value_type=DataType.A_INT32,
-                                numerators=[offset, 1],
-                                denominators=[1],
-                            ),
-                            domain_type=DataType.A_INT32,
-                            range_type=DataType.A_INT32),
-                    ],
-                    compu_default_value=None),
+                compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                    CompuScale(
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            value_type=DataType.A_INT32,
+                            numerators=[offset, 1],
+                            denominators=[1],
+                        ),
+                        domain_type=DataType.A_INT32,
+                        range_type=DataType.A_INT32),
+                ]),
                 internal_type=DataType.A_INT32,
                 physical_type=DataType.A_INT32,
             ),

@@ -452,18 +452,16 @@ class TestEncodeRequest(unittest.TestCase):
         # This CompuMethod represents the linear function: decode(x) = 2*x + 8 and encode(x) = (x-8)/2
         compu_method = LinearCompuMethod(
             category=CompuCategory.LINEAR,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[8, 2],
-                            denominators=[1],
-                        ),
-                        domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
-                ],
-                compu_default_value=None),
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_INT32,
+                        numerators=[8, 2],
+                        denominators=[1],
+                    ),
+                    domain_type=DataType.A_INT32,
+                    range_type=DataType.A_INT32),
+            ]),
             internal_type=DataType.A_UINT32,
             physical_type=DataType.A_UINT32)
         dop = DataObjectProperty(
@@ -563,7 +561,7 @@ class TestEncodeRequest(unittest.TestCase):
             odx_id=OdxLinkId("dl_id", doc_frags),
             short_name="dl_sn",
             diag_data_dictionary_spec=DiagDataDictionarySpec(
-                data_object_props=NamedItemList([dop]), sdgs=[]),
+                data_object_props=NamedItemList([dop])),
             diag_comms_raw=[service],
             requests=NamedItemList([req]),
             negative_responses=NamedItemList([resp]),
@@ -669,22 +667,19 @@ class TestEncodeRequest(unittest.TestCase):
                     short_name="first_trouble",
                     trouble_code=0x112233,
                     text=Text.from_string("The first trouble is the deepest"),
-                    display_trouble_code="Z123",
-                    sdgs=[]),
+                    display_trouble_code="Z123"),
                 DiagnosticTroubleCode(
                     odx_id=OdxLinkId("DTCs.follow_up_trouble", doc_frags),
                     short_name="follow_up_trouble",
                     trouble_code=0x445566,
                     text=Text.from_string(""),
-                    display_trouble_code="Y456",
-                    sdgs=[]),
+                    display_trouble_code="Y456"),
                 DiagnosticTroubleCode(
                     odx_id=OdxLinkId("DTCs.screwed_up_hard", doc_frags),
                     short_name="screwed_up_hard",
                     trouble_code=0xf00de5,
                     text=Text.from_string(""),
-                    display_trouble_code="SCREW",
-                    sdgs=[]),
+                    display_trouble_code="SCREW"),
             ],
         )
 
@@ -850,16 +845,14 @@ class TestEncodeRequest(unittest.TestCase):
             short_name="inner_dop",
             diag_coded_type=inner_dct,
             physical_type=physical_type,
-            compu_method=compu_method,
-            physical_constr=None)
+            compu_method=compu_method)
 
         outer_dop = DataObjectProperty(
             odx_id=OdxLinkId('dop.outer', doc_frags),
             short_name="outer_dop",
             diag_coded_type=outer_dct,
             physical_type=physical_type,
-            compu_method=compu_method,
-            physical_constr=None)
+            compu_method=compu_method)
 
         odxlinks = OdxLinkDatabase()
         odxlinks.update(inner_dop._build_odxlinks())
@@ -872,18 +865,14 @@ class TestEncodeRequest(unittest.TestCase):
             short_name="inner_param",
             byte_position=0,
             bit_position=2,
-            dop_ref=OdxLinkRef.from_id(inner_dop.odx_id),
-            physical_default_value_raw=None)
-        snref_ctx = SnRefContext(parameters=[])
+            dop_ref=OdxLinkRef.from_id(inner_dop.odx_id))
+        snref_ctx = SnRefContext()
         inner_param._resolve_odxlinks(odxlinks)
         inner_param._resolve_snrefs(snref_ctx)
 
         # Outer
         outer_param = ValueParameter(
-            short_name="outer_param",
-            byte_position=0,
-            dop_ref=OdxLinkRef.from_id(outer_dop.odx_id),
-            physical_default_value_raw=None)
+            short_name="outer_param", byte_position=0, dop_ref=OdxLinkRef.from_id(outer_dop.odx_id))
         outer_param._resolve_odxlinks(odxlinks)
         outer_param._resolve_snrefs(snref_ctx)
 
@@ -915,8 +904,7 @@ class TestEncodeRequest(unittest.TestCase):
             short_name="dop",
             diag_coded_type=dct,
             physical_type=physical_type,
-            compu_method=compu_method,
-            physical_constr=None)
+            compu_method=compu_method)
 
         odxlinks = OdxLinkDatabase()
         odxlinks.update(dop._build_odxlinks())
@@ -927,8 +915,7 @@ class TestEncodeRequest(unittest.TestCase):
             short_name="param",
             byte_position=0,
             bit_position=2,
-            dop_ref=OdxLinkRef.from_id(dop.odx_id),
-            physical_default_value_raw=None)
+            dop_ref=OdxLinkRef.from_id(dop.odx_id))
         param._resolve_odxlinks(odxlinks)
 
         req = self._create_request([param])
