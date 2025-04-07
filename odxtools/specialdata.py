@@ -11,8 +11,8 @@ from .snrefcontext import SnRefContext
 @dataclass(kw_only=True)
 class SpecialData:
     """This corresponds to the SD XML tag"""
-    semantic_info: str | None  # the "SI" attribute
-    text_identifier: str | None  # the "TI" attribute, specifies the language used
+    semantic_info: str | None = None  # the "SI" attribute
+    text_identifier: str | None = None  # the "TI" attribute, specifies the language used
     value: str
 
     @staticmethod

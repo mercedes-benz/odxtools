@@ -16,7 +16,7 @@ class SpecialDataGroup:
     sdg_caption: SpecialDataGroupCaption | None = None
     sdg_caption_ref: OdxLinkRef | None = None
     values: list[Union["SpecialDataGroup", SpecialData]] = field(default_factory=list)
-    semantic_info: str | None  # the "SI" attribute
+    semantic_info: str | None = None  # the "SI" attribute
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SpecialDataGroup":

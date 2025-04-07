@@ -18,7 +18,7 @@ class BaseComparam(IdentifiableElement):
     param_class: str
     cptype: StandardizationLevel
     display_level: int | None = None
-    cpusage: Usage | None  # Required in ODX 2.2, missing in ODX 2.0
+    cpusage: Usage | None = None  # Required in ODX 2.2, missing in ODX 2.0
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "BaseComparam":
