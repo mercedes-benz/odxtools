@@ -7,8 +7,8 @@ requires = [
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "odxtools"
-description = "Utilities to work with the ODX standard for automotive diagnostics"
+name = "odxtools_porsche"
+description = "Utilities to work with the ODX standard for automotive diagnostics. Adjusted for Porsche specific use cases"
 license = {text = "MIT"}
 authors = [
     {name = "Katrin Bauer", email = "katrin.bauer@mbition.io"},
