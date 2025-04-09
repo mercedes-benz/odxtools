@@ -106,13 +106,11 @@ class Database:
             # content of COMPARAM-SPEC was moved to COMPARAM-SUBSET
             # and COMPARAM-SPEC became a container for PROT-STACKS and
             # a PROT-STACK references a list of COMPARAM-SUBSET
+            context = OdxDocContext(model_version,
+                                    (OdxDocFragment(category_sn, DocType.COMPARAM_SPEC),))
             if model_version < Version("2.2"):
-                context = OdxDocContext(model_version,
-                                        (OdxDocFragment(category_sn, DocType.COMPARAM_SUBSET),))
                 self._comparam_subsets.append(ComparamSubset.from_et(category_et, context))
             else:
-                context = OdxDocContext(model_version,
-                                        (OdxDocFragment(category_sn, DocType.COMPARAM_SPEC),))
                 self._comparam_specs.append(ComparamSpec.from_et(category_et, context))
 
     def refresh(self) -> None:
