@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, NamedTuple
+from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from packaging.version import Version
 
@@ -6,7 +7,8 @@ if TYPE_CHECKING:
     from odxtools.odxlink import OdxDocFragment
 
 
-class OdxDocContext(NamedTuple):
+@dataclass(slots=True, frozen=True)
+class OdxDocContext:
     version: Version
 
     # the doc_fragments are either tuple(doc_frag(category),)
