@@ -249,7 +249,7 @@ class Multiplexer(ComplexDop):
         reference_case = self.default_case if self.default_case else self.cases[0]
         if reference_case.structure is None:
             return None
-        reference_size = reference_case.structure.get_static_bit_length()
+        case_bit_length = reference_case.structure.get_static_bit_length()
         if reference_size is None:
             return None
         for mux_case in self.cases:
