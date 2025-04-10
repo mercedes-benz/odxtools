@@ -241,6 +241,7 @@ class Multiplexer(ComplexDop):
     def get_static_bit_length(self) -> int | None:
         """
         Returns the static bit length of the multiplexer structure, if determinable.
+
         If all cases (including the default, if present) have the same static bit length,
         the codec length is considered static and is returned.
         Otherwise, returns None to indicate that the size is dynamic.
@@ -249,7 +250,8 @@ class Multiplexer(ComplexDop):
         if reference_case.structure is None:
             return None
         reference_size = reference_case.structure.get_static_bit_length()
-
+        if reference_size is None:
+            return None
         for mux_case in self.cases:
             if mux_case.structure is None:
                 return None
@@ -257,4 +259,8 @@ class Multiplexer(ComplexDop):
             if case_size != reference_size:
                 return None  # Found a case with a different or unknown size
 
-        return reference_size
+        switch_key_size = self.switch_key.dop.get_static_bit_length()
+        if switch_key_size is None:
+            return None
+
+        return max(switch_key_size + self.switch_key.byte_position, reference_size + self.byte_position)
