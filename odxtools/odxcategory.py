@@ -6,10 +6,9 @@ from xml.etree import ElementTree
 from .admindata import AdminData
 from .companydata import CompanyData
 from .element import IdentifiableElement
-from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxdoccontext import OdxDocContext
-from .odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
@@ -28,17 +27,7 @@ class OdxCategory(IdentifiableElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "OdxCategory":
-        raise Exception("Calling `._from_et()` is not allowed for OdxCategory. "
-                        "Use `OdxCategory.category_from_et()`!")
 
-    @staticmethod
-    def category_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
-                         doc_type: DocType) -> "OdxCategory":
-
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-        # create the current ODX "document fragment" (description of the
-        # current document for references and IDs)
-        context.doc_fragments.append(OdxDocFragment(short_name, doc_type))
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)

@@ -9,7 +9,7 @@ from .dataobjectproperty import DataObjectProperty
 from .nameditemlist import NamedItemList
 from .odxcategory import OdxCategory
 from .odxdoccontext import OdxDocContext
-from .odxlink import DocType, OdxLinkDatabase, OdxLinkId
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .unitspec import UnitSpec
 from .utils import dataclass_fields_asdict
@@ -31,14 +31,7 @@ class ComparamSubset(OdxCategory):
 
         category_attrib = et_element.attrib.get("CATEGORY")
 
-        # In ODX 2.0, COMPARAM-SPEC is used, whereas in ODX 2.2, it
-        # refers to something else and has been replaced by
-        # COMPARAM-SUBSET.
-        # - If the 'CATEGORY' attribute is missing (ODX 2.0), use
-        #   COMPARAM_SPEC,
-        # - else (ODX 2.2), use COMPARAM_SUBSET.
-        doc_type = DocType.COMPARAM_SUBSET if category_attrib is not None else DocType.COMPARAM_SPEC
-        base_obj = OdxCategory.category_from_et(et_element, context, doc_type=doc_type)
+        base_obj = OdxCategory.from_et(et_element, context)
         kwargs = dataclass_fields_asdict(base_obj)
 
         comparams = NamedItemList(
