@@ -263,4 +263,5 @@ class Multiplexer(ComplexDop):
         if switch_key_size is None:
             return None
 
-        return max(switch_key_size + self.switch_key.byte_position, reference_size + self.byte_position)
+        return max(switch_key_size + self.switch_key.byte_position,
+                   reference_size + self.byte_position)
