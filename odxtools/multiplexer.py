@@ -250,18 +250,20 @@ class Multiplexer(ComplexDop):
         if reference_case.structure is None:
             return None
         case_bit_length = reference_case.structure.get_static_bit_length()
-        if reference_size is None:
+        if case_bit_length is None:
             return None
         for mux_case in self.cases:
             if mux_case.structure is None:
                 return None
             case_size = mux_case.structure.get_static_bit_length()
-            if case_size != reference_size:
+            if case_size != case_bit_length:
                 return None  # Found a case with a different or unknown size
 
         switch_key_size = self.switch_key.dop.get_static_bit_length()
         if switch_key_size is None:
             return None
 
-        return max(switch_key_size + self.switch_key.byte_position,
-                   reference_size + self.byte_position)
+        return max(
+            switch_key_size + self.switch_key.byte_position * 8 +
+            (self.switch_key.bit_position if self.switch_key.bit_position else 0),
+            case_bit_length + self.byte_position * 8)
