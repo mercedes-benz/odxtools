@@ -265,5 +265,4 @@ class Multiplexer(ComplexDop):
 
         return max(
             switch_key_size + self.switch_key.byte_position * 8 +
-            (self.switch_key.bit_position if self.switch_key.bit_position else 0),
-            case_bit_length + self.byte_position * 8)
+            (self.switch_key.bit_position or 0), case_bit_length + self.byte_position * 8)
