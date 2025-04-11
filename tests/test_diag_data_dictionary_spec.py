@@ -281,8 +281,7 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
             mux.default_case.structure_ref = OdxLinkRef.from_id(mux_case2_struct.odx_id)
         ecu._resolve_odxlinks(odxlinks)
         self.assertEqual(  # mux cases doesn't have the same structure size
-            mux.get_static_bit_length(),
-            None)
+            mux.get_static_bit_length(), None)
         mux.cases[0].structure_ref = OdxLinkRef.from_id(mux_case2_struct.odx_id)
         ecu._resolve_odxlinks(odxlinks)
         self.assertEqual(mux.get_static_bit_length(), 16)
