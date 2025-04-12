@@ -17,7 +17,7 @@ from ..odxlink import OdxLinkDatabase, OdxLinkRef
 from ..parentref import ParentRef
 from ..variablegroup import HasVariableGroups, VariableGroup
 from .basevariant import BaseVariant
-from .diaglayer import DiagLayer, TInheritedObjects
+from .diaglayer import DiagLayer, InheritanceTriplet
 from .ecuvariantraw import EcuVariantRaw
 from .hierarchyelement import HierarchyElement
 
@@ -116,12 +116,12 @@ class EcuVariant(HierarchyElement):
     def _compute_available_diag_variables(self,
                                           odxlinks: OdxLinkDatabase) -> Iterable[DiagVariable]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[DiagVariable]:
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[InheritanceTriplet[DiagVariable]]:
             if not isinstance(dl.diag_layer_raw, HasDiagVariables):
                 return []
 
             prio = dl.variant_type.inheritance_priority
-            return [(x, dl, prio) for x in dl.diag_layer_raw.diag_variables]
+            return [InheritanceTriplet(x, dl, prio) for x in dl.diag_layer_raw.diag_variables]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_variables
@@ -132,12 +132,12 @@ class EcuVariant(HierarchyElement):
     def _compute_available_variable_groups(self,
                                            odxlinks: OdxLinkDatabase) -> Iterable[VariableGroup]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[VariableGroup]:
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[InheritanceTriplet[VariableGroup]]:
             if not isinstance(dl.diag_layer_raw, HasVariableGroups):
                 return []
 
             prio = dl.variant_type.inheritance_priority
-            return [(x, dl, prio) for x in dl.diag_layer_raw.variable_groups]
+            return [InheritanceTriplet(x, dl, prio) for x in dl.diag_layer_raw.variable_groups]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []

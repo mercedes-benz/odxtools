@@ -27,8 +27,8 @@ from ..specialdatagroup import SpecialDataGroup
 from ..statechart import StateChart
 from ..unitgroup import UnitGroup
 from ..unitspec import UnitSpec
-from .diaglayer import DiagLayer, TInheritedObject, TInheritedObjects
-from .diaglayertype import TInheritancePrio
+from .diaglayer import DiagLayer, InheritanceTriplet
+from .diaglayertype import InheritancePriority
 from .hierarchyelementraw import HierarchyElementRaw
 
 if TYPE_CHECKING:
@@ -267,9 +267,9 @@ class HierarchyElement(DiagLayer):
 
     def _compute_available_objects(
         self,
-        get_local_objects: Callable[["DiagLayer"], TInheritedObjects[TNamed]],
+        get_local_objects: Callable[["DiagLayer"], Iterable[InheritanceTriplet[TNamed]]],
         get_not_inherited: Callable[[ParentRef], Iterable[str]],
-    ) -> TInheritedObjects[TNamed]:
+    ) -> Iterable[InheritanceTriplet[TNamed]]:
         """Helper method to compute the set of all objects applicable
         to the DiagLayer if these objects are subject to the value
         inheritance mechanism
@@ -290,7 +290,7 @@ class HierarchyElement(DiagLayer):
 
         local_objects = get_local_objects(self)
         local_object_dict = {x[0].short_name: x for x in local_objects}
-        result_dict: dict[str, TInheritedObject[TNamed]] = {}
+        result_dict: dict[str, InheritanceTriplet[TNamed]] = {}
 
         # populate the result dictionary with the inherited objects
         for parent_ref in self._get_parent_refs_sorted_by_priority(reverse=True):
@@ -305,7 +305,7 @@ class HierarchyElement(DiagLayer):
             inherited_objects = [
                 x
                 for x in parent_dl._compute_available_objects(get_local_objects, get_not_inherited)
-                if x[0].short_name not in not_inherited_short_names
+                if x.object.short_name not in not_inherited_short_names
             ]
 
             # update the result set with the objects from the current parent_ref
@@ -314,25 +314,27 @@ class HierarchyElement(DiagLayer):
                 # no object with the given short name currently
                 # exits. add it to the result set and continue
                 if obj.short_name not in result_dict:
-                    result_dict[obj.short_name] = (obj, obj_layer, obj_prio)
+                    result_dict[obj.short_name] = InheritanceTriplet(obj, obj_layer, obj_prio)
                     continue
 
                 # if an object with a given name already exists,
                 # there's no problem if it was inherited from a parent
                 # of different priority than the one currently
                 # considered
-                orig_prio = result_dict[obj.short_name][2]
+                orig_prio = result_dict[obj.short_name].prio
 
-                if obj_prio == TInheritancePrio(0):
-                    # special case for inheriting from ECU-SHARED-DATA
-                    new_prio = cast(TInheritancePrio, self.variant_type.inheritance_priority - 0.5)
+                if obj_prio == InheritancePriority(0):
+                    # Special case for inheriting from ECU-SHARED-DATA:
+                    # Objects, that are inherited from ECU-SHARED-DATA, get a specialization,
+                    # that is less than the inheriting layer but higher than the next general layer.
+                    new_prio = InheritancePriority(self.variant_type.inheritance_priority - 0.5)
                 else:
                     new_prio = obj_prio
 
                 if new_prio < orig_prio:
                     continue
                 elif orig_prio < new_prio:
-                    result_dict[obj.short_name] = (obj, obj_layer, new_prio)
+                    result_dict[obj.short_name] = InheritanceTriplet(obj, obj_layer, new_prio)
                     continue
 
                 # if there is a conflict on the same priority level,
@@ -346,12 +348,12 @@ class HierarchyElement(DiagLayer):
                 # conflict. (note that value comparisons of complete
                 # complex objects tend to be expensive, so this test
                 # is done last.)
-                if obj == result_dict[obj.short_name][0]:
+                if obj == result_dict[obj.short_name].object:
                     continue
 
                 odxraise(f"Diagnostic layer {self.short_name} cannot inherit object "
                          f"{obj.short_name} due to an unresolveable inheritance conflict between "
-                         f"parent layers {result_dict[obj.short_name][1].short_name} "
+                         f"parent layers {result_dict[obj.short_name].source.short_name} "
                          f"and {obj_layer.short_name}")
 
         # add the locally defined entries, overriding the inherited
@@ -362,9 +364,9 @@ class HierarchyElement(DiagLayer):
 
     def _compute_available_diag_comms(self, odxlinks: OdxLinkDatabase) -> Iterable[DiagComm]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[DiagComm]:
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[InheritanceTriplet[DiagComm]]:
             prio = dl.variant_type.inheritance_priority
-            return [(x, dl, prio) for x in dl._get_local_diag_comms(odxlinks)]
+            return [InheritanceTriplet(x, dl, prio) for x in dl._get_local_diag_comms(odxlinks)]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_diag_comms
@@ -375,9 +377,11 @@ class HierarchyElement(DiagLayer):
     def _compute_available_global_neg_responses(self, odxlinks: OdxLinkDatabase) \
             -> Iterable[Response]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[Response]:
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[InheritanceTriplet[Response]]:
             prio = dl.variant_type.inheritance_priority
-            return [(x, dl, prio) for x in dl.diag_layer_raw.global_negative_responses]
+            return [
+                InheritanceTriplet(x, dl, prio) for x in dl.diag_layer_raw.global_negative_responses
+            ]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_global_neg_responses
@@ -391,20 +395,23 @@ class HierarchyElement(DiagLayer):
         exclude: Callable[["ParentRef"], list[str]],
     ) -> NamedItemList[TNamed]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[TNamed]:
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[InheritanceTriplet[TNamed]]:
             if dl.diag_layer_raw.diag_data_dictionary_spec is None:
                 return []
             prio = dl.variant_type.inheritance_priority
-            return [(x, dl, prio) for x in include(dl.diag_layer_raw.diag_data_dictionary_spec)]
+            return [
+                InheritanceTriplet(x, dl, prio)
+                for x in include(dl.diag_layer_raw.diag_data_dictionary_spec)
+            ]
 
         found = self._compute_available_objects(get_local_objects_fn, exclude)
         return NamedItemList(x[0] for x in found)
 
     def _compute_available_functional_classes(self) -> Iterable[FunctionalClass]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[FunctionalClass]:
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[InheritanceTriplet[FunctionalClass]]:
             prio = dl.variant_type.inheritance_priority
-            return [(x, dl, prio) for x in dl.diag_layer_raw.functional_classes]
+            return [InheritanceTriplet(x, dl, prio) for x in dl.diag_layer_raw.functional_classes]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
@@ -414,9 +421,9 @@ class HierarchyElement(DiagLayer):
 
     def _compute_available_additional_audiences(self) -> Iterable[AdditionalAudience]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[AdditionalAudience]:
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[InheritanceTriplet[AdditionalAudience]]:
             prio = dl.variant_type.inheritance_priority
-            return [(x, dl, prio) for x in dl.diag_layer_raw.additional_audiences]
+            return [InheritanceTriplet(x, dl, prio) for x in dl.diag_layer_raw.additional_audiences]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
@@ -426,9 +433,9 @@ class HierarchyElement(DiagLayer):
 
     def _compute_available_state_charts(self) -> Iterable[StateChart]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[StateChart]:
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[InheritanceTriplet[StateChart]]:
             prio = dl.variant_type.inheritance_priority
-            return [(x, dl, prio) for x in dl.diag_layer_raw.state_charts]
+            return [InheritanceTriplet(x, dl, prio) for x in dl.diag_layer_raw.state_charts]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
@@ -438,9 +445,9 @@ class HierarchyElement(DiagLayer):
 
     def _compute_available_unit_groups(self) -> Iterable[UnitGroup]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[UnitGroup]:
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[InheritanceTriplet[UnitGroup]]:
             prio = dl.variant_type.inheritance_priority
-            return [(x, dl, prio) for x in dl._get_local_unit_groups()]
+            return [InheritanceTriplet(x, dl, prio) for x in dl._get_local_unit_groups()]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []

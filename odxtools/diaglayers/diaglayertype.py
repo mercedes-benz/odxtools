@@ -2,7 +2,7 @@
 from enum import Enum
 from typing import NewType
 
-TInheritancePrio = NewType("TInheritancePrio", float)
+InheritancePriority = NewType("InheritancePriority", float)
 
 
 class DiagLayerType(Enum):
@@ -13,7 +13,7 @@ class DiagLayerType(Enum):
     ECU_SHARED_DATA = "ECU-SHARED-DATA"
 
     @property
-    def inheritance_priority(self) -> TInheritancePrio:
+    def inheritance_priority(self) -> InheritancePriority:
         """Return the inheritance priority of diag layers of the given type
 
         ODX mandates that diagnostic layers can only inherit from
@@ -21,12 +21,12 @@ class DiagLayerType(Enum):
 
         """
 
-        PRIORITY_OF_DIAG_LAYER_TYPE: dict[DiagLayerType, TInheritancePrio] = {
-            DiagLayerType.ECU_SHARED_DATA: TInheritancePrio(0),
-            DiagLayerType.PROTOCOL: TInheritancePrio(1),
-            DiagLayerType.FUNCTIONAL_GROUP: TInheritancePrio(2),
-            DiagLayerType.BASE_VARIANT: TInheritancePrio(3),
-            DiagLayerType.ECU_VARIANT: TInheritancePrio(4),
+        PRIORITY_OF_DIAG_LAYER_TYPE: dict[DiagLayerType, InheritancePriority] = {
+            DiagLayerType.ECU_SHARED_DATA: InheritancePriority(0),
+            DiagLayerType.PROTOCOL: InheritancePriority(1),
+            DiagLayerType.FUNCTIONAL_GROUP: InheritancePriority(2),
+            DiagLayerType.BASE_VARIANT: InheritancePriority(3),
+            DiagLayerType.ECU_VARIANT: InheritancePriority(4),
         }
 
         return PRIORITY_OF_DIAG_LAYER_TYPE[self]

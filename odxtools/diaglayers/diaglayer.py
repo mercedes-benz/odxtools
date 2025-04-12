@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: MIT
+import sys
 from collections.abc import Callable, Iterable
 from copy import copy, deepcopy
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
-from typing import Any, Union, cast
+from typing import Any, Generic, Union, cast
 from xml.etree import ElementTree
 
 from ..admindata import AdminData
@@ -29,11 +30,21 @@ from ..specialdatagroup import SpecialDataGroup
 from ..subcomponent import SubComponent
 from ..unitgroup import UnitGroup
 from .diaglayerraw import DiagLayerRaw
-from .diaglayertype import DiagLayerType, TInheritancePrio
+from .diaglayertype import DiagLayerType, InheritancePriority
+
+# python 3.10 does not support generic namedtuples
+if sys.version_info >= (3, 11):
+    from typing import NamedTuple
+else:
+    from typing_extensions import NamedTuple
 
 PrefixTree = dict[int, Union[list[DiagService], "PrefixTree"]]
-TInheritedObject = tuple[TNamed, "DiagLayer", TInheritancePrio]
-TInheritedObjects = Iterable[tuple[TNamed, "DiagLayer", TInheritancePrio]]
+
+
+class InheritanceTriplet(Generic[TNamed], NamedTuple):
+    object: TNamed
+    source: "DiagLayer"
+    prio: InheritancePriority
 
 
 @dataclass(kw_only=True)
@@ -158,9 +169,9 @@ class DiagLayer:
 
     def _compute_available_objects(
         self,
-        get_local_objects: Callable[["DiagLayer"], TInheritedObjects[TNamed]],
+        get_local_objects: Callable[["DiagLayer"], Iterable[InheritanceTriplet[TNamed]]],
         get_not_inherited: Callable[[ParentRef], Iterable[str]],
-    ) -> TInheritedObjects[TNamed]:
+    ) -> Iterable[InheritanceTriplet[TNamed]]:
         """Helper method to compute the set of all objects applicable
         to the DiagLayer if these objects are subject to the value
         inheritance mechanism
