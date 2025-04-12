@@ -14,7 +14,7 @@ from ..odxdoccontext import OdxDocContext
 from ..odxlink import OdxLinkDatabase, OdxLinkRef
 from ..parentref import ParentRef
 from ..variablegroup import VariableGroup
-from .diaglayer import DiagLayer
+from .diaglayer import DiagLayer, TInheritedObjects
 from .functionalgroupraw import FunctionalGroupRaw
 from .hierarchyelement import HierarchyElement
 
@@ -68,30 +68,34 @@ class FunctionalGroup(HierarchyElement):
     def _compute_available_diag_variables(self,
                                           odxlinks: OdxLinkDatabase) -> Iterable[DiagVariable]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> Iterable[DiagVariable]:
+        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[DiagVariable]:
             if not hasattr(dl.diag_layer_raw, "diag_variables"):
                 return []
 
-            return dl.diag_layer_raw.diag_variables  # type: ignore[no-any-return]
+            prio = dl.variant_type.inheritance_priority
+            return [(x, dl, prio) for x in dl.diag_layer_raw.diag_variables]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_variables
 
-        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        return [x[0] for x in available_objects]
 
     def _compute_available_variable_groups(self,
                                            odxlinks: OdxLinkDatabase) -> Iterable[VariableGroup]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> Iterable[VariableGroup]:
+        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[VariableGroup]:
             if not hasattr(dl.diag_layer_raw, "variable_groups"):
                 return []
 
-            return dl.diag_layer_raw.variable_groups  # type: ignore[no-any-return]
+            prio = dl.variant_type.inheritance_priority
+            return [(x, dl, prio) for x in dl.diag_layer_raw.variable_groups]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
-        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        return [x[0] for x in available_objects]
 
     def __deepcopy__(self, memo: dict[int, Any]) -> Any:
         """Create a deep copy of the functional group layer

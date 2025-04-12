@@ -29,9 +29,11 @@ from ..specialdatagroup import SpecialDataGroup
 from ..subcomponent import SubComponent
 from ..unitgroup import UnitGroup
 from .diaglayerraw import DiagLayerRaw
-from .diaglayertype import DiagLayerType
+from .diaglayertype import DiagLayerType, TInheritancePrio
 
 PrefixTree = dict[int, Union[list[DiagService], "PrefixTree"]]
+TInheritedObject = tuple[TNamed, "DiagLayer", TInheritancePrio]
+TInheritedObjects = Iterable[tuple[TNamed, "DiagLayer", TInheritancePrio]]
 
 
 @dataclass(kw_only=True)
@@ -156,9 +158,9 @@ class DiagLayer:
 
     def _compute_available_objects(
         self,
-        get_local_objects: Callable[["DiagLayer"], Iterable[TNamed]],
+        get_local_objects: Callable[["DiagLayer"], TInheritedObjects[TNamed]],
         get_not_inherited: Callable[[ParentRef], Iterable[str]],
-    ) -> Iterable[TNamed]:
+    ) -> TInheritedObjects[TNamed]:
         """Helper method to compute the set of all objects applicable
         to the DiagLayer if these objects are subject to the value
         inheritance mechanism

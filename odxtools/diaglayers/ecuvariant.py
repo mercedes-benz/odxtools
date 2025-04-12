@@ -17,7 +17,7 @@ from ..odxlink import OdxLinkDatabase, OdxLinkRef
 from ..parentref import ParentRef
 from ..variablegroup import HasVariableGroups, VariableGroup
 from .basevariant import BaseVariant
-from .diaglayer import DiagLayer
+from .diaglayer import DiagLayer, TInheritedObjects
 from .ecuvariantraw import EcuVariantRaw
 from .hierarchyelement import HierarchyElement
 
@@ -116,27 +116,31 @@ class EcuVariant(HierarchyElement):
     def _compute_available_diag_variables(self,
                                           odxlinks: OdxLinkDatabase) -> Iterable[DiagVariable]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> Iterable[DiagVariable]:
+        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[DiagVariable]:
             if not isinstance(dl.diag_layer_raw, HasDiagVariables):
                 return []
 
-            return dl.diag_layer_raw.diag_variables
+            prio = dl.variant_type.inheritance_priority
+            return [(x, dl, prio) for x in dl.diag_layer_raw.diag_variables]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_variables
 
-        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        return [x[0] for x in available_objects]
 
     def _compute_available_variable_groups(self,
                                            odxlinks: OdxLinkDatabase) -> Iterable[VariableGroup]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> Iterable[VariableGroup]:
+        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[VariableGroup]:
             if not isinstance(dl.diag_layer_raw, HasVariableGroups):
                 return []
 
-            return dl.diag_layer_raw.variable_groups
+            prio = dl.variant_type.inheritance_priority
+            return [(x, dl, prio) for x in dl.diag_layer_raw.variable_groups]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
-        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        return [x[0] for x in available_objects]

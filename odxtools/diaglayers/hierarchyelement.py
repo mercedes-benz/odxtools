@@ -5,7 +5,7 @@ from collections.abc import Callable, Iterable
 from copy import deepcopy
 from dataclasses import dataclass
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
+from typing import TYPE_CHECKING, Any, Union, cast
 from xml.etree import ElementTree
 
 from ..additionalaudience import AdditionalAudience
@@ -16,7 +16,7 @@ from ..diagdatadictionaryspec import DiagDataDictionarySpec
 from ..diagservice import DiagService
 from ..exceptions import OdxWarning, odxassert, odxraise
 from ..functionalclass import FunctionalClass
-from ..nameditemlist import NamedItemList, OdxNamed
+from ..nameditemlist import NamedItemList, TNamed
 from ..odxdoccontext import OdxDocContext
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..parentref import ParentRef
@@ -27,14 +27,13 @@ from ..specialdatagroup import SpecialDataGroup
 from ..statechart import StateChart
 from ..unitgroup import UnitGroup
 from ..unitspec import UnitSpec
-from .diaglayer import DiagLayer
+from .diaglayer import DiagLayer, TInheritedObject, TInheritedObjects
+from .diaglayertype import TInheritancePrio
 from .hierarchyelementraw import HierarchyElementRaw
 
 if TYPE_CHECKING:
-    from .database import Database
+    from ..database import Database
     from .protocol import Protocol
-
-TNamed = TypeVar("TNamed", bound=OdxNamed)
 
 
 @dataclass(kw_only=True)
@@ -268,9 +267,9 @@ class HierarchyElement(DiagLayer):
 
     def _compute_available_objects(
         self,
-        get_local_objects: Callable[["DiagLayer"], Iterable[TNamed]],
+        get_local_objects: Callable[["DiagLayer"], TInheritedObjects[TNamed]],
         get_not_inherited: Callable[[ParentRef], Iterable[str]],
-    ) -> Iterable[TNamed]:
+    ) -> TInheritedObjects[TNamed]:
         """Helper method to compute the set of all objects applicable
         to the DiagLayer if these objects are subject to the value
         inheritance mechanism
@@ -290,8 +289,8 @@ class HierarchyElement(DiagLayer):
         """
 
         local_objects = get_local_objects(self)
-        local_object_short_names = {x.short_name for x in local_objects}
-        result_dict: dict[str, tuple[TNamed, DiagLayer]] = {}
+        local_object_dict = {x[0].short_name: x for x in local_objects}
+        result_dict: dict[str, TInheritedObject[TNamed]] = {}
 
         # populate the result dictionary with the inherited objects
         for parent_ref in self._get_parent_refs_sorted_by_priority(reverse=True):
@@ -306,34 +305,40 @@ class HierarchyElement(DiagLayer):
             inherited_objects = [
                 x
                 for x in parent_dl._compute_available_objects(get_local_objects, get_not_inherited)
-                if x.short_name not in not_inherited_short_names
+                if x[0].short_name not in not_inherited_short_names
             ]
 
             # update the result set with the objects from the current parent_ref
-            for obj in inherited_objects:
+            for obj, obj_layer, obj_prio in inherited_objects:
 
                 # no object with the given short name currently
                 # exits. add it to the result set and continue
                 if obj.short_name not in result_dict:
-                    result_dict[obj.short_name] = (obj, parent_dl)
+                    result_dict[obj.short_name] = (obj, obj_layer, obj_prio)
                     continue
 
                 # if an object with a given name already exists,
                 # there's no problem if it was inherited from a parent
                 # of different priority than the one currently
                 # considered
-                orig_prio = result_dict[obj.short_name][1].variant_type.inheritance_priority
-                new_prio = parent_dl.variant_type.inheritance_priority
+                orig_prio = result_dict[obj.short_name][2]
+
+                if obj_prio == TInheritancePrio(0):
+                    # special case for inheriting from ECU-SHARED-DATA
+                    new_prio = cast(TInheritancePrio, self.variant_type.inheritance_priority - 0.5)
+                else:
+                    new_prio = obj_prio
+
                 if new_prio < orig_prio:
                     continue
                 elif orig_prio < new_prio:
-                    result_dict[obj.short_name] = (obj, parent_dl)
+                    result_dict[obj.short_name] = (obj, obj_layer, new_prio)
                     continue
 
                 # if there is a conflict on the same priority level,
                 # it does not matter if the object is overridden
                 # locally anyway...
-                if obj.short_name in local_object_short_names:
+                if obj.short_name in local_object_dict:
                     continue
 
                 # if all of these conditions do not apply, and if the
@@ -347,35 +352,38 @@ class HierarchyElement(DiagLayer):
                 odxraise(f"Diagnostic layer {self.short_name} cannot inherit object "
                          f"{obj.short_name} due to an unresolveable inheritance conflict between "
                          f"parent layers {result_dict[obj.short_name][1].short_name} "
-                         f"and {parent_dl.short_name}")
+                         f"and {obj_layer.short_name}")
 
         # add the locally defined entries, overriding the inherited
         # ones if necessary
-        for obj in local_objects:
-            result_dict[obj.short_name] = (obj, self)
+        result_dict.update(local_object_dict)
 
-        return [x[0] for x in result_dict.values()]
+        return result_dict.values()
 
     def _compute_available_diag_comms(self, odxlinks: OdxLinkDatabase) -> Iterable[DiagComm]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> Iterable[DiagComm]:
-            return dl._get_local_diag_comms(odxlinks)
+        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[DiagComm]:
+            prio = dl.variant_type.inheritance_priority
+            return [(x, dl, prio) for x in dl._get_local_diag_comms(odxlinks)]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_diag_comms
 
-        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        return [x[0] for x in available_objects]
 
     def _compute_available_global_neg_responses(self, odxlinks: OdxLinkDatabase) \
             -> Iterable[Response]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> Iterable[Response]:
-            return dl.diag_layer_raw.global_negative_responses
+        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[Response]:
+            prio = dl.variant_type.inheritance_priority
+            return [(x, dl, prio) for x in dl.diag_layer_raw.global_negative_responses]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_global_neg_responses
 
-        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        return [x[0] for x in available_objects]
 
     def _compute_available_ddd_spec_items(
         self,
@@ -383,53 +391,62 @@ class HierarchyElement(DiagLayer):
         exclude: Callable[["ParentRef"], list[str]],
     ) -> NamedItemList[TNamed]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> Iterable[TNamed]:
+        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[TNamed]:
             if dl.diag_layer_raw.diag_data_dictionary_spec is None:
                 return []
-            return include(dl.diag_layer_raw.diag_data_dictionary_spec)
+            prio = dl.variant_type.inheritance_priority
+            return [(x, dl, prio) for x in include(dl.diag_layer_raw.diag_data_dictionary_spec)]
 
         found = self._compute_available_objects(get_local_objects_fn, exclude)
-        return NamedItemList(found)
+        return NamedItemList(x[0] for x in found)
 
     def _compute_available_functional_classes(self) -> Iterable[FunctionalClass]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> Iterable[FunctionalClass]:
-            return dl.diag_layer_raw.functional_classes
+        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[FunctionalClass]:
+            prio = dl.variant_type.inheritance_priority
+            return [(x, dl, prio) for x in dl.diag_layer_raw.functional_classes]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
-        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        return [x[0] for x in available_objects]
 
     def _compute_available_additional_audiences(self) -> Iterable[AdditionalAudience]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> Iterable[AdditionalAudience]:
-            return dl.diag_layer_raw.additional_audiences
+        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[AdditionalAudience]:
+            prio = dl.variant_type.inheritance_priority
+            return [(x, dl, prio) for x in dl.diag_layer_raw.additional_audiences]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
-        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        return [x[0] for x in available_objects]
 
     def _compute_available_state_charts(self) -> Iterable[StateChart]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> Iterable[StateChart]:
-            return dl.diag_layer_raw.state_charts
+        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[StateChart]:
+            prio = dl.variant_type.inheritance_priority
+            return [(x, dl, prio) for x in dl.diag_layer_raw.state_charts]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
-        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        return [x[0] for x in available_objects]
 
     def _compute_available_unit_groups(self) -> Iterable[UnitGroup]:
 
-        def get_local_objects_fn(dl: DiagLayer) -> Iterable[UnitGroup]:
-            return dl._get_local_unit_groups()
+        def get_local_objects_fn(dl: DiagLayer) -> TInheritedObjects[UnitGroup]:
+            prio = dl.variant_type.inheritance_priority
+            return [(x, dl, prio) for x in dl._get_local_unit_groups()]
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
-        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+        return [x[0] for x in available_objects]
 
     #####
     # </value inheritance mechanism helpers>
