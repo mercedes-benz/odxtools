@@ -1,8 +1,5 @@
 # SPDX-License-Identifier: MIT
 from enum import Enum
-from typing import NewType
-
-InheritancePriority = NewType("InheritancePriority", float)
 
 
 class DiagLayerType(Enum):
@@ -13,7 +10,7 @@ class DiagLayerType(Enum):
     ECU_SHARED_DATA = "ECU-SHARED-DATA"
 
     @property
-    def inheritance_priority(self) -> InheritancePriority:
+    def inheritance_priority(self) -> int:
         """Return the inheritance priority of diag layers of the given type
 
         ODX mandates that diagnostic layers can only inherit from
@@ -21,12 +18,12 @@ class DiagLayerType(Enum):
 
         """
 
-        PRIORITY_OF_DIAG_LAYER_TYPE: dict[DiagLayerType, InheritancePriority] = {
-            DiagLayerType.ECU_SHARED_DATA: InheritancePriority(0),
-            DiagLayerType.PROTOCOL: InheritancePriority(1),
-            DiagLayerType.FUNCTIONAL_GROUP: InheritancePriority(2),
-            DiagLayerType.BASE_VARIANT: InheritancePriority(3),
-            DiagLayerType.ECU_VARIANT: InheritancePriority(4),
+        PRIORITY_OF_DIAG_LAYER_TYPE: dict[DiagLayerType, int] = {
+            DiagLayerType.ECU_SHARED_DATA: 0,
+            DiagLayerType.PROTOCOL: 10,
+            DiagLayerType.FUNCTIONAL_GROUP: 20,
+            DiagLayerType.BASE_VARIANT: 30,
+            DiagLayerType.ECU_VARIANT: 40,
         }
 
         return PRIORITY_OF_DIAG_LAYER_TYPE[self]

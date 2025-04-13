@@ -1,5 +1,4 @@
 # SPDX-License-Identifier: MIT
-import sys
 from collections.abc import Callable, Iterable
 from copy import copy, deepcopy
 from dataclasses import dataclass
@@ -30,21 +29,16 @@ from ..specialdatagroup import SpecialDataGroup
 from ..subcomponent import SubComponent
 from ..unitgroup import UnitGroup
 from .diaglayerraw import DiagLayerRaw
-from .diaglayertype import DiagLayerType, InheritancePriority
-
-# python 3.10 does not support generic namedtuples
-if sys.version_info >= (3, 11):
-    from typing import NamedTuple
-else:
-    from typing_extensions import NamedTuple
+from .diaglayertype import DiagLayerType
 
 PrefixTree = dict[int, Union[list[DiagService], "PrefixTree"]]
 
 
-class InheritanceTriplet(Generic[TNamed], NamedTuple):
+@dataclass(slots=True, frozen=True)
+class InheritanceTriplet(Generic[TNamed]):
     object: TNamed
     source: "DiagLayer"
-    prio: InheritancePriority
+    priority: int
 
 
 @dataclass(kw_only=True)

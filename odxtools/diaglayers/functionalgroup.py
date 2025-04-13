@@ -79,7 +79,7 @@ class FunctionalGroup(HierarchyElement):
             return parent_ref.not_inherited_variables
 
         available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
-        return [x[0] for x in available_objects]
+        return [x.object for x in available_objects]
 
     def _compute_available_variable_groups(self,
                                            odxlinks: OdxLinkDatabase) -> Iterable[VariableGroup]:
@@ -95,7 +95,7 @@ class FunctionalGroup(HierarchyElement):
             return []
 
         available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
-        return [x[0] for x in available_objects]
+        return [x.object for x in available_objects]
 
     def __deepcopy__(self, memo: dict[int, Any]) -> Any:
         """Create a deep copy of the functional group layer

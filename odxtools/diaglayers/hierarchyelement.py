@@ -28,7 +28,6 @@ from ..statechart import StateChart
 from ..unitgroup import UnitGroup
 from ..unitspec import UnitSpec
 from .diaglayer import DiagLayer, InheritanceTriplet
-from .diaglayertype import InheritancePriority
 from .hierarchyelementraw import HierarchyElementRaw
 
 if TYPE_CHECKING:
@@ -289,7 +288,7 @@ class HierarchyElement(DiagLayer):
         """
 
         local_objects = get_local_objects(self)
-        local_object_dict = {x[0].short_name: x for x in local_objects}
+        local_object_dict = {x.object.short_name: x for x in local_objects}
         result_dict: dict[str, InheritanceTriplet[TNamed]] = {}
 
         # populate the result dictionary with the inherited objects
@@ -309,38 +308,40 @@ class HierarchyElement(DiagLayer):
             ]
 
             # update the result set with the objects from the current parent_ref
-            for obj, obj_layer, obj_prio in inherited_objects:
+            for inherited in inherited_objects:
+                short_name = inherited.object.short_name
 
                 # no object with the given short name currently
                 # exits. add it to the result set and continue
-                if obj.short_name not in result_dict:
-                    result_dict[obj.short_name] = InheritanceTriplet(obj, obj_layer, obj_prio)
+                if short_name not in result_dict:
+                    result_dict[short_name] = inherited
                     continue
 
                 # if an object with a given name already exists,
                 # there's no problem if it was inherited from a parent
                 # of different priority than the one currently
                 # considered
-                orig_prio = result_dict[obj.short_name].prio
+                orig_prio = result_dict[short_name].priority
 
-                if obj_prio == InheritancePriority(0):
+                if inherited.priority == 0:
                     # Special case for inheriting from ECU-SHARED-DATA:
                     # Objects, that are inherited from ECU-SHARED-DATA, get a specialization,
                     # that is less than the inheriting layer but higher than the next general layer.
-                    new_prio = InheritancePriority(self.variant_type.inheritance_priority - 0.5)
+                    new_prio = self.variant_type.inheritance_priority - 5
                 else:
-                    new_prio = obj_prio
+                    new_prio = inherited.priority
 
                 if new_prio < orig_prio:
                     continue
                 elif orig_prio < new_prio:
-                    result_dict[obj.short_name] = InheritanceTriplet(obj, obj_layer, new_prio)
+                    result_dict[short_name] = InheritanceTriplet(inherited.object, inherited.source,
+                                                                 new_prio)
                     continue
 
                 # if there is a conflict on the same priority level,
                 # it does not matter if the object is overridden
                 # locally anyway...
-                if obj.short_name in local_object_dict:
+                if short_name in local_object_dict:
                     continue
 
                 # if all of these conditions do not apply, and if the
@@ -348,13 +349,13 @@ class HierarchyElement(DiagLayer):
                 # conflict. (note that value comparisons of complete
                 # complex objects tend to be expensive, so this test
                 # is done last.)
-                if obj == result_dict[obj.short_name].object:
+                if inherited.object == result_dict[short_name].object:
                     continue
 
                 odxraise(f"Diagnostic layer {self.short_name} cannot inherit object "
-                         f"{obj.short_name} due to an unresolveable inheritance conflict between "
-                         f"parent layers {result_dict[obj.short_name].source.short_name} "
-                         f"and {obj_layer.short_name}")
+                         f"{short_name} due to an unresolveable inheritance conflict between "
+                         f"parent layers {result_dict[short_name].source.short_name} "
+                         f"and {inherited.source.short_name}")
 
         # add the locally defined entries, overriding the inherited
         # ones if necessary
@@ -372,7 +373,7 @@ class HierarchyElement(DiagLayer):
             return parent_ref.not_inherited_diag_comms
 
         available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
-        return [x[0] for x in available_objects]
+        return [x.object for x in available_objects]
 
     def _compute_available_global_neg_responses(self, odxlinks: OdxLinkDatabase) \
             -> Iterable[Response]:
@@ -387,7 +388,7 @@ class HierarchyElement(DiagLayer):
             return parent_ref.not_inherited_global_neg_responses
 
         available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
-        return [x[0] for x in available_objects]
+        return [x.object for x in available_objects]
 
     def _compute_available_ddd_spec_items(
         self,
@@ -405,7 +406,7 @@ class HierarchyElement(DiagLayer):
             ]
 
         found = self._compute_available_objects(get_local_objects_fn, exclude)
-        return NamedItemList(x[0] for x in found)
+        return NamedItemList(x.object for x in found)
 
     def _compute_available_functional_classes(self) -> Iterable[FunctionalClass]:
 
@@ -417,7 +418,7 @@ class HierarchyElement(DiagLayer):
             return []
 
         available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
-        return [x[0] for x in available_objects]
+        return [x.object for x in available_objects]
 
     def _compute_available_additional_audiences(self) -> Iterable[AdditionalAudience]:
 
@@ -429,7 +430,7 @@ class HierarchyElement(DiagLayer):
             return []
 
         available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
-        return [x[0] for x in available_objects]
+        return [x.object for x in available_objects]
 
     def _compute_available_state_charts(self) -> Iterable[StateChart]:
 
@@ -441,7 +442,7 @@ class HierarchyElement(DiagLayer):
             return []
 
         available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
-        return [x[0] for x in available_objects]
+        return [x.object for x in available_objects]
 
     def _compute_available_unit_groups(self) -> Iterable[UnitGroup]:
 
@@ -453,7 +454,7 @@ class HierarchyElement(DiagLayer):
             return []
 
         available_objects = self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
-        return [x[0] for x in available_objects]
+        return [x.object for x in available_objects]
 
     #####
     # </value inheritance mechanism helpers>
