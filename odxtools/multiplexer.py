@@ -247,15 +247,20 @@ class Multiplexer(ComplexDop):
         Otherwise, returns None to indicate that the size is dynamic.
         """
         reference_case = self.default_case if self.default_case else self.cases[0]
+
+        case_bit_length: int | None
         if reference_case.structure is None:
-            return None
-        case_bit_length = reference_case.structure.get_static_bit_length()
+            case_bit_length = 0
+        else:
+            case_bit_length = reference_case.structure.get_static_bit_length()
         if case_bit_length is None:
             return None
+        case_size: int | None
         for mux_case in self.cases:
             if mux_case.structure is None:
-                return None
-            case_size = mux_case.structure.get_static_bit_length()
+                case_size = 0
+            else:
+                case_size = mux_case.structure.get_static_bit_length()
             if case_size != case_bit_length:
                 return None  # Found a case with a different or unknown size
 
