@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: MIT
-from typing import TYPE_CHECKING, NoReturn, Optional, Type, TypeVar
+from typing import TYPE_CHECKING, NoReturn, TypeVar
 
 from .globals import logger
 
@@ -37,7 +37,7 @@ class OdxWarning(Warning):
 strict_mode = True
 
 
-def odxraise(message: Optional[str] = None, error_type: Type[Exception] = OdxError) -> NoReturn:
+def odxraise(message: str | None = None, error_type: type[Exception] = OdxError) -> NoReturn:
     """
     Raise an exception but only if in strict mode.
 
@@ -53,8 +53,8 @@ def odxraise(message: Optional[str] = None, error_type: Type[Exception] = OdxErr
 
 
 def odxassert(condition: bool,
-              message: Optional[str] = None,
-              error_type: Type[Exception] = OdxError) -> None:
+              message: str | None = None,
+              error_type: type[Exception] = OdxError) -> None:
     """
     This method works similar as the build-in `assert` statement
 
@@ -72,7 +72,7 @@ def odxassert(condition: bool,
 T = TypeVar("T")
 
 
-def odxrequire(obj: Optional[T], message: Optional[str] = None) -> T:
+def odxrequire(obj: T | None, message: str | None = None) -> T:
     """This function ensures that an object required by the ODX
     specification is actually present.
 

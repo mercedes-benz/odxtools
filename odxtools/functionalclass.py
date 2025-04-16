@@ -1,34 +1,34 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .element import IdentifiableElement
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class FunctionalClass(IdentifiableElement):
     """
     Corresponds to FUNCT-CLASS.
     """
 
-    admin_data: Optional[AdminData]
+    admin_data: AdminData | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "FunctionalClass":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "FunctionalClass":
 
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
 
         return FunctionalClass(admin_data=admin_data, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

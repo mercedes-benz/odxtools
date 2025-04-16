@@ -1,19 +1,21 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
 
-from .codec import (composite_codec_decode_from_pdu, composite_codec_encode_into_pdu,
-                    composite_codec_get_free_parameters, composite_codec_get_required_parameters,
-                    composite_codec_get_static_bit_length)
 from .complexdop import ComplexDop
+from .compositecodec import (composite_codec_decode_from_pdu, composite_codec_encode_into_pdu,
+                             composite_codec_get_free_parameters,
+                             composite_codec_get_required_parameters,
+                             composite_codec_get_static_bit_length)
 from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import DecodeError, odxraise
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue
 from .parameters.createanyparameter import create_any_parameter_from_et
 from .parameters.parameter import Parameter
@@ -21,7 +23,7 @@ from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class BasicStructure(ComplexDop):
     """Base class for structure-like objects
 
@@ -29,33 +31,32 @@ class BasicStructure(ComplexDop):
     data objects. All structure-like objects adhere to the
     `CompositeCodec` type protocol.
     """
-    byte_size: Optional[int]
-    parameters: NamedItemList[Parameter]
+    byte_size: int | None = None
+    parameters: NamedItemList[Parameter] = field(default_factory=NamedItemList)
 
     @property
-    def required_parameters(self) -> List[Parameter]:
+    def required_parameters(self) -> list[Parameter]:
         return composite_codec_get_required_parameters(self)
 
     @property
-    def free_parameters(self) -> List[Parameter]:
+    def free_parameters(self) -> list[Parameter]:
         return composite_codec_get_free_parameters(self)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "BasicStructure":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "BasicStructure":
         """Read a BASIC-STRUCTURE."""
-        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, context))
 
         byte_size_str = et_element.findtext("BYTE-SIZE")
         byte_size = int(byte_size_str) if byte_size_str is not None else None
         parameters = NamedItemList([
-            create_any_parameter_from_et(et_parameter, doc_frags)
+            create_any_parameter_from_et(et_parameter, context)
             for et_parameter in et_element.iterfind("PARAMS/PARAM")
         ])
 
         return BasicStructure(byte_size=byte_size, parameters=parameters, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         for param in self.parameters:
@@ -78,7 +79,7 @@ class BasicStructure(ComplexDop):
 
         context.parameters = None
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         # Explicit size was specified, so we do not need to look at
         # the list of parameters
         if self.byte_size is not None:
@@ -95,7 +96,7 @@ class BasicStructure(ComplexDop):
         print(parameter_info(self.free_parameters), end="")
 
     @override
-    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_into_pdu(self, physical_value: ParameterValue | None,
                         encode_state: EncodeState) -> None:
         orig_pos = encode_state.cursor_byte_position
 

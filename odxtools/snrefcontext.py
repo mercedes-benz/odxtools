@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from .database import Database
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from .statechart import StateChart
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SnRefContext:
     """Represents the context for which a short name reference ought
     to be resolved
@@ -25,5 +25,5 @@ class SnRefContext:
     single_ecu_job: Optional["SingleEcuJob"] = None
     request: Optional["Request"] = None
     response: Optional["Response"] = None
-    parameters: Optional[List["Parameter"]] = None
+    parameters: list["Parameter"] | None = None
     state_chart: Optional["StateChart"] = None

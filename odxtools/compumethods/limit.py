@@ -1,45 +1,39 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
-from typing import List, Optional, overload
+from typing import Optional, overload
 from xml.etree import ElementTree
 
 from ..exceptions import odxraise
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import AtomicOdxType, DataType, compare_odx_values
+from .intervaltype import IntervalType
 
 
-class IntervalType(Enum):
-    OPEN = "OPEN"
-    CLOSED = "CLOSED"
-    INFINITE = "INFINITE"
-
-
-@dataclass
+@dataclass(kw_only=True)
 class Limit:
-    value_raw: Optional[str]
-    value_type: Optional[DataType]
-    interval_type: Optional[IntervalType]
+    value_raw: str | None = None
+    value_type: DataType | None = None
+    interval_type: IntervalType | None = None
 
     @property
-    def value(self) -> Optional[AtomicOdxType]:
+    def value(self) -> AtomicOdxType | None:
         return self._value
 
     @staticmethod
     @overload
-    def limit_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment],
-                      value_type: Optional[DataType]) -> "Limit":
+    def limit_from_et(et_element: ElementTree.Element, context: OdxDocContext,
+                      value_type: DataType | None) -> "Limit":
         ...
 
     @staticmethod
     @overload
-    def limit_from_et(et_element: None, doc_frags: List[OdxDocFragment],
-                      value_type: Optional[DataType]) -> None:
+    def limit_from_et(et_element: None, context: OdxDocContext,
+                      value_type: DataType | None) -> None:
         ...
 
     @staticmethod
-    def limit_from_et(et_element: Optional[ElementTree.Element], doc_frags: List[OdxDocFragment],
-                      value_type: Optional[DataType]) -> Optional["Limit"]:
+    def limit_from_et(et_element: ElementTree.Element | None, context: OdxDocContext,
+                      value_type: DataType | None) -> Optional["Limit"]:
 
         if et_element is None:
             return None
@@ -56,7 +50,7 @@ class Limit:
         return Limit(value_raw=value_raw, interval_type=interval_type, value_type=value_type)
 
     def __post_init__(self) -> None:
-        self._value: Optional[AtomicOdxType] = None
+        self._value: AtomicOdxType | None = None
 
         if self.value_type is not None:
             self.set_value_type(self.value_type)

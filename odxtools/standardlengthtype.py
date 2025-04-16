@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Literal, Optional
+from typing import Literal
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -9,17 +9,17 @@ from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import odxassert, odxraise, odxrequire
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .odxtypes import AtomicOdxType, BytesTypes, DataType, odxstr_to_bool
-from .utils import dataclass_fields_asdict
+from .utils import dataclass_fields_asdict, read_hex_binary
 
 
-@dataclass
+@dataclass(kw_only=True)
 class StandardLengthType(DiagCodedType):
 
     bit_length: int
-    bit_mask: Optional[int]
-    is_condensed_raw: Optional[bool]
+    bit_mask: int | None = None
+    is_condensed_raw: bool | None = None
 
     @property
     def dct_type(self) -> DctType:
@@ -31,21 +31,11 @@ class StandardLengthType(DiagCodedType):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "StandardLengthType":
-        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "StandardLengthType":
+        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, context))
 
         bit_length = int(odxrequire(et_element.findtext("BIT-LENGTH")))
-        bit_mask = None
-        if (bit_mask_str := et_element.findtext("BIT-MASK")) is not None:
-            # The XSD uses the type xsd:hexBinary
-            # xsd:hexBinary allows for leading/trailing whitespace, empty strings, and it only allows an even
-            # number of hex digits, while some of the examples shown in the  ODX specification exhibit an
-            # odd number of hex digits.
-            # This causes a validation paradox, so we try to be flexible
-            bit_mask_str = bit_mask_str.strip()
-            if len(bit_mask_str):
-                bit_mask = int(bit_mask_str, 16)
+        bit_mask = read_hex_binary(et_element.find("BIT-MASK"))
         is_condensed_raw = odxstr_to_bool(et_element.get("IS-CONDENSED"))
 
         return StandardLengthType(
@@ -59,7 +49,7 @@ class StandardLengthType(DiagCodedType):
                 'Can not apply a bit_mask on a value of type {self.base_data_type}',
             )
 
-    def __get_used_mask(self, internal_value: AtomicOdxType) -> Optional[bytes]:
+    def __get_used_mask(self, internal_value: AtomicOdxType) -> bytes | None:
         """Returns a byte field where all bits that are used by the
         DiagCoded type are set and all unused ones are not set.
 
@@ -81,11 +71,7 @@ class StandardLengthType(DiagCodedType):
         if self.is_condensed:
             # if a condensed bitmask is specified, the number of bits
             # set to one in the bit mask are used in the PDU
-
-            # TODO: this is pretty slow. replace it by
-            # `self.bit_mask.bit_count()` once we require python >=
-            # 3.10.
-            bit_sz = bin(self.bit_mask).count("1")
+            bit_sz = self.bit_mask.bit_count()
             used_mask = (1 << bit_sz) - 1
 
             return used_mask.to_bytes((bit_sz + 7) // 8, endianness)
@@ -127,7 +113,7 @@ class StandardLengthType(DiagCodedType):
                 mask_bit += 1
 
             if isinstance(internal_value, BytesTypes):
-                return result.to_bytes(len(internal_value), 'big')
+                return result.to_bytes(len(bytes(internal_value)), 'big')
 
             return result
 
@@ -165,7 +151,7 @@ class StandardLengthType(DiagCodedType):
                 mask_bit += 1
 
             if isinstance(raw_value, BytesTypes):
-                return result.to_bytes(len(raw_value), 'big')
+                return result.to_bytes(len(bytes(raw_value)), 'big')
 
             return result
         if isinstance(raw_value, int):
@@ -173,17 +159,14 @@ class StandardLengthType(DiagCodedType):
         if isinstance(raw_value, BytesTypes):
             int_value = int.from_bytes(raw_value, 'big')
             int_value &= self.bit_mask
-            return int_value.to_bytes(len(raw_value), 'big')
+            return int_value.to_bytes(len(bytes(raw_value)), 'big')
 
         odxraise(f'Can not apply a bit_mask on a value of type {type(raw_value)}')
         return raw_value
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         if self.bit_mask is not None and self.is_condensed:
-            # TODO: this is pretty slow. replace it by
-            # `self.bit_mask.bit_count()` once we require python >=
-            # 3.10.
-            return bin(self.bit_mask).count("1")
+            return self.bit_mask.bit_count()
 
         return self.bit_length
 

@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
+from collections import OrderedDict
 from itertools import chain
 from os import PathLike
 from pathlib import Path
-from typing import IO, Any, Dict, List, Optional, OrderedDict, Union
+from typing import IO, Any, Union
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
@@ -19,6 +20,7 @@ from .diaglayers.functionalgroup import FunctionalGroup
 from .diaglayers.protocol import Protocol
 from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
+from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 
@@ -30,7 +32,7 @@ class Database:
     """
 
     def __init__(self) -> None:
-        self.model_version: Optional[Version] = None
+        self.model_version: Version | None = None
         self.auxiliary_files: OrderedDict[str, IO[bytes]] = OrderedDict()
 
         # create an empty database object
@@ -68,16 +70,16 @@ class Database:
 
     def add_auxiliary_file(self,
                            aux_file_name: Union[str, "PathLike[Any]"],
-                           aux_file_obj: Optional[IO[bytes]] = None) -> None:
+                           aux_file_obj: IO[bytes] | None = None) -> None:
         if aux_file_obj is None:
             aux_file_obj = open(aux_file_name, "rb")
 
         self.auxiliary_files[str(aux_file_name)] = aux_file_obj
 
     def _process_xml_tree(self, root: ElementTree.Element) -> None:
-        dlcs: List[DiagLayerContainer] = []
-        comparam_subsets: List[ComparamSubset] = []
-        comparam_specs: List[ComparamSpec] = []
+        dlcs: list[DiagLayerContainer] = []
+        comparam_subsets: list[ComparamSubset] = []
+        comparam_specs: list[ComparamSpec] = []
 
         # ODX spec version
         model_version = Version(root.attrib.get("MODEL-VERSION", "2.0"))
@@ -89,7 +91,7 @@ class Database:
 
         dlc = root.find("DIAG-LAYER-CONTAINER")
         if dlc is not None:
-            dlcs.append(DiagLayerContainer.from_et(dlc, []))
+            dlcs.append(DiagLayerContainer.from_et(dlc, OdxDocContext(model_version, [])))
 
         # In ODX 2.0 there was only COMPARAM-SPEC. In ODX 2.2 the
         # content of COMPARAM-SPEC was moved to COMPARAM-SUBSET
@@ -97,14 +99,17 @@ class Database:
         # a PROT-STACK references a list of COMPARAM-SUBSET
         cp_subset = root.find("COMPARAM-SUBSET")
         if cp_subset is not None:
-            comparam_subsets.append(ComparamSubset.from_et(cp_subset, []))
+            comparam_subsets.append(
+                ComparamSubset.from_et(cp_subset, OdxDocContext(model_version, [])))
 
         cp_spec = root.find("COMPARAM-SPEC")
         if cp_spec is not None:
             if model_version < Version("2.2"):
-                comparam_subsets.append(ComparamSubset.from_et(cp_spec, []))
+                comparam_subsets.append(
+                    ComparamSubset.from_et(cp_spec, OdxDocContext(model_version, [])))
             else:  # odx >= 2.2
-                comparam_specs.append(ComparamSpec.from_et(cp_spec, []))
+                comparam_specs.append(
+                    ComparamSpec.from_et(cp_spec, OdxDocContext(model_version, [])))
 
         self._diag_layer_containers.extend(dlcs)
         self._comparam_subsets.extend(comparam_subsets)
@@ -160,8 +165,8 @@ class Database:
         for dlc in self.diag_layer_containers:
             dlc._resolve_snrefs(context)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result: Dict[OdxLinkId, Any] = {}
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
+        result: dict[OdxLinkId, Any] = {}
 
         for subset in self.comparam_subsets:
             result.update(subset._build_odxlinks())

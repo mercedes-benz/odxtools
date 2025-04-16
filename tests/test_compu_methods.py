@@ -5,22 +5,25 @@ import unittest
 from xml.etree import ElementTree
 
 import jinja2
+from packaging.version import Version
 
 import odxtools
+from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.compucodecompumethod import CompuCodeCompuMethod
 from odxtools.compumethods.compuconst import CompuConst
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
-from odxtools.compumethods.compumethod import CompuCategory
 from odxtools.compumethods.compuphystointernal import CompuPhysToInternal
 from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.createanycompumethod import create_any_compu_method_from_et
-from odxtools.compumethods.limit import IntervalType, Limit
+from odxtools.compumethods.intervaltype import IntervalType
+from odxtools.compumethods.limit import Limit
 from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.compumethods.ratfunccompumethod import RatFuncCompuMethod
 from odxtools.compumethods.scaleratfunccompumethod import ScaleRatFuncCompuMethod
 from odxtools.compumethods.tabintpcompumethod import TabIntpCompuMethod
 from odxtools.exceptions import DecodeError, EncodeError, OdxError
+from odxtools.odxdoccontext import OdxDocContext
 from odxtools.odxlink import DocType, OdxDocFragment
 from odxtools.odxtypes import DataType
 from odxtools.progcode import ProgCode
@@ -55,26 +58,16 @@ class TestLinearCompuMethod(unittest.TestCase):
 
         self.linear_compumethod = LinearCompuMethod(
             category=CompuCategory.LINEAR,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=None,
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[0, 1],
-                            denominators=[3600],
-                        ),
-                        domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
-            compu_phys_to_internal=None,
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_INT32,
+                        numerators=[0, 1],
+                        denominators=[3600],
+                    ),
+                    domain_type=DataType.A_INT32,
+                    range_type=DataType.A_INT32),
+            ]),
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32,
         )
@@ -107,7 +100,7 @@ class TestLinearCompuMethod(unittest.TestCase):
         et_element = ElementTree.fromstring(self.linear_compumethod_xml)
         actual = create_any_compu_method_from_et(
             et_element,
-            doc_frags,
+            OdxDocContext(Version("2.2.0"), doc_frags),
             internal_type=expected.internal_type,
             physical_type=expected.physical_type)
         self.assertIsInstance(actual, LinearCompuMethod)
@@ -136,32 +129,24 @@ class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_type_denom_not_one(self) -> None:
         compu_method = LinearCompuMethod(
             category=CompuCategory.LINEAR,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="0",
-                            value_type=DataType.A_INT32,
-                            interval_type=IntervalType.INFINITE),
-                        upper_limit=Limit(
-                            value_raw="0",
-                            value_type=DataType.A_INT32,
-                            interval_type=IntervalType.INFINITE),
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[0, 1],
-                            denominators=[3600],
-                        ),
-                        domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
-            compu_phys_to_internal=None,
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    lower_limit=Limit(
+                        value_raw="0",
+                        value_type=DataType.A_INT32,
+                        interval_type=IntervalType.INFINITE),
+                    upper_limit=Limit(
+                        value_raw="0",
+                        value_type=DataType.A_INT32,
+                        interval_type=IntervalType.INFINITE),
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_INT32,
+                        numerators=[0, 1],
+                        denominators=[3600],
+                    ),
+                    domain_type=DataType.A_INT32,
+                    range_type=DataType.A_INT32),
+            ]),
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32)
 
@@ -171,26 +156,16 @@ class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_type_int_int(self) -> None:
         compu_method = LinearCompuMethod(
             category=CompuCategory.LINEAR,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=None,
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[1, 3],
-                            denominators=[1],
-                        ),
-                        domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
-            compu_phys_to_internal=None,
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_INT32,
+                        numerators=[1, 3],
+                        denominators=[1],
+                    ),
+                    domain_type=DataType.A_INT32,
+                    range_type=DataType.A_INT32),
+            ]),
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32)
 
@@ -205,26 +180,16 @@ class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_type_int_float(self) -> None:
         compu_method = LinearCompuMethod(
             category=CompuCategory.LINEAR,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=None,
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[1, 3],
-                            denominators=[1],
-                        ),
-                        domain_type=DataType.A_INT32,
-                        range_type=DataType.A_FLOAT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
-            compu_phys_to_internal=None,
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_INT32,
+                        numerators=[1, 3],
+                        denominators=[1],
+                    ),
+                    domain_type=DataType.A_INT32,
+                    range_type=DataType.A_FLOAT32),
+            ]),
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_FLOAT32)
 
@@ -239,26 +204,16 @@ class TestLinearCompuMethod(unittest.TestCase):
     def test_linear_compu_method_type_float_int(self) -> None:
         compu_method = LinearCompuMethod(
             category=CompuCategory.LINEAR,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=None,
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[1, 3],
-                            denominators=[1],
-                        ),
-                        domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
-            compu_phys_to_internal=None,
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_INT32,
+                        numerators=[1, 3],
+                        denominators=[1],
+                    ),
+                    domain_type=DataType.A_INT32,
+                    range_type=DataType.A_INT32),
+            ]),
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_INT32)
         self.assertTrue(compu_method.is_valid_internal_value(1.2345))
@@ -273,54 +228,34 @@ class TestLinearCompuMethod(unittest.TestCase):
         with self.assertRaises(OdxError):
             LinearCompuMethod(
                 category=CompuCategory.LINEAR,
-                compu_internal_to_phys=CompuInternalToPhys(
-                    compu_scales=[
-                        CompuScale(
-                            short_label=None,
-                            description=None,
-                            lower_limit=None,
-                            upper_limit=None,
-                            compu_inverse_value=None,
-                            compu_const=None,
-                            compu_rational_coeffs=CompuRationalCoeffs(
-                                value_type=DataType.A_INT32,
-                                numerators=[1, 3],
-                                denominators=[1],
-                            ),
-                            domain_type=DataType.A_INT32,
-                            range_type=DataType.A_INT32),
-                    ],
-                    prog_code=None,
-                    compu_default_value=None),
-                compu_phys_to_internal=None,
+                compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                    CompuScale(
+                        compu_rational_coeffs=CompuRationalCoeffs(
+                            value_type=DataType.A_INT32,
+                            numerators=[1, 3],
+                            denominators=[1],
+                        ),
+                        domain_type=DataType.A_INT32,
+                        range_type=DataType.A_INT32),
+                ]),
                 internal_type=DataType.A_ASCIISTRING,
                 physical_type=DataType.A_UNICODE2STRING)
 
     def test_linear_compu_method_limits(self) -> None:
         compu_method = LinearCompuMethod(
             category=CompuCategory.LINEAR,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="2", value_type=DataType.A_INT32, interval_type=None),
-                        upper_limit=Limit(
-                            value_raw="15", value_type=DataType.A_INT32, interval_type=None),
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[1, 5],
-                            denominators=[1],
-                        ),
-                        domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
-            compu_phys_to_internal=None,
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    lower_limit=Limit(value_raw="2", value_type=DataType.A_INT32),
+                    upper_limit=Limit(value_raw="15", value_type=DataType.A_INT32),
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_INT32,
+                        numerators=[1, 5],
+                        denominators=[1],
+                    ),
+                    domain_type=DataType.A_INT32,
+                    range_type=DataType.A_INT32),
+            ]),
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32)
 
@@ -346,30 +281,20 @@ class TestLinearCompuMethod(unittest.TestCase):
         # Define decoding function: f: (2, 15] -> [-74, -14], f(x) = -5*x + 1
         compu_method = LinearCompuMethod(
             category=CompuCategory.LINEAR,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="2",
-                            value_type=DataType.A_INT32,
-                            interval_type=IntervalType.OPEN),
-                        upper_limit=Limit(
-                            value_raw="15", value_type=DataType.A_INT32, interval_type=None),
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_INT32,
-                            numerators=[1, -5],
-                            denominators=[1],
-                        ),
-                        domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
-            compu_phys_to_internal=None,
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    lower_limit=Limit(
+                        value_raw="2", value_type=DataType.A_INT32,
+                        interval_type=IntervalType.OPEN),
+                    upper_limit=Limit(value_raw="15", value_type=DataType.A_INT32),
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_INT32,
+                        numerators=[1, -5],
+                        denominators=[1],
+                    ),
+                    domain_type=DataType.A_INT32,
+                    range_type=DataType.A_INT32),
+            ]),
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_INT32)
 
@@ -382,11 +307,11 @@ class TestLinearCompuMethod(unittest.TestCase):
             compu_method.segment.internal_lower_limit,
             Limit(value_raw="2", value_type=DataType.A_INT32, interval_type=IntervalType.OPEN))
         self.assertEqual(compu_method.segment.internal_upper_limit,
-                         Limit(value_raw="15", value_type=DataType.A_INT32, interval_type=None))
+                         Limit(value_raw="15", value_type=DataType.A_INT32))
         self.assertEqual(compu_method.segment.internal_upper_limit.interval_type, None)
 
         self.assertEqual(compu_method.segment.physical_lower_limit,
-                         Limit(value_raw="-74", value_type=DataType.A_INT32, interval_type=None))
+                         Limit(value_raw="-74", value_type=DataType.A_INT32))
         self.assertEqual(
             compu_method.segment.physical_upper_limit,
             Limit(value_raw="-9", value_type=DataType.A_INT32, interval_type=IntervalType.OPEN))
@@ -419,25 +344,11 @@ class TestCompuCodeCompuMethod(unittest.TestCase):
         compu_method = CompuCodeCompuMethod(
             category=CompuCategory.COMPUCODE,
             compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[],
                 prog_code=ProgCode(
-                    code_file="nice_computation.java",
-                    syntax="JAVA",
-                    revision="1.0",
-                    encryption=None,
-                    entrypoint=None,
-                    library_refs=[]),
-                compu_default_value=None),
+                    code_file="nice_computation.java", syntax="JAVA", revision="1.0")),
             compu_phys_to_internal=CompuPhysToInternal(
-                compu_scales=[],
                 prog_code=ProgCode(
-                    code_file="nice_inverse_computation.java",
-                    syntax="JAVA",
-                    revision="1.0",
-                    encryption=None,
-                    entrypoint=None,
-                    library_refs=[]),
-                compu_default_value=None),
+                    code_file="nice_inverse_computation.java", syntax="JAVA", revision="1.0")),
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_FLOAT32)
 
@@ -454,37 +365,31 @@ class TestRatFuncCompuMethod(unittest.TestCase):
     def test_rat_func_compu_method(self) -> None:
         compu_method = RatFuncCompuMethod(
             category=CompuCategory.RAT_FUNC,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="2",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        upper_limit=Limit(
-                            value_raw="3",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_FLOAT32,
-                            # f(x) = 3.14*(2*x^2 + 4x + 6) / 3.14
-                            numerators=[3.14 * 6, 3.14 * 4, 3.14 * 2],
-                            denominators=[3.14],
-                        ),
-                        domain_type=DataType.A_FLOAT32,
-                        range_type=DataType.A_FLOAT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
-            compu_phys_to_internal=None,
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    lower_limit=Limit(
+                        value_raw="2",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    upper_limit=Limit(
+                        value_raw="3",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_FLOAT32,
+                        # f(x) = 3.14*(2*x^2 + 4x + 6) / 3.14
+                        numerators=[3.14 * 6, 3.14 * 4, 3.14 * 2],
+                        denominators=[3.14],
+                    ),
+                    domain_type=DataType.A_FLOAT32,
+                    range_type=DataType.A_FLOAT32),
+            ]),
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_FLOAT32)
 
-        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(2.5)) - 28.5) < 1e-5)
+        phys_val = compu_method.convert_internal_to_physical(2.5)
+        assert isinstance(phys_val, float)
+        self.assertTrue(abs(phys_val - 28.5) < 1e-5)
 
         # out of range
         with self.assertRaises(DecodeError):
@@ -500,71 +405,62 @@ class TestRatFuncCompuMethod(unittest.TestCase):
     def test_rat_func_compu_method_with_inverse(self) -> None:
         compu_method = RatFuncCompuMethod(
             category=CompuCategory.RAT_FUNC,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="2",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        upper_limit=Limit(
-                            value_raw="3",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_FLOAT32,
-                            # f(x) = x^2
-                            numerators=[0, 0, 1],
-                            denominators=[1],
-                        ),
-                        domain_type=DataType.A_FLOAT32,
-                        range_type=DataType.A_FLOAT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
-            compu_phys_to_internal=CompuPhysToInternal(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="4",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        upper_limit=Limit(
-                            value_raw="9",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_FLOAT32,
-                            # first three terms of Taylor expansion of
-                            # f(x) = sqrt(x) at evaluation point 1
-                            numerators=[2.72 * 3 / 8, 2.72 * 3 / 4, 2.72 * -1 / 8],
-                            denominators=[2.72],
-                        ),
-                        domain_type=DataType.A_FLOAT32,
-                        range_type=DataType.A_FLOAT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    lower_limit=Limit(
+                        value_raw="2",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    upper_limit=Limit(
+                        value_raw="3",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_FLOAT32,
+                        # f(x) = x^2
+                        numerators=[0, 0, 1],
+                        denominators=[1],
+                    ),
+                    domain_type=DataType.A_FLOAT32,
+                    range_type=DataType.A_FLOAT32),
+            ]),
+            compu_phys_to_internal=CompuPhysToInternal(compu_scales=[
+                CompuScale(
+                    lower_limit=Limit(
+                        value_raw="4",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    upper_limit=Limit(
+                        value_raw="9",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_FLOAT32,
+                        # first three terms of Taylor expansion of
+                        # f(x) = sqrt(x) at evaluation point 1
+                        numerators=[2.72 * 3 / 8, 2.72 * 3 / 4, 2.72 * -1 / 8],
+                        denominators=[2.72],
+                    ),
+                    domain_type=DataType.A_FLOAT32,
+                    range_type=DataType.A_FLOAT32),
+            ]),
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_FLOAT32)
 
         self.assertEqual(compu_method.convert_internal_to_physical(2), 4)
         self.assertEqual(compu_method.convert_internal_to_physical(2.5), 6.25)
-        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(3)) - 9) < 1e-8)
+        phys_val = compu_method.convert_internal_to_physical(3)
+        assert isinstance(phys_val, float)
+        self.assertTrue(abs(phys_val - 9) < 1e-8)
 
         # note that the inverse values are pretty inaccurate because
-        # the Taylor series was cut off way quite early.
-        self.assertTrue(abs(float(compu_method.convert_physical_to_internal(4)) - 1.375) < 1e-4)
-        self.assertTrue(
-            abs(float(compu_method.convert_physical_to_internal(6.25)) - 0.17969) < 1e-4)
+        # the Taylor series was cut off quite early.
+        int_val = compu_method.convert_physical_to_internal(4)
+        assert isinstance(int_val, float)
+        self.assertTrue(abs(int_val - 1.375) < 1e-4)
+        int_val = compu_method.convert_physical_to_internal(6.25)
+        assert isinstance(int_val, float)
+        self.assertTrue(abs(int_val - 0.17969) < 1e-4)
         self.assertEqual(compu_method.convert_physical_to_internal(9), -3)
 
         # ensure that we stay in bounds
@@ -579,37 +475,31 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
     def test_scale_rat_func_compu_method(self) -> None:
         compu_method = ScaleRatFuncCompuMethod(
             category=CompuCategory.SCALE_RAT_FUNC,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="2",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        upper_limit=Limit(
-                            value_raw="3",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_FLOAT32,
-                            # f(x) = 3.14*(2*x^2 + 4x + 6) / 3.14
-                            numerators=[3.14 * 6, 3.14 * 4, 3.14 * 2],
-                            denominators=[3.14],
-                        ),
-                        domain_type=DataType.A_FLOAT32,
-                        range_type=DataType.A_FLOAT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
-            compu_phys_to_internal=None,
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    lower_limit=Limit(
+                        value_raw="2",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    upper_limit=Limit(
+                        value_raw="3",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_FLOAT32,
+                        # f(x) = 3.14*(2*x^2 + 4x + 6) / 3.14
+                        numerators=[3.14 * 6, 3.14 * 4, 3.14 * 2],
+                        denominators=[3.14],
+                    ),
+                    domain_type=DataType.A_FLOAT32,
+                    range_type=DataType.A_FLOAT32),
+            ]),
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_FLOAT32)
 
-        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(2.5)) - 28.5) < 1e-5)
+        phys_val = compu_method.convert_internal_to_physical(2.5)
+        assert isinstance(phys_val, float)
+        self.assertTrue(abs(phys_val - 28.5) < 1e-5)
 
         # out of range
         with self.assertRaises(DecodeError):
@@ -625,116 +515,103 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
     def test_scale_rat_func_compu_method_with_inverse(self) -> None:
         compu_method = ScaleRatFuncCompuMethod(
             category=CompuCategory.SCALE_RAT_FUNC,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="2",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        upper_limit=Limit(
-                            value_raw="3",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_FLOAT32,
-                            # f(x) = x^2
-                            numerators=[0, 0, 1],
-                            denominators=[1],
-                        ),
-                        domain_type=DataType.A_FLOAT32,
-                        range_type=DataType.A_FLOAT32),
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="4",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        upper_limit=Limit(
-                            value_raw="5",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_FLOAT32,
-                            # f(x) = 1.38e-23*(3*x + 10)/1.38e-23
-                            numerators=[1.38e-23 * 10, 1.38e-23 * 3],
-                            denominators=[1.38e-23],
-                        ),
-                        domain_type=DataType.A_FLOAT32,
-                        range_type=DataType.A_FLOAT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
-            compu_phys_to_internal=CompuPhysToInternal(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="4",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        upper_limit=Limit(
-                            value_raw="9",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_FLOAT32,
-                            # first three terms of Taylor expansion of
-                            # f(x) = sqrt(x) at evaluation point 1
-                            numerators=[2.72 * 3 / 8, 2.72 * 3 / 4, 2.72 * -1 / 8],
-                            denominators=[2.72],
-                        ),
-                        domain_type=DataType.A_FLOAT32,
-                        range_type=DataType.A_FLOAT32),
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="22",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        upper_limit=Limit(
-                            value_raw="25",
-                            value_type=DataType.A_FLOAT32,
-                            interval_type=IntervalType.CLOSED),
-                        compu_inverse_value=None,
-                        compu_const=None,
-                        compu_rational_coeffs=CompuRationalCoeffs(
-                            value_type=DataType.A_FLOAT32,
-                            # f(x) = (x - 10)/3
-                            numerators=[-10, 1],
-                            denominators=[3],
-                        ),
-                        domain_type=DataType.A_FLOAT32,
-                        range_type=DataType.A_FLOAT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    lower_limit=Limit(
+                        value_raw="2",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    upper_limit=Limit(
+                        value_raw="3",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_FLOAT32,
+                        # f(x) = x^2
+                        numerators=[0, 0, 1],
+                        denominators=[1],
+                    ),
+                    domain_type=DataType.A_FLOAT32,
+                    range_type=DataType.A_FLOAT32),
+                CompuScale(
+                    lower_limit=Limit(
+                        value_raw="4",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    upper_limit=Limit(
+                        value_raw="5",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_FLOAT32,
+                        # f(x) = 1.38e-23*(3*x + 10)/1.38e-23
+                        numerators=[1.38e-23 * 10, 1.38e-23 * 3],
+                        denominators=[1.38e-23],
+                    ),
+                    domain_type=DataType.A_FLOAT32,
+                    range_type=DataType.A_FLOAT32),
+            ]),
+            compu_phys_to_internal=CompuPhysToInternal(compu_scales=[
+                CompuScale(
+                    lower_limit=Limit(
+                        value_raw="4",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    upper_limit=Limit(
+                        value_raw="9",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_FLOAT32,
+                        # first three terms of Taylor expansion of
+                        # f(x) = sqrt(x) at evaluation point 1
+                        numerators=[2.72 * 3 / 8, 2.72 * 3 / 4, 2.72 * -1 / 8],
+                        denominators=[2.72],
+                    ),
+                    domain_type=DataType.A_FLOAT32,
+                    range_type=DataType.A_FLOAT32),
+                CompuScale(
+                    lower_limit=Limit(
+                        value_raw="22",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    upper_limit=Limit(
+                        value_raw="25",
+                        value_type=DataType.A_FLOAT32,
+                        interval_type=IntervalType.CLOSED),
+                    compu_rational_coeffs=CompuRationalCoeffs(
+                        value_type=DataType.A_FLOAT32,
+                        # f(x) = (x - 10)/3
+                        numerators=[-10, 1],
+                        denominators=[3],
+                    ),
+                    domain_type=DataType.A_FLOAT32,
+                    range_type=DataType.A_FLOAT32),
+            ]),
             internal_type=DataType.A_FLOAT32,
             physical_type=DataType.A_FLOAT32)
 
         self.assertEqual(compu_method.convert_internal_to_physical(2), 4)
         self.assertEqual(compu_method.convert_internal_to_physical(2.5), 6.25)
-        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(3)) - 9) < 1e-8)
+        phys_val = compu_method.convert_internal_to_physical(3)
+        assert isinstance(phys_val, float)
+        self.assertTrue(abs(phys_val - 9) < 1e-8)
 
-        self.assertTrue(abs(float(compu_method.convert_internal_to_physical(4)) - 22) < 1e-8)
-        self.assertTrue(abs(float(compu_method.convert_physical_to_internal(22)) - 4) < 1e-8)
+        phys_val = compu_method.convert_internal_to_physical(4)
+        assert isinstance(phys_val, float)
+        self.assertTrue(abs(phys_val - 22) < 1e-8)
+        int_val = compu_method.convert_physical_to_internal(22)
+        assert isinstance(int_val, float)
+        self.assertTrue(abs(int_val - 4) < 1e-8)
 
         # note that the inverse values are pretty inaccurate because
         # the Taylor series was cut off way quite early.
-        self.assertTrue(abs(float(compu_method.convert_physical_to_internal(4)) - 1.375) < 1e-4)
-        self.assertTrue(
-            abs(float(compu_method.convert_physical_to_internal(6.25)) - 0.17969) < 1e-4)
+        int_val = compu_method.convert_physical_to_internal(4)
+        assert isinstance(int_val, float)
+        self.assertTrue(abs(int_val - 1.375) < 1e-4)
+        int_val = compu_method.convert_physical_to_internal(6.25)
+        assert isinstance(int_val, float)
+        self.assertTrue(abs(int_val - 0.17969) < 1e-4)
         self.assertEqual(compu_method.convert_physical_to_internal(9), -3)
 
         # make sure that we stay in bounds
@@ -769,45 +646,23 @@ class TestTabIntpCompuMethod(unittest.TestCase):
 
         self.tab_intp_compumethod = TabIntpCompuMethod(
             category=CompuCategory.TAB_INTP,
-            compu_internal_to_phys=CompuInternalToPhys(
-                compu_scales=[
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="0", value_type=DataType.A_INT32, interval_type=None),
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=CompuConst(v="-1", vt=None, data_type=DataType.A_INT32),
-                        compu_rational_coeffs=None,
-                        domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="10", value_type=DataType.A_INT32, interval_type=None),
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=CompuConst(v="1", vt=None, data_type=DataType.A_INT32),
-                        compu_rational_coeffs=None,
-                        domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
-                    CompuScale(
-                        short_label=None,
-                        description=None,
-                        lower_limit=Limit(
-                            value_raw="30", value_type=DataType.A_INT32, interval_type=None),
-                        upper_limit=None,
-                        compu_inverse_value=None,
-                        compu_const=CompuConst(v="2", vt=None, data_type=DataType.A_INT32),
-                        compu_rational_coeffs=None,
-                        domain_type=DataType.A_INT32,
-                        range_type=DataType.A_INT32),
-                ],
-                prog_code=None,
-                compu_default_value=None),
-            compu_phys_to_internal=None,
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                CompuScale(
+                    lower_limit=Limit(value_raw="0", value_type=DataType.A_INT32),
+                    compu_const=CompuConst(v="-1", data_type=DataType.A_INT32),
+                    domain_type=DataType.A_INT32,
+                    range_type=DataType.A_INT32),
+                CompuScale(
+                    lower_limit=Limit(value_raw="10", value_type=DataType.A_INT32),
+                    compu_const=CompuConst(v="1", data_type=DataType.A_INT32),
+                    domain_type=DataType.A_INT32,
+                    range_type=DataType.A_INT32),
+                CompuScale(
+                    lower_limit=Limit(value_raw="30", value_type=DataType.A_INT32),
+                    compu_const=CompuConst(v="2", data_type=DataType.A_INT32),
+                    domain_type=DataType.A_INT32,
+                    range_type=DataType.A_INT32),
+            ]),
             internal_type=DataType.A_INT32,
             physical_type=DataType.A_FLOAT32,
         )
@@ -869,7 +724,7 @@ class TestTabIntpCompuMethod(unittest.TestCase):
         et_element = ElementTree.fromstring(self.tab_intp_compumethod_xml)
         actual = create_any_compu_method_from_et(
             et_element,
-            doc_frags,
+            OdxDocContext(Version("2.2.0"), doc_frags),
             internal_type=expected.internal_type,
             physical_type=expected.physical_type)
         self.assertIsInstance(actual, TabIntpCompuMethod)

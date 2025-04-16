@@ -1,17 +1,18 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional, cast
+from typing import cast
 from xml.etree import ElementTree
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import dataclass_fields_asdict
-from .compumethod import CompuCategory, CompuMethod
+from .compucategory import CompuCategory
+from .compumethod import CompuMethod
 from .ratfuncsegment import RatFuncSegment
 
 
-@dataclass
+@dataclass(kw_only=True)
 class RatFuncCompuMethod(CompuMethod):
     """A compu method using a rational function
 
@@ -29,15 +30,15 @@ class RatFuncCompuMethod(CompuMethod):
         return self._int_to_phys_segment
 
     @property
-    def phys_to_int_segment(self) -> Optional[RatFuncSegment]:
+    def phys_to_int_segment(self) -> RatFuncSegment | None:
         return self._phys_to_int_segment
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                              internal_type: DataType,
                              physical_type: DataType) -> "RatFuncCompuMethod":
         cm = CompuMethod.compu_method_from_et(
-            et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
+            et_element, context, internal_type=internal_type, physical_type=physical_type)
         kwargs = dataclass_fields_asdict(cm)
 
         return RatFuncCompuMethod(**kwargs)

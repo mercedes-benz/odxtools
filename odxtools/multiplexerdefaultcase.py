@@ -1,33 +1,34 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import NamedElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .snrefcontext import SnRefContext
 from .structure import Structure
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MultiplexerDefaultCase(NamedElement):
     """This class represents a Default Case, which is selected when there are no cases defined in the Multiplexer."""
-    structure_ref: Optional[OdxLinkRef]
-    structure_snref: Optional[str]
+    structure_ref: OdxLinkRef | None = None
+    structure_snref: str | None = None
 
     @property
-    def structure(self) -> Optional[Structure]:
+    def structure(self) -> Structure | None:
         return self._structure
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "MultiplexerDefaultCase":
+                context: OdxDocContext) -> "MultiplexerDefaultCase":
         """Reads a default case for a multiplexer."""
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
-        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
+        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), context)
         structure_snref = None
         if (structure_snref_elem := et_element.find("STRUCTURE-SNREF")) is not None:
             structure_snref = odxrequire(structure_snref_elem.get("SHORT-NAME"))
@@ -35,7 +36,7 @@ class MultiplexerDefaultCase(NamedElement):
         return MultiplexerDefaultCase(
             structure_ref=structure_ref, structure_snref=structure_snref, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

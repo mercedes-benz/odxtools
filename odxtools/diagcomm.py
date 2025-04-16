@@ -1,18 +1,20 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .audience import Audience
+from .diagclasstype import DiagClassType
 from .element import IdentifiableElement
 from .exceptions import odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
 from .preconditionstateref import PreConditionStateRef
+from .relateddiagcommref import RelatedDiagCommRef
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .state import State
@@ -24,31 +26,7 @@ if TYPE_CHECKING:
     from .diaglayers.protocol import Protocol
 
 
-class DiagClassType(Enum):
-    STARTCOMM = "STARTCOMM"
-    STOPCOMM = "STOPCOMM"
-    VARIANTIDENTIFICATION = "VARIANTIDENTIFICATION"
-    READ_DYN_DEFINED_MESSAGE = "READ-DYN-DEFINED-MESSAGE"
-    DYN_DEF_MESSAGE = "DYN-DEF-MESSAGE"
-    CLEAR_DYN_DEF_MESSAGE = "CLEAR-DYN-DEF-MESSAGE"
-
-
-@dataclass
-class RelatedDiagCommRef(OdxLinkRef):
-    relation_type: str
-
-    @staticmethod
-    def from_et(  # type: ignore[override]
-            et_element: ElementTree.Element,
-            doc_frags: List[OdxDocFragment]) -> "RelatedDiagCommRef":
-        kwargs = dataclass_fields_asdict(odxrequire(OdxLinkRef.from_et(et_element, doc_frags)))
-
-        relation_type = odxrequire(et_element.findtext("RELATION-TYPE"))
-
-        return RelatedDiagCommRef(relation_type=relation_type, **kwargs)
-
-
-@dataclass
+@dataclass(kw_only=True)
 class DiagComm(IdentifiableElement):
     """Representation of a diagnostic communication object.
 
@@ -57,21 +35,21 @@ class DiagComm(IdentifiableElement):
 
     """
 
-    admin_data: Optional[AdminData]
-    sdgs: List[SpecialDataGroup]
-    functional_class_refs: List[OdxLinkRef]
-    audience: Optional[Audience]
-    protocol_snrefs: List[str]
-    related_diag_comm_refs: List[RelatedDiagCommRef]
-    pre_condition_state_refs: List[PreConditionStateRef]
-    state_transition_refs: List[StateTransitionRef]
+    admin_data: AdminData | None = None
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
+    functional_class_refs: list[OdxLinkRef] = field(default_factory=list)
+    audience: Audience | None = None
+    protocol_snrefs: list[str] = field(default_factory=list)
+    related_diag_comm_refs: list[RelatedDiagCommRef] = field(default_factory=list)
+    pre_condition_state_refs: list[PreConditionStateRef] = field(default_factory=list)
+    state_transition_refs: list[StateTransitionRef] = field(default_factory=list)
 
     # attributes
-    semantic: Optional[str]
-    diagnostic_class: Optional[DiagClassType]
-    is_mandatory_raw: Optional[bool]
-    is_executable_raw: Optional[bool]
-    is_final_raw: Optional[bool]
+    semantic: str | None = None
+    diagnostic_class: DiagClassType | None = None
+    is_mandatory_raw: bool | None = None
+    is_executable_raw: bool | None = None
+    is_final_raw: bool | None = None
 
     @property
     def functional_classes(self) -> NamedItemList[FunctionalClass]:
@@ -106,22 +84,20 @@ class DiagComm(IdentifiableElement):
         return self.is_final_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagComm":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DiagComm":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         functional_class_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            odxrequire(OdxLinkRef.from_et(el, context))
             for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF")
         ]
 
         audience = None
         if (audience_elem := et_element.find("AUDIENCE")) is not None:
-            audience = Audience.from_et(audience_elem, doc_frags)
+            audience = Audience.from_et(audience_elem, context)
 
         protocol_snrefs = [
             odxrequire(el.get("SHORT-NAME"))
@@ -129,23 +105,23 @@ class DiagComm(IdentifiableElement):
         ]
 
         related_diag_comm_refs = [
-            RelatedDiagCommRef.from_et(el, doc_frags)
+            RelatedDiagCommRef.from_et(el, context)
             for el in et_element.iterfind("RELATED-DIAG-COMM-REFS/RELATED-DIAG-COMM-REF")
         ]
 
         pre_condition_state_refs = [
-            PreConditionStateRef.from_et(el, doc_frags)
+            PreConditionStateRef.from_et(el, context)
             for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF")
         ]
 
         state_transition_refs = [
-            StateTransitionRef.from_et(el, doc_frags)
+            StateTransitionRef.from_et(el, context)
             for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
         ]
 
         semantic = et_element.attrib.get("SEMANTIC")
 
-        diagnostic_class: Optional[DiagClassType] = None
+        diagnostic_class: DiagClassType | None = None
         if (diagnostic_class_str := et_element.attrib.get("DIAGNOSTIC-CLASS")) is not None:
             try:
                 diagnostic_class = DiagClassType(diagnostic_class_str)
@@ -172,7 +148,7 @@ class DiagComm(IdentifiableElement):
             is_final_raw=is_final_raw,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         if self.admin_data is not None:

@@ -1,27 +1,28 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class State(IdentifiableElement):
     """
     Corresponds to STATE.
     """
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "State":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "State":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         return State(**kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

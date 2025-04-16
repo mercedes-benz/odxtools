@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -10,13 +10,14 @@ from ..decodestate import DecodeState
 from ..diagcodedtype import DiagCodedType
 from ..encodestate import EncodeState
 from ..exceptions import DecodeMismatch, EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkId
 from ..odxtypes import AtomicOdxType, DataType, ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 
 
-@dataclass
+@dataclass(kw_only=True)
 class NrcConstParameter(Parameter):
     """A parameter of type NRC-CONST defines a set of values to be
     matched for a negative response object to apply
@@ -34,7 +35,7 @@ class NrcConstParameter(Parameter):
 
     """
 
-    coded_values_raw: List[str]
+    coded_values_raw: list[str] = field(default_factory=list)
     diag_coded_type: DiagCodedType
 
     @property
@@ -57,21 +58,20 @@ class NrcConstParameter(Parameter):
         return self.diag_coded_type.base_data_type
 
     @property
-    def coded_values(self) -> List[AtomicOdxType]:
+    def coded_values(self) -> list[AtomicOdxType]:
         return self._coded_values
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "NrcConstParameter":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "NrcConstParameter":
 
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, context))
 
         coded_values_raw = [
             odxrequire(x.text) for x in et_element.iterfind("CODED-VALUES/CODED-VALUE")
         ]
         dct_elem = odxrequire(et_element.find("DIAG-CODED-TYPE"))
-        diag_coded_type = create_any_diag_coded_type_from_et(dct_elem, doc_frags)
+        diag_coded_type = create_any_diag_coded_type_from_et(dct_elem, context)
 
         return NrcConstParameter(
             coded_values_raw=coded_values_raw, diag_coded_type=diag_coded_type, **kwargs)
@@ -82,7 +82,7 @@ class NrcConstParameter(Parameter):
         ]
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         result.update(self.diag_coded_type._build_odxlinks())
@@ -90,11 +90,11 @@ class NrcConstParameter(Parameter):
         return result
 
     @override
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return self.diag_coded_type.get_static_bit_length()
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         # NRC-CONST parameters are not encoding any value on its
         # own. instead, it is supposed to overlap with a value

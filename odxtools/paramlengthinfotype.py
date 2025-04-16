@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, cast
+from typing import TYPE_CHECKING, Any, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -9,7 +9,8 @@ from .decodestate import DecodeState
 from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .exceptions import EncodeError, odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType, DataType
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
@@ -18,7 +19,7 @@ if TYPE_CHECKING:
     from .parameters.lengthkeyparameter import LengthKeyParameter
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ParamLengthInfoType(DiagCodedType):
     length_key_ref: OdxLinkRef
 
@@ -32,16 +33,14 @@ class ParamLengthInfoType(DiagCodedType):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ParamLengthInfoType":
-        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ParamLengthInfoType":
+        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, context))
 
-        length_key_ref = odxrequire(
-            OdxLinkRef.from_et(et_element.find("LENGTH-KEY-REF"), doc_frags))
+        length_key_ref = odxrequire(OdxLinkRef.from_et(et_element.find("LENGTH-KEY-REF"), context))
 
         return ParamLengthInfoType(length_key_ref=length_key_ref, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -74,6 +73,8 @@ class ParamLengthInfoType(DiagCodedType):
             elif self.base_data_type in [DataType.A_UNICODE2STRING]:
                 bit_length = 16 * len(cast(str, internal_value))
             elif self.base_data_type in [DataType.A_INT32, DataType.A_UINT32]:
+                if not isinstance(internal_value, int):
+                    odxraise()
                 bit_length = int(internal_value).bit_length()
                 if self.base_data_type == DataType.A_INT32:
                     bit_length += 1

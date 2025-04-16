@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -9,7 +9,8 @@ from ..dataobjectproperty import DataObjectProperty
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
 from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
@@ -17,7 +18,7 @@ from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PhysicalConstantParameter(ParameterWithDOP):
     physical_constant_value_raw: str
 
@@ -43,9 +44,9 @@ class PhysicalConstantParameter(ParameterWithDOP):
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "PhysicalConstantParameter":
+                context: OdxDocContext) -> "PhysicalConstantParameter":
 
-        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, context))
 
         physical_constant_value_raw = odxrequire(et_element.findtext("PHYS-CONSTANT-VALUE"))
 
@@ -53,7 +54,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
             physical_constant_value_raw=physical_constant_value_raw, **kwargs)
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
     @override
@@ -72,7 +73,7 @@ class PhysicalConstantParameter(ParameterWithDOP):
         self._physical_constant_value = base_data_type.from_string(self.physical_constant_value_raw)
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         if physical_value is not None and physical_value != self.physical_constant_value:
             odxraise(

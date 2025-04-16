@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Iterable
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Optional, Union, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -11,7 +12,8 @@ from ..diagvariable import DiagVariable
 from ..dyndefinedspec import DynDefinedSpec
 from ..exceptions import odxassert
 from ..nameditemlist import NamedItemList
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkRef
 from ..parentref import ParentRef
 from ..variablegroup import VariableGroup
 from .basevariantraw import BaseVariantRaw
@@ -19,7 +21,7 @@ from .diaglayer import DiagLayer
 from .hierarchyelement import HierarchyElement
 
 
-@dataclass
+@dataclass(kw_only=True)
 class BaseVariant(HierarchyElement):
     """This is a diagnostic layer for common functionality of an ECU
     """
@@ -32,19 +34,19 @@ class BaseVariant(HierarchyElement):
     # <properties forwarded to the "raw" base variant>
     #####
     @property
-    def diag_variables_raw(self) -> List[Union[DiagVariable, OdxLinkRef]]:
+    def diag_variables_raw(self) -> list[DiagVariable | OdxLinkRef]:
         return self.base_variant_raw.diag_variables_raw
 
     @property
-    def dyn_defined_spec(self) -> Optional[DynDefinedSpec]:
+    def dyn_defined_spec(self) -> DynDefinedSpec | None:
         return self.base_variant_raw.dyn_defined_spec
 
     @property
-    def base_variant_pattern(self) -> Optional[BaseVariantPattern]:
+    def base_variant_pattern(self) -> BaseVariantPattern | None:
         return self.base_variant_raw.base_variant_pattern
 
     @property
-    def parent_refs(self) -> List[ParentRef]:
+    def parent_refs(self) -> list[ParentRef]:
         return self.base_variant_raw.parent_refs
 
     #####
@@ -67,8 +69,8 @@ class BaseVariant(HierarchyElement):
     #######
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "BaseVariant":
-        base_variant_raw = BaseVariantRaw.from_et(et_element, doc_frags)
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "BaseVariant":
+        base_variant_raw = BaseVariantRaw.from_et(et_element, context)
 
         return BaseVariant(diag_layer_raw=base_variant_raw)
 
@@ -80,7 +82,7 @@ class BaseVariant(HierarchyElement):
             "The raw diagnostic layer passed to BaseVariant "
             "must be a BaseVariantRaw")
 
-    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
         """Create a deep copy of the base variant
 
         Note that the copied diagnostic layer is not fully
@@ -113,7 +115,7 @@ class BaseVariant(HierarchyElement):
 
             return dl.diag_layer_raw.diag_variables  # type: ignore[no-any-return]
 
-        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_variables
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
@@ -127,7 +129,7 @@ class BaseVariant(HierarchyElement):
 
             return dl.diag_layer_raw.variable_groups  # type: ignore[no-any-return]
 
-        def not_inherited_fn(parent_ref: ParentRef) -> List[str]:
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)

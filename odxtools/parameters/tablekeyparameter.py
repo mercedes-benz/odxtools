@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import final, override
@@ -8,7 +8,8 @@ from typing_extensions import final, override
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from ..odxtypes import ParameterValue
 from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
@@ -19,35 +20,34 @@ if TYPE_CHECKING:
     from ..tablerow import TableRow
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TableKeyParameter(Parameter):
 
     odx_id: OdxLinkId
 
     # the spec mandates that exactly one of the two attributes must
     # be non-None
-    table_ref: Optional[OdxLinkRef]
-    table_snref: Optional[str]
+    table_ref: OdxLinkRef | None = None
+    table_snref: str | None = None
 
     # the spec mandates that exactly one of the two attributes must
     # be non-None
-    table_row_ref: Optional[OdxLinkRef]
-    table_row_snref: Optional[str]
+    table_row_ref: OdxLinkRef | None = None
+    table_row_snref: str | None = None
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "TableKeyParameter":
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "TableKeyParameter":
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, context))
 
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, context))
 
-        table_ref = OdxLinkRef.from_et(et_element.find("TABLE-REF"), doc_frags)
+        table_ref = OdxLinkRef.from_et(et_element.find("TABLE-REF"), context)
         table_snref = None
         if (table_snref_elem := et_element.find("TABLE-SNREF")) is not None:
             table_snref = odxrequire(table_snref_elem.get("SHORT-NAME"))
 
-        table_row_ref = OdxLinkRef.from_et(et_element.find("TABLE-ROW-REF"), doc_frags)
+        table_row_ref = OdxLinkRef.from_et(et_element.find("TABLE-ROW-REF"), context)
         table_row_snref = None
         if (table_row_snref_elem := et_element.find("TABLE-ROW-SNREF")) is not None:
             table_row_snref = odxrequire(table_row_snref_elem.get("SHORT-NAME"))
@@ -62,7 +62,7 @@ class TableKeyParameter(Parameter):
 
     def __post_init__(self) -> None:
         self._table: Table
-        self._table_row: Optional[TableRow] = None
+        self._table_row: TableRow | None = None
 
     @property
     @override
@@ -70,7 +70,7 @@ class TableKeyParameter(Parameter):
         return "TABLE-KEY"
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         result[self.odx_id] = self
@@ -143,7 +143,7 @@ class TableKeyParameter(Parameter):
 
     @override
     @final
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         # if you get this exception, you ought to use
         # `.encode_placeholder_into_pdu()` followed by (after the
@@ -151,7 +151,7 @@ class TableKeyParameter(Parameter):
         # `.encode_value_into_pdu()`.
         raise RuntimeError("_encode_positioned_into_pdu() cannot be called for table keys.")
 
-    def encode_placeholder_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_placeholder_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
 
         if physical_value is not None:

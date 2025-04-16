@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from enum import Enum
-from typing import Dict
 
 
 class DiagLayerType(Enum):
@@ -19,7 +18,7 @@ class DiagLayerType(Enum):
 
         """
 
-        PRIORITY_OF_DIAG_LAYER_TYPE: Dict[DiagLayerType, int] = {
+        PRIORITY_OF_DIAG_LAYER_TYPE: dict[DiagLayerType, int] = {
             DiagLayerType.PROTOCOL:
                 1,
             DiagLayerType.FUNCTIONAL_GROUP:

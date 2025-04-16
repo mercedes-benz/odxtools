@@ -1,25 +1,26 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SpecialDataGroupCaption(IdentifiableElement):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "SpecialDataGroupCaption":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+                context: OdxDocContext) -> "SpecialDataGroupCaption":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         return SpecialDataGroupCaption(**kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         result[self.odx_id] = self

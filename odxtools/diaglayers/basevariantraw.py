@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
 from ..basevariantpattern import BaseVariantPattern
@@ -8,7 +8,8 @@ from ..diagvariable import DiagVariable
 from ..dyndefinedspec import DynDefinedSpec
 from ..exceptions import odxraise
 from ..nameditemlist import NamedItemList
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..parentref import ParentRef
 from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
@@ -16,60 +17,58 @@ from ..variablegroup import VariableGroup
 from .hierarchyelementraw import HierarchyElementRaw
 
 
-@dataclass
+@dataclass(kw_only=True)
 class BaseVariantRaw(HierarchyElementRaw):
     """This is a diagnostic layer for common functionality of an ECU
     """
 
-    diag_variables_raw: List[Union[DiagVariable, OdxLinkRef]]
-    variable_groups: NamedItemList[VariableGroup]
-    dyn_defined_spec: Optional[DynDefinedSpec]
-    base_variant_pattern: Optional[BaseVariantPattern]
-    parent_refs: List[ParentRef]
+    diag_variables_raw: list[DiagVariable | OdxLinkRef] = field(default_factory=list)
+    variable_groups: NamedItemList[VariableGroup] = field(default_factory=NamedItemList)
+    dyn_defined_spec: DynDefinedSpec | None = None
+    base_variant_pattern: BaseVariantPattern | None = None
+    parent_refs: list[ParentRef] = field(default_factory=list)
 
     @property
     def diag_variables(self) -> NamedItemList[DiagVariable]:
         return self._diag_variables
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "BaseVariantRaw":
-        # objects contained by diagnostic layers exibit an additional
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "BaseVariantRaw":
+        # objects contained by diagnostic layers exhibit an additional
         # document fragment for the diag layer, so we use the document
         # fragments of the odx id of the diag layer for IDs of
         # contained objects.
-        her = HierarchyElementRaw.from_et(et_element, doc_frags)
+        her = HierarchyElementRaw.from_et(et_element, context)
         kwargs = dataclass_fields_asdict(her)
-        doc_frags = her.odx_id.doc_fragments
 
-        diag_variables_raw: List[Union[DiagVariable, OdxLinkRef]] = []
+        diag_variables_raw: list[DiagVariable | OdxLinkRef] = []
         if (dv_elems := et_element.find("DIAG-VARIABLES")) is not None:
             for dv_proxy_elem in dv_elems:
-                dv_proxy: Union[OdxLinkRef, DiagVariable]
+                dv_proxy: OdxLinkRef | DiagVariable
                 if dv_proxy_elem.tag == "DIAG-VARIABLE-REF":
-                    dv_proxy = OdxLinkRef.from_et(dv_proxy_elem, doc_frags)
+                    dv_proxy = OdxLinkRef.from_et(dv_proxy_elem, context)
                 elif dv_proxy_elem.tag == "DIAG-VARIABLE":
-                    dv_proxy = DiagVariable.from_et(dv_proxy_elem, doc_frags)
+                    dv_proxy = DiagVariable.from_et(dv_proxy_elem, context)
                 else:
                     odxraise()
 
                 diag_variables_raw.append(dv_proxy)
 
         variable_groups = NamedItemList([
-            VariableGroup.from_et(vg_elem, doc_frags)
+            VariableGroup.from_et(vg_elem, context)
             for vg_elem in et_element.iterfind("VARIABLE-GROUPS/VARIABLE-GROUP")
         ])
 
         dyn_defined_spec = None
         if (dds_elem := et_element.find("DYN-DEFINED-SPEC")) is not None:
-            dyn_defined_spec = DynDefinedSpec.from_et(dds_elem, doc_frags)
+            dyn_defined_spec = DynDefinedSpec.from_et(dds_elem, context)
 
         base_variant_pattern = None
         if (bvp_elem := et_element.find("BASE-VARIANT-PATTERN")) is not None:
-            base_variant_pattern = BaseVariantPattern.from_et(bvp_elem, doc_frags)
+            base_variant_pattern = BaseVariantPattern.from_et(bvp_elem, context)
 
         parent_refs = [
-            ParentRef.from_et(pr_elem, doc_frags)
+            ParentRef.from_et(pr_elem, context)
             for pr_elem in et_element.iterfind("PARENT-REFS/PARENT-REF")
         ]
 
@@ -81,7 +80,7 @@ class BaseVariantRaw(HierarchyElementRaw):
             parent_refs=parent_refs,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         for dv_proxy in self.diag_variables_raw:

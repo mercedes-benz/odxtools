@@ -1,29 +1,19 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from ..exceptions import odxraise
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType, DataType
 from ..snrefcontext import SnRefContext
+from .compucategory import CompuCategory
 from .compuinternaltophys import CompuInternalToPhys
 from .compuphystointernal import CompuPhysToInternal
 
 
-class CompuCategory(Enum):
-    IDENTICAL = "IDENTICAL"
-    LINEAR = "LINEAR"
-    SCALE_LINEAR = "SCALE-LINEAR"
-    TEXTTABLE = "TEXTTABLE"
-    COMPUCODE = "COMPUCODE"
-    TAB_INTP = "TAB-INTP"
-    RAT_FUNC = "RAT-FUNC"
-    SCALE_RAT_FUNC = "SCALE-RAT-FUNC"
-
-
-@dataclass
+@dataclass(kw_only=True)
 class CompuMethod:
     """A compu method translates between the internal representation
     of a value and their physical representation.
@@ -42,14 +32,14 @@ class CompuMethod:
     """
 
     category: CompuCategory
-    compu_internal_to_phys: Optional[CompuInternalToPhys]
-    compu_phys_to_internal: Optional[CompuPhysToInternal]
+    compu_internal_to_phys: CompuInternalToPhys | None = None
+    compu_phys_to_internal: CompuPhysToInternal | None = None
 
     physical_type: DataType
     internal_type: DataType
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                              internal_type: DataType, physical_type: DataType) -> "CompuMethod":
         cat_text = et_element.findtext("CATEGORY")
         if cat_text is None:
@@ -65,11 +55,11 @@ class CompuMethod:
         compu_internal_to_phys = None
         if (citp_elem := et_element.find("COMPU-INTERNAL-TO-PHYS")) is not None:
             compu_internal_to_phys = CompuInternalToPhys.compu_internal_to_phys_from_et(
-                citp_elem, doc_frags, internal_type=internal_type, physical_type=physical_type)
+                citp_elem, context, internal_type=internal_type, physical_type=physical_type)
         compu_phys_to_internal = None
         if (cpti_elem := et_element.find("COMPU-PHYS-TO-INTERNAL")) is not None:
             compu_phys_to_internal = CompuPhysToInternal.compu_phys_to_internal_from_et(
-                cpti_elem, doc_frags, internal_type=internal_type, physical_type=physical_type)
+                cpti_elem, context, internal_type=internal_type, physical_type=physical_type)
 
         return CompuMethod(
             category=category,
@@ -78,7 +68,7 @@ class CompuMethod:
             physical_type=physical_type,
             internal_type=internal_type)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {}
 
         if self.compu_internal_to_phys is not None:

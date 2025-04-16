@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
 from .admindata import AdminData
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .physicaldimension import PhysicalDimension
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
@@ -13,7 +14,7 @@ from .unit import Unit
 from .unitgroup import UnitGroup
 
 
-@dataclass
+@dataclass(kw_only=True)
 class UnitSpec:
     """
     A unit spec encapsulates three lists:
@@ -25,11 +26,11 @@ class UnitSpec:
     The following odx elements are not internalized: ADMIN-DATA, SDGS
     """
 
-    admin_data: Optional[AdminData]
-    unit_groups: NamedItemList[UnitGroup]
-    units: NamedItemList[Unit]
-    physical_dimensions: NamedItemList[PhysicalDimension]
-    sdgs: List[SpecialDataGroup]
+    admin_data: AdminData | None = None
+    unit_groups: NamedItemList[UnitGroup] = field(default_factory=NamedItemList)
+    units: NamedItemList[Unit] = field(default_factory=NamedItemList)
+    physical_dimensions: NamedItemList[PhysicalDimension] = field(default_factory=NamedItemList)
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self.unit_groups = NamedItemList(self.unit_groups)
@@ -37,21 +38,19 @@ class UnitSpec:
         self.physical_dimensions = NamedItemList(self.physical_dimensions)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "UnitSpec":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "UnitSpec":
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
         unit_groups = NamedItemList([
-            UnitGroup.from_et(el, doc_frags) for el in et_element.iterfind("UNIT-GROUPS/UNIT-GROUP")
+            UnitGroup.from_et(el, context) for el in et_element.iterfind("UNIT-GROUPS/UNIT-GROUP")
         ])
         units = NamedItemList(
-            [Unit.from_et(el, doc_frags) for el in et_element.iterfind("UNITS/UNIT")])
+            [Unit.from_et(el, context) for el in et_element.iterfind("UNITS/UNIT")])
         physical_dimensions = NamedItemList([
-            PhysicalDimension.from_et(el, doc_frags)
+            PhysicalDimension.from_et(el, context)
             for el in et_element.iterfind("PHYSICAL-DIMENSIONS/PHYSICAL-DIMENSION")
         ])
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         return UnitSpec(
             admin_data=admin_data,
@@ -60,8 +59,8 @@ class UnitSpec:
             physical_dimensions=physical_dimensions,
             sdgs=sdgs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        odxlinks: Dict[OdxLinkId, Any] = {}
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
+        odxlinks: dict[OdxLinkId, Any] = {}
         for unit in self.units:
             odxlinks.update(unit._build_odxlinks())
         for dim in self.physical_dimensions:

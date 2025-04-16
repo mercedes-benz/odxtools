@@ -1,10 +1,9 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from ..description import Description
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import AtomicOdxType, DataType
 from .compuconst import CompuConst
 from .compuinversevalue import CompuInverseValue
@@ -12,18 +11,18 @@ from .compurationalcoeffs import CompuRationalCoeffs
 from .limit import Limit
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompuScale:
     """A COMPU-SCALE represents one value range of a COMPU-METHOD.
     """
 
-    short_label: Optional[str]
-    description: Optional[Description]
-    lower_limit: Optional[Limit]
-    upper_limit: Optional[Limit]
-    compu_inverse_value: Optional[CompuInverseValue]
-    compu_const: Optional[CompuConst]
-    compu_rational_coeffs: Optional[CompuRationalCoeffs]
+    short_label: str | None = None
+    description: Description | None = None
+    lower_limit: Limit | None = None
+    upper_limit: Limit | None = None
+    compu_inverse_value: CompuInverseValue | None = None
+    compu_const: CompuConst | None = None
+    compu_rational_coeffs: CompuRationalCoeffs | None = None
 
     # the following two attributes are not specified for COMPU-SCALE
     # tags in the XML, but they are required to do anything useful
@@ -38,15 +37,15 @@ class CompuScale:
     range_type: DataType
 
     @staticmethod
-    def compuscale_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def compuscale_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                            domain_type: DataType, range_type: DataType) -> "CompuScale":
         short_label = et_element.findtext("SHORT-LABEL")
-        description = Description.from_et(et_element.find("DESC"), doc_frags)
+        description = Description.from_et(et_element.find("DESC"), context)
 
         lower_limit = Limit.limit_from_et(
-            et_element.find("LOWER-LIMIT"), doc_frags, value_type=domain_type)
+            et_element.find("LOWER-LIMIT"), context, value_type=domain_type)
         upper_limit = Limit.limit_from_et(
-            et_element.find("UPPER-LIMIT"), doc_frags, value_type=domain_type)
+            et_element.find("UPPER-LIMIT"), context, value_type=domain_type)
 
         compu_inverse_value = None
         if (cive := et_element.find("COMPU-INVERSE-VALUE")) is not None:
@@ -56,10 +55,10 @@ class CompuScale:
         if (cce := et_element.find("COMPU-CONST")) is not None:
             compu_const = CompuConst.compuvalue_from_et(cce, data_type=range_type)
 
-        compu_rational_coeffs: Optional[CompuRationalCoeffs] = None
+        compu_rational_coeffs: CompuRationalCoeffs | None = None
         if (crc_elem := et_element.find("COMPU-RATIONAL-COEFFS")) is not None:
             compu_rational_coeffs = CompuRationalCoeffs.coeffs_from_et(
-                crc_elem, doc_frags, value_type=range_type)
+                crc_elem, context, value_type=range_type)
 
         return CompuScale(
             short_label=short_label,

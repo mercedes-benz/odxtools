@@ -1,22 +1,22 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import List, Union, cast
+from dataclasses import dataclass, field
+from typing import cast
 from xml.etree import ElementTree
 
 from ..exceptions import odxassert, odxrequire
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import DataType
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompuRationalCoeffs:
     value_type: DataType
 
-    numerators: List[Union[int, float]]
-    denominators: List[Union[int, float]]
+    numerators: list[int | float] = field(default_factory=list)
+    denominators: list[int | float] = field(default_factory=list)
 
     @staticmethod
-    def coeffs_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def coeffs_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                        value_type: DataType) -> "CompuRationalCoeffs":
         odxassert(
             value_type

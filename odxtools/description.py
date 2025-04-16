@@ -1,38 +1,22 @@
-from dataclasses import dataclass
-from typing import List, Optional
+from dataclasses import dataclass, field
+from typing import Optional
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment
+from .externaldoc import ExternalDoc
+from .odxdoccontext import OdxDocContext
 
 
-@dataclass
-class ExternalDoc:
-    description: Optional[str]
-    href: str
-
-    @staticmethod
-    def from_et(et_element: Optional[ElementTree.Element],
-                doc_frags: List[OdxDocFragment]) -> Optional["ExternalDoc"]:
-        if et_element is None:
-            return None
-
-        description = et_element.text
-        href = odxrequire(et_element.get("HREF"))
-
-        return ExternalDoc(description=description, href=href)
-
-
-@dataclass
+@dataclass(kw_only=True)
 class Description:
     text: str
-    external_docs: List[ExternalDoc]
+    external_docs: list[ExternalDoc] = field(default_factory=list)
 
-    text_identifier: Optional[str]
+    text_identifier: str | None = None
 
     @staticmethod
-    def from_et(et_element: Optional[ElementTree.Element],
-                doc_frags: List[OdxDocFragment]) -> Optional["Description"]:
+    def from_et(et_element: ElementTree.Element | None,
+                context: OdxDocContext) -> Optional["Description"]:
         if et_element is None:
             return None
 
@@ -51,7 +35,7 @@ class Description:
 
         external_docs = \
             [
-                odxrequire(ExternalDoc.from_et(ed, doc_frags)) for ed in et_element.iterfind("EXTERNAL-DOCS/EXTERNAL-DOC")
+                odxrequire(ExternalDoc.from_et(ed, context)) for ed in et_element.iterfind("EXTERNAL-DOCS/EXTERNAL-DOC")
             ]
 
         text_identifier = et_element.attrib.get("TI")

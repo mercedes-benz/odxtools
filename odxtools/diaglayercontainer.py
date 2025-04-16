@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import chain
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .diaglayers.basevariant import BaseVariant
@@ -12,7 +12,8 @@ from .diaglayers.functionalgroup import FunctionalGroup
 from .diaglayers.protocol import Protocol
 from .nameditemlist import NamedItemList
 from .odxcategory import OdxCategory
-from .odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import DocType, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -20,13 +21,13 @@ if TYPE_CHECKING:
     from .database import Database
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagLayerContainer(OdxCategory):
-    protocols: NamedItemList[Protocol]
-    functional_groups: NamedItemList[FunctionalGroup]
-    ecu_shared_datas: NamedItemList[EcuSharedData]
-    base_variants: NamedItemList[BaseVariant]
-    ecu_variants: NamedItemList[EcuVariant]
+    protocols: NamedItemList[Protocol] = field(default_factory=NamedItemList)
+    functional_groups: NamedItemList[FunctionalGroup] = field(default_factory=NamedItemList)
+    ecu_shared_datas: NamedItemList[EcuSharedData] = field(default_factory=NamedItemList)
+    base_variants: NamedItemList[BaseVariant] = field(default_factory=NamedItemList)
+    ecu_variants: NamedItemList[EcuVariant] = field(default_factory=NamedItemList)
 
     @property
     def diag_layers(self) -> NamedItemList[DiagLayer]:
@@ -40,31 +41,29 @@ class DiagLayerContainer(OdxCategory):
         return self.ecu_variants
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DiagLayerContainer":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DiagLayerContainer":
 
-        cat = OdxCategory.category_from_et(et_element, doc_frags, doc_type=DocType.CONTAINER)
-        doc_frags = cat.odx_id.doc_fragments
+        cat = OdxCategory.category_from_et(et_element, context, doc_type=DocType.CONTAINER)
         kwargs = dataclass_fields_asdict(cat)
 
         protocols = NamedItemList([
-            Protocol.from_et(dl_element, doc_frags)
+            Protocol.from_et(dl_element, context)
             for dl_element in et_element.iterfind("PROTOCOLS/PROTOCOL")
         ])
         functional_groups = NamedItemList([
-            FunctionalGroup.from_et(dl_element, doc_frags)
+            FunctionalGroup.from_et(dl_element, context)
             for dl_element in et_element.iterfind("FUNCTIONAL-GROUPS/FUNCTIONAL-GROUP")
         ])
         ecu_shared_datas = NamedItemList([
-            EcuSharedData.from_et(dl_element, doc_frags)
+            EcuSharedData.from_et(dl_element, context)
             for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")
         ])
         base_variants = NamedItemList([
-            BaseVariant.from_et(dl_element, doc_frags)
+            BaseVariant.from_et(dl_element, context)
             for dl_element in et_element.iterfind("BASE-VARIANTS/BASE-VARIANT")
         ])
         ecu_variants = NamedItemList([
-            EcuVariant.from_et(dl_element, doc_frags)
+            EcuVariant.from_et(dl_element, context)
             for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")
         ])
 
@@ -85,7 +84,7 @@ class DiagLayerContainer(OdxCategory):
             self.ecu_variants,
         ),)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
 
         for protocol in self.protocols:
@@ -132,5 +131,5 @@ class DiagLayerContainer(OdxCategory):
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         super()._resolve_snrefs(context)
 
-    def __getitem__(self, key: Union[int, str]) -> DiagLayer:
+    def __getitem__(self, key: int | str) -> DiagLayer:
         return self.diag_layers[key]

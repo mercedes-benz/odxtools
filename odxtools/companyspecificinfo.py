@@ -1,34 +1,32 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .relateddoc import RelatedDoc
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompanySpecificInfo:
-    related_docs: List[RelatedDoc]
-    sdgs: List[SpecialDataGroup]
+    related_docs: list[RelatedDoc] = field(default_factory=list)
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "CompanySpecificInfo":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "CompanySpecificInfo":
         related_docs = [
-            RelatedDoc.from_et(rd, doc_frags)
+            RelatedDoc.from_et(rd, context)
             for rd in et_element.iterfind("RELATED-DOCS/RELATED-DOC")
         ]
 
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         return CompanySpecificInfo(related_docs=related_docs, sdgs=sdgs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {}
 
         for rd in self.related_docs:

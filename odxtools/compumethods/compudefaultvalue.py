@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Optional
 from xml.etree import ElementTree
 
 from ..odxtypes import DataType
@@ -9,9 +8,9 @@ from .compuconst import CompuConst
 from .compuinversevalue import CompuInverseValue
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompuDefaultValue(CompuConst):
-    compu_inverse_value: Optional[CompuInverseValue]
+    compu_inverse_value: CompuInverseValue | None = None
 
     @staticmethod
     def compuvalue_from_et(et_element: ElementTree.Element, *,

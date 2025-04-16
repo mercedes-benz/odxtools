@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, cast
+from typing import TYPE_CHECKING, Any, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -8,7 +8,8 @@ from typing_extensions import override
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import DecodeError, EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from ..odxtypes import ParameterValue
 from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
@@ -19,10 +20,10 @@ if TYPE_CHECKING:
     from ..table import Table
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TableStructParameter(Parameter):
-    table_key_ref: Optional[OdxLinkRef]
-    table_key_snref: Optional[str]
+    table_key_ref: OdxLinkRef | None = None
+    table_key_snref: str | None = None
 
     @property
     @override
@@ -49,12 +50,11 @@ class TableStructParameter(Parameter):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "TableStructParameter":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "TableStructParameter":
 
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, context))
 
-        table_key_ref = OdxLinkRef.from_et(et_element.find("TABLE-KEY-REF"), doc_frags)
+        table_key_ref = OdxLinkRef.from_et(et_element.find("TABLE-KEY-REF"), context)
         table_key_snref = None
         if (table_key_snref_elem := et_element.find("TABLE-KEY-SNREF")) is not None:
             table_key_snref = odxrequire(table_key_snref_elem.get("SHORT-NAME"))
@@ -67,7 +67,7 @@ class TableStructParameter(Parameter):
             odxraise("Either table_key_ref or table_key_snref must be defined.")
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
     @override
@@ -86,7 +86,7 @@ class TableStructParameter(Parameter):
                                             TableKeyParameter)
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
 
         if not isinstance(physical_value, (tuple, list)) or \

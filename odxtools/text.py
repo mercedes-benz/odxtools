@@ -1,17 +1,16 @@
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Text:
     text: str
-    text_identifier: Optional[str]
+    text_identifier: str | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Text":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Text":
         # Extract the contents of the tag as a string.
         raw_string = et_element.text or ""
         for e in et_element:

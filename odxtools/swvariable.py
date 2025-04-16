@@ -1,21 +1,20 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from .element import NamedElement
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SwVariable(NamedElement):
-    origin: Optional[str]
-    oid: Optional[str]
+    origin: str | None = None
+    oid: str | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "SwVariable":
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SwVariable":
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
         origin = et_element.findtext("ORIGIN")
         oid = et_element.attrib.get("OID")

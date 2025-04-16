@@ -1,16 +1,17 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Library(IdentifiableElement):
     """
     A library defines a shared library used for single ECU jobs etc.
@@ -19,19 +20,19 @@ class Library(IdentifiableElement):
     """
 
     code_file: str
-    encryption: Optional[str]
+    encryption: str | None = None
     syntax: str
     revision: str
-    entrypoint: Optional[str]
+    entrypoint: str | None = None
 
     @property
     def code(self) -> bytes:
         return self._code
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Library":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Library":
 
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         code_file = odxrequire(et_element.findtext("CODE-FILE"))
         encryption = et_element.findtext("ENCRYPTION")
@@ -47,7 +48,7 @@ class Library(IdentifiableElement):
             entrypoint=entrypoint,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

@@ -1,26 +1,27 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Modification:
     change: str
-    reason: Optional[str]
+    reason: str | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Modification":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Modification":
         change = odxrequire(et_element.findtext("CHANGE"))
         reason = et_element.findtext("REASON")
 
         return Modification(change=change, reason=reason)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

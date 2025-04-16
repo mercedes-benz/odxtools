@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import typing
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, runtime_checkable
+from dataclasses import dataclass, field
+from typing import Any, runtime_checkable
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -9,7 +9,8 @@ from .commrelation import CommRelation
 from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
@@ -28,37 +29,37 @@ class HasDiagVariables(typing.Protocol):
         ...
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagVariable(IdentifiableElement):
     """Representation of a diagnostic variable
     """
 
-    admin_data: Optional[AdminData]
-    variable_group_ref: Optional[OdxLinkRef]
-    sw_variables: List[SwVariable]
+    admin_data: AdminData | None = None
+    variable_group_ref: OdxLinkRef | None = None
+    sw_variables: list[SwVariable] = field(default_factory=list)
 
     # a diag variable must specify either COMM-RELATIONS or a
     # reference to a table row
-    comm_relations: List[CommRelation]
+    comm_relations: list[CommRelation] = field(default_factory=list)
 
     # these are nested inside the SNREF-TO-TABLEROW tag
-    table_snref: Optional[str]
-    table_row_snref: Optional[str]
+    table_snref: str | None = None
+    table_row_snref: str | None = None
 
-    sdgs: List[SpecialDataGroup]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
-    is_read_before_write_raw: Optional[bool]
+    is_read_before_write_raw: bool | None = None
 
     @property
-    def table(self) -> Optional[Table]:
+    def table(self) -> Table | None:
         return self._table
 
     @property
-    def table_row(self) -> Optional[TableRow]:
+    def table_row(self) -> TableRow | None:
         return self._table_row
 
     @property
-    def variable_group(self) -> Optional[VariableGroup]:
+    def variable_group(self) -> VariableGroup | None:
         return self._variable_group
 
     @property
@@ -66,17 +67,17 @@ class DiagVariable(IdentifiableElement):
         return self.is_read_before_write_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagVariable":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DiagVariable":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
-        variable_group_ref = OdxLinkRef.from_et(et_element.find("VARIABLE-GROUP-REF"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
+        variable_group_ref = OdxLinkRef.from_et(et_element.find("VARIABLE-GROUP-REF"), context)
         sw_variables = NamedItemList([
-            SwVariable.from_et(swv_elem, doc_frags)
+            SwVariable.from_et(swv_elem, context)
             for swv_elem in et_element.iterfind("SW-VARIABLES/SW-VARIABLE")
         ])
         comm_relations = [
-            CommRelation.from_et(cr_elem, doc_frags)
+            CommRelation.from_et(cr_elem, context)
             for cr_elem in et_element.iterfind("COMM-RELATIONS/COMM-RELATION")
         ]
 
@@ -89,9 +90,7 @@ class DiagVariable(IdentifiableElement):
             table_row_snref_elem = odxrequire(snref_to_tablerow_elem.find("TABLE-ROW-SNREF"))
             table_row_snref = odxrequire(table_row_snref_elem.attrib.get("SHORT-NAME"))
 
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         is_read_before_write_raw = odxstr_to_bool(et_element.get("IS-READ-BEFORE-WRITE"))
 
@@ -106,7 +105,7 @@ class DiagVariable(IdentifiableElement):
             is_read_before_write_raw=is_read_before_write_raw,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         if self.admin_data is not None:

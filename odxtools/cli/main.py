@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import argparse
 import importlib
-from typing import Any, List
+from typing import Any
 
 import odxtools
 import odxtools.exceptions
@@ -11,7 +11,7 @@ from .dummy_sub_parser import DummyTool
 
 # import the tool modules which can be loaded. if a tool
 # can't be loaded, add a dummy one
-tool_modules: List[Any] = []
+tool_modules: list[Any] = []
 for tool_name in ["list", "browse", "snoop", "find", "decode", "compare"]:
     try:
         tool_modules.append(importlib.import_module(f".{tool_name}", package="odxtools.cli"))

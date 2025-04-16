@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MIT
 import typing
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, runtime_checkable
+from typing import TYPE_CHECKING, runtime_checkable
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement, NamedElement
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .utils import dataclass_fields_asdict
 
 if TYPE_CHECKING:
@@ -21,12 +21,11 @@ class HasVariableGroups(typing.Protocol):
         ...
 
 
-@dataclass
+@dataclass(kw_only=True)
 class VariableGroup(IdentifiableElement):
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "VariableGroup":
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "VariableGroup":
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
         return VariableGroup(**kwargs)

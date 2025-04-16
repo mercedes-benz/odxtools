@@ -1,12 +1,13 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, Union
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
 from .dataobjectproperty import DataObjectProperty
 from .exceptions import odxassert, odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import ParameterValue, ParameterValueDict
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.parameter import Parameter
@@ -27,11 +28,11 @@ if TYPE_CHECKING:
 
 
 def _resolve_in_param(
-    in_param_if_snref: Optional[str],
-    in_param_if_snpathref: Optional[str],
-    params: List[Parameter],
+    in_param_if_snref: str | None,
+    in_param_if_snpathref: str | None,
+    params: list[Parameter],
     param_dict: ParameterValueDict,
-) -> Tuple[Optional[Parameter], Optional[ParameterValue]]:
+) -> tuple[Parameter | None, ParameterValue | None]:
 
     if in_param_if_snref is not None:
         path_chunks = [in_param_if_snref]
@@ -44,10 +45,10 @@ def _resolve_in_param(
 
 
 def _resolve_in_param_helper(
-    params: List[Parameter],
+    params: list[Parameter],
     param_dict: ParameterValueDict,
-    path_chunks: List[str],
-) -> Tuple[Optional[Parameter], Optional[ParameterValue]]:
+    path_chunks: list[str],
+) -> tuple[Parameter | None, ParameterValue | None]:
 
     inner_param = resolve_snref(path_chunks[0], params, Parameter, lenient=True)
     if inner_param is None:
@@ -90,7 +91,7 @@ def _resolve_in_param_helper(
 
 def _check_applies(ref: Union["StateTransitionRef",
                               "PreConditionStateRef"], state_machine: "StateMachine",
-                   params: List[Parameter], param_value_dict: ParameterValueDict) -> bool:
+                   params: list[Parameter], param_value_dict: ParameterValueDict) -> bool:
     if state_machine.active_state != ref.state:
         # if the active state of the state machine is not the
         # specified one, the precondition does not apply
@@ -146,7 +147,7 @@ def _check_applies(ref: Union["StateTransitionRef",
     return True
 
 
-@dataclass
+@dataclass(kw_only=True)
 class StateTransitionRef(OdxLinkRef):
     """Describes a state transition that is to be potentially taken if
     a diagnostic communication is executed
@@ -155,10 +156,10 @@ class StateTransitionRef(OdxLinkRef):
     may also be conditional on the observed response of the ECU.
 
     """
-    value: Optional[str]
+    value: str | None = None
 
-    in_param_if_snref: Optional[str]
-    in_param_if_snpathref: Optional[str]
+    in_param_if_snref: str | None = None
+    in_param_if_snpathref: str | None = None
 
     @property
     def state_transition(self) -> StateTransition:
@@ -170,9 +171,8 @@ class StateTransitionRef(OdxLinkRef):
 
     @staticmethod
     def from_et(  # type: ignore[override]
-            et_element: ElementTree.Element,
-            doc_frags: List[OdxDocFragment]) -> "StateTransitionRef":
-        kwargs = dataclass_fields_asdict(OdxLinkRef.from_et(et_element, doc_frags))
+            et_element: ElementTree.Element, context: OdxDocContext) -> "StateTransitionRef":
+        kwargs = dataclass_fields_asdict(OdxLinkRef.from_et(et_element, context))
 
         value = et_element.findtext("VALUE")
 
@@ -195,7 +195,7 @@ class StateTransitionRef(OdxLinkRef):
             odxassert(self.in_param_if_snref is not None or self.in_param_if_snref is not None,
                       "If VALUE is specified, a parameter must be referenced")
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -204,7 +204,7 @@ class StateTransitionRef(OdxLinkRef):
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
 
-    def execute(self, state_machine: StateMachine, params: List[Parameter],
+    def execute(self, state_machine: StateMachine, params: list[Parameter],
                 param_value_dict: ParameterValueDict) -> bool:
         """Update a StateMachine object if the state transition ought
         to be executed based on the response received after executing a

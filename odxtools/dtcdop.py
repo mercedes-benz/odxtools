@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union, cast
+from dataclasses import dataclass, field
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -14,70 +14,26 @@ from .diagnostictroublecode import DiagnosticTroubleCode
 from .dopbase import DopBase
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
+from .linkeddtcdop import LinkedDtcDop
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import ParameterValue, odxstr_to_bool
 from .physicaltype import PhysicalType
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
-class LinkedDtcDop:
-    not_inherited_dtc_snrefs: List[str]
-    dtc_dop_ref: OdxLinkRef
-
-    @property
-    def not_inherited_dtcs(self) -> NamedItemList[DiagnosticTroubleCode]:
-        return self._not_inherited_dtcs
-
-    @property
-    def dtc_dop(self) -> "DtcDop":
-        return self._dtc_dop
-
-    @property
-    def short_name(self) -> str:
-        return self._dtc_dop.short_name
-
-    @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "LinkedDtcDop":
-        not_inherited_dtc_snrefs = [
-            odxrequire(el.get("SHORT-NAME"))
-            for el in et_element.iterfind("NOT-INHERITED-DTC-SNREFS/"
-                                          "NOT-INHERITED-DTC-SNREF")
-        ]
-
-        dtc_dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DTC-DOP-REF"), doc_frags))
-
-        return LinkedDtcDop(
-            not_inherited_dtc_snrefs=not_inherited_dtc_snrefs, dtc_dop_ref=dtc_dop_ref)
-
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        return {}
-
-    def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._dtc_dop = odxlinks.resolve(self.dtc_dop_ref, DtcDop)
-
-    def _resolve_snrefs(self, context: SnRefContext) -> None:
-        dtc_dop = self._dtc_dop
-        not_inherited_dtcs = [
-            resolve_snref(ni_snref, dtc_dop.dtcs, DiagnosticTroubleCode)
-            for ni_snref in self.not_inherited_dtc_snrefs
-        ]
-
-        self._not_inherited_dtcs = NamedItemList(not_inherited_dtcs)
-
-
-@dataclass
+@dataclass(kw_only=True)
 class DtcDop(DopBase):
     """A DOP describing a diagnostic trouble code"""
 
     diag_coded_type: DiagCodedType
     physical_type: PhysicalType
     compu_method: CompuMethod
-    dtcs_raw: List[Union[DiagnosticTroubleCode, OdxLinkRef]]
-    linked_dtc_dops_raw: List[LinkedDtcDop]
-    is_visible_raw: Optional[bool]
+    dtcs_raw: list[DiagnosticTroubleCode | OdxLinkRef] = field(default_factory=list)
+    linked_dtc_dops_raw: list[LinkedDtcDop] = field(default_factory=list)
+    is_visible_raw: bool | None = None
 
     @property
     def dtcs(self) -> NamedItemList[DiagnosticTroubleCode]:
@@ -92,30 +48,29 @@ class DtcDop(DopBase):
         return self.is_visible_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DtcDop":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DtcDop":
         """Reads a DTC-DOP."""
-        kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, context))
 
         diag_coded_type = create_any_diag_coded_type_from_et(
-            odxrequire(et_element.find("DIAG-CODED-TYPE")), doc_frags)
-        physical_type = PhysicalType.from_et(
-            odxrequire(et_element.find("PHYSICAL-TYPE")), doc_frags)
+            odxrequire(et_element.find("DIAG-CODED-TYPE")), context)
+        physical_type = PhysicalType.from_et(odxrequire(et_element.find("PHYSICAL-TYPE")), context)
         compu_method = create_any_compu_method_from_et(
             odxrequire(et_element.find("COMPU-METHOD")),
-            doc_frags,
+            context,
             internal_type=diag_coded_type.base_data_type,
             physical_type=physical_type.base_data_type,
         )
-        dtcs_raw: List[Union[DiagnosticTroubleCode, OdxLinkRef]] = []
+        dtcs_raw: list[DiagnosticTroubleCode | OdxLinkRef] = []
         if (dtcs_elem := et_element.find("DTCS")) is not None:
             for dtc_proxy_elem in dtcs_elem:
                 if dtc_proxy_elem.tag == "DTC":
-                    dtcs_raw.append(DiagnosticTroubleCode.from_et(dtc_proxy_elem, doc_frags))
+                    dtcs_raw.append(DiagnosticTroubleCode.from_et(dtc_proxy_elem, context))
                 elif dtc_proxy_elem.tag == "DTC-REF":
-                    dtcs_raw.append(OdxLinkRef.from_et(dtc_proxy_elem, doc_frags))
+                    dtcs_raw.append(OdxLinkRef.from_et(dtc_proxy_elem, context))
 
         linked_dtc_dops_raw = [
-            LinkedDtcDop.from_et(dtc_ref_elem, doc_frags)
+            LinkedDtcDop.from_et(dtc_ref_elem, context)
             for dtc_ref_elem in et_element.iterfind("LINKED-DTC-DOPS/"
                                                     "LINKED-DTC-DOP")
         ]
@@ -200,7 +155,7 @@ class DtcDop(DopBase):
             return cast(int, None)
 
     @override
-    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_into_pdu(self, physical_value: ParameterValue | None,
                         encode_state: EncodeState) -> None:
         if physical_value is None:
             odxraise(f"No DTC specified", EncodeError)
@@ -208,7 +163,11 @@ class DtcDop(DopBase):
 
         trouble_code = self.convert_to_numerical_trouble_code(physical_value)
 
-        internal_trouble_code = int(self.compu_method.convert_physical_to_internal(trouble_code))
+        if not isinstance(trouble_code, int):
+            odxraise()
+        internal_trouble_code = self.compu_method.convert_physical_to_internal(trouble_code)
+        if not isinstance(internal_trouble_code, int):
+            odxraise()
 
         found = False
         for dtc in self.dtcs:
@@ -223,7 +182,7 @@ class DtcDop(DopBase):
 
         self.diag_coded_type.encode_into_pdu(internal_trouble_code, encode_state)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
 
         odxlinks.update(self.compu_method._build_odxlinks())

@@ -1,18 +1,18 @@
 # SPDX-License-Identifier: MIT
 from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from ..comparamspec import ComparamSpec
 from ..exceptions import odxassert
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..protstack import ProtStack
 from .hierarchyelement import HierarchyElement
 from .protocolraw import ProtocolRaw
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Protocol(HierarchyElement):
     """This is the class for primitives that are common for a given communication protocol
 
@@ -29,12 +29,12 @@ class Protocol(HierarchyElement):
         return self.protocol_raw.comparam_spec
 
     @property
-    def prot_stack(self) -> Optional[ProtStack]:
+    def prot_stack(self) -> ProtStack | None:
         return self.protocol_raw.prot_stack
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Protocol":
-        protocol_raw = ProtocolRaw.from_et(et_element, doc_frags)
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Protocol":
+        protocol_raw = ProtocolRaw.from_et(et_element, context)
 
         return Protocol(diag_layer_raw=protocol_raw)
 
@@ -46,7 +46,7 @@ class Protocol(HierarchyElement):
             "The raw diagnostic layer passed to Protocol "
             "must be a ProtocolRaw")
 
-    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
         """Create a deep copy of the protocol layer
 
         Note that the copied diagnostic layer is not fully

@@ -1,18 +1,18 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Union
+from typing import TYPE_CHECKING
 from xml.etree import ElementTree
 
 from .exceptions import odxraise
 from .matchingparameter import MatchingParameter
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 
 if TYPE_CHECKING:
     from .matchingbasevariantparameter import MatchingBaseVariantParameter
     from .matchingparameter import MatchingParameter
 
 
-@dataclass
+@dataclass(kw_only=True)
 class VariantPattern:
     """Variant patterns are used to identify the concrete variant of an ECU
 
@@ -26,13 +26,12 @@ class VariantPattern:
     """
 
     def get_matching_parameters(
-            self) -> Union[List["MatchingParameter"], List["MatchingBaseVariantParameter"]]:
+            self) -> list["MatchingParameter"] | list["MatchingBaseVariantParameter"]:
         odxraise(
             f"VariantPattern subclass `{type(self).__name__}` does not "
             f"implement `.get_match_parameters()`", RuntimeError)
         return []
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "VariantPattern":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "VariantPattern":
         return VariantPattern()

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Dict, List, Sequence
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -10,33 +11,33 @@ from .determinenumberofitems import DetermineNumberOfItems
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from .field import Field
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DynamicLengthField(Field):
     """Array of structure with length field"""
     offset: int
     determine_number_of_items: DetermineNumberOfItems
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DynamicLengthField":
-        kwargs = dataclass_fields_asdict(Field.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DynamicLengthField":
+        kwargs = dataclass_fields_asdict(Field.from_et(et_element, context))
 
         offset = int(odxrequire(et_element.findtext('OFFSET')))
         determine_number_of_items = DetermineNumberOfItems.from_et(
             odxrequire(et_element.find('DETERMINE-NUMBER-OF-ITEMS')),
-            doc_frags,
+            context,
         )
 
         return DynamicLengthField(
             offset=offset, determine_number_of_items=determine_number_of_items, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
         odxlinks.update(self.determine_number_of_items._build_odxlinks())
         return odxlinks
@@ -106,7 +107,7 @@ class DynamicLengthField(Field):
         decode_state.cursor_bit_position = det_num_items.bit_position or 0
 
         n = det_num_items.dop.decode_from_pdu(decode_state)
-        result: List[ParameterValue] = []
+        result: list[ParameterValue] = []
 
         if not isinstance(n, int):
             odxraise(f"Number of items specified by a dynamic length field {self.short_name} "

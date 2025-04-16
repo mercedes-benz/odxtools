@@ -1,26 +1,27 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import NamedElement
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class XDoc(NamedElement):
-    number: Optional[str]
-    state: Optional[str]
-    date: Optional[str]
-    publisher: Optional[str]
-    url: Optional[str]
-    position: Optional[str]
+    number: str | None = None
+    state: str | None = None
+    date: str | None = None
+    publisher: str | None = None
+    url: str | None = None
+    position: str | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "XDoc":
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "XDoc":
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
         number = et_element.findtext("NUMBER")
         state = et_element.findtext("STATE")
         date = et_element.findtext("DATE")
@@ -37,7 +38,7 @@ class XDoc(NamedElement):
             position=position,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

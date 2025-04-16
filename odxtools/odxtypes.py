@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Callable, Iterable
 from enum import Enum
-from typing import (TYPE_CHECKING, Any, Callable, Dict, Iterable, Optional, SupportsBytes, Tuple,
-                    Type, Union, overload)
+from typing import TYPE_CHECKING, Any, SupportsBytes, Union, overload
 from xml.etree import ElementTree
 
 from .exceptions import odxassert, odxraise, odxrequire
@@ -16,22 +16,22 @@ def bytefield_to_bytearray(bytefield: str) -> bytearray:
     return bytearray([int(x, 16) for x in bytes_string])
 
 
-BytesTypes = (bytearray, bytes, SupportsBytes)
-AtomicOdxType = Union[str, int, float, bytearray, bytes]
+BytesTypes = bytearray | bytes | SupportsBytes
+AtomicOdxType = str | int | float | BytesTypes
 
 # dictionary mapping short names to a Parameter that needs to be
 # specified. Complex parameters (structures) may contain
 # sub-parameters, so this is a recursive type...
-ParameterDict = Dict[str, Union["Parameter", "ParameterDict"]]
+ParameterDict = dict[str, Union["Parameter", "ParameterDict"]]
 
 # Dictionary mapping short names of parameters to the value it
 # exhibits. Complex parameters (structures) may contain
 # sub-parameters, so this is a recursive type, and fields encompass
 # multiple items, so this can be a list of objects.
-TableStructParameterValue = Tuple[str, "ParameterValue"]
+TableStructParameterValue = tuple[str, "ParameterValue"]
 ParameterValue = Union[AtomicOdxType, "ParameterValueDict", TableStructParameterValue,
                        Iterable["ParameterValue"], "DiagnosticTroubleCode"]
-ParameterValueDict = Dict[str, ParameterValue]
+ParameterValueDict = dict[str, ParameterValue]
 
 
 @overload
@@ -44,7 +44,7 @@ def odxstr_to_bool(str_val: str) -> bool:
     ...
 
 
-def odxstr_to_bool(str_val: Optional[str]) -> Optional[bool]:
+def odxstr_to_bool(str_val: str | None) -> bool | None:
     if str_val is None:
         return None
 
@@ -79,7 +79,7 @@ def parse_int(value: str) -> int:
 
 #: conversion functions for strings from the XML to the types stored
 #: by the internalized database
-_PARSE_ODX_TYPE: Dict[str, Callable[[str], AtomicOdxType]] = {
+_PARSE_ODX_TYPE: dict[str, Callable[[str], AtomicOdxType]] = {
     "A_INT32": parse_int,
     "A_UINT32": parse_int,
     "A_FLOAT32": float,
@@ -92,7 +92,7 @@ _PARSE_ODX_TYPE: Dict[str, Callable[[str], AtomicOdxType]] = {
 
 #: mapping from type name strings specified by the XML to the types
 #: used by the internalized database
-_ODX_TYPE_TO_PYTHON_TYPE: Dict[str, Type[AtomicOdxType]] = {
+_ODX_TYPE_TO_PYTHON_TYPE: dict[str, type[int | float | str | bytearray]] = {
     "A_INT32": int,
     "A_UINT32": int,
     "A_FLOAT32": float,
@@ -140,10 +140,13 @@ def compare_odx_values(a: AtomicOdxType, b: AtomicOdxType) -> int:
         if not isinstance(b, BytesTypes):
             odxraise()
 
-        obj_len = max(len(a), len(b))
+        a_bytes = bytes(a)
+        b_bytes = bytes(b)
 
-        tmp_a = a.ljust(obj_len, b'\x00')
-        tmp_b = b.ljust(obj_len, b'\x00')
+        obj_len = max(len(a_bytes), len(b_bytes))
+
+        tmp_a = a_bytes.ljust(obj_len, b'\x00')
+        tmp_b = b_bytes.ljust(obj_len, b'\x00')
 
         if tmp_a > tmp_b:
             return 1
@@ -193,7 +196,7 @@ class DataType(Enum):
     A_UTF8STRING = "A_UTF8STRING"
 
     @property
-    def python_type(self) -> Type[AtomicOdxType]:
+    def python_type(self) -> type[int | float | str | bytearray]:
         return _ODX_TYPE_TO_PYTHON_TYPE[self.value]
 
     @property
@@ -211,7 +214,7 @@ class DataType(Enum):
     def create_from_et(self, et_element: ElementTree.Element) -> AtomicOdxType:
         ...
 
-    def create_from_et(self, et_element: Optional[ElementTree.Element]) -> Optional[AtomicOdxType]:
+    def create_from_et(self, et_element: ElementTree.Element | None) -> AtomicOdxType | None:
         """
             Parse a V/VT value union and return an AtomicOdxType from them that match current datatype
             this includes, but not limited to COMPU-CONST, COMPU-DEFAULT-VALUE, COMPU-INVERSE-VALUE

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from .compumethods.compumethod import CompuMethod
@@ -12,7 +12,8 @@ from .dopbase import DopBase
 from .encodestate import EncodeState
 from .exceptions import EncodeError, odxraise, odxrequire
 from .internalconstr import InternalConstr
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType, BytesTypes, ParameterValue
 from .physicaltype import PhysicalType
 from .snrefcontext import SnRefContext
@@ -20,7 +21,7 @@ from .unit import Unit
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DataObjectProperty(DopBase):
     """This class represents a DATA-OBJECT-PROP.
 
@@ -37,42 +38,40 @@ class DataObjectProperty(DopBase):
     #: The type of the value in the physical world
     physical_type: PhysicalType
 
-    internal_constr: Optional[InternalConstr]
+    internal_constr: InternalConstr | None = None
 
     #: The unit associated with physical values (e.g. 'm/s^2')
-    unit_ref: Optional[OdxLinkRef]
+    unit_ref: OdxLinkRef | None = None
 
-    physical_constr: Optional[InternalConstr]
+    physical_constr: InternalConstr | None = None
 
     @property
-    def unit(self) -> Optional[Unit]:
+    def unit(self) -> Unit | None:
         return self._unit
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DataObjectProperty":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DataObjectProperty":
         """Reads a DATA-OBJECT-PROP."""
-        kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(DopBase.from_et(et_element, context))
 
         diag_coded_type = create_any_diag_coded_type_from_et(
-            odxrequire(et_element.find("DIAG-CODED-TYPE")), doc_frags)
-        physical_type = PhysicalType.from_et(
-            odxrequire(et_element.find("PHYSICAL-TYPE")), doc_frags)
+            odxrequire(et_element.find("DIAG-CODED-TYPE")), context)
+        physical_type = PhysicalType.from_et(odxrequire(et_element.find("PHYSICAL-TYPE")), context)
         compu_method = create_any_compu_method_from_et(
             odxrequire(et_element.find("COMPU-METHOD")),
-            doc_frags,
+            context,
             internal_type=diag_coded_type.base_data_type,
             physical_type=physical_type.base_data_type,
         )
         internal_constr = None
         if (internal_constr_elem := et_element.find("INTERNAL-CONSTR")) is not None:
             internal_constr = InternalConstr.constr_from_et(
-                internal_constr_elem, doc_frags, value_type=diag_coded_type.base_data_type)
-        unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), doc_frags)
+                internal_constr_elem, context, value_type=diag_coded_type.base_data_type)
+        unit_ref = OdxLinkRef.from_et(et_element.find("UNIT-REF"), context)
         physical_constr = None
         if (physical_constr_elem := et_element.find("PHYS-CONSTR")) is not None:
             physical_constr = InternalConstr.constr_from_et(
-                physical_constr_elem, doc_frags, value_type=physical_type.base_data_type)
+                physical_constr_elem, context, value_type=physical_type.base_data_type)
 
         return DataObjectProperty(
             compu_method=compu_method,
@@ -83,7 +82,7 @@ class DataObjectProperty(DopBase):
             physical_constr=physical_constr,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = super()._build_odxlinks()
         result.update(self.compu_method._build_odxlinks())
         result.update(self.diag_coded_type._build_odxlinks())
@@ -96,7 +95,7 @@ class DataObjectProperty(DopBase):
         self.compu_method._resolve_odxlinks(odxlinks)
         self.diag_coded_type._resolve_odxlinks(odxlinks)
 
-        self._unit: Optional[Unit] = None
+        self._unit: Unit | None = None
         if self.unit_ref:
             self._unit = odxlinks.resolve(self.unit_ref, Unit)
 
@@ -106,7 +105,7 @@ class DataObjectProperty(DopBase):
         self.compu_method._resolve_snrefs(context)
         self.diag_coded_type._resolve_snrefs(context)
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return self.diag_coded_type.get_static_bit_length()
 
     def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:

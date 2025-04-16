@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
@@ -13,34 +14,31 @@ from .text import Text
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagnosticTroubleCode(IdentifiableElement):
     trouble_code: int
-    display_trouble_code: Optional[str]
+    display_trouble_code: str | None = None
     text: Text
-    level: Optional[int]
-    sdgs: List[SpecialDataGroup]
+    level: int | None = None
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
-    is_temporary_raw: Optional[bool]
+    is_temporary_raw: bool | None = None
 
     @property
     def is_temporary(self) -> bool:
         return self.is_temporary_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DiagnosticTroubleCode":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DiagnosticTroubleCode":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         trouble_code = int(odxrequire(et_element.findtext("TROUBLE-CODE")))
         display_trouble_code = et_element.findtext("DISPLAY-TROUBLE-CODE")
-        text = Text.from_et(odxrequire(et_element.find("TEXT")), doc_frags)
+        text = Text.from_et(odxrequire(et_element.find("TEXT")), context)
         level = None
         if (level_str := et_element.findtext("LEVEL")) is not None:
             level = int(level_str)
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         is_temporary_raw = odxstr_to_bool(et_element.attrib.get("IS-TEMPORARY"))
 
@@ -53,8 +51,8 @@ class DiagnosticTroubleCode(IdentifiableElement):
             is_temporary_raw=is_temporary_raw,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result: Dict[OdxLinkId, Any] = {}
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
+        result: dict[OdxLinkId, Any] = {}
 
         result[self.odx_id] = self
 

@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Dict, List, Sequence
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -11,13 +12,14 @@ from .dynenddopref import DynEndDopRef
 from .encodestate import EncodeState
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
 from .field import Field
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import AtomicOdxType, ParameterValue
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DynamicEndmarkerField(Field):
     """Array of a structure with variable length determined by a termination sequence"""
 
@@ -32,18 +34,17 @@ class DynamicEndmarkerField(Field):
         return self._termination_value
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DynamicEndmarkerField":
-        kwargs = dataclass_fields_asdict(Field.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DynamicEndmarkerField":
+        kwargs = dataclass_fields_asdict(Field.from_et(et_element, context))
 
         # ODX 2.0 uses DATA-OBJECT-PROP-REF
         # ODX 2.2 uses DYN-END-DOP-REF
         dop_ref = et_element.find("DYN-END-DOP-REF") or et_element.find("DATA-OBJECT-PROP-REF")
-        dyn_end_dop_ref = DynEndDopRef.from_et(odxrequire(dop_ref), doc_frags)
+        dyn_end_dop_ref = DynEndDopRef.from_et(odxrequire(dop_ref), context)
 
         return DynamicEndmarkerField(dyn_end_dop_ref=dyn_end_dop_ref, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
         return odxlinks
 
@@ -102,7 +103,7 @@ class DynamicEndmarkerField(Field):
         orig_origin = decode_state.origin_byte_position
         decode_state.origin_byte_position = decode_state.cursor_byte_position
 
-        result: List[ParameterValue] = []
+        result: list[ParameterValue] = []
         while True:
             # check if we're at the end of the PDU
             if decode_state.cursor_byte_position == len(decode_state.coded_message):

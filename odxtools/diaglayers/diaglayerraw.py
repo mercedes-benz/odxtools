@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
-from copy import copy
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union, cast
+from dataclasses import dataclass, field
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from ..additionalaudience import AdditionalAudience
@@ -15,6 +14,7 @@ from ..exceptions import odxassert, odxraise, odxrequire
 from ..functionalclass import FunctionalClass
 from ..library import Library
 from ..nameditemlist import NamedItemList
+from ..odxdoccontext import OdxDocContext
 from ..odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..request import Request
 from ..response import Response
@@ -27,7 +27,7 @@ from ..utils import dataclass_fields_asdict
 from .diaglayertype import DiagLayerType
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DiagLayerRaw(IdentifiableElement):
     """This class internalizes all data represented by the DIAG-LAYER
     XML tag and its derivatives.
@@ -36,21 +36,21 @@ class DiagLayerRaw(IdentifiableElement):
     """
 
     variant_type: DiagLayerType
-    admin_data: Optional[AdminData]
-    company_datas: NamedItemList[CompanyData]
-    functional_classes: NamedItemList[FunctionalClass]
-    diag_data_dictionary_spec: Optional[DiagDataDictionarySpec]
-    diag_comms_raw: List[Union[OdxLinkRef, DiagComm]]
-    requests: NamedItemList[Request]
-    positive_responses: NamedItemList[Response]
-    negative_responses: NamedItemList[Response]
-    global_negative_responses: NamedItemList[Response]
-    import_refs: List[OdxLinkRef]
-    state_charts: NamedItemList[StateChart]
-    additional_audiences: NamedItemList[AdditionalAudience]
-    sub_components: NamedItemList[SubComponent]
-    libraries: NamedItemList[Library]
-    sdgs: List[SpecialDataGroup]
+    admin_data: AdminData | None = None
+    company_datas: NamedItemList[CompanyData] = field(default_factory=NamedItemList)
+    functional_classes: NamedItemList[FunctionalClass] = field(default_factory=NamedItemList)
+    diag_data_dictionary_spec: DiagDataDictionarySpec | None = None
+    diag_comms_raw: list[OdxLinkRef | DiagComm] = field(default_factory=list)
+    requests: NamedItemList[Request] = field(default_factory=NamedItemList)
+    positive_responses: NamedItemList[Response] = field(default_factory=NamedItemList)
+    negative_responses: NamedItemList[Response] = field(default_factory=NamedItemList)
+    global_negative_responses: NamedItemList[Response] = field(default_factory=NamedItemList)
+    import_refs: list[OdxLinkRef] = field(default_factory=list)
+    state_charts: NamedItemList[StateChart] = field(default_factory=NamedItemList)
+    additional_audiences: NamedItemList[AdditionalAudience] = field(default_factory=NamedItemList)
+    sub_components: NamedItemList[SubComponent] = field(default_factory=NamedItemList)
+    libraries: NamedItemList[Library] = field(default_factory=NamedItemList)
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @property
     def diag_comms(self) -> NamedItemList[DiagComm]:
@@ -70,7 +70,7 @@ class DiagLayerRaw(IdentifiableElement):
         return self._single_ecu_jobs
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DiagLayerRaw":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DiagLayerRaw":
         try:
             variant_type = DiagLayerType(et_element.tag)
         except ValueError:
@@ -80,88 +80,83 @@ class DiagLayerRaw(IdentifiableElement):
         short_name = odxrequire(et_element.findtext("SHORT-NAME"))
 
         # extend the applicable ODX "document fragments" for the diag layer objects
-        doc_frags = copy(doc_frags)
-        doc_frags.append(OdxDocFragment(short_name, DocType.LAYER))
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        context.doc_fragments.append(OdxDocFragment(short_name, DocType.LAYER))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         admin_data = None
         if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:
-            admin_data = AdminData.from_et(admin_data_elem, doc_frags)
+            admin_data = AdminData.from_et(admin_data_elem, context)
 
         company_datas = NamedItemList([
-            CompanyData.from_et(cd_el, doc_frags)
+            CompanyData.from_et(cd_el, context)
             for cd_el in et_element.iterfind("COMPANY-DATAS/COMPANY-DATA")
         ])
 
         functional_classes = NamedItemList([
-            FunctionalClass.from_et(fc_el, doc_frags)
+            FunctionalClass.from_et(fc_el, context)
             for fc_el in et_element.iterfind("FUNCT-CLASSS/FUNCT-CLASS")
         ])
 
         diag_data_dictionary_spec = None
         if (ddds_elem := et_element.find("DIAG-DATA-DICTIONARY-SPEC")) is not None:
-            diag_data_dictionary_spec = DiagDataDictionarySpec.from_et(ddds_elem, doc_frags)
+            diag_data_dictionary_spec = DiagDataDictionarySpec.from_et(ddds_elem, context)
 
-        diag_comms_raw: List[Union[OdxLinkRef, DiagComm]] = []
+        diag_comms_raw: list[OdxLinkRef | DiagComm] = []
         if (dc_elems := et_element.find("DIAG-COMMS")) is not None:
             for dc_proxy_elem in dc_elems:
-                dc: Union[OdxLinkRef, DiagComm]
+                dc: OdxLinkRef | DiagComm
                 if dc_proxy_elem.tag == "DIAG-COMM-REF":
-                    dc = OdxLinkRef.from_et(dc_proxy_elem, doc_frags)
+                    dc = OdxLinkRef.from_et(dc_proxy_elem, context)
                 elif dc_proxy_elem.tag == "DIAG-SERVICE":
-                    dc = DiagService.from_et(dc_proxy_elem, doc_frags)
+                    dc = DiagService.from_et(dc_proxy_elem, context)
                 else:
                     odxassert(dc_proxy_elem.tag == "SINGLE-ECU-JOB")
-                    dc = SingleEcuJob.from_et(dc_proxy_elem, doc_frags)
+                    dc = SingleEcuJob.from_et(dc_proxy_elem, context)
 
                 diag_comms_raw.append(dc)
 
         requests = NamedItemList([
-            Request.from_et(rq_elem, doc_frags)
-            for rq_elem in et_element.iterfind("REQUESTS/REQUEST")
+            Request.from_et(rq_elem, context) for rq_elem in et_element.iterfind("REQUESTS/REQUEST")
         ])
 
         positive_responses = NamedItemList([
-            Response.from_et(rs_elem, doc_frags)
+            Response.from_et(rs_elem, context)
             for rs_elem in et_element.iterfind("POS-RESPONSES/POS-RESPONSE")
         ])
 
         negative_responses = NamedItemList([
-            Response.from_et(rs_elem, doc_frags)
+            Response.from_et(rs_elem, context)
             for rs_elem in et_element.iterfind("NEG-RESPONSES/NEG-RESPONSE")
         ])
 
         global_negative_responses = NamedItemList([
-            Response.from_et(rs_elem, doc_frags)
+            Response.from_et(rs_elem, context)
             for rs_elem in et_element.iterfind("GLOBAL-NEG-RESPONSES/GLOBAL-NEG-RESPONSE")
         ])
 
         import_refs = [
-            OdxLinkRef.from_et(el, doc_frags)
-            for el in et_element.iterfind("IMPORT-REFS/IMPORT-REF")
+            OdxLinkRef.from_et(el, context) for el in et_element.iterfind("IMPORT-REFS/IMPORT-REF")
         ]
 
         state_charts = NamedItemList([
-            StateChart.from_et(el, doc_frags)
+            StateChart.from_et(el, context)
             for el in et_element.iterfind("STATE-CHARTS/STATE-CHART")
         ])
 
         additional_audiences = NamedItemList([
-            AdditionalAudience.from_et(el, doc_frags)
+            AdditionalAudience.from_et(el, context)
             for el in et_element.iterfind("ADDITIONAL-AUDIENCES/ADDITIONAL-AUDIENCE")
         ])
 
         sub_components = NamedItemList([
-            SubComponent.from_et(el, doc_frags)
+            SubComponent.from_et(el, context)
             for el in et_element.iterfind("SUB-COMPONENTS/SUB-COMPONENT")
         ])
 
         libraries = NamedItemList(
-            [Library.from_et(el, doc_frags) for el in et_element.iterfind("LIBRARYS/LIBRARY")])
+            [Library.from_et(el, context) for el in et_element.iterfind("LIBRARYS/LIBRARY")])
 
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         # Create DiagLayer
         return DiagLayerRaw(
@@ -183,7 +178,7 @@ class DiagLayerRaw(IdentifiableElement):
             sdgs=sdgs,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         """Construct a mapping from IDs to all objects that are contained in this diagnostic layer."""
         odxlinks = {self.odx_id: self}
 

@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import List, Optional, Union
+from dataclasses import dataclass, field
 
 from ..exceptions import odxraise, odxrequire
 from ..odxtypes import AtomicOdxType, DataType
@@ -8,17 +7,17 @@ from .compuscale import CompuScale
 from .limit import Limit
 
 
-@dataclass
+@dataclass(kw_only=True)
 class RatFuncSegment:
     """Helper class to represent a segment of a piecewise rational function.
     """
     value_type: DataType
 
-    numerator_coeffs: List[Union[int, float]]
-    denominator_coeffs: List[Union[int, float]]
+    numerator_coeffs: list[int | float] = field(default_factory=list)
+    denominator_coeffs: list[int | float] = field(default_factory=list)
 
-    lower_limit: Optional[Limit]
-    upper_limit: Optional[Limit]
+    lower_limit: Limit | None = None
+    upper_limit: Limit | None = None
 
     @staticmethod
     def from_compu_scale(scale: CompuScale, value_type: DataType) -> "RatFuncSegment":
@@ -39,7 +38,7 @@ class RatFuncSegment:
             upper_limit=upper_limit,
             value_type=scale.range_type)
 
-    def convert(self, value: AtomicOdxType) -> Union[float, int]:
+    def convert(self, value: AtomicOdxType) -> float | int:
         if not isinstance(value, (int, float)):
             odxraise(f"Internal values of linear compumethods must "
                      f"either be int or float (is: {type(value).__name__})")

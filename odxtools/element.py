@@ -1,41 +1,40 @@
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from .description import Description
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkId
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class NamedElement:
     short_name: str
-    long_name: Optional[str]
-    description: Optional[Description]
+    long_name: str | None = None
+    description: Description | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "NamedElement":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "NamedElement":
 
         return NamedElement(
             short_name=odxrequire(et_element.findtext("SHORT-NAME")),
             long_name=et_element.findtext("LONG-NAME"),
-            description=Description.from_et(et_element.find("DESC"), doc_frags),
+            description=Description.from_et(et_element.find("DESC"), context),
         )
 
 
-@dataclass
+@dataclass(kw_only=True)
 class IdentifiableElement(NamedElement):
     odx_id: OdxLinkId
-    oid: Optional[str]
+    oid: str | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "IdentifiableElement":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "IdentifiableElement":
 
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
-        odx_id = odxrequire(OdxLinkId.from_et(et_element, doc_frags))
+        odx_id = odxrequire(OdxLinkId.from_et(et_element, context))
         oid = et_element.get("OID")
 
         return IdentifiableElement(**kwargs, odx_id=odx_id, oid=oid)

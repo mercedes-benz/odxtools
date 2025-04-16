@@ -1,40 +1,41 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, resolve_snref
 from .snrefcontext import SnRefContext
 from .state import State
 from .statetransition import StateTransition
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class StateChart(IdentifiableElement):
     """
     Corresponds to STATE-CHART.
     """
     semantic: str
-    state_transitions: List[StateTransition]
+    state_transitions: list[StateTransition] = field(default_factory=list)
     start_state_snref: str
-    states: NamedItemList[State]
+    states: NamedItemList[State] = field(default_factory=NamedItemList)
 
     @property
     def start_state(self) -> State:
         return self._start_state
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "StateChart":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "StateChart":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         semantic: str = odxrequire(et_element.findtext("SEMANTIC"))
 
         state_transitions = [
-            StateTransition.from_et(st_elem, doc_frags)
+            StateTransition.from_et(st_elem, context)
             for st_elem in et_element.iterfind("STATE-TRANSITIONS/STATE-TRANSITION")
         ]
 
@@ -42,7 +43,7 @@ class StateChart(IdentifiableElement):
         start_state_snref = start_state_snref_elem.attrib["SHORT-NAME"]
 
         states = [
-            State.from_et(st_elem, doc_frags) for st_elem in et_element.iterfind("STATES/STATE")
+            State.from_et(st_elem, context) for st_elem in et_element.iterfind("STATES/STATE")
         ]
 
         return StateChart(
@@ -52,7 +53,7 @@ class StateChart(IdentifiableElement):
             states=NamedItemList(states),
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         odxlinks = {self.odx_id: self}
 
         for strans in self.state_transitions:

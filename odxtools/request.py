@@ -1,18 +1,21 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from dataclasses import dataclass, field
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from .admindata import AdminData
-from .codec import (composite_codec_decode_from_pdu, composite_codec_encode_into_pdu,
-                    composite_codec_get_coded_const_prefix, composite_codec_get_free_parameters,
-                    composite_codec_get_required_parameters, composite_codec_get_static_bit_length)
+from .compositecodec import (composite_codec_decode_from_pdu, composite_codec_encode_into_pdu,
+                             composite_codec_get_coded_const_prefix,
+                             composite_codec_get_free_parameters,
+                             composite_codec_get_required_parameters,
+                             composite_codec_get_static_bit_length)
 from .decodestate import DecodeState
 from .element import IdentifiableElement
 from .encodestate import EncodeState
 from .exceptions import odxraise
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue, ParameterValueDict
 from .parameters.createanyparameter import create_any_parameter_from_et
 from .parameters.parameter import Parameter
@@ -21,40 +24,38 @@ from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Request(IdentifiableElement):
     """Represents all information related to an UDS request
 
     This class implements the `CompositeCodec` interface.
     """
-    admin_data: Optional[AdminData]
-    parameters: NamedItemList[Parameter]
-    sdgs: List[SpecialDataGroup]
+    admin_data: AdminData | None = None
+    parameters: NamedItemList[Parameter] = field(default_factory=NamedItemList)
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
 
     @property
-    def required_parameters(self) -> List[Parameter]:
+    def required_parameters(self) -> list[Parameter]:
         return composite_codec_get_required_parameters(self)
 
     @property
-    def free_parameters(self) -> List[Parameter]:
+    def free_parameters(self) -> list[Parameter]:
         return composite_codec_get_free_parameters(self)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Request":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Request":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
         parameters = NamedItemList([
-            create_any_parameter_from_et(et_parameter, doc_frags)
+            create_any_parameter_from_et(et_parameter, context)
             for et_parameter in et_element.iterfind("PARAMS/PARAM")
         ])
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         return Request(admin_data=admin_data, parameters=parameters, sdgs=sdgs, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         if self.admin_data is not None:
@@ -94,7 +95,7 @@ class Request(IdentifiableElement):
         context.request = None
         context.parameters = None
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return composite_codec_get_static_bit_length(self)
 
     def print_free_parameters_info(self) -> None:
@@ -121,7 +122,7 @@ class Request(IdentifiableElement):
 
         return cast(ParameterValueDict, param_values)
 
-    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_into_pdu(self, physical_value: ParameterValue | None,
                         encode_state: EncodeState) -> None:
         composite_codec_encode_into_pdu(self, physical_value, encode_state)
 

@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MIT
 from copy import deepcopy
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Dict, List
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 from xml.etree import ElementTree
 
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -13,23 +14,24 @@ if TYPE_CHECKING:
     from .diaglayers.diaglayer import DiagLayer
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ParentRef:
     layer_ref: OdxLinkRef
-    not_inherited_diag_comms: List[str]  # short_name references
-    not_inherited_variables: List[str]  # short_name references
-    not_inherited_dops: List[str]  # short_name references
-    not_inherited_tables: List[str]  # short_name references
-    not_inherited_global_neg_responses: List[str]  # short_name references
+    not_inherited_diag_comms: list[str] = field(default_factory=list)  # short_name references
+    not_inherited_variables: list[str] = field(default_factory=list)  # short_name references
+    not_inherited_dops: list[str] = field(default_factory=list)  # short_name references
+    not_inherited_tables: list[str] = field(default_factory=list)  # short_name references
+    not_inherited_global_neg_responses: list[str] = field(
+        default_factory=list)  # short_name references
 
     @property
     def layer(self) -> "DiagLayer":
         return self._layer
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ParentRef":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ParentRef":
 
-        layer_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
+        layer_ref = odxrequire(OdxLinkRef.from_et(et_element, context))
 
         not_inherited_diag_comms = [
             odxrequire(el.get("SHORT-NAME"))
@@ -69,7 +71,7 @@ class ParentRef:
             not_inherited_global_neg_responses=not_inherited_global_neg_responses,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -81,7 +83,7 @@ class ParentRef:
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         pass
 
-    def __deepcopy__(self, memo: Dict[int, Any]) -> Any:
+    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
         cls = self.__class__
         result = cls.__new__(cls)
         memo[id(self)] = result

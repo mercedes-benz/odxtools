@@ -1,51 +1,52 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
 from .companyrevisioninfo import CompanyRevisionInfo
 from .exceptions import odxrequire
 from .modification import Modification
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 from .teammember import TeamMember
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DocRevision:
     """
     Representation of a single revision of the relevant object.
     """
 
-    team_member_ref: Optional[OdxLinkRef]
-    revision_label: Optional[str]
-    state: Optional[str]
+    team_member_ref: OdxLinkRef | None = None
+    revision_label: str | None = None
+    state: str | None = None
     date: str
-    tool: Optional[str]
-    company_revision_infos: List[CompanyRevisionInfo]
-    modifications: List[Modification]
+    tool: str | None = None
+    company_revision_infos: list[CompanyRevisionInfo] = field(default_factory=list)
+    modifications: list[Modification] = field(default_factory=list)
 
     @property
-    def team_member(self) -> Optional[TeamMember]:
+    def team_member(self) -> TeamMember | None:
         return self._team_member
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "DocRevision":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DocRevision":
 
-        team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), doc_frags)
+        team_member_ref = OdxLinkRef.from_et(et_element.find("TEAM-MEMBER-REF"), context)
         revision_label = et_element.findtext("REVISION-LABEL")
         state = et_element.findtext("STATE")
         date = odxrequire(et_element.findtext("DATE"))
         tool = et_element.findtext("TOOL")
 
         company_revision_infos = [
-            CompanyRevisionInfo.from_et(cri_elem, doc_frags)
+            CompanyRevisionInfo.from_et(cri_elem, context)
             for cri_elem in et_element.iterfind("COMPANY-REVISION-INFOS/"
                                                 "COMPANY-REVISION-INFO")
         ]
 
         modifications = [
-            Modification.from_et(mod_elem, doc_frags)
+            Modification.from_et(mod_elem, context)
             for mod_elem in et_element.iterfind("MODIFICATIONS/MODIFICATION")
         ]
 
@@ -59,11 +60,11 @@ class DocRevision:
             modifications=modifications,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._team_member: Optional[TeamMember] = None
+        self._team_member: TeamMember | None = None
         if self.team_member_ref is not None:
             self._team_member = odxlinks.resolve(self.team_member_ref, TeamMember)
 

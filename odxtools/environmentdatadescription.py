@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -13,7 +13,8 @@ from .encodestate import EncodeState
 from .environmentdata import EnvironmentData
 from .exceptions import odxraise, odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import DataType, ParameterValue, ParameterValueDict
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.parameter import Parameter
@@ -24,7 +25,7 @@ from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EnvironmentDataDescription(ComplexDop):
     """This class represents environment data descriptions
 
@@ -35,20 +36,20 @@ class EnvironmentDataDescription(ComplexDop):
 
     """
 
-    param_snref: Optional[str]
-    param_snpathref: Optional[str]
+    param_snref: str | None = None
+    param_snpathref: str | None = None
 
     # in ODX 2.0.0, ENV-DATAS seems to be a mandatory
     # sub-element of ENV-DATA-DESC, in ODX 2.2 it is not
     # present
-    env_datas: NamedItemList[EnvironmentData]
-    env_data_refs: List[OdxLinkRef]
+    env_datas: NamedItemList[EnvironmentData] = field(default_factory=NamedItemList)
+    env_data_refs: list[OdxLinkRef] = field(default_factory=list)
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "EnvironmentDataDescription":
+                context: OdxDocContext) -> "EnvironmentDataDescription":
         """Reads Environment Data Description from Diag Layer."""
-        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, context))
 
         param_snref = None
         if (param_snref_elem := et_element.find("PARAM-SNREF")) is not None:
@@ -63,11 +64,11 @@ class EnvironmentDataDescription(ComplexDop):
         # empty and one non-empty list here. (Which is which depends
         # on the version of the standard used by the file.)
         env_datas = NamedItemList([
-            EnvironmentData.from_et(env_data_elem, doc_frags)
+            EnvironmentData.from_et(env_data_elem, context)
             for env_data_elem in et_element.iterfind("ENV-DATAS/ENV-DATA")
         ])
         env_data_refs = [
-            odxrequire(OdxLinkRef.from_et(env_data_ref, doc_frags))
+            odxrequire(OdxLinkRef.from_et(env_data_ref, context))
             for env_data_ref in et_element.iterfind("ENV-DATA-REFS/ENV-DATA-REF")
         ]
 
@@ -78,7 +79,7 @@ class EnvironmentDataDescription(ComplexDop):
             env_data_refs=env_data_refs,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         odxlinks = {self.odx_id: self}
 
         if not self.env_data_refs:
@@ -105,7 +106,7 @@ class EnvironmentDataDescription(ComplexDop):
                 ed._resolve_snrefs(context)
 
     @override
-    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_into_pdu(self, physical_value: ParameterValue | None,
                         encode_state: EncodeState) -> None:
         """Convert a physical value into bytes and emplace them into a PDU.
         """
@@ -118,7 +119,7 @@ class EnvironmentDataDescription(ComplexDop):
                      "descriptions via SNPATHREF is not supported yet")
             return None
 
-        numerical_dtc_value: Optional[ParameterValue] = None
+        numerical_dtc_value: ParameterValue | None = None
         for prev_param, prev_param_value in reversed(encode_state.journal):
             if prev_param.short_name == self.param_snref:
                 numerical_dtc_value = self._get_numerical_dtc_from_parameter(
@@ -165,7 +166,7 @@ class EnvironmentDataDescription(ComplexDop):
                      "descriptions via SNPATHREF is not supported yet")
             return None
 
-        numerical_dtc_value: Optional[ParameterValue] = None
+        numerical_dtc_value: ParameterValue | None = None
         for prev_param, prev_param_value in reversed(decode_state.journal):
             if prev_param.short_name == self.param_snref:
                 numerical_dtc_value = self._get_numerical_dtc_from_parameter(
@@ -204,7 +205,7 @@ class EnvironmentDataDescription(ComplexDop):
         return result
 
     def _get_numerical_dtc_from_parameter(self, param: Parameter,
-                                          param_value: Optional[ParameterValue]) -> int:
+                                          param_value: ParameterValue | None) -> int:
         if isinstance(param, ParameterWithDOP):
             dop = param.dop
             if not isinstance(dop, (DataObjectProperty, DtcDop)):
