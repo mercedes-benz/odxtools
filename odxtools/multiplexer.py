@@ -236,3 +236,38 @@ class Multiplexer(ComplexDop):
         decode_state.origin_byte_position = orig_origin
 
         return result
+
+    @override
+    def get_static_bit_length(self) -> int | None:
+        """
+        Returns the static bit length of the multiplexer structure, if determinable.
+
+        If all cases (including the default, if present) have the same static bit length,
+        the codec length is considered static and is returned.
+        Otherwise, returns None to indicate that the size is dynamic.
+        """
+        reference_case = self.default_case if self.default_case else self.cases[0]
+
+        case_bit_length: int | None
+        if reference_case.structure is None:
+            case_bit_length = 0
+        else:
+            case_bit_length = reference_case.structure.get_static_bit_length()
+        if case_bit_length is None:
+            return None
+        case_size: int | None
+        for mux_case in self.cases:
+            if mux_case.structure is None:
+                case_size = 0
+            else:
+                case_size = mux_case.structure.get_static_bit_length()
+            if case_size != case_bit_length:
+                return None  # Found a case with a different or unknown size
+
+        switch_key_size = self.switch_key.dop.get_static_bit_length()
+        if switch_key_size is None:
+            return None
+
+        return max(
+            switch_key_size + self.switch_key.byte_position * 8 +
+            (self.switch_key.bit_position or 0), case_bit_length + self.byte_position * 8)

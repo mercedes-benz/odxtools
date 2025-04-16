@@ -276,6 +276,34 @@ class TestDiagDataDictionarySpec(unittest.TestCase):
         decoded = mux.decode_from_pdu(decode_state)
         self.assertEqual(decoded, ("default_case", {}))
 
+        # mux cases don't have the same structure size
+        assert mux.default_case is not None
+        mux.default_case.structure_ref = OdxLinkRef.from_id(mux_case2_struct.odx_id)
+        ecu._resolve_odxlinks(odxlinks)
+        self.assertEqual(mux.get_static_bit_length(), None)
+        # mux cases have the same structure size
+        mux.cases[0].structure_ref = OdxLinkRef.from_id(mux_case2_struct.odx_id)
+        ecu._resolve_odxlinks(odxlinks)
+        self.assertEqual(mux.get_static_bit_length(), 16)
+
+        # zero-case scenario, only default case is considered
+        cases = mux.cases
+        mux.cases = NamedItemList()
+        ecu._resolve_odxlinks(odxlinks)
+        self.assertEqual(mux.get_static_bit_length(), 16)
+
+        # no default case, but cases have the same structure size
+        mux.default_case = None
+        mux.cases = cases
+        ecu._resolve_odxlinks(odxlinks)
+        self.assertEqual(mux.get_static_bit_length(), 16)
+
+        # no default case, and each case has no associated structure, only the switch key size is considered
+        mux.cases[0].structure_ref = None
+        mux.cases[1].structure_ref = None
+        ecu._resolve_odxlinks(odxlinks)
+        self.assertEqual(mux.get_static_bit_length(), 8)
+
 
 if __name__ == "__main__":
     unittest.main()
