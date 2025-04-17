@@ -10,10 +10,11 @@ from .diaglayers.ecushareddata import EcuSharedData
 from .diaglayers.ecuvariant import EcuVariant
 from .diaglayers.functionalgroup import FunctionalGroup
 from .diaglayers.protocol import Protocol
+from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
 from .odxcategory import OdxCategory
 from .odxdoccontext import OdxDocContext
-from .odxlink import DocType, OdxLinkDatabase, OdxLinkId
+from .odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -43,29 +44,30 @@ class DiagLayerContainer(OdxCategory):
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DiagLayerContainer":
 
-        cat = OdxCategory.category_from_et(et_element, context, doc_type=DocType.CONTAINER)
+        cat = OdxCategory.from_et(et_element, context)
         kwargs = dataclass_fields_asdict(cat)
 
-        protocols = NamedItemList([
-            Protocol.from_et(dl_element, context)
-            for dl_element in et_element.iterfind("PROTOCOLS/PROTOCOL")
-        ])
-        functional_groups = NamedItemList([
-            FunctionalGroup.from_et(dl_element, context)
-            for dl_element in et_element.iterfind("FUNCTIONAL-GROUPS/FUNCTIONAL-GROUP")
-        ])
-        ecu_shared_datas = NamedItemList([
-            EcuSharedData.from_et(dl_element, context)
-            for dl_element in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA")
-        ])
-        base_variants = NamedItemList([
-            BaseVariant.from_et(dl_element, context)
-            for dl_element in et_element.iterfind("BASE-VARIANTS/BASE-VARIANT")
-        ])
-        ecu_variants = NamedItemList([
-            EcuVariant.from_et(dl_element, context)
-            for dl_element in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT")
-        ])
+        def get_layer_context(diag_layer_et: ElementTree.Element) -> OdxDocContext:
+            layer_sn = odxrequire(diag_layer_et.findtext("SHORT-NAME"))
+            layer_docfrag = OdxDocFragment(layer_sn, DocType.LAYER)
+            # add layer doc fragment to container doc fragment
+            return OdxDocContext(context.version, (context.doc_fragments[0], layer_docfrag))
+
+        protocols = NamedItemList(
+            Protocol.from_et(layer_et, get_layer_context(layer_et))
+            for layer_et in et_element.iterfind("PROTOCOLS/PROTOCOL"))
+        functional_groups = NamedItemList(
+            FunctionalGroup.from_et(layer_et, get_layer_context(layer_et))
+            for layer_et in et_element.iterfind("FUNCTIONAL-GROUPS/FUNCTIONAL-GROUP"))
+        ecu_shared_datas = NamedItemList(
+            EcuSharedData.from_et(layer_et, get_layer_context(layer_et))
+            for layer_et in et_element.iterfind("ECU-SHARED-DATAS/ECU-SHARED-DATA"))
+        base_variants = NamedItemList(
+            BaseVariant.from_et(layer_et, get_layer_context(layer_et))
+            for layer_et in et_element.iterfind("BASE-VARIANTS/BASE-VARIANT"))
+        ecu_variants = NamedItemList(
+            EcuVariant.from_et(layer_et, get_layer_context(layer_et))
+            for layer_et in et_element.iterfind("ECU-VARIANTS/ECU-VARIANT"))
 
         return DiagLayerContainer(
             protocols=protocols,

@@ -26,7 +26,7 @@ from odxtools.standardlengthtype import StandardLengthType
 from odxtools.unit import Unit
 from odxtools.unitspec import UnitSpec
 
-doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
+doc_frags = (OdxDocFragment("UnitTest", DocType.CONTAINER),)
 
 
 class TestUnitSpec(unittest.TestCase):

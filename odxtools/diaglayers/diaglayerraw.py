@@ -10,12 +10,12 @@ from ..diagcomm import DiagComm
 from ..diagdatadictionaryspec import DiagDataDictionarySpec
 from ..diagservice import DiagService
 from ..element import IdentifiableElement
-from ..exceptions import odxassert, odxraise, odxrequire
+from ..exceptions import odxassert, odxraise
 from ..functionalclass import FunctionalClass
 from ..library import Library
 from ..nameditemlist import NamedItemList
 from ..odxdoccontext import OdxDocContext
-from ..odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..request import Request
 from ..response import Response
 from ..singleecujob import SingleEcuJob
@@ -77,10 +77,6 @@ class DiagLayerRaw(IdentifiableElement):
             variant_type = cast(DiagLayerType, None)
             odxraise(f"Encountered unknown diagnostic layer type '{et_element.tag}'")
 
-        short_name = odxrequire(et_element.findtext("SHORT-NAME"))
-
-        # extend the applicable ODX "document fragments" for the diag layer objects
-        context.doc_fragments.append(OdxDocFragment(short_name, DocType.LAYER))
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         admin_data = None

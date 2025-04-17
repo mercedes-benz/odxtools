@@ -27,10 +27,9 @@ from odxtools.odxdoccontext import OdxDocContext
 from odxtools.odxlink import DocType, OdxDocFragment
 from odxtools.odxtypes import DataType
 from odxtools.progcode import ProgCode
-from odxtools.writepdxfile import (get_parent_container_name, jinja2_odxraise_helper,
-                                   make_bool_xml_attrib, make_xml_attrib)
+from odxtools.writepdxfile import jinja2_odxraise_helper, make_bool_xml_attrib, make_xml_attrib
 
-doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
+doc_frags = (OdxDocFragment("UnitTest", DocType.CONTAINER),)
 
 
 class TestLinearCompuMethod(unittest.TestCase):
@@ -50,7 +49,6 @@ class TestLinearCompuMethod(unittest.TestCase):
             jinja_env.globals["odxraise"] = jinja2_odxraise_helper
             jinja_env.globals["make_xml_attrib"] = make_xml_attrib
             jinja_env.globals["make_bool_xml_attrib"] = make_bool_xml_attrib
-            jinja_env.globals["get_parent_container_name"] = get_parent_container_name
 
             return jinja_env
 
