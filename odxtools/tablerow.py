@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass, field, fields
-from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, cast
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -260,4 +260,26 @@ class TableRow(IdentifiableElement):
     def __reduce__(self) -> tuple[Any, ...]:
         """This ensures that the object can be correctly reconstructed during unpickling."""
         state = self.__dict__.copy()
-        return self.__class__, tuple([getattr(self, x.name) for x in fields(self)]), state
+        return _reconstruct_tablerow, (self.__class__, state)
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """
+        Restore the object's internal state.
+
+        This method is called during the unpickling, it updates
+        the instance's __dict__ with the saved state.
+        """
+        self.__dict__.update(state)
+
+
+def _reconstruct_tablerow(cls: Any, state: dict[str, Any]) -> TableRow:
+    """
+    Reconstruct a TableRow instance from pickled state.
+
+    This function is used during unpickling to bypass the `__init__`
+    constructor, which would normally enforce `kw_only=True` arguments.
+    Instead, it creates an uninitialized object and restores its state.
+    """
+    obj = cls.__new__(cls)
+    obj.__setstate__(state)
+    return cast(TableRow, obj)
