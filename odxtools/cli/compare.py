@@ -303,7 +303,7 @@ class Comparison(Display):
         else:
             changed_params += "request parameter list, "
             # infotext
-            information.append(f"list of request parameters for service '{service2.short_name}' "
+            information.append(f"List of request parameters for service '{service2.short_name}' "
                                f"is not identical.\n")
 
             # table
@@ -312,7 +312,7 @@ class Comparison(Display):
             param_list2 = [] if service2.request is None else service2.request.parameters
 
             information.append({
-                "list": ["Old list", "New list"],
+                "List": ["Old list", "New list"],
                 "Values": [f"\\{param_list1}", f"\\{param_list2}"]
             })
 
@@ -340,11 +340,11 @@ class Comparison(Display):
                             changed_params += "positive response parameter list, "
                             # infotext
                             information.append(
-                                f"list of positive response parameters for service '{service2.short_name}' is not identical."
+                                f"List of positive response parameters for service '{service2.short_name}' is not identical."
                             )
                             # table
                             information.append({
-                                "list": ["Old list", "New list"],
+                                "List": ["Old list", "New list"],
                                 "Values": [str(response1.parameters),
                                            str(response2.parameters)]
                             })
@@ -355,7 +355,7 @@ class Comparison(Display):
                 f"List of positive responses for service '{service2.short_name}' is not identical.")
             # table
             information.append({
-                "list": ["Old list", "New list"],
+                "List": ["Old list", "New list"],
                 "Values": [str(service1.positive_responses),
                            str(service2.positive_responses)]
             })
@@ -382,11 +382,11 @@ class Comparison(Display):
                             changed_params += "positive response parameter list, "
                             # infotext
                             information.append(
-                                f"list of positive response parameters for service '{service2.short_name}' is not identical.\n"
+                                f"List of positive response parameters for service '{service2.short_name}' is not identical.\n"
                             )
                             # table
                             information.append({
-                                "list": ["Old list", "New list"],
+                                "List": ["Old list", "New list"],
                                 "Values": [str(response1.parameters),
                                            str(response2.parameters)]
                             })
@@ -398,7 +398,7 @@ class Comparison(Display):
             )
             # table
             information.append({
-                "list": ["Old list", "New list"],
+                "List": ["Old list", "New list"],
                 "Values": [str(service1.negative_responses),
                            str(service2.negative_responses)]
             })
