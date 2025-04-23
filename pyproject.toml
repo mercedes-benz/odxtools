@@ -107,6 +107,7 @@ lint.ignore = [
 
 exclude = [
     "doc",
+    "odxtools/version.py",
 ]
 
 [tool.ruff.lint.isort]
