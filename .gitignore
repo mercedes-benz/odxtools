@@ -1,0 +1,40 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+*.egg-info/
+
+# Coverage log
+.coverage
+*.lcov
+
+# IDEs
+.vscode
+.idea
+/build/
+/dist/
+/bin/
+/include/
+/lib/
+
+# Virtual Environments
+.env
+.venv
+env
+venv
+/odxtools/version.py
+
+# editor and git backup files
+*~
+*.orig
+*.rej
+
+# files usually stemming from deflated PDX archives
+*.odx-d
+*.odx-c
+*.odx-cs
+*.jar
+index.xml
+!examples/data/*
