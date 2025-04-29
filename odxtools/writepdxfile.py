@@ -17,8 +17,6 @@ from .odxtypes import bool_to_odxstr
 
 odxdatabase: Database | None = None
 
-cur_docfrags: list[OdxDocFragment] = []
-
 
 def jinja2_odxraise_helper(msg: str) -> None:
     raise Exception(msg)
