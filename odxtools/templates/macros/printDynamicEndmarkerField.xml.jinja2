@@ -8,8 +8,8 @@
 {%- macro printStaticField(demf) -%}
 <DYNAMIC-ENDMARKER-FIELD {{-peid.printElementIdAttribs(demf)}}>
  {{ peid.printElementIdSubtags(demf)|indent(1) }}
- <BASIC-STRUCTURE-REF ID-REF="{{demf.structure_ref.ref_id}}" />
- <DYN-END-DOP-REF ID-REF="{{demf.dyn_end_dop_ref.ref_id}}">
+ <BASIC-STRUCTURE-REF {{make_ref_attribs(demf.structure_ref)}} />
+ <DYN-END-DOP-REF {{make_ref_attribs(demf.dyn_end_dop_ref)}}>
    <TERMINATION-VALUE>{{demf.dyn_end_dop_ref.termination_value_raw}}</TERMINATION-VALUE>
  </DYN-END-DOP-REF>
 </DYNAMIC-ENDMARKER-FIELD>

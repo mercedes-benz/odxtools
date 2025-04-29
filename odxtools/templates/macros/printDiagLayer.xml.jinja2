@@ -33,6 +33,7 @@
 {%- endmacro -%}
 
 {%- macro printDiagLayerSubtags(dl) -%}
+{{- set_layer_docfrag(dl.short_name) }}
 {%- set dlr = dl.diag_layer_raw %}
 {{ peid.printElementIdSubtags(dlr)|indent(1) }}
 {%- if dlr.admin_data is not none %}
@@ -149,7 +150,7 @@
 
   {%- if hasattr(dc, "ref_id") %}
   {#- -> reference to a diag-comm object #}
-  <DIAG-COMM-REF ID-REF="{{dc.ref_id}}" />
+  <DIAG-COMM-REF {{make_ref_attribs(dc)}} />
   {%- elif hasattr(dc, "request") %}
   {#- -> service #}
   {{ ps.printService(dc)|indent(2) }}

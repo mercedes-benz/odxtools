@@ -49,7 +49,7 @@
  <OFFSET-SI-TO-UNIT>{{ unit.offset_si_to_unit }}</OFFSET-SI-TO-UNIT>
  {%- endif %}
  {%- if unit.physical_dimension_ref %}
- <PHYSICAL-DIMENSION-REF ID-REF="{{ unit.physical_dimension_ref.ref_id }}" />
+ <PHYSICAL-DIMENSION-REF {{make_ref_attribs(unit.physical_dimension_ref)}} />
  {%- endif %}
 </UNIT>
 {%- endmacro -%}
@@ -61,7 +61,7 @@
  {%- if group.unit_refs %}
  <UNIT-REFS>
  {%- for ref in group.unit_refs %}
-  <UNIT-REF ID-REF="{{ ref.ref_id }}" />
+  <UNIT-REF {{make_ref_attribs(ref)}} />
  {%- endfor %}
  </UNIT-REFS>
  {%- endif %}

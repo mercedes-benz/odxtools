@@ -8,7 +8,7 @@
 {%- macro printDynamicLengthField(dlf) -%}
 <DYNAMIC-LENGTH-FIELD {{-peid.printElementIdAttribs(dlf)}}>
  {{ peid.printElementIdSubtags(dlf)|indent(1) }}
- <BASIC-STRUCTURE-REF ID-REF="{{dlf.structure_ref.ref_id}}" />
+ <BASIC-STRUCTURE-REF {{make_ref_attribs(dlf.structure_ref)}} />
  <OFFSET>{{dlf.offset}}</OFFSET>
  <DETERMINE-NUMBER-OF-ITEMS>
    {%- set dni = dlf.determine_number_of_items %}
@@ -16,7 +16,7 @@
    {%- if dni.bit_position is not none %}
    <BIT-POSITION>{{dni.bit_position}}</BIT-POSITION>
    {%- endif %}
-   <DATA-OBJECT-PROP-REF ID-REF="{{dni.dop_ref.ref_id}}" />
+   <DATA-OBJECT-PROP-REF {{make_ref_attribs(dni.dop_ref)}} />
  </DETERMINE-NUMBER-OF-ITEMS>
 </DYNAMIC-LENGTH-FIELD>
 {%- endmacro -%}

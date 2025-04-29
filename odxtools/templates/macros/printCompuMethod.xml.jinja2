@@ -103,7 +103,7 @@
   {%- if pc.library_refs %}
   <LIBRARY-REFS>
     {%- for libref in pc.library_refs %}
-    <LIBRARY-REF ID-REF="{{libref.ref_id}}" />
+    <LIBRARY-REF {{make_ref_attribs(libref)}} />
     {%- endfor %}
   </LIBRARY-REFS>
   {%- endif %}

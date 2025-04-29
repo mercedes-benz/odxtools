@@ -11,13 +11,13 @@
   <DYN-ID-DEF-MODE-INFO>
     <DEF-MODE>{{ diddmi.def_mode }}</DEF-MODE>
     {%- if diddmi.clear_dyn_def_message_ref is not none %}
-    <CLEAR-DYN-DEF-MESSAGE-REF ID-REF="{{diddmi.clear_dyn_def_message_ref.ref_id}}" />
+    <CLEAR-DYN-DEF-MESSAGE-REF {{make_ref_attribs(diddmi.clear_dyn_def_message_ref)}} />
     {%- endif %}
     {%- if diddmi.clear_dyn_def_message_snref is not none %}
     <CLEAR-DYN-DEF-MESSAGE-SNREF SHORT-NAME="{{diddmi.clear_dyn_def_message_snref}}" />
     {%- endif %}
     {%- if diddmi.read_dyn_def_message_ref is not none %}
-    <READ-DYN-DEF-MESSAGE-REF ID-REF="{{diddmi.read_dyn_def_message_ref.ref_id}}" />
+    <READ-DYN-DEF-MESSAGE-REF {{make_ref_attribs(diddmi.read_dyn_def_message_ref)}} />
     {%- endif %}
     {%- if diddmi.read_dyn_def_message_snref is not none %}
     <READ-DYN-DEF-MESSAGE-SNREF SHORT-NAME="{{diddmi.read_dyn_def_message_snref}}" />
@@ -33,7 +33,7 @@
     <SELECTION-TABLE-REFS>
       {%- for seltref in diddmi.selection_table_refs %}
         {%- if hasattr(seltref, "ref_id") %}
-	<SELECTION-TABLE-REF ID-REF="{{ seltref.ref_id }}" />
+	<SELECTION-TABLE-REF {{make_ref_attribs(seltref)}} />
         {%- else %}
 	<SELECTION-TABLE-SNREF SHORT-NAME="{{ seltref }}" />
         {%- endif %}

@@ -18,13 +18,13 @@
     {%- if mux.switch_key.bit_position is not none %}
     <BIT-POSITION>{{mux.switch_key.bit_position}}</BIT-POSITION>
     {%- endif %}
-    <DATA-OBJECT-PROP-REF ID-REF="{{mux.switch_key.dop_ref.ref_id}}"/>
+    <DATA-OBJECT-PROP-REF {{make_ref_attribs(mux.switch_key.dop_ref)}}/>
   </SWITCH-KEY>
   {%- if mux.default_case is not none %}
   <DEFAULT-CASE>
     {{ peid.printElementIdSubtags(mux.default_case)|indent(4) }}
     {%- if mux.default_case.structure_ref is not none %}
-    <STRUCTURE-REF ID-REF="{{mux.default_case.structure_ref.ref_id}}"/>
+    <STRUCTURE-REF {{make_ref_attribs(mux.default_case.structure_ref)}}/>
     {%- endif %}
     {%- if mux.default_case.structure_snref is not none %}
     <STRUCTURE-SNREF SHORT_NAME="{{mux.default_case.structure_snref}}"/>
@@ -37,7 +37,7 @@
     <CASE>
       {{ peid.printElementIdSubtags(case)|indent(6) }}
       {%- if case.structure_ref is not none %}
-      <STRUCTURE-REF ID-REF="{{case.structure_ref.ref_id}}"/>
+      <STRUCTURE-REF {{make_ref_attribs(case.structure_ref)}}/>
       {%- endif %}
       {%- if case.structure_snref is not none %}
       <STRUCTURE-SNREF SHORT_NAME="{{case.structure_snref}}"/>

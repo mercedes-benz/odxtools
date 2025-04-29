@@ -13,7 +13,7 @@
   {%- set dlr = protocol.protocol_raw %}
 
   {%- set cps_docfrag = dlr.comparam_spec_ref.ref_docs[-1] %}
-  <COMPARAM-SPEC-REF ID-REF="{{dlr.comparam_spec_ref.ref_id}}" DOCREF="{{cps_docfrag.doc_name}}" DOCTYPE="{{cps_docfrag.doc_type.value}}" />
+  <COMPARAM-SPEC-REF {{make_ref_attribs(dlr.comparam_spec_ref)}} />
 
   {%- if dlr.prot_stack_snref is not none %}
   <PROT-STACK-SNREF SHORT-NAME="{{ dlr.prot_stack_snref }}" />

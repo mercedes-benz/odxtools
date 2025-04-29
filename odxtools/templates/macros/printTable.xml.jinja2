@@ -16,7 +16,7 @@
        {{-make_xml_attrib("SEMANTIC", table.semantic)}}>
  {{ peid.printElementIdSubtags(table)|indent(1) }}
 {%- if table.key_dop_ref %}
- <KEY-DOP-REF ID-REF="{{ table.key_dop_ref.ref_id }}" />
+ <KEY-DOP-REF {{make_ref_attribs(table.key_dop_ref)}} />
 {%- endif %}
  {%- for table_row in table.table_rows_raw %}
  {%- if hasattr(table_row, "key") %}
@@ -25,13 +25,13 @@
   {{-peid.printElementIdSubtags(table_row)}}
   <KEY>{{table_row.key|e}}</KEY>
   {%- if table_row.dop_ref is not none %}
-  <DATA-OBJECT-PROP-REF ID-REF="{{ table_row.dop_ref.ref_id }}" />
+  <DATA-OBJECT-PROP-REF {{make_ref_attribs(table_row.dop_ref)}} />
   {%- endif %}
   {%- if table_row.dop_snref is not none %}
   <DATA-OBJECT-PROP-SNREF SHORT-NAME="{{ table_row.dop_snref }}" />
   {%- endif %}
   {%- if table_row.structure_ref is not none %}
-  <STRUCTURE-REF ID-REF="{{ table_row.structure_ref.ref_id }}" />
+  <STRUCTURE-REF {{make_ref_attribs(table_row.structure_ref)}} />
   {%- endif %}
   {%- if table_row.structure_snref is not none %}
   <STRUCTURE-SNREF SHORT-NAME="{{ table_row.structure_snref }}" />
@@ -43,7 +43,7 @@
   {%- if table_row.functional_class_refs %}
   <FUNCT-CLASS-REFS>
     {%- for fc_ref in table_row.functional_class_refs %}
-    <FUNCT-CLASS-REF ID-REF="{{ fc_ref.ref_id }}" />
+    <FUNCT-CLASS-REF {{make_ref_attribs(fc_ref)}} />
     {%- endfor %}
   </FUNCT-CLASS-REFS>
   {%- endif %}
@@ -66,7 +66,7 @@
   {%- endif %}
  </TABLE-ROW>
  {%- else %}
- <TABLE-ROW-REF ID-REF="{{ table_row.ref_id }}" />
+ <TABLE-ROW-REF {{make_ref_attribs(table_row)}} />
  {%- endif %}
 {%- endfor %}
  {%- if table_diag_comm_connectors %}
@@ -75,7 +75,7 @@
   <TABLE-DIAG-COMM-CONNECTOR>
    <SEMANTIC>{{tdcc.semantic}}</SEMANTIC>
    {%- if tdcc.diag_comm_ref %}
-   <DIAG-COMM-REF ID-REF="{{ tdcc.diag_comm_ref.ref_id }}" />
+   <DIAG-COMM-REF {{make_ref_attribs(tdcc.diag_comm_ref)}} />
    {%- elif tdcc.diag_comm_snref %}
    <DIAG-COMM-SNREF SHORT-NAME="{{ tdcc.diag_comm_snref }}" />
    {%- endif %}

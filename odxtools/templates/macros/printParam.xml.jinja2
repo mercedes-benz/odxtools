@@ -49,7 +49,7 @@
  <PHYSICAL-DEFAULT-VALUE>{{param.physical_default_value_raw | e}}</PHYSICAL-DEFAULT-VALUE>
 {%- endif %}
 {%- if param.dop_ref %}
- <DOP-REF ID-REF="{{param.dop_ref.ref_id}}"/>
+ <DOP-REF {{make_ref_attribs(param.dop_ref)}}/>
 {%- elif param.dop_snref %}
  <DOP-SNREF SHORT-NAME="{{param.dop_snref}}"/>
 {%- elif param.diag_coded_type is defined %}
@@ -59,7 +59,7 @@
 {%- endif %}
 {%- if param.parameter_type == "TABLE-KEY" %}
  {%- if param.table_ref %}
- <TABLE-REF ID-REF="{{param.table_ref.ref_id}}"/>
+ <TABLE-REF {{make_ref_attribs(param.table_ref)}}/>
  {%- endif %}
  {%- if param.table_snref %}
  <TABLE-SNREF SHORT-NAME="{{param.table_snref}}"/>
@@ -68,12 +68,12 @@
  <TABLE-ROW-SNREF SHORT-NAME="{{param.table_row_snref}}"/>
  {%- endif %}
  {%- if param.table_row_ref %}
- <TABLE-ROW-REF ID-REF="{{param.table_row_ref.ref_id}}"/>
+ <TABLE-ROW-REF {{make_ref_attribs(param.table_row_ref)}}/>
  {%- endif %}
 {%- endif %}
 {%- if param.parameter_type == "TABLE-STRUCT" %}
  {%- if param.table_key_ref %}
- <TABLE-KEY-REF ID-REF="{{param.table_key_ref.ref_id}}"/>
+ <TABLE-KEY-REF {{make_ref_attribs(param.table_key_ref)}}/>
  {%- endif %}
  {%- if param.table_key_snref %}
  <TABLE-KEY-SNREF SHORT-NAME="{{param.table_key_snref}}"/>

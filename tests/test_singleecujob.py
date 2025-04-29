@@ -3,7 +3,7 @@ import inspect
 import os
 import unittest
 from io import BytesIO
-from typing import NamedTuple, cast
+from typing import Any, NamedTuple, cast
 from xml.etree import ElementTree
 
 import jinja2
@@ -40,7 +40,8 @@ from odxtools.physicaltype import PhysicalType
 from odxtools.progcode import ProgCode
 from odxtools.singleecujob import SingleEcuJob
 from odxtools.standardlengthtype import StandardLengthType
-from odxtools.writepdxfile import jinja2_odxraise_helper, make_bool_xml_attrib, make_xml_attrib
+from odxtools.writepdxfile import (jinja2_odxraise_helper, make_bool_xml_attrib, make_ref_attribs,
+                                   make_xml_attrib, set_category_docfrag, set_layer_docfrag)
 
 doc_frags = (OdxDocFragment("UnitTest", DocType.CONTAINER),)
 
@@ -263,11 +264,17 @@ class TestSingleEcuJob(unittest.TestCase):
         # Setup jinja environment
         __module_filename = inspect.getsourcefile(odxtools)
         assert isinstance(__module_filename, str)
+        test_jinja_vars: dict[str, Any] = {}
         templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templates"])
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
         jinja_env.globals["odxraise"] = jinja2_odxraise_helper
         jinja_env.globals["make_xml_attrib"] = make_xml_attrib
         jinja_env.globals["make_bool_xml_attrib"] = make_bool_xml_attrib
+        jinja_env.globals["set_category_docfrag"] = lambda cname, ctype: set_category_docfrag(
+            test_jinja_vars, cname, ctype)
+        jinja_env.globals["set_layer_docfrag"] = lambda lname: set_layer_docfrag(
+            test_jinja_vars, lname)
+        jinja_env.globals["make_ref_attribs"] = lambda ref: make_ref_attribs(test_jinja_vars, ref)
         jinja_env.globals["getattr"] = getattr
         jinja_env.globals["hasattr"] = hasattr
 
@@ -277,6 +284,7 @@ class TestSingleEcuJob(unittest.TestCase):
             {{psej.printSingleEcuJob(singleecujob)}}
         """)
 
+        set_category_docfrag(test_jinja_vars, doc_frags[0].doc_name, "CONTAINER")
         rawodx: str = template.render(singleecujob=self.singleecujob_object)
 
         # Remove whitespace
