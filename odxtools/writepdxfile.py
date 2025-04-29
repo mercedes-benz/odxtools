@@ -15,8 +15,6 @@ from .database import Database
 from .odxlink import DocType, OdxDocFragment, OdxLinkRef
 from .odxtypes import bool_to_odxstr
 
-odxdatabase: Database | None = None
-
 
 def jinja2_odxraise_helper(msg: str) -> None:
     raise Exception(msg)
@@ -82,10 +80,6 @@ def write_pdx_file(
     """
     Write an internalized database to a PDX file.
     """
-    global odxdatabase
-
-    odxdatabase = database
-
     file_index = []
     with zipfile.ZipFile(output_file_name, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
 
