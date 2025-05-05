@@ -47,7 +47,7 @@
 {%- if param.physical_default_value is not none %}
  <PHYSICAL-DEFAULT-VALUE>{{param.physical_default_value | e}}</PHYSICAL-DEFAULT-VALUE>
 {%- endif %}
- <DOP-BASE-REF ID-REF="{{param.dop_base_ref.ref_id}}" />
+ <DOP-BASE-REF {{make_ref_attribs(param.dop_base_ref)}} />
 </INPUT-PARAM>
 {%- endmacro -%}
 
@@ -56,7 +56,7 @@
               {{-make_xml_attrib("OID", param.oid)}}
               {{-make_xml_attrib("SEMANTIC", param.semantic)}}>
  {{ peid.printElementIdSubtags(param)|indent(1) }}
- <DOP-BASE-REF ID-REF="{{param.dop_base_ref.ref_id}}" />
+ <DOP-BASE-REF {{make_ref_attribs(param.dop_base_ref)}} />
 </OUTPUT-PARAM>
 {%- endmacro -%}
 
@@ -64,6 +64,6 @@
 {%- macro printNegOutputParam(param) -%}
 <NEG-OUTPUT-PARAM>
  {{ peid.printElementIdSubtags(param)|indent(1) }}
- <DOP-BASE-REF ID-REF="{{param.dop_base_ref.ref_id}}" />
+ <DOP-BASE-REF {{make_ref_attribs(param.dop_base_ref)}} />
 </NEG-OUTPUT-PARAM>
 {%- endmacro -%}

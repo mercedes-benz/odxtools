@@ -20,14 +20,14 @@
 {%- if audience.enabled_audience_refs %}
  <ENABLED-AUDIENCE-REFS>
 {%- for ref in audience.enabled_audience_refs %}
-  <ENABLED-AUDIENCE-REF ID-REF="{{ref.ref_id}}" />
+  <ENABLED-AUDIENCE-REF {{make_ref_attribs(ref)}} />
 {%- endfor %}
  </ENABLED-AUDIENCE-REFS>
 {%- endif%}
 {%- if audience.disabled_audience_refs %}
  <DISABLED-AUDIENCE-REFS>
 {%- for ref in audience.disabled_audience_refs %}
-  <DISABLED-AUDIENCE-REF ID-REF="{{ref.ref_id}}" />
+  <DISABLED-AUDIENCE-REF {{make_ref_attribs(ref)}} />
 {%- endfor %}
  </DISABLED-AUDIENCE-REFS>
 {%- endif%}

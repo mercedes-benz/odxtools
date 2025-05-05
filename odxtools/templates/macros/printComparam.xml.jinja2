@@ -45,7 +45,7 @@
           CPUSAGE="{{cp.cpusage.value}}">
   {{ peid.printElementIdSubtags(cp)|indent(1) }}
   <PHYSICAL-DEFAULT-VALUE>{{cp.physical_default_value_raw}}</PHYSICAL-DEFAULT-VALUE>
- <DATA-OBJECT-PROP-REF ID-REF="{{cp.dop_ref.ref_id}}" />
+ <DATA-OBJECT-PROP-REF {{make_ref_attribs(cp.dop_ref)}} />
 </COMPARAM>
 {%- endmacro %}
 

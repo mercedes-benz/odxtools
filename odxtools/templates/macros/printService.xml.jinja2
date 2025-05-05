@@ -56,19 +56,19 @@
   </COMPARAM-REFS>
   {%- endif%}
   {%- if service.request_ref %}
-  <REQUEST-REF ID-REF="{{service.request_ref.ref_id}}"/>
+  <REQUEST-REF {{make_ref_attribs(service.request_ref)}}/>
   {%- endif %}
   {%- if service.pos_response_refs %}
   <POS-RESPONSE-REFS>
     {%- for ref in service.pos_response_refs %}
-    <POS-RESPONSE-REF ID-REF="{{ref.ref_id}}" />
+    <POS-RESPONSE-REF {{make_ref_attribs(ref)}} />
     {%- endfor %}
   </POS-RESPONSE-REFS>
   {%- endif%}
   {%- if service.neg_response_refs %}
   <NEG-RESPONSE-REFS>
     {%- for ref in service.neg_response_refs %}
-    <NEG-RESPONSE-REF ID-REF="{{ref.ref_id}}" />
+    <NEG-RESPONSE-REF {{make_ref_attribs(ref)}} />
     {%- endfor %}
   </NEG-RESPONSE-REFS>
   {%- endif%}

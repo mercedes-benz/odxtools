@@ -28,7 +28,7 @@
  {%- if dc.functional_class_refs %}
  <FUNCT-CLASS-REFS>
   {%- for ref in dc.functional_class_refs %}
-  <FUNCT-CLASS-REF ID-REF="{{ref.ref_id}}" />
+  <FUNCT-CLASS-REF {{make_ref_attribs(ref)}} />
   {%- endfor %}
  </FUNCT-CLASS-REFS>
  {%- endif%}
@@ -45,7 +45,7 @@
  {%- if dc.related_diag_comm_refs %}
  <RELATED-DIAG-COMM-REFS>
   {%- for ref in dc.related_diag_comm_refs %}
-  <RELATED-DIAG-COMM-REF ID-REF="{{ref.ref_id}}">
+  <RELATED-DIAG-COMM-REF {{make_ref_attribs(ref)}}>
    <RELATION-TYPE>{{ref.relation_type}}</RELATION-TYPE>
   </RELATED-DIAG-COMM-REF>
   {%- endfor %}

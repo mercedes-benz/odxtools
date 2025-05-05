@@ -14,7 +14,7 @@
  {%- if ps.comparam_subset_refs %}
  <COMPARAM-SUBSET-REFS>
   {%- for csr in ps.comparam_subset_refs %}
-  <COMPARAM-SUBSET-REF ID-REF="{{csr.ref_id}}" DOCREF="{{csr.ref_id}}" DOCTYPE="COMPARAM-SUBSET"/>
+  <COMPARAM-SUBSET-REF {{make_ref_attribs(csr)}}/>
   {%- endfor %}
  </COMPARAM-SUBSET-REFS>
  {%- endif %}

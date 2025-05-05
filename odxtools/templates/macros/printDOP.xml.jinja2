@@ -113,7 +113,7 @@
  {{- printInternalConstr(dop.internal_constr, False)|indent(1) }}
  {%- endif %}
  {%- if dop.unit_ref %}
- <UNIT-REF ID-REF="{{ dop.unit_ref.ref_id }}" />
+ <UNIT-REF {{make_ref_attribs(dop.unit_ref)}} />
  {%- endif %}
  {%- if dop.physical_constr %}
  {{- printInternalConstr(dop.internal_constr, True)|indent(1) }}
@@ -131,7 +131,7 @@
  <DTCS>
  {%- for dtc in dop.dtcs_raw %}
  {%- if hasattr(dtc, "ref_id") %}
-  <DTC-REF ID-REF="{{dtc.ref_id}}" />
+  <DTC-REF {{make_ref_attribs(dtc)}} />
  {%- else %}
   <DTC {{-peid.printElementIdAttribs(dtc)}}>
    <SHORT-NAME>{{dtc.short_name}}</SHORT-NAME>
@@ -159,7 +159,7 @@
        {%- endfor %}
      </NOT-INHERITED-DTC-SNREFS>
      {%- endif %}
-     <DTC-DOP-REF ID-REF="{{linked_dtc_dop.dtc_dop_ref.ref_id}}" />
+     <DTC-DOP-REF {{make_ref_attribs(linked_dtc_dop.dtc_dop_ref)}} />
    </LINKED-DTC-DOP>
    {%- endfor %}
  </LINKED-DTC-DOPS>

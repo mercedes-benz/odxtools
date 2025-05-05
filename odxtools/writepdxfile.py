@@ -12,9 +12,8 @@ import jinja2
 import odxtools
 
 from .database import Database
+from .odxlink import DocType, OdxDocFragment, OdxLinkRef
 from .odxtypes import bool_to_odxstr
-
-odxdatabase: Database | None = None
 
 
 def jinja2_odxraise_helper(msg: str) -> None:
@@ -35,6 +34,39 @@ def make_bool_xml_attrib(attrib_name: str, attrib_val: bool | None) -> str:
     return make_xml_attrib(attrib_name, bool_to_odxstr(attrib_val))
 
 
+def set_category_docfrag(jinja_vars: dict[str, Any], category_short_name: str,
+                         category_type: str) -> str:
+    jinja_vars["cur_docfrags"] = [OdxDocFragment(category_short_name, DocType(category_type))]
+
+    return ""
+
+
+def set_layer_docfrag(jinja_vars: dict[str, Any], layer_short_name: str | None) -> str:
+    cur_docfrags = jinja_vars["cur_docfrags"]
+
+    if layer_short_name is None:
+        cur_docfrags = cur_docfrags[:1]
+        return ""
+
+    if len(cur_docfrags) == 1:
+        cur_docfrags.append(OdxDocFragment(layer_short_name, DocType.LAYER))
+    else:
+        cur_docfrags[1] = OdxDocFragment(layer_short_name, DocType.LAYER)
+
+    return ""
+
+
+def make_ref_attribs(jinja_vars: dict[str, Any], ref: OdxLinkRef) -> str:
+    cur_docfrags = jinja_vars["cur_docfrags"]
+
+    for ref_frag in ref.ref_docs:
+        if ref_frag in cur_docfrags:
+            return f"ID-REF=\"{ref.ref_id}\""
+
+    docfrag = ref.ref_docs[-1]
+    return f"ID-REF=\"{ref.ref_id}\" DOCREF=\"{docfrag.doc_name}\" DOCTYPE=\"{docfrag.doc_type.value}\""
+
+
 __module_filename = inspect.getsourcefile(odxtools)
 assert isinstance(__module_filename, str)
 __templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templates"])
@@ -48,10 +80,6 @@ def write_pdx_file(
     """
     Write an internalized database to a PDX file.
     """
-    global odxdatabase
-
-    odxdatabase = database
-
     file_index = []
     with zipfile.ZipFile(output_file_name, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
 
@@ -128,9 +156,14 @@ def write_pdx_file(
         jinja_env.globals["make_xml_attrib"] = make_xml_attrib
         jinja_env.globals["make_bool_xml_attrib"] = make_bool_xml_attrib
 
-        vars: dict[str, Any] = {}
-        vars["odxtools_version"] = odxtools.__version__
-        vars["database"] = database
+        jinja_vars: dict[str, Any] = {}
+        jinja_vars["odxtools_version"] = odxtools.__version__
+        jinja_vars["database"] = database
+
+        jinja_env.globals["set_category_docfrag"] = lambda cname, ctype: set_category_docfrag(
+            jinja_vars, cname, ctype)
+        jinja_env.globals["set_layer_docfrag"] = lambda lname: set_layer_docfrag(jinja_vars, lname)
+        jinja_env.globals["make_ref_attribs"] = lambda ref: make_ref_attribs(jinja_vars, ref)
 
         # write the communication parameter subsets
         comparam_subset_tpl = jinja_env.get_template("comparam-subset.odx-cs.xml.jinja2")
@@ -139,13 +172,13 @@ def write_pdx_file(
             zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
             zf_mime_type = "application/x-asam.odx.odx-cs"
 
-            vars["comparam_subset"] = comparam_subset
+            jinja_vars["comparam_subset"] = comparam_subset
 
             file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
 
-            zf.writestr(zf_file_name, comparam_subset_tpl.render(**vars))
+            zf.writestr(zf_file_name, comparam_subset_tpl.render(**jinja_vars))
 
-            del vars["comparam_subset"]
+            del jinja_vars["comparam_subset"]
 
         # write the communication parameter specs
         comparam_spec_tpl = jinja_env.get_template("comparam-spec.odx-c.xml.jinja2")
@@ -154,18 +187,18 @@ def write_pdx_file(
             zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
             zf_mime_type = "application/x-asam.odx.odx-c"
 
-            vars["comparam_spec"] = comparam_spec
+            jinja_vars["comparam_spec"] = comparam_spec
 
             file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
 
-            zf.writestr(zf_file_name, comparam_spec_tpl.render(**vars))
+            zf.writestr(zf_file_name, comparam_spec_tpl.render(**jinja_vars))
 
-            del vars["comparam_spec"]
+            del jinja_vars["comparam_spec"]
 
         # write the actual diagnostic data.
         dlc_tpl = jinja_env.get_template("diag_layer_container.odx-d.xml.jinja2")
         for dlc in database.diag_layer_containers:
-            vars["dlc"] = dlc
+            jinja_vars["dlc"] = dlc
 
             file_name = f"{dlc.short_name}.odx-d"
             file_cdate = datetime.datetime.now()
@@ -173,13 +206,13 @@ def write_pdx_file(
             mime_type = "application/x-asam.odx.odx-d"
 
             file_index.append((file_name, creation_date, mime_type))
-            zf.writestr(file_name, dlc_tpl.render(**vars))
-            del vars["dlc"]
+            zf.writestr(file_name, dlc_tpl.render(**jinja_vars))
+            del jinja_vars["dlc"]
 
         # write the index.xml file
-        vars["file_index"] = file_index
+        jinja_vars["file_index"] = file_index
         index_tpl = jinja_env.get_template("index.xml.jinja2")
-        text = index_tpl.render(**vars)
+        text = index_tpl.render(**jinja_vars)
         zf.writestr("index.xml", text)
 
     return True

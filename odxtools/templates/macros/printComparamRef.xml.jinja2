@@ -7,9 +7,7 @@
 {#- -#}
 
 {%- macro printComparamRef(cp) %}
-<COMPARAM-REF ID-REF="{{cp.spec_ref.ref_id}}"
-              DOCREF="{{cp.spec_ref.ref_docs[0].doc_name}}"
-              DOCTYPE="COMPARAM-SUBSET">
+<COMPARAM-REF {{make_ref_attribs(cp.spec_ref)}}>
   {%- if cp.value is string %}
   <SIMPLE-VALUE>{{cp.value}}</SIMPLE-VALUE>
   {{ pd.printDescription(cp.description) }}

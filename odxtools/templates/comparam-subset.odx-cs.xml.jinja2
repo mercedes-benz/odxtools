@@ -15,6 +15,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <!-- Written using odxtools {{odxtools_version}} -->
 <ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
+ {{- set_category_docfrag(comparam_subset.short_name, "COMPARAM-SUBSET") }}
  <COMPARAM-SUBSET  {{- poc.printOdxCategoryAttribs(comparam_subset) }} {{make_xml_attrib("CATEGORY", comparam_subset.category)}}>
    {{- poc.printOdxCategorySubtags(comparam_subset)|indent(3) }}
    {%- if comparam_subset.comparams %}
