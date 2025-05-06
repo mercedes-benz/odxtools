@@ -14,7 +14,7 @@ from .utils import dataclass_fields_asdict
 @dataclass(kw_only=True)
 class ExpectedIdent(IdentifiableElement):
     """
-    Corresponds to ADDITIONAL-AUDIENCE.
+    Corresponds to EXPECTED-IDENT.
     """
 
     ident_values: list[IdentValue]

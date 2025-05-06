@@ -15,7 +15,7 @@ from .utils import dataclass_fields_asdict
 @dataclass(kw_only=True)
 class OwnIdent(IdentifiableElement):
     """
-    Corresponds to ADDITIONAL-AUDIENCE.
+    Corresponds to OWN-IDENT.
     """
 
     ident_value: IdentValue
