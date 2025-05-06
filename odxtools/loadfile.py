@@ -23,7 +23,7 @@ def load_odx_d_file(odx_d_file_name: str | Path) -> Database:
 def load_file(file_name: str | Path) -> Database:
     if str(file_name).lower().endswith(".pdx"):
         return load_pdx_file(str(file_name))
-    elif str(file_name).lower().endswith(".odx-d"):
+    elif Path(file_name).suffix.lower().startswith(".odx"):
         return load_odx_d_file(str(file_name))
     else:
         raise RuntimeError(f"Could not guess the file format of file '{file_name}'!")
