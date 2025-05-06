@@ -1,0 +1,24 @@
+1{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printMem.xml.jinja2') as pm %}
+{%- import('macros/printPhysMem.xml.jinja2') as ppm %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printEcuMem(ecu_mem) -%}
+<ECU-MEM {{peid.printElementIdAttribs(ecu_mem) | indent(1) }}>
+  {{peid.printElementIdSubtags(ecu_mem)|indent(2) }}
+  {%- if ecu_mem.admin_data is not none %}
+  {{ pad.printAdminData(ecu_mem.admin_data)|indent(2) }}
+  {%- endif %}
+  {{ pm.printMem(ecu_mem.mem)|indent(2) }}
+  {%- if ecu_mem.phys_mem is not none %}
+  {{ ppm.printPhysMem(ecu_mem.phys_mem)|indent(2) }}
+  {%- endif %}
+  {{- psd.printSpecialDataGroups(ecu_mem.sdgs)|indent(2, first=True) }}{#- #}
+</ECU-MEM>
+{%- endmacro -%}

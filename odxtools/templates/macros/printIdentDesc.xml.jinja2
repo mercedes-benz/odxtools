@@ -1,0 +1,17 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- macro printIdentDesc(ident_desc) -%}
+<IDENT-DESC>
+  <DIAG-COMM-SNREF SHORT-NAME="{{ident_desc.diag_comm_snref}}" />
+  <IDENT-IF-SNREF SHORT-NAME="{{ident_desc.ident_if_snref}}" />
+  {%- if ident_desc.out_param_if_snref is not none %}
+  <OUT-PARAM-IF-SNREF SHORT-NAME="{{ident_desc.out_param_if_snref}}" />
+  {%- endif %}
+  {%- if ident_desc.out_param_if_snpathref is not none %}
+  <OUT-PARAM-IF-SNPATHREF SHORT-NAME-PATH="{{ident_desc.out_param_if_snpathref}}" />
+  {%- endif %}
+</IDENT-DESC>
+{%- endmacro -%}

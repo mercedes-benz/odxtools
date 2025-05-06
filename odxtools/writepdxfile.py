@@ -209,6 +209,21 @@ def write_pdx_file(
             zf.writestr(file_name, dlc_tpl.render(**jinja_vars))
             del jinja_vars["dlc"]
 
+        # write the flash description objects
+        flash_tpl = jinja_env.get_template("flash.odx-f.xml.jinja2")
+        for flash in database.flashs:
+            zf_file_name = f"{flash.short_name}.odx-f"
+            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            zf_mime_type = "application/x-asam.odx.odx-f"
+
+            jinja_vars["flash"] = flash
+
+            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
+
+            zf.writestr(zf_file_name, flash_tpl.render(**jinja_vars))
+
+            del jinja_vars["flash"]
+
         # write the index.xml file
         jinja_vars["file_index"] = file_index
         index_tpl = jinja_env.get_template("index.xml.jinja2")

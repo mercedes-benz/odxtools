@@ -1,0 +1,35 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printDatablock.xml.jinja2') as pdbl %}
+{%- import('macros/printFlashdata.xml.jinja2') as pfd %}
+{%- import('macros/printSession.xml.jinja2') as pses %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printMem(mem) -%}
+<MEM>
+  {%- if mem.sessions %}
+  <SESSIONS>
+    {%- for session in mem.sessions %}
+    {{ pses.printSession(session) | indent(4) }}
+    {%- endfor %}
+  </SESSIONS>
+  {%- endif %}
+  {%- if mem.datablocks %}
+  <DATABLOCKS>
+    {%- for datablock in mem.datablocks %}
+    {{ pdbl.printDatablock(datablock) | indent(4) }}
+    {%- endfor %}
+  </DATABLOCKS>
+  {%- endif %}
+  {%- if mem.flashdatas %}
+  <FLASHDATAS>
+    {%- for flashdata in mem.flashdatas %}
+    {{ pfd.printFlashdata(flashdata) | indent(4) }}
+    {%- endfor %}
+  </FLASHDATAS>
+  {%- endif %}
+</MEM>
+{%- endmacro -%}
