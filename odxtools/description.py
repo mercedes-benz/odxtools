@@ -5,6 +5,7 @@ from xml.etree import ElementTree
 from .exceptions import odxrequire
 from .externaldoc import ExternalDoc
 from .odxdoccontext import OdxDocContext
+from .utils import strip_indent
 
 
 @dataclass(kw_only=True)
@@ -27,11 +28,7 @@ class Description:
                 break
             raw_string += ElementTree.tostring(e, encoding="unicode")
 
-        # remove white spaces at the beginning and at the end of all
-        # extracted lines
-        stripped_lines = [x.strip() for x in raw_string.split("\n")]
-
-        text = "\n".join(stripped_lines).strip()
+        text = strip_indent(raw_string)
 
         external_docs = \
             [

@@ -7,6 +7,7 @@ from .exceptions import odxrequire
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
+from .utils import strip_indent
 
 
 @dataclass(kw_only=True)
@@ -16,8 +17,8 @@ class Modification:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Modification":
-        change = odxrequire(et_element.findtext("CHANGE"))
-        reason = et_element.findtext("REASON")
+        change = odxrequire(strip_indent(et_element.findtext("CHANGE")))
+        reason = strip_indent(et_element.findtext("REASON"))
 
         return Modification(change=change, reason=reason)
 
