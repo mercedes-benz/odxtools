@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import datetime
+import html
 import inspect
 import mimetypes
 import os
@@ -24,7 +25,7 @@ def make_xml_attrib(attrib_name: str, attrib_val: Any | None) -> str:
     if attrib_val is None:
         return ""
 
-    return f' {attrib_name}="{attrib_val}"'
+    return f' {attrib_name}="{html.escape(attrib_val)}"'
 
 
 def make_bool_xml_attrib(attrib_name: str, attrib_val: bool | None) -> str:

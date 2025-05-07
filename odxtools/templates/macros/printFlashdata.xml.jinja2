@@ -24,7 +24,7 @@
   <ADDRESS-LENGTH>{{flashdata.address_length}}</ADDRESS-LENGTH>
   {%- endif %}
   <DATAFORMAT {{ make_xml_attrib("SELECTION", flashdata.dataformat.selection.value) }}
-              {#- #} {{ make_xml_attrib("USER-SELECTION", flashdata.dataformat.user_selection | e) }} />
+              {#- #} {{ make_xml_attrib("USER-SELECTION", flashdata.dataformat.user_selection) }} />
   {%- if flashdata.encrypt_compress_method is not none %}
   <ENCRYPT-COMPRESS-METHOD
     {%- if flashdata.encrypt_compress_method.value_type is not none %}
