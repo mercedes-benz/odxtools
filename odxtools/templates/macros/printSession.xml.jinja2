@@ -6,8 +6,8 @@
 {%- import('macros/printChecksum.xml.jinja2') as pcs %}
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printExpectedIdent.xml.jinja2') as pei %}
-{%- import('macros/printSpecialData.xml.jinja2') as psd %}
 {%- import('macros/printSecurity.xml.jinja2') as psec %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
 {%- macro printSession(session) -%}
 <SESSION {{-peid.printElementIdAttribs(session)|indent(2) }}{# -#}>

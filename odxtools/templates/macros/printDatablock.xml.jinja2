@@ -5,6 +5,7 @@
 
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printOwnIdent.xml.jinja2') as poi %}
+{%- import('macros/printSecurity.xml.jinja2') as psec %}
 {%- import('macros/printSegment.xml.jinja2') as pseg %}
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
@@ -64,6 +65,13 @@
     {{ poi.printOwnIdent(own_ident)|indent(4) }}
     {%- endfor %}
   </OWN-IDENTS>
+  {%- endif %}
+  {%- if datablock.securities %}
+  <SECURITYS>
+    {%- for security in datablock.securities %}
+    {{ psec.printSecurity(security)|indent(4) }}
+    {%- endfor %}
+  </SECURITYS>
   {%- endif %}
   {{- psd.printSpecialDataGroups(datablock.sdgs)|indent(2, first=True) }}{#- #}
 </DATABLOCK>

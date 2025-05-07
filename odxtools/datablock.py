@@ -38,7 +38,7 @@ class Datablock(IdentifiableElement):
     target_addr_offset: TargetAddrOffset | None = None
 
     own_idents: NamedItemList[OwnIdent] = field(default_factory=NamedItemList)
-    securities: NamedItemList[Security] = field(default_factory=NamedItemList)
+    securities: list[Security] = field(default_factory=list)
     sdgs: list[SpecialDataGroup] = field(default_factory=list)
     audience: Audience | None = None
 
@@ -55,7 +55,7 @@ class Datablock(IdentifiableElement):
 
         kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
-        logical_block_index = odxrequire(read_hex_binary(et_element.find("LOGICAL-BLOCK-INDEX")))
+        logical_block_index = read_hex_binary(et_element.find("LOGICAL-BLOCK-INDEX"))
         flashdata_ref = OdxLinkRef.from_et(et_element.find("FLASHDATA-REF"), context)
         filters: list[Filter] = []
         for filter_elem in et_element.iterfind("FILTERS/FILTER"):
@@ -85,10 +85,10 @@ class Datablock(IdentifiableElement):
             OwnIdent.from_et(own_ident_elem, context)
             for own_ident_elem in et_element.iterfind("OWN-IDENTS/OWN-IDENT")
         ])
-        securities = NamedItemList([
+        securities = [
             Security.from_et(security_elem, context)
             for security_elem in et_element.iterfind("SECURITYS/SECURITY")
-        ])
+        ]
         sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
         audience = None
         if (audience_elem := et_element.find("AUDIENCE")) is not None:

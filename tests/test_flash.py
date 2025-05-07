@@ -99,6 +99,14 @@ flash_xml_str = """<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                       <IDENT-VALUE TYPE="A_ASCIISTRING">blabertrash</IDENT-VALUE>
                     </OWN-IDENT>
                   </OWN-IDENTS>
+                  <SECURITYS>
+                    <SECURITY>
+                      <SECURITY-METHOD TYPE="A_BYTEFIELD">00aB</SECURITY-METHOD>
+                      <FW-SIGNATURE TYPE="A_BYTEFIELD">01cD</FW-SIGNATURE>
+                      <FW-CHECKSUM TYPE="A_BYTEFIELD">03eF</FW-CHECKSUM>
+                      <VALIDITY-FOR TYPE="A_BYTEFIELD">04Ab</VALIDITY-FOR>
+                    </SECURITY>
+                  </SECURITYS>
                 </DATABLOCK>
               </DATABLOCKS>
               <FLASHDATAS>
@@ -239,6 +247,17 @@ def test_create_flash_from_et() -> None:
     assert datablock.filters[0].filter_end == 0x53ef
     assert datablock.filters[1].filter_start == 0x42de
     assert datablock.filters[1].filter_size == 423
+
+    assert len(datablock.securities) == 1
+    security = datablock.securities[0]
+    assert odxrequire(security.security_method).value_type.value == "A_BYTEFIELD"
+    assert odxrequire(security.security_method).value == "00aB"
+    assert odxrequire(security.fw_signature).value_type.value == "A_BYTEFIELD"
+    assert odxrequire(security.fw_signature).value == "01cD"
+    assert odxrequire(security.fw_checksum).value_type.value == "A_BYTEFIELD"
+    assert odxrequire(security.fw_checksum).value == "03eF"
+    assert odxrequire(security.validity_for).value_type.value == "A_BYTEFIELD"
+    assert odxrequire(security.validity_for).value == "04Ab"
 
     assert len(datablock.segments) == 1
     segment = datablock.segments.my_segment
