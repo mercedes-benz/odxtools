@@ -28,8 +28,8 @@
   <UNCOMPRESSED-SIZE>{{ checksum.uncompressed_size }}</UNCOMPRESSED-SIZE>
   {%- endif %}
   <CHECKSUM-RESULT
-    {%- if checksum.checksum_result.checksum_type is not none %}
-    {#- #} TYPE="{{ checksum.checksum_result.checksum_type }}"
+    {%- if checksum.checksum_result.value_type is not none %}
+    {#- #} TYPE="{{ checksum.checksum_result.value_type }}"
     {%- endif %}
     {#- #}>{{checksum.checksum_result.value}}</CHECKSUM-RESULT>
 </CHECKSUM>
