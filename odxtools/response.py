@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
 from typing import Any, cast
 from xml.etree import ElementTree
 
@@ -25,7 +25,7 @@ from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
 
 
-class ResponseType(Enum):
+class ResponseType(StrEnum):
     POSITIVE = "POS-RESPONSE"
     NEGATIVE = "NEG-RESPONSE"
     GLOBAL_NEGATIVE = "GLOBAL-NEG-RESPONSE"

@@ -29,7 +29,7 @@
   {%- endif %}
   <CHECKSUM-RESULT
     {%- if checksum.checksum_result.checksum_type is not none %}
-    {#- #} TYPE="{{ checksum.checksum_result.checksum_type.value }}"
+    {#- #} TYPE="{{ checksum.checksum_result.checksum_type }}"
     {%- endif %}
     {#- #}>{{checksum.checksum_result.value}}</CHECKSUM-RESULT>
 </CHECKSUM>

@@ -1,11 +1,11 @@
 # SPDX-License-Identifier: MIT
-from enum import Enum
+from enum import StrEnum
 
 from .exceptions import odxraise
 from .odxtypes import DataType
 
 
-class Encoding(Enum):
+class Encoding(StrEnum):
     BCD_P = "BCD-P"
     BCD_UP = "BCD-UP"
 

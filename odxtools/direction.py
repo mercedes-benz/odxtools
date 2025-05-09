@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
-from enum import Enum
+from enum import StrEnum
 
 
-class Direction(Enum):
+class Direction(StrEnum):
     UPLOAD = "UPLOAD"
     DOWNLOAD = "DOWNLOAD"

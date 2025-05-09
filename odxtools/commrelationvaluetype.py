@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
-from enum import Enum
+from enum import StrEnum
 
 
-class CommRelationValueType(Enum):
+class CommRelationValueType(StrEnum):
     CURRENT = "CURRENT"
     STORED = "STORED"
     STATIC = "STATIC"

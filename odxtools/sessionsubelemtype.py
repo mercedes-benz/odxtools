@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MIT
-from enum import Enum
+from enum import StrEnum
 
 from .odxtypes import DataType
 
 
-class SessionSubElemType(Enum):
+class SessionSubElemType(StrEnum):
     A_UINT32 = "A_UINT32"
     A_BYTEFIELD = "A_BYTEFIELD"
     A_ASCIISTRING = "A_ASCIISTRING"

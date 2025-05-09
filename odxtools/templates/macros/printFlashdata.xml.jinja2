@@ -28,7 +28,7 @@
   {%- if flashdata.encrypt_compress_method is not none %}
   <ENCRYPT-COMPRESS-METHOD
     {%- if flashdata.encrypt_compress_method.value_type is not none %}
-    {#- #} TYPE="{{ flashdata.encrypt_compress_method.value_type.value }}"
+    {#- #} TYPE="{{ flashdata.encrypt_compress_method.value_type }}"
     {%- endif %}
     {#- #}>{{flashdata.encrypt_compress_method.value}}</ENCRYPT-COMPRESS-METHOD>
   {%- endif %}

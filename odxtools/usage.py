@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
-from enum import Enum
+from enum import StrEnum
 
 
-class Usage(Enum):
+class Usage(StrEnum):
     ECU_SOFTWARE = "ECU-SOFTWARE"
     ECU_COMM = "ECU-COMM"
     APPLICATION = "APPLICATION"

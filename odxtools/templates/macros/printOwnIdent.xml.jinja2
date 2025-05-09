@@ -10,7 +10,7 @@
   {{ peid.printElementIdSubtags(own_ident)}}
   <IDENT-VALUE
     {%- if own_ident.ident_value.value_type is not none %}
-    {#- #} TYPE="{{ own_ident.ident_value.value_type.value }}"
+    {#- #} TYPE="{{ own_ident.ident_value.value_type }}"
     {%- endif %}
     {#- #}>{{own_ident.ident_value.value}}</IDENT-VALUE>
 </OWN-IDENT>

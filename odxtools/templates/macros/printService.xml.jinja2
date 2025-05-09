@@ -42,10 +42,10 @@
  {{-make_bool_xml_attrib("IS-CYCLIC", service.is_cyclic_raw)}}
  {{-make_bool_xml_attrib("IS-MULTIPLE", service.is_multiple_raw)}}
  {%- if service.addressing_raw is not none %}
- {{-make_xml_attrib("ADDRESSING", service.addressing_raw.value)}}
+ {{-make_xml_attrib("ADDRESSING", service.addressing_raw)}}
  {%- endif %}
  {%- if service.transmission_mode_raw is not none %}
- {{-make_xml_attrib("TRANSMISSION-MODE", service.transmission_mode_raw.value)}}
+ {{-make_xml_attrib("TRANSMISSION-MODE", service.transmission_mode_raw)}}
  {%- endif %}>
   {{pdc.printDiagCommSubtags(service) | indent(1, first=True) }}
   {%- if service.comparam_refs %}
