@@ -1,0 +1,58 @@
+1{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printIdentDesc.xml.jinja2') as pidd %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printSessionDesc.xml.jinja2') as psesd %}
+
+{%- macro printEcuMemConnector(ecu_mem_connector) -%}
+<ECU-MEM-CONNECTOR {{peid.printElementIdAttribs(ecu_mem_connector)}}>
+  {{peid.printElementIdSubtags(ecu_mem_connector)|indent(2) }}
+  {%- if ecu_mem_connector.admin_data is not none %}
+  {{ pad.printAdminData(ecu_mem_connector.admin_data)|indent(2) }}
+  {%- endif %}
+  {%- if ecu_mem_connector.flash_classes %}
+  <FLASH-CLASSS>
+    {%- for flash_class in ecu_mem_connector.flash_classes %}
+    <FLASH-CLASS {{peid.printElementIdAttribs(flash_class)}}>
+      {{peid.printElementIdSubtags(flash_class)|indent(6) }}
+    </FLASH-CLASS>
+    {%- endfor %}
+  </FLASH-CLASSS>
+  {%- endif %}
+  {%- if ecu_mem_connector.session_descs %}
+  <SESSION-DESCS>
+    {%- for session_desc in ecu_mem_connector.session_descs %}
+    {{psesd.printSessionDesc(session_desc)}}
+    {%- endfor %}
+  </SESSION-DESCS>
+  {%- endif %}
+  {%- if ecu_mem_connector.ident_descs %}
+  <IDENT-DESCS>
+    {%- for ident_desc in ecu_mem_connector.ident_descs %}
+    {{pidd.printIdentDesc(ident_desc)}}
+    {%- endfor %}
+  </IDENT-DESCS>
+  {%- endif %}
+  <ECU-MEM-REF {{make_ref_attribs(ecu_mem_connector.ecu_mem_ref)}} />
+  {%- if ecu_mem_connector.layer_refs %}
+  <LAYER-REFS>
+    {%- for layer_ref in ecu_mem_connector.layer_refs %}
+    <LAYER-REF {{make_ref_attribs(layer_ref)}} />
+    {%- endfor %}
+  </LAYER-REFS>
+  {%- endif %}
+  {%- if ecu_mem_connector.all_variant_refs %}
+  <ALL-VARIANT-REFS>
+    {%- for all_variant_ref in ecu_mem_connector.all_variant_refs %}
+    <ALL-VARIANT-REF {{make_ref_attribs(all_variant_ref)}} />
+    {%- endfor %}
+  </ALL-VARIANT-REFS>
+  {%- endif %}
+  {{- psd.printSpecialDataGroups(ecu_mem_connector.sdgs)|indent(2, first=True) }}{#- #}
+</ECU-MEM-CONNECTOR>
+{%- endmacro -%}

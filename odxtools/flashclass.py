@@ -3,27 +3,27 @@ from dataclasses import dataclass
 from typing import Any
 from xml.etree import ElementTree
 
-from .exceptions import odxrequire
+from .element import IdentifiableElement
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
-from .utils import strip_indent
+from .utils import dataclass_fields_asdict
 
 
 @dataclass(kw_only=True)
-class Modification:
-    change: str
-    reason: str | None = None
+class FlashClass(IdentifiableElement):
+    """
+    Corresponds to FLASH-CLASS.
+    """
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Modification":
-        change = odxrequire(strip_indent(et_element.findtext("CHANGE")))
-        reason = strip_indent(et_element.findtext("REASON"))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "FlashClass":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
-        return Modification(change=change, reason=reason)
+        return FlashClass(**kwargs)
 
     def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
-        return {}
+        return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         pass

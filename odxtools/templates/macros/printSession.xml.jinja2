@@ -1,0 +1,45 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printChecksum.xml.jinja2') as pcs %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printExpectedIdent.xml.jinja2') as pei %}
+{%- import('macros/printSecurity.xml.jinja2') as psec %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printSession(session) -%}
+<SESSION {{-peid.printElementIdAttribs(session)|indent(2) }}{# -#}>
+  {{ peid.printElementIdSubtags(session)|indent(2) }}
+  {%- if session.expected_idents %}
+  <EXPECTED-IDENTS>
+    {%- for expected_ident in session.expected_idents %}
+    {{ pei.printExpectedIdent(expected_ident)|indent(4) }}
+    {%- endfor %}
+  </EXPECTED-IDENTS>
+  {%- endif %}
+  {%- if session.checksums %}
+  <CHECKSUMS>
+    {%- for checksum in session.checksums %}
+    {{ pcs.printChecksum(checksum)|indent(4) }}
+    {%- endfor %}
+  </CHECKSUMS>
+  {%- endif %}
+  {%- if session.securities %}
+  <SECURITYS>
+    {%- for security in session.securities %}
+    {{ psec.printSecurity(security)|indent(4) }}
+    {%- endfor %}
+  </SECURITYS>
+  {%- endif %}
+  {%- if session.datablock_refs %}
+  <DATABLOCK-REFS>
+    {%- for datablock_ref in session.datablock_refs %}
+    <DATABLOCK-REF {{make_ref_attribs(datablock_ref)}} />
+    {%- endfor %}
+  </DATABLOCK-REFS>
+  {%- endif %}
+  {{- psd.printSpecialDataGroups(session.sdgs)|indent(2, first=True) }}
+</SESSION>
+{%- endmacro -%}

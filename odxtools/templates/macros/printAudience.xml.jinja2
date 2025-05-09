@@ -7,7 +7,7 @@
 
 {%- macro printAdditionalAudience(audience) -%}
 <ADDITIONAL-AUDIENCE {{-peid.printElementIdAttribs(audience)}}>
- {{ peid.printElementIdSubtags(audience)|indent(1) }}
+  {{ peid.printElementIdSubtags(audience)|indent(2) }}
 </ADDITIONAL-AUDIENCE>
 {%- endmacro -%}
 

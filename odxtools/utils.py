@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import dataclasses
 import re
-from typing import TYPE_CHECKING, Any, Optional
+from typing import TYPE_CHECKING, Any, Optional, overload
 from xml.etree import ElementTree
 
 from .exceptions import odxraise
@@ -10,6 +10,27 @@ if TYPE_CHECKING:
     from .database import Database
     from .diaglayers.diaglayer import DiagLayer
     from .snrefcontext import SnRefContext
+
+
+@overload
+def strip_indent(text: str) -> str:
+    ...
+
+
+@overload
+def strip_indent(text: None) -> None:
+    ...
+
+
+def strip_indent(text: str | None) -> str | None:
+    """Remove the leading and trailing space characters of all lines of a string.
+
+    Note that non-space whitespace characters (tabulators, etc) are unaffected
+    """
+    if text is None:
+        return None
+
+    return "\n".join([x.strip(" \r") for x in text.split("\n")])
 
 
 def read_hex_binary(et_element: ElementTree.Element | None) -> int | None:

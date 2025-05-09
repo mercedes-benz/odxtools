@@ -1,0 +1,40 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printAudience.xml.jinja2') as paud %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printOwnIdent.xml.jinja2') as poid %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printSessionDesc(session_desc) -%}
+<SESSION-DESC {#- #} {{- make_xml_attrib("OID", session_desc.oid) -}}
+              {#- #} DIRECTION="{{session_desc.direction.value}}">
+  {{ peid.printElementIdSubtags(session_desc)}}
+  {%- if session_desc.partnumber is not none %}
+  <PARTNUMBER>{{session_desc.partnumber}}</PARTNUMBER>
+  {%- endif %}
+  {%- if session_desc.priority is not none %}
+  <PRIORITY>{{session_desc.priority}}</PRIORITY>
+  {%- endif %}
+  <SESSION-SNREF SHORT-NAME="{{ session_desc.session_snref }}" />
+  {%- if session_desc.diag_comm_snref is not none %}
+  <DIAG-COMM-SNREF SHORT-NAME="{{ session_desc.diag_comm_snref }}" />
+  {%- endif %}
+  {%- if session_desc.flash_class_refs %}
+  <FLASH-CLASS-REFS>
+    {%- for flash_class_ref in session_desc.flash_class_refs %}
+    <FLASH-CLASS-REF {{make_ref_attribs(flash_class_ref)}} />
+    {%- endfor %}
+  </FLASH-CLASS-REFS>
+  {%- endif %}
+  {{- psd.printSpecialDataGroups(session_desc.sdgs)|indent(2, first=True) }}{#- #}
+  {%- if session_desc.audience is not none %}
+  {{ paud.printAudience(session_desc.audience) | indent(2) }}
+  {%- endif %}
+  {%- if session_desc.own_ident is not none %}
+  {{poid.printOwnIdent(session_desc.own_ident) | indent(2)}}
+  {%- endif %}
+</SESSION-DESC>
+{%- endmacro -%}

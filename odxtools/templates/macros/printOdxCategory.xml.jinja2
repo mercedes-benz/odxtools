@@ -12,17 +12,17 @@
 {#- #} {{- peid.printElementIdAttribs(obj) }}
 {%- endmacro -%}
 
-{%- macro printOdxCategorySubtags(obj) -%}
+{%- macro printOdxCategorySubtags(obj) %}
 {{ peid.printElementIdSubtags(obj) }}
 {%- if obj.admin_data %}
-{{pad.printAdminData(obj.admin_data)|indent(2)}}
+{{pad.printAdminData(obj.admin_data)}}
 {%- endif %}
 {%- if obj.company_datas %}
 <COMPANY-DATAS>
 {%- for cd in obj.company_datas %}
-{{pcd.printCompanyData(cd)|indent(3)}}
+{{pcd.printCompanyData(cd)|indent(2)}}
 {%- endfor %}
 </COMPANY-DATAS>
 {%- endif %}
-{{- psd.printSpecialDataGroups(obj.sdgs)|indent(2, first=True) }}
+{{- psd.printSpecialDataGroups(obj.sdgs) }}{#- #}
 {%- endmacro -%}

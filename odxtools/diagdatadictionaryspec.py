@@ -46,9 +46,7 @@ class DiagDataDictionarySpec:
     @staticmethod
     def from_et(et_element: ElementTree.Element,
                 context: OdxDocContext) -> "DiagDataDictionarySpec":
-        admin_data = None
-        if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:
-            admin_data = AdminData.from_et(admin_data_elem, context)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
 
         dtc_dops = NamedItemList([
             DtcDop.from_et(dtc_dop_elem, context)

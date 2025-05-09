@@ -1,0 +1,20 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printPhysSegment.xml.jinja2') as ppseg %}
+
+{%- macro printPhysMem(phys_mem) -%}
+<PHYS-MEM {{peid.printElementIdAttribs(phys_mem)}}>
+  {{ peid.printElementIdSubtags(phys_mem)|indent(1) }}
+  {%- if phys_mem.phys_segments %}
+  <PHYS-SEGMENTS>
+  {%- for phys_segment in phys_mem.phys_segments %}
+    {{ ppseg.printPhysSegment(phys_segment)|indent(4) }}
+  {%- endfor %}
+  </PHYS-SEGMENTS>
+  {%- endif %}
+</PHYS-MEM>
+{%- endmacro -%}

@@ -19,6 +19,7 @@ from .diaglayers.ecuvariant import EcuVariant
 from .diaglayers.functionalgroup import FunctionalGroup
 from .diaglayers.protocol import Protocol
 from .exceptions import odxraise, odxrequire
+from .flash import Flash
 from .nameditemlist import NamedItemList
 from .odxdoccontext import OdxDocContext
 from .odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
@@ -39,6 +40,7 @@ class Database:
         self._diag_layer_containers = NamedItemList[DiagLayerContainer]()
         self._comparam_subsets = NamedItemList[ComparamSubset]()
         self._comparam_specs = NamedItemList[ComparamSpec]()
+        self._flashs = NamedItemList[Flash]()
         self._short_name = "odx_database"
 
     def add_pdx_file(self, pdx_file: Union[str, "PathLike[Any]", IO[bytes], ZipFile]) -> None:
@@ -57,7 +59,7 @@ class Database:
             p = Path(zip_member)
             if p.suffix.lower().startswith(".odx"):
                 root = ElementTree.parse(pdx_zip.open(zip_member)).getroot()
-                self._process_xml_tree(root)
+                self.add_xml_tree(root)
             elif p.name.lower() == "index.xml":
                 root = ElementTree.parse(pdx_zip.open(zip_member)).getroot()
                 db_short_name = odxrequire(root.findtext("SHORT-NAME"))
@@ -66,7 +68,7 @@ class Database:
                 self.add_auxiliary_file(zip_member, pdx_zip.open(zip_member))
 
     def add_odx_file(self, odx_file_name: Union[str, "PathLike[Any]"]) -> None:
-        self._process_xml_tree(ElementTree.parse(odx_file_name).getroot())
+        self.add_xml_tree(ElementTree.parse(odx_file_name).getroot())
 
     def add_auxiliary_file(self,
                            aux_file_name: Union[str, "PathLike[Any]"],
@@ -76,7 +78,7 @@ class Database:
 
         self.auxiliary_files[str(aux_file_name)] = aux_file_obj
 
-    def _process_xml_tree(self, root: ElementTree.Element) -> None:
+    def add_xml_tree(self, root: ElementTree.Element) -> None:
         # ODX spec version
         model_version = Version(root.attrib.get("MODEL-VERSION", "2.0"))
         if self.model_version is not None and self.model_version != model_version:
@@ -112,6 +114,9 @@ class Database:
                 self._comparam_subsets.append(ComparamSubset.from_et(category_et, context))
             else:
                 self._comparam_specs.append(ComparamSpec.from_et(category_et, context))
+        elif category_tag == "FLASH":
+            context = OdxDocContext(model_version, (OdxDocFragment(category_sn, DocType.FLASH),))
+            self._flashs.append(Flash.from_et(category_et, context))
 
     def refresh(self) -> None:
         # Create wrapper objects
@@ -143,6 +148,9 @@ class Database:
         for dlc in self.diag_layer_containers:
             dlc._resolve_odxlinks(self._odxlinks)
 
+        for flash in self.flashs:
+            flash._resolve_odxlinks(self._odxlinks)
+
         # resolve short name references for containers which do not do
         # inheritance (we can call directly call _resolve_snrefs())
         context = SnRefContext()
@@ -155,6 +163,8 @@ class Database:
             spec._finalize_init(self, self._odxlinks)
         for dlc in self.diag_layer_containers:
             dlc._finalize_init(self, self._odxlinks)
+        for flash in self.flashs:
+            flash._finalize_init(self, self._odxlinks)
 
         for subset in self.comparam_subsets:
             subset._resolve_snrefs(context)
@@ -162,6 +172,8 @@ class Database:
             spec._resolve_snrefs(context)
         for dlc in self.diag_layer_containers:
             dlc._resolve_snrefs(context)
+        for flash in self.flashs:
+            flash._resolve_snrefs(context)
 
     def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result: dict[OdxLinkId, Any] = {}
@@ -174,6 +186,9 @@ class Database:
 
         for dlc in self.diag_layer_containers:
             result.update(dlc._build_odxlinks())
+
+        for flash in self.flashs:
+            result.update(flash._build_odxlinks())
 
         return result
 
@@ -248,10 +263,15 @@ class Database:
     def comparam_specs(self) -> NamedItemList[ComparamSpec]:
         return self._comparam_specs
 
+    @property
+    def flashs(self) -> NamedItemList[Flash]:
+        return self._flashs
+
     def __repr__(self) -> str:
         return f"Database(model_version={self.model_version}, " \
             f"protocols={[x.short_name for x in self.protocols]}, " \
             f"ecus={[x.short_name for x in self.ecus]}, " \
             f"diag_layer_containers={repr(self.diag_layer_containers)}, " \
             f"comparam_subsets={repr(self.comparam_subsets)}, " \
-            f"comparam_specs={repr(self.comparam_specs)})"
+            f"comparam_specs={repr(self.comparam_specs)}, " \
+            f"flashs={repr(self.flashs)})"

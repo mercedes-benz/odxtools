@@ -6,6 +6,7 @@ from xml.etree import ElementTree
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
+from .utils import strip_indent
 
 
 @dataclass(kw_only=True)
@@ -19,7 +20,7 @@ class SpecialData:
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SpecialData":
         semantic_info = et_element.get("SI")
         text_identifier = et_element.get("TI")
-        value = et_element.text or ""
+        value = strip_indent(et_element.text) or ""
 
         return SpecialData(
             semantic_info=semantic_info, text_identifier=text_identifier, value=value)

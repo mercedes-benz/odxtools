@@ -1,0 +1,33 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+
+{%- macro printPhysSegment(phys_segment) -%}
+<PHYS-SEGMENT {{-peid.printElementIdAttribs(phys_segment)}}
+              {%- if phys_segment.size is defined %}
+              {#- #}xsi:type="SIZEDEF-PHYS-SEGMENT"
+              {%- elif phys_segment.end_address is defined %}
+              {#- #}xsi:type="ADDRDEF-PHYS-SEGMENT"
+              {%- endif %}
+              {#- #}>
+  {{ peid.printElementIdSubtags(phys_segment)|indent(2) }}
+  {%- if phys_segment.fillbyte is not none %}
+  {%- set num_nibbles = (phys_segment.fillbyte.bit_length() + 7) // 8 * 2 %}
+  <FILLBYTE>{{ ("%%0%dX" | format(num_nibbles | int)) | format(phys_segment.fillbyte | int) }}</FILLBYTE>
+  {%- endif %}
+  {%- if phys_segment.block_size is not none %}
+  <BLOCK-SIZE>{{ phys_segment.block_size }}</BLOCK-SIZE>
+  {%- endif %}
+  {%- set num_nibbles = (phys_segment.start_address.bit_length() + 7) // 8 * 2 %}
+  <START-ADDRESS>{{ ("%%0%dX" | format(num_nibbles | int)) | format(phys_segment.start_address | int) }}</START-ADDRESS>
+  {%- if phys_segment.size is defined %}
+  <SIZE>{{phys_segment.size}}</SIZE>
+  {%- elif phys_segment.end_address is defined %}
+  {%- set num_nibbles = (phys_segment.end_address.bit_length() + 7) // 8 * 2 %}
+  <END-ADDRESS>{{ ("%%0%dX" | format(num_nibbles | int)) | format(phys_segment.end_address | int) }}</END-ADDRESS>
+  {%- endif %}
+</PHYS-SEGMENT>
+{%- endmacro -%}

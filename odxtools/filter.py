@@ -7,23 +7,23 @@ from .exceptions import odxrequire
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
-from .utils import strip_indent
+from .utils import read_hex_binary
 
 
 @dataclass(kw_only=True)
-class Modification:
-    change: str
-    reason: str | None = None
+class Filter:
+    filter_start: int
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Modification":
-        change = odxrequire(strip_indent(et_element.findtext("CHANGE")))
-        reason = strip_indent(et_element.findtext("REASON"))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Filter":
+        filter_start = odxrequire(read_hex_binary(et_element.find("FILTER-START")))
 
-        return Modification(change=change, reason=reason)
+        return Filter(filter_start=filter_start)
 
     def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
-        return {}
+        odxlinks: dict[OdxLinkId, Any] = {}
+
+        return odxlinks
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         pass

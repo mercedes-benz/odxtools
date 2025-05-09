@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import datetime
+import html
 import inspect
 import mimetypes
 import os
@@ -24,7 +25,7 @@ def make_xml_attrib(attrib_name: str, attrib_val: Any | None) -> str:
     if attrib_val is None:
         return ""
 
-    return f' {attrib_name}="{attrib_val}"'
+    return f' {attrib_name}="{html.escape(attrib_val)}"'
 
 
 def make_bool_xml_attrib(attrib_name: str, attrib_val: bool | None) -> str:
@@ -208,6 +209,21 @@ def write_pdx_file(
             file_index.append((file_name, creation_date, mime_type))
             zf.writestr(file_name, dlc_tpl.render(**jinja_vars))
             del jinja_vars["dlc"]
+
+        # write the flash description objects
+        flash_tpl = jinja_env.get_template("flash.odx-f.xml.jinja2")
+        for flash in database.flashs:
+            zf_file_name = f"{flash.short_name}.odx-f"
+            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            zf_mime_type = "application/x-asam.odx.odx-f"
+
+            jinja_vars["flash"] = flash
+
+            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
+
+            zf.writestr(zf_file_name, flash_tpl.render(**jinja_vars))
+
+            del jinja_vars["flash"]
 
         # write the index.xml file
         jinja_vars["file_index"] = file_index
