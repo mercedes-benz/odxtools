@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
-from enum import StrEnum
+from enum import Enum
 
 
-class StandardizationLevel(StrEnum):
+class StandardizationLevel(Enum):
     STANDARD = "STANDARD"
     OEM_SPECIFIC = "OEM-SPECIFIC"
     OPTIONAL = "OPTIONAL"

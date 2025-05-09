@@ -10,7 +10,7 @@
 
 {%- macro printSessionDesc(session_desc) -%}
 <SESSION-DESC {#- #} {{- make_xml_attrib("OID", session_desc.oid) -}}
-              {#- #} DIRECTION="{{session_desc.direction}}">
+              {#- #} DIRECTION="{{session_desc.direction.value}}">
   {{ peid.printElementIdSubtags(session_desc)}}
   {%- if session_desc.partnumber is not none %}
   <PARTNUMBER>{{session_desc.partnumber}}</PARTNUMBER>

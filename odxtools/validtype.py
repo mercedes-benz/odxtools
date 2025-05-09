@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
-from enum import StrEnum
+from enum import Enum
 
 
-class ValidType(StrEnum):
+class ValidType(Enum):
     VALID = "VALID"
     NOT_VALID = "NOT-VALID"
     NOT_DEFINED = "NOT-DEFINED"

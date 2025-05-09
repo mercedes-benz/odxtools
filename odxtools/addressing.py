@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
-from enum import StrEnum
+from enum import Enum
 
 
-class Addressing(StrEnum):
+class Addressing(Enum):
     FUNCTIONAL = "FUNCTIONAL"
     PHYSICAL = "PHYSICAL"
     FUNCTIONAL_OR_PHYSICAL = "FUNCTIONAL-OR-PHYSICAL"

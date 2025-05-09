@@ -23,7 +23,7 @@
   {%- if segment.encrypt_compress_method is not none %}
   <ENCRYPT-COMPRESS-METHOD
     {%- if segment.encrypt_compress_method.value_type is not none %}
-    {#- #} TYPE="{{ segment.encrypt_compress_method.value_type }}"
+    {#- #} TYPE="{{ segment.encrypt_compress_method.value_type.value }}"
     {%- endif %}
     {#- #}>{{segment.encrypt_compress_method.value}}</ENCRYPT-COMPRESS-METHOD>
   {%- endif %}

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
-from enum import StrEnum
+from enum import Enum
 
 
-class UnitGroupCategory(StrEnum):
+class UnitGroupCategory(Enum):
     COUNTRY = "COUNTRY"
     EQUIV_UNITS = "EQUIV-UNITS"

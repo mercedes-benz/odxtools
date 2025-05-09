@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from collections.abc import Callable, Iterable
-from enum import StrEnum
+from enum import Enum
 from typing import TYPE_CHECKING, Any, SupportsBytes, Union, overload
 from xml.etree import ElementTree
 
@@ -172,7 +172,7 @@ _BITSTRUCT_FORMAT_LETTER_MAP__ = {
 }
 
 
-class DataType(StrEnum):
+class DataType(Enum):
     """Types for the physical and internal value.
 
     These types can be used either as BASE-DATA-TYPE (for the "internal value")

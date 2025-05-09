@@ -57,7 +57,7 @@
 {%- macro printUnitGroup(group) -%}
 <UNIT-GROUP {{-make_xml_attrib("OID", group.oid)}}>
  {{ peid.printElementIdSubtags(group)|indent(1) }}
- <CATEGORY>{{ group.category }}</CATEGORY>
+ <CATEGORY>{{ group.category.value }}</CATEGORY>
  {%- if group.unit_refs %}
  <UNIT-REFS>
  {%- for ref in group.unit_refs %}

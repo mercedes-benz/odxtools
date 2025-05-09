@@ -2,7 +2,7 @@
 import warnings
 from collections.abc import Iterable
 from dataclasses import dataclass
-from enum import StrEnum
+from enum import Enum
 from typing import Any, Optional, TypeVar, overload
 from xml.etree import ElementTree
 
@@ -11,7 +11,7 @@ from .nameditemlist import OdxNamed, TNamed
 from .odxdoccontext import OdxDocContext
 
 
-class DocType(StrEnum):
+class DocType(Enum):
     FLASH = "FLASH"
     CONTAINER = "CONTAINER"
     LAYER = "LAYER"

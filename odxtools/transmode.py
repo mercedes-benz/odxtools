@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
-from enum import StrEnum
+from enum import Enum
 
 
-class TransMode(StrEnum):
+class TransMode(Enum):
     SEND_ONLY = "SEND-ONLY"
     RECEIVE_ONLY = "RECEIVE-ONLY"
     SEND_AND_RECEIVE = "SEND-AND-RECEIVE"

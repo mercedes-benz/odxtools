@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
-from enum import StrEnum
+from enum import Enum
 
 
-class DiagClassType(StrEnum):
+class DiagClassType(Enum):
     STARTCOMM = "STARTCOMM"
     STOPCOMM = "STOPCOMM"
     VARIANTIDENTIFICATION = "VARIANTIDENTIFICATION"

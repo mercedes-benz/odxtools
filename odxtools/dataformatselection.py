@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
-from enum import StrEnum
+from enum import Enum
 
 
-class DataformatSelection(StrEnum):
+class DataformatSelection(Enum):
     INTEL_HEX = "INTEL-HEX"
     MOTOROLA_S = "MOTOROLA-S"
     BINARY = "BINARY"
