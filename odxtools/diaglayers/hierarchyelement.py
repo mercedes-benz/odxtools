@@ -439,6 +439,11 @@ class HierarchyElement(DiagLayer):
     # <properties subject to value inheritance>
     #######
     @property
+    def functional_classes(self) -> NamedItemList[FunctionalClass]:
+        """All functional classes applicable to this DiagLayer"""
+        return self._functional_classes
+
+    @property
     def diag_data_dictionary_spec(self) -> DiagDataDictionarySpec:
         return self._diag_data_dictionary_spec
 
@@ -479,11 +484,6 @@ class HierarchyElement(DiagLayer):
     def global_negative_responses(self) -> NamedItemList[Response]:
         """All global negative responses applicable to this DiagLayer"""
         return self._global_negative_responses
-
-    @property
-    def functional_classes(self) -> NamedItemList[FunctionalClass]:
-        """All functional classes applicable to this DiagLayer"""
-        return self._functional_classes
 
     @property
     def state_charts(self) -> NamedItemList[StateChart]:
