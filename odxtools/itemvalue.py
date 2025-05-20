@@ -4,7 +4,6 @@ from typing import Any
 from xml.etree import ElementTree
 
 from .audience import Audience
-from .exceptions import odxrequire
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
@@ -16,7 +15,7 @@ from .text import Text
 class ItemValue:
     """This class represents a ITEM-VALUE."""
 
-    phys_constant_value: str
+    phys_constant_value: str | None
     meaning: Text | None = None
     key: str | None = None
     rule: str | None = None
@@ -26,7 +25,7 @@ class ItemValue:
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ItemValue":
-        phys_constant_value = odxrequire(et_element.findtext("PHYS-CONSTANT-VALUE"))
+        phys_constant_value = et_element.findtext("PHYS-CONSTANT-VALUE")
 
         meaning = None
         if (meaning_elem := et_element.find("MEANING")) is not None:

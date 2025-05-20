@@ -20,7 +20,7 @@ class ConfigItem(NamedElement):
     CONFIG-ITEM is the base class for CONFIG-ID-ITEM, DATA-ID-ITEM,
     OPTION-ITEM, and SYSTEM-ITEM.
     """
-    byte_position: int
+    byte_position: int | None = None
     bit_position: int | None = None
 
     # according to the spec exactly one of the following two
@@ -37,7 +37,10 @@ class ConfigItem(NamedElement):
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ConfigItem":
         kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
-        byte_position = int(odxrequire(et_element.findtext("BYTE-POSITION")))
+        byte_position = None
+        if (byte_pos_elem := et_element.findtext("BYTE-POSITION")) is not None:
+            byte_position = int(byte_pos_elem)
+
         bit_position = None
         if (bit_pos_elem := et_element.findtext("BIT-POSITION")) is not None:
             bit_position = int(bit_pos_elem)
