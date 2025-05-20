@@ -18,6 +18,7 @@ from .diaglayers.ecushareddata import EcuSharedData
 from .diaglayers.ecuvariant import EcuVariant
 from .diaglayers.functionalgroup import FunctionalGroup
 from .diaglayers.protocol import Protocol
+from .ecuconfig import EcuConfig
 from .exceptions import odxraise, odxrequire
 from .flash import Flash
 from .nameditemlist import NamedItemList
@@ -40,6 +41,7 @@ class Database:
         self._diag_layer_containers = NamedItemList[DiagLayerContainer]()
         self._comparam_subsets = NamedItemList[ComparamSubset]()
         self._comparam_specs = NamedItemList[ComparamSpec]()
+        self._ecu_configs = NamedItemList[EcuConfig]()
         self._flashs = NamedItemList[Flash]()
         self._short_name = "odx_database"
 
@@ -114,6 +116,10 @@ class Database:
                 self._comparam_subsets.append(ComparamSubset.from_et(category_et, context))
             else:
                 self._comparam_specs.append(ComparamSpec.from_et(category_et, context))
+        elif category_tag == "ECU-CONFIG":
+            context = OdxDocContext(model_version,
+                                    (OdxDocFragment(category_sn, DocType.ECU_CONFIG),))
+            self._ecu_configs.append(EcuConfig.from_et(category_et, context))
         elif category_tag == "FLASH":
             context = OdxDocContext(model_version, (OdxDocFragment(category_sn, DocType.FLASH),))
             self._flashs.append(Flash.from_et(category_et, context))
@@ -148,6 +154,9 @@ class Database:
         for dlc in self.diag_layer_containers:
             dlc._resolve_odxlinks(self._odxlinks)
 
+        for ecu_config in self.ecu_configs:
+            ecu_config._resolve_odxlinks(self._odxlinks)
+
         for flash in self.flashs:
             flash._resolve_odxlinks(self._odxlinks)
 
@@ -163,6 +172,8 @@ class Database:
             spec._finalize_init(self, self._odxlinks)
         for dlc in self.diag_layer_containers:
             dlc._finalize_init(self, self._odxlinks)
+        for ecu_config in self.ecu_configs:
+            ecu_config._finalize_init(self, self._odxlinks)
         for flash in self.flashs:
             flash._finalize_init(self, self._odxlinks)
 
@@ -172,6 +183,8 @@ class Database:
             spec._resolve_snrefs(context)
         for dlc in self.diag_layer_containers:
             dlc._resolve_snrefs(context)
+        for ecu_config in self.ecu_configs:
+            ecu_config._resolve_snrefs(context)
         for flash in self.flashs:
             flash._resolve_snrefs(context)
 
@@ -186,6 +199,9 @@ class Database:
 
         for dlc in self.diag_layer_containers:
             result.update(dlc._build_odxlinks())
+
+        for ecu_config in self.ecu_configs:
+            result.update(ecu_config._build_odxlinks())
 
         for flash in self.flashs:
             result.update(flash._build_odxlinks())
@@ -264,6 +280,10 @@ class Database:
         return self._comparam_specs
 
     @property
+    def ecu_configs(self) -> NamedItemList[EcuConfig]:
+        return self._ecu_configs
+
+    @property
     def flashs(self) -> NamedItemList[Flash]:
         return self._flashs
 
@@ -274,4 +294,5 @@ class Database:
             f"diag_layer_containers={repr(self.diag_layer_containers)}, " \
             f"comparam_subsets={repr(self.comparam_subsets)}, " \
             f"comparam_specs={repr(self.comparam_specs)}, " \
+            f"ecu_configs={repr(self.ecu_configs)}, " \
             f"flashs={repr(self.flashs)})"
