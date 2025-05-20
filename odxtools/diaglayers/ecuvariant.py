@@ -34,6 +34,18 @@ class EcuVariant(HierarchyElement):
         return self.ecu_variant_raw.diag_variables_raw
 
     @property
+    def diag_variables(self) -> NamedItemList[DiagVariable]:
+        return self._diag_variables
+
+    @property
+    def variable_groups(self) -> NamedItemList[VariableGroup]:
+        return self._variable_groups
+
+    @property
+    def ecu_variant_patterns(self) -> list[EcuVariantPattern]:
+        return self.ecu_variant_raw.ecu_variant_patterns
+
+    @property
     def dyn_defined_spec(self) -> DynDefinedSpec | None:
         return self.ecu_variant_raw.dyn_defined_spec
 
@@ -55,25 +67,6 @@ class EcuVariant(HierarchyElement):
                 return pr.layer
 
         return None
-
-    @property
-    def ecu_variant_patterns(self) -> list[EcuVariantPattern]:
-        return self.ecu_variant_raw.ecu_variant_patterns
-
-    #######
-    # <properties subject to value inheritance>
-    #######
-    @property
-    def diag_variables(self) -> NamedItemList[DiagVariable]:
-        return self._diag_variables
-
-    @property
-    def variable_groups(self) -> NamedItemList[VariableGroup]:
-        return self._variable_groups
-
-    #######
-    # </properties subject to value inheritance>
-    #######
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EcuVariant":

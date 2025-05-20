@@ -77,7 +77,7 @@ class SubComponentParamConnector(IdentifiableElement):
                                 odxrequire(context.diag_layer).diag_comms, DiagService)
         self._service = service
 
-        if self._service.request is not None:
+        if self._service.request is None:
             odxraise()
             return
         if not self._service.positive_responses:

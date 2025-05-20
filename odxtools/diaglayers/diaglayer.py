@@ -7,6 +7,7 @@ from itertools import chain
 from typing import Any, Union, cast
 from xml.etree import ElementTree
 
+from ..additionalaudience import AdditionalAudience
 from ..admindata import AdminData
 from ..companydata import CompanyData
 from ..description import Description
@@ -14,6 +15,7 @@ from ..diagcomm import DiagComm
 from ..diagdatadictionaryspec import DiagDataDictionarySpec
 from ..diagservice import DiagService
 from ..exceptions import DecodeError, odxassert, odxraise
+from ..functionalclass import FunctionalClass
 from ..library import Library
 from ..message import Message
 from ..nameditemlist import NamedItemList, TNamed
@@ -26,6 +28,7 @@ from ..servicebinner import ServiceBinner
 from ..singleecujob import SingleEcuJob
 from ..snrefcontext import SnRefContext
 from ..specialdatagroup import SpecialDataGroup
+from ..statechart import StateChart
 from ..subcomponent import SubComponent
 from ..unitgroup import UnitGroup
 from .diaglayerraw import DiagLayerRaw
@@ -224,11 +227,29 @@ class DiagLayer:
         return self.diag_layer_raw.admin_data
 
     @property
+    def company_datas(self) -> NamedItemList[CompanyData]:
+        return self.diag_layer_raw.company_datas
+
+    @property
+    def functional_classes(self) -> NamedItemList[FunctionalClass]:
+        return self.diag_layer_raw.functional_classes
+
+    @property
+    def diag_data_dictionary_spec(self) -> DiagDataDictionarySpec:
+        """The DiagDataDictionarySpec applicable to this DiagLayer"""
+        return self._diag_data_dictionary_spec
+
+    @property
+    def diag_comms_raw(self) -> list[OdxLinkRef | DiagComm]:
+        return self.diag_layer_raw.diag_comms_raw
+
+    @property
     def diag_comms(self) -> NamedItemList[DiagComm]:
         return self.diag_layer_raw.diag_comms
 
     @property
     def services(self) -> NamedItemList[DiagService]:
+        """This is an alias for `.diag_services`"""
         return self.diag_layer_raw.services
 
     @property
@@ -238,10 +259,6 @@ class DiagLayer:
     @property
     def single_ecu_jobs(self) -> NamedItemList[SingleEcuJob]:
         return self.diag_layer_raw.single_ecu_jobs
-
-    @property
-    def company_datas(self) -> NamedItemList[CompanyData]:
-        return self.diag_layer_raw.company_datas
 
     @property
     def requests(self) -> NamedItemList[Request]:
@@ -264,21 +281,24 @@ class DiagLayer:
         return self.diag_layer_raw.import_refs
 
     @property
-    def libraries(self) -> NamedItemList[Library]:
-        return self.diag_layer_raw.libraries
+    def state_charts(self) -> NamedItemList[StateChart]:
+        return self.diag_layer_raw.state_charts
+
+    @property
+    def additional_audiences(self) -> NamedItemList[AdditionalAudience]:
+        return self.diag_layer_raw.additional_audiences
 
     @property
     def sub_components(self) -> NamedItemList[SubComponent]:
         return self.diag_layer_raw.sub_components
 
     @property
-    def sdgs(self) -> list[SpecialDataGroup]:
-        return self.diag_layer_raw.sdgs
+    def libraries(self) -> NamedItemList[Library]:
+        return self.diag_layer_raw.libraries
 
     @property
-    def diag_data_dictionary_spec(self) -> DiagDataDictionarySpec:
-        """The DiagDataDictionarySpec applicable to this DiagLayer"""
-        return self._diag_data_dictionary_spec
+    def sdgs(self) -> list[SpecialDataGroup]:
+        return self.diag_layer_raw.sdgs
 
     #####
     # </properties forwarded to the "raw" diag layer>
