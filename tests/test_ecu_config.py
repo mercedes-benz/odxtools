@@ -1,9 +1,17 @@
 # SPDX-License-Identifier: MIT
+import inspect
+from pathlib import Path
+from typing import Any
 from xml.etree import ElementTree
 
+import jinja2
+
+import odxtools
 from examples.somersaultecu import database as somersault_db
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import DocType, OdxDocFragment
+from odxtools.writepdxfile import (jinja2_odxraise_helper, make_bool_xml_attrib, make_ref_attribs,
+                                   make_xml_attrib, set_category_docfrag, set_layer_docfrag)
 
 doc_frags = (OdxDocFragment(doc_name="ecu_config_test", doc_type=DocType.ECU_CONFIG),)
 
@@ -240,3 +248,35 @@ def test_create_ecu_config_from_et() -> None:
 
     assert cdds.unit_spec is not None
     assert len(cdds.unit_spec.units) == 1
+
+
+def test_write_ecu_config() -> None:
+    somersault_db._ecu_configs = NamedItemList()
+    somersault_db.add_xml_tree(ecu_config_et)
+    somersault_db.refresh()
+    assert len(somersault_db.ecu_configs) == 1
+
+    __module_filename = inspect.getsourcefile(odxtools)
+    assert isinstance(__module_filename, str)
+    test_jinja_vars: dict[str, Any] = {}
+    test_jinja_vars["ecu_config"] = somersault_db.ecu_configs[0]
+    templates_dir = Path(__module_filename).parent / "templates"
+    jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
+    jinja_env.globals["odxraise"] = jinja2_odxraise_helper
+    jinja_env.globals["make_xml_attrib"] = make_xml_attrib
+    jinja_env.globals["make_bool_xml_attrib"] = make_bool_xml_attrib
+    jinja_env.globals["set_category_docfrag"] = lambda cname, ctype: set_category_docfrag(
+        test_jinja_vars, cname, ctype)
+    jinja_env.globals["set_layer_docfrag"] = lambda lname: set_layer_docfrag(test_jinja_vars, lname)
+    jinja_env.globals["make_ref_attribs"] = lambda ref: make_ref_attribs(test_jinja_vars, ref)
+    jinja_env.globals["getattr"] = getattr
+    jinja_env.globals["hasattr"] = hasattr
+
+    template = jinja_env.get_template("ecu_config.odx-e.xml.jinja2")
+    rawodx: str = template.render(test_jinja_vars)
+
+    rawodx2 = '\n'.join(rawodx.split("\n")[0:1] + rawodx.split("\n")[2:])
+    expected_xml = ecu_config_xml_str.replace(" ", "").upper()
+    actual_xml = rawodx2.replace(" ", "").upper()
+
+    assert expected_xml == actual_xml

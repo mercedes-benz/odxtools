@@ -1,0 +1,66 @@
+1{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printAudience.xml.jinja2') as paud %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printItemValue.xml.jinja2') as piv %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printConfigItemSubtags(config_item) %}
+{#-#}{{ peid.printElementIdSubtags(config_item) }}
+{%- if config_item.byte_position is not none %}
+<BYTE-POSITION>{{config_item.byte_position}}</BYTE-POSITION>
+{%- endif %}
+{%- if config_item.bit_position is not none %}
+<BIT-POSITION>{{config_item.bit_position}}</BIT-POSITION>
+{%- endif %}
+{%- if config_item.data_object_prop_ref is not none %}
+<DATA-OBJECT-PROP-REF {{ make_ref_attribs(config_item.data_object_prop_ref) }} />
+{%- endif %}
+{%- if config_item.data_object_prop_snref is not none %}
+<DATA-OBJECT-PROP-SNREF SHORT-NAME="{{ config_item.data_object_prop_snref }}" />
+{%- endif %}
+{{- psd.printSpecialDataGroups(config_item.sdgs) }}
+{%- endmacro %}
+
+{%- macro printConfigIdItem(config_id_item) %}
+<CONFIG-ID-ITEM>
+  {{ printConfigItemSubtags(config_id_item)|indent(2) }}
+</CONFIG-ID-ITEM>
+{%- endmacro %}
+
+{%- macro printDataIdItem(data_id_item) %}
+<DATA-ID-ITEM>
+  {{ printConfigItemSubtags(data_id_item)|indent(2) }}
+</DATA-ID-ITEM>
+{%- endmacro %}
+
+{%- macro printOptionItem(option_item) %}
+<OPTION-ITEM>
+  {{ printConfigItemSubtags(option_item)|indent(2) }}
+  {%- if option_item.physical_default_value is not none %}
+  <PHYSICAL-DEFAULT-VALUE>{{ option_item.physical_default_value|e }}</PHYSICAL-DEFAULT-VALUE>
+  {%- endif %}
+  {%- if option_item.item_values %}
+  <ITEM-VALUES>
+    {%- for item_value in option_item.item_values %}
+    {{ piv.printItemValue(item_value) }}
+    {%- endfor %}
+  </ITEM-VALUES>
+  {%- endif %}
+  {%- if option_item.write_audience is not none %}
+  {{ paud.printAudience(option_item.write_audience, "WRITE-AUDIENCE")}}
+  {%- endif %}
+  {%- if option_item.read_audience is not none %}
+  {{ paud.printAudience(option_item.read_audience, "READ-AUDIENCE")}}
+  {%- endif %}
+</OPTION-ITEM>
+{%- endmacro %}
+
+{%- macro printSystemItem(system_item) %}
+<SYSTEM-ITEM {{ make_xml_attrib("SYSPARAM", system_item.sysparam) }}>
+  {{ printConfigItemSubtags(system_item)|indent(2) }}
+</SYSTEM-ITEM>
+{%- endmacro %}

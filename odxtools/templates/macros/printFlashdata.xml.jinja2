@@ -33,7 +33,7 @@
     {#- #}>{{flashdata.encrypt_compress_method.value}}</ENCRYPT-COMPRESS-METHOD>
   {%- endif %}
   {%- if flashdata.datafile is defined %}
-  <DATAFILE {{ make_bool_xml_attrib("LATEBOUND-DATAFILE", flashdata.latebound_datafile) }}>
+  <DATAFILE {{ make_bool_xml_attrib("LATEBOUND-DATAFILE", flashdata.datafile.latebound_datafile) }}>
     {#- #}{{flashdata.datafile.value}}
   {#- #}</DATAFILE>
   {%- elif flashdata.data is defined %}

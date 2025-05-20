@@ -225,6 +225,21 @@ def write_pdx_file(
 
             del jinja_vars["flash"]
 
+        # write the ECU-config objects
+        ecu_config_tpl = jinja_env.get_template("ecu_config.odx-e.xml.jinja2")
+        for ecu_config in database.ecu_configs:
+            zf_file_name = f"{ecu_config.short_name}.odx-e"
+            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            zf_mime_type = "application/x-asam.odx.odx-e"
+
+            jinja_vars["ecu_config"] = ecu_config
+
+            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
+
+            zf.writestr(zf_file_name, ecu_config_tpl.render(**jinja_vars))
+
+            del jinja_vars["ecu_config"]
+
         # write the index.xml file
         jinja_vars["file_index"] = file_index
         index_tpl = jinja_env.get_template("index.xml.jinja2")
