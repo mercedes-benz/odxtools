@@ -11,8 +11,8 @@
 </ADDITIONAL-AUDIENCE>
 {%- endmacro -%}
 
-{%- macro printAudience(audience) -%}
-<AUDIENCE {{-make_bool_xml_attrib("IS-SUPPLIER", audience.is_supplier_raw)}}
+{%- macro printAudience(audience, tag_name="AUDIENCE") -%}
+<{{tag_name}} {{-make_bool_xml_attrib("IS-SUPPLIER", audience.is_supplier_raw)}}
           {{-make_bool_xml_attrib("IS-DEVELOPMENT", audience.is_development_raw)}}
           {{-make_bool_xml_attrib("IS-MANUFACTURING", audience.is_manufacturing_raw)}}
           {{-make_bool_xml_attrib("IS-AFTERSALES", audience.is_aftersales_raw)}}
@@ -31,5 +31,5 @@
 {%- endfor %}
  </DISABLED-AUDIENCE-REFS>
 {%- endif%}
-</AUDIENCE>
+</{{tag_name}}>
 {%- endmacro -%}

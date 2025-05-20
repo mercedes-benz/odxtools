@@ -1,0 +1,73 @@
+1{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+{%- import('macros/printAudience.xml.jinja2') as paud %}
+{%- import('macros/printDataRecord.xml.jinja2') as pdr %}
+{%- import('macros/printDiagCommDataConnector.xml.jinja2') as pdcdc %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printConfigItems.xml.jinja2') as pcits %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printConfigRecord(config_record) -%}
+<CONFIG-RECORD>
+  {{peid.printElementIdSubtags(config_record)|indent(2) }}
+  {%- if config_record.config_id_item is not none %}
+  {{- pcits.printConfigIdItem(config_record.config_id_item)|indent(2)}}
+  {%- endif %}
+  {%- if config_record.data_items %}
+  <DATA-ITEMS>
+    {%- for data_item in config_record.data_items %}
+    {{ pcits.printDataItem(data_item) | indent(4) }}
+    {%- endfor %}
+  </DATA-ITEMS>
+  {%- endif %}
+  {%- if config_record.diag_comm_data_connectors %}
+  <DIAG-COMM-DATA-CONNECTORS>
+    {%- for connector in config_record.diag_comm_data_connectors %}
+    {{ pdcdc.printDiagCommDataConnector(connector) | indent(4) }}
+    {%- endfor %}
+  </DIAG-COMM-DATA-CONNECTORS>
+  {%- endif %}
+  {%- if config_record.config_id is not none %}
+  <CONFIG-ID
+    {%- if config_record.config_id.value_type is not none %}
+      {#- #} TYPE="{{ config_record.config_id.value_type.value }}"
+      {%- endif %}
+      {#- #}>{{config_record.config_id.value}}</CONFIG-ID>
+  {%- endif %}
+  {%- if config_record.data_records %}
+  <DATA-RECORDS>
+    {%- for data_record in config_record.data_records %}
+    {{ pdr.printDataRecord(data_record) | indent(4) }}
+    {%- endfor %}
+  </DATA-RECORDS>
+  {%- endif %}
+  {%- if config_record.audience is not none %}
+  {{ paud.printAudience(config_record.audience) | indent(2) }}
+  {%- endif %}
+  {%- if config_record.system_items %}
+  <SYSTEM-ITEMS>
+    {%- for system_item in config_record.system_items %}
+    {{- pcits.printSystemItem(system_item) | indent(4) }}
+    {%- endfor %}
+  </SYSTEM-ITEMS>
+  {%- endif %}
+  {%- if config_record.data_id_item is not none %}
+  {{- pcits.printDataIdItem(config_record.data_id_item)|indent(2)}}
+  {%- endif %}
+  {%- if config_record.option_items %}
+  <OPTION-ITEMS>
+    {%- for option_item in config_record.option_items %}
+    {{- pcits.printOptionItem(option_item) | indent(4) }}
+    {%- endfor %}
+  </OPTION-ITEMS>
+  {%- endif %}
+  {%- if config_record.default_data_record_snref is not none %}
+  <DEFAULT-DATA-RECORD-SNREF SHORT-NAME="{{config_record.default_data_record_snref}}" />
+  {%- endif %}
+  {{- psd.printSpecialDataGroups(config_record.sdgs)|indent(2, first=True) }}{#- #}
+</CONFIG-RECORD>
+{%- endmacro -%}

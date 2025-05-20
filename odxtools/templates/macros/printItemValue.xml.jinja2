@@ -1,0 +1,31 @@
+1{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printAudience.xml.jinja2') as paud %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printItemValue(item_value) -%}
+<ITEM-VALUE>
+  {%- if item_value.phys_constant_value is not none %}
+  <PHYS-CONSTANT-VALUE>{{item_value.phys_constant_value | e}}</PHYS-CONSTANT-VALUE>
+  {%- endif %}
+  {%- if item_value.meaning is not none %}
+  <MEANING {{- make_xml_attrib("TI", item_value.meaning.text_identifier) }}>{{item_value.meaning|e}}</MEANING>
+  {%- endif %}
+  {%- if item_value.key is not none %}
+  <KEY>{{item_value.key | e}}</KEY>
+  {%- endif %}
+  {%- if item_value.rule is not none %}
+  <RULE>{{item_value.rule | e}}</RULE>
+  {%- endif %}
+  {%- if item_value.description is not none %}
+  <DESCRIPTION {{- make_xml_attrib("TI", item_value.description.text_identifier) }}>{{item_value.description|e}}</DESCRIPTION>
+  {%- endif %}
+  {{- psd.printSpecialDataGroups(item_value.sdgs)|indent(2, first=True) }}{#- #}
+  {%- if item_value.audience is not none %}
+  {{ paud.printAudience(item_value.audience) | indent(2) }}
+  {%- endif %}
+</ITEM-VALUE>
+{%- endmacro -%}

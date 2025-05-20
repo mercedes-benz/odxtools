@@ -1,0 +1,38 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+ #
+ # This template writes an .odx-e file containing an ECU-CONFIG description
+ # for variant coding.
+-#}
+{%- import('macros/printOdxCategory.xml.jinja2') as poc %}
+{%- import('macros/printConfigData.xml.jinja2') as pcd %}
+{%- import('macros/printConfigDataDictionarySpec.xml.jinja2') as pcdds %}
+{%- import('macros/printAudience.xml.jinja2') as paud %}
+{#- -#}
+
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- Written using odxtools {{odxtools_version}} -->
+<ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
+  {{- set_category_docfrag(ecu_config.short_name, "ECU-CONFIG") }}
+  <ECU-CONFIG {{- poc.printOdxCategoryAttribs(ecu_config) }}>
+    {{- poc.printOdxCategorySubtags(ecu_config)|indent(4) }}
+    {%- if ecu_config.config_datas %}
+    <CONFIG-DATAS>
+      {%- for config_data in ecu_config.config_datas %}
+      {{ pcd.printConfigData(config_data) | indent(6) }}
+      {%- endfor %}
+    </CONFIG-DATAS>
+    {%- endif %}
+    {%- if ecu_config.additional_audiences %}
+    <ADDITIONAL-AUDIENCES>
+      {%- for additional_audience in ecu_config.additional_audiences %}
+      {{ paud.printAdditionalAudience(additional_audience) | indent(6) }}
+      {%- endfor %}
+    </ADDITIONAL-AUDIENCES>
+    {%- endif %}
+    {%- if ecu_config.config_data_dictionary_spec %}
+    {{ pcdds.printConfigDataDictionarySpec(ecu_config.config_data_dictionary_spec) | indent(4) }}
+    {%- endif %}
+  </ECU-CONFIG>
+</ODX>

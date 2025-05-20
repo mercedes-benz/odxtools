@@ -1,0 +1,22 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printDOP.xml.jinja2') as pdop %}
+{%- import('macros/printUnitSpec.xml.jinja2') as punit %}
+
+{%- macro printConfigDataDictionarySpec(cdds) -%}
+<CONFIG-DATA-DICTIONARY-SPEC>
+  {%- if cdds.data_object_props %}
+  <DATA-OBJECT-PROPS>
+    {%- for dop in cdds.data_object_props %}
+    {{- pdop.printDataObjectProp(dop)|indent(3) }}
+    {%- endfor %}
+  </DATA-OBJECT-PROPS>
+  {%- endif %}
+  {%- if cdds.unit_spec %}
+  {{ punit.printUnitSpec(cdds.unit_spec)|indent(2) }}
+  {%- endif %}
+</CONFIG-DATA-DICTIONARY-SPEC>
+{%- endmacro -%}
