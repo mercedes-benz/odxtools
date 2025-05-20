@@ -21,6 +21,7 @@ from .diaglayers.protocol import Protocol
 from .ecuconfig import EcuConfig
 from .exceptions import odxraise, odxrequire
 from .flash import Flash
+from .multipleecujobspec import MultipleEcuJobSpec
 from .nameditemlist import NamedItemList
 from .odxdoccontext import OdxDocContext
 from .odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
@@ -43,6 +44,7 @@ class Database:
         self._comparam_specs = NamedItemList[ComparamSpec]()
         self._ecu_configs = NamedItemList[EcuConfig]()
         self._flashs = NamedItemList[Flash]()
+        self._multiple_ecu_job_specs = NamedItemList[MultipleEcuJobSpec]()
         self._short_name = "odx_database"
 
     def add_pdx_file(self, pdx_file: Union[str, "PathLike[Any]", IO[bytes], ZipFile]) -> None:
@@ -123,6 +125,10 @@ class Database:
         elif category_tag == "FLASH":
             context = OdxDocContext(model_version, (OdxDocFragment(category_sn, DocType.FLASH),))
             self._flashs.append(Flash.from_et(category_et, context))
+        elif category_tag == "MULTIPLE-ECU-JOB-SPEC":
+            context = OdxDocContext(model_version,
+                                    (OdxDocFragment(category_sn, DocType.MULTIPLE_ECU_JOB_SPEC),))
+            self._multiple_ecu_job_specs.append(MultipleEcuJobSpec.from_et(category_et, context))
 
     def refresh(self) -> None:
         # Create wrapper objects
@@ -160,6 +166,9 @@ class Database:
         for flash in self.flashs:
             flash._resolve_odxlinks(self._odxlinks)
 
+        for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
+            multiple_ecu_job_spec._resolve_odxlinks(self._odxlinks)
+
         # resolve short name references for containers which do not do
         # inheritance (we can call directly call _resolve_snrefs())
         context = SnRefContext()
@@ -176,6 +185,8 @@ class Database:
             ecu_config._finalize_init(self, self._odxlinks)
         for flash in self.flashs:
             flash._finalize_init(self, self._odxlinks)
+        for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
+            multiple_ecu_job_spec._finalize_init(self, self._odxlinks)
 
         for subset in self.comparam_subsets:
             subset._resolve_snrefs(context)
@@ -187,6 +198,8 @@ class Database:
             ecu_config._resolve_snrefs(context)
         for flash in self.flashs:
             flash._resolve_snrefs(context)
+        for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
+            multiple_ecu_job_spec._resolve_snrefs(context)
 
     def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result: dict[OdxLinkId, Any] = {}
@@ -205,6 +218,8 @@ class Database:
 
         for flash in self.flashs:
             result.update(flash._build_odxlinks())
+        for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
+            result.update(multiple_ecu_job_spec._build_odxlinks())
 
         return result
 
@@ -286,6 +301,10 @@ class Database:
     @property
     def flashs(self) -> NamedItemList[Flash]:
         return self._flashs
+
+    @property
+    def multiple_ecu_job_specs(self) -> NamedItemList[MultipleEcuJobSpec]:
+        return self._multiple_ecu_job_specs
 
     def __repr__(self) -> str:
         return f"Database(model_version={self.model_version}, " \
