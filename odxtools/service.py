@@ -2,6 +2,7 @@
 # Copyright (c) 2022 MBition GmbH
 from typing import List, Iterable, Optional, Union
 
+
 from .utils import short_name_as_id
 from .audience import Audience
 from .functionalclass import FunctionalClass
@@ -9,6 +10,7 @@ from .state import State
 from .utils import create_description_from_et
 from .exceptions import DecodeError
 from .parameters import Parameter
+from .pre_condition_state import PreConditionState
 from .odxlink import OdxLinkRef, OdxLinkId, OdxDocFragment, OdxLinkDatabase
 from .state_transition import StateTransition
 from .structures import Request, Response
@@ -32,7 +34,7 @@ class DiagService:
                  addressing: Optional[str] = None,
                  audience: Optional[Audience] = None,
                  functional_class_refs: Iterable[OdxLinkRef] = [],
-                 pre_condition_state_refs: Iterable[OdxLinkRef] = [],
+                 pre_condition_state_refs: Iterable[PreConditionState] = [],
                  state_transition_refs: Iterable[OdxLinkRef] = [],
                  sdgs: List[SpecialDataGroup] = []):
         """Constructs the service.
@@ -57,7 +59,7 @@ class DiagService:
         self.functional_class_refs: List[OdxLinkRef] = list(functional_class_refs)
         self._functional_classes: Union[List[FunctionalClass],
                                         NamedItemList[FunctionalClass]] = []
-        self.pre_condition_state_refs: List[OdxLinkRef] = list(pre_condition_state_refs)
+        self.pre_condition_state_refs: List[PreConditionState] = list(pre_condition_state_refs)
         self._pre_condition_states: Union[List[State],
                                           NamedItemList[State]] = []
         self.state_transition_refs: List[OdxLinkRef] = list(state_transition_refs)
@@ -141,7 +143,7 @@ class DiagService:
 
         pre_condition_state_refs = []
         for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF"):
-            ref = OdxLinkRef.from_et(el, doc_frags)
+            ref = PreConditionState.from_et(el, doc_frags)
             assert ref is not None
             pre_condition_state_refs.append(ref)
 
@@ -247,7 +249,7 @@ class DiagService:
         self._pre_condition_states = \
             NamedItemList(
                 short_name_as_id,
-                [odxlinks.resolve(st_id) for st_id in self.pre_condition_state_refs])
+                [odxlinks.resolve(ref.ref) for ref in self.pre_condition_state_refs])
         self._state_transitions = \
             NamedItemList(
                 short_name_as_id,
