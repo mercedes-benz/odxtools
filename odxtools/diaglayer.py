@@ -26,6 +26,7 @@ from .service import DiagService
 from .singleecujob import SingleEcuJob
 from .specialdata import SpecialDataGroup, create_sdgs_from_et
 from .state import State
+from .statechart import StateChart
 from .state_transition import StateTransition
 from .structures import Request, Response, create_any_structure_from_et
 from .utils import create_description_from_et, short_name_as_id
@@ -291,9 +292,13 @@ class DiagLayer:
             for el in et_element.iterfind("FUNCT-CLASSS/FUNCT-CLASS")
         ]
 
+        state_charts = [
+            StateChart.from_et(el, doc_frags)
+            for el in et_element.iterfind("STATE-CHARTS/STATE-CHART")
+        ]
+
         states = [
-            State.from_et(el, doc_frags)
-            for el in et_element.iterfind("STATE-CHARTS/STATE-CHART/STATES/STATE")
+            state for state_chart in state_charts for state in state_chart.states
         ]
 
         # TODO: store the state charts properly (i.e. as separate objects)
