@@ -24,6 +24,8 @@ class ParameterWithDOP(Parameter):
         super().__init__(parameter_type=parameter_type, **kwargs)
         self.dop_ref = dop_ref
         self.dop_snref = dop_snref
+        self._dop: Optional[DopBase] = None
+
 
     @property
     def dop(self) -> Optional[DopBase]:
@@ -35,8 +37,6 @@ class ParameterWithDOP(Parameter):
                             parent_dl: "DiagLayer",
                             odxlinks: OdxLinkDatabase) -> None:
         super()._resolve_references(parent_dl, odxlinks)
-
-        self._dop: Optional[DopBase] = None
 
         if self.dop_snref:
             dop = parent_dl.data_object_properties.get(self.dop_snref)
