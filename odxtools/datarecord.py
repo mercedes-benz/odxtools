@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MIT
+import re
 from dataclasses import dataclass, field
+from functools import cached_property
 from typing import Any, cast
 from xml.etree import ElementTree
 
@@ -8,6 +10,8 @@ from .dataformatselection import DataformatSelection
 from .element import NamedElement
 from .exceptions import odxraise, odxrequire
 from .identvalue import IdentValue
+from .intelhexdataset import IntelHexDataSet
+from .motorolasdataset import MotorolaSDataSet
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
@@ -27,6 +31,57 @@ class DataRecord(NamedElement):
     data: str | None = None
 
     dataformat: DataformatSelection
+
+    @cached_property
+    def dataset(self) -> IntelHexDataSet | MotorolaSDataSet | bytearray:
+        if self.data is None:
+            db = odxrequire(self._database)
+            if db is None:
+                return bytearray()
+
+            datafile = odxrequire(self.datafile)
+            if datafile is None:
+                return bytearray()
+
+            aux_file = odxrequire(db.auxiliary_files.get(datafile.value))
+            if aux_file is None:
+                return bytearray()
+
+            data_str = aux_file.read().decode()
+            aux_file.seek(0)
+        elif self.data is not None:
+            data_str = self.data
+        else:
+            odxraise("No data specified for DATA-RECORD")
+            return bytearray()
+
+        if self.dataformat == DataformatSelection.INTEL_HEX:
+            return IntelHexDataSet.from_string(data_str)
+        elif self.dataformat == DataformatSelection.MOTOROLA_S:
+            return MotorolaSDataSet.from_string(data_str)
+        elif self.dataformat == DataformatSelection.BINARY:
+            return bytearray.fromhex(re.sub(r"\s", "", data_str, flags=re.MULTILINE))
+
+        # user defined formats are not possible here
+        odxraise(f"Unsupported data format {self.dataformat.value}")
+        return bytearray()
+
+    @property
+    def blob(self) -> bytearray:
+        """Computes the binary data blob that ought to be send to the ECU.
+
+        i.e., this property stitches together the data of all
+        segments.
+
+        Note that, in order to reduce memory usage, this property is
+        not computed when instanting the data record object, but at
+        run time when it is accessed.
+        """
+
+        if isinstance(self.dataset, (IntelHexDataSet, MotorolaSDataSet)):
+            return self.dataset.blob
+
+        return self.dataset
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DataRecord":
@@ -70,4 +125,6 @@ class DataRecord(NamedElement):
         pass
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
-        pass
+        # this is slightly hacky because we only remember the
+        # applicable ODX database and do not resolve any SNREFs here
+        self._database = odxrequire(context.database)

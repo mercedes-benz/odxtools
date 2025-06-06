@@ -20,7 +20,7 @@
     {%- if data_record.data_id.value_type is not none %}
       {#- #} TYPE="{{ data_record.data_id.value_type.value }}"
       {%- endif %}
-      {#- #}>{{data_record.data_id.value | e}}</DATA-ID>
+      {#- #}>{{data_record.data_id.value_raw | e}}</DATA-ID>
   {%- endif %}
   {{- psd.printSpecialDataGroups(data_record.sdgs)|indent(2, first=True) }}{#- #}
   {%- if data_record.datafile is not none %}

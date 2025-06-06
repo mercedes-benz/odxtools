@@ -1,12 +1,16 @@
 # SPDX-License-Identifier: MIT
+import re
 from dataclasses import dataclass
 from typing import Any
 from xml.etree import ElementTree
 
 from .dataformat import Dataformat
+from .dataformatselection import DataformatSelection
 from .element import IdentifiableElement
 from .encryptcompressmethod import EncryptCompressMethod
-from .exceptions import odxrequire
+from .exceptions import odxassert, odxrequire
+from .intelhexdataset import IntelHexDataSet
+from .motorolasdataset import MotorolaSDataSet
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
@@ -19,6 +23,38 @@ class Flashdata(IdentifiableElement):
     address_length: int | None = None
     dataformat: Dataformat
     encrypt_compress_method: EncryptCompressMethod | None = None
+
+    @property
+    def data_str(self) -> str:
+        raise NotImplementedError(f"The .data_str property has not been implemented "
+                                  f"by the {type(self).__name__} class")
+
+    @property
+    def dataset(self) -> IntelHexDataSet | MotorolaSDataSet | bytearray | None:
+        data_str = self.data_str
+        if self.dataformat.selection == DataformatSelection.INTEL_HEX:
+            return IntelHexDataSet.from_string(data_str)
+        elif self.dataformat.selection == DataformatSelection.MOTOROLA_S:
+            return MotorolaSDataSet.from_string(data_str)
+        elif self.dataformat.selection == DataformatSelection.BINARY:
+            return bytearray.fromhex(re.sub(r"\s", "", data_str, flags=re.MULTILINE))
+        else:
+            odxassert(self.dataformat.selection == DataformatSelection.USER_DEFINED)
+            # user defined formats cannot be parsed on the odxtools
+            # level
+            return None
+
+    @property
+    def blob(self) -> bytearray | None:
+        ds = self.dataset
+        if isinstance(ds, (IntelHexDataSet, MotorolaSDataSet)):
+            return ds.blob
+        elif isinstance(ds, bytearray):
+            return ds
+
+        # USER-DEFINED flash data cannot be interpreted on the
+        # odxtools level
+        return ds
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Flashdata":

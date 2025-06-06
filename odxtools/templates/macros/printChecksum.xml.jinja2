@@ -31,6 +31,6 @@
     {%- if checksum.checksum_result.value_type is not none %}
     {#- #} TYPE="{{ checksum.checksum_result.value_type.value }}"
     {%- endif %}
-    {#- #}>{{checksum.checksum_result.value}}</CHECKSUM-RESULT>
+    {#- #}>{{checksum.checksum_result.value_raw}}</CHECKSUM-RESULT>
 </CHECKSUM>
 {%- endmacro -%}

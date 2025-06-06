@@ -15,6 +15,10 @@ from .utils import dataclass_fields_asdict
 class InternFlashdata(Flashdata):
     data: str
 
+    @property
+    def data_str(self) -> str:
+        return self.data
+
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "InternFlashdata":
         kwargs = dataclass_fields_asdict(Flashdata.from_et(et_element, context))

@@ -14,7 +14,7 @@
       {%- if ident_value.value_type is not none %}
       {#- #} TYPE="{{ ident_value.value_type.value }}"
       {%- endif %}
-      {#- #}>{{ident_value.value}}</IDENT-VALUE>
+      {#- #}>{{ident_value.value_raw}}</IDENT-VALUE>
     {%- endfor %}
   </IDENT-VALUES>
 </EXPECTED-IDENT>
