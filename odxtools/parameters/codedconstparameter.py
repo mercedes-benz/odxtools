@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -57,8 +57,7 @@ class CodedConstParameter(Parameter):
             coded_value_raw=coded_value_raw, diag_coded_type=diag_coded_type, **kwargs)
 
     def __post_init__(self) -> None:
-        self._coded_value = cast(
-            AtomicOdxType, self.diag_coded_type.base_data_type.from_string(self.coded_value_raw))
+        self._coded_value = self.diag_coded_type.base_data_type.from_string(self.coded_value_raw)
 
     @override
     def _build_odxlinks(self) -> dict[OdxLinkId, Any]:

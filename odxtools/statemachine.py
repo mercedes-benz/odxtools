@@ -97,8 +97,9 @@ class StateMachine:
         self._state_chart = state_chart
         self._active_state = state_chart.start_state
 
-    def execute(self, service: "DiagService", **service_params: Any
-               ) -> Generator[bytes, bytes | bytearray | ParameterValueDict, None]:
+    def execute(
+        self, service: "DiagService", **service_params: Any
+    ) -> Generator[bytes | bytearray, bytes | bytearray | ParameterValueDict, None]:
         """Run a diagnostic service and update the state machine
         depending on the outcome.
 

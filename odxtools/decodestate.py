@@ -21,7 +21,7 @@ class DecodeState:
     """Utility class to be used while decoding a message."""
 
     #: bytes to be decoded
-    coded_message: bytes
+    coded_message: bytes | bytearray
 
     #: Absolute position of the origin
     #:

@@ -113,8 +113,8 @@ class Request(IdentifiableElement):
 
         return encode_state.coded_message
 
-    def decode(self, message: bytes) -> ParameterValueDict:
-        decode_state = DecodeState(coded_message=message)
+    def decode(self, message: bytes | bytearray) -> ParameterValueDict:
+        decode_state = DecodeState(coded_message=bytes(message))
         param_values = self.decode_from_pdu(decode_state)
 
         if not isinstance(param_values, dict):
@@ -129,5 +129,5 @@ class Request(IdentifiableElement):
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
         return composite_codec_decode_from_pdu(self, decode_state)
 
-    def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:
+    def coded_const_prefix(self, request_prefix: bytes = b'') -> bytearray:
         return composite_codec_get_coded_const_prefix(self, request_prefix)

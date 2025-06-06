@@ -352,7 +352,7 @@ class DiagLayer:
             # corresponding request for `decode_response()`.)
             request_prefix = b''
             if s.request is not None:
-                request_prefix = s.request.coded_const_prefix()
+                request_prefix = bytes(s.request.coded_const_prefix())
             prefixes = [request_prefix]
             gnrs = getattr(self, "global_negative_responses", [])
             prefixes += [
@@ -383,7 +383,7 @@ class DiagLayer:
         else:
             cast(list[DiagService], sub_tree[-1]).append(service)
 
-    def _find_services_for_uds(self, message: bytes) -> list[DiagService]:
+    def _find_services_for_uds(self, message: bytes | bytearray) -> list[DiagService]:
         prefix_tree = self._prefix_tree
 
         # Find matching service(s) in prefix tree
@@ -398,7 +398,8 @@ class DiagLayer:
                 possible_services += cast(list[DiagService], prefix_tree[-1])
         return possible_services
 
-    def _decode(self, message: bytes, candidate_services: Iterable[DiagService]) -> list[Message]:
+    def _decode(self, message: bytes | bytearray,
+                candidate_services: Iterable[DiagService]) -> list[Message]:
         decoded_messages: list[Message] = []
 
         for service in candidate_services:
@@ -420,7 +421,7 @@ class DiagLayer:
 
                         decoded_messages.append(
                             Message(
-                                coded_message=message,
+                                coded_message=bytes(message),
                                 service=service,
                                 coding_object=gnr,
                                 param_dict=decoded_gnr))
@@ -437,12 +438,13 @@ class DiagLayer:
 
         return decoded_messages
 
-    def decode(self, message: bytes) -> list[Message]:
+    def decode(self, message: bytes | bytearray) -> list[Message]:
         candidate_services = self._find_services_for_uds(message)
 
         return self._decode(message, candidate_services)
 
-    def decode_response(self, response: bytes, request: bytes) -> list[Message]:
+    def decode_response(self, response: bytes | bytearray,
+                        request: bytes | bytearray) -> list[Message]:
         candidate_services = self._find_services_for_uds(request)
         if candidate_services is None:
             raise DecodeError(f"Couldn't find corresponding service for request {request.hex()}.")

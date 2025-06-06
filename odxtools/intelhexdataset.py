@@ -27,12 +27,12 @@ class IntelHexDataSet:
                 # address within the segment...
                 odxassert(segment.load_offset == 0x0)
                 odxassert(len(segment.payload) == 4)
-                return int.from_bytes(segment.payload)
+                return int.from_bytes(segment.payload, "big")
             elif segment.segment_type == 5:
                 # start linear address record
                 odxassert(segment.load_offset == 0x0)
                 odxassert(len(segment.payload) == 4)
-                return int.from_bytes(segment.payload)
+                return int.from_bytes(segment.payload, "big")
             elif segment.segment_type == 1:
                 # end of file record
                 odxassert(len(segment.payload) == 0)

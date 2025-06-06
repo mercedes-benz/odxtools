@@ -107,14 +107,14 @@ class VariantMatcher:
                     req_bytes = matching_param.get_ident_service(variant).encode_request()
 
                     if self.use_cache and req_bytes in self.req_resp_cache:
-                        resp_values = copy(self.req_resp_cache[req_bytes])
+                        resp_values = copy(bytes(self.req_resp_cache[bytes(req_bytes)]))
                     else:
                         if isinstance(matching_param, MatchingBaseVariantParameter):
-                            yield matching_param.use_physical_addressing, req_bytes
+                            yield matching_param.use_physical_addressing, bytes(req_bytes)
                         else:
-                            yield True, req_bytes
+                            yield True, bytes(req_bytes)
                         resp_values = self._get_ident_response()
-                        self._update_cache(req_bytes, copy(resp_values))
+                        self._update_cache(bytes(req_bytes), copy(bytes(resp_values)))
 
                     cur_response_matches = self._ident_response_matches(
                         variant, matching_param, resp_values)

@@ -4,7 +4,7 @@ import typing
 from collections.abc import Collection, Iterable
 from copy import deepcopy
 from keyword import iskeyword
-from typing import Any, SupportsIndex, TypeVar, cast, overload, runtime_checkable
+from typing import Any, SupportsIndex, TypeVar, overload, runtime_checkable
 
 from .exceptions import odxraise
 
@@ -159,7 +159,7 @@ class ItemAttributeList(list[T]):
                 return super().__getitem__(key)
             return default
         else:
-            return cast(T | None, self._item_dict.get(key, default))
+            return self._item_dict.get(key, default)
 
     def __eq__(self, other: object) -> bool:
         """
