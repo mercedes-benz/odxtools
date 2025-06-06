@@ -27,13 +27,6 @@ class ReadDiagCommConnector:
     def read_diag_comm(self) -> DiagComm | None:
         return self._read_diag_comm
 
-    # READ-DATA cannot be resolved ahead of time as it points to a
-    # value parameter of the positive responses that are received as
-    # an answer after executing the read diag comm...
-    #@property
-    #def read_data(self) -> ValueParameter:
-    #    return self._read_data
-
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ReadDiagCommConnector":
         read_param_values = [
