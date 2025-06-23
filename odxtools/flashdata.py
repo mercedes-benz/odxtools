@@ -1,16 +1,16 @@
 # SPDX-License-Identifier: MIT
 import re
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 from xml.etree import ElementTree
+
+from bincopy import BinFile
 
 from .dataformat import Dataformat
 from .dataformatselection import DataformatSelection
 from .element import IdentifiableElement
 from .encryptcompressmethod import EncryptCompressMethod
-from .exceptions import odxassert, odxrequire
-from .intelhexdataset import IntelHexDataSet
-from .motorolasdataset import MotorolaSDataSet
+from .exceptions import odxassert, odxraise, odxrequire
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
@@ -30,31 +30,33 @@ class Flashdata(IdentifiableElement):
                                   f"by the {type(self).__name__} class")
 
     @property
-    def dataset(self) -> IntelHexDataSet | MotorolaSDataSet | bytearray | None:
+    def dataset(self) -> BinFile | bytearray | None:
         data_str = self.data_str
-        if self.dataformat.selection == DataformatSelection.INTEL_HEX:
-            return IntelHexDataSet.from_string(data_str)
-        elif self.dataformat.selection == DataformatSelection.MOTOROLA_S:
-            return MotorolaSDataSet.from_string(data_str)
+        if self.dataformat.selection in (DataformatSelection.INTEL_HEX,
+                                         DataformatSelection.MOTOROLA_S):
+            bf = BinFile()
+
+            # remove white space and empty lines
+            bf.add("\n".join([re.sub(r"\s", "", x) for x in data_str.splitlines() if x.strip()]))
+
+            return bf
         elif self.dataformat.selection == DataformatSelection.BINARY:
             return bytearray.fromhex(re.sub(r"\s", "", data_str, flags=re.MULTILINE))
         else:
-            odxassert(self.dataformat.selection == DataformatSelection.USER_DEFINED)
-            # user defined formats cannot be parsed on the odxtools
-            # level
+            odxassert(self.dataformat.selection == DataformatSelection.USER_DEFINED,
+                      f"Unsupported data format {self.dataformat.selection}")
             return None
 
     @property
-    def blob(self) -> bytearray | None:
+    def blob(self) -> bytearray:
         ds = self.dataset
-        if isinstance(ds, (IntelHexDataSet, MotorolaSDataSet)):
-            return ds.blob
+        if isinstance(ds, BinFile):
+            return cast(bytearray, ds.as_binary())
         elif isinstance(ds, bytearray):
             return ds
 
-        # USER-DEFINED flash data cannot be interpreted on the
-        # odxtools level
-        return ds
+        odxraise("USER-DEFINED flash data cannot be interpreted on the odxtools level")
+        return bytearray()
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Flashdata":

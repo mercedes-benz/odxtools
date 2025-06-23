@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "setuptools >= 59",
-    "setuptools_scm[toml]>=6.2",
+    "setuptools_scm[toml] >= 6.2",
     "wheel >= 0.41"
 ]
 build-backend = "setuptools.build_meta"
@@ -44,6 +44,7 @@ dependencies = [
     "packaging",
     "rich >= 13.7",
     "typing_extensions >= 4.9",
+    "bincopy >= 20.1",
 ]
 dynamic = ["version"]
 

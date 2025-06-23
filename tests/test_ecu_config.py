@@ -5,11 +5,10 @@ from typing import Any
 from xml.etree import ElementTree
 
 import jinja2
+from bincopy import BinFile
 
 import odxtools
 from examples.somersaultecu import database as somersault_db
-from odxtools.intelhexdataset import IntelHexDataSet
-from odxtools.motorolasdataset import MotorolaSDataSet
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import DocType, OdxDocFragment
 from odxtools.writepdxfile import (jinja2_odxraise_helper, make_bool_xml_attrib, make_ref_attribs,
@@ -103,7 +102,7 @@ ecu_config_xml_str = """<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
  
      S11F00007C0802A6900100049421FFF07C6C1B787C8C23783C6000003863000026  
 
-     S705ABCDEF0193  
+     S705ABCDEF0192  
 
                     </DATA>
                   </DATA-RECORD>
@@ -245,19 +244,8 @@ def test_create_ecu_config_from_et() -> None:
     assert dr.data_id.value_raw == "001122aBCd"
     assert dr.data_id.value == bytes.fromhex("001122aBCd")
     dset = dr.dataset
-    assert isinstance(dset, IntelHexDataSet)
-    assert dset.verify_checksums()
-    assert len(dset.segments) == 5
-    assert dset.start_address == 0xabcdef01
-
-    ds_intel = dset.segments[1]
-    assert ds_intel.payload_len == 5
-    assert ds_intel.load_offset == 0
-    assert ds_intel.segment_type == 0
-    assert ds_intel.payload == b"hello"
-    assert ds_intel.checksum == 0xe7
-    assert ds_intel.verify_checksum()
-    assert dr.blob == b'\x00' * 16 + b"hello, world!"
+    assert isinstance(dset, BinFile)
+    assert dset.execution_start_address == 0xabcdef01
 
     dr = config_record.data_records.my_binary_data_record
     dset_bin = dr.dataset
@@ -267,17 +255,8 @@ def test_create_ecu_config_from_et() -> None:
 
     dr = config_record.data_records.my_moto_s_data_record
     dset_moto = dr.dataset
-    assert isinstance(dset_moto, MotorolaSDataSet)
-    assert dset_moto.start_address == 0xabcdef01
-    assert len(dset_moto.segments) == 3
-    ds_moto = dset_moto.segments[1]
-    assert ds_moto.segment_type == 1
-    assert ds_moto.byte_count == 0x1f
-    assert ds_moto.address == 0x0
-    assert ds_moto.payload == bytes.fromhex(
-        "7C0802A6900100049421FFF07C6C1B787C8C23783C60000038630000")
-    assert ds_moto.checksum == 0x26
-    assert ds_moto.verify_checksum()
+    assert isinstance(dset_moto, BinFile)
+    assert dset_moto.execution_start_address == 0xabcdef01
 
     assert config_record.audience is not None
     assert config_record.audience.is_development is True

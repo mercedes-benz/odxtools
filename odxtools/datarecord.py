@@ -1,17 +1,16 @@
 # SPDX-License-Identifier: MIT
 import re
 from dataclasses import dataclass, field
-from functools import cached_property
 from typing import Any, cast
 from xml.etree import ElementTree
+
+from bincopy import BinFile
 
 from .datafile import Datafile
 from .dataformatselection import DataformatSelection
 from .element import NamedElement
 from .exceptions import odxraise, odxrequire
 from .identvalue import IdentValue
-from .intelhexdataset import IntelHexDataSet
-from .motorolasdataset import MotorolaSDataSet
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
@@ -32,9 +31,9 @@ class DataRecord(NamedElement):
 
     dataformat: DataformatSelection
 
-    @cached_property
-    def dataset(self) -> IntelHexDataSet | MotorolaSDataSet | bytearray:
-        if self.data is None:
+    @property
+    def dataset(self) -> BinFile | bytearray:
+        if self.datafile is not None:
             db = odxrequire(self._database)
             if db is None:
                 return bytearray()
@@ -55,10 +54,13 @@ class DataRecord(NamedElement):
             odxraise("No data specified for DATA-RECORD")
             return bytearray()
 
-        if self.dataformat == DataformatSelection.INTEL_HEX:
-            return IntelHexDataSet.from_string(data_str)
-        elif self.dataformat == DataformatSelection.MOTOROLA_S:
-            return MotorolaSDataSet.from_string(data_str)
+        if self.dataformat in (DataformatSelection.INTEL_HEX, DataformatSelection.MOTOROLA_S):
+            bf = BinFile()
+
+            # remove white space and empty lines
+            bf.add("\n".join([re.sub(r"\s", "", x) for x in data_str.splitlines() if x.strip()]))
+
+            return bf
         elif self.dataformat == DataformatSelection.BINARY:
             return bytearray.fromhex(re.sub(r"\s", "", data_str, flags=re.MULTILINE))
 
@@ -78,8 +80,8 @@ class DataRecord(NamedElement):
         run time when it is accessed.
         """
 
-        if isinstance(self.dataset, (IntelHexDataSet, MotorolaSDataSet)):
-            return self.dataset.blob
+        if isinstance(self.dataset, BinFile):
+            return cast(bytearray, self.dataset.as_binary())
 
         return self.dataset
 
