@@ -79,7 +79,7 @@ def composite_codec_get_free_parameters(codec: CompositeCodec) -> list[Parameter
 
 
 def composite_codec_get_coded_const_prefix(codec: CompositeCodec,
-                                           request_prefix: bytes = b'') -> bytes:
+                                           request_prefix: bytes = b'') -> bytearray:
     encode_state = EncodeState(coded_message=bytearray(), triggering_request=request_prefix)
 
     for param in codec.parameters:

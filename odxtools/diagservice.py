@@ -179,13 +179,13 @@ class DiagService(DiagComm):
 
         self.request.print_free_parameters_info()
 
-    def decode_message(self, raw_message: bytes) -> Message:
+    def decode_message(self, raw_message: bytes | bytearray) -> Message:
         request_prefix = b''
         candidate_coding_objects: list[Request | Response] = [
             *self.positive_responses, *self.negative_responses
         ]
         if self.request is not None:
-            request_prefix = self.request.coded_const_prefix()
+            request_prefix = bytes(self.request.coded_const_prefix())
             candidate_coding_objects.append(self.request)
 
         coding_objects: list[Request | Response] = []
@@ -199,7 +199,7 @@ class DiagService(DiagComm):
             try:
                 result_list.append(
                     Message(
-                        coded_message=raw_message,
+                        coded_message=bytes(raw_message),
                         service=self,
                         coding_object=coding_object,
                         param_dict=coding_object.decode(raw_message)))
@@ -221,7 +221,7 @@ class DiagService(DiagComm):
 
         return result_list[0]
 
-    def encode_request(self, **kwargs: ParameterValue) -> bytes:
+    def encode_request(self, **kwargs: ParameterValue) -> bytearray:
         """Prepare an array of bytes ready to be send over the wire
         for the request of this service.
         """
@@ -229,7 +229,7 @@ class DiagService(DiagComm):
         # encoding are specified (parameters which have a default are
         # optional)
         if self.request is None:
-            return b''
+            return bytearray()
 
         missing_params = {x.short_name
                           for x in self.request.required_parameters}.difference(kwargs.keys())
@@ -245,18 +245,18 @@ class DiagService(DiagComm):
         return self.request.encode(**kwargs)
 
     def encode_positive_response(self,
-                                 coded_request: bytes,
+                                 coded_request: bytes | bytearray,
                                  response_index: int = 0,
-                                 **kwargs: ParameterValue) -> bytes:
+                                 **kwargs: ParameterValue) -> bytearray:
         # TODO: Should the user decide the positive response or what are the differences?
         return self.positive_responses[response_index].encode(coded_request, **kwargs)
 
     def encode_negative_response(self,
-                                 coded_request: bytes,
+                                 coded_request: bytes | bytearray,
                                  response_index: int = 0,
-                                 **kwargs: ParameterValue) -> bytes:
+                                 **kwargs: ParameterValue) -> bytearray:
         return self.negative_responses[response_index].encode(coded_request, **kwargs)
 
-    def __call__(self, **kwargs: ParameterValue) -> bytes:
+    def __call__(self, **kwargs: ParameterValue) -> bytearray:
         """Encode a request."""
         return self.encode_request(**kwargs)

@@ -81,7 +81,7 @@ class TestEncodeRequest(unittest.TestCase):
             used_mask=None)
         self.assertEqual(encode_state.coded_message, bytes([0xe4, 0x3f, 0x61]))
 
-        decode_state = DecodeState(encode_state.coded_message)
+        decode_state = DecodeState(bytes(encode_state.coded_message))
         decoded = decode_state.extract_atomic_value(
             bit_length=24,
             base_data_type=DataType.A_UTF8STRING,
@@ -100,7 +100,7 @@ class TestEncodeRequest(unittest.TestCase):
             used_mask=None)
         self.assertEqual(encode_state.coded_message, bytes([0xc3, 0xa4, 0x3f]))
 
-        decode_state = DecodeState(encode_state.coded_message)
+        decode_state = DecodeState(bytes(encode_state.coded_message))
         decoded = decode_state.extract_atomic_value(
             bit_length=24,
             base_data_type=DataType.A_UTF8STRING,
@@ -119,7 +119,7 @@ class TestEncodeRequest(unittest.TestCase):
             used_mask=None)
         self.assertEqual(encode_state.coded_message, bytes([0x00, 0xe4]))
 
-        decode_state = DecodeState(encode_state.coded_message)
+        decode_state = DecodeState(bytes(encode_state.coded_message))
         decoded = decode_state.extract_atomic_value(
             bit_length=16,
             base_data_type=DataType.A_UTF8STRING,
@@ -138,7 +138,7 @@ class TestEncodeRequest(unittest.TestCase):
             used_mask=None)
         self.assertEqual(encode_state.coded_message, bytes([0xe4, 0x00]))
 
-        decode_state = DecodeState(encode_state.coded_message)
+        decode_state = DecodeState(bytes(encode_state.coded_message))
         decoded = decode_state.extract_atomic_value(
             bit_length=16,
             base_data_type=DataType.A_UTF8STRING,
@@ -158,7 +158,7 @@ class TestEncodeRequest(unittest.TestCase):
             used_mask=None)
         self.assertEqual(encode_state.coded_message, bytes([0x00, 0x12, 0x34]))
 
-        decode_state = DecodeState(encode_state.coded_message)
+        decode_state = DecodeState(bytes(encode_state.coded_message))
         decoded = decode_state.extract_atomic_value(
             bit_length=24,
             base_data_type=DataType.A_UINT32,
@@ -185,7 +185,7 @@ class TestEncodeRequest(unittest.TestCase):
             used_mask=None)
         self.assertEqual(encode_state.coded_message, bytes([0x00, 0x01, 0x02]))
 
-        decode_state = DecodeState(encode_state.coded_message)
+        decode_state = DecodeState(bytes(encode_state.coded_message))
         decoded = decode_state.extract_atomic_value(
             bit_length=24,
             base_data_type=DataType.A_UINT32,
@@ -204,7 +204,7 @@ class TestEncodeRequest(unittest.TestCase):
             used_mask=None)
         self.assertEqual(encode_state.coded_message, bytes([0x00, 0x12, 0x34]))
 
-        decode_state = DecodeState(encode_state.coded_message)
+        decode_state = DecodeState(bytes(encode_state.coded_message))
         decoded = decode_state.extract_atomic_value(
             bit_length=24,
             base_data_type=DataType.A_INT32,
@@ -222,7 +222,7 @@ class TestEncodeRequest(unittest.TestCase):
             used_mask=None)
         self.assertEqual(encode_state.coded_message, bytes([0xff, 0xed, 0xcb]))
 
-        decode_state = DecodeState(encode_state.coded_message)
+        decode_state = DecodeState(bytes(encode_state.coded_message))
         decoded = decode_state.extract_atomic_value(
             bit_length=24,
             base_data_type=DataType.A_INT32,

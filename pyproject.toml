@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "setuptools >= 59",
-    "setuptools_scm[toml]>=6.2",
+    "setuptools_scm[toml] >= 6.2",
     "wheel >= 0.41"
 ]
 build-backend = "setuptools.build_meta"
@@ -44,6 +44,7 @@ dependencies = [
     "packaging",
     "rich >= 13.7",
     "typing_extensions >= 4.9",
+    "bincopy >= 20.1",
 ]
 dynamic = ["version"]
 
@@ -103,8 +104,8 @@ lint.ignore = [
     "E501",  # line too long
     "F541",  # f-string-missing-placeholders
     "UP038",  # non-pep604-isinstance (deprecated)
+    "W293",  # empty lines contains white space
 ]
-
 exclude = [
     "doc",
     "odxtools/version.py",
@@ -114,7 +115,8 @@ exclude = [
 known-first-party = ["odxtools"]
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401"]
+"__init__.py" = ["F401"]  # unused imports
+"tests/test_ecu_config.py" = ["W291", "W293"]  # trailing whitespace; empty line contains white space
 
 [tool.yapf]
 based_on_style = "yapf"

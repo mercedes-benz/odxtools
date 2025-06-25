@@ -1,0 +1,66 @@
+1{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printConfigItems.xml.jinja2') as pcits %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printDiagCommDataConnector(connector) -%}
+<DIAG-COMM-DATA-CONNECTOR>
+  <UNCOMPRESSED-SIZE>{{connector.uncompressed_size}}</UNCOMPRESSED-SIZE>
+  {%- set num_nibbles = (connector.source_start_address.bit_length() + 7) // 8 * 2 %}
+  <SOURCE-START-ADDRESS>{{ ("%%0%dX" | format(num_nibbles | int)) | format(connector.source_start_address | int) }}</SOURCE-START-ADDRESS>
+  {%- if connector.read_diag_comm_connector is not none %}
+  {%- set rdcc = connector.read_diag_comm_connector %}
+  <READ-DIAG-COMM-CONNECTOR>
+    {%- if rdcc.read_param_values %}
+    <READ-PARAM-VALUES>
+       {%- for rpv in rdcc.read_param_values %}
+       <READ-PARAM-VALUE {{ make_xml_attrib("SEMANTIC", rpv.semantic) }}>
+         <PHYS-CONSTANT-VALUE>{{ rpv.phys_constant_value | e }}</PHYS-CONSTANT-VALUE>
+         {%- if rpv.in_param_if_snref is not none %}
+         <IN-PARAM-IF-SNREF SHORT-NAME="{{rpv.in_param_if_snref}}" />
+         {%- endif %}
+         {%- if rpv.in_param_if_snpathref is not none %}
+         <IN-PARAM-IF-SNPATHREF SHORT-NAME-PATH="{{rpv.in_param_if_snpathref}}" />
+         {%- endif %}
+       </READ-PARAM-VALUE>
+       {%- endfor %}
+    </READ-PARAM-VALUES>
+    {%- endif %}
+    {%- if rdcc.read_diag_comm_ref is not none %}
+    <READ-DIAG-COMM-REF {{make_ref_attribs(rdcc.read_diag_comm_ref)}} />
+    {%- endif %}
+    {%- if rdcc.read_diag_comm_snref is not none %}
+    <READ-DIAG-COMM-SNREF SHORT-NAME="{{rdcc.read_diag_comm_snref}}" />
+    {%- endif %}
+    {%- if rdcc.read_data_snref is not none %}
+    <READ-DATA-SNREF SHORT-NAME="{{rdcc.read_data_snref}}" />
+    {%- endif %}
+    {%- if rdcc.read_data_snpathref is not none %}
+    <READ-DATA-SNPATHREF SHORT-NAME-PATH="{{rdcc.read_data_snpathref}}" />
+    {%- endif %}
+  </READ-DIAG-COMM-CONNECTOR>
+  {%- endif %}
+  {%- if connector.write_diag_comm_connector is not none %}
+  {%- set wdcc = connector.write_diag_comm_connector %}
+  <WRITE-DIAG-COMM-CONNECTOR>
+    {%- if wdcc.write_diag_comm_ref is not none %}
+    <WRITE-DIAG-COMM-REF {{make_ref_attribs(wdcc.write_diag_comm_ref)}} />
+    {%- endif %}
+    {%- if wdcc.write_diag_comm_snref is not none %}
+    <WRITE-DIAG-COMM-SNREF SHORT-NAME="{{wdcc.write_diag_comm_snref}}" />
+    {%- endif %}
+    {%- if wdcc.write_data_snref is not none %}
+    <WRITE-DATA-SNREF SHORT-NAME="{{wdcc.write_data_snref}}" />
+    {%- endif %}
+    {%- if wdcc.write_data_snpathref is not none %}
+    <WRITE-DATA-SNPATHREF SHORT-NAME-PATH="{{wdcc.write_data_snpathref}}" />
+    {%- endif %}
+  </WRITE-DIAG-COMM-CONNECTOR>
+  {%- endif %}
+</DIAG-COMM-DATA-CONNECTOR>
+{%- endmacro -%}

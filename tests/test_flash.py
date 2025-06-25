@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import inspect
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 from xml.etree import ElementTree
@@ -87,7 +88,7 @@ flash_xml_str = """<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                       <SOURCE-START-ADDRESS> B005  </SOURCE-START-ADDRESS>
                       <COMPRESSED-SIZE> 123 </COMPRESSED-SIZE>
                       <UNCOMPRESSED-SIZE> 12345  </UNCOMPRESSED-SIZE>
-                      <ENCRYPT-COMPRESS-METHOD TYPE="A_BYTEFIELD"> blac75o7e </ENCRYPT-COMPRESS-METHOD>
+                      <ENCRYPT-COMPRESS-METHOD TYPE="A_BYTEFIELD"> b7ac7507e0 </ENCRYPT-COMPRESS-METHOD>
                     </SEGMENT>
                   </SEGMENTS>
                   <TARGET-ADDR-OFFSET xsi:type="NEG-OFFSET">
@@ -201,6 +202,7 @@ flash_et = ElementTree.fromstring(flash_xml_str)
 def test_create_flash_from_et() -> None:
     somersault_db._flashs = NamedItemList()
     somersault_db.add_xml_tree(flash_et)
+    somersault_db.add_auxiliary_file("my_funny_blob.hex", BytesIO(b"I can do whatever I want"))
     somersault_db.refresh()
     assert len(somersault_db.flashs) == 1
 
@@ -251,13 +253,17 @@ def test_create_flash_from_et() -> None:
     assert len(datablock.securities) == 1
     security = datablock.securities[0]
     assert odxrequire(security.security_method).value_type.value == "A_BYTEFIELD"
-    assert odxrequire(security.security_method).value == "00aB"
+    assert odxrequire(security.security_method).value_raw == "00aB"
+    assert odxrequire(security.security_method).value == bytes.fromhex("00aB")
     assert odxrequire(security.fw_signature).value_type.value == "A_BYTEFIELD"
-    assert odxrequire(security.fw_signature).value == "01cD"
+    assert odxrequire(security.fw_signature).value_raw == "01cD"
+    assert odxrequire(security.fw_signature).value == bytes.fromhex("01cD")
     assert odxrequire(security.fw_checksum).value_type.value == "A_BYTEFIELD"
-    assert odxrequire(security.fw_checksum).value == "03eF"
+    assert odxrequire(security.fw_checksum).value_raw == "03eF"
+    assert odxrequire(security.fw_checksum).value == bytes.fromhex("03eF")
     assert odxrequire(security.validity_for).value_type.value == "A_BYTEFIELD"
-    assert odxrequire(security.validity_for).value == "04Ab"
+    assert odxrequire(security.validity_for).value_raw == "04Ab"
+    assert odxrequire(security.validity_for).value == bytes.fromhex("04Ab")
 
     assert len(datablock.segments) == 1
     segment = datablock.segments.my_segment
@@ -265,7 +271,8 @@ def test_create_flash_from_et() -> None:
     assert segment.compressed_size == 123
     assert segment.uncompressed_size == 12345
     assert odxrequire(segment.encrypt_compress_method).value_type.value == "A_BYTEFIELD"
-    assert odxrequire(segment.encrypt_compress_method).value.strip() == "blac75o7e"
+    assert odxrequire(segment.encrypt_compress_method).value_raw.strip() == "b7ac7507e0"
+    assert odxrequire(segment.encrypt_compress_method).value == bytes.fromhex("b7ac7507e0")
 
     tao = odxrequire(datablock.target_addr_offset)
     assert isinstance(tao, NegOffset)

@@ -1,12 +1,16 @@
 # SPDX-License-Identifier: MIT
+import re
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 from xml.etree import ElementTree
 
+from bincopy import BinFile
+
 from .dataformat import Dataformat
+from .dataformatselection import DataformatSelection
 from .element import IdentifiableElement
 from .encryptcompressmethod import EncryptCompressMethod
-from .exceptions import odxrequire
+from .exceptions import odxassert, odxraise, odxrequire
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
@@ -19,6 +23,40 @@ class Flashdata(IdentifiableElement):
     address_length: int | None = None
     dataformat: Dataformat
     encrypt_compress_method: EncryptCompressMethod | None = None
+
+    @property
+    def data_str(self) -> str:
+        raise NotImplementedError(f"The .data_str property has not been implemented "
+                                  f"by the {type(self).__name__} class")
+
+    @property
+    def dataset(self) -> BinFile | bytearray | None:
+        data_str = self.data_str
+        if self.dataformat.selection in (DataformatSelection.INTEL_HEX,
+                                         DataformatSelection.MOTOROLA_S):
+            bf = BinFile()
+
+            # remove white space and empty lines
+            bf.add("\n".join([re.sub(r"\s", "", x) for x in data_str.splitlines() if x.strip()]))
+
+            return bf
+        elif self.dataformat.selection == DataformatSelection.BINARY:
+            return bytearray.fromhex(re.sub(r"\s", "", data_str, flags=re.MULTILINE))
+        else:
+            odxassert(self.dataformat.selection == DataformatSelection.USER_DEFINED,
+                      f"Unsupported data format {self.dataformat.selection}")
+            return None
+
+    @property
+    def blob(self) -> bytearray:
+        ds = self.dataset
+        if isinstance(ds, BinFile):
+            return cast(bytearray, ds.as_binary())
+        elif isinstance(ds, bytearray):
+            return ds
+
+        odxraise("USER-DEFINED flash data cannot be interpreted on the odxtools level")
+        return bytearray()
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Flashdata":

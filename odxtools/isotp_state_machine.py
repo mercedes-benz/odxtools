@@ -44,7 +44,7 @@ class IsoTpStateMachine:
         self._telegram_data: list[bytearray | None] = [None] * len(can_rx_ids)
         self._telegram_last_rx_fragment_idx = [0] * len(can_rx_ids)
 
-    def decode_rx_frame(self, rx_id: int, data: bytes) -> Iterable[tuple[int, bytes]]:
+    def decode_rx_frame(self, rx_id: int, data: bytes | bytearray) -> Iterable[tuple[int, bytes]]:
         """Handle the ISO-TP state transitions caused by a CAN frame.
 
         E.g., add some data to a telegram, etc. Returns a generator of
@@ -67,7 +67,7 @@ class IsoTpStateMachine:
             self.on_single_frame(telegram_idx, data[1:1 + telegram_len])
             self.on_telegram_complete(telegram_idx, data[1:1 + telegram_len])
 
-            yield (rx_id, data[1:1 + telegram_len])
+            yield (rx_id, bytes(data[1:1 + telegram_len]))
 
         elif frame_type == IsoTp.FRAME_TYPE_FIRST:
             frame_type, telegram_len = bitstruct.unpack("u4u12", data)
@@ -105,7 +105,7 @@ class IsoTpStateMachine:
                 self.on_sequence_error(telegram_idx, expected_segment_idx, rx_segment_idx)
             elif len(telegram_data) == n:
                 self.on_telegram_complete(telegram_idx, telegram_data)
-                yield (rx_id, telegram_data)
+                yield (rx_id, bytes(telegram_data))
 
         elif frame_type == IsoTp.FRAME_TYPE_FLOW_CONTROL:
             frame_type, flow_control_flag = bitstruct.unpack("u4u4", data)
@@ -185,7 +185,7 @@ class IsoTpStateMachine:
         """
         return self._can_rx_ids[telegram_idx]
 
-    def telegram_data(self, telegram_idx: int) -> bytes | None:
+    def telegram_data(self, telegram_idx: int) -> bytearray | None:
         """Given a Telegram index, returns the data received for this telegram
         so far.
 
@@ -196,16 +196,16 @@ class IsoTpStateMachine:
     ##############
     # Callbacks
     ##############
-    def on_single_frame(self, telegram_idx: int, frame_payload: bytes) -> None:
+    def on_single_frame(self, telegram_idx: int, frame_payload: bytes | bytearray) -> None:
         """Callback method for when an ISO-TP message of type "single frame" has been received"""
         pass
 
-    def on_first_frame(self, telegram_idx: int, frame_payload: bytes) -> None:
+    def on_first_frame(self, telegram_idx: int, frame_payload: bytes | bytearray) -> None:
         """Callback method for when an ISO-TP message of type "first frame" has been received"""
         pass
 
     def on_consecutive_frame(self, telegram_idx: int, segment_idx: int,
-                             frame_payload: bytes) -> None:
+                             frame_payload: bytes | bytearray) -> None:
         """Callback method for when an ISO-TP message of type "consecutive frame" has been received"""
         pass
 
@@ -221,7 +221,7 @@ class IsoTpStateMachine:
         """Method called when a frame exhibiting an unknown frame type has been received"""
         pass
 
-    def on_telegram_complete(self, telegram_idx: int, telegram_payload: bytes) -> None:
+    def on_telegram_complete(self, telegram_idx: int, telegram_payload: bytes | bytearray) -> None:
         """Method called when an ISO-TP telegram has been fully received"""
         pass
 
@@ -264,7 +264,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         """
         return self._can_tx_ids[telegram_idx]
 
-    def on_single_frame(self, telegram_idx: int, frame_payload: bytes) -> None:
+    def on_single_frame(self, telegram_idx: int, frame_payload: bytes | bytearray) -> None:
         # send ACK
         # rx_id = self.can_rx_id(telegram_idx)
         tx_id = self.can_tx_id(telegram_idx)
@@ -283,7 +283,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
 
         super().on_first_frame(telegram_idx, frame_payload)
 
-    def on_first_frame(self, telegram_idx: int, frame_payload: bytes) -> None:
+    def on_first_frame(self, telegram_idx: int, frame_payload: bytes | bytearray) -> None:
         # send ACK
         # rx_id = self.can_rx_id(telegram_idx)
         tx_id = self.can_tx_id(telegram_idx)
@@ -306,7 +306,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         super().on_first_frame(telegram_idx, frame_payload)
 
     def on_consecutive_frame(self, telegram_idx: int, segment_idx: int,
-                             frame_payload: bytes) -> None:
+                             frame_payload: bytes | bytearray) -> None:
         num_received = self._frames_received[telegram_idx]
         if num_received is None:
             # consequtive frame received before a first frame.

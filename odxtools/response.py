@@ -109,14 +109,18 @@ class Response(IdentifiableElement):
         context.response = None
         context.parameters = None
 
-    def encode(self, coded_request: bytes | None = None, **kwargs: ParameterValue) -> bytearray:
-        encode_state = EncodeState(triggering_request=coded_request, is_end_of_pdu=True)
+    def encode(self,
+               coded_request: bytes | bytearray | None = None,
+               **kwargs: ParameterValue) -> bytearray:
+        encode_state = EncodeState(
+            triggering_request=bytes(coded_request) if coded_request is not None else None,
+            is_end_of_pdu=True)
 
         self.encode_into_pdu(physical_value=kwargs, encode_state=encode_state)
 
         return encode_state.coded_message
 
-    def decode(self, message: bytes) -> ParameterValueDict:
+    def decode(self, message: bytes | bytearray) -> ParameterValueDict:
         decode_state = DecodeState(coded_message=message)
         param_values = self.decode_from_pdu(decode_state)
 
@@ -151,5 +155,5 @@ class Response(IdentifiableElement):
 
         print(parameter_info(self.free_parameters), end="")
 
-    def coded_const_prefix(self, request_prefix: bytes = b'') -> bytes:
+    def coded_const_prefix(self, request_prefix: bytes = b'') -> bytearray:
         return composite_codec_get_coded_const_prefix(self, request_prefix)

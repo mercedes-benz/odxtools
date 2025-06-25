@@ -12,6 +12,6 @@
     {%- if own_ident.ident_value.value_type is not none %}
     {#- #} TYPE="{{ own_ident.ident_value.value_type.value }}"
     {%- endif %}
-    {#- #}>{{own_ident.ident_value.value}}</IDENT-VALUE>
+    {#- #}>{{own_ident.ident_value.value_raw}}</IDENT-VALUE>
 </OWN-IDENT>
 {%- endmacro -%}

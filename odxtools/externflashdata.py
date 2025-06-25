@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any
+from typing import IO, Any
 from xml.etree import ElementTree
 
 from .datafile import Datafile
-from .exceptions import odxrequire
+from .exceptions import odxraise, odxrequire
 from .flashdata import Flashdata
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
@@ -15,6 +15,21 @@ from .utils import dataclass_fields_asdict
 @dataclass(kw_only=True)
 class ExternFlashdata(Flashdata):
     datafile: Datafile
+
+    @property
+    def data_str(self) -> str:
+        if self._database is None:
+            odxraise("No database object specified")
+            return ""
+
+        aux_file: IO[bytes] = odxrequire(self._database.auxiliary_files.get(self.datafile.value))
+        if aux_file is None:
+            return ""
+
+        result = aux_file.read().decode()
+        aux_file.seek(0)
+
+        return result
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ExternFlashdata":
@@ -32,3 +47,7 @@ class ExternFlashdata(Flashdata):
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         super()._resolve_snrefs(context)
+
+        # this is slightly hacky because we only remember the
+        # applicable ODX database and do not resolve any SNREFs here
+        self._database = context.database
