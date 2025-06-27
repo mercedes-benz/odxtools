@@ -6,7 +6,9 @@
 {%- import('macros/printDescription.xml.jinja2') as pd %}
 
 {%- macro printElementIdAttribs(obj) -%}
+{%- if obj.odx_id is defined %}
 {#- #} {{- make_xml_attrib("ID", obj.odx_id.local_id) }}
+{%- endif %}
 {#- #} {{- make_xml_attrib("OID", getattr(obj, "oid", none)) -}}
 {%- endmacro -%}
 
