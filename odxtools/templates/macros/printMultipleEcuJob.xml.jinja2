@@ -1,0 +1,77 @@
+1{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printCompuMethod.xml.jinja2') as pcm %}
+{%- import('macros/printAudience.xml.jinja2') as paud %}
+
+{%- macro printMultipleEcuJob(multiple_ecu_job) -%}
+<MULTIPLE-ECU-JOB {{peid.printElementIdAttribs(multiple_ecu_job)}}
+                  {{-make_xml_attrib("SEMANTIC", multiple_ecu_job.semantic)}}
+                  {{-make_bool_xml_attrib("IS-EXECUTABLE", multiple_ecu_job.is_executable_raw)}}>
+  {{peid.printElementIdSubtags(multiple_ecu_job)|indent(2) }}
+  {%- if multiple_ecu_job.admin_data is not none %}
+  {{- pad.printAdminData(multiple_ecu_job.admin_data)|indent(2) }}
+  {%- endif %}
+  {{- psd.printSpecialDataGroups(multiple_ecu_job.sdgs)|indent(2, first=True) }}{#- #}
+  {%- if multiple_ecu_job.functional_class_refs %}
+  <FUNCT-CLASS-REFS>
+    {%- for fc_ref in multiple_ecu_job.functional_class_refs %}
+    <FUNCT-CLASS-REF {{make_ref_attribs(fc_ref)}} />
+    {%- endfor %}
+  </FUNCT-CLASS-REFS>
+  {%- endif %}
+  <PROG-CODES>
+    {%- for pc in multiple_ecu_job.prog_codes %}
+    {{pcm.printProgCode(pc)|indent(4)}}
+    {%- endfor %}
+  </PROG-CODES>
+  {%- if multiple_ecu_job.input_params %}
+  <INPUT-PARAMS>
+    {%- for ip in multiple_ecu_job.input_params %}
+    <INPUT-PARAM {{ peid.printElementIdAttribs(ip) }} {{make_xml_attrib("SEMANTIC", ip.semantic)}}>
+      {{peid.printElementIdSubtags(ip)|indent(4)}}
+      {%- if ip.physical_default_value is not none %}
+      <PHYSICAL-DEFAULT-VALUE>{{ip.physical_default_value | e}}</PHYSICAL-DEFAULT-VALUE>
+      {%- endif %}
+      <DOP-BASE-REF {{make_ref_attribs(ip.dop_base_ref)}} />
+    </INPUT-PARAM>
+    {%- endfor %}
+  </INPUT-PARAMS>
+  {%- endif %}
+  {%- if multiple_ecu_job.output_params %}
+  <OUTPUT-PARAMS>
+    {%- for op in multiple_ecu_job.output_params %}
+    <OUTPUT-PARAM {{ peid.printElementIdAttribs(op) }} {{make_xml_attrib("SEMANTIC", op.semantic)}}>
+      {{peid.printElementIdSubtags(op)|indent(4)}}
+      <DOP-BASE-REF {{make_ref_attribs(op.dop_base_ref)}} />
+    </OUTPUT-PARAM>
+    {%- endfor %}
+  </OUTPUT-PARAMS>
+  {%- endif %}
+  {%- if multiple_ecu_job.neg_output_params %}
+  <NEG-OUTPUT-PARAMS>
+    {%- for nop in multiple_ecu_job.neg_output_params %}
+    <NEG-OUTPUT-PARAM {{ peid.printElementIdAttribs(nop) }}>
+      {{peid.printElementIdSubtags(nop)|indent(4)}}
+      <DOP-BASE-REF {{make_ref_attribs(nop.dop_base_ref)}} />
+    </NEG-OUTPUT-PARAM>
+    {%- endfor %}
+  </NEG-OUTPUT-PARAMS>
+  {%- endif %}
+  {%- if multiple_ecu_job.diag_layer_refs %}
+  <DIAG-LAYER-REFS>
+    {%- for dl_ref in multiple_ecu_job.diag_layer_refs %}
+    <DIAG-LAYER-REF {{make_ref_attribs(dl_ref)}} />
+    {%- endfor %}
+  </DIAG-LAYER-REFS>
+  {%- endif %}
+  {%- if multiple_ecu_job.audience is not none %}
+  {{ paud.printAudience(multiple_ecu_job.audience) | indent(2) }}
+  {%- endif %}
+</MULTIPLE-ECU-JOB>
+{%- endmacro -%}

@@ -26,7 +26,7 @@
   {%- endfor %}
  </COMPANY-DOC-INFOS>
  {%- endif %}
- {%- if admin_data.doc_revisions is not none %}
+ {%- if admin_data.doc_revisions %}
  <DOC-REVISIONS>
   {%- for doc_revision in admin_data.doc_revisions %}
   <DOC-REVISION>

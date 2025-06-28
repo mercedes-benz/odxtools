@@ -38,7 +38,7 @@ class OutputParam(IdentifiableElement):
         return OutputParam(dop_base_ref=dop_base_ref, semantic=semantic, **kwargs)
 
     def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
-        return {}
+        return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         self._dop = odxlinks.resolve(self.dop_base_ref, DopBase)

@@ -98,14 +98,7 @@ class DiagLayer:
         if self.import_refs:
             imported_links: dict[OdxLinkId, Any] = {}
             for import_ref in self.import_refs:
-                imported_dl = odxlinks.resolve(import_ref, DiagLayer)
-
-                odxassert(
-                    imported_dl.variant_type == DiagLayerType.ECU_SHARED_DATA,
-                    f"Tried to import references from diagnostic layer "
-                    f"'{imported_dl.short_name}' of type {imported_dl.variant_type.value}. "
-                    f"Only ECU-SHARED-DATA layers may be referenced using the "
-                    f"IMPORT-REF mechanism")
+                imported_dl = odxlinks.resolve(import_ref)
 
                 # TODO: ensure that the imported diagnostic layer has
                 # not been referenced in any PARENT-REF of the current

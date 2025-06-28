@@ -166,20 +166,50 @@ def write_pdx_file(
         jinja_env.globals["set_layer_docfrag"] = lambda lname: set_layer_docfrag(jinja_vars, lname)
         jinja_env.globals["make_ref_attribs"] = lambda ref: make_ref_attribs(jinja_vars, ref)
 
-        # write the communication parameter subsets
-        comparam_subset_tpl = jinja_env.get_template("comparam-subset.odx-cs.xml.jinja2")
-        for comparam_subset in database.comparam_subsets:
-            zf_file_name = f"{comparam_subset.short_name}.odx-cs"
+        # write the flash description objects
+        flash_tpl = jinja_env.get_template("flash.odx-f.xml.jinja2")
+        for flash in database.flashs:
+            zf_file_name = f"{flash.short_name}.odx-f"
             zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            zf_mime_type = "application/x-asam.odx.odx-cs"
+            zf_mime_type = "application/x-asam.odx.odx-f"
 
-            jinja_vars["comparam_subset"] = comparam_subset
+            jinja_vars["flash"] = flash
 
             file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
 
-            zf.writestr(zf_file_name, comparam_subset_tpl.render(**jinja_vars))
+            zf.writestr(zf_file_name, flash_tpl.render(**jinja_vars))
 
-            del jinja_vars["comparam_subset"]
+            del jinja_vars["flash"]
+
+        # write the actual diagnostic data.
+        dlc_tpl = jinja_env.get_template("diag_layer_container.odx-d.xml.jinja2")
+        for dlc in database.diag_layer_containers:
+            jinja_vars["dlc"] = dlc
+
+            file_name = f"{dlc.short_name}.odx-d"
+            file_cdate = datetime.datetime.now()
+            creation_date = file_cdate.strftime("%Y-%m-%dT%H:%M:%S")
+            mime_type = "application/x-asam.odx.odx-d"
+
+            file_index.append((file_name, creation_date, mime_type))
+            zf.writestr(file_name, dlc_tpl.render(**jinja_vars))
+            del jinja_vars["dlc"]
+
+        # write the multiple ECU jobs specs
+        multiple_ecu_jobs_spec_tpl = jinja_env.get_template(
+            "multiple-ecu-job-spec.odx-m.xml.jinja2")
+        for multiple_ecu_jobs_spec in database.multiple_ecu_job_specs:
+            zf_file_name = f"{multiple_ecu_jobs_spec.short_name}.odx-m"
+            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            zf_mime_type = "application/x-asam.odx.odx-m"
+
+            jinja_vars["multiple_ecu_jobs_spec"] = multiple_ecu_jobs_spec
+
+            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
+
+            zf.writestr(zf_file_name, multiple_ecu_jobs_spec_tpl.render(**jinja_vars))
+
+            del jinja_vars["multiple_ecu_jobs_spec"]
 
         # write the communication parameter specs
         comparam_spec_tpl = jinja_env.get_template("comparam-spec.odx-c.xml.jinja2")
@@ -196,34 +226,20 @@ def write_pdx_file(
 
             del jinja_vars["comparam_spec"]
 
-        # write the actual diagnostic data.
-        dlc_tpl = jinja_env.get_template("diag_layer_container.odx-d.xml.jinja2")
-        for dlc in database.diag_layer_containers:
-            jinja_vars["dlc"] = dlc
-
-            file_name = f"{dlc.short_name}.odx-d"
-            file_cdate = datetime.datetime.now()
-            creation_date = file_cdate.strftime("%Y-%m-%dT%H:%M:%S")
-            mime_type = "application/x-asam.odx.odx-d"
-
-            file_index.append((file_name, creation_date, mime_type))
-            zf.writestr(file_name, dlc_tpl.render(**jinja_vars))
-            del jinja_vars["dlc"]
-
-        # write the flash description objects
-        flash_tpl = jinja_env.get_template("flash.odx-f.xml.jinja2")
-        for flash in database.flashs:
-            zf_file_name = f"{flash.short_name}.odx-f"
+        # write the communication parameter subsets
+        comparam_subset_tpl = jinja_env.get_template("comparam-subset.odx-cs.xml.jinja2")
+        for comparam_subset in database.comparam_subsets:
+            zf_file_name = f"{comparam_subset.short_name}.odx-cs"
             zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            zf_mime_type = "application/x-asam.odx.odx-f"
+            zf_mime_type = "application/x-asam.odx.odx-cs"
 
-            jinja_vars["flash"] = flash
+            jinja_vars["comparam_subset"] = comparam_subset
 
             file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
 
-            zf.writestr(zf_file_name, flash_tpl.render(**jinja_vars))
+            zf.writestr(zf_file_name, comparam_subset_tpl.render(**jinja_vars))
 
-            del jinja_vars["flash"]
+            del jinja_vars["comparam_subset"]
 
         # write the ECU-config objects
         ecu_config_tpl = jinja_env.get_template("ecu_config.odx-e.xml.jinja2")

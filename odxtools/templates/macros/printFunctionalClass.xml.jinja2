@@ -9,9 +9,9 @@
 
 {%- macro printFunctionalClass(fc) -%}
 <FUNCT-CLASS {{-peid.printElementIdAttribs(fc)}}>
- {{ peid.printElementIdSubtags(fc)|indent(1) }}
- {%- if fc.admin_data is not none -%}
- {{ pad.printAdminData(fc.admin_data)|indent(1) }}
- {%- endif -%}
+  {{ peid.printElementIdSubtags(fc)|indent(2) }}
+  {%- if fc.admin_data is not none %}
+  {{ pad.printAdminData(fc.admin_data)|indent(2) }}
+  {%- endif %}
 </FUNCT-CLASS>
 {%- endmacro -%}
