@@ -8,7 +8,15 @@ Welcome to odxtools's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting Started
+
+   getting_started
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+
+   index  # This can point to other .rst sections if needed
 
 .. automodule:: odxtools
    :members:
@@ -16,11 +24,10 @@ Welcome to odxtools's documentation!
 
 Important classes
 =================
-      
+
 .. autoclass:: odxtools.database.Database
    :members:
    :undoc-members:
- 
 
 Indices and tables
 ==================
