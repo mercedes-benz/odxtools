@@ -256,6 +256,21 @@ def write_pdx_file(
 
             del jinja_vars["ecu_config"]
 
+        # write the vehicle info specification objects
+        vehicle_info_spec_tpl = jinja_env.get_template("vehicle_info_spec.odx-v.xml.jinja2")
+        for vehicle_info_spec in database.vehicle_info_specs:
+            zf_file_name = f"{vehicle_info_spec.short_name}.odx-v"
+            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            zf_mime_type = "application/x-asam.odx.odx-v"
+
+            jinja_vars["vehicle_info_spec"] = vehicle_info_spec
+
+            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
+
+            zf.writestr(zf_file_name, vehicle_info_spec_tpl.render(**jinja_vars))
+
+            del jinja_vars["vehicle_info_spec"]
+
         # write the index.xml file
         jinja_vars["file_index"] = file_index
         index_tpl = jinja_env.get_template("index.xml.jinja2")

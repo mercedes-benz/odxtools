@@ -177,12 +177,14 @@ def test_create_vehicle_info_spec_from_et() -> None:
     assert len(vehicle_info_spec.info_components) == 4
     ic = vehicle_info_spec.info_components.horse_proxy
     assert isinstance(ic, EcuProxy)
+    assert ic.component_type.value == "ECU-PROXY"
 
     assert len(ic.matching_components) == 1
     mc = ic.matching_components[0]
 
     assert mc.expected_value == "White mare"
     assert mc.out_param_if_snref == "sault_time"
+    assert mc.diag_comm is not None
     assert mc.diag_comm.short_name == "do_forward_flips"
 
     ic = vehicle_info_spec.info_components._1842
@@ -205,11 +207,15 @@ def test_create_vehicle_info_spec_from_et() -> None:
 
     assert len(vi.logical_links) == 2
     gl = vi.logical_links.gateway
+    assert isinstance(gl, GatewayLogicalLink)
+    assert gl.link_type.value == "GATEWAY-LOGICAL-LINK"
     assert len(gl.gateway_logical_links) == 1
     assert isinstance(gl.gateway_logical_links.gateway, GatewayLogicalLink)
 
     assert gl.physical_vehicle_link is not None
+    assert gl.protocol is not None
     assert gl.protocol.short_name == "somersault_protocol"
+    assert gl.base_variant is not None
     assert gl.base_variant.short_name == "somersault_base_variant"
     assert len(gl.ecu_proxies) == 1
     assert gl.ecu_proxies.horse_proxy is not None
@@ -242,8 +248,6 @@ def test_write_vehicle_info_spec() -> None:
     somersault_db.add_xml_tree(vehicle_info_spec_et)
     somersault_db.refresh()
     assert len(somersault_db.vehicle_info_specs) == 1
-
-    return
 
     __module_filename = inspect.getsourcefile(odxtools)
     assert isinstance(__module_filename, str)
