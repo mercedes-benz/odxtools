@@ -36,19 +36,19 @@ class VehicleInfoSpec(OdxCategory):
 
         info_components: NamedItemList[InfoComponent] = NamedItemList()
         for info_component_elem in et_element.iterfind("INFO-COMPONENTS/INFO-COMPONENT"):
-            info_component_type = info_component_elem.attrib.get(f"{xsi}type")
-            if info_component_type == "ECU-PROXY":
+            info_component_type_str = info_component_elem.attrib.get(f"{xsi}type")
+            if info_component_type_str == "ECU-PROXY":
                 info_components.append(EcuProxy.from_et(info_component_elem, context))
-            elif info_component_type == "MODEL-YEAR":
+            elif info_component_type_str == "MODEL-YEAR":
                 info_components.append(ModelYear.from_et(info_component_elem, context))
-            elif info_component_type == "OEM":
+            elif info_component_type_str == "OEM":
                 info_components.append(Oem.from_et(info_component_elem, context))
-            elif info_component_type == "VEHICLE-MODEL":
+            elif info_component_type_str == "VEHICLE-MODEL":
                 info_components.append(VehicleModel.from_et(info_component_elem, context))
-            elif info_component_type == "VEHICLE-TYPE":
+            elif info_component_type_str == "VEHICLE-TYPE":
                 info_components.append(VehicleType.from_et(info_component_elem, context))
             else:
-                odxraise(f"Encountered info component of illegal type {info_component_type}")
+                odxraise(f"Encountered info component of illegal type {info_component_type_str}")
                 info_components.append(InfoComponent.from_et(info_component_elem, context))
 
         vehicle_informations = NamedItemList([

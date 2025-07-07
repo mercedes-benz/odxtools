@@ -48,13 +48,13 @@ class VehicleInformation(NamedElement):
         ])
         logical_links: NamedItemList[LogicalLink] = NamedItemList()
         for logical_link_elem in et_element.iterfind("LOGICAL-LINKS/LOGICAL-LINK"):
-            logical_link_type = logical_link_elem.attrib.get(f"{xsi}type")
-            if logical_link_type == "GATEWAY-LOGICAL-LINK":
+            logical_link_type_str = logical_link_elem.attrib.get(f"{xsi}type")
+            if logical_link_type_str == "GATEWAY-LOGICAL-LINK":
                 logical_links.append(GatewayLogicalLink.from_et(logical_link_elem, context))
-            elif logical_link_type == "MEMBER-LOGICAL-LINK":
+            elif logical_link_type_str == "MEMBER-LOGICAL-LINK":
                 logical_links.append(MemberLogicalLink.from_et(logical_link_elem, context))
             else:
-                odxraise(f"Encountered logical link of illegal type {logical_link_type}")
+                odxraise(f"Encountered logical link of illegal type {logical_link_type_str}")
                 logical_links.append(InfoComponent.from_et(logical_link_elem, context))
 
         ecu_groups = NamedItemList([
