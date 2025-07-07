@@ -40,7 +40,7 @@ db = somersaultecu.database
 dlc = db.diag_layer_containers[0]
 
 # modify the positive response of the tester_present service for all ECUs
-somersault_dlr = dlc.base_variants.somersault.diag_layer_raw
+somersault_dlr = dlc.base_variants.somersault_base_variant.diag_layer_raw
 
 # rename the "session_start" and "session_stop" services to
 # "start_session" and "stop_session"

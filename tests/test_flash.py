@@ -184,7 +184,7 @@ flash_xml_str = """<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
               <LAYER-REF ID-REF="somersault_lazy" DOCREF="somersault" DOCTYPE="CONTAINER" />
             </LAYER-REFS>
             <ALL-VARIANT-REFS>
-              <ALL-VARIANT-REF ID-REF="somersault"  DOCREF="somersault" DOCTYPE="CONTAINER" />
+              <ALL-VARIANT-REF ID-REF="somersault.base_variant"  DOCREF="somersault" DOCTYPE="CONTAINER" />
             </ALL-VARIANT-REFS>
           </ECU-MEM-CONNECTOR>
         </ECU-MEM-CONNECTORS>

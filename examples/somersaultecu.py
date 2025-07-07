@@ -1439,8 +1439,8 @@ somersault_protocol = Protocol(diag_layer_raw=somersault_protocol_raw)
 # diagnostics layer for the base variant
 somersault_base_variant_raw = BaseVariantRaw(
     variant_type=DiagLayerType.BASE_VARIANT,
-    odx_id=OdxLinkId("somersault", doc_frags),
-    short_name="somersault",
+    odx_id=OdxLinkId("somersault.base_variant", doc_frags),
+    short_name="somersault_base_variant",
     long_name="Somersault base variant",
     description=Description.from_string("<p>Base variant of the somersault ECU &amp; cetera</p>"),
     functional_classes=NamedItemList(somersault_functional_classes.values()),
