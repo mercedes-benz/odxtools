@@ -26,6 +26,7 @@ from .nameditemlist import NamedItemList
 from .odxdoccontext import OdxDocContext
 from .odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
+from .vehicleinfospec import VehicleInfoSpec
 
 
 class Database:
@@ -43,6 +44,7 @@ class Database:
         self._comparam_subsets = NamedItemList[ComparamSubset]()
         self._comparam_specs = NamedItemList[ComparamSpec]()
         self._ecu_configs = NamedItemList[EcuConfig]()
+        self._vehicle_info_specs = NamedItemList[VehicleInfoSpec]()
         self._flashs = NamedItemList[Flash]()
         self._multiple_ecu_job_specs = NamedItemList[MultipleEcuJobSpec]()
         self._short_name = "odx_database"
@@ -122,6 +124,10 @@ class Database:
             context = OdxDocContext(model_version,
                                     (OdxDocFragment(category_sn, DocType.ECU_CONFIG),))
             self._ecu_configs.append(EcuConfig.from_et(category_et, context))
+        elif category_tag == "VEHICLE-INFO-SPEC":
+            context = OdxDocContext(model_version,
+                                    (OdxDocFragment(category_sn, DocType.VEHICLE_INFO_SPEC),))
+            self._vehicle_info_specs.append(VehicleInfoSpec.from_et(category_et, context))
         elif category_tag == "FLASH":
             context = OdxDocContext(model_version, (OdxDocFragment(category_sn, DocType.FLASH),))
             self._flashs.append(Flash.from_et(category_et, context))
@@ -163,6 +169,9 @@ class Database:
         for ecu_config in self.ecu_configs:
             ecu_config._resolve_odxlinks(self._odxlinks)
 
+        for vehicle_info_spec in self.vehicle_info_specs:
+            vehicle_info_spec._resolve_odxlinks(self._odxlinks)
+
         for flash in self.flashs:
             flash._resolve_odxlinks(self._odxlinks)
 
@@ -183,6 +192,8 @@ class Database:
             dlc._finalize_init(self, self._odxlinks)
         for ecu_config in self.ecu_configs:
             ecu_config._finalize_init(self, self._odxlinks)
+        for vehicle_info_spec in self.vehicle_info_specs:
+            vehicle_info_spec._finalize_init(self, self._odxlinks)
         for flash in self.flashs:
             flash._finalize_init(self, self._odxlinks)
         for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
@@ -196,6 +207,8 @@ class Database:
             dlc._resolve_snrefs(context)
         for ecu_config in self.ecu_configs:
             ecu_config._resolve_snrefs(context)
+        for vehicle_info_spec in self.vehicle_info_specs:
+            vehicle_info_spec._resolve_snrefs(context)
         for flash in self.flashs:
             flash._resolve_snrefs(context)
         for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
@@ -215,6 +228,9 @@ class Database:
 
         for ecu_config in self.ecu_configs:
             result.update(ecu_config._build_odxlinks())
+
+        for vehicle_info_spec in self.vehicle_info_specs:
+            result.update(vehicle_info_spec._build_odxlinks())
 
         for flash in self.flashs:
             result.update(flash._build_odxlinks())
@@ -299,6 +315,10 @@ class Database:
         return self._ecu_configs
 
     @property
+    def vehicle_info_specs(self) -> NamedItemList[VehicleInfoSpec]:
+        return self._vehicle_info_specs
+
+    @property
     def flashs(self) -> NamedItemList[Flash]:
         return self._flashs
 
@@ -314,4 +334,6 @@ class Database:
             f"comparam_subsets={repr(self.comparam_subsets)}, " \
             f"comparam_specs={repr(self.comparam_specs)}, " \
             f"ecu_configs={repr(self.ecu_configs)}, " \
+            f"vehicle_info_specs={repr(self.vehicle_info_specs)}, " \
+            f"multiple_ecu_job_specs={repr(self.multiple_ecu_job_specs)}, " \
             f"flashs={repr(self.flashs)})"

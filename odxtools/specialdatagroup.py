@@ -22,7 +22,7 @@ class SpecialDataGroup:
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SpecialDataGroup":
 
         sdg_caption = None
-        if caption_elem := et_element.find("SDG-CAPTION"):
+        if (caption_elem := et_element.find("SDG-CAPTION")) is not None:
             sdg_caption = SpecialDataGroupCaption.from_et(caption_elem, context)
 
         sdg_caption_ref = None

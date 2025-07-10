@@ -1,0 +1,34 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+ #
+ # This template writes an .odx-e file containing an ECU-CONFIG description
+ # for variant coding.
+-#}
+{%- import('macros/printOdxCategory.xml.jinja2') as poc %}
+{%- import('macros/printInfoComponent.xml.jinja2') as pic %}
+{%- import('macros/printVehicleInformation.xml.jinja2') as pvi %}
+{#- -#}
+
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- Written using odxtools {{odxtools_version}} -->
+<ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
+  {{- set_category_docfrag(vehicle_info_spec.short_name, "VEHICLE-INFO-SPEC") }}
+  <VEHICLE-INFO-SPEC {{- poc.printOdxCategoryAttribs(vehicle_info_spec) }}>
+    {{- poc.printOdxCategorySubtags(vehicle_info_spec) | indent(4) }}
+    {%- if vehicle_info_spec.info_components %}
+    <INFO-COMPONENTS>
+      {%- for info_component in vehicle_info_spec.info_components %}
+      {{ pic.printInfoComponent(info_component) | indent(6) }}
+      {%- endfor %}
+    </INFO-COMPONENTS>
+    {%- endif %}
+    {%- if vehicle_info_spec.vehicle_informations %}
+    <VEHICLE-INFORMATIONS>
+      {%- for vehicle_information in vehicle_info_spec.vehicle_informations %}
+      {{ pvi.printVehicleInformation(vehicle_information) | indent(6) }}
+      {%- endfor %}
+    </VEHICLE-INFORMATIONS>
+    {%- endif %}
+  </VEHICLE-INFO-SPEC>
+</ODX>

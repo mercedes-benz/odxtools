@@ -28,7 +28,7 @@ ecu_config_xml_str = """<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
                 <ECU-VARIANT-SNREFS>
                   <ECU-VARIANT-SNREF SHORT-NAME="somersault_lazy" />
                 </ECU-VARIANT-SNREFS>
-                <BASE-VARIANT-SNREF SHORT-NAME="somersault" />
+                <BASE-VARIANT-SNREF SHORT-NAME="somersault_base_variant" />
               </VALID-BASE-VARIANT>
             </VALID-BASE-VARIANTS>
             <CONFIG-RECORDS>
@@ -197,7 +197,7 @@ def test_create_ecu_config_from_et() -> None:
     assert len(config_data.valid_base_variants) == 1
     valid_bv = config_data.valid_base_variants[0]
     assert len(valid_bv.ecu_variant_snrefs) == 1
-    assert valid_bv.base_variant.short_name == "somersault"
+    assert valid_bv.base_variant.short_name == "somersault_base_variant"
 
     assert len(config_data.config_records) == 1
     config_record = config_data.config_records.my_config_record

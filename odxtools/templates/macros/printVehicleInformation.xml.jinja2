@@ -1,0 +1,158 @@
+1{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printComparam.xml.jinja2') as pcp %}
+{%- import('macros/printDescription.xml.jinja2') as pd %}
+
+
+{%- macro printVehicleInformation(vehicle_information) -%}
+<VEHICLE-INFORMATION>
+  {{peid.printElementIdSubtags(vehicle_information)|indent(2) }}
+  {%- if vehicle_information.info_component_refs %}
+  <INFO-COMPONENT-REFS>
+    {%- for info_component_ref in vehicle_information.info_component_refs %}
+    <INFO-COMPONENT-REF {{make_ref_attribs(info_component_ref)}} />
+    {%- endfor %}
+  </INFO-COMPONENT-REFS>
+  {%- endif %}
+  {%- if vehicle_information.vehicle_connectors %}
+  <VEHICLE-CONNECTORS>
+    {%- for vehicle_connector in vehicle_information.vehicle_connectors %}
+    <VEHICLE-CONNECTOR {{peid.printElementIdAttribs(vehicle_connector)}}>
+      {{peid.printElementIdSubtags(vehicle_connector) | indent(6)}}
+      <VEHICLE-CONNECTOR-PINS>
+        {%- for vehicle_connector_pin in vehicle_connector.vehicle_connector_pins %}
+        <VEHICLE-CONNECTOR-PIN {{peid.printElementIdAttribs(vehicle_connector_pin)}}
+                               {{- make_xml_attrib("TYPE", vehicle_connector_pin.pin_type and vehicle_connector_pin.pin_type.value) }}>
+          {{peid.printElementIdSubtags(vehicle_connector_pin) | indent(10)}}
+          <PIN-NUMBER>{{vehicle_connector_pin.pin_number}}</PIN-NUMBER>
+        </VEHICLE-CONNECTOR-PIN>
+        {%- endfor %}
+      </VEHICLE-CONNECTOR-PINS>
+    </VEHICLE-CONNECTOR>
+    {%- endfor %}
+  </VEHICLE-CONNECTORS>
+  {%- endif %}
+  {%- if vehicle_information.logical_links %}
+  <LOGICAL-LINKS>
+    {%- for logical_link in vehicle_information.logical_links %}
+    <LOGICAL-LINK {{peid.printElementIdAttribs(logical_link)}} xsi:type="{{logical_link.link_type.value}}" >
+      {{peid.printElementIdSubtags(logical_link)|indent(6) }}
+      {%- if logical_link.gateway_logical_link_refs %}
+      <GATEWAY-LOGICAL-LINK-REFS>
+        {%- for gateway_logical_link_ref in logical_link.gateway_logical_link_refs %}
+        <GATEWAY-LOGICAL-LINK-REF {{make_ref_attribs(gateway_logical_link_ref)}} />
+        {%- endfor %}
+      </GATEWAY-LOGICAL-LINK-REFS>
+      {%- endif %}
+      {%- if logical_link.physical_vehicle_link_ref is not none %}
+      <PHYSICAL-VEHICLE-LINK-REF {{make_ref_attribs(logical_link.physical_vehicle_link_ref)}} />
+      {%- endif %}
+      {%- if logical_link.protocol_ref is not none %}
+      <PROTOCOL-REF {{make_ref_attribs(logical_link.protocol_ref)}} />
+      {%- endif %}
+      {%- if logical_link.functional_group_ref is not none %}
+      <FUNCTIONAL-GROUP-REF {{make_ref_attribs(logical_link.functional_group_ref)}} />
+      {%- endif %}
+      {%- if logical_link.base_variant_ref is not none %}
+      <BASE-VARIANT-REF {{make_ref_attribs(logical_link.base_variant_ref)}} />
+      {%- endif %}
+      {%- if logical_link.ecu_proxy_refs %}
+      <ECU-PROXY-REFS>
+        {%- for ecu_proxy_ref in logical_link.ecu_proxy_refs %}
+        <ECU-PROXY-REF {{make_ref_attribs(ecu_proxy_ref)}} />
+        {%- endfor %}
+      </ECU-PROXY-REFS>
+      {%- endif %}
+      {%- if logical_link.link_comparam_refs_raw %}
+      <LINK-COMPARAM-REFS>
+        {%- for link_comparam_ref in logical_link.link_comparam_refs_raw %}
+        <LINK-COMPARAM-REF {{make_ref_attribs(link_comparam_ref)}}>
+          {%- if link_comparam_ref.simple_value is not none %}
+          <SIMPLE-VALUE>{{ link_comparam_ref.simple_value | e }}</SIMPLE-VALUE>
+          {%- endif %}
+          {%- if link_comparam_ref.complex_value is not none %}
+          {{ pcp.printComplexValue(link_comparam_ref.complex_value) | indent(6) }}
+          {%- endif %}
+          {%- if link_comparam_ref.description is not none %}
+          {{- pd.printDescription(link_comparam_ref.description)|indent(10) }}
+          {%- endif %}
+        </LINK-COMPARAM-REF>
+        {%- endfor %}
+      </LINK-COMPARAM-REFS>
+      {%- endif %}
+      {%- if logical_link.prot_stack_snref is not none %}
+      <PROT-STACK-SNREF SHORT-NAME="{{logical_link.prot_stack_snref}}" />
+      {%- endif %}
+      {%- if logical_link.link_type.value == "GATEWAY-LOGICAL-LINK" %}
+      {%- if logical_link.semantic is not none %}
+      <SEMANTIC>{{logical_link.semantic}}</SEMANTIC>
+      {%- endif %}
+      {%- endif %}
+    </LOGICAL-LINK>
+    {%- endfor %}
+  </LOGICAL-LINKS>
+  {%- endif %}
+  {%- if vehicle_information.ecu_groups %}
+  <ECU-GROUPS>
+    {%- for ecu_group in vehicle_information.ecu_groups %}
+    <ECU-GROUP {{ peid.printElementIdAttribs(ecu_group) }}>
+      {{ peid.printElementIdSubtags(ecu_group) }}
+      <GROUP-MEMBERS>
+        {%- for group_member in ecu_group.group_members %}
+        <GROUP-MEMBER>
+          {%- if group_member.base_variant_ref is not none %}
+          <BASE-VARIANT-REF {{make_ref_attribs(group_member.base_variant_ref)}} />
+          {%- endif %}
+          {%- if group_member.funct_resolution_link_ref is not none %}
+          <FUNCT-RESOLUTION-LINK-REF {{make_ref_attribs(group_member.funct_resolution_link_ref)}} />
+          {%- endif %}
+          {%- if group_member.phys_resolution_link_ref is not none %}
+          <PHYS-RESOLUTION-LINK-REF {{make_ref_attribs(group_member.phys_resolution_link_ref)}} />
+          {%- endif %}
+        </GROUP-MEMBER>
+        {%- endfor %}
+      </GROUP-MEMBERS>
+    </ECU-GROUP>
+    {%- endfor %}
+  </ECU-GROUPS>
+  {%- endif %}
+  {%- if vehicle_information.physical_vehicle_link is not none %}
+  <PHYSICAL-VEHICLE-LINKS>
+    {%- for physical_vehicle_link in vehicle_information.physical_vehicle_links %}
+    <PHYSICAL-VEHICLE-LINK {{peid.printElementIdAttribs(physical_vehicle_link)}}
+                           {{- make_xml_attrib("TYPE", physical_vehicle_link.link_type) }}>
+      {{peid.printElementIdSubtags(physical_vehicle_link)}}
+      {%- if physical_vehicle_link.vehicle_connector_pin_refs is not none %}
+      <VEHICLE-CONNECTOR-PIN-REFS>
+        {%- for vehicle_connector_pin_ref in physical_vehicle_link.vehicle_connector_pin_refs %}
+        <VEHICLE-CONNECTOR-PIN-REF {{ make_ref_attribs(vehicle_connector_pin_ref) }} />
+        {%- endfor %}
+      </VEHICLE-CONNECTOR-PIN-REFS>
+      {%- endif %}
+      {%- if physical_vehicle_link.link_comparam_refs_raw %}
+      <LINK-COMPARAM-REFS>
+        {%- for link_comparam_ref in physical_vehicle_link.link_comparam_refs_raw %}
+        <LINK-COMPARAM-REF {{make_ref_attribs(link_comparam_ref)}}>
+          {%- if link_comparam_ref.simple_value is not none %}
+          <SIMPLE-VALUE>{{ link_comparam_ref.simple_value | e }}</SIMPLE-VALUE>
+          {%- endif %}
+          {%- if link_comparam_ref.complex_value is not none %}
+          {{ pcp.printComplexValue(link_comparam_ref.complex_value) | indent(6) }}
+          {%- endif %}
+          {%- if link_comparam_ref.description is not none %}
+          {{- pd.printDescription(link_comparam_ref.description) }}
+          {%- endif %}
+        </LINK-COMPARAM-REF>
+        {%- endfor %}
+      </LINK-COMPARAM-REFS>
+      {%- endif %}
+    </PHYSICAL-VEHICLE-LINK>
+    {%- endfor %}
+  </PHYSICAL-VEHICLE-LINKS>
+  {%- endif %}
+</VEHICLE-INFORMATION>
+{%- endmacro -%}

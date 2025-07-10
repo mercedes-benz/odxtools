@@ -24,7 +24,10 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(
             {x.short_name
              for x in odxdb.diag_layers},
-            {"somersault", "somersault_assiduous", "somersault_lazy", "somersault_protocol"},
+            {
+                "somersault_base_variant", "somersault_assiduous", "somersault_lazy",
+                "somersault_protocol"
+            },
         )
 
         self.assertEqual([x.short_name for x in odxdb.ecus],
@@ -356,7 +359,7 @@ class TestEnDecode(unittest.TestCase):
         self.assertEqual(m.param_dict, {"sid": 0xFA, "num_flips_done": 0x03, "sault_time": 255})
 
     def test_retarget_snrefs(self) -> None:
-        base_variant = odxdb.base_variants.somersault
+        base_variant = odxdb.base_variants.somersault_base_variant
         ecu_lazy = odxdb.ecu_variants.somersault_lazy
         ecu_assiduous = odxdb.ecu_variants.somersault_assiduous
 
@@ -402,9 +405,9 @@ class TestNavigation(unittest.TestCase):
 
     def test_finding_services(self) -> None:
         # Find base variant
-        self.assertIsNotNone(odxdb.diag_layers.somersault.services.do_backward_flips)
-        self.assertIsNotNone(odxdb.diag_layers.somersault.services.do_forward_flips)
-        self.assertIsNotNone(odxdb.diag_layers.somersault.services.report_status)
+        self.assertIsNotNone(odxdb.diag_layers.somersault_base_variant.services.do_backward_flips)
+        self.assertIsNotNone(odxdb.diag_layers.somersault_base_variant.services.do_forward_flips)
+        self.assertIsNotNone(odxdb.diag_layers.somersault_base_variant.services.report_status)
 
         # Find ecu variant
         self.assertIsNotNone(odxdb.ecus.somersault_assiduous.services.headstand)
