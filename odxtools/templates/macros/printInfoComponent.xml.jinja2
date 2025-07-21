@@ -10,7 +10,7 @@
 
 {%- macro printInfoComponent(info_component) -%}
 <INFO-COMPONENT {{- peid.printElementIdAttribs(info_component) }}
-                {#- #}xsi:type="{{info_component.component_type.value}}">
+                {#- #} xsi:type="{{info_component.component_type.value}}">
   {{peid.printElementIdSubtags(info_component)|indent(2) }}
   {%- if info_component.matching_components %}
   <MATCHING-COMPONENTS>
