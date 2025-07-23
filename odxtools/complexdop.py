@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from .dopbase import DopBase
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ComplexDop(DopBase):
     """Base class for all complex data object properties.
 

@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Optional, Union
 
 from ..exceptions import odxraise, odxrequire
 from ..odxtypes import AtomicOdxType, DataType
@@ -8,7 +7,7 @@ from .compuscale import CompuScale
 from .limit import Limit
 
 
-@dataclass
+@dataclass(kw_only=True)
 class LinearSegment:
     """Helper class to represent a segment of a piecewise-linear interpolation.
 
@@ -24,20 +23,20 @@ class LinearSegment:
     offset: float
     factor: float
     denominator: float
-    internal_lower_limit: Optional[Limit]
-    internal_upper_limit: Optional[Limit]
+    internal_lower_limit: Limit | None = None
+    internal_upper_limit: Limit | None = None
 
-    inverse_value: Union[int, float]  # value used as inverse if factor is 0
+    inverse_value: int | float  # value used as inverse if factor is 0
 
     internal_type: DataType
     physical_type: DataType
 
     @property
-    def physical_lower_limit(self) -> Optional[Limit]:
+    def physical_lower_limit(self) -> Limit | None:
         return self._physical_lower_limit
 
     @property
-    def physical_upper_limit(self) -> Optional[Limit]:
+    def physical_upper_limit(self) -> Limit | None:
         return self._physical_upper_limit
 
     @staticmethod
@@ -52,7 +51,7 @@ class LinearSegment:
         if len(coeffs.denominators) > 0:
             denominator = coeffs.denominators[0]
 
-        inverse_value: Union[int, float] = 0
+        inverse_value: int | float = 0
         if scale.compu_inverse_value is not None:
             x = odxrequire(scale.compu_inverse_value).value
             if not isinstance(x, (int, float)):
@@ -75,7 +74,7 @@ class LinearSegment:
     def __post_init__(self) -> None:
         self.__compute_physical_limits()
 
-    def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> Union[float, int]:
+    def convert_internal_to_physical(self, internal_value: AtomicOdxType) -> float | int:
         if not isinstance(internal_value, (int, float)):
             odxraise(f"Internal values of linear compumethods must "
                      f"either be int or float (is: {type(internal_value).__name__})")
@@ -90,7 +89,7 @@ class LinearSegment:
 
         return result
 
-    def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> Union[float, int]:
+    def convert_physical_to_internal(self, physical_value: AtomicOdxType) -> float | int:
         if not isinstance(physical_value, (int, float)):
             odxraise(f"Physical values of linear compumethods must "
                      f"either be int or float (is: {type(physical_value).__name__})")
@@ -115,7 +114,7 @@ class LinearSegment:
         This method is called by `__post_init__()`.
         """
 
-        def convert_internal_to_physical_limit(internal_limit: Optional[Limit]) -> Optional[Limit]:
+        def convert_internal_to_physical_limit(internal_limit: Limit | None) -> Limit | None:
             """Helper method to convert a single internal limit
             """
             if internal_limit is None or internal_limit.value_raw is None:

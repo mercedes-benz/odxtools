@@ -1,15 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from .matchingparameter import MatchingParameter
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .odxtypes import odxstr_to_bool
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MatchingBaseVariantParameter(MatchingParameter):
     """A description of a parameter used for base variant matching.
 
@@ -18,7 +17,7 @@ class MatchingBaseVariantParameter(MatchingParameter):
     additional subtag `USE-PHYSICAL-ADDRESSING`.
     """
 
-    use_physical_addressing_raw: Optional[bool]
+    use_physical_addressing_raw: bool | None = None
 
     @property
     def use_physical_addressing(self) -> bool:
@@ -26,9 +25,9 @@ class MatchingBaseVariantParameter(MatchingParameter):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "MatchingBaseVariantParameter":
+                context: OdxDocContext) -> "MatchingBaseVariantParameter":
 
-        kwargs = dataclass_fields_asdict(MatchingParameter.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(MatchingParameter.from_et(et_element, context))
 
         use_physical_addressing_raw = odxstr_to_bool(et_element.findtext("USE-PHYSICAL-ADDRESSING"))
 

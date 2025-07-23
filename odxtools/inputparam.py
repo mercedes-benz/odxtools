@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from deprecation import deprecated
@@ -8,17 +8,18 @@ from deprecation import deprecated
 from .dopbase import DopBase
 from .element import NamedElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class InputParam(NamedElement):
-    physical_default_value: Optional[str]
+    physical_default_value: str | None = None
     dop_base_ref: OdxLinkRef
-    oid: Optional[str]
-    semantic: Optional[str]
+    oid: str | None = None
+    semantic: str | None = None
 
     @property
     def dop(self) -> DopBase:
@@ -30,11 +31,11 @@ class InputParam(NamedElement):
         return self._dop
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "InputParam":
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "InputParam":
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
         physical_default_value = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
-        dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), doc_frags))
+        dop_base_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DOP-BASE-REF"), context))
 
         oid = et_element.get("OID")
         semantic = et_element.get("SEMANTIC")
@@ -46,7 +47,7 @@ class InputParam(NamedElement):
             semantic=semantic,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

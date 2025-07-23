@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -8,13 +7,13 @@ from typing_extensions import override
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import DataType, ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MatchingRequestParameter(Parameter):
     request_byte_position: int
     byte_length: int
@@ -37,9 +36,9 @@ class MatchingRequestParameter(Parameter):
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "MatchingRequestParameter":
+                context: OdxDocContext) -> "MatchingRequestParameter":
 
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, context))
 
         request_byte_position = int(odxrequire(et_element.findtext("REQUEST-BYTE-POS")))
         byte_length = int(odxrequire(et_element.findtext("BYTE-LENGTH")))
@@ -48,11 +47,11 @@ class MatchingRequestParameter(Parameter):
             request_byte_position=request_byte_position, byte_length=byte_length, **kwargs)
 
     @override
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return 8 * self.byte_length
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         if encode_state.triggering_request is None:
             odxraise(

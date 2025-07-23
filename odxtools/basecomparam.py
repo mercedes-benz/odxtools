@@ -1,40 +1,28 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
+from .standardizationlevel import StandardizationLevel
+from .usage import Usage
 from .utils import dataclass_fields_asdict
 
 
-class StandardizationLevel(Enum):
-    STANDARD = "STANDARD"
-    OEM_SPECIFIC = "OEM-SPECIFIC"
-    OPTIONAL = "OPTIONAL"
-    OEM_OPTIONAL = "OEM-OPTIONAL"
-
-
-class Usage(Enum):
-    ECU_SOFTWARE = "ECU-SOFTWARE"
-    ECU_COMM = "ECU-COMM"
-    APPLICATION = "APPLICATION"
-    TESTER = "TESTER"
-
-
-@dataclass
+@dataclass(kw_only=True)
 class BaseComparam(IdentifiableElement):
     param_class: str
     cptype: StandardizationLevel
-    display_level: Optional[int]
-    cpusage: Optional[Usage]  # Required in ODX 2.2, missing in ODX 2.0
+    display_level: int | None = None
+    cpusage: Usage | None = None  # Required in ODX 2.2, missing in ODX 2.0
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "BaseComparam":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "BaseComparam":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         param_class = odxrequire(et_element.attrib.get("PARAM-CLASS"))
 
@@ -65,7 +53,7 @@ class BaseComparam(IdentifiableElement):
             cpusage=cpusage,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass, fields
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any, cast
 from xml.etree import ElementTree
 
 from .admindata import AdminData
@@ -11,7 +11,8 @@ from .element import IdentifiableElement
 from .exceptions import odxassert, odxraise, odxrequire
 from .functionalclass import FunctionalClass
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .odxtypes import AtomicOdxType, odxstr_to_bool
 from .preconditionstateref import PreConditionStateRef
 from .snrefcontext import SnRefContext
@@ -24,7 +25,7 @@ if TYPE_CHECKING:
     from .table import Table
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TableRow(IdentifiableElement):
     """This class represents a TABLE-ROW."""
     table_ref: OdxLinkRef
@@ -33,22 +34,22 @@ class TableRow(IdentifiableElement):
     # The spec mandates that either a structure or a non-complex DOP
     # must be referenced here, i.e., exactly one of the four
     # attributes below is not None
-    dop_ref: Optional[OdxLinkRef]
-    dop_snref: Optional[str]
-    structure_ref: Optional[OdxLinkRef]
-    structure_snref: Optional[str]
+    dop_ref: OdxLinkRef | None = None
+    dop_snref: str | None = None
+    structure_ref: OdxLinkRef | None = None
+    structure_snref: str | None = None
 
-    sdgs: List[SpecialDataGroup]
-    audience: Optional[Audience]
-    functional_class_refs: List[OdxLinkRef]
-    state_transition_refs: List[StateTransitionRef]
-    pre_condition_state_refs: List[PreConditionStateRef]
-    admin_data: Optional[AdminData]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
+    audience: Audience | None = None
+    functional_class_refs: list[OdxLinkRef] = field(default_factory=list)
+    state_transition_refs: list[StateTransitionRef] = field(default_factory=list)
+    pre_condition_state_refs: list[PreConditionStateRef] = field(default_factory=list)
+    admin_data: AdminData | None = None
 
-    is_executable_raw: Optional[bool]
-    semantic: Optional[str]
-    is_mandatory_raw: Optional[bool]
-    is_final_raw: Optional[bool]
+    is_executable_raw: bool | None = None
+    semantic: str | None = None
+    is_mandatory_raw: bool | None = None
+    is_final_raw: bool | None = None
 
     @property
     def table(self) -> "Table":
@@ -57,16 +58,16 @@ class TableRow(IdentifiableElement):
     # the value of the key expressed in the type represented by the
     # referenced DOP
     @property
-    def key(self) -> Optional[AtomicOdxType]:
+    def key(self) -> AtomicOdxType | None:
         return self._key
 
     @property
-    def dop(self) -> Optional[DataObjectProperty]:
+    def dop(self) -> DataObjectProperty | None:
         """The data object property object resolved by dop_ref."""
         return self._dop
 
     @property
-    def structure(self) -> Optional[Structure]:
+    def structure(self) -> Structure | None:
         """The structure associated with this table row."""
         return self._structure
 
@@ -87,52 +88,50 @@ class TableRow(IdentifiableElement):
         return self.is_final_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> Any:
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> Any:
         raise RuntimeError(
             "Calling TableRow.from_et() is not allowed. Use TableRow.tablerow_from_et().")
 
     @staticmethod
-    def tablerow_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def tablerow_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                          table_ref: OdxLinkRef) -> "TableRow":
         """Reads a TABLE-ROW."""
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         key_raw = odxrequire(et_element.findtext("KEY"))
 
-        dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags)
-        dop_snref: Optional[str] = None
+        dop_ref = OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), context)
+        dop_snref: str | None = None
         if (dop_snref_elem := et_element.find("DATA-OBJECT-PROP-SNREF")) is not None:
             dop_snref = dop_snref_elem.attrib["SHORT-NAME"]
 
-        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), doc_frags)
-        structure_snref: Optional[str] = None
+        structure_ref = OdxLinkRef.from_et(et_element.find("STRUCTURE-REF"), context)
+        structure_snref: str | None = None
         if (structure_snref_elem := et_element.find("STRUCTURE-SNREF")) is not None:
             structure_snref = structure_snref_elem.attrib["SHORT-NAME"]
 
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
 
         audience = None
         if (audience_elem := et_element.find("AUDIENCE")) is not None:
-            audience = Audience.from_et(audience_elem, doc_frags)
+            audience = Audience.from_et(audience_elem, context)
 
         functional_class_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            odxrequire(OdxLinkRef.from_et(el, context))
             for el in et_element.iterfind("FUNCT-CLASS-REFS/FUNCT-CLASS-REF")
         ]
 
         state_transition_refs = [
-            StateTransitionRef.from_et(el, doc_frags)
+            StateTransitionRef.from_et(el, context)
             for el in et_element.iterfind("STATE-TRANSITION-REFS/STATE-TRANSITION-REF")
         ]
 
         pre_condition_state_refs = [
-            PreConditionStateRef.from_et(el, doc_frags)
+            PreConditionStateRef.from_et(el, context)
             for el in et_element.iterfind("PRE-CONDITION-STATE-REFS/PRE-CONDITION-STATE-REF")
         ]
 
-        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), doc_frags)
+        admin_data = AdminData.from_et(et_element.find("ADMIN-DATA"), context)
 
         is_executable_raw = odxstr_to_bool(et_element.attrib.get("IS-EXECUTABLE"))
         semantic = et_element.attrib.get("SEMANTIC")
@@ -159,8 +158,8 @@ class TableRow(IdentifiableElement):
             **kwargs)
 
     def __post_init__(self) -> None:
-        self._dop: Optional[DataObjectProperty] = None
-        self._structure: Optional[Structure] = None
+        self._dop: DataObjectProperty | None = None
+        self._structure: Structure | None = None
 
         n = sum([0 if x is None else 1 for x in (self.dop_ref, self.dop_snref)])
         odxassert(
@@ -174,7 +173,7 @@ class TableRow(IdentifiableElement):
             f"Table row {self.short_name}: The structure can either be defined using ODXLINK or SNREF but not both."
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         for sdg in self.sdgs:
@@ -258,7 +257,29 @@ class TableRow(IdentifiableElement):
         for pc_ref in self.pre_condition_state_refs:
             pc_ref._resolve_snrefs(context)
 
-    def __reduce__(self) -> Tuple[Any, ...]:
+    def __reduce__(self) -> tuple[Any, ...]:
         """This ensures that the object can be correctly reconstructed during unpickling."""
         state = self.__dict__.copy()
-        return self.__class__, tuple([getattr(self, x.name) for x in fields(self)]), state
+        return _reconstruct_tablerow, (self.__class__, state)
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """
+        Restore the object's internal state.
+
+        This method is called during the unpickling, it updates
+        the instance's __dict__ with the saved state.
+        """
+        self.__dict__.update(state)
+
+
+def _reconstruct_tablerow(cls: Any, state: dict[str, Any]) -> TableRow:
+    """
+    Reconstruct a TableRow instance from pickled state.
+
+    This function is used during unpickling to bypass the `__init__`
+    constructor, which would normally enforce `kw_only=True` arguments.
+    Instead, it creates an uninitialized object and restores its state.
+    """
+    obj = cls.__new__(cls)
+    obj.__setstate__(state)
+    return cast(TableRow, obj)

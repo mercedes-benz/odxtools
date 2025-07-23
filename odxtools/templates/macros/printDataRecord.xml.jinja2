@@ -1,0 +1,35 @@
+1{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printDataRecord(data_record) -%}
+<DATA-RECORD {{ make_xml_attrib("DATAFORMAT", data_record.dataformat.value) }}>
+  {{peid.printElementIdSubtags(data_record)|indent(2) }}
+  {%- if data_record.rule is not none %}
+  <RULE>{{data_record.rule | e}}</RULE>
+  {%- endif %}
+  {%- if data_record.key is not none %}
+  <KEY>{{data_record.key | e}}</KEY>
+  {%- endif %}
+  {%- if data_record.data_id is not none %}
+  <DATA-ID
+    {%- if data_record.data_id.value_type is not none %}
+      {#- #} TYPE="{{ data_record.data_id.value_type.value }}"
+      {%- endif %}
+      {#- #}>{{data_record.data_id.value_raw | e}}</DATA-ID>
+  {%- endif %}
+  {{- psd.printSpecialDataGroups(data_record.sdgs)|indent(2, first=True) }}{#- #}
+  {%- if data_record.datafile is not none %}
+  <DATAFILE {{ make_bool_xml_attrib("LATEBOUND-DATAFILE", data_record.datafile.latebound_datafile) }}>
+    {#- #}{{data_record.datafile.value | e}}
+  {#- #}</DATAFILE>
+  {%- endif %}
+  {%- if data_record.data is defined %}
+  <DATA>{{data_record.data | e}}</DATA>
+  {%- endif %}
+</DATA-RECORD>
+{%- endmacro -%}

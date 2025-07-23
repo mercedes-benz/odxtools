@@ -40,7 +40,7 @@
 {%- macro printTableRowConnector(conn) %}
 <TABLE-ROW-CONNECTOR>
   {{ peid.printElementIdSubtags(conn)|indent(2) }}
-  <TABLE-REF ID-REF="{{ conn.table_ref.ref_id }}" />
+  <TABLE-REF {{make_ref_attribs(conn.table_ref)}} />
   <TABLE-ROW-SNREF {{- make_xml_attrib("SHORT-NAME", conn.table_row_snref ) }} />
 </TABLE-ROW-CONNECTOR>
 {%- endmacro %}
@@ -48,7 +48,7 @@
 {%- macro printEnvDataConnector(conn) %}
 <ENV-DATA-CONNECTOR>
   {{ peid.printElementIdSubtags(conn)|indent(2) }}
-  <ENV-DATA-DESC-REF ID-REF="{{ conn.env_data_desc_ref.ref_id }}" />
+  <ENV-DATA-DESC-REF {{make_ref_attribs(conn.env_data_desc_ref)}} />
   <ENV-DATA-SNREF {{- make_xml_attrib("SHORT-NAME", conn.env_data_snref ) }} />
 </ENV-DATA-CONNECTOR>
 {%- endmacro %}
@@ -56,7 +56,7 @@
 {%- macro printDtcConnector(conn) %}
 <DTC-CONNECTOR>
   {{ peid.printElementIdSubtags(conn)|indent(2) }}
-  <DTC-DOP-REF ID-REF="{{ conn.dtc_dop_ref.ref_id }}" />
+  <DTC-DOP-REF {{make_ref_attribs(conn.dtc_dop_ref)}} />
   <DOP-SNREF {{- make_xml_attrib("SHORT-NAME", conn.dtc_snref ) }} />
 </DTC-CONNECTOR>
 {%- endmacro %}

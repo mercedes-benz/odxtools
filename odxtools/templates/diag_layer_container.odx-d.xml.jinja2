@@ -1,6 +1,10 @@
 {#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
  #
  # SPDX-License-Identifier: MIT
+ #
+ # This template writes an .odx-d file containing a diag layer container, i.e.,
+ # a collection of descriptions of the diagnostic interactions which are
+ # supported by variants of ECUs.
 -#}
 {%- import('macros/printOdxCategory.xml.jinja2') as poc %}
 {%- import('macros/printEcuSharedData.xml.jinja2') as pecusd -%}
@@ -14,6 +18,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <!-- Written using odxtools {{odxtools_version}} -->
 <ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
+ {{- set_category_docfrag(dlc.short_name, "CONTAINER") }}
  <DIAG-LAYER-CONTAINER {{- poc.printOdxCategoryAttribs(dlc) }}>
   {{- poc.printOdxCategorySubtags(dlc)|indent(3) }}
 {%- if dlc.protocols %}
@@ -44,7 +49,7 @@
  {%- endfor %}
   </BASE-VARIANTS>
 {%- endif %}
-{%- if  dlc.ecu_variants %}
+{%- if dlc.ecu_variants %}
   <ECU-VARIANTS>
  {%- for dl in dlc.ecu_variants %}
   {{pecuv.printEcuVariant(dl)|indent(3)}}

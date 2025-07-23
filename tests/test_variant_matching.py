@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 import json
-from typing import Any, Dict, List
+from typing import Any
 
 import pytest
 
@@ -16,13 +16,12 @@ from odxtools.ecuvariantpattern import EcuVariantPattern
 from odxtools.exceptions import OdxError, odxrequire
 from odxtools.matchingbasevariantparameter import MatchingBaseVariantParameter
 from odxtools.matchingparameter import MatchingParameter
-from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.request import Request
 from odxtools.response import Response, ResponseType
 from odxtools.variantmatcher import VariantMatcher
 
-doc_frags = [OdxDocFragment(doc_name="pytest", doc_type=DocType.CONTAINER)]
+doc_frags = (OdxDocFragment(doc_name="pytest", doc_type=DocType.CONTAINER),)
 
 odxlinks = OdxLinkDatabase()
 
@@ -31,18 +30,12 @@ odxlinks = OdxLinkDatabase()
 def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
     resp = Response(
         odx_id=OdxLinkId(local_id="dummy_resp", doc_fragments=doc_frags),
-        oid=None,
         short_name="dummy_resp",
-        long_name=None,
-        description=None,
-        admin_data=None,
-        sdgs=[],
-        parameters=NamedItemList(),
         response_type=ResponseType.POSITIVE,
     )
     odxlinks.update({resp.odx_id: resp})
 
-    def decode(message: bytes) -> Dict[str, Any]:
+    def decode(message: bytes) -> dict[str, Any]:
         msg_str = message.decode(encoding="utf-8")
         msg_dict = json.loads(msg_str)
         assert isinstance(msg_dict, dict)
@@ -56,44 +49,15 @@ def dummy_response(monkeypatch: pytest.MonkeyPatch) -> Response:
 def bv_ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> DiagService:
     dummy_req = Request(
         odx_id=OdxLinkId(local_id="dummy_req", doc_fragments=doc_frags),
-        oid=None,
         short_name="dummy_req",
-        long_name=None,
-        description=None,
-        admin_data=None,
-        sdgs=[],
-        parameters=NamedItemList(),
     )
     odxlinks.update({dummy_req.odx_id: dummy_req})
 
     diagService = DiagService(
         odx_id=OdxLinkId(local_id="identService", doc_fragments=doc_frags),
-        oid=None,
         short_name="identService",
-        long_name=None,
-        description=None,
-        semantic=None,
-        admin_data=None,
-        protocol_snrefs=[],
-        related_diag_comm_refs=[],
-        diagnostic_class=None,
-        is_mandatory_raw=None,
-        is_executable_raw=None,
-        is_final_raw=None,
-        comparam_refs=[],
-        is_cyclic_raw=None,
-        is_multiple_raw=None,
-        addressing_raw=None,
-        transmission_mode_raw=None,
-        audience=None,
-        functional_class_refs=[],
-        pre_condition_state_refs=[],
-        state_transition_refs=[],
         request_ref=OdxLinkRef.from_id(dummy_req.odx_id),
         pos_response_refs=[OdxLinkRef.from_id(dummy_response.odx_id)],
-        neg_response_refs=[],
-        pos_response_suppressible=None,
-        sdgs=[],
     )
 
     def encode_request() -> bytes:
@@ -107,44 +71,15 @@ def bv_ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) 
 def ev_ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> DiagService:
     dummy_req = Request(
         odx_id=OdxLinkId(local_id="dummy_req", doc_fragments=doc_frags),
-        oid=None,
         short_name="dummy_req",
-        long_name=None,
-        description=None,
-        admin_data=None,
-        sdgs=[],
-        parameters=NamedItemList(),
     )
     odxlinks.update({dummy_req.odx_id: dummy_req})
 
     diagService = DiagService(
         odx_id=OdxLinkId(local_id="identService", doc_fragments=doc_frags),
-        oid=None,
         short_name="identService",
-        long_name=None,
-        description=None,
-        semantic=None,
-        admin_data=None,
-        protocol_snrefs=[],
-        related_diag_comm_refs=[],
-        diagnostic_class=None,
-        is_mandatory_raw=None,
-        is_executable_raw=None,
-        is_final_raw=None,
-        comparam_refs=[],
-        is_cyclic_raw=None,
-        is_multiple_raw=None,
-        addressing_raw=None,
-        transmission_mode_raw=None,
-        audience=None,
-        functional_class_refs=[],
-        pre_condition_state_refs=[],
-        state_transition_refs=[],
         request_ref=OdxLinkRef.from_id(dummy_req.odx_id),
         pos_response_refs=[OdxLinkRef.from_id(dummy_response.odx_id)],
-        neg_response_refs=[],
-        pos_response_suppressible=None,
-        sdgs=[],
     )
 
     def encode_request() -> bytes:
@@ -158,44 +93,15 @@ def ev_ident_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) 
 def ev_supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> DiagService:
     dummy_req = Request(
         odx_id=OdxLinkId(local_id="dummy_req", doc_fragments=doc_frags),
-        oid=None,
         short_name="dummy_req",
-        long_name=None,
-        description=None,
-        admin_data=None,
-        sdgs=[],
-        parameters=NamedItemList(),
     )
     odxlinks.update({dummy_req.odx_id: dummy_req})
 
     diagService = DiagService(
         odx_id=OdxLinkId(local_id="supplierService", doc_fragments=doc_frags),
-        oid=None,
         short_name="supplierService",
-        long_name=None,
-        description=None,
-        semantic=None,
-        admin_data=None,
-        protocol_snrefs=[],
-        related_diag_comm_refs=[],
-        diagnostic_class=None,
-        is_mandatory_raw=None,
-        is_executable_raw=None,
-        is_final_raw=None,
-        comparam_refs=[],
-        is_cyclic_raw=None,
-        is_multiple_raw=None,
-        addressing_raw=None,
-        transmission_mode_raw=None,
-        audience=None,
-        functional_class_refs=[],
-        pre_condition_state_refs=[],
-        state_transition_refs=[],
         request_ref=OdxLinkRef.from_id(dummy_req.odx_id),
         pos_response_refs=[OdxLinkRef.from_id(dummy_response.odx_id)],
-        neg_response_refs=[],
-        pos_response_suppressible=None,
-        sdgs=[],
     )
 
     def encode_request() -> bytes:
@@ -209,44 +115,15 @@ def ev_supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Respons
 def bv_supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> DiagService:
     dummy_req = Request(
         odx_id=OdxLinkId(local_id="dummy_req", doc_fragments=doc_frags),
-        oid=None,
         short_name="dummy_req",
-        long_name=None,
-        description=None,
-        admin_data=None,
-        sdgs=[],
-        parameters=NamedItemList(),
     )
     odxlinks.update({dummy_req.odx_id: dummy_req})
 
     diagService = DiagService(
         odx_id=OdxLinkId(local_id="supplierService", doc_fragments=doc_frags),
-        oid=None,
         short_name="supplierService",
-        long_name=None,
-        description=None,
-        semantic=None,
-        admin_data=None,
-        protocol_snrefs=[],
-        related_diag_comm_refs=[],
-        diagnostic_class=None,
-        is_mandatory_raw=None,
-        is_executable_raw=None,
-        is_final_raw=None,
-        comparam_refs=[],
-        is_cyclic_raw=None,
-        is_multiple_raw=None,
-        addressing_raw=None,
-        transmission_mode_raw=None,
-        audience=None,
-        functional_class_refs=[],
-        pre_condition_state_refs=[],
-        state_transition_refs=[],
         request_ref=OdxLinkRef.from_id(dummy_req.odx_id),
         pos_response_refs=[OdxLinkRef.from_id(dummy_response.odx_id)],
-        neg_response_refs=[],
-        pos_response_suppressible=None,
-        sdgs=[],
     )
 
     def encode_request() -> bytes:
@@ -260,44 +137,15 @@ def bv_supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Respons
 def bv2_supplier_service(monkeypatch: pytest.MonkeyPatch, dummy_response: Response) -> DiagService:
     bv2_req = Request(
         odx_id=OdxLinkId(local_id="bv2_req", doc_fragments=doc_frags),
-        oid=None,
         short_name="bv2_req",
-        long_name=None,
-        description=None,
-        admin_data=None,
-        sdgs=[],
-        parameters=NamedItemList(),
     )
     odxlinks.update({bv2_req.odx_id: bv2_req})
 
     diagService = DiagService(
         odx_id=OdxLinkId(local_id="bv2.supplierService", doc_fragments=doc_frags),
-        oid=None,
         short_name="supplierService",
-        long_name=None,
-        description=None,
-        semantic=None,
-        admin_data=None,
-        protocol_snrefs=[],
-        related_diag_comm_refs=[],
-        diagnostic_class=None,
-        is_mandatory_raw=None,
-        is_executable_raw=None,
-        is_final_raw=None,
-        comparam_refs=[],
-        is_cyclic_raw=None,
-        is_multiple_raw=None,
-        addressing_raw=None,
-        transmission_mode_raw=None,
-        audience=None,
-        functional_class_refs=[],
-        pre_condition_state_refs=[],
-        state_transition_refs=[],
         request_ref=OdxLinkRef.from_id(bv2_req.odx_id),
         pos_response_refs=[OdxLinkRef.from_id(dummy_response.odx_id)],
-        neg_response_refs=[],
-        pos_response_suppressible=None,
-        sdgs=[],
     )
 
     def encode_request() -> bytes:
@@ -312,16 +160,13 @@ def base_variant_pattern1() -> BaseVariantPattern:
     return BaseVariantPattern(matching_base_variant_parameters=[
         MatchingBaseVariantParameter(
             diag_comm_snref="identService",
-            use_physical_addressing_raw=None,
             expected_value="1234",
             out_param_if_snref="id",
-            out_param_if_snpathref=None,
         ),
         MatchingBaseVariantParameter(
             diag_comm_snref="supplierService",
             use_physical_addressing_raw=False,
             expected_value="OEM",
-            out_param_if_snref=None,
             out_param_if_snpathref="info.type",
         ),
     ])
@@ -332,16 +177,13 @@ def base_variant_pattern2() -> BaseVariantPattern:
     return BaseVariantPattern(matching_base_variant_parameters=[
         MatchingBaseVariantParameter(
             diag_comm_snref="identService",
-            use_physical_addressing_raw=None,
             expected_value="1234",
             out_param_if_snref="id",
-            out_param_if_snpathref=None,
         ),
         MatchingBaseVariantParameter(
             diag_comm_snref="supplierService",
             use_physical_addressing_raw=True,
             expected_value="tier1",
-            out_param_if_snref=None,
             out_param_if_snpathref="info.type",
         ),
     ])
@@ -354,7 +196,6 @@ def base_variant_pattern3() -> BaseVariantPattern:
             diag_comm_snref="supplierService",
             use_physical_addressing_raw=False,
             expected_value="tier5",
-            out_param_if_snref=None,
             out_param_if_snpathref="info.type",
         )
     ])
@@ -367,12 +208,10 @@ def ecu_variant_pattern1() -> EcuVariantPattern:
             diag_comm_snref="identService",
             expected_value="1000",
             out_param_if_snref="id",
-            out_param_if_snpathref=None,
         ),
         MatchingParameter(
             diag_comm_snref="supplierService",
             expected_value="supplier_A",
-            out_param_if_snref=None,
             out_param_if_snpathref="name.english",
         ),
     ])
@@ -385,12 +224,10 @@ def ecu_variant_pattern2() -> EcuVariantPattern:
             diag_comm_snref="identService",
             expected_value="2000",
             out_param_if_snref="id",
-            out_param_if_snpathref=None,
         ),
         MatchingParameter(
             diag_comm_snref="supplierService",
             expected_value="supplier_B",
-            out_param_if_snref=None,
             out_param_if_snpathref="name.english",
         ),
     ])
@@ -402,7 +239,6 @@ def ecu_variant_pattern3() -> EcuVariantPattern:
         MatchingParameter(
             diag_comm_snref="supplierService",
             expected_value="supplier_C",
-            out_param_if_snref=None,
             out_param_if_snpathref="name.english",
         )
     ])
@@ -417,31 +253,9 @@ def base_variant_1(
     raw_layer = BaseVariantRaw(
         variant_type=DiagLayerType.BASE_VARIANT,
         odx_id=OdxLinkId(local_id="base_variant1", doc_fragments=doc_frags),
-        oid=None,
         short_name="base_variant1",
-        long_name=None,
-        description=None,
-        admin_data=None,
-        company_datas=NamedItemList(),
-        functional_classes=NamedItemList(),
-        diag_data_dictionary_spec=None,
         diag_comms_raw=[bv_ident_service, bv_supplier_service],
-        requests=NamedItemList(),
-        positive_responses=NamedItemList(),
-        negative_responses=NamedItemList(),
-        global_negative_responses=NamedItemList(),
-        import_refs=[],
-        state_charts=NamedItemList(),
-        additional_audiences=NamedItemList(),
-        sdgs=[],
-        parent_refs=[],
-        comparam_refs=[],
         base_variant_pattern=base_variant_pattern1,
-        diag_variables_raw=[],
-        variable_groups=NamedItemList(),
-        libraries=NamedItemList(),
-        dyn_defined_spec=None,
-        sub_components=NamedItemList(),
     )
     result = BaseVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
@@ -460,31 +274,9 @@ def base_variant_2(
     raw_layer = BaseVariantRaw(
         variant_type=DiagLayerType.BASE_VARIANT,
         odx_id=OdxLinkId(local_id="base_variant2", doc_fragments=doc_frags),
-        oid=None,
         short_name="base_variant2",
-        long_name=None,
-        description=None,
-        admin_data=None,
-        company_datas=NamedItemList(),
-        functional_classes=NamedItemList(),
-        diag_data_dictionary_spec=None,
         diag_comms_raw=[bv_ident_service, bv2_supplier_service],
-        requests=NamedItemList(),
-        positive_responses=NamedItemList(),
-        negative_responses=NamedItemList(),
-        global_negative_responses=NamedItemList(),
-        import_refs=[],
-        state_charts=NamedItemList(),
-        additional_audiences=NamedItemList(),
-        sdgs=[],
-        parent_refs=[],
-        comparam_refs=[],
         base_variant_pattern=base_variant_pattern2,
-        diag_variables_raw=[],
-        variable_groups=NamedItemList(),
-        libraries=NamedItemList(),
-        dyn_defined_spec=None,
-        sub_components=NamedItemList(),
     )
     result = BaseVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
@@ -504,31 +296,9 @@ def base_variant_3(
     raw_layer = BaseVariantRaw(
         variant_type=DiagLayerType.BASE_VARIANT,
         odx_id=OdxLinkId(local_id="base_variant3", doc_fragments=doc_frags),
-        oid=None,
         short_name="base_variant3",
-        long_name=None,
-        description=None,
-        admin_data=None,
-        company_datas=NamedItemList(),
-        functional_classes=NamedItemList(),
-        diag_data_dictionary_spec=None,
         diag_comms_raw=[bv_ident_service, bv_supplier_service],
-        requests=NamedItemList(),
-        positive_responses=NamedItemList(),
-        negative_responses=NamedItemList(),
-        global_negative_responses=NamedItemList(),
-        import_refs=[],
-        state_charts=NamedItemList(),
-        additional_audiences=NamedItemList(),
-        sdgs=[],
-        parent_refs=[],
-        comparam_refs=[],
         base_variant_pattern=base_variant_pattern3,
-        diag_variables_raw=[],
-        variable_groups=NamedItemList(),
-        libraries=NamedItemList(),
-        dyn_defined_spec=None,
-        sub_components=NamedItemList(),
     )
     result = BaseVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
@@ -540,7 +310,7 @@ def base_variant_3(
 
 @pytest.fixture
 def base_variants(base_variant_1: BaseVariant, base_variant_2: BaseVariant,
-                  base_variant_3: BaseVariant) -> List[BaseVariant]:
+                  base_variant_3: BaseVariant) -> list[BaseVariant]:
     return [base_variant_1, base_variant_2, base_variant_3]
 
 
@@ -553,31 +323,9 @@ def ecu_variant_1(
     raw_layer = EcuVariantRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant1", doc_fragments=doc_frags),
-        oid=None,
         short_name="ecu_variant1",
-        long_name=None,
-        description=None,
-        admin_data=None,
-        company_datas=NamedItemList(),
-        functional_classes=NamedItemList(),
-        diag_data_dictionary_spec=None,
         diag_comms_raw=[ev_ident_service, ev_supplier_service],
-        requests=NamedItemList(),
-        positive_responses=NamedItemList(),
-        negative_responses=NamedItemList(),
-        global_negative_responses=NamedItemList(),
-        import_refs=[],
-        state_charts=NamedItemList(),
-        additional_audiences=NamedItemList(),
-        sdgs=[],
-        parent_refs=[],
-        comparam_refs=[],
         ecu_variant_patterns=[ecu_variant_pattern1],
-        diag_variables_raw=[],
-        variable_groups=NamedItemList(),
-        libraries=NamedItemList(),
-        dyn_defined_spec=None,
-        sub_components=NamedItemList(),
     )
     result = EcuVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
@@ -596,31 +344,9 @@ def ecu_variant_2(
     raw_layer = EcuVariantRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant2", doc_fragments=doc_frags),
-        oid=None,
         short_name="ecu_variant2",
-        long_name=None,
-        description=None,
-        admin_data=None,
-        company_datas=NamedItemList(),
-        functional_classes=NamedItemList(),
-        diag_data_dictionary_spec=None,
         diag_comms_raw=[ev_ident_service, ev_supplier_service],
-        requests=NamedItemList(),
-        positive_responses=NamedItemList(),
-        negative_responses=NamedItemList(),
-        global_negative_responses=NamedItemList(),
-        import_refs=[],
-        state_charts=NamedItemList(),
-        additional_audiences=NamedItemList(),
-        sdgs=[],
-        parent_refs=[],
-        comparam_refs=[],
         ecu_variant_patterns=[ecu_variant_pattern2],
-        diag_variables_raw=[],
-        variable_groups=NamedItemList(),
-        libraries=NamedItemList(),
-        dyn_defined_spec=None,
-        sub_components=NamedItemList(),
     )
     result = EcuVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
@@ -640,31 +366,9 @@ def ecu_variant_3(
     raw_layer = EcuVariantRaw(
         variant_type=DiagLayerType.ECU_VARIANT,
         odx_id=OdxLinkId(local_id="ecu_variant3", doc_fragments=doc_frags),
-        oid=None,
         short_name="ecu_variant3",
-        long_name=None,
-        description=None,
-        admin_data=None,
-        company_datas=NamedItemList(),
-        functional_classes=NamedItemList(),
-        diag_data_dictionary_spec=None,
         diag_comms_raw=[ev_ident_service, ev_supplier_service],
-        requests=NamedItemList(),
-        positive_responses=NamedItemList(),
-        negative_responses=NamedItemList(),
-        global_negative_responses=NamedItemList(),
-        import_refs=[],
-        state_charts=NamedItemList(),
-        additional_audiences=NamedItemList(),
-        sdgs=[],
-        parent_refs=[],
-        comparam_refs=[],
         ecu_variant_patterns=[ecu_variant_pattern1, ecu_variant_pattern3],
-        diag_variables_raw=[],
-        variable_groups=NamedItemList(),
-        libraries=NamedItemList(),
-        dyn_defined_spec=None,
-        sub_components=NamedItemList(),
     )
     result = EcuVariant(diag_layer_raw=raw_layer)
     odxlinks.update(result._build_odxlinks())
@@ -676,11 +380,11 @@ def ecu_variant_3(
 
 @pytest.fixture
 def ecu_variants(ecu_variant_1: EcuVariant, ecu_variant_2: EcuVariant,
-                 ecu_variant_3: EcuVariant) -> List[EcuVariant]:
+                 ecu_variant_3: EcuVariant) -> list[EcuVariant]:
     return [ecu_variant_1, ecu_variant_2, ecu_variant_3]
 
 
-def as_bytes(dikt: Dict[str, Any]) -> bytes:
+def as_bytes(dikt: dict[str, Any]) -> bytes:
     return bytes(json.dumps(dikt), "utf-8")
 
 
@@ -711,9 +415,9 @@ def as_bytes(dikt: Dict[str, Any]) -> bytes:
     ],
 )
 def test_base_variant_matching(
-    base_variants: List[BaseVariant],
+    base_variants: list[BaseVariant],
     use_cache: bool,
-    req_resp_mapping: Dict[bytes, bytes],
+    req_resp_mapping: dict[bytes, bytes],
     expected_variant: str,
 ) -> None:
 
@@ -776,9 +480,9 @@ def test_base_variant_matching(
     ],
 )
 def test_ecu_variant_matching(
-    ecu_variants: List[EcuVariant],
+    ecu_variants: list[EcuVariant],
     use_cache: bool,
-    req_resp_mapping: Dict[bytes, bytes],
+    req_resp_mapping: dict[bytes, bytes],
     expected_variant: str,
 ) -> None:
     matcher = VariantMatcher(
@@ -794,7 +498,7 @@ def test_ecu_variant_matching(
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-def test_no_match(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
+def test_no_match(ecu_variants: list[EcuVariant], use_cache: bool) -> None:
     # stores the responses for each request for the ecu-under-test
     req_resp_mapping = {
         b"\x22\x10\x00": as_bytes({"id": 1000}),
@@ -817,7 +521,7 @@ def test_no_match(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if pending matchers reject the has_match() or active variant query
-def test_no_request_loop(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
+def test_no_request_loop(ecu_variants: list[EcuVariant], use_cache: bool) -> None:
     matcher = VariantMatcher(
         variant_candidates=ecu_variants,
         use_cache=use_cache,
@@ -829,7 +533,7 @@ def test_no_request_loop(ecu_variants: List[EcuVariant], use_cache: bool) -> Non
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if runs of the request loop without calling `evaluate(...)` are rejected
-def test_request_loop_misuse(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
+def test_request_loop_misuse(ecu_variants: list[EcuVariant], use_cache: bool) -> None:
     matcher = VariantMatcher(
         variant_candidates=ecu_variants,
         use_cache=use_cache,
@@ -841,7 +545,7 @@ def test_request_loop_misuse(ecu_variants: List[EcuVariant], use_cache: bool) ->
 
 @pytest.mark.parametrize("use_cache", [True, False])
 # test if request loop is idempotent, i.e., the matching is the same regardless of how often the request loop is run
-def test_request_loop_idempotency(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
+def test_request_loop_idempotency(ecu_variants: list[EcuVariant], use_cache: bool) -> None:
     req_resp_mapping = {
         b"\x22\x10\x00": as_bytes({"id": 2000}),
         b"\x22\x20\x00": as_bytes({"name": {
@@ -870,7 +574,7 @@ def test_request_loop_idempotency(ecu_variants: List[EcuVariant], use_cache: boo
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-def test_unresolvable_snpathref(ecu_variants: List[EcuVariant], use_cache: bool) -> None:
+def test_unresolvable_snpathref(ecu_variants: list[EcuVariant], use_cache: bool) -> None:
     # stores the responses for each request for the ecu-under-test
     req_resp_mapping = {
         b"\x22\x10\x00": as_bytes({"id": 1000}),

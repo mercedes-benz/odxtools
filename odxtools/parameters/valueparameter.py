@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -8,7 +8,8 @@ from typing_extensions import override
 from ..dataobjectproperty import DataObjectProperty
 from ..encodestate import EncodeState
 from ..exceptions import EncodeError, odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import AtomicOdxType, ParameterValue
 from ..snrefcontext import SnRefContext
 from ..utils import dataclass_fields_asdict
@@ -16,9 +17,9 @@ from .parameter import ParameterType
 from .parameterwithdop import ParameterWithDOP
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ValueParameter(ParameterWithDOP):
-    physical_default_value_raw: Optional[str]
+    physical_default_value_raw: str | None = None
 
     @property
     @override
@@ -26,7 +27,7 @@ class ValueParameter(ParameterWithDOP):
         return "VALUE"
 
     @property
-    def physical_default_value(self) -> Optional[AtomicOdxType]:
+    def physical_default_value(self) -> AtomicOdxType | None:
         return self._physical_default_value
 
     @property
@@ -41,20 +42,19 @@ class ValueParameter(ParameterWithDOP):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ValueParameter":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ValueParameter":
 
-        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, context))
 
         physical_default_value_raw = et_element.findtext("PHYSICAL-DEFAULT-VALUE")
 
         return ValueParameter(physical_default_value_raw=physical_default_value_raw, **kwargs)
 
     def __post_init__(self) -> None:
-        self._physical_default_value: Optional[AtomicOdxType] = None
+        self._physical_default_value: AtomicOdxType | None = None
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
     @override
@@ -75,7 +75,7 @@ class ValueParameter(ParameterWithDOP):
                 self.physical_default_value_raw)
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
 
         if physical_value is None:

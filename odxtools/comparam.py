@@ -1,18 +1,19 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List
+from typing import Any
 from xml.etree import ElementTree
 
 from .basecomparam import BaseComparam
 from .dataobjectproperty import DataObjectProperty
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import AtomicOdxType
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Comparam(BaseComparam):
     physical_default_value_raw: str
     dop_ref: OdxLinkRef
@@ -27,16 +28,16 @@ class Comparam(BaseComparam):
         return self._dop
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Comparam":
-        kwargs = dataclass_fields_asdict(BaseComparam.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Comparam":
+        kwargs = dataclass_fields_asdict(BaseComparam.from_et(et_element, context))
 
         physical_default_value_raw = odxrequire(et_element.findtext("PHYSICAL-DEFAULT-VALUE"))
-        dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), doc_frags))
+        dop_ref = odxrequire(OdxLinkRef.from_et(et_element.find("DATA-OBJECT-PROP-REF"), context))
 
         return Comparam(
             dop_ref=dop_ref, physical_default_value_raw=physical_default_value_raw, **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

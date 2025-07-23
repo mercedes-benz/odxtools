@@ -1,19 +1,18 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
 
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
 
 
-@dataclass
+@dataclass(kw_only=True)
 class DynamicParameter(Parameter):
 
     @property
@@ -33,15 +32,14 @@ class DynamicParameter(Parameter):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "DynamicParameter":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "DynamicParameter":
 
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, context))
 
         return DynamicParameter(**kwargs)
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         raise NotImplementedError("Encoding DynamicParameter is not implemented yet.")
 

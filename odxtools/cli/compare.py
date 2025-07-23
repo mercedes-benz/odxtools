@@ -425,10 +425,10 @@ class Comparison(Display):
             changed_parameters_of_service=services_with_param_changes)
         dl1_service_names = [service.short_name for service in dl1.services]
 
-        dl1_request_prefixes: list[bytes | None] = [
+        dl1_request_prefixes: list[bytes | bytearray | None] = [
             None if s.request is None else s.request.coded_const_prefix() for s in dl1.services
         ]
-        dl2_request_prefixes: list[bytes | None] = [
+        dl2_request_prefixes: list[bytes | bytearray | None] = [
             None if s.request is None else s.request.coded_const_prefix() for s in dl2.services
         ]
 
@@ -436,7 +436,7 @@ class Comparison(Display):
         for service1 in dl1.services:
 
             # check for added diagnostic services
-            rq_prefix: bytes
+            rq_prefix: bytes | bytearray
             if service1.request is not None:
                 rq_prefix = service1.request.coded_const_prefix()
 

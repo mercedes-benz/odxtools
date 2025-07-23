@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
-from typing import List, Optional, cast
+from typing import cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -11,20 +10,15 @@ from .diagcodedtype import DctType, DiagCodedType
 from .encodestate import EncodeState
 from .encoding import get_string_encoding
 from .exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .odxtypes import AtomicOdxType, BytesTypes, DataType
+from .termination import Termination
 from .utils import dataclass_fields_asdict
 
 
-class Termination(Enum):
-    END_OF_PDU = "END-OF-PDU"
-    ZERO = "ZERO"
-    HEX_FF = "HEX-FF"
-
-
-@dataclass
+@dataclass(kw_only=True)
 class MinMaxLengthType(DiagCodedType):
-    max_length: Optional[int]
+    max_length: int | None = None
     min_length: int
     termination: Termination
 
@@ -34,9 +28,8 @@ class MinMaxLengthType(DiagCodedType):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "MinMaxLengthType":
-        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "MinMaxLengthType":
+        kwargs = dataclass_fields_asdict(DiagCodedType.from_et(et_element, context))
 
         max_length = None
         if et_element.find("MAX-LENGTH") is not None:

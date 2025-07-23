@@ -1,16 +1,17 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from dataclasses import dataclass, field
+from typing import Any, Union
 from xml.etree import ElementTree
 
 from .basecomparam import BaseComparam
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
-ComplexValue = List[Union[str, "ComplexValue"]]
+ComplexValue = list[Union[str, "ComplexValue"]]
 
 
 def create_complex_value_from_et(et_element: ElementTree.Element) -> ComplexValue:
@@ -23,20 +24,19 @@ def create_complex_value_from_et(et_element: ElementTree.Element) -> ComplexValu
     return result
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ComplexComparam(BaseComparam):
-    subparams: NamedItemList[BaseComparam]
-    physical_default_value: Optional[ComplexValue]
-    allow_multiple_values_raw: Optional[bool]
+    subparams: NamedItemList[BaseComparam] = field(default_factory=NamedItemList)
+    physical_default_value: ComplexValue | None = None
+    allow_multiple_values_raw: bool | None = None
 
     @property
     def allow_multiple_values(self) -> bool:
         return self.allow_multiple_values_raw is True
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ComplexComparam":
-        kwargs = dataclass_fields_asdict(BaseComparam.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ComplexComparam":
+        kwargs = dataclass_fields_asdict(BaseComparam.from_et(et_element, context))
 
         # to avoid a cyclic import, create_any_comparam_from_et cannot
         # be imported globally. TODO: figure out if this has
@@ -61,14 +61,14 @@ class ComplexComparam(BaseComparam):
             if elems[i].tag not in ("COMPARAM", "COMPLEX-COMPARAM"):
                 break
 
-            subparam = create_any_comparam_from_et(elems[i], doc_frags)
+            subparam = create_any_comparam_from_et(elems[i], context)
             subparams.append(subparam)
             i += 1
 
         # extract the complex physical default value. (what's the
         # purpose of this? the sub-parameters can define their own
         # default values if a default is desired...)
-        complex_physical_default_value: Optional[ComplexValue] = None
+        complex_physical_default_value: ComplexValue | None = None
         if (cpdv_elem := et_element.find("COMPLEX-PHYSICAL-DEFAULT-VALUE")) is not None:
             complex_physical_default_value = create_complex_value_from_et(cpdv_elem)
 
@@ -80,7 +80,7 @@ class ComplexComparam(BaseComparam):
             allow_multiple_values_raw=allow_multiple_values_raw,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
         for subparam in self.subparams:
             odxlinks.update(subparam._build_odxlinks())

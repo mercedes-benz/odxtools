@@ -1,0 +1,37 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- macro printSecurity(security) -%}
+<SECURITY>
+  {%- if security.security_method is not none %}
+  <SECURITY-METHOD
+    {%- if security.security_method.value_type is not none %}
+    {#- #} TYPE="{{ security.security_method.value_type.value }}"
+    {%- endif %}
+    {#- #}>{{security.security_method.value_raw}}</SECURITY-METHOD>
+  {%- endif %}
+  {%- if security.fw_signature is not none %}
+  <FW-SIGNATURE
+    {%- if security.fw_signature.value_type is not none %}
+    {#- #} TYPE="{{ security.fw_signature.value_type.value }}"
+    {%- endif %}
+    {#- #}>{{security.fw_signature.value_raw}}</FW-SIGNATURE>
+  {%- endif %}
+  {%- if security.fw_checksum is not none %}
+  <FW-CHECKSUM
+    {%- if security.fw_checksum.value_type is not none %}
+    {#- #} TYPE="{{ security.fw_checksum.value_type.value }}"
+    {%- endif %}
+    {#- #}>{{security.fw_checksum.value_raw}}</FW-CHECKSUM>
+  {%- endif %}
+  {%- if security.validity_for is not none %}
+  <VALIDITY-FOR
+    {%- if security.validity_for.value_type is not none %}
+    {#- #} TYPE="{{ security.validity_for.value_type.value }}"
+    {%- endif %}
+    {#- #}>{{security.validity_for.value_raw}}</VALIDITY-FOR>
+  {%- endif %}
+</SECURITY>
+{%- endmacro -%}

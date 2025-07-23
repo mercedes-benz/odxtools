@@ -4,7 +4,7 @@
 -#}
 
 {%- macro printPreConditionStateRef(ps_ref) -%}
-<PRE-CONDITION-STATE-REF ID-REF="{{ps_ref.ref_id}}">
+<PRE-CONDITION-STATE-REF {{make_ref_attribs(ps_ref)}}>
   {%- if ps_ref.value is not none %}
   <VALUE>{{ ps_ref.value }}</VALUE>
   {%- endif %}

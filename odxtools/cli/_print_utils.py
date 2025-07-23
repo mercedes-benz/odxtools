@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 import re
 import textwrap
-from typing import List, Optional, Tuple, Union
 
 import markdownify
 from rich import print as rich_print
@@ -113,9 +112,9 @@ def print_service_parameters(service: DiagService,
     rich_print("\n")
 
 
-def extract_service_tabulation_data(services: List[DiagService],
+def extract_service_tabulation_data(services: list[DiagService],
                                     *,
-                                    additional_columns: Optional[List[Tuple[str, List[str]]]] = None
+                                    additional_columns: list[tuple[str, list[str]]] | None = None
                                    ) -> RichTable:
     """Extracts data of diagnostic services into Dictionary which can
     be printed by tabulate module
@@ -125,9 +124,9 @@ def extract_service_tabulation_data(services: List[DiagService],
     table = RichTable(
         title="", show_header=True, header_style="bold cyan", border_style="blue", show_lines=True)
 
-    name_column: List[str] = []
-    semantic_column: List[str] = []
-    request_column: List[str] = []
+    name_column: list[str] = []
+    semantic_column: list[str] = []
+    request_column: list[str] = []
 
     for service in services:
         name_column.append(service.short_name)
@@ -147,15 +146,19 @@ def extract_service_tabulation_data(services: List[DiagService],
         for ac_title, _ in additional_columns:
             table.add_column(ac_title, justify="left", style="white")
 
-        rows = zip(name_column, semantic_column, request_column,
-                   *[ac[1] for ac in additional_columns])
+        rows = zip(
+            name_column,
+            semantic_column,
+            request_column,
+            *[ac[1] for ac in additional_columns],
+            strict=False)
         for row in rows:
             table.add_row(*map(str, row))
 
     return table
 
 
-def extract_parameter_tabulation_data(parameters: List[Parameter]) -> RichTable:
+def extract_parameter_tabulation_data(parameters: list[Parameter]) -> RichTable:
     # extracts data of parameters of diagnostic services into
     # a RichTable object that can be printed
 
@@ -174,15 +177,15 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> RichTable:
     table.add_column("Value Type", justify="left", style="white")
     table.add_column("Linked DOP", justify="left", style="white")
 
-    name_column: List[str] = []
-    byte_column: List[str] = []
-    bit_length_column: List[str] = []
-    semantic_column: List[str] = []
-    param_type_column: List[str] = []
-    value_column: List[str] = []
-    value_type_column: List[str] = []
-    data_type_column: List[str] = []
-    dop_column: List[str] = []
+    name_column: list[str] = []
+    byte_column: list[str] = []
+    bit_length_column: list[str] = []
+    semantic_column: list[str] = []
+    param_type_column: list[str] = []
+    value_column: list[str] = []
+    value_type_column: list[str] = []
+    data_type_column: list[str] = []
+    dop_column: list[str] = []
 
     for param in parameters:
         name_column.append(param.short_name)
@@ -250,15 +253,24 @@ def extract_parameter_tabulation_data(parameters: List[Parameter]) -> RichTable:
             dop_column.append("")
 
     # Add all rows at once by zipping dictionary values
-    rows = zip(name_column, byte_column, bit_length_column, semantic_column, param_type_column,
-               data_type_column, value_column, value_type_column, dop_column)
+    rows = zip(
+        name_column,
+        byte_column,
+        bit_length_column,
+        semantic_column,
+        param_type_column,
+        data_type_column,
+        value_column,
+        value_type_column,
+        dop_column,
+        strict=False)
     for row in rows:
         table.add_row(*map(str, row))
 
     return table
 
 
-def print_dl_metrics(variants: List[DiagLayer]) -> None:
+def print_dl_metrics(variants: list[DiagLayer]) -> None:
     """
     Print diagnostic layer metrics using Rich tables.
     Args:
@@ -278,7 +290,7 @@ def print_dl_metrics(variants: List[DiagLayer]) -> None:
     # Process each variant
     for variant in variants:
         assert isinstance(variant, DiagLayer)
-        all_services: List[Union[DiagService, SingleEcuJob]] = sorted(
+        all_services: list[DiagService | SingleEcuJob] = sorted(
             variant.services, key=lambda x: x.short_name)
         ddds = variant.diag_data_dictionary_spec
 

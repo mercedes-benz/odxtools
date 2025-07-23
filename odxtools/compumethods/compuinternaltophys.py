@@ -1,9 +1,10 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import DataType
 from ..progcode import ProgCode
 from ..snrefcontext import SnRefContext
@@ -11,25 +12,25 @@ from .compudefaultvalue import CompuDefaultValue
 from .compuscale import CompuScale
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompuInternalToPhys:
-    compu_scales: List[CompuScale]
-    prog_code: Optional[ProgCode]
-    compu_default_value: Optional[CompuDefaultValue]
+    compu_scales: list[CompuScale] = field(default_factory=list)
+    prog_code: ProgCode | None = None
+    compu_default_value: CompuDefaultValue | None = None
 
     @staticmethod
-    def compu_internal_to_phys_from_et(et_element: ElementTree.Element,
-                                       doc_frags: List[OdxDocFragment], *, internal_type: DataType,
+    def compu_internal_to_phys_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
+                                       internal_type: DataType,
                                        physical_type: DataType) -> "CompuInternalToPhys":
         compu_scales = [
             CompuScale.compuscale_from_et(
-                cse, doc_frags, domain_type=internal_type, range_type=physical_type)
+                cse, context, domain_type=internal_type, range_type=physical_type)
             for cse in et_element.iterfind("COMPU-SCALES/COMPU-SCALE")
         ]
 
         prog_code = None
         if (pce := et_element.find("PROG-CODE")) is not None:
-            prog_code = ProgCode.from_et(pce, doc_frags)
+            prog_code = ProgCode.from_et(pce, context)
 
         compu_default_value = None
         if (cdve := et_element.find("COMPU-DEFAULT-VALUE")) is not None:
@@ -39,7 +40,7 @@ class CompuInternalToPhys:
         return CompuInternalToPhys(
             compu_scales=compu_scales, prog_code=prog_code, compu_default_value=compu_default_value)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {}
 
         if self.prog_code is not None:

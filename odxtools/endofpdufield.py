@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import List, Optional, Sequence
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -9,21 +9,20 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import EncodeError, odxassert, odxraise
 from .field import Field
-from .odxlink import OdxDocFragment
+from .odxdoccontext import OdxDocContext
 from .odxtypes import ParameterValue
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class EndOfPduField(Field):
     """End of PDU fields are structures that are repeated until the end of the PDU"""
-    max_number_of_items: Optional[int]
-    min_number_of_items: Optional[int]
+    max_number_of_items: int | None = None
+    min_number_of_items: int | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "EndOfPduField":
-        kwargs = dataclass_fields_asdict(Field.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EndOfPduField":
+        kwargs = dataclass_fields_asdict(Field.from_et(et_element, context))
 
         if (max_n_str := et_element.findtext("MAX-NUMBER-OF-ITEMS")) is not None:
             max_number_of_items = int(max_n_str)
@@ -40,7 +39,7 @@ class EndOfPduField(Field):
             **kwargs)
 
     @override
-    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_into_pdu(self, physical_value: ParameterValue | None,
                         encode_state: EncodeState) -> None:
         odxassert(not encode_state.cursor_bit_position,
                   "No bit position can be specified for end-of-pdu fields!")
@@ -72,7 +71,7 @@ class EndOfPduField(Field):
         orig_origin = decode_state.origin_byte_position
         decode_state.origin_byte_position = decode_state.cursor_byte_position
 
-        result: List[ParameterValue] = []
+        result: list[ParameterValue] = []
         while decode_state.cursor_byte_position < len(decode_state.coded_message):
             # ATTENTION: the ODX specification is very misleading
             # here: it says that the item is repeated until the end of

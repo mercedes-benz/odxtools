@@ -11,7 +11,7 @@
   <PARAM-SNREF SHORT-NAME="{{env_data_desc.param_snref}}"/>
   <ENV-DATA-REFS>
     {%- for env_data_ref in env_data_desc.env_data_refs %}
-    <ENV-DATA-REF ID-REF="{{env_data_ref.ref_id}}"/>
+    <ENV-DATA-REF {{make_ref_attribs(env_data_ref)}}/>
     {%- endfor %}
   </ENV-DATA-REFS>
 </ENV-DATA-DESC>

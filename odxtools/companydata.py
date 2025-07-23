@@ -1,40 +1,40 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
 from .companyspecificinfo import CompanySpecificInfo
 from .element import IdentifiableElement
 from .exceptions import odxrequire
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .teammember import TeamMember
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class CompanyData(IdentifiableElement):
-    roles: List[str]
-    team_members: NamedItemList[TeamMember]
-    company_specific_info: Optional[CompanySpecificInfo]
+    roles: list[str] = field(default_factory=list)
+    team_members: NamedItemList[TeamMember] = field(default_factory=NamedItemList)
+    company_specific_info: CompanySpecificInfo | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "CompanyData":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "CompanyData":
 
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         roles = []
         if (roles_elem := et_element.find("ROLES")) is not None:
             roles = [odxrequire(role.text) for role in roles_elem.iterfind("ROLE")]
         team_members = [
-            TeamMember.from_et(tm, doc_frags)
+            TeamMember.from_et(tm, context)
             for tm in et_element.iterfind("TEAM-MEMBERS/TEAM-MEMBER")
         ]
         company_specific_info = None
         if (company_specific_info_elem := et_element.find("COMPANY-SPECIFIC-INFO")) is not None:
-            company_specific_info = CompanySpecificInfo.from_et(company_specific_info_elem,
-                                                                doc_frags)
+            company_specific_info = CompanySpecificInfo.from_et(company_specific_info_elem, context)
 
         return CompanyData(
             roles=roles,
@@ -43,7 +43,7 @@ class CompanyData(IdentifiableElement):
             **kwargs,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         for tm in self.team_members:

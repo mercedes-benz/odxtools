@@ -1,0 +1,21 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+
+{%- macro printExpectedIdent(expected_ident) -%}
+<EXPECTED-IDENT {{-peid.printElementIdAttribs(expected_ident)}} >
+  {{ peid.printElementIdSubtags(expected_ident)}}
+  <IDENT-VALUES>
+    {%- for ident_value in expected_ident.ident_values %}
+    <IDENT-VALUE
+      {%- if ident_value.value_type is not none %}
+      {#- #} TYPE="{{ ident_value.value_type.value }}"
+      {%- endif %}
+      {#- #}>{{ident_value.value_raw}}</IDENT-VALUE>
+    {%- endfor %}
+  </IDENT-VALUES>
+</EXPECTED-IDENT>
+{%- endmacro -%}

@@ -1,0 +1,43 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printOwnIdent.xml.jinja2') as poi %}
+{%- import('macros/printSegment.xml.jinja2') as pseg %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printFlashdata(flashdata) -%}
+<FLASHDATA {{peid.printElementIdAttribs(flashdata)}}
+           {%- if flashdata.datafile is defined %}
+           {#- #} xsi:type="EXTERN-FLASHDATA"
+           {%- elif flashdata.data is defined %}
+           {#- #} xsi:type="INTERN-FLASHDATA"
+           {%- endif %}
+           {#- #}>
+  {{ peid.printElementIdSubtags(flashdata)|indent(2) }}
+  {%- if flashdata.size_length is not none %}
+  <SIZE-LENGTH>{{flashdata.size_length}}</SIZE-LENGTH>
+  {%- endif %}
+  {%- if flashdata.address_length is not none %}
+  <ADDRESS-LENGTH>{{flashdata.address_length}}</ADDRESS-LENGTH>
+  {%- endif %}
+  <DATAFORMAT {{ make_xml_attrib("SELECTION", flashdata.dataformat.selection.value) }}
+              {#- #} {{ make_xml_attrib("USER-SELECTION", flashdata.dataformat.user_selection) }} />
+  {%- if flashdata.encrypt_compress_method is not none %}
+  <ENCRYPT-COMPRESS-METHOD
+    {%- if flashdata.encrypt_compress_method.value_type is not none %}
+    {#- #} TYPE="{{ flashdata.encrypt_compress_method.value_type.value }}"
+    {%- endif %}
+    {#- #}>{{flashdata.encrypt_compress_method.value_raw}}</ENCRYPT-COMPRESS-METHOD>
+  {%- endif %}
+  {%- if flashdata.datafile is defined %}
+  <DATAFILE {{ make_bool_xml_attrib("LATEBOUND-DATAFILE", flashdata.datafile.latebound_datafile) }}>
+    {#- #}{{flashdata.datafile.value}}
+  {#- #}</DATAFILE>
+  {%- elif flashdata.data is defined %}
+  <DATA>{{flashdata.data}}</DATA>
+  {%- endif %}
+</FLASHDATA>
+{%- endmacro -%}

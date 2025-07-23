@@ -8,7 +8,7 @@
 {%- macro printEndOfPdu(eopdu) -%}
 <END-OF-PDU-FIELD {{-peid.printElementIdAttribs(eopdu)}}>
  {{ peid.printElementIdSubtags(eopdu)|indent(1) }}
- <BASIC-STRUCTURE-REF ID-REF="{{eopdu.structure_ref.ref_id}}" />
+ <BASIC-STRUCTURE-REF {{make_ref_attribs(eopdu.structure_ref)}} />
  {%- if eopdu.max_number_of_items is not none %}
  <MAX-NUMBER-OF-ITEMS>{{eopdu.max_number_of_items}}</MAX-NUMBER-OF-ITEMS>
  {%- endif %}

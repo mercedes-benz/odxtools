@@ -38,7 +38,7 @@ jobs:
       matrix:
         # restrict the matrix to the oldest and the latest Python
         # version being supported by odxtools
-        python-version: ["3.8", "3"]
+        python-version: ["3.10", "3"]
 
     steps:
       - uses: actions/checkout@v3
@@ -54,13 +54,10 @@ jobs:
           pip install --upgrade pip
           pip install .
           pip install .[test]
+          rm -rf build
 
       - name: Static type checking (mypy)
         run: |
-          # remove '# type:' comments in version.py which mypy-3.8
-          # stumbles over. for some reason, mypy cannot be
-          # instructed to ignore 'version.py'
-          sed -i "s/# type:.*//" odxtools/version.py
           python -m mypy .
 
       - name: Lint code quality (ruff)
@@ -73,13 +70,13 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         # restrict the matrix to the oldest and the latest Python
         # version being supported by odxtools
-        python-version: ["3.8", "3"]
+        python-version: ["3.10", "3"]
 
         # due to the slow windows runners, we refrain from testing every python
         # version on windows-latest
         exclude:
           - os: windows-latest
-            python-version: "3.8"
+            python-version: "3.10"
 
     runs-on: ${{matrix.os}}
 

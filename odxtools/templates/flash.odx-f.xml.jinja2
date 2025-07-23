@@ -1,0 +1,42 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+ #
+ # This template writes an .odx-f file containing descriptions of firmware
+ # blobs that can be flashed to ECUs.
+-#}
+{%- import('macros/printOdxCategory.xml.jinja2') as poc %}
+{%- import('macros/printEcuMem.xml.jinja2') as pem %}
+{%- import('macros/printEcuMemConnector.xml.jinja2') as pemc %}
+{%- import('macros/printAudience.xml.jinja2') as paud %}
+{#- -#}
+
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- Written using odxtools {{odxtools_version}} -->
+<ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
+  {{- set_category_docfrag(flash.short_name, "FLASH") }}
+  <FLASH {{- poc.printOdxCategoryAttribs(flash) }}>
+    {{- poc.printOdxCategorySubtags(flash)|indent(4) }}
+    {%- if flash.ecu_mems %}
+    <ECU-MEMS>
+      {%- for ecu_mem in flash.ecu_mems %}
+      {{ pem.printEcuMem(ecu_mem) | indent(6) }}
+      {%- endfor %}
+    </ECU-MEMS>
+    {%- endif %}
+    {%- if flash.ecu_mem_connectors %}
+    <ECU-MEM-CONNECTORS>
+      {%- for ecu_mem_connector in flash.ecu_mem_connectors %}
+      {{ pemc.printEcuMemConnector(ecu_mem_connector) | indent(6) }}
+      {%- endfor %}
+    </ECU-MEM-CONNECTORS>
+    {%- endif %}
+    {%- if flash.additional_audiences %}
+    <ADDITIONAL-AUDIENCES>
+      {%- for audience in flash.additional_audiences %}
+      {{ paud.printAdditionalAudience(audience) | indent(6) }}
+      {%- endfor %}
+    </ADDITIONAL-AUDIENCES>
+    {%- endif %}
+  </FLASH>
+</ODX>

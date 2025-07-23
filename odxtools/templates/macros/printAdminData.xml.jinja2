@@ -14,9 +14,9 @@
  <COMPANY-DOC-INFOS>
   {%- for cdi in admin_data.company_doc_infos %}
   <COMPANY-DOC-INFO>
-    <COMPANY-DATA-REF ID-REF="{{cdi.company_data_ref.ref_id}}" />
+    <COMPANY-DATA-REF {{make_ref_attribs(cdi.company_data_ref)}} />
    {%- if cdi.team_member_ref is not none %}
-    <TEAM-MEMBER-REF ID-REF="{{cdi.team_member_ref.ref_id}}" />
+    <TEAM-MEMBER-REF {{make_ref_attribs(cdi.team_member_ref)}} />
     {%- endif %}
    {%- if cdi.doc_label is not none %}
     <DOC-LABEL>{{cdi.doc_label|e}}</DOC-LABEL>
@@ -26,12 +26,12 @@
   {%- endfor %}
  </COMPANY-DOC-INFOS>
  {%- endif %}
- {%- if admin_data.doc_revisions is not none %}
+ {%- if admin_data.doc_revisions %}
  <DOC-REVISIONS>
   {%- for doc_revision in admin_data.doc_revisions %}
   <DOC-REVISION>
    {%- if doc_revision.team_member_ref is not none %}
-   <TEAM-MEMBER-REF ID-REF="{{doc_revision.team_member_ref.ref_id}}" />
+   <TEAM-MEMBER-REF {{make_ref_attribs(doc_revision.team_member_ref)}} />
    {%- endif %}
    {%- if doc_revision.revision_label is not none %}
    <REVISION-LABEL>{{doc_revision.revision_label|e}}</REVISION-LABEL>
@@ -47,7 +47,7 @@
    <COMPANY-REVISION-INFOS>
      {%- for cri in doc_revision.company_revision_infos %}
      <COMPANY-REVISION-INFO>
-       <COMPANY-DATA-REF ID-REF="{{cri.company_data_ref.ref_id}}" />
+       <COMPANY-DATA-REF {{make_ref_attribs(cri.company_data_ref)}} />
        {%- if cri.revision_label is not none %}
        <REVISION-LABEL>{{cri.revision_label|e}}</REVISION-LABEL>
        {%- endif %}

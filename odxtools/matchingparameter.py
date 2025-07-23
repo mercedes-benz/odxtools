@@ -1,18 +1,19 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from .diaglayers.diaglayer import DiagLayer
 from .diagnostictroublecode import DiagnosticTroubleCode
 from .diagservice import DiagService
 from .exceptions import odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, resolve_snref
 from .odxtypes import BytesTypes, ParameterValue, ParameterValueDict
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class MatchingParameter:
     """According to ISO 22901, a MatchingParameter contains a string
     value identifying the active ECU or base variant. Moreover, it
@@ -34,12 +35,11 @@ class MatchingParameter:
     # or negative response. What it probably actually wants to say is
     # that any response that can possibly be received shall exhibit
     # the referenced parameter.
-    out_param_if_snref: Optional[str]
-    out_param_if_snpathref: Optional[str]
+    out_param_if_snref: str | None = None
+    out_param_if_snpathref: str | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "MatchingParameter":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "MatchingParameter":
 
         expected_value = odxrequire(et_element.findtext("EXPECTED-VALUE"))
         diag_comm_snref = odxrequire(
@@ -61,7 +61,7 @@ class MatchingParameter:
             out_param_if_snpathref=out_param_if_snpathref,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -93,7 +93,7 @@ class MatchingParameter:
 
         return self.__matches(param_dict, snpath_chunks)
 
-    def __matches(self, param_dict: ParameterValue, snpath_chunks: List[str]) -> bool:
+    def __matches(self, param_dict: ParameterValue, snpath_chunks: list[str]) -> bool:
         if len(snpath_chunks) == 0:
             parameter_value = param_dict
             if isinstance(parameter_value, dict):
@@ -105,7 +105,7 @@ class MatchingParameter:
                 # floating point
                 return abs(float(self.expected_value) - parameter_value) < 1e-8
             elif isinstance(parameter_value, BytesTypes):
-                return parameter_value.hex().upper() == self.expected_value.upper()
+                return bytes(parameter_value).hex().upper() == self.expected_value.upper()
             elif isinstance(parameter_value, DiagnosticTroubleCode):
                 # TODO: what happens if non-numerical DTCs like
                 # "U123456" are specified? Is specifying DTCs even

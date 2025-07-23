@@ -1,48 +1,42 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
+from .commrelationvaluetype import CommRelationValueType
 from .description import Description
 from .diagcomm import DiagComm
 from .diagservice import DiagService
 from .exceptions import OdxWarning, odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from .parameters.parameter import Parameter
 from .snrefcontext import SnRefContext
 
 
-class CommRelationValueType(Enum):
-    CURRENT = "CURRENT"
-    STORED = "STORED"
-    STATIC = "STATIC"
-    SUBSTITUTED = "SUBSTITUTED"
-
-
-@dataclass
+@dataclass(kw_only=True)
 class CommRelation:
-    description: Optional[Description]
+    description: Description | None = None
     relation_type: str
-    diag_comm_ref: Optional[OdxLinkRef]
-    diag_comm_snref: Optional[str]
-    in_param_if_snref: Optional[str]
-    #in_param_if_snpathref: Optional[str] # TODO
-    out_param_if_snref: Optional[str]
-    #out_param_if_snpathref: Optional[str] # TODO
-    value_type_raw: Optional[CommRelationValueType]
+    diag_comm_ref: OdxLinkRef | None = None
+    diag_comm_snref: str | None = None
+    in_param_if_snref: str | None = None
+    #in_param_if_snpathref: Optional[str] = None # TODO
+    out_param_if_snref: str | None = None
+    #out_param_if_snpathref: Optional[str] = None # TODO
+    value_type_raw: CommRelationValueType | None = None
 
     @property
     def diag_comm(self) -> DiagComm:
         return self._diag_comm
 
     @property
-    def in_param_if(self) -> Optional[Parameter]:
+    def in_param_if(self) -> Parameter | None:
         return self._in_param_if
 
     @property
-    def out_param_if(self) -> Optional[Parameter]:
+    def out_param_if(self) -> Parameter | None:
         return self._out_param_if
 
     @property
@@ -53,11 +47,11 @@ class CommRelation:
         return self.value_type_raw
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "CommRelation":
-        description = Description.from_et(et_element.find("DESC"), doc_frags)
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "CommRelation":
+        description = Description.from_et(et_element.find("DESC"), context)
         relation_type = odxrequire(et_element.findtext("RELATION-TYPE"))
 
-        diag_comm_ref = OdxLinkRef.from_et(et_element.find("DIAG-COMM-REF"), doc_frags)
+        diag_comm_ref = OdxLinkRef.from_et(et_element.find("DIAG-COMM-REF"), context)
         diag_comm_snref = None
         if (diag_comm_snref_elem := et_element.find("DIAG-COMM-SNREF")) is not None:
             diag_comm_snref = odxrequire(diag_comm_snref_elem.get("SHORT-NAME"))
@@ -92,7 +86,7 @@ class CommRelation:
             out_param_if_snref=out_param_if_snref,
             value_type_raw=value_type_raw)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

@@ -1,17 +1,18 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .physicaldimension import PhysicalDimension
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Unit(IdentifiableElement):
     """
     A unit consists of an ID, short name and a display name.
@@ -53,21 +54,21 @@ class Unit(IdentifiableElement):
     ```
     """
     display_name: str
-    factor_si_to_unit: Optional[float]
-    offset_si_to_unit: Optional[float]
-    physical_dimension_ref: Optional[OdxLinkRef]
+    factor_si_to_unit: float | None = None
+    offset_si_to_unit: float | None = None
+    physical_dimension_ref: OdxLinkRef | None = None
 
     @property
-    def physical_dimension(self) -> Optional[PhysicalDimension]:
+    def physical_dimension(self) -> PhysicalDimension | None:
         return self._physical_dimension
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Unit":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Unit":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         display_name = odxrequire(et_element.findtext("DISPLAY-NAME"))
 
-        def read_optional_float(element: ElementTree.Element, name: str) -> Optional[float]:
+        def read_optional_float(element: ElementTree.Element, name: str) -> float | None:
             if (elem_str := element.findtext(name)) is not None:
                 return float(elem_str)
             else:
@@ -76,7 +77,7 @@ class Unit(IdentifiableElement):
         factor_si_to_unit = read_optional_float(et_element, "FACTOR-SI-TO-UNIT")
         offset_si_to_unit = read_optional_float(et_element, "OFFSET-SI-TO-UNIT")
         physical_dimension_ref = OdxLinkRef.from_et(
-            et_element.find("PHYSICAL-DIMENSION-REF"), doc_frags)
+            et_element.find("PHYSICAL-DIMENSION-REF"), context)
 
         return Unit(
             display_name=display_name,
@@ -85,11 +86,11 @@ class Unit(IdentifiableElement):
             physical_dimension_ref=physical_dimension_ref,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        self._physical_dimension: Optional[PhysicalDimension] = None
+        self._physical_dimension: PhysicalDimension | None = None
         if self.physical_dimension_ref:
             self._physical_dimension = odxlinks.resolve(self.physical_dimension_ref,
                                                         PhysicalDimension)

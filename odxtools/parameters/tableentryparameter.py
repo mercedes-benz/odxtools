@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import Enum
-from typing import TYPE_CHECKING, List, Optional, cast
+from typing import TYPE_CHECKING, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -9,21 +8,18 @@ from typing_extensions import override
 from ..decodestate import DecodeState
 from ..encodestate import EncodeState
 from ..exceptions import odxraise, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkRef
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import Parameter, ParameterType
+from .rowfragment import RowFragment
 
 if TYPE_CHECKING:
     from ..tablerow import TableRow
 
 
-class RowFragment(Enum):
-    KEY = "KEY"
-    STRUCT = "STRUCT"
-
-
-@dataclass
+@dataclass(kw_only=True)
 class TableEntryParameter(Parameter):
     target: RowFragment
     table_row_ref: OdxLinkRef
@@ -49,9 +45,8 @@ class TableEntryParameter(Parameter):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "TableEntryParameter":
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "TableEntryParameter":
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, context))
 
         target_str = odxrequire(et_element.findtext("TARGET"))
         try:
@@ -59,7 +54,7 @@ class TableEntryParameter(Parameter):
         except ValueError:
             odxraise(f"Encountered unknown target '{target_str}'")
             target = cast(RowFragment, None)
-        table_row_ref = odxrequire(OdxLinkRef.from_et(et_element.find("TABLE-ROW-REF"), doc_frags))
+        table_row_ref = odxrequire(OdxLinkRef.from_et(et_element.find("TABLE-ROW-REF"), context))
 
         return TableEntryParameter(target=target, table_row_ref=table_row_ref, **kwargs)
 
@@ -73,7 +68,7 @@ class TableEntryParameter(Parameter):
             self._table_row = odxlinks.resolve(self.table_row_ref)
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         raise NotImplementedError("Encoding a TableEntryParameter is not implemented yet.")
 

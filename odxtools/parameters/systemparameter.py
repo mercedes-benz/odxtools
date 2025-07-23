@@ -2,14 +2,13 @@
 import getpass
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from typing_extensions import override
 
 from ..encodestate import EncodeState
 from ..exceptions import odxraise, odxrequire
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import ParameterValue
 from ..utils import dataclass_fields_asdict
 from .parameter import ParameterType
@@ -25,7 +24,7 @@ PREDEFINED_SYSPARAM_VALUES = [
 ]
 
 
-@dataclass
+@dataclass(kw_only=True)
 class SystemParameter(ParameterWithDOP):
     sysparam: str
 
@@ -49,16 +48,15 @@ class SystemParameter(ParameterWithDOP):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "SystemParameter":
-        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "SystemParameter":
+        kwargs = dataclass_fields_asdict(ParameterWithDOP.from_et(et_element, context))
 
         sysparam = odxrequire(et_element.get("SYSPARAM"))
 
         return SystemParameter(sysparam=sysparam, **kwargs)
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         if physical_value is None:
             # determine the value to be encoded automatically

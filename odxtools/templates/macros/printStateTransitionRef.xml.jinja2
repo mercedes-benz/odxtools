@@ -4,7 +4,7 @@
 -#}
 
 {%- macro printStateTransitionRef(st_ref) -%}
-<STATE-TRANSITION-REF ID-REF="{{st_ref.ref_id}}">
+<STATE-TRANSITION-REF {{make_ref_attribs(st_ref)}}>
   {%- if st_ref.value is not none %}
   <VALUE>{{ st_ref.value }}</VALUE>
   {%- endif %}

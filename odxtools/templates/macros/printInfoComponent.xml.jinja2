@@ -1,0 +1,37 @@
+1{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+{%- import('macros/printConfigRecord.xml.jinja2') as pcr %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printInfoComponent(info_component) -%}
+<INFO-COMPONENT {{- peid.printElementIdAttribs(info_component) }}
+                {#- #} xsi:type="{{info_component.component_type.value}}">
+  {{peid.printElementIdSubtags(info_component)|indent(2) }}
+  {%- if info_component.matching_components %}
+  <MATCHING-COMPONENTS>
+    {%- for matching_component in info_component.matching_components %}
+    <MATCHING-COMPONENT>
+      <EXPECTED-VALUE>{{ matching_component.expected_value | e }}</EXPECTED-VALUE>
+      {%- if matching_component.out_param_if_snref is not none %}
+      <OUT-PARAM-IF-SNREF SHORT-NAME="{{matching_component.out_param_if_snref}}" />
+      {%- endif %}
+      {%- if matching_component.out_param_if_snpathref is not none %}
+      <OUT-PARAM-IF-SNPATHREF SHORT-NAME-PATH="{{matching_component.out_param_if_snpathref}}" />
+      {%- endif %}
+      {%- if matching_component.multiple_ecu_job_ref is not none %}
+      <MULTIPLE-ECU-JOB-REF {{make_ref_attribs(matching_component.multiple_ecu_job_ref)}} />
+      {%- endif %}
+      {%- if matching_component.diag_comm_ref is not none %}
+      <DIAG-COMM-REF {{make_ref_attribs(matching_component.diag_comm_ref)}} />
+      {%- endif %}
+    </MATCHING-COMPONENT>
+    {%- endfor %}
+  </MATCHING-COMPONENTS>
+  {%- endif %}
+</INFO-COMPONENT>
+{%- endmacro -%}

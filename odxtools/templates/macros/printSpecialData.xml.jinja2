@@ -25,7 +25,7 @@
 {%- macro printSpecialDataGroup(sdg) %}
 <SDG {{-make_xml_attrib("SI", sdg.semantic_info)}}>
  {%- if sdg.sdg_caption_ref %}
- <SDG-CAPTION-REF ID-REF="{{sdg.sdg_caption_ref.ref_id}}" />
+ <SDG-CAPTION-REF {{make_ref_attribs(sdg.sdg_caption_ref)}} />
  {%- elif sdg.sdg_caption %}
  {{- printSdgCaption(sdg.sdg_caption) | indent(1, first=True) }}
  {%- endif %}
@@ -49,4 +49,4 @@
  {%- endfor %}
 </SDGS>
 {%- endif %}
-{%- endmacro %}
+{#- #}{%- endmacro %}

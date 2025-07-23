@@ -1,15 +1,16 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class PhysicalDimension(IdentifiableElement):
     """A physical dimension is a formal definition of a unit.
 
@@ -41,20 +42,19 @@ class PhysicalDimension(IdentifiableElement):
     )
     ```
     """
-    length_exp: Optional[int]
-    mass_exp: Optional[int]
-    time_exp: Optional[int]
-    current_exp: Optional[int]
-    temperature_exp: Optional[int]
-    molar_amount_exp: Optional[int]
-    luminous_intensity_exp: Optional[int]
+    length_exp: int | None = None
+    mass_exp: int | None = None
+    time_exp: int | None = None
+    current_exp: int | None = None
+    temperature_exp: int | None = None
+    molar_amount_exp: int | None = None
+    luminous_intensity_exp: int | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "PhysicalDimension":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "PhysicalDimension":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
-        def read_optional_int(element: ElementTree.Element, name: str) -> Optional[int]:
+        def read_optional_int(element: ElementTree.Element, name: str) -> int | None:
             if (val_str := element.findtext(name)) is not None:
                 return int(val_str)
             else:
@@ -78,7 +78,7 @@ class PhysicalDimension(IdentifiableElement):
             luminous_intensity_exp=luminous_intensity_exp,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

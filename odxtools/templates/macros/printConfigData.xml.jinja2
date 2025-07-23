@@ -1,0 +1,39 @@
+1{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+{%- import('macros/printConfigRecord.xml.jinja2') as pcr %}
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printConfigData(config_data) -%}
+<CONFIG-DATA>
+  {{peid.printElementIdSubtags(config_data)|indent(2) }}
+  {%- if config_data.valid_base_variants %}
+  <VALID-BASE-VARIANTS>
+    {%- for valid_base_variant in config_data.valid_base_variants %}
+    <VALID-BASE-VARIANT>
+      {%- if valid_base_variant.ecu_variant_snrefs %}
+      <ECU-VARIANT-SNREFS>
+        {%- for ecu_variant_snref in valid_base_variant.ecu_variant_snrefs %}
+        <ECU-VARIANT-SNREF SHORT-NAME="{{ecu_variant_snref}}" />
+        {%- endfor %}
+      </ECU-VARIANT-SNREFS>
+      {%- endif %}
+      <BASE-VARIANT-SNREF SHORT-NAME="{{valid_base_variant.base_variant_snref}}" />
+    </VALID-BASE-VARIANT>
+    {%- endfor %}
+  </VALID-BASE-VARIANTS>
+  {%- endif %}
+  {%- if config_data.config_records %}
+  <CONFIG-RECORDS>
+    {%- for config_record in config_data.config_records %}
+    {{ pcr.printConfigRecord(config_record) | indent(4) }}
+    {%- endfor %}
+  </CONFIG-RECORDS>
+  {%- endif %}
+  {{- psd.printSpecialDataGroups(config_data.sdgs)|indent(2, first=True) }}{#- #}
+</CONFIG-DATA>
+{%- endmacro -%}

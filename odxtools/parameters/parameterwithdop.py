@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -11,7 +11,8 @@ from ..dopbase import DopBase
 from ..dtcdop import DtcDop
 from ..encodestate import EncodeState
 from ..exceptions import odxassert, odxrequire
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef, resolve_snref
 from ..odxtypes import AtomicOdxType, ParameterValue
 from ..physicaltype import PhysicalType
 from ..snrefcontext import SnRefContext
@@ -19,10 +20,10 @@ from ..utils import dataclass_fields_asdict
 from .parameter import Parameter
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ParameterWithDOP(Parameter):
-    dop_ref: Optional[OdxLinkRef]
-    dop_snref: Optional[str]
+    dop_ref: OdxLinkRef | None = None
+    dop_snref: str | None = None
 
     @property
     def dop(self) -> DopBase:
@@ -32,12 +33,11 @@ class ParameterWithDOP(Parameter):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ParameterWithDOP":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ParameterWithDOP":
 
-        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(Parameter.from_et(et_element, context))
 
-        dop_ref = OdxLinkRef.from_et(et_element.find("DOP-REF"), doc_frags)
+        dop_ref = OdxLinkRef.from_et(et_element.find("DOP-REF"), context)
         dop_snref = None
         if (dop_snref_elem := et_element.find("DOP-SNREF")) is not None:
             dop_snref = odxrequire(dop_snref_elem.get("SHORT-NAME"))
@@ -50,7 +50,7 @@ class ParameterWithDOP(Parameter):
         self._dop: DopBase
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return super()._build_odxlinks()
 
     @override
@@ -70,21 +70,21 @@ class ParameterWithDOP(Parameter):
             self._dop = resolve_snref(self.dop_snref, ddds.all_data_object_properties, DopBase)
 
     @override
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         if self._dop is not None:
             return self._dop.get_static_bit_length()
         else:
             return None
 
     @property
-    def physical_type(self) -> Optional[PhysicalType]:
+    def physical_type(self) -> PhysicalType | None:
         if isinstance(self.dop, (DataObjectProperty, DtcDop)):
             return self.dop.physical_type
         else:
             return None
 
     @override
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         self.dop.encode_into_pdu(cast(AtomicOdxType, physical_value), encode_state)
 

@@ -1,0 +1,51 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+ #
+ # This template writes an .odx-f file containing descriptions of firmware
+ # blobs that can be flashed to ECUs.
+-#}
+{%- import('macros/printOdxCategory.xml.jinja2') as poc %}
+{%- import('macros/printMultipleEcuJob.xml.jinja2') as pmecuj %}
+{%- import('macros/printDiagDataDictionarySpec.xml.jinja2') as pddds %}
+{%- import('macros/printFunctionalClass.xml.jinja2') as pfc %}
+{%- import('macros/printAudience.xml.jinja2') as paud %}
+{#- -#}
+
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- Written using odxtools {{odxtools_version}} -->
+<ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
+  {{- set_category_docfrag(multiple_ecu_job_spec.short_name, "MULTIPLE-ECU-JOB-SPEC") }}
+  <MULTIPLE-ECU-JOB-SPEC {{- poc.printOdxCategoryAttribs(multiple_ecu_job_spec) }}>
+    {{- poc.printOdxCategorySubtags(multiple_ecu_job_spec)|indent(4) }}
+    <MULTIPLE-ECU-JOBS>
+      {%- for mecuj in multiple_ecu_job_spec.multiple_ecu_jobs %}
+      {{ pmecuj.printMultipleEcuJob(mecuj) | indent(6) }}
+      {%- endfor %}
+    </MULTIPLE-ECU-JOBS>
+    {%- if multiple_ecu_job_spec.diag_data_dictionary_spec is not none %}
+    {{ pddds.printDiagDataDictionarySpec(multiple_ecu_job_spec.diag_data_dictionary_spec) }}
+    {%- endif %}
+    {%- if multiple_ecu_job_spec.functional_classes %}
+    <FUNCT-CLASSS>
+      {%- for fc in multiple_ecu_job_spec.functional_classes %}
+      {{ pfc.printFunctionalClass(fc)|indent(6) }}
+      {%- endfor%}
+    </FUNCT-CLASSS>
+    {%- endif %}
+    {%- if multiple_ecu_job_spec.additional_audiences %}
+    <ADDITIONAL-AUDIENCES>
+      {%- for audience in multiple_ecu_job_spec.additional_audiences %}
+      {{ paud.printAdditionalAudience(audience) | indent(6) }}
+      {%- endfor %}
+    </ADDITIONAL-AUDIENCES>
+    {%- endif %}
+    {%- if multiple_ecu_job_spec.import_refs %}
+    <IMPORT-REFS>
+      {%- for ir in multiple_ecu_job_spec.import_refs %}
+      <IMPORT-REF {{make_ref_attribs(ir)}} />
+      {%- endfor %}
+    </IMPORT-REFS>
+    {%- endif %}
+  </MULTIPLE-ECU-JOB-SPEC>
+</ODX>

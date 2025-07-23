@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 from xml.etree import ElementTree
 
 from .basecomparam import BaseComparam
@@ -9,21 +9,22 @@ from .comparam import Comparam
 from .complexcomparam import ComplexComparam, ComplexValue, create_complex_value_from_et
 from .description import Description
 from .exceptions import OdxWarning, odxraise, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ComparamInstance:
     """
     This class represents a communication parameter.
 
     Be aware that the ODX specification calls this class COMPARAM-REF!
     """
-    value: Union[str, ComplexValue]
-    description: Optional[Description]
-    protocol_snref: Optional[str]
-    prot_stack_snref: Optional[str]
+    value: str | ComplexValue
+    description: Description | None = None
+    protocol_snref: str | None = None
+    prot_stack_snref: str | None = None
     spec_ref: OdxLinkRef
 
     @property
@@ -35,14 +36,13 @@ class ComparamInstance:
         return self.spec.short_name
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element,
-                doc_frags: List[OdxDocFragment]) -> "ComparamInstance":
-        spec_ref = odxrequire(OdxLinkRef.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ComparamInstance":
+        spec_ref = odxrequire(OdxLinkRef.from_et(et_element, context))
 
         # ODX standard v2.0.0 defined only VALUE. ODX v2.0.1 decided
         # to break things and change it to a choice between SIMPLE-VALUE
         # and COMPLEX-VALUE
-        value: Union[str, List[Union[str, ComplexValue]]]
+        value: str | list[str | ComplexValue]
         if et_element.find("VALUE") is not None:
             value = odxrequire(et_element.findtext("VALUE"))
         elif et_element.find("SIMPLE-VALUE") is not None:
@@ -50,7 +50,7 @@ class ComparamInstance:
         else:
             value = create_complex_value_from_et(odxrequire(et_element.find("COMPLEX-VALUE")))
 
-        description = Description.from_et(et_element.find("DESC"), doc_frags)
+        description = Description.from_et(et_element.find("DESC"), context)
 
         protocol_snref = None
         if (psnref_elem := et_element.find("PROTOCOL-SNREF")) is not None:
@@ -68,7 +68,7 @@ class ComparamInstance:
             prot_stack_snref=prot_stack_snref,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
@@ -98,7 +98,7 @@ class ComparamInstance:
 
         return result
 
-    def get_subvalue(self, subparam_name: str) -> Optional[str]:
+    def get_subvalue(self, subparam_name: str) -> str | None:
         """Retrieve the value of a complex communication parameter's sub-parameter by name
 
         This takes the default value of the comparam (if any) into

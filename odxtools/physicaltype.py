@@ -1,22 +1,14 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from enum import IntEnum
-from typing import List, Optional
 from xml.etree import ElementTree
 
-from .exceptions import odxraise
-from .odxlink import OdxDocFragment
+from .exceptions import odxraise, odxrequire
+from .odxdoccontext import OdxDocContext
 from .odxtypes import DataType
+from .radix import Radix
 
 
-class Radix(IntEnum):
-    HEX = 16
-    DEC = 10
-    BIN = 2
-    OCT = 8
-
-
-@dataclass
+@dataclass(kw_only=True)
 class PhysicalType:
     """The physical type describes the base data type of a parameter.
 
@@ -39,27 +31,29 @@ class PhysicalType:
     PhysicalType(DataType.A_FLOAT64, precision=2)
     """
 
-    precision: Optional[int]
-    """Number of digits after the decimal point to display to the user
-    The precision is only applicable if the base data type is A_FLOAT32 or A_FLOAT64.
-    """
+    #: Number of digits after the decimal point to display to the user
+    #: The precision is only applicable if the base data type is
+    #: A_FLOAT32 or A_FLOAT64.
+    precision: int | None = None
 
     base_data_type: DataType
 
-    display_radix: Optional[Radix]
-    """The display radix defines how integers are displayed to the user.
-    The display radix is only applicable if the base data type is A_UINT32.
-    """
+    #: The display radix defines how integers are displayed to the
+    #: user. The display radix is only applicable if the base data type
+    #: is A_UINT32.
+    display_radix: Radix | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "PhysicalType":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "PhysicalType":
         precision_str = et_element.findtext("PRECISION")
         precision = int(precision_str) if precision_str is not None else None
 
-        base_data_type_str = et_element.get("BASE-DATA-TYPE")
-        if base_data_type_str not in DataType.__members__:
+        base_data_type_str = odxrequire(et_element.attrib.get("BASE-DATA-TYPE"))
+        try:
+            base_data_type = DataType(base_data_type_str)
+        except ValueError:
             odxraise(f"Encountered unknown base data type '{base_data_type_str}'")
-        base_data_type = DataType(base_data_type_str)
+            base_data_type = None
 
         display_radix_str = et_element.get("DISPLAY-RADIX")
         if display_radix_str is not None:

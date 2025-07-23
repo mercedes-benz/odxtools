@@ -1,29 +1,30 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
 from .element import IdentifiableElement
 from .exceptions import odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TeamMember(IdentifiableElement):
-    roles: List[str]
-    department: Optional[str]
-    address: Optional[str]
-    zipcode: Optional[str]  # the tag for this is "ZIP", but `zip` is a keyword in python
-    city: Optional[str]
-    phone: Optional[str]
-    fax: Optional[str]
-    email: Optional[str]
+    roles: list[str] = field(default_factory=list)
+    department: str | None = None
+    address: str | None = None
+    zipcode: str | None = None  # the tag for this is "ZIP", but `zip` is a keyword in python
+    city: str | None = None
+    phone: str | None = None
+    fax: str | None = None
+    email: str | None = None
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "TeamMember":
-        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "TeamMember":
+        kwargs = dataclass_fields_asdict(IdentifiableElement.from_et(et_element, context))
 
         roles = [odxrequire(role_elem.text) for role_elem in et_element.iterfind("ROLES/ROLE")]
         department = et_element.findtext("DEPARTMENT")
@@ -45,7 +46,7 @@ class TeamMember(IdentifiableElement):
             email=email,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {self.odx_id: self}
 
         return result

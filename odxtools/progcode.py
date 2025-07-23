@@ -1,24 +1,25 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, cast
+from dataclasses import dataclass, field
+from typing import Any, cast
 from xml.etree import ElementTree
 
 from .exceptions import odxraise, odxrequire
 from .library import Library
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class ProgCode:
     """A reference to code that is executed by a single ECU job"""
     code_file: str
-    encryption: Optional[str]
+    encryption: str | None = None
     syntax: str
     revision: str
-    entrypoint: Optional[str]
-    library_refs: List[OdxLinkRef]
+    entrypoint: str | None = None
+    library_refs: list[OdxLinkRef] = field(default_factory=list)
 
     @property
     def code(self) -> bytes:
@@ -29,7 +30,7 @@ class ProgCode:
         return self._libraries
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "ProgCode":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "ProgCode":
         code_file = odxrequire(et_element.findtext("CODE-FILE"))
         encryption = et_element.findtext("ENCRYPTION")
         syntax = odxrequire(et_element.findtext("SYNTAX"))
@@ -37,7 +38,7 @@ class ProgCode:
         entrypoint = et_element.findtext("ENTRYPOINT")
 
         library_refs = [
-            odxrequire(OdxLinkRef.from_et(el, doc_frags))
+            odxrequire(OdxLinkRef.from_et(el, context))
             for el in et_element.iterfind("LIBRARY-REFS/LIBRARY-REF")
         ]
 
@@ -50,7 +51,7 @@ class ProgCode:
             library_refs=library_refs,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

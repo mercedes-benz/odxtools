@@ -1,17 +1,18 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Union
 from xml.etree import ElementTree
 
 from ..exceptions import DecodeError, EncodeError, odxassert, odxraise, odxrequire
-from ..odxlink import OdxDocFragment
+from ..odxdoccontext import OdxDocContext
 from ..odxtypes import AtomicOdxType, DataType
 from ..utils import dataclass_fields_asdict
-from .compumethod import CompuCategory, CompuMethod
-from .limit import IntervalType, Limit
+from .compucategory import CompuCategory
+from .compumethod import CompuMethod
+from .intervaltype import IntervalType
+from .limit import Limit
 
 
-@dataclass
+@dataclass(kw_only=True)
 class TabIntpCompuMethod(CompuMethod):
     """A table-based interpolated compu method provides a continuous
     transfer function based on piecewise linear interpolation.
@@ -35,11 +36,11 @@ class TabIntpCompuMethod(CompuMethod):
     """
 
     @property
-    def internal_points(self) -> List[Union[float, int]]:
+    def internal_points(self) -> list[float | int]:
         return self._internal_points
 
     @property
-    def physical_points(self) -> List[Union[float, int]]:
+    def physical_points(self) -> list[float | int]:
         return self._physical_points
 
     @property
@@ -59,11 +60,11 @@ class TabIntpCompuMethod(CompuMethod):
         return self._physical_upper_limit
 
     @staticmethod
-    def compu_method_from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment], *,
+    def compu_method_from_et(et_element: ElementTree.Element, context: OdxDocContext, *,
                              internal_type: DataType,
                              physical_type: DataType) -> "TabIntpCompuMethod":
         cm = CompuMethod.compu_method_from_et(
-            et_element, doc_frags, internal_type=internal_type, physical_type=physical_type)
+            et_element, context, internal_type=internal_type, physical_type=physical_type)
         kwargs = dataclass_fields_asdict(cm)
 
         return TabIntpCompuMethod(**kwargs)
@@ -72,8 +73,8 @@ class TabIntpCompuMethod(CompuMethod):
         odxassert(self.category == CompuCategory.TAB_INTP,
                   "TabIntpCompuMethod must exibit TAB-INTP category")
 
-        self._internal_points: List[Union[int, float]] = []
-        self._physical_points: List[Union[int, float]] = []
+        self._internal_points: list[int | float] = []
+        self._physical_points: list[int | float] = []
         for scale in odxrequire(self.compu_internal_to_phys).compu_scales:
             internal_point = odxrequire(scale.lower_limit).value
             physical_point = odxrequire(scale.compu_const).value
@@ -128,10 +129,8 @@ class TabIntpCompuMethod(CompuMethod):
             ], "Physical data type of TAB-INTP compumethod must be one of"
             " [A_INT32, A_UINT32, A_FLOAT32, A_FLOAT64]")
 
-    def __piecewise_linear_interpolate(self, x: Union[int, float],
-                                       range_samples: List[Union[int, float]],
-                                       domain_samples: List[Union[int,
-                                                                  float]]) -> Union[float, None]:
+    def __piecewise_linear_interpolate(self, x: int | float, range_samples: list[int | float],
+                                       domain_samples: list[int | float]) -> float | None:
         for i in range(0, len(range_samples) - 1):
             if (x0 := range_samples[i]) <= x and x <= (x1 := range_samples[i + 1]):
                 y0 = domain_samples[i]

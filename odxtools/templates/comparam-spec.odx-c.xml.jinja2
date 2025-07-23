@@ -12,6 +12,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <!-- Written using odxtools {{odxtools_version}} -->
 <ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
+ {{- set_category_docfrag(comparam_spec.short_name, "COMPARAM-SPEC") }}
  <COMPARAM-SPEC  {{- poc.printOdxCategoryAttribs(comparam_spec) }}>
    {{- poc.printOdxCategorySubtags(comparam_spec)|indent(3) }}
    {%- if comparam_spec.prot_stacks %}

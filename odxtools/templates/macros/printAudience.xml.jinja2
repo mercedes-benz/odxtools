@@ -7,12 +7,12 @@
 
 {%- macro printAdditionalAudience(audience) -%}
 <ADDITIONAL-AUDIENCE {{-peid.printElementIdAttribs(audience)}}>
- {{ peid.printElementIdSubtags(audience)|indent(1) }}
+  {{ peid.printElementIdSubtags(audience)|indent(2) }}
 </ADDITIONAL-AUDIENCE>
 {%- endmacro -%}
 
-{%- macro printAudience(audience) -%}
-<AUDIENCE {{-make_bool_xml_attrib("IS-SUPPLIER", audience.is_supplier_raw)}}
+{%- macro printAudience(audience, tag_name="AUDIENCE") -%}
+<{{tag_name}} {{-make_bool_xml_attrib("IS-SUPPLIER", audience.is_supplier_raw)}}
           {{-make_bool_xml_attrib("IS-DEVELOPMENT", audience.is_development_raw)}}
           {{-make_bool_xml_attrib("IS-MANUFACTURING", audience.is_manufacturing_raw)}}
           {{-make_bool_xml_attrib("IS-AFTERSALES", audience.is_aftersales_raw)}}
@@ -20,16 +20,16 @@
 {%- if audience.enabled_audience_refs %}
  <ENABLED-AUDIENCE-REFS>
 {%- for ref in audience.enabled_audience_refs %}
-  <ENABLED-AUDIENCE-REF ID-REF="{{ref.ref_id}}" />
+  <ENABLED-AUDIENCE-REF {{make_ref_attribs(ref)}} />
 {%- endfor %}
  </ENABLED-AUDIENCE-REFS>
 {%- endif%}
 {%- if audience.disabled_audience_refs %}
  <DISABLED-AUDIENCE-REFS>
 {%- for ref in audience.disabled_audience_refs %}
-  <DISABLED-AUDIENCE-REF ID-REF="{{ref.ref_id}}" />
+  <DISABLED-AUDIENCE-REF {{make_ref_attribs(ref)}} />
 {%- endfor %}
  </DISABLED-AUDIENCE-REFS>
 {%- endif%}
-</AUDIENCE>
+</{{tag_name}}>
 {%- endmacro -%}

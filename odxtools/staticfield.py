@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Dict, List, Sequence
+from typing import Any
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -9,13 +10,14 @@ from .decodestate import DecodeState
 from .encodestate import EncodeState
 from .exceptions import odxassert, odxraise, odxrequire
 from .field import Field
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId
 from .odxtypes import ParameterValue
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class StaticField(Field):
     """Array of a fixed number of structure objects"""
     fixed_number_of_items: int
@@ -23,8 +25,8 @@ class StaticField(Field):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "StaticField":
-        kwargs = dataclass_fields_asdict(Field.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "StaticField":
+        kwargs = dataclass_fields_asdict(Field.from_et(et_element, context))
 
         fixed_number_of_items = int(odxrequire(et_element.findtext('FIXED-NUMBER-OF-ITEMS')))
         item_byte_size = int(odxrequire(et_element.findtext('ITEM-BYTE-SIZE')))
@@ -33,7 +35,7 @@ class StaticField(Field):
             fixed_number_of_items=fixed_number_of_items, item_byte_size=item_byte_size, **kwargs)
 
     @override
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         odxlinks = super()._build_odxlinks()
         return odxlinks
 
@@ -89,7 +91,7 @@ class StaticField(Field):
         orig_origin = decode_state.origin_byte_position
         decode_state.origin_byte_position = decode_state.cursor_byte_position
 
-        result: List[ParameterValue] = []
+        result: list[ParameterValue] = []
         for _ in range(self.fixed_number_of_items):
             orig_cursor = decode_state.cursor_byte_position
 

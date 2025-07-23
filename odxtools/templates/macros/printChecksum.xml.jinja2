@@ -1,0 +1,36 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+
+{%- macro printChecksum(checksum) -%}
+<CHECKSUM {{-peid.printElementIdAttribs(checksum)|indent(2) }}{# -#}>
+  {{ peid.printElementIdSubtags(checksum)|indent(2) }}
+  {%- if checksum.fillbyte is not none %}
+  {%- set num_nibbles = (checksum.fillbyte.bit_length() + 7) // 8 * 2 %}
+  <FILLBYTE>{{ ("%%0%dX" | format(num_nibbles | int)) | format(checksum.fillbyte | int) }}</FILLBYTE>
+  {%- endif %}
+  {%- set num_nibbles = (checksum.source_start_address.bit_length() + 7) // 8 * 2 %}
+  <SOURCE-START-ADDRESS>{{ ("%%0%dX" | format(num_nibbles | int)) | format(checksum.source_start_address | int) }}</SOURCE-START-ADDRESS>
+  {%- if checksum.compressed_size is not none %}
+  <COMPRESSED-SIZE>{{ checksum.compressed_size }}</COMPRESSED-SIZE>
+  {%- endif %}
+  {%- if checksum.checksum_alg is not none %}
+  <CHECKSUM-ALG>{{checksum.checksum_alg}}</CHECKSUM-ALG>
+  {%- endif %}
+  {%- if checksum.source_end_address is not none %}
+  {%- set num_nibbles = (checksum.source_end_address.bit_length() + 7) // 8 * 2 %}
+  <SOURCE-END-ADDRESS>{{ ("%%0%dX" | format(num_nibbles | int)) | format(checksum.source_end_address | int) }}</SOURCE-END-ADDRESS>
+  {%- endif %}
+  {%- if checksum.uncompressed_size is not none %}
+  <UNCOMPRESSED-SIZE>{{ checksum.uncompressed_size }}</UNCOMPRESSED-SIZE>
+  {%- endif %}
+  <CHECKSUM-RESULT
+    {%- if checksum.checksum_result.value_type is not none %}
+    {#- #} TYPE="{{ checksum.checksum_result.value_type.value }}"
+    {%- endif %}
+    {#- #}>{{checksum.checksum_result.value_raw}}</CHECKSUM-RESULT>
+</CHECKSUM>
+{%- endmacro -%}

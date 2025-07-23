@@ -1,25 +1,25 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import List, Optional
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
 from .complexdop import ComplexDop
 from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxassert, odxrequire
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkRef, resolve_snref
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkRef, resolve_snref
 from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Field(ComplexDop):
-    structure_ref: Optional[OdxLinkRef]
-    structure_snref: Optional[str]
-    env_data_desc_ref: Optional[OdxLinkRef]
-    env_data_desc_snref: Optional[str]
-    is_visible_raw: Optional[bool]
+    structure_ref: OdxLinkRef | None = None
+    structure_snref: str | None = None
+    env_data_desc_ref: OdxLinkRef | None = None
+    env_data_desc_snref: str | None = None
+    is_visible_raw: bool | None = None
 
     @property
     def structure(self) -> BasicStructure:
@@ -31,15 +31,15 @@ class Field(ComplexDop):
         return self.is_visible_raw in (None, True)
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Field":
-        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, doc_frags))
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Field":
+        kwargs = dataclass_fields_asdict(ComplexDop.from_et(et_element, context))
 
-        structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), doc_frags)
+        structure_ref = OdxLinkRef.from_et(et_element.find("BASIC-STRUCTURE-REF"), context)
         structure_snref = None
         if (edsnr_elem := et_element.find("BASIC-STRUCTURE-SNREF")) is not None:
             structure_snref = edsnr_elem.get("SHORT-NAME")
 
-        env_data_desc_ref = OdxLinkRef.from_et(et_element.find("ENV-DATA-DESC-REF"), doc_frags)
+        env_data_desc_ref = OdxLinkRef.from_et(et_element.find("ENV-DATA-DESC-REF"), context)
         env_data_desc_snref = None
         if (edsnr_elem := et_element.find("ENV-DATA-DESC-SNREF")) is not None:
             env_data_desc_snref = edsnr_elem.get("SHORT-NAME")
@@ -54,8 +54,8 @@ class Field(ComplexDop):
             **kwargs)
 
     def __post_init__(self) -> None:
-        self._structure: Optional[BasicStructure] = None
-        self._env_data_desc: Optional[EnvironmentDataDescription] = None
+        self._structure: BasicStructure | None = None
+        self._env_data_desc: EnvironmentDataDescription | None = None
         num_struct_refs = 0 if self.structure_ref is None else 1
         num_struct_refs += 0 if self.structure_snref is None else 1
 
@@ -87,5 +87,5 @@ class Field(ComplexDop):
             self._env_data_desc = resolve_snref(self.env_data_desc_snref, ddds.env_data_descs,
                                                 EnvironmentDataDescription)
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return None

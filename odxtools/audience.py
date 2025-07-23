@@ -1,25 +1,26 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional
+from dataclasses import dataclass, field
+from typing import Any
 from xml.etree import ElementTree
 
 from .additionalaudience import AdditionalAudience
 from .nameditemlist import NamedItemList
-from .odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
+from .odxdoccontext import OdxDocContext
+from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from .odxtypes import odxstr_to_bool
 from .snrefcontext import SnRefContext
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Audience:
-    enabled_audience_refs: List[OdxLinkRef]
-    disabled_audience_refs: List[OdxLinkRef]
+    enabled_audience_refs: list[OdxLinkRef] = field(default_factory=list)
+    disabled_audience_refs: list[OdxLinkRef] = field(default_factory=list)
 
-    is_supplier_raw: Optional[bool]
-    is_development_raw: Optional[bool]
-    is_manufacturing_raw: Optional[bool]
-    is_aftersales_raw: Optional[bool]
-    is_aftermarket_raw: Optional[bool]
+    is_supplier_raw: bool | None = None
+    is_development_raw: bool | None = None
+    is_manufacturing_raw: bool | None = None
+    is_aftersales_raw: bool | None = None
+    is_aftermarket_raw: bool | None = None
 
     @property
     def is_supplier(self) -> bool:
@@ -50,15 +51,14 @@ class Audience:
         return self._disabled_audiences
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Audience":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Audience":
 
         enabled_audience_refs = [
-            OdxLinkRef.from_et(ref, doc_frags)
-            for ref in et_element.iterfind("ENABLED-AUDIENCE-REFS/"
-                                           "ENABLED-AUDIENCE-REF")
+            OdxLinkRef.from_et(ref, context) for ref in et_element.iterfind("ENABLED-AUDIENCE-REFS/"
+                                                                            "ENABLED-AUDIENCE-REF")
         ]
         disabled_audience_refs = [
-            OdxLinkRef.from_et(ref, doc_frags)
+            OdxLinkRef.from_et(ref, context)
             for ref in et_element.iterfind("DISABLED-AUDIENCE-REFS/"
                                            "DISABLED-AUDIENCE-REF")
         ]
@@ -78,7 +78,7 @@ class Audience:
             is_aftermarket_raw=is_aftermarket_raw,
         )
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         return {}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

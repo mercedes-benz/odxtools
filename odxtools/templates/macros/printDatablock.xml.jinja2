@@ -1,0 +1,78 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printOwnIdent.xml.jinja2') as poi %}
+{%- import('macros/printSecurity.xml.jinja2') as psec %}
+{%- import('macros/printSegment.xml.jinja2') as pseg %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+
+{%- macro printDatablock(datablock) -%}
+<DATABLOCK {{peid.printElementIdAttribs(datablock)}} TYPE="{{datablock.data_type}}">
+  {{ peid.printElementIdSubtags(datablock)|indent(1) }}
+  {%- if datablock.logical_block_index is not none %}
+  {%- set num_nibbles = (datablock.logical_block_index.bit_length() + 7) // 8 * 2 %}
+  <LOGICAL-BLOCK-INDEX>{{("%%0%dX" | format(num_nibbles | int)) | format(datablock.logical_block_index | int)}}</LOGICAL-BLOCK-INDEX>
+  {%- endif %}
+  {%- if datablock.flashdata_ref is not none %}
+  <FLASHDATA-REF {{make_ref_attribs(datablock.flashdata_ref)}} />
+  {%- endif %}
+  {%- if datablock.filters %}
+  <FILTERS>
+    {%- for filter in datablock.filters %}
+    {%- if filter.filter_end %}
+    <FILTER xsi:type="ADDRDEF-FILTER">
+      {%- set num_nibbles = (filter.filter_start.bit_length() + 7) // 8 * 2 %}
+      <FILTER-START>{{ ("%%0%dX" | format(num_nibbles | int)) | format(filter.filter_start | int) }}</FILTER-START>
+      {%- set num_nibbles = (filter.filter_end.bit_length() + 7) // 8 * 2 %}
+      <FILTER-END>{{ ("%%0%dX" | format(num_nibbles | int)) | format(filter.filter_end | int) }}</FILTER-END>
+    </FILTER>
+    {%- elif filter.filter_size %}
+    <FILTER xsi:type="SIZEDEF-FILTER">
+      {%- set num_nibbles = (filter.filter_start.bit_length() + 7) // 8 * 2 %}
+      <FILTER-START>{{ ("%%0%dX" | format(num_nibbles | int)) | format(filter.filter_start | int) }}</FILTER-START>
+      <FILTER-SIZE>{{filter.filter_size}}</FILTER-SIZE>
+    </FILTER>
+    {%- endif %}
+    {%- endfor %}
+  </FILTERS>
+  {%- endif %}
+  {%- if datablock.segments %}
+  <SEGMENTS>
+    {%- for segment in datablock.segments %}
+    {{ pseg.printSegment(segment) | indent(4) }}
+    {%- endfor %}
+  </SEGMENTS>
+  {%- endif %}
+  {%- if datablock.target_addr_offset is not none %}
+  {%- if datablock.target_addr_offset.positive_offset is defined %}
+  <TARGET-ADDR-OFFSET xsi:type="POS-OFFSET">
+    {%- set num_nibbles = (datablock.target_addr_offset.positive_offset.bit_length() + 7) // 8 * 2 %}
+    <POSITIVE-OFFSET>{{("%%0%dX" | format(num_nibbles | int)) | format(datablock.target_addr_offset.positive_offset | int)}}</POSITIVE-OFFSET>
+  </TARGET-ADDR-OFFSET>
+  {%- elif datablock.target_addr_offset.negative_offset is defined %}
+  <TARGET-ADDR-OFFSET xsi:type="NEG-OFFSET">
+    {%- set num_nibbles = (datablock.target_addr_offset.negative_offset.bit_length() + 7) // 8 * 2 %}
+    <NEGATIVE-OFFSET>{{("%%0%dX" | format(num_nibbles | int)) | format(datablock.target_addr_offset.negative_offset | int)}}</NEGATIVE-OFFSET>
+  </TARGET-ADDR-OFFSET>
+  {%- endif %}
+  {%- endif %}
+  {%- if datablock.own_idents %}
+  <OWN-IDENTS>
+    {%- for own_ident in datablock.own_idents %}
+    {{ poi.printOwnIdent(own_ident)|indent(4) }}
+    {%- endfor %}
+  </OWN-IDENTS>
+  {%- endif %}
+  {%- if datablock.securities %}
+  <SECURITYS>
+    {%- for security in datablock.securities %}
+    {{ psec.printSecurity(security)|indent(4) }}
+    {%- endfor %}
+  </SECURITYS>
+  {%- endif %}
+  {{- psd.printSpecialDataGroups(datablock.sdgs)|indent(2, first=True) }}{#- #}
+</DATABLOCK>
+{%- endmacro -%}

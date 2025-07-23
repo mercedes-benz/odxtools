@@ -1,0 +1,31 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+
+{%- macro printSegment(segment) -%}
+<SEGMENT {{peid.printElementIdAttribs(segment)}}>
+  {{ peid.printElementIdSubtags(segment)|indent(1) }}
+  {%- set num_nibbles = (segment.source_start_address.bit_length() + 7) // 8 * 2 %}
+  <SOURCE-START-ADDRESS>{{("%%0%dX" | format(num_nibbles | int)) | format(segment.source_start_address | int)}}</SOURCE-START-ADDRESS>
+  {%- if segment.compressed_size is not none %}
+  <COMPRESSED-SIZE>{{segment.compressed_size}}</COMPRESSED-SIZE>
+  {%- endif %}
+  {%- if segment.uncompressed_size is not none %}
+  <UNCOMPRESSED-SIZE>{{segment.uncompressed_size}}</UNCOMPRESSED-SIZE>
+  {%- endif %}
+  {%- if segment.source_end_address is not none %}
+  {%- set num_nibbles = (segment.source_end_address.bit_length() + 7) // 8 * 2 %}
+  <SOURCE-END-ADDRESS>{{("%%0%dX" | format(num_nibbles | int)) | format(segment.source_end_address | int)}}</SOURCE-END-ADDRESS>
+  {%- endif %}
+  {%- if segment.encrypt_compress_method is not none %}
+  <ENCRYPT-COMPRESS-METHOD
+    {%- if segment.encrypt_compress_method.value_type is not none %}
+    {#- #} TYPE="{{ segment.encrypt_compress_method.value_type.value }}"
+    {%- endif %}
+    {#- #}>{{segment.encrypt_compress_method.value_raw | e}}</ENCRYPT-COMPRESS-METHOD>
+  {%- endif %}
+</SEGMENT>
+{%- endmacro -%}

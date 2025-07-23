@@ -2,12 +2,15 @@
 import unittest
 from xml.etree import ElementTree
 
+from packaging.version import Version
+
+from odxtools.odxdoccontext import OdxDocContext
 from odxtools.odxlink import DocType, OdxDocFragment
 from odxtools.odxtypes import DataType
 from odxtools.parameters.createanyparameter import create_any_parameter_from_et
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
 
-doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
+doc_frags = (OdxDocFragment("UnitTest", DocType.CONTAINER),)
 
 
 class TestReadNrcParam(unittest.TestCase):
@@ -28,7 +31,7 @@ class TestReadNrcParam(unittest.TestCase):
         </PARAM>
         """
         root = ElementTree.fromstring(ODX)
-        param = create_any_parameter_from_et(root, doc_frags=doc_frags)
+        param = create_any_parameter_from_et(root, OdxDocContext(Version("2.2.0"), doc_frags))
 
         self.assertIsInstance(param, NrcConstParameter)
         assert isinstance(param, NrcConstParameter)

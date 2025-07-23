@@ -1,8 +1,9 @@
 # SPDX-License-Identifier: MIT
+from collections import OrderedDict
 from itertools import chain
 from os import PathLike
 from pathlib import Path
-from typing import IO, Any, Dict, List, Optional, OrderedDict, Union
+from typing import IO, Any, Union
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
@@ -17,10 +18,15 @@ from .diaglayers.ecushareddata import EcuSharedData
 from .diaglayers.ecuvariant import EcuVariant
 from .diaglayers.functionalgroup import FunctionalGroup
 from .diaglayers.protocol import Protocol
+from .ecuconfig import EcuConfig
 from .exceptions import odxraise, odxrequire
+from .flash import Flash
+from .multipleecujobspec import MultipleEcuJobSpec
 from .nameditemlist import NamedItemList
-from .odxlink import OdxLinkDatabase, OdxLinkId
+from .odxdoccontext import OdxDocContext
+from .odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
+from .vehicleinfospec import VehicleInfoSpec
 
 
 class Database:
@@ -30,13 +36,17 @@ class Database:
     """
 
     def __init__(self) -> None:
-        self.model_version: Optional[Version] = None
+        self.model_version: Version | None = None
         self.auxiliary_files: OrderedDict[str, IO[bytes]] = OrderedDict()
 
         # create an empty database object
         self._diag_layer_containers = NamedItemList[DiagLayerContainer]()
         self._comparam_subsets = NamedItemList[ComparamSubset]()
         self._comparam_specs = NamedItemList[ComparamSpec]()
+        self._ecu_configs = NamedItemList[EcuConfig]()
+        self._vehicle_info_specs = NamedItemList[VehicleInfoSpec]()
+        self._flashs = NamedItemList[Flash]()
+        self._multiple_ecu_job_specs = NamedItemList[MultipleEcuJobSpec]()
         self._short_name = "odx_database"
 
     def add_pdx_file(self, pdx_file: Union[str, "PathLike[Any]", IO[bytes], ZipFile]) -> None:
@@ -55,7 +65,7 @@ class Database:
             p = Path(zip_member)
             if p.suffix.lower().startswith(".odx"):
                 root = ElementTree.parse(pdx_zip.open(zip_member)).getroot()
-                self._process_xml_tree(root)
+                self.add_xml_tree(root)
             elif p.name.lower() == "index.xml":
                 root = ElementTree.parse(pdx_zip.open(zip_member)).getroot()
                 db_short_name = odxrequire(root.findtext("SHORT-NAME"))
@@ -64,21 +74,17 @@ class Database:
                 self.add_auxiliary_file(zip_member, pdx_zip.open(zip_member))
 
     def add_odx_file(self, odx_file_name: Union[str, "PathLike[Any]"]) -> None:
-        self._process_xml_tree(ElementTree.parse(odx_file_name).getroot())
+        self.add_xml_tree(ElementTree.parse(odx_file_name).getroot())
 
     def add_auxiliary_file(self,
                            aux_file_name: Union[str, "PathLike[Any]"],
-                           aux_file_obj: Optional[IO[bytes]] = None) -> None:
+                           aux_file_obj: IO[bytes] | None = None) -> None:
         if aux_file_obj is None:
             aux_file_obj = open(aux_file_name, "rb")
 
         self.auxiliary_files[str(aux_file_name)] = aux_file_obj
 
-    def _process_xml_tree(self, root: ElementTree.Element) -> None:
-        dlcs: List[DiagLayerContainer] = []
-        comparam_subsets: List[ComparamSubset] = []
-        comparam_specs: List[ComparamSpec] = []
-
+    def add_xml_tree(self, root: ElementTree.Element) -> None:
         # ODX spec version
         model_version = Version(root.attrib.get("MODEL-VERSION", "2.0"))
         if self.model_version is not None and self.model_version != model_version:
@@ -87,28 +93,48 @@ class Database:
 
         self.model_version = model_version
 
-        dlc = root.find("DIAG-LAYER-CONTAINER")
-        if dlc is not None:
-            dlcs.append(DiagLayerContainer.from_et(dlc, []))
+        child_elements = list(root)
+        if len(child_elements) != 1:
+            odxraise("Each ODX document must contain exactly one category.")
 
-        # In ODX 2.0 there was only COMPARAM-SPEC. In ODX 2.2 the
-        # content of COMPARAM-SPEC was moved to COMPARAM-SUBSET
-        # and COMPARAM-SPEC became a container for PROT-STACKS and
-        # a PROT-STACK references a list of COMPARAM-SUBSET
-        cp_subset = root.find("COMPARAM-SUBSET")
-        if cp_subset is not None:
-            comparam_subsets.append(ComparamSubset.from_et(cp_subset, []))
+        category_et = child_elements[0]
+        category_sn = odxrequire(category_et.findtext("SHORT-NAME"))
+        category_tag = category_et.tag
 
-        cp_spec = root.find("COMPARAM-SPEC")
-        if cp_spec is not None:
+        if category_tag == "DIAG-LAYER-CONTAINER":
+            context = OdxDocContext(model_version,
+                                    (OdxDocFragment(category_sn, DocType.CONTAINER),))
+            self._diag_layer_containers.append(DiagLayerContainer.from_et(category_et, context))
+        elif category_tag == "COMPARAM-SUBSET":
+            context = OdxDocContext(model_version,
+                                    (OdxDocFragment(category_sn, DocType.COMPARAM_SUBSET),))
+            self._comparam_subsets.append(ComparamSubset.from_et(category_et, context))
+        elif category_tag == "COMPARAM-SPEC":
+            # In ODX 2.0 there was only COMPARAM-SPEC. In ODX 2.2 the
+            # content of COMPARAM-SPEC was moved to COMPARAM-SUBSET
+            # and COMPARAM-SPEC became a container for PROT-STACKS and
+            # a PROT-STACK references a list of COMPARAM-SUBSET
+            context = OdxDocContext(model_version,
+                                    (OdxDocFragment(category_sn, DocType.COMPARAM_SPEC),))
             if model_version < Version("2.2"):
-                comparam_subsets.append(ComparamSubset.from_et(cp_spec, []))
-            else:  # odx >= 2.2
-                comparam_specs.append(ComparamSpec.from_et(cp_spec, []))
-
-        self._diag_layer_containers.extend(dlcs)
-        self._comparam_subsets.extend(comparam_subsets)
-        self._comparam_specs.extend(comparam_specs)
+                self._comparam_subsets.append(ComparamSubset.from_et(category_et, context))
+            else:
+                self._comparam_specs.append(ComparamSpec.from_et(category_et, context))
+        elif category_tag == "ECU-CONFIG":
+            context = OdxDocContext(model_version,
+                                    (OdxDocFragment(category_sn, DocType.ECU_CONFIG),))
+            self._ecu_configs.append(EcuConfig.from_et(category_et, context))
+        elif category_tag == "VEHICLE-INFO-SPEC":
+            context = OdxDocContext(model_version,
+                                    (OdxDocFragment(category_sn, DocType.VEHICLE_INFO_SPEC),))
+            self._vehicle_info_specs.append(VehicleInfoSpec.from_et(category_et, context))
+        elif category_tag == "FLASH":
+            context = OdxDocContext(model_version, (OdxDocFragment(category_sn, DocType.FLASH),))
+            self._flashs.append(Flash.from_et(category_et, context))
+        elif category_tag == "MULTIPLE-ECU-JOB-SPEC":
+            context = OdxDocContext(model_version,
+                                    (OdxDocFragment(category_sn, DocType.MULTIPLE_ECU_JOB_SPEC),))
+            self._multiple_ecu_job_specs.append(MultipleEcuJobSpec.from_et(category_et, context))
 
     def refresh(self) -> None:
         # Create wrapper objects
@@ -140,6 +166,18 @@ class Database:
         for dlc in self.diag_layer_containers:
             dlc._resolve_odxlinks(self._odxlinks)
 
+        for ecu_config in self.ecu_configs:
+            ecu_config._resolve_odxlinks(self._odxlinks)
+
+        for vehicle_info_spec in self.vehicle_info_specs:
+            vehicle_info_spec._resolve_odxlinks(self._odxlinks)
+
+        for flash in self.flashs:
+            flash._resolve_odxlinks(self._odxlinks)
+
+        for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
+            multiple_ecu_job_spec._resolve_odxlinks(self._odxlinks)
+
         # resolve short name references for containers which do not do
         # inheritance (we can call directly call _resolve_snrefs())
         context = SnRefContext()
@@ -152,6 +190,14 @@ class Database:
             spec._finalize_init(self, self._odxlinks)
         for dlc in self.diag_layer_containers:
             dlc._finalize_init(self, self._odxlinks)
+        for ecu_config in self.ecu_configs:
+            ecu_config._finalize_init(self, self._odxlinks)
+        for vehicle_info_spec in self.vehicle_info_specs:
+            vehicle_info_spec._finalize_init(self, self._odxlinks)
+        for flash in self.flashs:
+            flash._finalize_init(self, self._odxlinks)
+        for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
+            multiple_ecu_job_spec._finalize_init(self, self._odxlinks)
 
         for subset in self.comparam_subsets:
             subset._resolve_snrefs(context)
@@ -159,9 +205,17 @@ class Database:
             spec._resolve_snrefs(context)
         for dlc in self.diag_layer_containers:
             dlc._resolve_snrefs(context)
+        for ecu_config in self.ecu_configs:
+            ecu_config._resolve_snrefs(context)
+        for vehicle_info_spec in self.vehicle_info_specs:
+            vehicle_info_spec._resolve_snrefs(context)
+        for flash in self.flashs:
+            flash._resolve_snrefs(context)
+        for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
+            multiple_ecu_job_spec._resolve_snrefs(context)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
-        result: Dict[OdxLinkId, Any] = {}
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
+        result: dict[OdxLinkId, Any] = {}
 
         for subset in self.comparam_subsets:
             result.update(subset._build_odxlinks())
@@ -171,6 +225,17 @@ class Database:
 
         for dlc in self.diag_layer_containers:
             result.update(dlc._build_odxlinks())
+
+        for ecu_config in self.ecu_configs:
+            result.update(ecu_config._build_odxlinks())
+
+        for vehicle_info_spec in self.vehicle_info_specs:
+            result.update(vehicle_info_spec._build_odxlinks())
+
+        for flash in self.flashs:
+            result.update(flash._build_odxlinks())
+        for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
+            result.update(multiple_ecu_job_spec._build_odxlinks())
 
         return result
 
@@ -245,10 +310,30 @@ class Database:
     def comparam_specs(self) -> NamedItemList[ComparamSpec]:
         return self._comparam_specs
 
+    @property
+    def ecu_configs(self) -> NamedItemList[EcuConfig]:
+        return self._ecu_configs
+
+    @property
+    def vehicle_info_specs(self) -> NamedItemList[VehicleInfoSpec]:
+        return self._vehicle_info_specs
+
+    @property
+    def flashs(self) -> NamedItemList[Flash]:
+        return self._flashs
+
+    @property
+    def multiple_ecu_job_specs(self) -> NamedItemList[MultipleEcuJobSpec]:
+        return self._multiple_ecu_job_specs
+
     def __repr__(self) -> str:
         return f"Database(model_version={self.model_version}, " \
             f"protocols={[x.short_name for x in self.protocols]}, " \
             f"ecus={[x.short_name for x in self.ecus]}, " \
             f"diag_layer_containers={repr(self.diag_layer_containers)}, " \
             f"comparam_subsets={repr(self.comparam_subsets)}, " \
-            f"comparam_specs={repr(self.comparam_specs)})"
+            f"comparam_specs={repr(self.comparam_specs)}, " \
+            f"ecu_configs={repr(self.ecu_configs)}, " \
+            f"vehicle_info_specs={repr(self.vehicle_info_specs)}, " \
+            f"multiple_ecu_job_specs={repr(self.multiple_ecu_job_specs)}, " \
+            f"flashs={repr(self.flashs)})"

@@ -10,7 +10,7 @@
 {%- import('macros/printDescription.xml.jinja2') as pd %}
 
 
-{%- macro printDiagCodedType(dct) -%}
+{%- macro printDiagCodedType(dct) %}
 <DIAG-CODED-TYPE {{-make_xml_attrib("BASE-DATA-TYPE", dct.base_data_type.value)}}
                  {{-make_xml_attrib("BASE-TYPE-ENCODING", dct.base_type_encoding and dct.base_type_encoding.value)}}
                  {{-make_bool_xml_attrib("IS-HIGHLOW-BYTE-ORDER", dct.is_highlow_byte_order_raw)}}
@@ -34,7 +34,7 @@
  <MIN-LENGTH>{{dct.min_length}}</MIN-LENGTH>
  {%- endif %}
 </DIAG-CODED-TYPE>
-{%- endmacro -%}
+{%- endmacro %}
 
 {%- macro printPhysicalType(physical_type) %}
 {%- if physical_type.display_radix is not none %}
@@ -84,7 +84,6 @@
 {%- macro printDopBaseAttribs(dop) %}
 {{- make_xml_attrib("ID", dop.odx_id.local_id) }}
 {{- make_xml_attrib("OID", dop.oid) }}
-{#- -#}
 {%- endmacro %}
 
 {%- macro printDopBaseSubtags(dop) %}
@@ -92,8 +91,8 @@
  {%- if dop.admin_data %}
  {{ pad.printAdminData(dop.admin_data)|indent(1) }}
  {%- endif %}
- {{ psd.printSpecialDataGroups(dop.sdgs)|indent(1) }}
-{%- endmacro -%}
+ {{- psd.printSpecialDataGroups(dop.sdgs)|indent(1) }}
+{%- endmacro %}
 
 {%- macro printComplexDopAttribs(st) %}
  {{- printDopBaseAttribs(st) }}
@@ -101,7 +100,7 @@
 
 {%- macro printComplexDopSubtags(st) %}
  {{- printDopBaseSubtags(st) }}
-{%- endmacro -%}
+{%- endmacro %}
 
 {%- macro printDataObjectProp(dop) %}
 <DATA-OBJECT-PROP {{- printDopBaseAttribs(dop) }}>
@@ -113,7 +112,7 @@
  {{- printInternalConstr(dop.internal_constr, False)|indent(1) }}
  {%- endif %}
  {%- if dop.unit_ref %}
- <UNIT-REF ID-REF="{{ dop.unit_ref.ref_id }}" />
+ <UNIT-REF {{make_ref_attribs(dop.unit_ref)}} />
  {%- endif %}
  {%- if dop.physical_constr %}
  {{- printInternalConstr(dop.internal_constr, True)|indent(1) }}
@@ -131,7 +130,7 @@
  <DTCS>
  {%- for dtc in dop.dtcs_raw %}
  {%- if hasattr(dtc, "ref_id") %}
-  <DTC-REF ID-REF="{{dtc.ref_id}}" />
+  <DTC-REF {{make_ref_attribs(dtc)}} />
  {%- else %}
   <DTC {{-peid.printElementIdAttribs(dtc)}}>
    <SHORT-NAME>{{dtc.short_name}}</SHORT-NAME>
@@ -159,7 +158,7 @@
        {%- endfor %}
      </NOT-INHERITED-DTC-SNREFS>
      {%- endif %}
-     <DTC-DOP-REF ID-REF="{{linked_dtc_dop.dtc_dop_ref.ref_id}}" />
+     <DTC-DOP-REF {{make_ref_attribs(linked_dtc_dop.dtc_dop_ref)}} />
    </LINKED-DTC-DOP>
    {%- endfor %}
  </LINKED-DTC-DOPS>

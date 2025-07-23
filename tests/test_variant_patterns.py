@@ -2,13 +2,15 @@
 from xml.etree import ElementTree
 
 import pytest
+from packaging.version import Version
 
 from odxtools.basevariantpattern import BaseVariantPattern
 from odxtools.ecuvariantpattern import EcuVariantPattern
 from odxtools.exceptions import OdxError
+from odxtools.odxdoccontext import OdxDocContext
 from odxtools.odxlink import DocType, OdxDocFragment
 
-doc_frags = [OdxDocFragment(doc_name="pytest", doc_type=DocType.CONTAINER)]
+doc_frags = (OdxDocFragment(doc_name="pytest", doc_type=DocType.CONTAINER),)
 
 
 @pytest.fixture()
@@ -92,7 +94,7 @@ def invalid_evp_et() -> ElementTree.Element:
 
 def test_create_bvp_from_et(valid_bvp_et: ElementTree.Element) -> None:
     base_variant_patterns = [
-        BaseVariantPattern.from_et(elem, doc_frags)
+        BaseVariantPattern.from_et(elem, OdxDocContext(Version("2.2.0"), doc_frags))
         for elem in valid_bvp_et.iterfind("BASE-VARIANT-PATTERN")
     ]
     assert len(base_variant_patterns) == 2
@@ -124,7 +126,7 @@ def test_create_bvp_from_et(valid_bvp_et: ElementTree.Element) -> None:
 
 def test_create_evp_from_et(valid_evp_et: ElementTree.Element) -> None:
     ecu_variant_patterns = [
-        EcuVariantPattern.from_et(elem, doc_frags)
+        EcuVariantPattern.from_et(elem, OdxDocContext(Version("2.2.0"), doc_frags))
         for elem in valid_evp_et.iterfind("ECU-VARIANT-PATTERN")
     ]
     assert len(ecu_variant_patterns) == 2
@@ -139,4 +141,4 @@ def test_create_evp_from_et(valid_evp_et: ElementTree.Element) -> None:
 def test_create_invalid_evp_from_et(invalid_evp_et: ElementTree.Element) -> None:
     with pytest.raises(OdxError):
         for x in invalid_evp_et.iterfind("ECU-VARIANT-PATTERN"):
-            EcuVariantPattern.from_et(x, doc_frags)
+            EcuVariantPattern.from_et(x, OdxDocContext(Version("2.2.0"), doc_frags))

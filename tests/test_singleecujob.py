@@ -3,17 +3,18 @@ import inspect
 import os
 import unittest
 from io import BytesIO
-from typing import NamedTuple, cast
+from typing import Any, NamedTuple, cast
 from xml.etree import ElementTree
 
 import jinja2
+from packaging.version import Version
 
 import odxtools
 from odxtools.additionalaudience import AdditionalAudience
 from odxtools.audience import Audience
+from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.compuconst import CompuConst
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
-from odxtools.compumethods.compumethod import CompuCategory
 from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
 from odxtools.compumethods.compuscale import CompuScale
 from odxtools.compumethods.limit import Limit
@@ -31,6 +32,7 @@ from odxtools.inputparam import InputParam
 from odxtools.library import Library
 from odxtools.nameditemlist import NamedItemList
 from odxtools.negoutputparam import NegOutputParam
+from odxtools.odxdoccontext import OdxDocContext
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
 from odxtools.outputparam import OutputParam
@@ -38,9 +40,10 @@ from odxtools.physicaltype import PhysicalType
 from odxtools.progcode import ProgCode
 from odxtools.singleecujob import SingleEcuJob
 from odxtools.standardlengthtype import StandardLengthType
-from odxtools.writepdxfile import jinja2_odxraise_helper, make_bool_xml_attrib, make_xml_attrib
+from odxtools.writepdxfile import (jinja2_odxraise_helper, make_bool_xml_attrib, make_ref_attribs,
+                                   make_xml_attrib, set_category_docfrag, set_layer_docfrag)
 
-doc_frags = [OdxDocFragment("UnitTest", DocType.CONTAINER)]
+doc_frags = (OdxDocFragment("UnitTest", DocType.CONTAINER),)
 
 
 class TestSingleEcuJob(unittest.TestCase):
@@ -66,180 +69,93 @@ class TestSingleEcuJob(unittest.TestCase):
         self.context = Context(
             extensiveTask=FunctionalClass(
                 odx_id=OdxLinkId("ID.extensiveTask", doc_frags),
-                oid=None,
                 short_name="extensiveTask",
-                long_name=None,
-                description=None,
-                admin_data=None,
             ),
             specialAudience=AdditionalAudience(
                 odx_id=OdxLinkId("ID.specialAudience", doc_frags),
-                oid=None,
                 short_name="specialAudience",
-                long_name=None,
-                description=None,
             ),
             inputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.inputDOP", doc_frags),
-                oid=None,
                 short_name="inputDOP",
-                long_name=None,
-                description=None,
-                admin_data=None,
                 diag_coded_type=StandardLengthType(
                     base_data_type=DataType.A_INT32,
                     bit_length=1,
-                    bit_mask=None,
-                    base_type_encoding=None,
-                    is_condensed_raw=None,
-                    is_highlow_byte_order_raw=None,
                 ),
-                physical_type=PhysicalType(
-                    base_data_type=DataType.A_UNICODE2STRING, display_radix=None, precision=None),
+                physical_type=PhysicalType(base_data_type=DataType.A_UNICODE2STRING),
                 compu_method=TexttableCompuMethod(
                     category=CompuCategory.TEXTTABLE,
-                    compu_phys_to_internal=None,
                     physical_type=DataType.A_UNICODE2STRING,
-                    compu_internal_to_phys=CompuInternalToPhys(
-                        compu_scales=[
-                            CompuScale(
-                                "yes",
-                                lower_limit=Limit(
-                                    value_raw="0", value_type=DataType.A_INT32, interval_type=None),
-                                compu_const=CompuConst(
-                                    v=None, vt="Yes!", data_type=DataType.A_UTF8STRING),
-                                description=None,
-                                compu_inverse_value=None,
-                                upper_limit=None,
-                                compu_rational_coeffs=None,
-                                domain_type=DataType.A_INT32,
-                                range_type=DataType.A_UNICODE2STRING,
-                            ),
-                            CompuScale(
-                                "no",
-                                lower_limit=Limit(
-                                    value_raw="1", value_type=DataType.A_INT32, interval_type=None),
-                                compu_const=CompuConst(
-                                    v=None, vt="No!", data_type=DataType.A_UTF8STRING),
-                                description=None,
-                                compu_inverse_value=None,
-                                upper_limit=None,
-                                compu_rational_coeffs=None,
-                                domain_type=DataType.A_INT32,
-                                range_type=DataType.A_UNICODE2STRING),
-                        ],
-                        prog_code=None,
-                        compu_default_value=None,
-                    ),
+                    compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                        CompuScale(
+                            short_label="yes",
+                            lower_limit=Limit(value_raw="0", value_type=DataType.A_INT32),
+                            compu_const=CompuConst(vt="Yes!", data_type=DataType.A_UTF8STRING),
+                            domain_type=DataType.A_INT32,
+                            range_type=DataType.A_UNICODE2STRING,
+                        ),
+                        CompuScale(
+                            short_label="no",
+                            lower_limit=Limit(value_raw="1", value_type=DataType.A_INT32),
+                            compu_const=CompuConst(vt="Yes!", data_type=DataType.A_UTF8STRING),
+                            domain_type=DataType.A_INT32,
+                            range_type=DataType.A_UNICODE2STRING),
+                    ]),
                     internal_type=DataType.A_UINT32,
                 ),
-                unit_ref=None,
-                sdgs=[],
-                internal_constr=None,
-                physical_constr=None,
             ),
             outputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.outputDOP", doc_frags),
-                oid=None,
                 short_name="outputDOP",
-                long_name=None,
-                description=None,
-                admin_data=None,
                 diag_coded_type=StandardLengthType(
                     base_data_type=DataType.A_INT32,
                     bit_length=1,
-                    bit_mask=None,
-                    base_type_encoding=None,
-                    is_condensed_raw=None,
-                    is_highlow_byte_order_raw=None,
                 ),
-                physical_type=PhysicalType(
-                    base_data_type=DataType.A_UNICODE2STRING, display_radix=None, precision=None),
+                physical_type=PhysicalType(base_data_type=DataType.A_UNICODE2STRING),
                 compu_method=LinearCompuMethod(
                     category=CompuCategory.LINEAR,
-                    compu_internal_to_phys=CompuInternalToPhys(
-                        compu_scales=[
-                            CompuScale(
-                                short_label=None,
-                                description=None,
-                                lower_limit=None,
-                                upper_limit=None,
-                                compu_inverse_value=None,
-                                compu_const=None,
-                                compu_rational_coeffs=CompuRationalCoeffs(
-                                    value_type=DataType.A_INT32,
-                                    numerators=[1, -1],
-                                    denominators=[1],
-                                ),
-                                domain_type=DataType.A_INT32,
-                                range_type=DataType.A_INT32),
-                        ],
-                        prog_code=None,
-                        compu_default_value=None),
-                    compu_phys_to_internal=None,
+                    compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                        CompuScale(
+                            compu_rational_coeffs=CompuRationalCoeffs(
+                                value_type=DataType.A_INT32,
+                                numerators=[1, -1],
+                                denominators=[1],
+                            ),
+                            domain_type=DataType.A_INT32,
+                            range_type=DataType.A_INT32),
+                    ]),
                     internal_type=DataType.A_UINT32,
                     physical_type=DataType.A_UINT32),
-                unit_ref=None,
-                sdgs=[],
-                internal_constr=None,
-                physical_constr=None,
             ),
             negOutputDOP=DataObjectProperty(
                 odx_id=OdxLinkId("ID.negOutputDOP", doc_frags),
-                oid=None,
                 short_name="negOutputDOP",
-                long_name=None,
-                description=None,
-                admin_data=None,
                 diag_coded_type=StandardLengthType(
                     base_data_type=DataType.A_INT32,
                     bit_length=1,
-                    bit_mask=None,
-                    base_type_encoding=None,
-                    is_condensed_raw=None,
-                    is_highlow_byte_order_raw=None,
                 ),
-                physical_type=PhysicalType(
-                    base_data_type=DataType.A_UNICODE2STRING, display_radix=None, precision=None),
+                physical_type=PhysicalType(base_data_type=DataType.A_UNICODE2STRING),
                 compu_method=LinearCompuMethod(
                     category=CompuCategory.LINEAR,
-                    compu_internal_to_phys=CompuInternalToPhys(
-                        compu_scales=[
-                            CompuScale(
-                                short_label=None,
-                                description=None,
-                                lower_limit=None,
-                                upper_limit=None,
-                                compu_inverse_value=None,
-                                compu_const=None,
-                                compu_rational_coeffs=CompuRationalCoeffs(
-                                    value_type=DataType.A_INT32,
-                                    numerators=[1, -1],
-                                    denominators=[1],
-                                ),
-                                domain_type=DataType.A_INT32,
-                                range_type=DataType.A_INT32),
-                        ],
-                        prog_code=None,
-                        compu_default_value=None),
-                    compu_phys_to_internal=None,
+                    compu_internal_to_phys=CompuInternalToPhys(compu_scales=[
+                        CompuScale(
+                            compu_rational_coeffs=CompuRationalCoeffs(
+                                value_type=DataType.A_INT32,
+                                numerators=[1, -1],
+                                denominators=[1],
+                            ),
+                            domain_type=DataType.A_INT32,
+                            range_type=DataType.A_INT32),
+                    ]),
                     internal_type=DataType.A_UINT32,
                     physical_type=DataType.A_UINT32,
                 ),
-                unit_ref=None,
-                sdgs=[],
-                internal_constr=None,
-                physical_constr=None,
             ),
         )
 
         input_params = NamedItemList([
             InputParam(
-                oid=None,
                 short_name="inputParam",
-                long_name=None,
-                description=None,
-                semantic=None,
                 physical_default_value="Yes!",
                 dop_base_ref=OdxLinkRef.from_id(self.context.inputDOP.odx_id),
             )
@@ -247,7 +163,6 @@ class TestSingleEcuJob(unittest.TestCase):
         output_params = NamedItemList([
             OutputParam(
                 odx_id=OdxLinkId("ID.outputParam", doc_frags),
-                oid=None,
                 semantic="DATA",
                 short_name="outputParam",
                 long_name="The Output Param",
@@ -258,7 +173,6 @@ class TestSingleEcuJob(unittest.TestCase):
         neg_output_params = NamedItemList([
             NegOutputParam(
                 short_name="NegativeOutputParam",
-                long_name=None,
                 description=Description.from_string("<p>The one and only output of this job.</p>"),
                 dop_base_ref=OdxLinkRef.from_id(self.context.negOutputDOP.odx_id),
             )
@@ -266,25 +180,10 @@ class TestSingleEcuJob(unittest.TestCase):
 
         self.singleecujob_object = SingleEcuJob(
             odx_id=OdxLinkId("ID.JumpStart", doc_frags),
-            oid=None,
             short_name="JumpStart",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            semantic=None,
             functional_class_refs=[OdxLinkRef.from_id(self.context.extensiveTask.odx_id)],
-            protocol_snrefs=[],
-            related_diag_comm_refs=[],
-            pre_condition_state_refs=[],
-            state_transition_refs=[],
-            diagnostic_class=None,
             audience=Audience(
                 enabled_audience_refs=[OdxLinkRef.from_id(self.context.specialAudience.odx_id)],
-                disabled_audience_refs=[],
-                is_supplier_raw=None,
-                is_development_raw=None,
-                is_aftersales_raw=None,
-                is_aftermarket_raw=None,
                 is_manufacturing_raw=False,
             ),
             prog_codes=[
@@ -300,10 +199,6 @@ class TestSingleEcuJob(unittest.TestCase):
             input_params=input_params,
             output_params=output_params,
             neg_output_params=neg_output_params,
-            is_mandatory_raw=None,
-            is_executable_raw=None,
-            is_final_raw=None,
-            sdgs=[],
         )
 
         self.singleecujob_odx = f"""
@@ -358,7 +253,7 @@ class TestSingleEcuJob(unittest.TestCase):
         expected = self.singleecujob_object
         sample_single_ecu_job_odx = self.singleecujob_odx
         et_element = ElementTree.fromstring(sample_single_ecu_job_odx)
-        sej = SingleEcuJob.from_et(et_element, doc_frags)
+        sej = SingleEcuJob.from_et(et_element, OdxDocContext(Version("2.2.0"), doc_frags))
         self.assertEqual(expected.prog_codes, sej.prog_codes)
         self.assertEqual(expected.output_params, sej.output_params)
         self.assertEqual(expected.neg_output_params, sej.neg_output_params)
@@ -369,11 +264,17 @@ class TestSingleEcuJob(unittest.TestCase):
         # Setup jinja environment
         __module_filename = inspect.getsourcefile(odxtools)
         assert isinstance(__module_filename, str)
+        test_jinja_vars: dict[str, Any] = {}
         templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templates"])
         jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
         jinja_env.globals["odxraise"] = jinja2_odxraise_helper
         jinja_env.globals["make_xml_attrib"] = make_xml_attrib
         jinja_env.globals["make_bool_xml_attrib"] = make_bool_xml_attrib
+        jinja_env.globals["set_category_docfrag"] = lambda cname, ctype: set_category_docfrag(
+            test_jinja_vars, cname, ctype)
+        jinja_env.globals["set_layer_docfrag"] = lambda lname: set_layer_docfrag(
+            test_jinja_vars, lname)
+        jinja_env.globals["make_ref_attribs"] = lambda ref: make_ref_attribs(test_jinja_vars, ref)
         jinja_env.globals["getattr"] = getattr
         jinja_env.globals["hasattr"] = hasattr
 
@@ -383,6 +284,7 @@ class TestSingleEcuJob(unittest.TestCase):
             {{psej.printSingleEcuJob(singleecujob)}}
         """)
 
+        set_category_docfrag(test_jinja_vars, doc_frags[0].doc_name, "CONTAINER")
         rawodx: str = template.render(singleecujob=self.singleecujob_object)
 
         # Remove whitespace
@@ -395,43 +297,20 @@ class TestSingleEcuJob(unittest.TestCase):
 
         # Assert equality of objects
         # This tests the idempotency of read-write
-        sej = SingleEcuJob.from_et(ElementTree.fromstring(rawodx), doc_frags)
+        sej = SingleEcuJob.from_et(
+            ElementTree.fromstring(rawodx), OdxDocContext(Version("2.2.0"), doc_frags))
         self.assertEqual(self.singleecujob_object, sej)
 
     def test_default_lists(self) -> None:
         """Test that empty lists are assigned to list-attributes if no explicit value is passed."""
         sej = SingleEcuJob(
             odx_id=OdxLinkId("ID.SomeID", doc_frags),
-            oid=None,
             short_name="SN.SomeShortName",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            semantic=None,
-            audience=None,
-            protocol_snrefs=[],
-            related_diag_comm_refs=[],
-            pre_condition_state_refs=[],
-            state_transition_refs=[],
-            prog_codes=[
-                ProgCode(
-                    code_file="abc.jar",
-                    library_refs=[],
-                    encryption=None,
-                    entrypoint=None,
-                    syntax="abc",
-                    revision="12.34",
-                )
-            ],
-            input_params=NamedItemList(),
-            output_params=NamedItemList(),
-            neg_output_params=NamedItemList(),
-            functional_class_refs=[],
-            diagnostic_class=None,
-            is_mandatory_raw=None,
-            is_executable_raw=None,
-            is_final_raw=None,
-            sdgs=[],
+            prog_codes=[ProgCode(
+                code_file="abc.jar",
+                syntax="abc",
+                revision="12.34",
+            )],
         )
         self.assertEqual(sej.functional_class_refs, [])
         self.assertEqual(sej.input_params, NamedItemList())
@@ -443,43 +322,19 @@ class TestSingleEcuJob(unittest.TestCase):
         ecu_variant_raw = EcuVariantRaw(
             variant_type=DiagLayerType.ECU_VARIANT,
             odx_id=OdxLinkId("ID.bv", doc_frags),
-            oid=None,
             short_name="bv",
-            long_name=None,
-            description=None,
-            admin_data=None,
-            company_datas=NamedItemList(),
             functional_classes=NamedItemList([self.context.extensiveTask]),
-            diag_data_dictionary_spec=None,
             diag_comms_raw=[self.singleecujob_object],
-            requests=NamedItemList(),
-            positive_responses=NamedItemList(),
-            negative_responses=NamedItemList(),
-            global_negative_responses=NamedItemList(),
             additional_audiences=NamedItemList([self.context.specialAudience]),
-            import_refs=[],
-            state_charts=NamedItemList(),
-            sdgs=[],
-            parent_refs=[],
-            comparam_refs=[],
-            ecu_variant_patterns=[],
-            diag_variables_raw=[],
-            variable_groups=NamedItemList(),
             libraries=NamedItemList([
                 Library(
                     short_name="great_lib",
-                    long_name=None,
-                    description=None,
                     odx_id=OdxLinkId("my.favourite.lib", doc_frags),
-                    oid=None,
                     code_file="great_lib.py",
-                    encryption=None,
                     syntax="PYTHON",
                     revision="3.141529",
                     entrypoint="i_am_great")
             ]),
-            dyn_defined_spec=None,
-            sub_components=NamedItemList(),
         )
         ecu_variant = EcuVariant(diag_layer_raw=ecu_variant_raw)
         odxlinks = OdxLinkDatabase()

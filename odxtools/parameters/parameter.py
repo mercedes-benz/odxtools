@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
-from dataclasses import dataclass
-from typing import Any, Dict, List, Literal, Optional
+from dataclasses import dataclass, field
+from typing import Any, Literal
 from xml.etree import ElementTree
 
 from typing_extensions import final, override
@@ -8,7 +8,8 @@ from typing_extensions import final, override
 from ..decodestate import DecodeState
 from ..element import NamedElement
 from ..encodestate import EncodeState
-from ..odxlink import OdxDocFragment, OdxLinkDatabase, OdxLinkId
+from ..odxdoccontext import OdxDocContext
+from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..odxtypes import ParameterValue
 from ..snrefcontext import SnRefContext
 from ..specialdatagroup import SpecialDataGroup
@@ -30,7 +31,7 @@ ParameterType = Literal[
 ]
 
 
-@dataclass
+@dataclass(kw_only=True)
 class Parameter(NamedElement):
     """This class corresponds to POSITIONABLE-PARAM in the ODX
     specification
@@ -42,11 +43,11 @@ class Parameter(NamedElement):
     non-positionable parameter types.
 
     """
-    sdgs: List[SpecialDataGroup]
-    semantic: Optional[str]
-    oid: Optional[str]
-    byte_position: Optional[int]
-    bit_position: Optional[int]
+    sdgs: list[SpecialDataGroup] = field(default_factory=list)
+    semantic: str | None = None
+    oid: str | None = None
+    byte_position: int | None = None
+    bit_position: int | None = None
 
     @property
     def parameter_type(self) -> ParameterType:
@@ -78,13 +79,11 @@ class Parameter(NamedElement):
 
     @staticmethod
     @override
-    def from_et(et_element: ElementTree.Element, doc_frags: List[OdxDocFragment]) -> "Parameter":
+    def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "Parameter":
 
-        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, doc_frags))
+        kwargs = dataclass_fields_asdict(NamedElement.from_et(et_element, context))
 
-        sdgs = [
-            SpecialDataGroup.from_et(sdge, doc_frags) for sdge in et_element.iterfind("SDGS/SDG")
-        ]
+        sdgs = [SpecialDataGroup.from_et(sdge, context) for sdge in et_element.iterfind("SDGS/SDG")]
         semantic = et_element.attrib.get("SEMANTIC")
         oid = et_element.attrib.get("OID")
         byte_position_str = et_element.findtext("BYTE-POSITION")
@@ -100,7 +99,7 @@ class Parameter(NamedElement):
             bit_position=bit_position,
             **kwargs)
 
-    def _build_odxlinks(self) -> Dict[OdxLinkId, Any]:
+    def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result = {}
 
         for sdg in self.sdgs:
@@ -116,11 +115,11 @@ class Parameter(NamedElement):
         for sdg in self.sdgs:
             sdg._resolve_snrefs(context)
 
-    def get_static_bit_length(self) -> Optional[int]:
+    def get_static_bit_length(self) -> int | None:
         return None
 
     @final
-    def encode_into_pdu(self, physical_value: Optional[ParameterValue],
+    def encode_into_pdu(self, physical_value: ParameterValue | None,
                         encode_state: EncodeState) -> None:
         """Convert a physical value into its encoded form and place it
         into the PDU
@@ -140,7 +139,7 @@ class Parameter(NamedElement):
 
         encode_state.cursor_bit_position = 0
 
-    def _encode_positioned_into_pdu(self, physical_value: Optional[ParameterValue],
+    def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
         """Method which actually encodes the parameter
 
