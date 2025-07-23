@@ -17,7 +17,7 @@ from odxtools.writepdxfile import (jinja2_odxraise_helper, make_bool_xml_attrib,
 from .test_multiple_ecu_jobs import multiple_ecu_job_et
 from .test_vehicle_info_spec import vehicle_info_spec_et
 
-doc_frags = (OdxDocFragment(doc_name="mecuj_test", doc_type=DocType.FUNCTION_DICTIONARY),)
+doc_frags = (OdxDocFragment(doc_name="mecuj_test", doc_type=DocType.FUNCTION_DICTIONARY_SPEC),)
 
 function_dictionary_xml_str = """<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">

@@ -138,8 +138,8 @@ class Database:
                                     (OdxDocFragment(category_sn, DocType.MULTIPLE_ECU_JOB_SPEC),))
             self._multiple_ecu_job_specs.append(MultipleEcuJobSpec.from_et(category_et, context))
         elif category_tag == "FUNCTION-DICTIONARY":
-            context = OdxDocContext(model_version,
-                                    (OdxDocFragment(category_sn, DocType.FUNCTION_DICTIONARY),))
+            context = OdxDocContext(model_version, (OdxDocFragment(
+                category_sn, DocType.FUNCTION_DICTIONARY_SPEC),))
             self._function_dictionaries.append(FunctionDictionary.from_et(category_et, context))
         else:
             odxraise(f"Encountered unknown ODX category '{category_tag}' (non-conforming dataset?)")
