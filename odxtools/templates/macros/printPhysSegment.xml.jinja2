@@ -8,9 +8,9 @@
 {%- macro printPhysSegment(phys_segment) -%}
 <PHYS-SEGMENT {{-peid.printElementIdAttribs(phys_segment)}}
               {%- if phys_segment.size is defined %}
-              {#- #}xsi:type="SIZEDEF-PHYS-SEGMENT"
+              {#- #} xsi:type="SIZEDEF-PHYS-SEGMENT"
               {%- elif phys_segment.end_address is defined %}
-              {#- #}xsi:type="ADDRDEF-PHYS-SEGMENT"
+              {#- #} xsi:type="ADDRDEF-PHYS-SEGMENT"
               {%- endif %}
               {#- #}>
   {{ peid.printElementIdSubtags(phys_segment)|indent(2) }}
