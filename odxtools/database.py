@@ -141,6 +141,8 @@ class Database:
             context = OdxDocContext(model_version,
                                     (OdxDocFragment(category_sn, DocType.FUNCTION_DICTIONARY),))
             self._function_dictionaries.append(FunctionDictionary.from_et(category_et, context))
+        else:
+            odxraise(f"Encountered unknown ODX category '{category_tag}' (non-conforming dataset?)")
 
     def refresh(self) -> None:
         # Create wrapper objects
