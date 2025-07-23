@@ -52,8 +52,10 @@ class ComponentConnector:
         result = {}
 
         if self.diag_object_connector_ref is None:
-            assert self.diag_object_connector is not None
-            result.update(self.diag_object_connector._build_odxlinks())
+            if self.diag_object_connector is None:
+                odxraise()
+            else:
+                result.update(self.diag_object_connector._build_odxlinks())
 
         return result
 
@@ -75,5 +77,8 @@ class ComponentConnector:
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         if self.diag_object_connector_ref is None:
-            assert self.diag_object_connector is not None
+            if self.diag_object_connector is None:
+                odxraise()
+                return
+
             self.diag_object_connector._resolve_snrefs(context)
