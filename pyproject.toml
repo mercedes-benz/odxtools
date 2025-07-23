@@ -117,7 +117,6 @@ known-first-party = ["odxtools"]
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F401"]  # unused imports
 "tests/test_ecu_config.py" = ["W291", "W293"]  # trailing whitespace; empty line contains white space
-"tests/test_function_dictionary.py" = ["W291", "W293"]  # trailing whitespace; empty line contains white space
 
 [tool.yapf]
 based_on_style = "yapf"
