@@ -1,9 +1,18 @@
 # SPDX-License-Identifier: MIT
+import inspect
+import re
+from pathlib import Path
+from typing import Any
 from xml.etree import ElementTree
 
+import jinja2
+
+import odxtools
 from examples.somersaultecu import database as somersault_db
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import DocType, OdxDocFragment
+from odxtools.writepdxfile import (jinja2_odxraise_helper, make_bool_xml_attrib, make_ref_attribs,
+                                   make_xml_attrib, set_category_docfrag, set_layer_docfrag)
 
 from .test_multiple_ecu_jobs import multiple_ecu_job_et
 from .test_vehicle_info_spec import vehicle_info_spec_et
@@ -256,3 +265,40 @@ def test_create_function_dictionary_from_et() -> None:
     assert fng.function_nodes.function_node0 is not None
     assert len(fng.function_node_groups) == 1
     assert fng.function_node_groups.function_node_group_nested is not None
+
+
+def test_write_function_dictionary() -> None:
+    somersault_db._function_dictionaries = NamedItemList()
+    somersault_db._vehicle_info_specs = NamedItemList()
+    somersault_db._multiple_ecu_job_specs = NamedItemList()
+    somersault_db.add_xml_tree(function_dictionary_et)
+    somersault_db.add_xml_tree(vehicle_info_spec_et)
+    somersault_db.add_xml_tree(multiple_ecu_job_et)
+    somersault_db.refresh()
+    assert len(somersault_db.function_dictionaries) == 1
+
+    __module_filename = inspect.getsourcefile(odxtools)
+    assert isinstance(__module_filename, str)
+    test_jinja_vars: dict[str, Any] = {}
+    test_jinja_vars["function_dictionary"] = somersault_db.function_dictionaries[0]
+    templates_dir = Path(__module_filename).parent / "templates"
+    jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
+    jinja_env.globals["odxraise"] = jinja2_odxraise_helper
+    jinja_env.globals["make_xml_attrib"] = make_xml_attrib
+    jinja_env.globals["make_bool_xml_attrib"] = make_bool_xml_attrib
+    jinja_env.globals["set_category_docfrag"] = lambda cname, ctype: set_category_docfrag(
+        test_jinja_vars, cname, ctype)
+    jinja_env.globals["set_layer_docfrag"] = lambda lname: set_layer_docfrag(test_jinja_vars, lname)
+    jinja_env.globals["make_ref_attribs"] = lambda ref: make_ref_attribs(test_jinja_vars, ref)
+    jinja_env.globals["getattr"] = getattr
+    jinja_env.globals["hasattr"] = hasattr
+
+    template = jinja_env.get_template("function_dictionary.odx-fd.xml.jinja2")
+    rawodx: str = template.render(test_jinja_vars)
+
+    rawodx2 = '\n'.join(rawodx.split("\n")[0:1] + rawodx.split("\n")[2:])
+    expected_xml = function_dictionary_xml_str.replace(" ", "").upper()
+    expected_xml = re.sub(r"<!--.*-->\s*", "", expected_xml, flags=re.DOTALL)
+    actual_xml = rawodx2.replace(" ", "").upper()
+
+    assert expected_xml == actual_xml

@@ -271,6 +271,21 @@ def write_pdx_file(
 
             del jinja_vars["vehicle_info_spec"]
 
+        # write the function dictionary objects
+        function_dictionary_tpl = jinja_env.get_template("function_dictionary.odx-fd.xml.jinja2")
+        for function_dictionary in database.function_dictionaries:
+            zf_file_name = f"{function_dictionary.short_name}.odx-v"
+            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+            zf_mime_type = "application/x-asam.odx.odx-fd"
+
+            jinja_vars["function_dictionary"] = function_dictionary
+
+            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
+
+            zf.writestr(zf_file_name, function_dictionary_tpl.render(**jinja_vars))
+
+            del jinja_vars["function_dictionary"]
+
         # write the index.xml file
         jinja_vars["file_index"] = file_index
         index_tpl = jinja_env.get_template("index.xml.jinja2")

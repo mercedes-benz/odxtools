@@ -1,0 +1,13 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- macro printFunctionDiagCommConnector(fdcc) -%}
+<FUNCTION-DIAG-COMM-CONNECTOR>
+   {%- if fdcc.logical_link_ref is not none %}
+   <LOGICAL-LINK-REF {{make_ref_attribs(fdcc.logical_link_ref)}} />
+   {%- endif %}
+   <DIAG-COMM-REF {{make_ref_attribs(fdcc.diag_comm_ref)}} />
+</FUNCTION-DIAG-COMM-CONNECTOR>
+{%- endmacro -%}

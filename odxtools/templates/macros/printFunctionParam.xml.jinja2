@@ -1,0 +1,40 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printDOP.xml.jinja2') as pdop %}
+{%- import('macros/printFunctionDiagCommConnector.xml.jinja2') as pfdcc %}
+
+{%- macro printFunctionInParam(function_in_param) -%}
+<FUNCTION-IN-PARAM>
+   {{peid.printElementIdSubtags(function_in_param) | indent(2) -}}
+   {%- if function_in_param.unit_ref is not none %}
+   <UNIT-REF {{make_ref_attribs(function_in_param.unit_ref)}} />
+   {%- endif -%}
+   {{pdop.printPhysicalType(function_in_param.physical_type) | indent(2)}}
+   {%- if function_in_param.in_param_if_snref is not none %}
+   <IN-PARAM-IF-SNREF SHORT-NAME="{{function_in_param.in_param_if_snref}}" />
+   {%- endif %}
+   {%- if function_in_param.function_diag_comm_connector is not none %}
+   {{pfdcc.printFunctionDiagCommConnector(function_in_param.function_diag_comm_connector)
+   | indent(2)}} {%- endif %}
+</FUNCTION-IN-PARAM>
+{%- endmacro -%}
+
+{%- macro printFunctionOutParam(function_out_param) -%}
+<FUNCTION-OUT-PARAM>
+   {{peid.printElementIdSubtags(function_out_param) | indent(2)}}
+   {%- if function_out_param.unit_ref is not none %}
+   <UNIT-REF {{make_ref_attribs(function_out_param.unit_ref)}} />
+   {%- endif -%}
+   {{pdop.printPhysicalType(function_out_param.physical_type) | indent(2)}}
+   {%- if function_out_param.out_param_if_snref is not none %}
+   <OUT-PARAM-IF-SNREF SHORT-NAME="{{function_out_param.out_param_if_snref}}" />
+   {%- endif %}
+   {%- if function_out_param.function_diag_comm_connector is not none %}
+   {{pfdcc.printFunctionDiagCommConnector(function_out_param.function_diag_comm_connector) | indent(2)}}
+   {%- endif %}
+</FUNCTION-OUT-PARAM>
+{%- endmacro -%}
