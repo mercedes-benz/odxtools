@@ -67,7 +67,7 @@ class SubComponentParamConnector(IdentifiableElement):
             **kwargs)
 
     def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
-        return {}
+        return {self.odx_id: self}
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
         pass
