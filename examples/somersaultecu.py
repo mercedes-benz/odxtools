@@ -845,8 +845,6 @@ somersault_global_negative_responses = {
 }
 
 # tables
-flip_quality_table_id = OdxLinkId("somersault.table.flip_quality", doc_frags)
-flip_quality_table_ref = OdxLinkRef.from_id(flip_quality_table_id)
 somersault_tables = {
     "last_flip_details":
         Table(
