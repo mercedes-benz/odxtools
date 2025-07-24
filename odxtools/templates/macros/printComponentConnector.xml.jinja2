@@ -1,0 +1,57 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printSubComponent.xml.jinja2') as psc %}
+{%- import('macros/printFunctionDiagCommConnector.xml.jinja2') as pfdcc %}
+
+{%- macro printComponentConnector(cc) -%}
+<COMPONENT-CONNECTOR>
+  {%- if cc.ecu_variant_refs %}
+  <ECU-VARIANT-REFS>
+    {%- for ecuv_ref in cc.ecu_variant_refs %}
+    <ECU-VARIANT-REF {{make_ref_attribs(ecuv_ref)}} />
+    {%- endfor %}
+  </ECU-VARIANT-REFS>
+  {%- endif %}
+  {%- if cc.base_variant_ref is not none %}
+  <BASE-VARIANT-REF {{make_ref_attribs(cc.base_variant_ref)}} />
+  {%- endif %}
+  {%- if cc.diag_object_connector_ref is not none %}
+  <DIAG-OBJECT-CONNECTOR-REF {{make_ref_attribs(cc.diag_object_connector_ref)}} />
+  {%- else %}
+  <DIAG-OBJECT-CONNECTOR {{peid.printElementIdAttribs(cc.diag_object_connector)}}>
+    {%- set doc = cc.diag_object_connector %}
+    {{peid.printElementIdSubtags(doc)|indent(4)}}
+    {%- if doc.function_diag_comm_connectors %}
+    <FUNCTION-DIAG-COMM-CONNECTORS>
+      {%- for fdcc in doc.function_diag_comm_connectors %}
+      {{pfdcc.printFunctionDiagCommConnector(fdcc)|indent(4)}}
+      {%- endfor %}
+    </FUNCTION-DIAG-COMM-CONNECTORS>
+    {%- endif %}
+    {%- if doc.table_row_connectors %}
+    <TABLE-ROW-CONNECTORS>
+      {%- for tr_conn in doc.table_row_connectors %}
+      {{ psc.printTableRowConnector(tr_conn)|indent(4) }}
+      {%- endfor %}
+    </TABLE-ROW-CONNECTORS>
+    {%- endif %}
+    {%- if doc.env_data_connectors %}
+    <ENV-DATA-CONNECTORS>
+      {%- for ed_conn in doc.env_data_connectors %}
+      {%- endfor %}
+    </ENV-DATA-CONNECTORS>
+    {%- endif %}
+    {%- if doc.dtc_connectors %}
+    <DTC-CONNECTORS>
+      {%- for ed_conn in cc.dtc_connectors %}
+      {%- endfor %}
+    </DTC-CONNECTORS>
+    {%- endif %}
+  </DIAG-OBJECT-CONNECTOR>
+  {%- endif %}
+</COMPONENT-CONNECTOR>
+{%- endmacro -%}

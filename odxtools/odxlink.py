@@ -20,6 +20,9 @@ class DocType(Enum):
     VEHICLE_INFO_SPEC = "VEHICLE-INFO-SPEC"
     COMPARAM_SUBSET = "COMPARAM-SUBSET"
     ECU_CONFIG = "ECU-CONFIG"
+    # be aware that the ODX category object contained by
+    # FUNCTION-DICTIONARY-SPEC documents is called
+    # FUNCTION-DICTIONARY! (quirk of the standard?)
     FUNCTION_DICTIONARY_SPEC = "FUNCTION-DICTIONARY-SPEC"
 
 

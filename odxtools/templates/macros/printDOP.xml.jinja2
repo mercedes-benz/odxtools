@@ -36,7 +36,7 @@
 </DIAG-CODED-TYPE>
 {%- endmacro %}
 
-{%- macro printPhysicalType(physical_type) %}
+{%- macro printPhysicalType(physical_type) -%}
 {%- if physical_type.display_radix is not none %}
 <PHYSICAL-TYPE BASE-DATA-TYPE="{{physical_type.base_data_type.value}}" DISPLAY-RADIX="{{physical_type.display_radix.name}}" />
 {%- elif physical_type.precision is not none %}

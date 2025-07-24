@@ -1,0 +1,41 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+ #
+ # This template writes an .odx-e file containing an ECU-CONFIG description
+ # for variant coding.
+-#}
+{%- import('macros/printOdxCategory.xml.jinja2') as poc %}
+{%- import('macros/printFunctionNode.xml.jinja2') as pfn %}
+{%- import('macros/printAudience.xml.jinja2') as paud %}
+{#- -#}
+
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- Written using odxtools {{odxtools_version}} -->
+<ODX MODEL-VERSION="2.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="odx.xsd">
+  {{- set_category_docfrag(function_dictionary.short_name, "FUNCTION-DICTIONARY-SPEC") }}
+  <FUNCTION-DICTIONARY {{- poc.printOdxCategoryAttribs(function_dictionary) }}>
+    {{- poc.printOdxCategorySubtags(function_dictionary)|indent(4) }}
+    {%- if function_dictionary.function_nodes %}
+    <FUNCTION-NODES>
+      {%- for function_node in function_dictionary.function_nodes %}
+      {{ pfn.printFunctionNode(function_node) | indent(6) }}
+      {%- endfor %}
+    </FUNCTION-NODES>
+    {%- endif %}
+    {%- if function_dictionary.function_node_groups %}
+    <FUNCTION-NODE-GROUPS>
+      {%- for function_node_group in function_dictionary.function_node_groups %}
+      {{ pfn.printFunctionNodeGroup(function_node_group) | indent(6) }}
+      {%- endfor %}
+    </FUNCTION-NODE-GROUPS>
+    {%- endif %}
+    {%- if function_dictionary.additional_audiences %}
+    <ADDITIONAL-AUDIENCES>
+      {%- for additional_audience in function_dictionary.additional_audiences %}
+      {{ paud.printAdditionalAudience(additional_audience) | indent(6) }}
+      {%- endfor %}
+    </ADDITIONAL-AUDIENCES>
+    {%- endif %}
+  </FUNCTION-DICTIONARY>
+</ODX>
