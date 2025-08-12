@@ -299,3 +299,33 @@ def print_dl_metrics(variants: list[DiagLayer]) -> None:
                       str(len(ddds.data_object_props)),
                       str(len(getattr(variant, "comparams_refs", []))))
     rich_print(table)
+def print_change_metrics(metrics_results: list[dict]) -> None:
+    """Print new/deleted/renamed/changed counts between files."""
+
+    table = RichTable(title="Change Metrics", show_header=True, header_style="bold cyan", border_style="blue", show_lines=True)
+    table.add_column("File Comparison", style="green")
+    table.add_column("Diag Layer", style="magenta")
+    table.add_column("Variant Type", style="magenta")
+    table.add_column("Variants Added", justify="right", style="yellow")
+    table.add_column("Variants Changed", justify="right", style="yellow")
+    table.add_column("Variants Deleted", justify="right", style="yellow")
+    table.add_column("Services Added", justify="right", style="yellow")
+    table.add_column("Services Changed", justify="right", style="yellow")
+    table.add_column("Services Deleted", justify="right", style="yellow")
+    table.add_column("Changed Parameters", justify="right", style="yellow")
+#
+    for m in metrics_results:
+        file_pair = f"{m['file_a']} --> {m['file_b']}"
+        table.add_row(
+            file_pair,
+            str(m["diag_layer"]),
+            str(m["diag_layer_type"]),
+            str(m["num_variants_added"]),
+            str(m["num_variants_changed"]),
+            str(m["num_variants_deleted"]),
+            str(m["num_new_services"]),
+            str(m["num_deleted_services"]),
+            str(m["num_renamed_services"]),
+            str(m["num_changed_parameters"])
+        )
+    rich_print(table)
