@@ -5,7 +5,7 @@
 
 {%- import('macros/printSpecialData.xml.jinja2') as psd %}
 
-{%- macro printAdminData(admin_data) %}
+{%- macro printAdminData(admin_data) -%}
 <ADMIN-DATA>
  {%- if admin_data.language is not none %}
  <LANGUAGE>{{admin_data.language|e}}</LANGUAGE>

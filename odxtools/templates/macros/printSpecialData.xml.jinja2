@@ -5,7 +5,7 @@
 
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 
-{%- macro printSpecialData(sd) %}
+{%- macro printSpecialData(sd) -%}
 <SD
  {%- if sd.semantic_info is not none %}
 {#- #} SI="{{sd.semantic_info}}"
@@ -16,36 +16,36 @@
  {#- -#}>{{sd.value|e}}</SD>
 {%- endmacro %}
 
-{%- macro printSdgCaption(sdg_caption) %}
+{%- macro printSdgCaption(sdg_caption) -%}
 <SDG-CAPTION {{-peid.printElementIdAttribs(sdg_caption)}}>
  {{ peid.printElementIdSubtags(sdg_caption)|indent(1) }}
 </SDG-CAPTION>
 {%- endmacro %}
 
-{%- macro printSpecialDataGroup(sdg) %}
+{%- macro printSpecialDataGroup(sdg) -%}
 <SDG {{-make_xml_attrib("SI", sdg.semantic_info)}}>
  {%- if sdg.sdg_caption_ref %}
  <SDG-CAPTION-REF {{make_ref_attribs(sdg.sdg_caption_ref)}} />
  {%- elif sdg.sdg_caption %}
- {{- printSdgCaption(sdg.sdg_caption) | indent(1, first=True) }}
+ {{ printSdgCaption(sdg.sdg_caption) | indent(1) }}
  {%- endif %}
  {%- for sd in sdg.values %}
  {%- if hasattr(sd, "values") %}
  {#- -> nested SDG #}
- {{- printSpecialDataGroup(sd) | indent(1, first=True) }}
+ {{ printSpecialDataGroup(sd) | indent(2) }}
  {%- else %}
- {{- printSpecialData(sd) | indent(1, first=True) }}
+ {{ printSpecialData(sd) | indent(2) }}
  {%- endif %}
  {%- endfor %}
 </SDG>
 {%- endmacro %}
 
 
-{%- macro printSpecialDataGroups(sdgs) %}
+{%- macro printSpecialDataGroups(sdgs) -%}
 {%- if sdgs %}
 <SDGS>
  {%- for sdg in sdgs %}
- {{- printSpecialDataGroup(sdg) | indent(1, first=True) }}
+ {{ printSpecialDataGroup(sdg) | indent(2) }}
  {%- endfor %}
 </SDGS>
 {%- endif %}
