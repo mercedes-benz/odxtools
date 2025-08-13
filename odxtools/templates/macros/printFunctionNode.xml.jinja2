@@ -1,0 +1,82 @@
+{#- -*- mode: sgml; tab-width: 1; indent-tabs-mode: nil -*-
+ #
+ # SPDX-License-Identifier: MIT
+-#}
+
+{%- import('macros/printElementId.xml.jinja2') as peid %}
+{%- import('macros/printSpecialData.xml.jinja2') as psd %}
+{%- import('macros/printAdminData.xml.jinja2') as pad %}
+{%- import('macros/printAudience.xml.jinja2') as paud %}
+{%- import('macros/printFunctionParam.xml.jinja2') as pfp %}
+{%- import('macros/printComponentConnector.xml.jinja2') as pcc %}
+
+{%- macro printBaseFunctionNodeAttribs(base_function_node) %}
+{{-peid.printElementIdAttribs(base_function_node)}}
+{%- endmacro %}
+
+{%- macro printBaseFunctionNodeSubtags(base_function_node) -%}
+{{ peid.printElementIdSubtags(base_function_node) }}
+{%- if base_function_node.audience is not none %}
+{{ paud.printAudience(base_function_node.audience) }}
+{%- endif %}
+{%- if base_function_node.function_in_params %}
+<FUNCTION-IN-PARAMS>
+  {%- for fop in base_function_node.function_in_params %}
+  {{ pfp.printFunctionInParam(fop)|indent(2) }}
+  {%- endfor %}
+</FUNCTION-IN-PARAMS>
+{%- endif %}
+{%- if base_function_node.function_out_params %}
+<FUNCTION-OUT-PARAMS>
+  {%- for fop in base_function_node.function_out_params %}
+  {{ pfp.printFunctionOutParam(fop)|indent(2) }}
+  {%- endfor %}
+</FUNCTION-OUT-PARAMS>
+{%- endif %}
+{%- if base_function_node.component_connectors %}
+<COMPONENT-CONNECTORS>
+  {%- for cc in base_function_node.component_connectors %}
+  {{ pcc.printComponentConnector(cc)|indent(2) }}
+  {%- endfor %}
+</COMPONENT-CONNECTORS>
+{%- endif %}
+{%- if base_function_node.multiple_ecu_job_refs %}
+<MULTIPLE-ECU-JOB-REFS>
+  {%- for mecujr in base_function_node.multiple_ecu_job_refs %}
+  <MULTIPLE-ECU-JOB-REF {{ make_ref_attribs(mecujr) }} />
+  {%- endfor %}
+</MULTIPLE-ECU-JOB-REFS>
+{%- endif %}
+{%- if base_function_node.admin_data is not none %}
+{{ pad.printAdminData(base_function_node.admin_data) }}
+{%- endif %}
+{%- if base_function_node.sdg is not none %}
+{{ psd.printSpecialDataGroup(base_function_node.sdg)|indent(2) }}
+{%- endif %}
+{%- endmacro -%}
+
+{%- macro printFunctionNode(function_node) -%}
+<FUNCTION-NODE {{printBaseFunctionNodeAttribs(function_node)}}>
+  {{ printBaseFunctionNodeSubtags(function_node)|indent(2) }}
+</FUNCTION-NODE>
+{%- endmacro -%}
+
+{%- macro printFunctionNodeGroup(function_node_group) -%}
+<FUNCTION-NODE-GROUP {{printBaseFunctionNodeAttribs(function_node_group)}}>
+  {{ printBaseFunctionNodeSubtags(function_node_group)|indent(2) }}
+  {%- if function_node_group.function_node_refs %}
+  <FUNCTION-NODE-REFS>
+    {%- for function_node_ref in function_node_group.function_node_refs %}
+    <FUNCTION-NODE-REF {{make_ref_attribs(function_node_ref)}} />
+    {%- endfor %}
+  </FUNCTION-NODE-REFS>
+  {%- endif %}
+  {%- if function_node_group.function_node_groups %}
+  <FUNCTION-NODE-GROUPS>
+    {%- for function_node_group in function_node_group.function_node_groups %}
+    {{printFunctionNodeGroup(function_node_group)|indent(4)}}
+    {%- endfor %}
+  </FUNCTION-NODE-GROUPS>
+  {%- endif %}
+</FUNCTION-NODE-GROUP>
+{%- endmacro -%}

@@ -20,7 +20,7 @@
 {%- macro printDiagDataDictionarySpec(ddds) -%}
 <DIAG-DATA-DICTIONARY-SPEC>
   {%- if ddds.admin_data is not none %}
-  {{- pad.printAdminData(ddds.admin_data)|indent(2) }}
+  {{ pad.printAdminData(ddds.admin_data)|indent(2) }}
   {%- endif %}
   {%- if ddds.dtc_dops  %}
   <DTC-DOPS>

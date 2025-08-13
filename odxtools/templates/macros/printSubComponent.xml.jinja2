@@ -6,6 +6,7 @@
 {%- import('macros/printElementId.xml.jinja2') as peid %}
 {%- import('macros/printEcuVariantPattern.xml.jinja2') as pevp %}
 
+
 {%- macro printSubComponentPattern(pat) %}
 <SUB-COMPONENT-PATTERN>
   <MATCHING-PARAMETERS>
@@ -37,7 +38,7 @@
 </SUB-COMPONENT-PARAM-CONNECTOR>
 {%- endmacro %}
 
-{%- macro printTableRowConnector(conn) %}
+{%- macro printTableRowConnector(conn) -%}
 <TABLE-ROW-CONNECTOR>
   {{ peid.printElementIdSubtags(conn)|indent(2) }}
   <TABLE-REF {{make_ref_attribs(conn.table_ref)}} />
