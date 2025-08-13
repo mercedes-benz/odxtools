@@ -710,6 +710,7 @@ def run(args: argparse.Namespace) -> None:
             dl for db in task.databases for dl in db.diag_layers
             if dl.short_name in task.diagnostic_layer_names
         ]
+
         for name in args.variants:
             if name not in task.diagnostic_layer_names:
                 rich_print(f"The variant '{name}' could not be found!")
