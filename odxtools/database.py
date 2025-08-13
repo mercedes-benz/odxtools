@@ -21,6 +21,7 @@ from .diaglayers.protocol import Protocol
 from .ecuconfig import EcuConfig
 from .exceptions import odxraise, odxrequire
 from .flash import Flash
+from .functiondictionary import FunctionDictionary
 from .multipleecujobspec import MultipleEcuJobSpec
 from .nameditemlist import NamedItemList
 from .odxdoccontext import OdxDocContext
@@ -47,6 +48,7 @@ class Database:
         self._vehicle_info_specs = NamedItemList[VehicleInfoSpec]()
         self._flashs = NamedItemList[Flash]()
         self._multiple_ecu_job_specs = NamedItemList[MultipleEcuJobSpec]()
+        self._function_dictionaries = NamedItemList[FunctionDictionary]()
         self._short_name = "odx_database"
 
     def add_pdx_file(self, pdx_file: Union[str, "PathLike[Any]", IO[bytes], ZipFile]) -> None:
@@ -135,6 +137,12 @@ class Database:
             context = OdxDocContext(model_version,
                                     (OdxDocFragment(category_sn, DocType.MULTIPLE_ECU_JOB_SPEC),))
             self._multiple_ecu_job_specs.append(MultipleEcuJobSpec.from_et(category_et, context))
+        elif category_tag == "FUNCTION-DICTIONARY":
+            context = OdxDocContext(model_version, (OdxDocFragment(
+                category_sn, DocType.FUNCTION_DICTIONARY_SPEC),))
+            self._function_dictionaries.append(FunctionDictionary.from_et(category_et, context))
+        else:
+            odxraise(f"Encountered unknown ODX category '{category_tag}' (non-conforming dataset?)")
 
     def refresh(self) -> None:
         # Create wrapper objects
@@ -178,6 +186,9 @@ class Database:
         for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
             multiple_ecu_job_spec._resolve_odxlinks(self._odxlinks)
 
+        for function_dictionary in self.function_dictionaries:
+            function_dictionary._resolve_odxlinks(self._odxlinks)
+
         # resolve short name references for containers which do not do
         # inheritance (we can call directly call _resolve_snrefs())
         context = SnRefContext()
@@ -198,6 +209,8 @@ class Database:
             flash._finalize_init(self, self._odxlinks)
         for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
             multiple_ecu_job_spec._finalize_init(self, self._odxlinks)
+        for function_dictionary in self.function_dictionaries:
+            function_dictionary._finalize_init(self, self._odxlinks)
 
         for subset in self.comparam_subsets:
             subset._resolve_snrefs(context)
@@ -213,6 +226,8 @@ class Database:
             flash._resolve_snrefs(context)
         for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
             multiple_ecu_job_spec._resolve_snrefs(context)
+        for function_dictionary in self.function_dictionaries:
+            function_dictionary._resolve_snrefs(context)
 
     def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
         result: dict[OdxLinkId, Any] = {}
@@ -234,8 +249,12 @@ class Database:
 
         for flash in self.flashs:
             result.update(flash._build_odxlinks())
+
         for multiple_ecu_job_spec in self.multiple_ecu_job_specs:
             result.update(multiple_ecu_job_spec._build_odxlinks())
+
+        for function_dictionary in self.function_dictionaries:
+            result.update(function_dictionary._build_odxlinks())
 
         return result
 
@@ -326,6 +345,10 @@ class Database:
     def multiple_ecu_job_specs(self) -> NamedItemList[MultipleEcuJobSpec]:
         return self._multiple_ecu_job_specs
 
+    @property
+    def function_dictionaries(self) -> NamedItemList[FunctionDictionary]:
+        return self._function_dictionaries
+
     def __repr__(self) -> str:
         return f"Database(model_version={self.model_version}, " \
             f"protocols={[x.short_name for x in self.protocols]}, " \
@@ -336,4 +359,5 @@ class Database:
             f"ecu_configs={repr(self.ecu_configs)}, " \
             f"vehicle_info_specs={repr(self.vehicle_info_specs)}, " \
             f"multiple_ecu_job_specs={repr(self.multiple_ecu_job_specs)}, " \
+            f"function_dictionaries={repr(self.function_dictionaries)}, " \
             f"flashs={repr(self.flashs)})"

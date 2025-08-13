@@ -15,9 +15,9 @@
                   {{-make_bool_xml_attrib("IS-EXECUTABLE", multiple_ecu_job.is_executable_raw)}}>
   {{peid.printElementIdSubtags(multiple_ecu_job)|indent(2) }}
   {%- if multiple_ecu_job.admin_data is not none %}
-  {{- pad.printAdminData(multiple_ecu_job.admin_data)|indent(2) }}
+  {{ pad.printAdminData(multiple_ecu_job.admin_data)|indent(2) }}
   {%- endif %}
-  {{- psd.printSpecialDataGroups(multiple_ecu_job.sdgs)|indent(2, first=True) }}{#- #}
+  {{- psd.printSpecialDataGroups(multiple_ecu_job.sdgs)|indent(2, first=True) }}
   {%- if multiple_ecu_job.functional_class_refs %}
   <FUNCT-CLASS-REFS>
     {%- for fc_ref in multiple_ecu_job.functional_class_refs %}
