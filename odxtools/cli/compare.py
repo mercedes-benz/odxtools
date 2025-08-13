@@ -2,10 +2,11 @@
 # SPDX-License-Identifier: MIT
 
 import argparse
+import json
 import os
 from dataclasses import dataclass, field
 from typing import Any
-import json
+
 from rich import print as rich_print
 from rich.padding import Padding as RichPadding
 from rich.table import Table as RichTable
@@ -22,8 +23,8 @@ from ..parameters.physicalconstantparameter import PhysicalConstantParameter
 from ..parameters.valueparameter import ValueParameter
 from . import _parser_utils
 from ._parser_utils import SubparsersList
-from ._print_utils import (extract_service_tabulation_data, print_dl_metrics,
-                           print_service_parameters, print_change_metrics)
+from ._print_utils import (extract_service_tabulation_data, print_change_metrics, print_dl_metrics,
+                           print_service_parameters)
 
 # name of the tool
 _odxtools_tool_name_ = "compare"
@@ -608,6 +609,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         help="Write comparison results to JSON file.",
     )
 
+
 def run(args: argparse.Namespace) -> None:
 
     task = Comparison()
@@ -708,7 +710,7 @@ def run(args: argparse.Namespace) -> None:
             dl for db in task.databases for dl in db.diag_layers
             if dl.short_name in task.diagnostic_layer_names
         ]
-      #  print("NAMES: ",task.diagnostic_layer_names)
+        #  print("NAMES: ",task.diagnostic_layer_names)
         for name in args.variants:
             if name not in task.diagnostic_layer_names:
                 rich_print(f"The variant '{name}' could not be found!")
@@ -729,7 +731,8 @@ def run(args: argparse.Namespace) -> None:
             )
             task.print_dl_changes(
                 task.compare_diagnostic_layers(dl, task.diagnostic_layers[db_idx + 1]))
-    elif args.folder:
+    #elif args.folder:
+    elif hasattr(args, "folder") and args.folder:
         print("Now printing the pdx files in folder")
         pdx_files = []
         for file in os.listdir(args.folder):
@@ -741,42 +744,43 @@ def run(args: argparse.Namespace) -> None:
         for i in range(len(pdx_files) - 1):
             file_a = pdx_files[i]
             file_b = pdx_files[i + 1]
-            task.databases = load_file(file_a)
-            db_a = task.databases
-            task.databases = load_file(file_b)
-            db_b = task.databases
-            dl_a =db_a.diag_layers
+            task.databases = [load_file(file_a)]
+            db_a = task.databases[0]
+            task.databases = [load_file(file_b)]
+            db_b = task.databases[0]
+            dl_a = db_a.diag_layers
             dl_b = db_b.diag_layers
             names_a = {dl.short_name for dl in dl_a}
             names_b = {dl.short_name for dl in dl_b}
 
             variants_added = names_b - names_a
             variants_deleted = names_a - names_b
-            variants_common = names_a & names_b
             variants_changed_count = 0
             services_changed_set = set()
 
-            diagnostic_layer_names = {dl.short_name for dl in dl_a}.intersection({dl.short_name for dl in dl_b})
-            
+            diagnostic_layer_names = {dl.short_name
+                                      for dl in dl_a}.intersection({dl.short_name
+                                                                    for dl in dl_b})
+
             for name in diagnostic_layer_names:
                 layer_a = next(dl for dl in dl_a if dl.short_name == name)
                 layer_b = next(dl for dl in dl_b if dl.short_name == name)
                 changes = task.compare_diagnostic_layers(layer_a, layer_b)
                 old_names = []
-                new_names = []
                 if getattr(changes, "changed_name_of_service", None):
                     try:
                         old_names = changes.changed_name_of_service[0]
-                        new_names = changes.changed_name_of_service[1]
                     except Exception:
                         # handle different shapes safely
-                        old_names = list(changes.changed_name_of_service)
-                        new_names = []
-
+                        #old_names = list(changes.changed_name_of_service)
+                        old_names = [
+                            item for sublist in changes.changed_name_of_service for item in sublist
+                        ]
                 num_new = len(getattr(changes, "new_services", []) or [])
                 num_deleted = len(getattr(changes, "deleted_services", []) or [])
                 num_renamed = len(old_names)
-                num_changed_params = len(getattr(changes, "changed_parameters_of_service", []) or [])
+                num_changed_params = len(
+                    getattr(changes, "changed_parameters_of_service", []) or [])
 
                 # collect which services had parameter changes (unique)
                 for param_detail in getattr(changes, "changed_parameters_of_service", []) or []:
@@ -788,18 +792,18 @@ def run(args: argparse.Namespace) -> None:
                     variants_changed_count += 1
 
                 summary_results.append({
-                "file_a": os.path.basename(file_a),
-                "file_b": os.path.basename(file_b),
-                "diag_layer": changes.diag_layer,
-                "diag_layer_type": changes.diag_layer_type,
-                "num_variants_added": len(variants_added),
-                "num_variants_changed": variants_changed_count,
-                "num_variants_deleted": len(variants_deleted),
-                "num_new_services": len(changes.new_services),
-                "num_deleted_services": len(changes.deleted_services),
-                "num_renamed_services": len(changes.changed_name_of_service[0]),
-                "num_changed_parameters": len(changes.changed_parameters_of_service)
-            })
+                    "file_a": os.path.basename(file_a),
+                    "file_b": os.path.basename(file_b),
+                    "diag_layer": changes.diag_layer,
+                    "diag_layer_type": changes.diag_layer_type,
+                    "num_variants_added": len(variants_added),
+                    "num_variants_changed": variants_changed_count,
+                    "num_variants_deleted": len(variants_deleted),
+                    "num_new_services": len(changes.new_services),
+                    "num_deleted_services": len(changes.deleted_services),
+                    "num_renamed_services": len(changes.changed_name_of_service[0]),
+                    "num_changed_parameters": len(changes.changed_parameters_of_service)
+                })
             services_a = {srv.short_name for srv in layer_a.services}
             services_b = {srv.short_name for srv in layer_b.services}
             print("Services in file A:", services_a)
@@ -813,9 +817,4 @@ def run(args: argparse.Namespace) -> None:
             if args.output:
                 with open(args.output, "w") as f:
                     json.dump(summary_results, f, indent=4)
-    if args.output:
-        with open(args.output, "w", encoding="utf-8") as f:
-            json.dump(summary_results, f, indent=4)
-        rich_print(f"[green]Results written to {args.output}[/green]")
-    print_change_metrics(summary_results)
-    
+        print_change_metrics(summary_results)
