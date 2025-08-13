@@ -710,7 +710,6 @@ def run(args: argparse.Namespace) -> None:
             dl for db in task.databases for dl in db.diag_layers
             if dl.short_name in task.diagnostic_layer_names
         ]
-        #  print("NAMES: ",task.diagnostic_layer_names)
         for name in args.variants:
             if name not in task.diagnostic_layer_names:
                 rich_print(f"The variant '{name}' could not be found!")
@@ -731,15 +730,15 @@ def run(args: argparse.Namespace) -> None:
             )
             task.print_dl_changes(
                 task.compare_diagnostic_layers(dl, task.diagnostic_layers[db_idx + 1]))
-    #elif args.folder:
-    elif hasattr(args, "folder") and args.folder:
-        print("Now printing the pdx files in folder")
+
+    elif getattr(args, "folder", None):
         pdx_files = []
         for file in os.listdir(args.folder):
             if file.lower().endswith(".pdx"):
                 full_path = os.path.join(args.folder, file)
                 pdx_files.append(full_path)
         pdx_files.sort()
+        print(f"PDX files in folder {args.folder}: {','.join(pdx_files)}")
         summary_results = []
         for i in range(len(pdx_files) - 1):
             file_a = pdx_files[i]
@@ -771,8 +770,6 @@ def run(args: argparse.Namespace) -> None:
                     try:
                         old_names = changes.changed_name_of_service[0]
                     except Exception:
-                        # handle different shapes safely
-                        #old_names = list(changes.changed_name_of_service)
                         old_names = [
                             item for sublist in changes.changed_name_of_service for item in sublist
                         ]
@@ -784,7 +781,6 @@ def run(args: argparse.Namespace) -> None:
 
                 # collect which services had parameter changes (unique)
                 for param_detail in getattr(changes, "changed_parameters_of_service", []) or []:
-                    # param_detail.service.short_name exists in your output above
                     services_changed_set.add(param_detail.service.short_name)
 
                 # if anything changed in this variant mark it as changed
