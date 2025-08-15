@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 import argparse
+import json
 import os
 from dataclasses import dataclass, field
 from typing import Any
@@ -22,7 +23,7 @@ from ..parameters.physicalconstantparameter import PhysicalConstantParameter
 from ..parameters.valueparameter import ValueParameter
 from . import _parser_utils
 from ._parser_utils import SubparsersList
-from ._print_utils import (extract_service_tabulation_data, print_dl_metrics,
+from ._print_utils import (extract_service_tabulation_data, print_change_metrics, print_dl_metrics,
                            print_service_parameters)
 
 # name of the tool
@@ -303,7 +304,7 @@ class Comparison(Display):
         else:
             changed_params += "request parameter list, "
             # infotext
-            information.append(f"List of request parameters for service '{service2.short_name}' "
+            information.append(f"list of request parameters for service '{service2.short_name}' "
                                f"is not identical.\n")
 
             # table
@@ -312,7 +313,7 @@ class Comparison(Display):
             param_list2 = [] if service2.request is None else service2.request.parameters
 
             information.append({
-                "List": ["Old list", "New list"],
+                "list": ["Old list", "New list"],
                 "Values": [f"\\{param_list1}", f"\\{param_list2}"]
             })
 
@@ -340,11 +341,11 @@ class Comparison(Display):
                             changed_params += "positive response parameter list, "
                             # infotext
                             information.append(
-                                f"List of positive response parameters for service '{service2.short_name}' is not identical."
+                                f"list of positive response parameters for service '{service2.short_name}' is not identical."
                             )
                             # table
                             information.append({
-                                "List": ["Old list", "New list"],
+                                "list": ["Old list", "New list"],
                                 "Values": [str(response1.parameters),
                                            str(response2.parameters)]
                             })
@@ -352,10 +353,10 @@ class Comparison(Display):
             changed_params += "positive responses list, "
             # infotext
             information.append(
-                f"List of positive responses for service '{service2.short_name}' is not identical.")
+                f"list of positive responses for service '{service2.short_name}' is not identical.")
             # table
             information.append({
-                "List": ["Old list", "New list"],
+                "list": ["Old list", "New list"],
                 "Values": [str(service1.positive_responses),
                            str(service2.positive_responses)]
             })
@@ -382,11 +383,11 @@ class Comparison(Display):
                             changed_params += "positive response parameter list, "
                             # infotext
                             information.append(
-                                f"List of positive response parameters for service '{service2.short_name}' is not identical.\n"
+                                f"list of positive response parameters for service '{service2.short_name}' is not identical.\n"
                             )
                             # table
                             information.append({
-                                "List": ["Old list", "New list"],
+                                "list": ["Old list", "New list"],
                                 "Values": [str(response1.parameters),
                                            str(response2.parameters)]
                             })
@@ -394,11 +395,11 @@ class Comparison(Display):
             changed_params += "negative responses list, "
             # infotext
             information.append(
-                f"List of positive responses for service '{service2.short_name}' is not identical.\n"
+                f"list of positive responses for service '{service2.short_name}' is not identical.\n"
             )
             # table
             information.append({
-                "List": ["Old list", "New list"],
+                "list": ["Old list", "New list"],
                 "Values": [str(service1.negative_responses),
                            str(service2.negative_responses)]
             })
@@ -584,12 +585,29 @@ def add_subparser(subparsers: SubparsersList) -> None:
         required=False,
         help="Don't show all service parameter details",
     )
-
     # TODO
     # Idea: provide folder with multiple pdx files as argument
     # -> load all pdx files in folder, sort them alphabetically, compare databases pairwaise
     # -> calculate metrics (number of added services, number of changed services, number of removed services, total number of services per ecu variant, ...)
     # -> display metrics graphically
+    parser.add_argument(
+        "-f",
+        "--folder",
+        #action="store_false",
+        #default=True,
+        metavar="FOLDER",
+        required=False,
+        help="Provide folder path containing multiple PDX files for pairwise comparison.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        #action="store_false",
+        #default=True,
+        metavar="RESULT",
+        required=False,
+        help="Write comparison results to JSON file.",
+    )
 
 
 def run(args: argparse.Namespace) -> None:
@@ -598,7 +616,6 @@ def run(args: argparse.Namespace) -> None:
     task.param_detailed = args.no_details
 
     db_names = [args.pdx_file if isinstance(args.pdx_file, str) else str(args.pdx_file[0])]
-
     if args.database and args.variants:
         # compare specified databases, consider only specified variants
 
@@ -715,6 +732,86 @@ def run(args: argparse.Namespace) -> None:
             task.print_dl_changes(
                 task.compare_diagnostic_layers(dl, task.diagnostic_layers[db_idx + 1]))
 
-    else:
-        # no databases & no variants specified
-        rich_print("Please specify either a database or variant for a comparison")
+    elif getattr(args, "folder", None):
+        pdx_files = []
+        for file in os.listdir(args.folder):
+            if file.lower().endswith(".pdx"):
+                full_path = os.path.join(args.folder, file)
+                pdx_files.append(full_path)
+        pdx_files.sort()
+        print(f"PDX files in folder {args.folder}: {','.join(pdx_files)}")
+        summary_results = []
+        for i in range(len(pdx_files) - 1):
+            file_a = pdx_files[i]
+            file_b = pdx_files[i + 1]
+            task.databases = [load_file(file_a)]
+            db_a = task.databases[0]
+            task.databases = [load_file(file_b)]
+            db_b = task.databases[0]
+            dl_a = db_a.diag_layers
+            dl_b = db_b.diag_layers
+            names_a = {dl.short_name for dl in dl_a}
+            names_b = {dl.short_name for dl in dl_b}
+
+            variants_added = names_b - names_a
+            variants_deleted = names_a - names_b
+            variants_changed_count = 0
+            services_changed_set = set()
+
+            diagnostic_layer_names = {dl.short_name
+                                      for dl in dl_a}.intersection({dl.short_name
+                                                                    for dl in dl_b})
+
+            for name in diagnostic_layer_names:
+                layer_a = next(dl for dl in dl_a if dl.short_name == name)
+                layer_b = next(dl for dl in dl_b if dl.short_name == name)
+                changes = task.compare_diagnostic_layers(layer_a, layer_b)
+                old_names = []
+                if getattr(changes, "changed_name_of_service", None):
+                    try:
+                        old_names = changes.changed_name_of_service[0]
+                    except Exception:
+                        old_names = [
+                            item for sublist in changes.changed_name_of_service for item in sublist
+                        ]
+                num_new = len(getattr(changes, "new_services", []) or [])
+                num_deleted = len(getattr(changes, "deleted_services", []) or [])
+                num_renamed = len(old_names)
+                num_changed_params = len(
+                    getattr(changes, "changed_parameters_of_service", []) or [])
+
+                # collect which services had parameter changes (unique)
+                for param_detail in getattr(changes, "changed_parameters_of_service", []) or []:
+                    services_changed_set.add(param_detail.service.short_name)
+
+                # if anything changed in this variant mark it as changed
+                if num_new or num_deleted or num_renamed or num_changed_params:
+                    variants_changed_count += 1
+
+                summary_results.append({
+                    "file_a": os.path.basename(file_a),
+                    "file_b": os.path.basename(file_b),
+                    "diag_layer": changes.diag_layer,
+                    "diag_layer_type": changes.diag_layer_type,
+                    "num_variants_added": len(variants_added),
+                    "num_variants_changed": variants_changed_count,
+                    "num_variants_deleted": len(variants_deleted),
+                    "num_new_services": len(changes.new_services),
+                    "num_deleted_services": len(changes.deleted_services),
+                    "num_renamed_services": len(changes.changed_name_of_service[0]),
+                    "num_changed_parameters": len(changes.changed_parameters_of_service)
+                })
+            services_a = {srv.short_name for srv in layer_a.services}
+            services_b = {srv.short_name for srv in layer_b.services}
+            print("Services in file A:", services_a)
+            print("Services in file B:", services_b)
+
+            print("New services:", services_b - services_a)
+            print("Deleted services:", services_a - services_b)
+            print_dl_metrics([layer_a, layer_b])
+
+            print(json.dumps(summary_results, indent=4))
+            if args.output:
+                with open(args.output, "w") as f:
+                    json.dump(summary_results, f, indent=4)
+        print_change_metrics(summary_results)
