@@ -498,6 +498,7 @@ class Comparison(Display):
             renamed_services=renamed_services,
             services_with_parameter_changes=services_with_param_changes)
         dl1_service_names = [service.short_name for service in dl1.services]
+        dl2_service_names = [service.short_name for service in dl2.services]
 
         dl1_request_prefixes: list[bytes | bytearray | None] = [
             None if s.request is None else s.request.coded_const_prefix() for s in dl1.services
@@ -515,18 +516,14 @@ class Comparison(Display):
                 rq_prefix = service1.request.coded_const_prefix()
 
             if service1 not in dl2.services:
-                if rq_prefix is None or rq_prefix not in dl2_request_prefixes:
-                    # TODO: this will not work in cases where the constant
-                    # prefix of a request was modified...
 
-                    service_spec.new_services.append(service1)
-            # check whether names of diagnostic services have changed
-            elif service1 not in dl2.services:
+                # check whether names of diagnostic services have changed
+                # (this will not work in cases where the constant prefix of a request was modified)
+                if (rq_prefix in dl2_request_prefixes and
+                        service1.short_name not in dl2_service_names):
 
-                if rq_prefix is None or rq_prefix in dl2_request_prefixes:
                     # get related diagnostic service for request
-                    service2_idx = dl2_request_prefixes.index(rq_prefix)
-                    service2 = dl2.services[service2_idx]
+                    service2 = dl2.services[dl2_request_prefixes.index(rq_prefix)]
 
                     # save information about changes in ServiceDiff object
                     service_spec.renamed_services.append(
@@ -540,16 +537,17 @@ class Comparison(Display):
                     if (detailed_information := self.compare_services(service1, service2)):
                         service_spec.services_with_parameter_changes.append(detailed_information)
 
+                elif rq_prefix not in dl2_request_prefixes or service1.short_name not in dl2_service_names:
+                    service_spec.new_services.append(service1)
+
             for service2_idx, service2 in enumerate(dl2.services):
 
                 # check for deleted diagnostic services
                 if service2.short_name not in dl1_service_names and dl2_request_prefixes[
                         service2_idx] not in dl1_request_prefixes:
 
-                    deleted_list = service_spec.deleted_services
-                    assert isinstance(deleted_list, list)
-                    if service2 not in deleted_list:
-                        service_spec.deleted_services.append(service2)
+                    if service2 not in (deleted_list := service_spec.deleted_services):
+                        deleted_list.append(service2)
 
                 if service1.short_name == service2.short_name:
                     # compare request, pos. response and neg. response parameters of both diagnostic services &
