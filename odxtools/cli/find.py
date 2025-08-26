@@ -104,11 +104,12 @@ def add_subparser(subparsers: SubparsersList) -> None:
     )
 
     parser.add_argument(
-        "-nd",
-        "--no-details",
+        "-V",
+        "--verbose",
         action="store_true",
+        default=False,
         required=False,
-        help="Don't show all service details",
+        help="Show all service details",
     )
 
     parser.add_argument(
@@ -128,5 +129,5 @@ def run(args: argparse.Namespace) -> None:
         odxdb,
         ecu_variants=None if variants == "all" else variants,
         service_names=args.service_names,
-        print_params=not args.no_details,
+        print_params=args.verbose,
         allow_unknown_bit_lengths=args.relaxed_output)

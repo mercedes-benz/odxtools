@@ -77,8 +77,7 @@ class SpecsChangesVariants:
 
 class Display:
 
-    param_detailed: bool
-    obj_detailed: bool
+    detailed: bool
 
     def __init__(self) -> None:
         pass
@@ -155,7 +154,7 @@ class Display:
                                       (str(value.new_value) if value.new_value else ""))
                     rich_print(RichPadding(table, pad=(0, 0, 0, 3)))
 
-                if self.param_detailed:
+                if self.detailed:
                     print_service_parameters(item.service, allow_unknown_bit_lengths=True)
 
     def print_database_changes(self, changes_variants: SpecsChangesVariants) -> None:
@@ -636,12 +635,12 @@ def add_subparser(subparsers: SubparsersList) -> None:
     )
 
     parser.add_argument(
-        "-nd",
-        "--no-details",
-        action="store_false",
-        default=True,
+        "-V",
+        "--verbose",
+        action="store_true",
+        default=False,
         required=False,
-        help="Don't show all service parameter details",
+        help="Show all variant and service details",
     )
 
     # TODO
@@ -654,7 +653,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
 def run(args: argparse.Namespace) -> None:
 
     task = Comparison()
-    task.param_detailed = args.no_details
+    task.detailed = args.verbose
 
     db_names = [args.pdx_file if isinstance(args.pdx_file, str) else str(args.pdx_file[0])]
 
@@ -686,18 +685,19 @@ def run(args: argparse.Namespace) -> None:
             rich_print(
                 f" (compared to [orange1]'{os.path.basename(db_names[db_idx + 1])}'[/orange1])")
 
-            task.print_dl_overview(
-                filename=os.path.basename(db_names[0]),
-                dls=[
-                    variant for variant in task.databases[0].diag_layers
-                    if variant.short_name in task.diagnostic_layer_names
-                ])
-            task.print_dl_overview(
-                filename=os.path.basename(db_names[db_idx + 1]),
-                dls=[
-                    variant for variant in task.databases[db_idx + 1].diag_layers
-                    if variant.short_name in task.diagnostic_layer_names
-                ])
+            if task.detailed:
+                task.print_dl_overview(
+                    filename=os.path.basename(db_names[0]),
+                    dls=[
+                        variant for variant in task.databases[0].diag_layers
+                        if variant.short_name in task.diagnostic_layer_names
+                    ])
+                task.print_dl_overview(
+                    filename=os.path.basename(db_names[db_idx + 1]),
+                    dls=[
+                        variant for variant in task.databases[db_idx + 1].diag_layers
+                        if variant.short_name in task.diagnostic_layer_names
+                    ])
 
             task.print_database_changes(
                 task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
@@ -727,11 +727,12 @@ def run(args: argparse.Namespace) -> None:
             rich_print(
                 f" (compared to [orange1]'{os.path.basename(db_names[db_idx + 1])}'[/orange1])")
 
-            task.print_dl_overview(
-                filename=os.path.basename(db_names[0]), dls=list(task.databases[0].diag_layers))
-            task.print_dl_overview(
-                filename=os.path.basename(db_names[db_idx + 1]),
-                dls=list(task.databases[db_idx + 1].diag_layers))
+            if task.detailed:
+                task.print_dl_overview(
+                    filename=os.path.basename(db_names[0]), dls=list(task.databases[0].diag_layers))
+                task.print_dl_overview(
+                    filename=os.path.basename(db_names[db_idx + 1]),
+                    dls=list(task.databases[db_idx + 1].diag_layers))
 
             task.print_database_changes(
                 task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
@@ -755,10 +756,11 @@ def run(args: argparse.Namespace) -> None:
                 rich_print(f"The variant [green3]'{name}'[/green3] could not be found!")
                 return
 
-        task.print_dl_overview(
-            filename=os.path.basename(
-                args.pdx_file if isinstance(args.pdx_file, str) else str(args.pdx_file[0])),
-            dls=task.diagnostic_layers)
+        if task.detailed:
+            task.print_dl_overview(
+                filename=os.path.basename(
+                    args.pdx_file if isinstance(args.pdx_file, str) else str(args.pdx_file[0])),
+                dls=task.diagnostic_layers)
 
         for db_idx, dl in enumerate(task.diagnostic_layers):
             if db_idx + 1 >= len(task.diagnostic_layers):
