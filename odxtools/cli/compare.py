@@ -83,6 +83,11 @@ class Display:
     def __init__(self) -> None:
         pass
 
+    def print_dl_overview(self, filename: str, dls: list[DiagLayer]) -> None:
+        rich_print()
+        rich_print(f"Overview of diagnostic layers (in [orange1]{filename}[/orange1])")
+        print_dl_metrics(dls)
+
     def print_dl_changes(self, service_spec: DiagLayerChanges) -> None:
         if service_spec.new_services or service_spec.deleted_services or service_spec.renamed_services or service_spec.services_with_parameter_changes:
             assert isinstance(service_spec.diag_layer, str)
@@ -681,20 +686,18 @@ def run(args: argparse.Namespace) -> None:
             rich_print(
                 f" (compared to [orange1]'{os.path.basename(db_names[db_idx + 1])}'[/orange1])")
 
-            rich_print()
-            rich_print(f"Overview of diagnostic layers (for [orange1]{os.path.basename(db_names[0])})[/orange1]")
-            print_dl_metrics([
-                variant for variant in task.databases[0].diag_layers
-                if variant.short_name in task.diagnostic_layer_names
-            ])
-
-            rich_print()
-            rich_print(
-                f"Overview of diagnostic layers (for [orange1]{os.path.basename(db_names[db_idx+1])})[/orange1]")
-            print_dl_metrics([
-                variant for variant in task.databases[db_idx + 1].diag_layers
-                if variant.short_name in task.diagnostic_layer_names
-            ])
+            task.print_dl_overview(
+                filename=os.path.basename(db_names[0]),
+                dls=[
+                    variant for variant in task.databases[0].diag_layers
+                    if variant.short_name in task.diagnostic_layer_names
+                ])
+            task.print_dl_overview(
+                filename=os.path.basename(db_names[db_idx + 1]),
+                dls=[
+                    variant for variant in task.databases[db_idx + 1].diag_layers
+                    if variant.short_name in task.diagnostic_layer_names
+                ])
 
             task.print_database_changes(
                 task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
@@ -723,15 +726,12 @@ def run(args: argparse.Namespace) -> None:
             rich_print(f"Changes in file [orange1]'{os.path.basename(db_names[0])}'[/orange1]")
             rich_print(
                 f" (compared to [orange1]'{os.path.basename(db_names[db_idx + 1])}'[/orange1])")
-            
-            rich_print()
-            rich_print(f"Overview of diagnostic layers (for [orange1]{os.path.basename(db_names[0])}[/orange1])")
-            print_dl_metrics(list(task.databases[0].diag_layers))
 
-            rich_print()
-            rich_print(
-                f"Overview of diagnostic layers (for [orange1]{os.path.basename(db_names[db_idx+1])}[/orange1])")
-            print_dl_metrics(list(task.databases[db_idx + 1].diag_layers))
+            task.print_dl_overview(
+                filename=os.path.basename(db_names[0]), dls=list(task.databases[0].diag_layers))
+            task.print_dl_overview(
+                filename=os.path.basename(db_names[db_idx + 1]),
+                dls=list(task.databases[db_idx + 1].diag_layers))
 
             task.print_database_changes(
                 task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
@@ -755,9 +755,10 @@ def run(args: argparse.Namespace) -> None:
                 rich_print(f"The variant [green3]'{name}'[/green3] could not be found!")
                 return
 
-        rich_print()
-        rich_print(f"Overview of diagnostic layers: ")
-        print_dl_metrics(task.diagnostic_layers)
+        task.print_dl_overview(
+            filename=os.path.basename(
+                args.pdx_file if isinstance(args.pdx_file, str) else str(args.pdx_file[0])),
+            dls=task.diagnostic_layers)
 
         for db_idx, dl in enumerate(task.diagnostic_layers):
             if db_idx + 1 >= len(task.diagnostic_layers):
