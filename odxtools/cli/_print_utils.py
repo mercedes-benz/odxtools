@@ -40,7 +40,8 @@ def print_diagnostic_service(service: DiagService,
                              print_audiences: bool = False,
                              allow_unknown_bit_lengths: bool = False) -> None:
 
-    rich_print(f" Service '{service.short_name}':")
+    rich_print()
+    rich_print(f" Service [magenta]'{service.short_name}'[/magenta]:")
 
     if service.description:
         desc = format_desc(service.description, indent=3)
@@ -77,44 +78,44 @@ def print_service_parameters(service: DiagService,
     negative response of diagnostic service
     '''
     rich_print()
-    rich_print(f"  Request and response parameters of diagnostic service '{service.short_name}'")
+    rich_print(
+        f"  Request and response parameters of diagnostic service [magenta]'{service.short_name}'[/magenta]"
+    )
 
     # Request
     if service.request:
-        rich_print(f"  Request '{service.request.short_name}':")
+        rich_print()
+        rich_print(f"   Request [dark_sea_green2]'{service.request.short_name}'[/dark_sea_green2]:")
         const_prefix = service.request.coded_const_prefix()
         rich_print(
             f"    Identifying Prefix: 0x{const_prefix.hex().upper()} ({bytes(const_prefix)!r})")
         rich_print(f"    Parameters:")
         param_table = build_parameter_table(service.request.parameters)
         rich_print(RichPadding(param_table, pad=(0, 0, 0, 4)))
-        rich_print()
     else:
-        rich_print(f"  No Request!")
+        rich_print(f"   No Request!")
 
     # Positive Responses
     if not service.positive_responses:
-        rich_print(f"  No positive responses")
+        rich_print(f"   No positive responses")
 
     for resp in service.positive_responses:
-        rich_print(f"  Positive Response '{resp.short_name}':")
-        rich_print(f"   Parameters:\n")
+        rich_print()
+        rich_print(f"   Positive Response [dark_sea_green2]'{resp.short_name}'[/dark_sea_green2]:")
+        rich_print(f"    Parameters:")
         table = build_parameter_table(list(resp.parameters))
         rich_print(RichPadding(table, pad=(0, 0, 0, 4)))
-        rich_print()
 
     # Negative Response
     if not service.negative_responses:
-        rich_print(f"  No negative responses")
+        rich_print(f"   No negative responses")
 
     for resp in service.negative_responses:
-        rich_print(f" Negative Response '{resp.short_name}':")
-        rich_print(f"   Parameters:\n")
+        rich_print()
+        rich_print(f"   Negative Response [dark_sea_green2]'{resp.short_name}'[/dark_sea_green2]:")
+        rich_print(f"    Parameters:")
         table = build_parameter_table(list(resp.parameters))
         rich_print(RichPadding(table, pad=(0, 0, 0, 4)))
-        rich_print()
-
-    rich_print("\n")
 
 
 def build_service_table(services: list[DiagService],
@@ -130,9 +131,9 @@ def build_service_table(services: list[DiagService],
         title="", show_header=True, header_style="bold cyan", border_style="blue", show_lines=True)
 
     request = None
-    table.add_column("Name", style="green")
+    table.add_column("Name", style="magenta")
     table.add_column("Semantic", justify="left", style="white")
-    table.add_column("Hex-Request", justify="left", style="white")
+    table.add_column("Hex-Request", justify="left", style="light_goldenrod3")
 
     if additional_columns is not None:
         for ac_title, _ in additional_columns:
@@ -165,13 +166,13 @@ def build_parameter_table(parameters: list[Parameter]) -> RichTable:
         title="", show_header=True, header_style="bold cyan", border_style="blue", show_lines=True)
 
     # Add columns with appropriate styling
-    table.add_column("Name", style="green")
+    table.add_column("Name", style="light_slate_grey")
     table.add_column("Byte Position", justify="right", style="yellow")
     table.add_column("Bit Length", justify="right", style="yellow")
     table.add_column("Semantic", justify="left", style="white")
     table.add_column("Parameter Type", justify="left", style="white")
     table.add_column("Data Type", justify="left", style="white")
-    table.add_column("Value", justify="left", style="yellow")
+    table.add_column("Value", justify="left", style="light_goldenrod3")
     table.add_column("Linked DOP", justify="left", style="white")
 
     name_column: list[str] = []
@@ -270,8 +271,8 @@ def print_dl_metrics(variants: list[DiagLayer]) -> None:
         title="", show_header=True, header_style="bold cyan", border_style="blue", show_lines=True)
 
     # Add columns with appropriate styling
-    table.add_column("Name", style="green")
-    table.add_column("Variant Type", style="magenta")
+    table.add_column("Name", style="green3")
+    table.add_column("Variant Type", style="medium_spring_green")
     table.add_column("Number of Services", justify="right", style="yellow")
     table.add_column("Number of DOPs", justify="right", style="yellow")
     table.add_column("Number of communication parameters", justify="right", style="yellow")

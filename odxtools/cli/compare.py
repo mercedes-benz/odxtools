@@ -88,7 +88,7 @@ class Display:
             assert isinstance(service_spec.diag_layer, str)
             rich_print()
             rich_print(
-                f"Changed diagnostic services for diagnostic layer '{service_spec.diag_layer}' ({service_spec.diag_layer_type}):"
+                f"[blue]Changed diagnostic services[/blue] of diagnostic layer [green3]'{service_spec.diag_layer}'[/green3] [medium_spring_green]({service_spec.diag_layer_type})[/medium_spring_green]:"
             )
         if service_spec.new_services:
             assert isinstance(service_spec.new_services, list)
@@ -130,7 +130,9 @@ class Display:
                 assert isinstance(item, ServiceChanges)
                 assert isinstance(item.service, DiagService)
                 rich_print()
-                rich_print(f"  Detailed changes of diagnostic service '{item.service.short_name}'")
+                rich_print(
+                    f"  [blue]Detailed changes[/blue] of diagnostic service [magenta]'{item.service.short_name}'[/magenta]"
+                )
                 for param_changes in item.changed_parameters_of_service:
                     rich_print(f"   {param_changes.description}:")
                     table = RichTable(
@@ -139,8 +141,8 @@ class Display:
                         border_style="blue",
                         show_lines=True)
                     table.add_column("Attribute", style="light_cyan1")
-                    table.add_column("Old Value", justify="left", style="yellow3")
-                    table.add_column("New Value", justify="left", style="yellow3")
+                    table.add_column("Old Value", justify="left", style="light_goldenrod3")
+                    table.add_column("New Value", justify="left", style="light_goldenrod3")
 
                     for value in param_changes.changed_attributes:
                         table.add_row(value.attribute,
@@ -155,26 +157,29 @@ class Display:
 
         if changes_variants.new_diagnostic_layers:
             rich_print()
-            rich_print(" New diagnostic layers: ")
+            rich_print("[blue]New diagnostic layers[/blue]:")
             for variant in changes_variants.new_diagnostic_layers:
                 assert isinstance(variant, DiagLayer)
                 rich_print(
-                    f"  [magenta]{variant.short_name}[/magenta] ({variant.variant_type.value})")
+                    f" [green3]{variant.short_name}[/green3] [medium_spring_green]({variant.variant_type.value})[/medium_spring_green]"
+                )
 
         if changes_variants.deleted_diagnostic_layers:
             rich_print()
-            rich_print(" Deleted diagnostic layers: ")
+            rich_print("[blue]Deleted diagnostic layers[/blue]:")
             for variant in changes_variants.deleted_diagnostic_layers:
                 assert isinstance(variant, DiagLayer)
                 rich_print(
-                    f"  [magenta]{variant.short_name}[/magenta] ({variant.variant_type.value})")
+                    f" [green3]{variant.short_name}[/green3] [medium_spring_green]({variant.variant_type.value})[/medium_spring_green]"
+                )
 
         if changes_variants.changed_diagnostic_layers:
             rich_print()
-            rich_print(" Changed diagnostic layers: ")
+            rich_print("[blue]Changed diagnostic layers[/blue]: ")
             [
-                rich_print(f" [magenta]{value.diag_layer}[/magenta] ({value.diag_layer_type})")
-                for value in changes_variants.changed_diagnostic_layers
+                rich_print(
+                    f" [green3]{value.diag_layer}[/green3] [medium_spring_green]({value.diag_layer_type})[/medium_spring_green]"
+                ) for value in changes_variants.changed_diagnostic_layers
             ]
 
             # print changes of diagnostic services
@@ -367,13 +372,13 @@ class Comparison(Display):
                         # find changed request parameter properties
                         if (param_changes := self.compare_parameters(param1, param2)):
                             description = (
-                                f"Properties of {res2_idx+1}. request parameter '{param2.short_name}' have changed"
+                                f"Properties of {res2_idx+1}. request parameter [light_slate_grey]'{param2.short_name}'[/light_slate_grey] have changed"
                             )
                             changed_params.append(
                                 ParameterChanges(
                                     description=description, changed_attributes=param_changes))
         else:
-            description = f"List of request parameters for service '{service2.short_name}' is not identical"
+            description = f"List of request parameters for service [magenta]'{service2.short_name}'[/magenta] is not identical"
 
             changed_params.append(
                 ParameterChanges(
@@ -399,13 +404,13 @@ class Comparison(Display):
                                         # find changed positive response parameter properties
                                         if (param_changes :=
                                                 self.compare_parameters(param1, param2)):
-                                            description = f"Properties of {param2_idx+1}. positive response parameter '{param2.short_name}' have changed"
+                                            description = f"Properties of {param2_idx+1}. positive response parameter [light_slate_grey]'{param2.short_name}'[/light_slate_grey] have changed"
                                             changed_params.append(
                                                 ParameterChanges(
                                                     description=description,
                                                     changed_attributes=param_changes))
                         else:
-                            description = f"List of positive response parameters for service '{service2.short_name}' is not identical"
+                            description = f"List of positive response parameters for service [magenta]'{service2.short_name}'[/magenta] is not identical"
                             changed_params.append(
                                 ParameterChanges(
                                     description=description,
@@ -417,7 +422,7 @@ class Comparison(Display):
                                     ]))
 
         else:
-            description = f"List of positive responses for service '{service2.short_name}' is not identical"
+            description = f"List of positive responses for service [magenta]'{service2.short_name}'[/magenta] is not identical"
             changed_params.append(
                 ParameterChanges(
                     description=description,
@@ -440,13 +445,13 @@ class Comparison(Display):
                                         # find changed negative response parameter properties
                                         if (param_changes :=
                                                 self.compare_parameters(param1, param2)):
-                                            description = f"Properties of {param2_idx+1}. negative response parameter '{param2.short_name}' have changed"
+                                            description = f"Properties of {param2_idx+1}. negative response parameter [light_slate_grey]'{param2.short_name}'[/light_slate_grey] have changed"
                                             changed_params.append(
                                                 ParameterChanges(
                                                     description=description,
                                                     changed_attributes=param_changes))
                         else:
-                            description = f"List of negative response parameters for service '{service2.short_name}' is not identical"
+                            description = f"List of negative response parameters for service [magenta]'{service2.short_name}'[/magenta] is not identical"
                             changed_params.append(
                                 ParameterChanges(
                                     description=description,
@@ -457,7 +462,7 @@ class Comparison(Display):
                                             new_value=[x.short_name for x in response1.parameters])
                                     ]))
         else:
-            description = f"List of negative responses for service '{service2.short_name}' is not identical"
+            description = f"List of negative responses for service [magenta]'{service2.short_name}'[/magenta] is not identical"
             changed_params.append(
                 ParameterChanges(
                     description=description,
@@ -661,7 +666,7 @@ def run(args: argparse.Namespace) -> None:
 
         for name in args.variants:
             if name not in task.diagnostic_layer_names:
-                rich_print(f"The variant '{name}' could not be found!")
+                rich_print(f"The variant [green3]'{name}'[/green3] could not be found!")
                 return
 
         task.db_indicator_1 = 0
@@ -672,11 +677,12 @@ def run(args: argparse.Namespace) -> None:
             task.db_indicator_2 = db_idx + 1
 
             rich_print()
-            rich_print(f"Changes in file '{os.path.basename(db_names[0])}'")
-            rich_print(f" (compared to '{os.path.basename(db_names[db_idx + 1])}')")
+            rich_print(f"Changes in file [orange1]'{os.path.basename(db_names[0])}'[/orange1]")
+            rich_print(
+                f" (compared to [orange1]'{os.path.basename(db_names[db_idx + 1])}'[/orange1])")
 
             rich_print()
-            rich_print(f"Overview of diagnostic layers (for {os.path.basename(db_names[0])})")
+            rich_print(f"Overview of diagnostic layers (for [orange1]{os.path.basename(db_names[0])})[/orange1]")
             print_dl_metrics([
                 variant for variant in task.databases[0].diag_layers
                 if variant.short_name in task.diagnostic_layer_names
@@ -684,7 +690,7 @@ def run(args: argparse.Namespace) -> None:
 
             rich_print()
             rich_print(
-                f"Overview of diagnostic layers (for {os.path.basename(db_names[db_idx+1])})")
+                f"Overview of diagnostic layers (for [orange1]{os.path.basename(db_names[db_idx+1])})[/orange1]")
             print_dl_metrics([
                 variant for variant in task.databases[db_idx + 1].diag_layers
                 if variant.short_name in task.diagnostic_layer_names
@@ -714,16 +720,17 @@ def run(args: argparse.Namespace) -> None:
             task.db_indicator_2 = db_idx + 1
 
             rich_print()
-            rich_print(f"Changes in file '{os.path.basename(db_names[0])}")
-            rich_print(f" (compared to '{os.path.basename(db_names[db_idx + 1])}')")
-
+            rich_print(f"Changes in file [orange1]'{os.path.basename(db_names[0])}'[/orange1]")
+            rich_print(
+                f" (compared to [orange1]'{os.path.basename(db_names[db_idx + 1])}'[/orange1])")
+            
             rich_print()
-            rich_print(f"Overview of diagnostic layers (for {os.path.basename(db_names[0])})")
+            rich_print(f"Overview of diagnostic layers (for [orange1]{os.path.basename(db_names[0])}[/orange1])")
             print_dl_metrics(list(task.databases[0].diag_layers))
 
             rich_print()
             rich_print(
-                f"Overview of diagnostic layers (for {os.path.basename(db_names[db_idx+1])})")
+                f"Overview of diagnostic layers (for [orange1]{os.path.basename(db_names[db_idx+1])}[/orange1])")
             print_dl_metrics(list(task.databases[db_idx + 1].diag_layers))
 
             task.print_database_changes(
@@ -745,7 +752,7 @@ def run(args: argparse.Namespace) -> None:
 
         for name in args.variants:
             if name not in task.diagnostic_layer_names:
-                rich_print(f"The variant '{name}' could not be found!")
+                rich_print(f"The variant [green3]'{name}'[/green3] could not be found!")
                 return
 
         rich_print()
@@ -757,9 +764,11 @@ def run(args: argparse.Namespace) -> None:
                 break
 
             rich_print()
-            rich_print(f"Changes in diagnostic layer '{dl.short_name}' ({dl.variant_type.value})")
             rich_print(
-                f" (compared to '{task.diagnostic_layers[db_idx + 1].short_name}' ({task.diagnostic_layers[db_idx + 1].variant_type.value}))"
+                f"Changes in diagnostic layer [green3]'{dl.short_name}'[/green3] [medium_spring_green]({dl.variant_type.value})[/medium_spring_green]"
+            )
+            rich_print(
+                f" (compared to '[green3]{task.diagnostic_layers[db_idx+1].short_name}'[/green3] [medium_spring_green]({task.diagnostic_layers[db_idx+1].variant_type.value})[/medium_spring_green])"
             )
             task.print_dl_changes(
                 task.compare_diagnostic_layers(dl, task.diagnostic_layers[db_idx + 1]))

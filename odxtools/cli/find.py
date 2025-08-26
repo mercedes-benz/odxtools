@@ -33,7 +33,7 @@ def print_summary(odxdb: Database,
     for ecu_name in ecu_names:
         ecu = odxdb.ecus[ecu_name]
         if not ecu:
-            print(f"The ecu variant '{ecu_name}' could not be found!")
+            print(f"The ecu variant [green3]'{ecu_name}'[/green3] could not be found!")
             continue
 
         if service_names:
@@ -51,7 +51,7 @@ def print_summary(odxdb: Database,
         filler = str.ljust("", len(display_names), "=")
         print(f"\n{filler}")
         print(f"{', '.join(ecu_names)}")
-        print(f"{filler}\n\n")
+        print(f"{filler}")
         if isinstance(service, DiagService):
             print_diagnostic_service(
                 service,
