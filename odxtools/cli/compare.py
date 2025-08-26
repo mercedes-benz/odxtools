@@ -10,11 +10,14 @@ from rich import print as rich_print
 from rich.padding import Padding as RichPadding
 from rich.table import Table as RichTable
 
+from ..compumethods.limit import Limit
 from ..database import Database
 from ..dataobjectproperty import DataObjectProperty
 from ..diaglayers.diaglayer import DiagLayer
 from ..diagservice import DiagService
+from ..dopbase import DopBase
 from ..dtcdop import DtcDop
+from ..internalconstr import InternalConstr
 from ..loadfile import load_file
 from ..odxtypes import AtomicOdxType
 from ..parameters.codedconstparameter import CodedConstParameter
@@ -23,6 +26,7 @@ from ..parameters.parameter import Parameter
 from ..parameters.parameterwithdop import ParameterWithDOP
 from ..parameters.physicalconstantparameter import PhysicalConstantParameter
 from ..parameters.valueparameter import ValueParameter
+from ..unit import Unit
 from . import _parser_utils
 from ._parser_utils import SubparsersList
 from ._print_utils import build_service_table, print_dl_metrics, print_service_parameters
@@ -203,12 +207,281 @@ class Comparison(Display):
     def __init__(self) -> None:
         pass
 
+    def compare_units(self, unit1: Unit, unit2: Unit) -> list[ParameterAttributeChanges]:
+        '''
+        Checks whether properties of unit1 and unit2 differ
+
+        Checked properties:
+        - short_name
+        - display_name
+        - factor_si_to_unit
+        - offset_si_to_unit
+        - physical_dimension
+
+        Properties of unit object: short_name, long_name, description, odx_id, display_name, oid, factor_si_to_unit, offset_si_to_unit, physical_dimension_ref
+        '''
+
+        changed_attributes: list[ParameterAttributeChanges] = []
+        if unit1 == unit2:
+            return []
+
+        changed_attributes.append(
+            ParameterAttributeChanges(
+                attribute="Linked DOP object: Unit",
+                old_value=f"<{unit2.odx_id.local_id}",
+                new_value=f"<{unit1.odx_id.local_id}>"))
+        if unit1.short_name != unit2.short_name:
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Linked DOP object: Unit: Name",
+                    old_value=unit2.short_name,
+                    new_value=unit1.short_name))
+        if unit1.display_name != unit2.display_name:
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Linked DOP object: Unit: Display name",
+                    old_value=unit2.display_name,
+                    new_value=unit1.display_name))
+        if unit1.factor_si_to_unit != unit2.factor_si_to_unit:
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Linked DOP object: Unit: FACTOR-SI-TO-UNIT",
+                    old_value=f if (f := unit2.factor_si_to_unit) else "",
+                    new_value=f if (f := unit1.factor_si_to_unit) else ""))
+        if unit1.offset_si_to_unit != unit2.offset_si_to_unit:
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Linked DOP object: Unit: OFFSET-SI-TO-UNIT",
+                    old_value=ofs if (ofs := unit2.offset_si_to_unit) else "",
+                    new_value=ofs if (ofs := unit1.offset_si_to_unit) else ""))
+        if unit1.physical_dimension != unit2.physical_dimension:
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Linked DOP object: Unit: Physical dimension",
+                    old_value="<Physical dimension object" if unit2.physical_dimension else "",
+                    new_value="<Physical dimension object" if unit1.physical_dimension else ""))
+
+        return changed_attributes
+
+    def compare_dops(self, dop1: DopBase, dop2: DopBase) -> list[ParameterAttributeChanges]:
+        '''
+        Checks whether properties of dop1 and dop2 differ
+        
+        Checked properties:
+        - Name,
+        - COMPU-METHOD (for DataObjectProperty and DtcDop)
+        - DIAG-CODED-TYPE (for DataObjectProperty and DtcDop)
+        - PHYSICAL-TYPE (for DataObjectProperty and DtcDop)
+        - INTERNAL-CONSTR (for DataObjectProperty)
+        - PHYS-CONSTR (for DataObjectProperty)
+        - Unit (for DataObjectProperty)
+        - DTCs (for DtcDop)
+        '''
+        changed_attributes: list[ParameterAttributeChanges] = []
+        if dop1 == dop2:
+            return []
+
+        changed_attributes.append(
+            ParameterAttributeChanges(
+                attribute="Linked DOP (data object property) object",
+                old_value=f"<{dop2.odx_id.local_id}>",
+                new_value=f"<{dop1.odx_id.local_id}>"))
+
+        # DOP Name
+        if dop1.short_name != dop2.short_name:
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Linked DOP object: Name",
+                    old_value=dop2.short_name,
+                    new_value=dop1.short_name))
+
+        # compare COMPU-METHOD, DIAG-CODED-TYPE and PHYSICAL-TYPE of DOP
+        if (isinstance(dop1, DataObjectProperty) and isinstance(dop2, DataObjectProperty) or
+                isinstance(dop1, DtcDop) and isinstance(dop2, DtcDop)):
+
+            if dop1.compu_method != dop2.compu_method:
+                # TODO compare sub-attributes of CompuMethod
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute="Linked DOP object: Computation Method",
+                        old_value="<COMPU-METHOD>",
+                        new_value="<COMPU-METHOD>"))
+
+            if dop1.diag_coded_type != dop2.diag_coded_type:
+                # attributes: base_type_encoding, base_data_type, is_highlow_byte_order, dct_type
+                if dop1.diag_coded_type.base_type_encoding != dop2.diag_coded_type.base_type_encoding:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Linked DOP object: DIAG-CODED-TYPE: Base Type Encoding",
+                            old_value=dop2.diag_coded_type.base_type_encoding,
+                            new_value=dop1.diag_coded_type.base_type_encoding))
+                if dop1.diag_coded_type.base_data_type != dop2.diag_coded_type.base_data_type:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Linked DOP object: DIAG-CODED-TYPE: Base Data Type",
+                            old_value=dop2.diag_coded_type.base_data_type.name,
+                            new_value=dop1.diag_coded_type.base_data_type.name))
+                if dop1.diag_coded_type.dct_type != dop2.diag_coded_type.dct_type:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Linked DOP object: DIAG-CODED-TYPE: Type",
+                            old_value=dop2.diag_coded_type.dct_type,
+                            new_value=dop1.diag_coded_type.dct_type))
+
+            if dop1.physical_type != dop2.physical_type:
+                # attributes: precision, base_data_type, display_radix
+                if dop1.physical_type.precision != dop2.physical_type.precision:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Linked DOP object: PHYSICAL-TYPE: Precision",
+                            old_value=dop2.physical_type.precision,
+                            new_value=dop1.physical_type.precision))
+                if dop1.physical_type.base_data_type != dop2.physical_type.base_data_type:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Linked DOP object: PHYSICAL-TYPE: Base data type",
+                            old_value=dop2.physical_type.base_data_type.name,
+                            new_value=dop1.physical_type.base_data_type.name))
+                if dop1.physical_type.display_radix != dop2.physical_type.display_radix:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Linked DOP object: PHYSICAL-TYPE: Display Radix",
+                            old_value=dr.name if (dr := dop2.physical_type.display_radix) else "",
+                            new_value=dr.name if (dr := dop1.physical_type.display_radix) else ""))
+
+        # compare INTERNAL-CONSTR, PHYS-CONSTR and unit of DOP
+        if isinstance(dop1, DataObjectProperty) and isinstance(dop2, DataObjectProperty):
+
+            def compare_internal_constr_objects(
+                    constr1: InternalConstr, constr2: InternalConstr,
+                    constr_type: str) -> list[ParameterAttributeChanges]:
+                """
+                Compares to objects of type 'InternalConstr'
+                
+                Attributes: lower_limit, upper_limit, scale_constrs
+                """
+
+                def compare_limits(limit1: Limit, limit2: Limit,
+                                   limit_type: str) -> list[ParameterAttributeChanges]:
+                    """
+                    Compares to objects of type 'Limit'
+
+                    Attributes: value, value_type, interval_type
+                    """
+                    changed_attributes: list[ParameterAttributeChanges] = []
+                    if limit1 == limit2:
+                        return []
+
+                    if limit1.value != limit2.value:
+                        changed_attributes.append(
+                            ParameterAttributeChanges(
+                                attribute=f"Linked DOP object: {constr_type}: {limit_type} Limit: Value",
+                                old_value=limit2.value,
+                                new_value=limit1.value))
+                    if limit1.value_type != limit2.value_type:
+                        changed_attributes.append(
+                            ParameterAttributeChanges(
+                                attribute=f"Linked DOP object: {constr_type}: {limit_type} Limit: Value Type",
+                                old_value=limit2.value_type,
+                                new_value=limit1.value_type))
+
+                    return changed_attributes
+
+                changed_attributes: list[ParameterAttributeChanges] = []
+                if constr1 == constr2:
+                    return []
+
+                # compare lower limit
+                if constr1.lower_limit is not None and constr2.lower_limit is not None:
+                    changed_attributes += attrs if (attrs := compare_limits(
+                        constr1.lower_limit, constr2.lower_limit, 'Lower')) else []
+                elif (constr1.lower_limit is None) != (constr2.lower_limit is None):
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute=f"Linked DOP object: {constr_type}: Lower Limit",
+                            old_value="<Limit object>" if constr2.lower_limit else "",
+                            new_value="<Limit object>" if constr1.lower_limit else ""))
+
+                # compare upper limit
+                if constr1.upper_limit is not None and constr2.upper_limit is not None:
+                    changed_attributes += attrs if (attrs := compare_limits(
+                        constr1.upper_limit, constr2.upper_limit, 'Upper')) else []
+                elif (constr1.upper_limit is None) != (constr2.upper_limit is None):
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute=f"Linked DOP object: {constr_type}: Upper Limit",
+                            old_value="<Limit object>" if constr2.upper_limit else "",
+                            new_value="<Limit object>" if constr1.upper_limit else ""))
+
+                # compare scale_constrs
+                if constr1.scale_constrs != constr2.scale_constrs:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute=f"Linked DOP object: {constr_type}: Scale Constraints",
+                            old_value="<List of SCALE-CONSTR objects>",
+                            new_value="<List of SCALE-CONSTR objects>"))
+
+                return changed_attributes
+
+            # compare INTERNAL-CONSTR
+            if dop1.internal_constr is not None and dop2.internal_constr is not None:
+                changed_attributes += attrs if (attrs := compare_internal_constr_objects(
+                    dop1.internal_constr, dop2.internal_constr, 'INTERNAL-CONSTR')) else []
+            elif (dop1.internal_constr is None) != (dop2.internal_constr is None):
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute=f"Linked DOP object: INTERNAL-CONSTR",
+                        old_value="<INTERNAL-CONSTR object>" if dop2.internal_constr else "",
+                        new_value="<INTERNAL-CONSTR object>" if dop1.internal_constr else ""))
+
+            # compare PHYS-CONSTR
+            if dop1.physical_constr is not None and dop2.physical_constr is not None:
+                changed_attributes += attrs if (attrs := compare_internal_constr_objects(
+                    dop1.physical_constr, dop2.physical_constr, 'PHYS-CONSTR')) else []
+            elif (dop1.physical_constr is None) != (dop2.physical_constr is None):
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute=f"Linked DOP object: PHYS-CONSTR",
+                        old_value="<PHYS-CONSTR object>" if dop2.physical_constr else "",
+                        new_value="<PHYS-CONSTR object>" if dop1.physical_constr else ""))
+
+            # compare unit
+            if dop1.unit is not None and dop2.unit is not None:
+                changed_attributes += attrs if (attrs := self.compare_units(
+                    unit1=dop1.unit, unit2=dop2.unit)) else []
+            elif (dop1.unit is None) != (dop2.unit is None):
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute=f"Linked DOP object: Unit",
+                        old_value="<Unit object>" if dop2.unit else "",
+                        new_value="<Unit object>" if dop1.unit else ""))
+
+        # compare DTCs of DOP
+        if isinstance(dop1, DtcDop) and isinstance(dop2, DtcDop):
+
+            if dop1.dtcs != dop2.dtcs:
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute="Linked DOP object: List of DTCs",
+                        old_value="<List of DTC objects>",
+                        new_value="<List of DTC objects>"))
+
+        return changed_attributes
+
     def compare_parameters(self, param1: Parameter,
                            param2: Parameter) -> list[ParameterAttributeChanges]:
         '''
-        checks whether properties of param1 and param2 differ
+        Checks whether properties of param1 and param2 differ
         
-        checked properties: Name, Byte Position, Bit Length, Semantic, Parameter Type, Value (Coded, Constant, Default etc.), Data Type, Data Object Property (Name, Physical Data Type, Unit)
+        Checked properties:
+        - Name
+        - Byte Position
+        - Bit Length
+        - Semantic
+        - Parameter Type
+        - Value (CODED-CONST, NRC-CONST, PHYS-CONST, PHYSICAL-DEFAULT-VALUE)
+        - Data Type
+        - Data Object Property
         '''
 
         changed_attributes: list[ParameterAttributeChanges] = []
@@ -216,13 +489,13 @@ class Comparison(Display):
         if param1.short_name != param2.short_name:
             changed_attributes.append(
                 ParameterAttributeChanges(
-                    attribute="Parameter name",
+                    attribute="Parameter Name",
                     old_value=param2.short_name,
                     new_value=param1.short_name))
         if param1.byte_position != param2.byte_position:
             changed_attributes.append(
                 ParameterAttributeChanges(
-                    attribute="Byte position",
+                    attribute="Byte Position",
                     old_value=param2.byte_position,
                     new_value=param1.byte_position))
         if param1.get_static_bit_length() != param2.get_static_bit_length():
@@ -238,7 +511,7 @@ class Comparison(Display):
         if param1.parameter_type != param2.parameter_type:
             changed_attributes.append(
                 ParameterAttributeChanges(
-                    attribute="Parameter type",
+                    attribute="Parameter Type",
                     old_value=param2.parameter_type,
                     new_value=param1.parameter_type))
 
@@ -246,21 +519,21 @@ class Comparison(Display):
             if param1.diag_coded_type.base_data_type != param2.diag_coded_type.base_data_type:
                 changed_attributes.append(
                     ParameterAttributeChanges(
-                        attribute="Data type",
+                        attribute="Data Type",
                         old_value=param2.diag_coded_type.base_data_type.name,
                         new_value=param1.diag_coded_type.base_data_type.name))
             if param1.coded_value != param2.coded_value:
                 if isinstance(param1.coded_value, int) and isinstance(param2.coded_value, int):
                     changed_attributes.append(
                         ParameterAttributeChanges(
-                            attribute="Value",
+                            attribute="Value (CODED-CONST)",
                             old_value=f"0x{param2.coded_value:0{(param2.get_static_bit_length() or 0) // 4}X}",
                             new_value=f"0x{param1.coded_value:0{(param1.get_static_bit_length() or 0) // 4}X}"
                         ))
                 else:
                     changed_attributes.append(
                         ParameterAttributeChanges(
-                            attribute="Value",
+                            attribute="Value (CODED-CONST)",
                             old_value=f"{param2.coded_value!r}",
                             new_value=f"{param1.coded_value!r}"))
 
@@ -268,59 +541,22 @@ class Comparison(Display):
             if param1.diag_coded_type.base_data_type != param2.diag_coded_type.base_data_type:
                 changed_attributes.append(
                     ParameterAttributeChanges(
-                        attribute="Data type",
+                        attribute="Data Type",
                         old_value=param2.diag_coded_type.base_data_type.name,
                         new_value=param1.diag_coded_type.base_data_type.name))
 
             if param1.coded_values != param2.coded_values:
                 changed_attributes.append(
                     ParameterAttributeChanges(
-                        attribute="Values",
+                        attribute="Values (NRC-CONST)",
                         old_value=param2.coded_values,
                         new_value=param1.coded_values))
 
         elif isinstance(param1, ParameterWithDOP) and isinstance(param2, ParameterWithDOP):
 
-            if (dop_1 := param1.dop) != (dop_2 := param2.dop):
-                # TODO: compare INTERNAL-CONSTR, COMPU-INTERNAL-TO-PHYS of DOP
-
-                # DOP Name
-                if dop_1.short_name != dop_2.short_name:
-                    changed_attributes.append(
-                        ParameterAttributeChanges(
-                            attribute="Linked DOP object: Name",
-                            old_value=dop_2.short_name,
-                            new_value=dop_1.short_name))
-
-                # DOP Unit
-                if isinstance(dop_1, DataObjectProperty) and isinstance(dop_2, DataObjectProperty):
-                    # (properties of unit object: short_name, long_name, description, odx_id, display_name, oid, factor_si_to_unit, offset_si_to_unit, physical_dimension_ref)
-                    if dop_1.unit != dop_2.unit and dop_1.unit.short_name != dop_2.unit.short_name:
-                        changed_attributes.append(
-                            ParameterAttributeChanges(
-                                attribute="Linked DOP object: Unit name",
-                                old_value=dop_2.unit.short_name,
-                                new_value=dop_1.unit.short_name))
-                    elif dop_1.unit != dop_2.unit and dop_1.unit.display_name != dop_2.unit.display_name:
-                        changed_attributes.append(
-                            ParameterAttributeChanges(
-                                attribute="Linked DOP object: Unit display name",
-                                old_value=dop_2.unit.display_name,
-                                new_value=dop_1.unit.display_name))
-                    elif dop_1.unit != dop_2.unit:
-                        changed_attributes.append(
-                            ParameterAttributeChanges(attribute="Linked DOP object: Unit object"))
-
-                if ((isinstance(dop_1, DataObjectProperty) or isinstance(dop_1, DtcDop)) and
-                    (isinstance(dop_2, DataObjectProperty) or isinstance(dop_2, DtcDop))):
-                    if (dop_1.physical_type and dop_2.physical_type and
-                            dop_1.physical_type.base_data_type
-                            != dop_2.physical_type.base_data_type):
-                        changed_attributes.append(
-                            ParameterAttributeChanges(
-                                attribute="Linked DOP object: Physical data type",
-                                old_value=dop_2.physical_type.base_data_type.name,
-                                new_value=dop_1.physical_type.base_data_type.name))
+            # compare DOP object
+            changed_attributes += attrs if (attrs := self.compare_dops(
+                dop1=param1.dop, dop2=param2.dop)) else []
 
             if (isinstance(param1, PhysicalConstantParameter) and
                     isinstance(param2, PhysicalConstantParameter) and
@@ -329,14 +565,14 @@ class Comparison(Display):
                         param2.physical_constant_value, int):
                     changed_attributes.append(
                         ParameterAttributeChanges(
-                            attribute="Constant value",
+                            attribute="Value (PHYS-CONST)",
                             old_value=f"0x{param2.physical_constant_value:0{(param2.get_static_bit_length() or 0) // 4}X}",
                             new_value=f"0x{param1.physical_constant_value:0{(param1.get_static_bit_length() or 0) // 4}X}"
                         ))
                 else:
                     changed_attributes.append(
                         ParameterAttributeChanges(
-                            attribute="Constant value",
+                            attribute="Value (PHYS-CONST)",
                             old_value=f"{param2.physical_constant_value!r}",
                             new_value=f"{param1.physical_constant_value!r}"))
 
@@ -348,14 +584,14 @@ class Comparison(Display):
                         param2.physical_default_value, int):
                     changed_attributes.append(
                         ParameterAttributeChanges(
-                            attribute="Constant value",
+                            attribute="Value (PHYSICAL-DEFAULT-VALUE)",
                             old_value=f"0x{param2.physical_default_value:0{(param2.get_static_bit_length() or 0) // 4}X}",
                             new_value=f"0x{param1.physical_default_value:0{(param1.get_static_bit_length() or 0) // 4}X}"
                         ))
                 else:
                     changed_attributes.append(
                         ParameterAttributeChanges(
-                            attribute="Default value",
+                            attribute="Value (PHYSICAL-DEFAULT-VALUE)",
                             old_value=f"{param2.physical_default_value!r}",
                             new_value=f"{param1.physical_default_value!r}"))
 
