@@ -16,9 +16,10 @@ from odxtools.diaglayers.diaglayer import DiagLayer
 from odxtools.diaglayers.ecuvariant import EcuVariant
 from odxtools.diagservice import DiagService
 from odxtools.nameditemlist import NamedItemList
-from odxtools.odxlink import OdxLinkId, OdxLinkRef
+from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkId, OdxLinkRef
 from odxtools.parameters.codedconstparameter import CodedConstParameter
 from odxtools.parameters.valueparameter import ValueParameter
+from odxtools.parentref import ParentRef
 from odxtools.request import Request
 from odxtools.response import Response, ResponseType
 
@@ -91,16 +92,26 @@ operational parameters can be set. Finally, it is unwilling to compete
 somersault_young = DiagLayer(diag_layer_raw=somersault_young_dlr)
 
 # remove the "sault_time" parameter from the positive response of the
-# "do_forward_flips" service.
-do_forward_flips_service = deepcopy(somersault_lazy.services.do_forward_flips)
-somersault_young_dlr.diag_comms_raw.append(do_forward_flips_service)
-pr = do_forward_flips_service.positive_responses[0]
-new_params = [x for x in pr.parameters if getattr(x, "short_name", None) != "sault_time"]
-pr.parameters = NamedItemList(new_params)
+# "do_forward_flips" service for ecu variant "somersault_young"
+pr_grudging_forward = find_named_object(somersault_dlr.positive_responses, "grudging_forward")
+assert isinstance(pr_grudging_forward, Response)
+pr_young_forward = deepcopy(pr_grudging_forward)
+pr_young_forward.odx_id = OdxLinkId("somersault_young.PR.young_forward", doc_frags)
+pr_young_forward.short_name = "young_forward"
+pr_young_forward.parameters = NamedItemList(
+    [x for x in pr_young_forward.parameters if getattr(x, "short_name", None) != "sault_time"])
+somersault_young_dlr.positive_responses.append(pr_young_forward)
+
+do_forward_flips_service = find_named_object(somersault_dlr.diag_comms_raw, "do_forward_flips")
+assert isinstance(do_forward_flips_service, DiagService)
+ds_young_forward = deepcopy(do_forward_flips_service)
+ds_young_forward.odx_id = OdxLinkId("somersault_young.service.do_forward_flips", doc_frags)
+ds_young_forward.pos_response_refs = [OdxLinkRef.from_id(pr_young_forward.odx_id)]
+somersault_young_dlr.diag_comms_raw.append(ds_young_forward)
 
 # add a new "flic-flac" service
 flic_flac_request = Request(
-    odx_id=OdxLinkId("somersault.RQ.flic_flac", doc_frags),
+    odx_id=OdxLinkId("somersault_young.RQ.flic_flac", doc_frags),
     short_name="RQ_flic_flac",
     parameters=NamedItemList([
         CodedConstParameter(
@@ -114,7 +125,7 @@ flic_flac_request = Request(
 somersault_young_dlr.requests.append(flic_flac_request)
 
 flic_flac_positive_response = Response(
-    odx_id=OdxLinkId("somersault.PR.flic_flac", doc_frags),
+    odx_id=OdxLinkId("somersault_young.PR.flic_flac", doc_frags),
     short_name="PR_flic_flac",
     response_type=ResponseType.POSITIVE,
     parameters=NamedItemList([
@@ -125,7 +136,7 @@ flic_flac_positive_response = Response(
             coded_value_raw=str(uds.positive_response_id(FLIC_FLAC_SID)),
         ),
         ValueParameter(
-            short_name="can_do_backward_flips",
+            short_name="can_do_flic_flacs",
             byte_position=1,
             dop_ref=OdxLinkRef("somersault.DOP.boolean", doc_frags),
         ),
@@ -134,7 +145,7 @@ flic_flac_positive_response = Response(
 somersault_young_dlr.positive_responses.append(flic_flac_positive_response)
 
 flic_flac_service = DiagService(
-    odx_id=OdxLinkId("somersault.service.flic_flac", doc_frags),
+    odx_id=OdxLinkId("somersault_young.service.flic_flac", doc_frags),
     short_name="flic_flac",
     semantic="FUNCTION",
     request_ref=OdxLinkRef.from_id(flic_flac_request.odx_id),
@@ -146,18 +157,19 @@ flic_flac_service = DiagService(
     ],
 )
 
-# create a new list of diagnostic communications that does not include
-# the "set_operation_params" and "compulsory_program" services
-ss_young_diag_comms_raw = [
-    x for x in somersault_young_dlr.diag_comms_raw
-    if getattr(x, "short_name", None) not in ("set_operation_params", "compulsory_program")
-]
-
 # append the flic-flac service
-ss_young_diag_comms_raw.append(flic_flac_service)
+somersault_young_dlr.diag_comms_raw.append(flic_flac_service)
 
-# change the list of the ECU's diag comms
-somersault_young_dlr.diag_comms_raw = ss_young_diag_comms_raw
+# specify the "compulsory_program" and "set_operation_params" services
+# as services that should not be inherited from the somersault_base_variant as
+# the somersault_young variant does neither compete nor like being told under which conditions to operate
+somersault_young_dlr.parent_refs = [
+    ParentRef(
+        layer_ref=OdxLinkRef.from_id(
+            OdxLinkId("somersault.base_variant",
+                      (OdxDocFragment("somersault", DocType.CONTAINER),))),
+        not_inherited_diag_comms=["set_operation_params", "compulsory_program"])
+]
 
 dlc.ecu_variants.append(EcuVariant(diag_layer_raw=somersault_young_dlr))
 
