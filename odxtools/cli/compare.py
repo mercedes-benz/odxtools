@@ -657,8 +657,9 @@ def run(args: argparse.Namespace) -> None:
 
     db_names = [args.pdx_file if isinstance(args.pdx_file, str) else str(args.pdx_file[0])]
 
-    if args.database and args.variants:
-        # compare specified databases, consider only specified variants
+    if args.database:
+        # compare specified databases
+        # if args.variants is specified, filter considered diagnostic layers
 
         for name in args.database:
             db_names.append(name) if isinstance(name, str) else str(name[0])
@@ -666,12 +667,16 @@ def run(args: argparse.Namespace) -> None:
         task.databases = [load_file(name) for name in db_names]
         diag_layer_names = {dl.short_name for db in task.databases for dl in db.diag_layers}
 
-        task.diagnostic_layer_names = diag_layer_names.intersection(set(args.variants))
+        if args.variants:
+            task.diagnostic_layer_names = diag_layer_names.intersection(set(args.variants))
 
-        for name in args.variants:
-            if name not in task.diagnostic_layer_names:
-                rich_print(f"The variant [green3]'{name}'[/green3] could not be found!")
-                return
+            for name in args.variants:
+                if name not in task.diagnostic_layer_names:
+                    rich_print(f"The variant [green3]'{name}'[/green3] could not be found!")
+                    return
+
+        else:
+            task.diagnostic_layer_names = diag_layer_names
 
         task.db_indicator_1 = 0
 
@@ -686,53 +691,22 @@ def run(args: argparse.Namespace) -> None:
                 f" (compared to [orange1]'{os.path.basename(db_names[db_idx + 1])}'[/orange1])")
 
             if task.detailed:
+                if args.variants:
+                    diag_layers_1 = [
+                        dl for dl in task.databases[0].diag_layers
+                        if dl.short_name in task.diagnostic_layer_names
+                    ]
+                    diag_layers_2 = [
+                        dl for dl in task.databases[db_idx + 1].diag_layers
+                        if dl.short_name in task.diagnostic_layer_names
+                    ]
+                else:
+                    diag_layers_1 = task.databases[0].diag_layers
+                    diag_layers_2 = task.databases[db_idx + 1].diag_layers
+
+                task.print_dl_overview(filename=os.path.basename(db_names[0]), dls=diag_layers_1)
                 task.print_dl_overview(
-                    filename=os.path.basename(db_names[0]),
-                    dls=[
-                        variant for variant in task.databases[0].diag_layers
-                        if variant.short_name in task.diagnostic_layer_names
-                    ])
-                task.print_dl_overview(
-                    filename=os.path.basename(db_names[db_idx + 1]),
-                    dls=[
-                        variant for variant in task.databases[db_idx + 1].diag_layers
-                        if variant.short_name in task.diagnostic_layer_names
-                    ])
-
-            task.print_database_changes(
-                task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
-
-    elif args.database:
-        # compare specified databases, consider all variants
-
-        for name in args.database:
-            db_names.append(name)
-        task.databases = [load_file(name) for name in db_names]
-
-        # collect all diagnostic layers from all specified databases
-        task.diagnostic_layer_names = {
-            dl.short_name
-            for db in task.databases
-            for dl in db.diag_layers
-        }
-        task.db_indicator_1 = 0
-
-        for db_idx, _ in enumerate(task.databases):
-            if db_idx + 1 >= len(task.databases):
-                break
-            task.db_indicator_2 = db_idx + 1
-
-            rich_print()
-            rich_print(f"Changes in file [orange1]'{os.path.basename(db_names[0])}'[/orange1]")
-            rich_print(
-                f" (compared to [orange1]'{os.path.basename(db_names[db_idx + 1])}'[/orange1])")
-
-            if task.detailed:
-                task.print_dl_overview(
-                    filename=os.path.basename(db_names[0]), dls=list(task.databases[0].diag_layers))
-                task.print_dl_overview(
-                    filename=os.path.basename(db_names[db_idx + 1]),
-                    dls=list(task.databases[db_idx + 1].diag_layers))
+                    filename=os.path.basename(db_names[db_idx + 1]), dls=diag_layers_2)
 
             task.print_database_changes(
                 task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
