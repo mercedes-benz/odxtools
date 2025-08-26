@@ -72,8 +72,12 @@ def print_diagnostic_service(service: DiagService,
 def print_service_parameters(service: DiagService,
                              *,
                              allow_unknown_bit_lengths: bool = False) -> None:
-    # prints parameter details of request, positive response and
-    # negative response of diagnostic service
+    '''
+    prints parameter details of request, positive response and
+    negative response of diagnostic service
+    '''
+    rich_print()
+    rich_print(f"  Request and response parameters of diagnostic service '{service.short_name}'")
 
     # Request
     if service.request:
@@ -82,7 +86,7 @@ def print_service_parameters(service: DiagService,
         rich_print(
             f"    Identifying Prefix: 0x{const_prefix.hex().upper()} ({bytes(const_prefix)!r})")
         rich_print(f"    Parameters:")
-        param_table = extract_parameter_tabulation_data(service.request.parameters)
+        param_table = build_parameter_table(service.request.parameters)
         rich_print(RichPadding(param_table, pad=(0, 0, 0, 4)))
         rich_print()
     else:
@@ -95,7 +99,7 @@ def print_service_parameters(service: DiagService,
     for resp in service.positive_responses:
         rich_print(f"  Positive Response '{resp.short_name}':")
         rich_print(f"   Parameters:\n")
-        table = extract_parameter_tabulation_data(list(resp.parameters))
+        table = build_parameter_table(list(resp.parameters))
         rich_print(RichPadding(table, pad=(0, 0, 0, 4)))
         rich_print()
 
@@ -106,62 +110,55 @@ def print_service_parameters(service: DiagService,
     for resp in service.negative_responses:
         rich_print(f" Negative Response '{resp.short_name}':")
         rich_print(f"   Parameters:\n")
-        table = extract_parameter_tabulation_data(list(resp.parameters))
+        table = build_parameter_table(list(resp.parameters))
         rich_print(RichPadding(table, pad=(0, 0, 0, 4)))
         rich_print()
 
     rich_print("\n")
 
 
-def extract_service_tabulation_data(services: list[DiagService],
-                                    *,
-                                    additional_columns: list[tuple[str, list[str]]] | None = None
-                                   ) -> RichTable:
-    """Extracts data of diagnostic services into Dictionary which can
-    be printed by tabulate module
+def build_service_table(services: list[DiagService],
+                        *,
+                        additional_columns: list[tuple[str, list[str]]] | None = None) -> RichTable:
+    """
+    Extracts data of diagnostic services into
+    a RichTable object that can be printed
     """
 
     # Create Rich table
     table = RichTable(
         title="", show_header=True, header_style="bold cyan", border_style="blue", show_lines=True)
 
-    name_column: list[str] = []
-    semantic_column: list[str] = []
-    request_column: list[str] = []
-
-    for service in services:
-        name_column.append(service.short_name)
-        semantic_column.append(service.semantic or "")
-
-        if service.request:
-            prefix = service.request.coded_const_prefix()
-            request_column.append(f"0x{str(prefix.hex().upper())[:32]}...") if len(
-                prefix) > 32 else request_column.append(f"0x{str(prefix.hex().upper())}")
-        else:
-            request_column.append("")
-
+    request = None
     table.add_column("Name", style="green")
     table.add_column("Semantic", justify="left", style="white")
-    table.add_column("Request", justify="left", style="white")
+    table.add_column("Hex-Request", justify="left", style="white")
+
     if additional_columns is not None:
         for ac_title, _ in additional_columns:
             table.add_column(ac_title, justify="left", style="white")
 
-        rows = zip(
-            name_column,
-            semantic_column,
-            request_column,
-            *[ac[1] for ac in additional_columns],
-            strict=False)
-        for row in rows:
-            table.add_row(*map(str, row))
+    for i, service in enumerate(services):
+
+        if service.request:
+            prefix = service.request.coded_const_prefix()
+            request = f"0x{str(prefix.hex().upper())[:32]}..." if len(
+                prefix) > 32 else f"0x{str(prefix.hex().upper())}"
+
+        if additional_columns is not None:
+            table.add_row(service.short_name, service.semantic, request,
+                          *[ac_values[i] for _, ac_values in additional_columns])
+        else:
+            table.add_row(service.short_name, service.semantic, request)
 
     return table
 
 
-def extract_parameter_tabulation_data(parameters: list[Parameter]) -> RichTable:
-    # extracts data of parameters of diagnostic services into
-    # a RichTable object that can be printed
+def build_parameter_table(parameters: list[Parameter]) -> RichTable:
+    """
+    Extracts data of parameters of a diagnostic service into
+    a RichTable object that can be printed
+    """
 
     # Create Rich table
     table = RichTable(
@@ -175,7 +172,6 @@ def extract_parameter_tabulation_data(parameters: list[Parameter]) -> RichTable:
     table.add_column("Parameter Type", justify="left", style="white")
     table.add_column("Data Type", justify="left", style="white")
     table.add_column("Value", justify="left", style="yellow")
-    table.add_column("Value Type", justify="left", style="white")
     table.add_column("Linked DOP", justify="left", style="white")
 
     name_column: list[str] = []
@@ -184,7 +180,6 @@ def extract_parameter_tabulation_data(parameters: list[Parameter]) -> RichTable:
     semantic_column: list[str] = []
     param_type_column: list[str] = []
     value_column: list[str] = []
-    value_type_column: list[str] = []
     data_type_column: list[str] = []
     dop_column: list[str] = []
 
@@ -208,12 +203,10 @@ def extract_parameter_tabulation_data(parameters: list[Parameter]) -> RichTable:
             else:
                 value_column.append(f"{param.coded_value!r}")
             data_type_column.append(param.diag_coded_type.base_data_type.name)
-            value_type_column.append('coded value')
             dop_column.append("")
         elif isinstance(param, NrcConstParameter):
             data_type_column.append(param.diag_coded_type.base_data_type.name)
             value_column.append(str(param.coded_values))
-            value_type_column.append('coded values')
             dop_column.append("")
         elif isinstance(param, (PhysicalConstantParameter, SystemParameter, ValueParameter)):
             # this is a hack to make this routine work for parameters
@@ -236,21 +229,17 @@ def extract_parameter_tabulation_data(parameters: list[Parameter]) -> RichTable:
                     value_column.append(f"0x{param.physical_constant_value.hex().upper()}")
                 else:
                     value_column.append(f"{param.physical_constant_value!r}")
-                value_type_column.append('constant value')
             elif isinstance(param, ValueParameter) and param.physical_default_value is not None:
                 if isinstance(param.physical_default_value, bytes) or isinstance(
                         param.physical_default_value, bytearray):
                     value_column.append(f"0x{param.physical_default_value.hex().upper()}")
                 else:
                     value_column.append(f"{param.physical_default_value!r}")
-                value_type_column.append('default value')
             else:
                 value_column.append("")
-                value_type_column.append("")
         else:
             value_column.append("")
             data_type_column.append("")
-            value_type_column.append("")
             dop_column.append("")
 
     # Add all rows at once by zipping dictionary values
@@ -262,7 +251,6 @@ def extract_parameter_tabulation_data(parameters: list[Parameter]) -> RichTable:
         param_type_column,
         data_type_column,
         value_column,
-        value_type_column,
         dop_column,
         strict=False)
     for row in rows:
