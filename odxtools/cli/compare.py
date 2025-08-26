@@ -743,13 +743,11 @@ def run(args: argparse.Namespace) -> None:
         odxdb = _parser_utils.load_file(args)
         task.databases = [odxdb]
 
-        diag_layer_names = {dl.short_name for db in task.databases for dl in db.diag_layers}
-
-        task.diagnostic_layer_names = diag_layer_names.intersection(set(args.variants))
         task.diagnostic_layers = [
-            dl for db in task.databases for dl in db.diag_layers
-            if dl.short_name in task.diagnostic_layer_names
+            v for db in task.databases for variant in args.variants
+            if (v := db.diag_layers.get(variant))
         ]
+        task.diagnostic_layer_names = {dl.short_name for dl in task.diagnostic_layers}
 
         for name in args.variants:
             if name not in task.diagnostic_layer_names:
