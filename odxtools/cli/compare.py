@@ -3,8 +3,8 @@
 
 import argparse
 import os
+from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Optional
 
 from rich import print as rich_print
 from rich.padding import Padding as RichPadding
@@ -17,9 +17,10 @@ from ..diaglayers.diaglayer import DiagLayer
 from ..diagservice import DiagService
 from ..dopbase import DopBase
 from ..dtcdop import DtcDop
+from ..encoding import Encoding
 from ..internalconstr import InternalConstr
 from ..loadfile import load_file
-from ..odxtypes import AtomicOdxType
+from ..odxtypes import AtomicOdxType, DataType
 from ..parameters.codedconstparameter import CodedConstParameter
 from ..parameters.nrcconstparameter import NrcConstParameter
 from ..parameters.parameter import Parameter
@@ -38,8 +39,10 @@ _odxtools_tool_name_ = "compare"
 @dataclass
 class ParameterAttributeChanges:
     attribute: str
-    old_value: Optional[AtomicOdxType] = field(default=None)
-    new_value: Optional[AtomicOdxType] = field(default=None)
+    old_value: AtomicOdxType | Sequence[AtomicOdxType] | Encoding | DataType | None = field(
+        default=None)
+    new_value: AtomicOdxType | Sequence[AtomicOdxType] | Encoding | DataType | None = field(
+        default=None)
 
 
 @dataclass
@@ -184,11 +187,10 @@ class Display:
         if changes_variants.changed_diagnostic_layers:
             rich_print()
             rich_print("[blue]Changed diagnostic layers[/blue]: ")
-            [
+            for value in changes_variants.changed_diagnostic_layers:
                 rich_print(
                     f" [green3]{value.diag_layer}[/green3] [medium_spring_green]({value.diag_layer_type})[/medium_spring_green]"
-                ) for value in changes_variants.changed_diagnostic_layers
-            ]
+                )
 
             # print changes of diagnostic services
             for value in changes_variants.changed_diagnostic_layers:
@@ -598,7 +600,7 @@ class Comparison(Display):
         return changed_attributes
 
     def compare_services(self, service1: DiagService,
-                         service2: DiagService) -> Optional[ServiceChanges]:
+                         service2: DiagService) -> ServiceChanges | None:
         '''compares request, positive response and negative response parameters of two diagnostic services'''
 
         changed_params: list[ParameterChanges] = []
@@ -715,9 +717,9 @@ class Comparison(Display):
 
         if changed_params:
             return ServiceChanges(service=service1, changed_parameters_of_service=changed_params)
+        return None
 
-    def compare_diagnostic_layers(self, dl1: DiagLayer,
-                                  dl2: DiagLayer) -> Optional[DiagLayerChanges]:
+    def compare_diagnostic_layers(self, dl1: DiagLayer, dl2: DiagLayer) -> DiagLayerChanges | None:
         '''compares diagnostic services of two diagnostic layers with each other'''
         # TODO: add comparison of SingleECUJobs
 
@@ -793,9 +795,10 @@ class Comparison(Display):
 
         if service_spec.new_services or service_spec.deleted_services or service_spec.renamed_services or service_spec.services_with_parameter_changes:
             return service_spec
+        return None
 
     def compare_databases(self, database_new: Database,
-                          database_old: Database) -> Optional[SpecsChangesVariants]:
+                          database_old: Database) -> SpecsChangesVariants | None:
         '''compares two PDX-files with each other'''
 
         new_variants: list[DiagLayer] = []  # Assuming it stores diagnostic layer names
@@ -827,6 +830,7 @@ class Comparison(Display):
 
         if changes_variants.new_diagnostic_layers or changes_variants.deleted_diagnostic_layers or changes_variants.changed_diagnostic_layers:
             return changes_variants
+        return None
 
 
 def add_subparser(subparsers: SubparsersList) -> None:
@@ -942,8 +946,9 @@ def run(args: argparse.Namespace) -> None:
                 task.print_dl_overview(
                     filename=os.path.basename(db_names[db_idx + 1]), dls=diag_layers_2)
 
-            task.print_database_changes(
-                task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
+            if (db_changes := task.compare_databases(task.databases[0],
+                                                     task.databases[db_idx + 1])):
+                task.print_database_changes(db_changes)
 
     elif args.variants:
         # no databases specified -> comparison of diagnostic layers
@@ -979,8 +984,9 @@ def run(args: argparse.Namespace) -> None:
             rich_print(
                 f" (compared to '[green3]{task.diagnostic_layers[db_idx+1].short_name}'[/green3] [medium_spring_green]({task.diagnostic_layers[db_idx+1].variant_type.value})[/medium_spring_green])"
             )
-            task.print_dl_changes(
-                task.compare_diagnostic_layers(dl, task.diagnostic_layers[db_idx + 1]))
+            if (dl_changes := task.compare_diagnostic_layers(dl,
+                                                             task.diagnostic_layers[db_idx + 1])):
+                task.print_dl_changes(dl_changes)
 
     else:
         # no databases & no variants specified

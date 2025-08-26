@@ -283,9 +283,9 @@ def print_dl_metrics(variants: list[DiagLayer]) -> None:
         all_services: list[DiagService | SingleEcuJob] = sorted(
             variant.services, key=lambda x: x.short_name)
         ddds = variant.diag_data_dictionary_spec
-        comparam_refs = variant.comparam_refs if isinstance(variant, HierarchyElement) else []
+        comparam_refs = list(variant.comparam_refs) if isinstance(variant, HierarchyElement) else []
 
         # Add row to table
         table.add_row(variant.short_name, variant.variant_type.value, str(len(all_services)),
-                      str(len(ddds.data_object_props)), str(len(comparam_refs)))
+                      str(len(list(ddds.data_object_props))), str(len(comparam_refs)))
     rich_print(table)
