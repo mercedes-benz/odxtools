@@ -9,6 +9,7 @@ from rich.table import Table as RichTable
 
 from ..description import Description
 from ..diaglayers.diaglayer import DiagLayer
+from ..diaglayers.hierarchyelement import HierarchyElement
 from ..diagservice import DiagService
 from ..parameters.codedconstparameter import CodedConstParameter
 from ..parameters.nrcconstparameter import NrcConstParameter
@@ -293,11 +294,11 @@ def print_dl_metrics(variants: list[DiagLayer]) -> None:
         all_services: list[DiagService | SingleEcuJob] = sorted(
             variant.services, key=lambda x: x.short_name)
         ddds = variant.diag_data_dictionary_spec
+        comparam_refs = variant.comparam_refs if isinstance(variant, HierarchyElement) else []
 
         # Add row to table
         table.add_row(variant.short_name, variant.variant_type.value, str(len(all_services)),
-                      str(len(ddds.data_object_props)),
-                      str(len(getattr(variant, "comparams_refs", []))))
+                      str(len(ddds.data_object_props)), str(len(comparam_refs)))
     rich_print(table)
 
 
