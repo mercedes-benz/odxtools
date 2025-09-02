@@ -4,7 +4,6 @@ import textwrap
 
 import markdownify
 from rich import print as rich_print
-from rich import box
 from rich.padding import Padding as RichPadding
 from rich.table import Table as RichTable
 
@@ -298,7 +297,7 @@ def print_change_metrics(variants: list[dict[str,  int| str | None]]) -> None:
 
     table = RichTable(
         title="",
-        show_header=True,  # We’ll manually add our own headers
+        show_header=True,
         border_style="blue",
         show_lines=True,
         header_style="bold green"

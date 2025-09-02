@@ -2,11 +2,10 @@
 # SPDX-License-Identifier: MIT
 
 import argparse
-import json
 import os
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Union
+from typing import Any
 
 from rich import print as rich_print
 from rich.padding import Padding as RichPadding
@@ -1020,7 +1019,7 @@ def run(args: argparse.Namespace) -> None:
                 pdx_files.append(full_path)
         
         for pdx in range(len(pdx_files) - 1):
-            summary_results: List[Dict[str, Union[int, str, None]]] = []
+            summary_results: list[dict[str, int|str|None]] = []
             file_a = pdx_files[pdx]
             file_b = pdx_files[pdx + 1]
             db_changes = task.compare_databases([load_file(file_a)][0], [load_file(file_b)][0])
@@ -1033,7 +1032,7 @@ def run(args: argparse.Namespace) -> None:
             deleted_diaglayer_objs: list[DiagLayer] = []
             changed_variant: list[DiagLayer] = []
             changed_variant_type: list[str] = []
-            for variant in db_changes.deleted_diagnostic_layers:
+            for variant in getattr(db_changes, "deleted_diagnostic_layers", []):
                 assert isinstance(variant, DiagLayer)
                 deleted_diaglayer_objs.append(variant)
                 changed_variant.append(variant)
@@ -1072,7 +1071,9 @@ def run(args: argparse.Namespace) -> None:
                 summary_results[-1]["Variant Type"] = changed_variant_type[db_idx]
                 print_change_metrics(summary_results)
                 if len(deleted_diaglayer_objs) > 1:
-                    task.print_dl_changes(
-                    task.compare_diagnostic_layers(deleted_diaglayer_objs[db_idx ],deleted_diaglayer_objs[db_idx + 1]))
-            task.print_database_changes(db_changes)
+                    dl_change = task.compare_diagnostic_layers(deleted_diaglayer_objs[db_idx ],deleted_diaglayer_objs[db_idx + 1])
+                    if dl_change:
+                        task.print_dl_changes(dl_change)
+            if db_changes:
+                task.print_database_changes(db_changes)
             rich_print()
