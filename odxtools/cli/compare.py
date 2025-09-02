@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: MIT
 
 import argparse
-import json
 import os
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -11,152 +11,193 @@ from rich import print as rich_print
 from rich.padding import Padding as RichPadding
 from rich.table import Table as RichTable
 
+from ..compumethods.limit import Limit
 from ..database import Database
+from ..dataobjectproperty import DataObjectProperty
 from ..diaglayers.diaglayer import DiagLayer
 from ..diagservice import DiagService
+from ..dopbase import DopBase
+from ..dtcdop import DtcDop
+from ..encoding import Encoding
+from ..internalconstr import InternalConstr
 from ..loadfile import load_file
-from ..odxtypes import AtomicOdxType
+from ..odxtypes import AtomicOdxType, DataType
 from ..parameters.codedconstparameter import CodedConstParameter
 from ..parameters.nrcconstparameter import NrcConstParameter
 from ..parameters.parameter import Parameter
+from ..parameters.parameterwithdop import ParameterWithDOP
 from ..parameters.physicalconstantparameter import PhysicalConstantParameter
 from ..parameters.valueparameter import ValueParameter
+from ..unit import Unit
 from . import _parser_utils
 from ._parser_utils import SubparsersList
-from ._print_utils import (extract_service_tabulation_data, print_change_metrics, print_dl_metrics,
-                           print_service_parameters)
+
+from ._print_utils import build_service_table, print_dl_metrics, print_service_parameters, print_change_metrics
 
 # name of the tool
 _odxtools_tool_name_ = "compare"
 
 
 @dataclass
-class ChangedParameterDetails:
-    service: DiagService  # The service whose parameters changed
-    changed_parameters: list[DiagService] = field(
-        default_factory=list)  # list of changed parameter names
-    change_details: list[DiagService] = field(default_factory=list)  # Detailed change information
+class ParameterAttributeChanges:
+    attribute: str
+    old_value: AtomicOdxType | Sequence[AtomicOdxType] | Encoding | DataType | None = field(
+        default=None)
+    new_value: AtomicOdxType | Sequence[AtomicOdxType] | Encoding | DataType | None = field(
+        default=None)
+
 
 
 @dataclass
-class ServiceDiff:
+class ParameterChanges:
+    description: str  # description of change
+    changed_attributes: list[ParameterAttributeChanges] = field(
+        default_factory=list)  # detailed information on changed attribute of parameter
+
+
+@dataclass
+class ServiceChanges:
+    service: DiagService  # The service whose parameters have changed
+    changed_parameters_of_service: list[ParameterChanges] = field(default_factory=list)
+
+
+@dataclass
+class RenamedService:
+    old_service_name: str
+    new_service_name: str
+    new_service_object: DiagService
+
+
+@dataclass
+class DiagLayerChanges:
     diag_layer: str
     diag_layer_type: str
     new_services: list[DiagService] = field(default_factory=list)
     deleted_services: list[DiagService] = field(default_factory=list)
-    changed_name_of_service: list[list[str | DiagService]] = field(default_factory=list)
-    changed_parameters_of_service: list[ChangedParameterDetails] = field(default_factory=list)
+    renamed_services: list[RenamedService] = field(default_factory=list)
+    services_with_parameter_changes: list[ServiceChanges] = field(default_factory=list)
 
 
 @dataclass
 class SpecsChangesVariants:
     new_diagnostic_layers: list[DiagLayer] = field(default_factory=list)
     deleted_diagnostic_layers: list[DiagLayer] = field(default_factory=list)
-    service_changes: dict[str, list[DiagLayer] | ServiceDiff] = field(default_factory=dict)
+    changed_diagnostic_layers: list[DiagLayerChanges] = field(default_factory=list)
 
 
 class Display:
 
-    param_detailed: bool
-    obj_detailed: bool
+    detailed: bool
 
     def __init__(self) -> None:
         pass
 
-    def print_dl_changes(self, service_spec: ServiceDiff) -> None:
-        if service_spec.new_services or service_spec.deleted_services or service_spec.changed_name_of_service or service_spec.changed_parameters_of_service:
+    def print_dl_overview(self, filename: str, dls: list[DiagLayer]) -> None:
+        rich_print()
+        rich_print(f"Overview of diagnostic layers (in [orange1]{filename}[/orange1])")
+        print_dl_metrics(dls)
+
+    def print_dl_changes(self, service_spec: DiagLayerChanges) -> None:
+        if service_spec.new_services or service_spec.deleted_services or service_spec.renamed_services or service_spec.services_with_parameter_changes:
             assert isinstance(service_spec.diag_layer, str)
             rich_print()
             rich_print(
-                f"Changed diagnostic services for diagnostic layer '{service_spec.diag_layer}' ({service_spec.diag_layer_type}):"
+                f"[blue]Changed diagnostic services[/blue] of diagnostic layer [green3]'{service_spec.diag_layer}'[/green3] [medium_spring_green]({service_spec.diag_layer_type})[/medium_spring_green]:"
             )
         if service_spec.new_services:
             assert isinstance(service_spec.new_services, list)
             rich_print()
             rich_print(" [blue]New services[/blue]")
-            rich_print(extract_service_tabulation_data(service_spec.new_services))
+            rich_print(build_service_table(service_spec.new_services))
         if service_spec.deleted_services:
             assert isinstance(service_spec.deleted_services, list)
             rich_print()
             rich_print(" [blue]Deleted services[/blue]")
-            rich_print(extract_service_tabulation_data(service_spec.deleted_services))
-        if service_spec.changed_name_of_service[0]:
+            rich_print(build_service_table(service_spec.deleted_services))
+        if service_spec.renamed_services:
+            assert isinstance(service_spec.renamed_services, list)
             rich_print()
             rich_print(" [blue]Renamed services[/blue]")
-            tmp: list[DiagService] = []
-            for sublist in service_spec.changed_name_of_service:
-                for item in sublist:
-                    if isinstance(item, DiagService):
-                        tmp.append(item)
-            rich_print(extract_service_tabulation_data(tmp))
-        if service_spec.changed_parameters_of_service:
-            first_change_details = service_spec.changed_parameters_of_service[0]
-            if first_change_details:
+            services = [item.new_service_object for item in service_spec.renamed_services]
+            old_names = [item.old_service_name for item in service_spec.renamed_services]
+            rich_print(
+                build_service_table(
+                    services=services, additional_columns=[("Old service name", old_names)]))
+        if service_spec.services_with_parameter_changes:
+            assert isinstance(service_spec.services_with_parameter_changes, list)
+            rich_print()
+            rich_print(" [blue]Services with parameter changes[/blue]")
+            services = [item.service for item in service_spec.services_with_parameter_changes]
+            changed_param_column = [
+                f"\n".join(
+                    [item.description
+                     for item in changed_params.changed_parameters_of_service])
+                for changed_params in service_spec.services_with_parameter_changes
+            ]
+
+            table = build_service_table(
+                services=services,
+                additional_columns=[("Changed Parameters", changed_param_column)])
+            rich_print(RichPadding(table, pad=(0, 0, 0, 1)))
+
+            for item in service_spec.services_with_parameter_changes:
+                assert isinstance(item, ServiceChanges)
+                assert isinstance(item.service, DiagService)
                 rich_print()
-                rich_print(" [blue]Services with parameter changes[/blue]")
-                changed_param_column = [
-                    str(param_details.changed_parameters)
-                    for param_details in service_spec.changed_parameters_of_service
-                ]
-                services = [
-                    param_detail.service
-                    for param_detail in service_spec.changed_parameters_of_service
-                ]
-                table = extract_service_tabulation_data(
-                    services, additional_columns=[("Changed Parameters", changed_param_column)])
-                rich_print(table)
-                for service_idx, param_detail in enumerate(
-                        service_spec.changed_parameters_of_service):
-                    service = param_detail.service
+                rich_print(
+                    f"  [blue]Detailed changes[/blue] of diagnostic service [magenta]'{item.service.short_name}'[/magenta]"
+                )
+                for param_changes in item.changed_parameters_of_service:
+                    rich_print(f"   {param_changes.description}:")
+                    table = RichTable(
+                        show_header=True,
+                        header_style="bold cyan",
+                        border_style="blue",
+                        show_lines=True)
+                    table.add_column("Attribute", style="light_cyan1")
+                    table.add_column("Old Value", justify="left", style="light_goldenrod3")
+                    table.add_column("New Value", justify="left", style="light_goldenrod3")
 
-                    assert isinstance(service, DiagService)
-                    rich_print()
-                    rich_print(
-                        f"  Detailed changes of diagnostic service [u cyan]{service.short_name}[/u cyan]"
-                    )
+                    for value in param_changes.changed_attributes:
+                        table.add_row(value.attribute,
+                                      (str(value.old_value) if value.old_value else ""),
+                                      (str(value.new_value) if value.new_value else ""))
+                    rich_print(RichPadding(table, pad=(0, 0, 0, 3)))
 
-                    info_list = service_spec.changed_parameters_of_service[
-                        service_idx].change_details
-                    for detailed_info in info_list:
-                        if isinstance(detailed_info, str):
-                            rich_print()
-                            rich_print(detailed_info)
-                        elif isinstance(detailed_info, dict):
-                            table = RichTable(
-                                show_header=True,
-                                header_style="bold cyan",
-                                border_style="blue",
-                                show_lines=True)
-                            for header in detailed_info:
-                                table.add_column(header)
-                            rows = zip(*detailed_info.values(), strict=True)
-                            for row in rows:
-                                table.add_row(*map(str, row))
-
-                            rich_print(RichPadding(table, pad=(0, 0, 0, 4)))
-                            rich_print()
-                    if self.param_detailed:
-                        print_service_parameters(service, allow_unknown_bit_lengths=True)
+                if self.detailed:
+                    print_service_parameters(item.service, allow_unknown_bit_lengths=True)
 
     def print_database_changes(self, changes_variants: SpecsChangesVariants) -> None:
 
-        if changes_variants.new_diagnostic_layers or changes_variants.deleted_diagnostic_layers:
+        if changes_variants.new_diagnostic_layers:
             rich_print()
-            rich_print("[bright_blue]Changed diagnostic layers[/bright_blue]: ")
-            rich_print(" New diagnostic layers: ")
+            rich_print("[blue]New diagnostic layers[/blue]:")
             for variant in changes_variants.new_diagnostic_layers:
                 assert isinstance(variant, DiagLayer)
                 rich_print(
-                    f"  [magenta]{variant.short_name}[/magenta] ({variant.variant_type.value})")
-            rich_print(" Deleted diagnostic layers: ")
+                    f" [green3]{variant.short_name}[/green3] [medium_spring_green]({variant.variant_type.value})[/medium_spring_green]"
+                )
+
+        if changes_variants.deleted_diagnostic_layers:
+            rich_print()
+            rich_print("[blue]Deleted diagnostic layers[/blue]:")
             for variant in changes_variants.deleted_diagnostic_layers:
                 assert isinstance(variant, DiagLayer)
                 rich_print(
-                    f"  [magenta]{variant.short_name}[/magenta] ({variant.variant_type.value})")
+                    f" [green3]{variant.short_name}[/green3] [medium_spring_green]({variant.variant_type.value})[/medium_spring_green]"
+                )
 
-        # diagnostic services
-        for _, value in changes_variants.service_changes.items():
-            if isinstance(value, ServiceDiff):
+        if changes_variants.changed_diagnostic_layers:
+            rich_print()
+            rich_print("[blue]Changed diagnostic layers[/blue]: ")
+            for value in changes_variants.changed_diagnostic_layers:
+                rich_print(
+                    f" [green3]{value.diag_layer}[/green3] [medium_spring_green]({value.diag_layer_type})[/medium_spring_green]"
+                )
+
+            # print changes of diagnostic services
+            for value in changes_variants.changed_diagnostic_layers:
+                assert isinstance(value, DiagLayerChanges)
                 self.print_dl_changes(value)
 
 
@@ -171,95 +212,374 @@ class Comparison(Display):
     def __init__(self) -> None:
         pass
 
-    def compare_parameters(self, param1: Parameter, param2: Parameter) -> dict[str, Any]:
-        # checks whether properties of param1 and param2 differ
-        # checked properties: Name, Byte Position, Bit Length, Semantic, Parameter Type, Value (Coded, Constant, Default etc.), Data Type, Data Object Property (Name, Physical Data Type, Unit)
+    def compare_units(self, unit1: Unit, unit2: Unit) -> list[ParameterAttributeChanges]:
+        '''
+        Checks whether properties of unit1 and unit2 differ
 
-        property = []
-        old = []
-        new = []
+        Checked properties:
+        - short_name
+        - display_name
+        - factor_si_to_unit
+        - offset_si_to_unit
+        - physical_dimension
 
-        def append_list(property_name: str, new_property_value: AtomicOdxType | None,
-                        old_property_value: AtomicOdxType | None) -> None:
-            property.append(property_name)
-            old.append(old_property_value)
-            new.append(new_property_value)
+        Properties of unit object: short_name, long_name, description, odx_id, display_name, oid, factor_si_to_unit, offset_si_to_unit, physical_dimension_ref
+        '''
+
+        changed_attributes: list[ParameterAttributeChanges] = []
+        if unit1 == unit2:
+            return []
+
+        changed_attributes.append(
+            ParameterAttributeChanges(
+                attribute="Linked DOP object: Unit",
+                old_value=f"<{unit2.odx_id.local_id}",
+                new_value=f"<{unit1.odx_id.local_id}>"))
+        if unit1.short_name != unit2.short_name:
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Linked DOP object: Unit: Name",
+                    old_value=unit2.short_name,
+                    new_value=unit1.short_name))
+        if unit1.display_name != unit2.display_name:
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Linked DOP object: Unit: Display name",
+                    old_value=unit2.display_name,
+                    new_value=unit1.display_name))
+        if unit1.factor_si_to_unit != unit2.factor_si_to_unit:
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Linked DOP object: Unit: FACTOR-SI-TO-UNIT",
+                    old_value=f if (f := unit2.factor_si_to_unit) else "",
+                    new_value=f if (f := unit1.factor_si_to_unit) else ""))
+        if unit1.offset_si_to_unit != unit2.offset_si_to_unit:
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Linked DOP object: Unit: OFFSET-SI-TO-UNIT",
+                    old_value=ofs if (ofs := unit2.offset_si_to_unit) else "",
+                    new_value=ofs if (ofs := unit1.offset_si_to_unit) else ""))
+        if unit1.physical_dimension != unit2.physical_dimension:
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Linked DOP object: Unit: Physical dimension",
+                    old_value="<Physical dimension object" if unit2.physical_dimension else "",
+                    new_value="<Physical dimension object" if unit1.physical_dimension else ""))
+
+        return changed_attributes
+
+    def compare_dops(self, dop1: DopBase, dop2: DopBase) -> list[ParameterAttributeChanges]:
+        '''
+        Checks whether properties of dop1 and dop2 differ
+        
+        Checked properties:
+        - Name,
+        - COMPU-METHOD (for DataObjectProperty and DtcDop)
+        - DIAG-CODED-TYPE (for DataObjectProperty and DtcDop)
+        - PHYSICAL-TYPE (for DataObjectProperty and DtcDop)
+        - INTERNAL-CONSTR (for DataObjectProperty)
+        - PHYS-CONSTR (for DataObjectProperty)
+        - Unit (for DataObjectProperty)
+        - DTCs (for DtcDop)
+        '''
+        changed_attributes: list[ParameterAttributeChanges] = []
+        if dop1 == dop2:
+            return []
+
+        changed_attributes.append(
+            ParameterAttributeChanges(
+                attribute="Linked DOP (data object property) object",
+                old_value=f"<{dop2.odx_id.local_id}>",
+                new_value=f"<{dop1.odx_id.local_id}>"))
+
+        # DOP Name
+        if dop1.short_name != dop2.short_name:
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Linked DOP object: Name",
+                    old_value=dop2.short_name,
+                    new_value=dop1.short_name))
+
+        # compare COMPU-METHOD, DIAG-CODED-TYPE and PHYSICAL-TYPE of DOP
+        if (isinstance(dop1, DataObjectProperty) and isinstance(dop2, DataObjectProperty) or
+                isinstance(dop1, DtcDop) and isinstance(dop2, DtcDop)):
+
+            if dop1.compu_method != dop2.compu_method:
+                # TODO compare sub-attributes of CompuMethod
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute="Linked DOP object: Computation Method",
+                        old_value="<COMPU-METHOD>",
+                        new_value="<COMPU-METHOD>"))
+
+            if dop1.diag_coded_type != dop2.diag_coded_type:
+                # attributes: base_type_encoding, base_data_type, is_highlow_byte_order, dct_type
+                if dop1.diag_coded_type.base_type_encoding != dop2.diag_coded_type.base_type_encoding:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Linked DOP object: DIAG-CODED-TYPE: Base Type Encoding",
+                            old_value=dop2.diag_coded_type.base_type_encoding,
+                            new_value=dop1.diag_coded_type.base_type_encoding))
+                if dop1.diag_coded_type.base_data_type != dop2.diag_coded_type.base_data_type:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Linked DOP object: DIAG-CODED-TYPE: Base Data Type",
+                            old_value=dop2.diag_coded_type.base_data_type.name,
+                            new_value=dop1.diag_coded_type.base_data_type.name))
+                if dop1.diag_coded_type.dct_type != dop2.diag_coded_type.dct_type:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Linked DOP object: DIAG-CODED-TYPE: Type",
+                            old_value=dop2.diag_coded_type.dct_type,
+                            new_value=dop1.diag_coded_type.dct_type))
+
+            if dop1.physical_type != dop2.physical_type:
+                # attributes: precision, base_data_type, display_radix
+                if dop1.physical_type.precision != dop2.physical_type.precision:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Linked DOP object: PHYSICAL-TYPE: Precision",
+                            old_value=dop2.physical_type.precision,
+                            new_value=dop1.physical_type.precision))
+                if dop1.physical_type.base_data_type != dop2.physical_type.base_data_type:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Linked DOP object: PHYSICAL-TYPE: Base data type",
+                            old_value=dop2.physical_type.base_data_type.name,
+                            new_value=dop1.physical_type.base_data_type.name))
+                if dop1.physical_type.display_radix != dop2.physical_type.display_radix:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Linked DOP object: PHYSICAL-TYPE: Display Radix",
+                            old_value=dr.name if (dr := dop2.physical_type.display_radix) else "",
+                            new_value=dr.name if (dr := dop1.physical_type.display_radix) else ""))
+
+        # compare INTERNAL-CONSTR, PHYS-CONSTR and unit of DOP
+        if isinstance(dop1, DataObjectProperty) and isinstance(dop2, DataObjectProperty):
+
+            def compare_internal_constr_objects(
+                    constr1: InternalConstr, constr2: InternalConstr,
+                    constr_type: str) -> list[ParameterAttributeChanges]:
+                """
+                Compares to objects of type 'InternalConstr'
+                
+                Attributes: lower_limit, upper_limit, scale_constrs
+                """
+
+                def compare_limits(limit1: Limit, limit2: Limit,
+                                   limit_type: str) -> list[ParameterAttributeChanges]:
+                    """
+                    Compares to objects of type 'Limit'
+
+                    Attributes: value, value_type, interval_type
+                    """
+                    changed_attributes: list[ParameterAttributeChanges] = []
+                    if limit1 == limit2:
+                        return []
+
+                    if limit1.value != limit2.value:
+                        changed_attributes.append(
+                            ParameterAttributeChanges(
+                                attribute=f"Linked DOP object: {constr_type}: {limit_type} Limit: Value",
+                                old_value=limit2.value,
+                                new_value=limit1.value))
+                    if limit1.value_type != limit2.value_type:
+                        changed_attributes.append(
+                            ParameterAttributeChanges(
+                                attribute=f"Linked DOP object: {constr_type}: {limit_type} Limit: Value Type",
+                                old_value=limit2.value_type,
+                                new_value=limit1.value_type))
+
+                    return changed_attributes
+
+                changed_attributes: list[ParameterAttributeChanges] = []
+                if constr1 == constr2:
+                    return []
+
+                # compare lower limit
+                if constr1.lower_limit is not None and constr2.lower_limit is not None:
+                    changed_attributes += attrs if (attrs := compare_limits(
+                        constr1.lower_limit, constr2.lower_limit, 'Lower')) else []
+                elif (constr1.lower_limit is None) != (constr2.lower_limit is None):
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute=f"Linked DOP object: {constr_type}: Lower Limit",
+                            old_value="<Limit object>" if constr2.lower_limit else "",
+                            new_value="<Limit object>" if constr1.lower_limit else ""))
+
+                # compare upper limit
+                if constr1.upper_limit is not None and constr2.upper_limit is not None:
+                    changed_attributes += attrs if (attrs := compare_limits(
+                        constr1.upper_limit, constr2.upper_limit, 'Upper')) else []
+                elif (constr1.upper_limit is None) != (constr2.upper_limit is None):
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute=f"Linked DOP object: {constr_type}: Upper Limit",
+                            old_value="<Limit object>" if constr2.upper_limit else "",
+                            new_value="<Limit object>" if constr1.upper_limit else ""))
+
+                # compare scale_constrs
+                if constr1.scale_constrs != constr2.scale_constrs:
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute=f"Linked DOP object: {constr_type}: Scale Constraints",
+                            old_value="<List of SCALE-CONSTR objects>",
+                            new_value="<List of SCALE-CONSTR objects>"))
+
+                return changed_attributes
+
+            # compare INTERNAL-CONSTR
+            if dop1.internal_constr is not None and dop2.internal_constr is not None:
+                changed_attributes += attrs if (attrs := compare_internal_constr_objects(
+                    dop1.internal_constr, dop2.internal_constr, 'INTERNAL-CONSTR')) else []
+            elif (dop1.internal_constr is None) != (dop2.internal_constr is None):
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute=f"Linked DOP object: INTERNAL-CONSTR",
+                        old_value="<INTERNAL-CONSTR object>" if dop2.internal_constr else "",
+                        new_value="<INTERNAL-CONSTR object>" if dop1.internal_constr else ""))
+
+            # compare PHYS-CONSTR
+            if dop1.physical_constr is not None and dop2.physical_constr is not None:
+                changed_attributes += attrs if (attrs := compare_internal_constr_objects(
+                    dop1.physical_constr, dop2.physical_constr, 'PHYS-CONSTR')) else []
+            elif (dop1.physical_constr is None) != (dop2.physical_constr is None):
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute=f"Linked DOP object: PHYS-CONSTR",
+                        old_value="<PHYS-CONSTR object>" if dop2.physical_constr else "",
+                        new_value="<PHYS-CONSTR object>" if dop1.physical_constr else ""))
+
+            # compare unit
+            if dop1.unit is not None and dop2.unit is not None:
+                changed_attributes += attrs if (attrs := self.compare_units(
+                    unit1=dop1.unit, unit2=dop2.unit)) else []
+            elif (dop1.unit is None) != (dop2.unit is None):
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute=f"Linked DOP object: Unit",
+                        old_value="<Unit object>" if dop2.unit else "",
+                        new_value="<Unit object>" if dop1.unit else ""))
+
+        # compare DTCs of DOP
+        if isinstance(dop1, DtcDop) and isinstance(dop2, DtcDop):
+
+            if dop1.dtcs != dop2.dtcs:
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute="Linked DOP object: List of DTCs",
+                        old_value="<List of DTC objects>",
+                        new_value="<List of DTC objects>"))
+
+        return changed_attributes
+
+    def compare_parameters(self, param1: Parameter,
+                           param2: Parameter) -> list[ParameterAttributeChanges]:
+        '''
+        Checks whether properties of param1 and param2 differ
+        
+        Checked properties:
+        - Name
+        - Byte Position
+        - Bit Length
+        - Semantic
+        - Parameter Type
+        - Value (CODED-CONST, NRC-CONST, PHYS-CONST, PHYSICAL-DEFAULT-VALUE)
+        - Data Type
+        - Data Object Property
+        '''
+
+        changed_attributes: list[ParameterAttributeChanges] = []
 
         if param1.short_name != param2.short_name:
-            append_list("Parameter name", param1.short_name, param2.short_name)
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Parameter Name",
+                    old_value=param2.short_name,
+                    new_value=param1.short_name))
         if param1.byte_position != param2.byte_position:
-            append_list("Byte position", param1.byte_position, param2.byte_position)
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Byte Position",
+                    old_value=param2.byte_position,
+                    new_value=param1.byte_position))
         if param1.get_static_bit_length() != param2.get_static_bit_length():
-            append_list("Bit Length", param1.get_static_bit_length(),
-                        param2.get_static_bit_length())
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Bit Length",
+                    old_value=param2.get_static_bit_length(),
+                    new_value=param1.get_static_bit_length()))
         if param1.semantic != param2.semantic:
-            append_list("Semantic", param1.semantic, param2.semantic)
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Semantic", old_value=param2.semantic, new_value=param1.semantic))
         if param1.parameter_type != param2.parameter_type:
-            append_list("Parameter type", param1.parameter_type, param2.parameter_type)
+            changed_attributes.append(
+                ParameterAttributeChanges(
+                    attribute="Parameter Type",
+                    old_value=param2.parameter_type,
+                    new_value=param1.parameter_type))
 
         if isinstance(param1, CodedConstParameter) and isinstance(param2, CodedConstParameter):
             if param1.diag_coded_type.base_data_type != param2.diag_coded_type.base_data_type:
-                append_list("Data type", param1.diag_coded_type.base_data_type.name,
-                            param2.diag_coded_type.base_data_type.name)
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute="Data Type",
+                        old_value=param2.diag_coded_type.base_data_type.name,
+                        new_value=param1.diag_coded_type.base_data_type.name))
             if param1.coded_value != param2.coded_value:
                 if isinstance(param1.coded_value, int) and isinstance(param2.coded_value, int):
-                    append_list(
-                        "Value",
-                        f"0x{param1.coded_value:0{(param1.get_static_bit_length() or 0) // 4}X}",
-                        f"0x{param2.coded_value:0{(param2.get_static_bit_length() or 0) // 4}X}")
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Value (CODED-CONST)",
+                            old_value=f"0x{param2.coded_value:0{(param2.get_static_bit_length() or 0) // 4}X}",
+                            new_value=f"0x{param1.coded_value:0{(param1.get_static_bit_length() or 0) // 4}X}"
+                        ))
                 else:
-                    append_list("Value", f"{param1.coded_value!r}", f"{param2.coded_value!r}")
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Value (CODED-CONST)",
+                            old_value=f"{param2.coded_value!r}",
+                            new_value=f"{param1.coded_value!r}"))
 
         elif isinstance(param1, NrcConstParameter) and isinstance(param2, NrcConstParameter):
             if param1.diag_coded_type.base_data_type != param2.diag_coded_type.base_data_type:
-                append_list("Data type", param1.diag_coded_type.base_data_type.name,
-                            param2.diag_coded_type.base_data_type.name)
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute="Data Type",
+                        old_value=param2.diag_coded_type.base_data_type.name,
+                        new_value=param1.diag_coded_type.base_data_type.name))
+
             if param1.coded_values != param2.coded_values:
-                append_list("Values", str(param1.coded_values), str(param2.coded_values))
+                changed_attributes.append(
+                    ParameterAttributeChanges(
+                        attribute="Values (NRC-CONST)",
+                        old_value=param2.coded_values,
+                        new_value=param1.coded_values))
 
-        elif (dop_1 := getattr(param1, "dop", None)) is not None and (dop_2 := getattr(
-                param2, "dop", None)) is not None:
+        elif isinstance(param1, ParameterWithDOP) and isinstance(param2, ParameterWithDOP):
 
-            if dop_1 != dop_2:
-                # TODO: compare INTERNAL-CONSTR, COMPU-INTERNAL-TO-PHYS of DOP
-                append_list("Linked DOP object", "", "")
-
-                # DOP Name
-                if dop_1.short_name != dop_2.short_name:
-                    append_list(" DOP name", dop_1.short_name, dop_2.short_name)
-
-                # DOP Unit
-                if getattr(dop_1, "unit", None) and getattr(dop_2, "unit", None):
-                    # (properties of unit object: short_name, long_name, description, odx_id, display_name, oid, factor_si_to_unit, offset_si_to_unit, physical_dimension_ref)
-                    if dop_1.unit != dop_2.unit and dop_1.unit.short_name != dop_2.unit.short_name:
-                        append_list("  DOP unit name", dop_1.unit.short_name, dop_2.unit.short_name)
-                    elif dop_1.unit != dop_2.unit and dop_1.unit.display_name != dop_2.unit.display_name:
-                        append_list("  DOP unit display name", dop_1.unit.display_name,
-                                    dop_2.unit.display_name)
-                    elif dop_1.unit != dop_2.unit:
-                        append_list(" DOP unit object", "", "")
-
-                if hasattr(dop_1, "physical_type") and hasattr(dop_2, "physical_type"):
-                    if (dop_1.physical_type and dop_2.physical_type and
-                            dop_1.physical_type.base_data_type
-                            != dop_2.physical_type.base_data_type):
-                        append_list(" DOP physical data type",
-                                    dop_1.physical_type.base_data_type.name,
-                                    dop_2.physical_type.base_data_type.name)
+            # compare DOP object
+            changed_attributes += attrs if (attrs := self.compare_dops(
+                dop1=param1.dop, dop2=param2.dop)) else []
 
             if (isinstance(param1, PhysicalConstantParameter) and
                     isinstance(param2, PhysicalConstantParameter) and
                     param1.physical_constant_value != param2.physical_constant_value):
                 if isinstance(param1.physical_constant_value, int) and isinstance(
                         param2.physical_constant_value, int):
-                    append_list(
-                        "Constant value",
-                        f"0x{param1.physical_constant_value:0{(param1.get_static_bit_length() or 0) // 4}X}",
-                        f"0x{param2.physical_constant_value:0{(param2.get_static_bit_length() or 0) // 4}X}"
-                    )
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Value (PHYS-CONST)",
+                            old_value=f"0x{param2.physical_constant_value:0{(param2.get_static_bit_length() or 0) // 4}X}",
+                            new_value=f"0x{param1.physical_constant_value:0{(param1.get_static_bit_length() or 0) // 4}X}"
+                        ))
                 else:
-                    append_list("Constant value", f"{param1.physical_constant_value!r}",
-                                f"{param2.physical_constant_value!r}")
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Value (PHYS-CONST)",
+                            old_value=f"{param2.physical_constant_value!r}",
+                            new_value=f"{param1.physical_constant_value!r}"))
 
             elif (isinstance(param1, ValueParameter) and isinstance(param2, ValueParameter) and
                   param1.physical_default_value is not None and
@@ -267,23 +587,26 @@ class Comparison(Display):
                   param1.physical_default_value != param2.physical_default_value):
                 if isinstance(param1.physical_default_value, int) and isinstance(
                         param2.physical_default_value, int):
-                    append_list(
-                        "Default value",
-                        f"0x{param1.physical_default_value:0{(param1.get_static_bit_length() or 0) // 4}X}",
-                        f"0x{param2.physical_default_value:0{(param2.get_static_bit_length() or 0) // 4}X}"
-                    )
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Value (PHYSICAL-DEFAULT-VALUE)",
+                            old_value=f"0x{param2.physical_default_value:0{(param2.get_static_bit_length() or 0) // 4}X}",
+                            new_value=f"0x{param1.physical_default_value:0{(param1.get_static_bit_length() or 0) // 4}X}"
+                        ))
                 else:
-                    append_list("Default value", f"{param1.physical_default_value!r}",
-                                f"{param2.physical_default_value!r}")
+                    changed_attributes.append(
+                        ParameterAttributeChanges(
+                            attribute="Value (PHYSICAL-DEFAULT-VALUE)",
+                            old_value=f"{param2.physical_default_value!r}",
+                            new_value=f"{param1.physical_default_value!r}"))
 
-        return {"Property": property, "Old Value": old, "New Value": new}
+        return changed_attributes
 
-    def compare_services(self, service1: DiagService, service2: DiagService) -> list[DiagService]:
-        # compares request, positive response and negative response parameters of two diagnostic services
+    def compare_services(self, service1: DiagService,
+                         service2: DiagService) -> ServiceChanges | None:
+        '''compares request, positive response and negative response parameters of two diagnostic services'''
 
-        information: list[str | dict[str, Any]] = [
-        ]  # information = [infotext1, table1, infotext2, table2, ...]
-        changed_params = ""
+        changed_params: list[ParameterChanges] = []
 
         # Request
         if service1.request is not None and service2.request is not None and len(
@@ -292,30 +615,27 @@ class Comparison(Display):
                 for res2_idx, param2 in enumerate(service2.request.parameters):
                     if res1_idx == res2_idx:
                         # find changed request parameter properties
-                        table = self.compare_parameters(param1, param2)
-                        infotext = (f"   Properties of request parameter '{param2.short_name}' "
-                                    f"that have changed:\n")
-                        # array index starts with 0 -> param[0] is 1. service parameter
-
-                        if table["Property"]:
-                            information.append(infotext)
-                            information.append(table)
-                            changed_params += f"request parameter '{param2.short_name}',\n"
+                        if (param_changes := self.compare_parameters(param1, param2)):
+                            description = (
+                                f"Properties of {res2_idx+1}. request parameter [light_slate_grey]'{param2.short_name}'[/light_slate_grey] have changed"
+                            )
+                            changed_params.append(
+                                ParameterChanges(
+                                    description=description, changed_attributes=param_changes))
         else:
-            changed_params += "request parameter list, "
-            # infotext
-            information.append(f"list of request parameters for service '{service2.short_name}' "
-                               f"is not identical.\n")
+            description = f"List of request parameters for service [magenta]'{service2.short_name}'[/magenta] is not identical"
 
-            # table
-
-            param_list1 = [] if service1.request is None else service1.request.parameters
-            param_list2 = [] if service2.request is None else service2.request.parameters
-
-            information.append({
-                "list": ["Old list", "New list"],
-                "Values": [f"\\{param_list1}", f"\\{param_list2}"]
-            })
+            changed_params.append(
+                ParameterChanges(
+                    description=description,
+                    changed_attributes=[
+                        ParameterAttributeChanges(
+                            attribute="Request parameter list",
+                            old_value=[x.short_name for x in service2.request.parameters]
+                            if service2.request else "",
+                            new_value=[x.short_name for x in service1.request.parameters]
+                            if service1.request else "")
+                    ]))
 
         # Positive Responses
         if len(service1.positive_responses) == len(service2.positive_responses):
@@ -327,39 +647,38 @@ class Comparison(Display):
                                 for param2_idx, param2 in enumerate(response2.parameters):
                                     if param1_idx == param2_idx:
                                         # find changed positive response parameter properties
-                                        table = self.compare_parameters(param1, param2)
-                                        infotext = (
-                                            f"   Properties of positive response parameter '{param2.short_name}' that "
-                                            f"have changed:\n")
-                                        # array index starts with 0 -> param[0] is first service parameter
-
-                                        if table["Property"]:
-                                            information.append(infotext)
-                                            information.append(table)
-                                            changed_params += f"positive response parameter '{param2.short_name}',\n"
+                                        if (param_changes :=
+                                                self.compare_parameters(param1, param2)):
+                                            description = f"Properties of {param2_idx+1}. positive response parameter [light_slate_grey]'{param2.short_name}'[/light_slate_grey] have changed"
+                                            changed_params.append(
+                                                ParameterChanges(
+                                                    description=description,
+                                                    changed_attributes=param_changes))
                         else:
-                            changed_params += "positive response parameter list, "
-                            # infotext
-                            information.append(
-                                f"list of positive response parameters for service '{service2.short_name}' is not identical."
-                            )
-                            # table
-                            information.append({
-                                "list": ["Old list", "New list"],
-                                "Values": [str(response1.parameters),
-                                           str(response2.parameters)]
-                            })
+
+                            description = f"List of positive response parameters for service [magenta]'{service2.short_name}'[/magenta] is not identical"
+                            changed_params.append(
+                                ParameterChanges(
+                                    description=description,
+                                    changed_attributes=[
+                                        ParameterAttributeChanges(
+                                            attribute="Positive response parameter list",
+                                            old_value=[x.short_name for x in response2.parameters],
+                                            new_value=[x.short_name for x in response1.parameters])
+                                    ]))
+
         else:
-            changed_params += "positive responses list, "
-            # infotext
-            information.append(
-                f"list of positive responses for service '{service2.short_name}' is not identical.")
-            # table
-            information.append({
-                "list": ["Old list", "New list"],
-                "Values": [str(service1.positive_responses),
-                           str(service2.positive_responses)]
-            })
+            description = f"List of positive responses for service [magenta]'{service2.short_name}'[/magenta] is not identical"
+            changed_params.append(
+                ParameterChanges(
+                    description=description,
+                    changed_attributes=[
+                        ParameterAttributeChanges(
+                            attribute="Positive responses list",
+                            old_value=[x.short_name for x in service2.positive_responses],
+                            new_value=[x.short_name for x in service1.positive_responses])
+                    ]))
+
 
         # Negative Responses
         if len(service1.negative_responses) == len(service2.negative_responses):
@@ -371,60 +690,59 @@ class Comparison(Display):
                                 for param2_idx, param2 in enumerate(response2.parameters):
                                     if param1_idx == param2_idx:
                                         # find changed negative response parameter properties
-                                        table = self.compare_parameters(param1, param2)
-                                        infotext = f"   Properties of response parameter '{param2.short_name}' that have changed:\n"
-                                        # array index starts with 0 -> param[0] is 1. service parameter
-
-                                        if table["Property"]:
-                                            information.append(infotext)
-                                            information.append(table)
-                                            changed_params += f"negative response parameter '{param2.short_name}',\n"
+                                        if (param_changes :=
+                                                self.compare_parameters(param1, param2)):
+                                            description = f"Properties of {param2_idx+1}. negative response parameter [light_slate_grey]'{param2.short_name}'[/light_slate_grey] have changed"
+                                            changed_params.append(
+                                                ParameterChanges(
+                                                    description=description,
+                                                    changed_attributes=param_changes))
                         else:
-                            changed_params += "positive response parameter list, "
-                            # infotext
-                            information.append(
-                                f"list of positive response parameters for service '{service2.short_name}' is not identical.\n"
-                            )
-                            # table
-                            information.append({
-                                "list": ["Old list", "New list"],
-                                "Values": [str(response1.parameters),
-                                           str(response2.parameters)]
-                            })
+
+                            description = f"List of negative response parameters for service [magenta]'{service2.short_name}'[/magenta] is not identical"
+                            changed_params.append(
+                                ParameterChanges(
+                                    description=description,
+                                    changed_attributes=[
+                                        ParameterAttributeChanges(
+                                            attribute="Negative response parameter list",
+                                            old_value=[x.short_name for x in response2.parameters],
+                                            new_value=[x.short_name for x in response1.parameters])
+                                    ]))
         else:
-            changed_params += "negative responses list, "
-            # infotext
-            information.append(
-                f"list of positive responses for service '{service2.short_name}' is not identical.\n"
-            )
-            # table
-            information.append({
-                "list": ["Old list", "New list"],
-                "Values": [str(service1.negative_responses),
-                           str(service2.negative_responses)]
-            })
+            description = f"List of negative responses for service [magenta]'{service2.short_name}'[/magenta] is not identical"
+            changed_params.append(
+                ParameterChanges(
+                    description=description,
+                    changed_attributes=[
+                        ParameterAttributeChanges(
+                            attribute="Negative responses list",
+                            old_value=[x.short_name for x in service2.negative_responses],
+                            new_value=[x.short_name for x in service1.negative_responses])
+                    ]))
 
-        return [information, changed_params]  # type: ignore[list-item]
+        if changed_params:
+            return ServiceChanges(service=service1, changed_parameters_of_service=changed_params)
+        return None
 
-    def compare_diagnostic_layers(self, dl1: DiagLayer, dl2: DiagLayer) -> ServiceDiff:
-        # compares diagnostic services of two diagnostic layers with each other
-        # save changes in dictionary (service_dict)
+    def compare_diagnostic_layers(self, dl1: DiagLayer, dl2: DiagLayer) -> DiagLayerChanges | None:
+        '''compares diagnostic services of two diagnostic layers with each other'''
         # TODO: add comparison of SingleECUJobs
 
         new_services: list[DiagService] = []
         deleted_services: list[DiagService] = []
-        renamed_service: list[list[str | DiagService]] = [[], []]  # list of (old_name, new_name)
-        services_with_param_changes: list[ChangedParameterDetails] = [
-        ]  # Parameter changes  # TODO: implement list of tuples (str, str, DiagService)-tuples
+        renamed_services: list[RenamedService] = []
+        services_with_param_changes: list[ServiceChanges] = []
 
-        service_spec = ServiceDiff(
+        service_spec = DiagLayerChanges(
             diag_layer=dl1.short_name,
             diag_layer_type=dl1.variant_type.value,
             new_services=new_services,
             deleted_services=deleted_services,
-            changed_name_of_service=renamed_service,
-            changed_parameters_of_service=services_with_param_changes)
+            renamed_services=renamed_services,
+            services_with_parameter_changes=services_with_param_changes)
         dl1_service_names = [service.short_name for service in dl1.services]
+        dl2_service_names = [service.short_name for service in dl2.services]
 
         dl1_request_prefixes: list[bytes | bytearray | None] = [
             None if s.request is None else s.request.coded_const_prefix() for s in dl1.services
@@ -442,39 +760,29 @@ class Comparison(Display):
                 rq_prefix = service1.request.coded_const_prefix()
 
             if service1 not in dl2.services:
-                if rq_prefix is None or rq_prefix not in dl2_request_prefixes:
-                    # TODO: this will not work in cases where the constant
-                    # prefix of a request was modified...
 
-                    service_spec.new_services.append(service1)
-            # check whether names of diagnostic services have changed
-            elif service1 not in dl2.services:
+                # check whether names of diagnostic services have changed
+                # (this will not work in cases where the constant prefix of a request was modified)
+                if (rq_prefix in dl2_request_prefixes and
+                        service1.short_name not in dl2_service_names):
 
-                if rq_prefix is None or rq_prefix in dl2_request_prefixes:
                     # get related diagnostic service for request
-                    service2_idx = dl2_request_prefixes.index(rq_prefix)
-                    service2 = dl2.services[service2_idx]
+                    service2 = dl2.services[dl2_request_prefixes.index(rq_prefix)]
 
-                    # save information about changes in dictionary
+                    # save information about changes in ServiceDiff object
+                    service_spec.renamed_services.append(
+                        RenamedService(
+                            old_service_name=service2.short_name,
+                            new_service_name=service1.short_name,
+                            new_service_object=service1))
 
-                    # add new service (type: DiagService)
+                    # compare request, pos. response and neg. response parameters of diagnostic services &
+                    # add information about changed diagnostic service parameters to ServiceDiff object
+                    if (detailed_information := self.compare_services(service1, service2)):
+                        service_spec.services_with_parameter_changes.append(detailed_information)
 
-                    service_spec.changed_name_of_service[0].append(service1)
-                    # add old service name (type: String)
-                    service_spec.changed_name_of_service[1].append(service2.short_name)
-
-                    # compare request, pos. response and neg. response parameters of diagnostic services
-                    detailed_information = self.compare_services(service1, service2)
-
-                    # add information about changed diagnostic service parameters to dicitionary
-                    if detailed_information[1]:  # check whether string "changed_params" is empty
-                        param_change_details = ChangedParameterDetails(
-                            service=service1,
-                            changed_parameters=[detailed_information[1]],
-                            change_details=[detailed_information[0]],
-                        )
-
-                        service_spec.changed_parameters_of_service.append(param_change_details)
+                elif rq_prefix not in dl2_request_prefixes or service1.short_name not in dl2_service_names:
+                    service_spec.new_services.append(service1)
 
             for service2_idx, service2 in enumerate(dl2.services):
 
@@ -482,29 +790,22 @@ class Comparison(Display):
                 if service2.short_name not in dl1_service_names and dl2_request_prefixes[
                         service2_idx] not in dl1_request_prefixes:
 
-                    deleted_list = service_spec.deleted_services
-                    assert isinstance(deleted_list, list)
-                    if service2 not in deleted_list:
-                        service_spec.deleted_services.append(service2)
+                    if service2 not in (deleted_list := service_spec.deleted_services):
+                        deleted_list.append(service2)
 
                 if service1.short_name == service2.short_name:
-                    # compare request, pos. response and neg. response parameters of both diagnostic services
-                    detailed_information = self.compare_services(service1, service2)
+                    # compare request, pos. response and neg. response parameters of both diagnostic services &
+                    # add information about changed diagnostic service parameters to ServiceDiff object
+                    if (detailed_information := self.compare_services(service1, service2)):
+                        service_spec.services_with_parameter_changes.append(detailed_information)
 
-                    # add information about changed diagnostic service parameters to dicitionary
-                    if detailed_information[1]:  # check whether string "changed_params" is empty
-                        param_change_details = ChangedParameterDetails(
-                            service=service1,
-                            changed_parameters=[detailed_information[1]],
-                            change_details=[detailed_information[0]],
-                        )
-                        service_spec.changed_parameters_of_service.append(param_change_details)
-
-        return service_spec
+        if service_spec.new_services or service_spec.deleted_services or service_spec.renamed_services or service_spec.services_with_parameter_changes:
+            return service_spec
+        return None
 
     def compare_databases(self, database_new: Database,
-                          database_old: Database) -> SpecsChangesVariants:
-        # compares two PDX-files with each other
+                          database_old: Database) -> SpecsChangesVariants | None:
+        '''compares two PDX-files with each other'''
 
         new_variants: list[DiagLayer] = []  # Assuming it stores diagnostic layer names
         deleted_variants: list[DiagLayer] = []
@@ -512,7 +813,7 @@ class Comparison(Display):
         changes_variants = SpecsChangesVariants(
             new_diagnostic_layers=new_variants,
             deleted_diagnostic_layers=deleted_variants,
-            service_changes={})
+            changed_diagnostic_layers=[])
 
         # compare databases
         for _, dl1 in enumerate(database_new.diag_layers):
@@ -528,14 +829,14 @@ class Comparison(Display):
                     changes_variants.deleted_diagnostic_layers.append(dl2)
 
                 if dl1.short_name == dl2.short_name and dl1.short_name in self.diagnostic_layer_names:
-                    # compare diagnostic services of both diagnostic layers
-                    # save diagnostic service changes in dictionary (empty if no changes)
-                    service_spec: ServiceDiff = self.compare_diagnostic_layers(dl1, dl2)
-                    if changes_variants.service_changes is not None:
-                        # adds information about diagnostic service changes to return variable (changes_variants)
-                        changes_variants.service_changes.update({dl1.short_name: service_spec})
+                    # compare diagnostic services of both diagnostic layers &
+                    # save diagnostic service changes in SpecsChangesVariants object
+                    if (service_spec := self.compare_diagnostic_layers(dl1, dl2)):
+                        changes_variants.changed_diagnostic_layers.append(service_spec)
 
-        return changes_variants
+        if changes_variants.new_diagnostic_layers or changes_variants.deleted_diagnostic_layers or changes_variants.changed_diagnostic_layers:
+            return changes_variants
+        return None
 
 
 def add_subparser(subparsers: SubparsersList) -> None:
@@ -578,12 +879,12 @@ def add_subparser(subparsers: SubparsersList) -> None:
     )
 
     parser.add_argument(
-        "-nd",
-        "--no-details",
-        action="store_false",
-        default=True,
+        "-V",
+        "--verbose",
+        action="store_true",
+        default=False,
         required=False,
-        help="Don't show all service parameter details",
+        help="Show all variant and service details",
     )
     # TODO
     # Idea: provide folder with multiple pdx files as argument
@@ -613,11 +914,13 @@ def add_subparser(subparsers: SubparsersList) -> None:
 def run(args: argparse.Namespace) -> None:
 
     task = Comparison()
-    task.param_detailed = args.no_details
+    task.detailed = args.verbose
 
     db_names = [args.pdx_file if isinstance(args.pdx_file, str) else str(args.pdx_file[0])]
-    if args.database and args.variants:
-        # compare specified databases, consider only specified variants
+
+    if args.database:
+        # compare specified databases
+        # if args.variants is specified, filter considered diagnostic layers
 
         for name in args.database:
             db_names.append(name) if isinstance(name, str) else str(name[0])
@@ -625,12 +928,16 @@ def run(args: argparse.Namespace) -> None:
         task.databases = [load_file(name) for name in db_names]
         diag_layer_names = {dl.short_name for db in task.databases for dl in db.diag_layers}
 
-        task.diagnostic_layer_names = diag_layer_names.intersection(set(args.variants))
+        if args.variants:
+            task.diagnostic_layer_names = diag_layer_names.intersection(set(args.variants))
 
-        for name in args.variants:
-            if name not in task.diagnostic_layer_names:
-                rich_print(f"The variant '{name}' could not be found!")
-                return
+            for name in args.variants:
+                if name not in task.diagnostic_layer_names:
+                    rich_print(f"The variant [green3]'{name}'[/green3] could not be found!")
+                    return
+
+        else:
+            task.diagnostic_layer_names = diag_layer_names
 
         task.db_indicator_1 = 0
 
@@ -640,62 +947,31 @@ def run(args: argparse.Namespace) -> None:
             task.db_indicator_2 = db_idx + 1
 
             rich_print()
-            rich_print(f"Changes in file '{os.path.basename(db_names[0])}'")
-            rich_print(f" (compared to '{os.path.basename(db_names[db_idx + 1])}')")
-
-            rich_print()
-            rich_print(f"Overview of diagnostic layers (for {os.path.basename(db_names[0])})")
-            print_dl_metrics([
-                variant for variant in task.databases[0].diag_layers
-                if variant.short_name in task.diagnostic_layer_names
-            ])
-
-            rich_print()
+            rich_print(f"Changes in file [orange1]'{os.path.basename(db_names[0])}'[/orange1]")
             rich_print(
-                f"Overview of diagnostic layers (for {os.path.basename(db_names[db_idx+1])})")
-            print_dl_metrics([
-                variant for variant in task.databases[db_idx + 1].diag_layers
-                if variant.short_name in task.diagnostic_layer_names
-            ])
+                f" (compared to [orange1]'{os.path.basename(db_names[db_idx + 1])}'[/orange1])")
 
-            task.print_database_changes(
-                task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
+            if task.detailed:
+                if args.variants:
+                    diag_layers_1 = [
+                        dl for dl in task.databases[0].diag_layers
+                        if dl.short_name in task.diagnostic_layer_names
+                    ]
+                    diag_layers_2 = [
+                        dl for dl in task.databases[db_idx + 1].diag_layers
+                        if dl.short_name in task.diagnostic_layer_names
+                    ]
+                else:
+                    diag_layers_1 = task.databases[0].diag_layers
+                    diag_layers_2 = task.databases[db_idx + 1].diag_layers
 
-    elif args.database:
-        # compare specified databases, consider all variants
+                task.print_dl_overview(filename=os.path.basename(db_names[0]), dls=diag_layers_1)
+                task.print_dl_overview(
+                    filename=os.path.basename(db_names[db_idx + 1]), dls=diag_layers_2)
 
-        for name in args.database:
-            db_names.append(name)
-        task.databases = [load_file(name) for name in db_names]
-
-        # collect all diagnostic layers from all specified databases
-        task.diagnostic_layer_names = {
-            dl.short_name
-            for db in task.databases
-            for dl in db.diag_layers
-        }
-        task.db_indicator_1 = 0
-
-        for db_idx, _ in enumerate(task.databases):
-            if db_idx + 1 >= len(task.databases):
-                break
-            task.db_indicator_2 = db_idx + 1
-
-            rich_print()
-            rich_print(f"Changes in file '{os.path.basename(db_names[0])}")
-            rich_print(f" (compared to '{os.path.basename(db_names[db_idx + 1])}')")
-
-            rich_print()
-            rich_print(f"Overview of diagnostic layers (for {os.path.basename(db_names[0])})")
-            print_dl_metrics(list(task.databases[0].diag_layers))
-
-            rich_print()
-            rich_print(
-                f"Overview of diagnostic layers (for {os.path.basename(db_names[db_idx+1])})")
-            print_dl_metrics(list(task.databases[db_idx + 1].diag_layers))
-
-            task.print_database_changes(
-                task.compare_databases(task.databases[0], task.databases[db_idx + 1]))
+            if (db_changes := task.compare_databases(task.databases[0],
+                                                     task.databases[db_idx + 1])):
+                task.print_database_changes(db_changes)
 
     elif args.variants:
         # no databases specified -> comparison of diagnostic layers
@@ -703,115 +979,102 @@ def run(args: argparse.Namespace) -> None:
         odxdb = _parser_utils.load_file(args)
         task.databases = [odxdb]
 
-        diag_layer_names = {dl.short_name for db in task.databases for dl in db.diag_layers}
-
-        task.diagnostic_layer_names = diag_layer_names.intersection(set(args.variants))
         task.diagnostic_layers = [
-            dl for db in task.databases for dl in db.diag_layers
-            if dl.short_name in task.diagnostic_layer_names
+            v for db in task.databases for variant in args.variants
+            if (v := db.diag_layers.get(variant))
         ]
+        task.diagnostic_layer_names = {dl.short_name for dl in task.diagnostic_layers}
 
         for name in args.variants:
             if name not in task.diagnostic_layer_names:
-                rich_print(f"The variant '{name}' could not be found!")
+                rich_print(f"The variant [green3]'{name}'[/green3] could not be found!")
                 return
 
-        rich_print()
-        rich_print(f"Overview of diagnostic layers: ")
-        print_dl_metrics(task.diagnostic_layers)
+        if task.detailed:
+            task.print_dl_overview(
+                filename=os.path.basename(
+                    args.pdx_file if isinstance(args.pdx_file, str) else str(args.pdx_file[0])),
+                dls=task.diagnostic_layers)
 
         for db_idx, dl in enumerate(task.diagnostic_layers):
             if db_idx + 1 >= len(task.diagnostic_layers):
                 break
 
             rich_print()
-            rich_print(f"Changes in diagnostic layer '{dl.short_name}' ({dl.variant_type.value})")
             rich_print(
-                f" (compared to '{task.diagnostic_layers[db_idx + 1].short_name}' ({task.diagnostic_layers[db_idx + 1].variant_type.value}))"
+                f"Changes in diagnostic layer [green3]'{dl.short_name}'[/green3] [medium_spring_green]({dl.variant_type.value})[/medium_spring_green]"
             )
-            task.print_dl_changes(
-                task.compare_diagnostic_layers(dl, task.diagnostic_layers[db_idx + 1]))
+            rich_print(
+                f" (compared to '[green3]{task.diagnostic_layers[db_idx+1].short_name}'[/green3] [medium_spring_green]({task.diagnostic_layers[db_idx+1].variant_type.value})[/medium_spring_green])"
+            )
+            if (dl_changes := task.compare_diagnostic_layers(dl,
+                                                             task.diagnostic_layers[db_idx + 1])):
+                task.print_dl_changes(dl_changes)
 
-    elif getattr(args, "folder", None):
+    elif args.folder:
+        rich_print()
         pdx_files = []
         for file in os.listdir(args.folder):
             if file.lower().endswith(".pdx"):
                 full_path = os.path.join(args.folder, file)
                 pdx_files.append(full_path)
-        pdx_files.sort()
-        print(f"PDX files in folder {args.folder}: {','.join(pdx_files)}")
-        summary_results = []
-        for i in range(len(pdx_files) - 1):
-            file_a = pdx_files[i]
-            file_b = pdx_files[i + 1]
-            task.databases = [load_file(file_a)]
-            db_a = task.databases[0]
-            task.databases = [load_file(file_b)]
-            db_b = task.databases[0]
-            dl_a = db_a.diag_layers
-            dl_b = db_b.diag_layers
-            names_a = {dl.short_name for dl in dl_a}
-            names_b = {dl.short_name for dl in dl_b}
+        
+        for pdx in range(len(pdx_files) - 1):
+            summary_results: list[dict[str, int|str|None]] = []
+            file_a = pdx_files[pdx]
+            file_b = pdx_files[pdx + 1]
+            db_changes = task.compare_databases([load_file(file_a)][0], [load_file(file_b)][0])
+            
+            summary: dict[str, Any] = {
+                "new_layers": [],
+                "deleted_layers": [],
+                "service_changes": {}
+            }
+            deleted_diaglayer_objs: list[DiagLayer] = []
+            changed_variant: list[DiagLayer] = []
+            changed_variant_type: list[str] = []
+            for variant in getattr(db_changes, "deleted_diagnostic_layers", []):
+                assert isinstance(variant, DiagLayer)
+                deleted_diaglayer_objs.append(variant)
+                changed_variant.append(variant)
+                changed_variant_type.append(str(variant.variant_type.value))
 
-            variants_added = names_b - names_a
-            variants_deleted = names_a - names_b
-            variants_changed_count = 0
-            services_changed_set = set()
-
-            diagnostic_layer_names = {dl.short_name
-                                      for dl in dl_a}.intersection({dl.short_name
-                                                                    for dl in dl_b})
-
-            for name in diagnostic_layer_names:
-                layer_a = next(dl for dl in dl_a if dl.short_name == name)
-                layer_b = next(dl for dl in dl_b if dl.short_name == name)
-                changes = task.compare_diagnostic_layers(layer_a, layer_b)
-                old_names = []
-                if getattr(changes, "changed_name_of_service", None):
-                    try:
-                        old_names = changes.changed_name_of_service[0]
-                    except Exception:
-                        old_names = [
-                            item for sublist in changes.changed_name_of_service for item in sublist
-                        ]
-                num_new = len(getattr(changes, "new_services", []) or [])
-                num_deleted = len(getattr(changes, "deleted_services", []) or [])
-                num_renamed = len(old_names)
-                num_changed_params = len(
-                    getattr(changes, "changed_parameters_of_service", []) or [])
-
-                # collect which services had parameter changes (unique)
-                for param_detail in getattr(changes, "changed_parameters_of_service", []) or []:
-                    services_changed_set.add(param_detail.service.short_name)
-
-                # if anything changed in this variant mark it as changed
-                if num_new or num_deleted or num_renamed or num_changed_params:
-                    variants_changed_count += 1
-
-                summary_results.append({
-                    "file_a": os.path.basename(file_a),
-                    "file_b": os.path.basename(file_b),
-                    "diag_layer": changes.diag_layer,
-                    "diag_layer_type": changes.diag_layer_type,
-                    "num_variants_added": len(variants_added),
-                    "num_variants_changed": variants_changed_count,
-                    "num_variants_deleted": len(variants_deleted),
-                    "num_new_services": len(changes.new_services),
-                    "num_deleted_services": len(changes.deleted_services),
-                    "num_renamed_services": len(changes.changed_name_of_service[0]),
-                    "num_changed_parameters": len(changes.changed_parameters_of_service)
+            for layer in getattr(db_changes, "new_diagnostic_layers", []):
+                summary["new_layers"].append({
+                    "short_name": getattr(layer, "short_name", None),
                 })
-            services_a = {srv.short_name for srv in layer_a.services}
-            services_b = {srv.short_name for srv in layer_b.services}
-            print("Services in file A:", services_a)
-            print("Services in file B:", services_b)
 
-            print("New services:", services_b - services_a)
-            print("Deleted services:", services_a - services_b)
-            print_dl_metrics([layer_a, layer_b])
+            for layer in getattr(db_changes, "deleted_diagnostic_layers", []):
+                deleted_info = {
+                    "services": [svc.short_name for svc in getattr(layer, "diag_comms_raw", [])],
+                }
+                summary["deleted_layers"].append(deleted_info)
+            summary["service_changes"] = getattr(db_changes, "service_changes", {})
+            summary_results.append({
+                    "Variant Comparison":"",
+                    "Variant Type": "",
+                   "Services Added": len(summary["new_layers"]),
+                    "Services Changed": len(summary["service_changes"]),
+                    "Services Deleted": len(summary["deleted_layers"][0]["services"] if summary["deleted_layers"] else []),
+                })
+            
+            rich_print(f"Changes in file '{file_a}")
+            rich_print(f" (compared to '{file_b}')")
 
-            print(json.dumps(summary_results, indent=4))
-            if args.output:
-                with open(args.output, "w") as f:
-                    json.dump(summary_results, f, indent=4)
-        print_change_metrics(summary_results)
+            rich_print()
+
+            
+            for db_idx, dl in enumerate(changed_variant):
+                if db_idx + 1 > len(changed_variant):
+                    break
+                rich_print()
+                summary_results[-1]["Variant Comparison"] = dl.short_name
+                summary_results[-1]["Variant Type"] = changed_variant_type[db_idx]
+                print_change_metrics(summary_results)
+                if len(deleted_diaglayer_objs) > 1:
+                    dl_change = task.compare_diagnostic_layers(deleted_diaglayer_objs[db_idx ],deleted_diaglayer_objs[db_idx + 1])
+                    if dl_change:
+                        task.print_dl_changes(dl_change)
+            if db_changes:
+                task.print_database_changes(db_changes)
+            rich_print()

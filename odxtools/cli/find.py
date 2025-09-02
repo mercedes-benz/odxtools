@@ -33,7 +33,7 @@ def print_summary(odxdb: Database,
     for ecu_name in ecu_names:
         ecu = odxdb.ecus[ecu_name]
         if not ecu:
-            print(f"The ecu variant '{ecu_name}' could not be found!")
+            print(f"The ecu variant [green3]'{ecu_name}'[/green3] could not be found!")
             continue
 
         if service_names:
@@ -51,7 +51,7 @@ def print_summary(odxdb: Database,
         filler = str.ljust("", len(display_names), "=")
         print(f"\n{filler}")
         print(f"{', '.join(ecu_names)}")
-        print(f"{filler}\n\n")
+        print(f"{filler}")
         if isinstance(service, DiagService):
             print_diagnostic_service(
                 service,
@@ -104,11 +104,12 @@ def add_subparser(subparsers: SubparsersList) -> None:
     )
 
     parser.add_argument(
-        "-nd",
-        "--no-details",
+        "-V",
+        "--verbose",
         action="store_true",
+        default=False,
         required=False,
-        help="Don't show all service details",
+        help="Show all service details",
     )
 
     parser.add_argument(
@@ -128,5 +129,5 @@ def run(args: argparse.Namespace) -> None:
         odxdb,
         ecu_variants=None if variants == "all" else variants,
         service_names=args.service_names,
-        print_params=not args.no_details,
+        print_params=args.verbose,
         allow_unknown_bit_lengths=args.relaxed_output)
