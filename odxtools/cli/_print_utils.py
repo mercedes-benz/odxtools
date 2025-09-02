@@ -4,6 +4,7 @@ import textwrap
 
 import markdownify
 from rich import print as rich_print
+from rich import box
 from rich.padding import Padding as RichPadding
 from rich.table import Table as RichTable
 
@@ -302,31 +303,31 @@ def print_dl_metrics(variants: list[DiagLayer]) -> None:
     rich_print(table)
 
 
-def print_change_metrics(metrics_results: list[dict[str, object]]) -> None:
+
+def print_change_metrics(variants: list[dict[str,  int| str | None]]) -> None:
     """Print new/deleted/renamed/changed counts between files."""
 
     table = RichTable(
-        title="Change Metrics",
-        show_header=True,
-        header_style="bold cyan",
+        title="",
+        show_header=True,  # We’ll manually add our own headers
         border_style="blue",
-        show_lines=True)
-    table.add_column("File Comparison", style="green")
-    table.add_column("Diag Layer", style="magenta")
+        show_lines=True,
+        header_style="bold green"
+    )
+
+    table.add_column("Variant Comparison", style="magenta")
     table.add_column("Variant Type", style="magenta")
-    table.add_column("Variants Added", justify="right", style="yellow")
-    table.add_column("Variants Changed", justify="right", style="yellow")
-    table.add_column("Variants Deleted", justify="right", style="yellow")
-    table.add_column("Services Added", justify="right", style="yellow")
-    table.add_column("Services Changed", justify="right", style="yellow")
-    table.add_column("Services Deleted", justify="right", style="yellow")
-    table.add_column("Changed Parameters", justify="right", style="yellow")
-    #
-    for m in metrics_results:
-        file_pair = f"{m['file_a']} --> {m['file_b']}"
-        table.add_row(file_pair, str(m["diag_layer"]), str(m["diag_layer_type"]),
-                      str(m["num_variants_added"]), str(m["num_variants_changed"]),
-                      str(m["num_variants_deleted"]), str(m["num_new_services"]),
-                      str(m["num_deleted_services"]), str(m["num_renamed_services"]),
-                      str(m["num_changed_parameters"]))
+    table.add_column("Services Added", justify="center", style="yellow", no_wrap=False, max_width=10)
+    table.add_column("Services Changed", justify="center", style="yellow", no_wrap=False, max_width=10)
+    table.add_column("Services Deleted", justify="center", style="yellow", no_wrap=False, max_width=10)
+    for variant in variants:
+        table.add_row(
+            str(variant["Variant Comparison"]),
+            str(variant["Variant Type"]),
+            str(variant["Services Added"]),
+            str(variant["Services Changed"]),
+            str(variant["Services Deleted"]),
+        )
+
     rich_print(table)
+

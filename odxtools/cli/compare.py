@@ -5,7 +5,7 @@ import argparse
 import json
 import os
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Dict, List, Union
 
 from rich import print as rich_print
 from rich.padding import Padding as RichPadding
@@ -304,7 +304,7 @@ class Comparison(Display):
         else:
             changed_params += "request parameter list, "
             # infotext
-            information.append(f"list of request parameters for service '{service2.short_name}' "
+            information.append(f"List of request parameters for service '{service2.short_name}' "
                                f"is not identical.\n")
 
             # table
@@ -313,7 +313,7 @@ class Comparison(Display):
             param_list2 = [] if service2.request is None else service2.request.parameters
 
             information.append({
-                "list": ["Old list", "New list"],
+                "List": ["Old list", "New list"],
                 "Values": [f"\\{param_list1}", f"\\{param_list2}"]
             })
 
@@ -732,86 +732,68 @@ def run(args: argparse.Namespace) -> None:
             task.print_dl_changes(
                 task.compare_diagnostic_layers(dl, task.diagnostic_layers[db_idx + 1]))
 
-    elif getattr(args, "folder", None):
+    elif args.folder:
+        rich_print()
         pdx_files = []
         for file in os.listdir(args.folder):
             if file.lower().endswith(".pdx"):
                 full_path = os.path.join(args.folder, file)
                 pdx_files.append(full_path)
-        pdx_files.sort()
-        print(f"PDX files in folder {args.folder}: {','.join(pdx_files)}")
-        summary_results = []
-        for i in range(len(pdx_files) - 1):
-            file_a = pdx_files[i]
-            file_b = pdx_files[i + 1]
-            task.databases = [load_file(file_a)]
-            db_a = task.databases[0]
-            task.databases = [load_file(file_b)]
-            db_b = task.databases[0]
-            dl_a = db_a.diag_layers
-            dl_b = db_b.diag_layers
-            names_a = {dl.short_name for dl in dl_a}
-            names_b = {dl.short_name for dl in dl_b}
+        
+        for pdx in range(len(pdx_files) - 1):
+            summary_results: List[Dict[str, Union[int, str, None]]] = []
+            file_a = pdx_files[pdx]
+            file_b = pdx_files[pdx + 1]
+            db_changes = task.compare_databases([load_file(file_a)][0], [load_file(file_b)][0])
+            
+            summary: dict[str, Any] = {
+                "new_layers": [],
+                "deleted_layers": [],
+                "service_changes": {}
+            }
+            deleted_diaglayer_objs: list[DiagLayer] = []
+            changed_variant: list[DiagLayer] = []
+            changed_variant_type: list[str] = []
+            for variant in db_changes.deleted_diagnostic_layers:
+                assert isinstance(variant, DiagLayer)
+                deleted_diaglayer_objs.append(variant)
+                changed_variant.append(variant)
+                changed_variant_type.append(str(variant.variant_type.value))
 
-            variants_added = names_b - names_a
-            variants_deleted = names_a - names_b
-            variants_changed_count = 0
-            services_changed_set = set()
-
-            diagnostic_layer_names = {dl.short_name
-                                      for dl in dl_a}.intersection({dl.short_name
-                                                                    for dl in dl_b})
-
-            for name in diagnostic_layer_names:
-                layer_a = next(dl for dl in dl_a if dl.short_name == name)
-                layer_b = next(dl for dl in dl_b if dl.short_name == name)
-                changes = task.compare_diagnostic_layers(layer_a, layer_b)
-                old_names = []
-                if getattr(changes, "changed_name_of_service", None):
-                    try:
-                        old_names = changes.changed_name_of_service[0]
-                    except Exception:
-                        old_names = [
-                            item for sublist in changes.changed_name_of_service for item in sublist
-                        ]
-                num_new = len(getattr(changes, "new_services", []) or [])
-                num_deleted = len(getattr(changes, "deleted_services", []) or [])
-                num_renamed = len(old_names)
-                num_changed_params = len(
-                    getattr(changes, "changed_parameters_of_service", []) or [])
-
-                # collect which services had parameter changes (unique)
-                for param_detail in getattr(changes, "changed_parameters_of_service", []) or []:
-                    services_changed_set.add(param_detail.service.short_name)
-
-                # if anything changed in this variant mark it as changed
-                if num_new or num_deleted or num_renamed or num_changed_params:
-                    variants_changed_count += 1
-
-                summary_results.append({
-                    "file_a": os.path.basename(file_a),
-                    "file_b": os.path.basename(file_b),
-                    "diag_layer": changes.diag_layer,
-                    "diag_layer_type": changes.diag_layer_type,
-                    "num_variants_added": len(variants_added),
-                    "num_variants_changed": variants_changed_count,
-                    "num_variants_deleted": len(variants_deleted),
-                    "num_new_services": len(changes.new_services),
-                    "num_deleted_services": len(changes.deleted_services),
-                    "num_renamed_services": len(changes.changed_name_of_service[0]),
-                    "num_changed_parameters": len(changes.changed_parameters_of_service)
+            for layer in getattr(db_changes, "new_diagnostic_layers", []):
+                summary["new_layers"].append({
+                    "short_name": getattr(layer, "short_name", None),
                 })
-            services_a = {srv.short_name for srv in layer_a.services}
-            services_b = {srv.short_name for srv in layer_b.services}
-            print("Services in file A:", services_a)
-            print("Services in file B:", services_b)
 
-            print("New services:", services_b - services_a)
-            print("Deleted services:", services_a - services_b)
-            print_dl_metrics([layer_a, layer_b])
+            for layer in getattr(db_changes, "deleted_diagnostic_layers", []):
+                deleted_info = {
+                    "services": [svc.short_name for svc in getattr(layer, "diag_comms_raw", [])],
+                }
+                summary["deleted_layers"].append(deleted_info)
+            summary["service_changes"] = getattr(db_changes, "service_changes", {})
+            summary_results.append({
+                    "Variant Comparison":"",
+                    "Variant Type": "",
+                   "Services Added": len(summary["new_layers"]),
+                    "Services Changed": len(summary["service_changes"]),
+                    "Services Deleted": len(summary["deleted_layers"][0]["services"] if summary["deleted_layers"] else []),
+                })
+            
+            rich_print(f"Changes in file '{file_a}")
+            rich_print(f" (compared to '{file_b}')")
 
-            print(json.dumps(summary_results, indent=4))
-            if args.output:
-                with open(args.output, "w") as f:
-                    json.dump(summary_results, f, indent=4)
-        print_change_metrics(summary_results)
+            rich_print()
+
+            
+            for db_idx, dl in enumerate(changed_variant):
+                if db_idx + 1 > len(changed_variant):
+                    break
+                rich_print()
+                summary_results[-1]["Variant Comparison"] = dl.short_name
+                summary_results[-1]["Variant Type"] = changed_variant_type[db_idx]
+                print_change_metrics(summary_results)
+                if len(deleted_diaglayer_objs) > 1:
+                    task.print_dl_changes(
+                    task.compare_diagnostic_layers(deleted_diaglayer_objs[db_idx ],deleted_diaglayer_objs[db_idx + 1]))
+            task.print_database_changes(db_changes)
+            rich_print()
