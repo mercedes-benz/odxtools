@@ -46,7 +46,7 @@ def print_summary(odxdb: Database,
             diag_layers.append([x for x in odxdb.diag_layers if x.short_name == name][0])
 
         else:
-            rich.print(f"The variant '{name}' could not be found!")
+            rich.print(f"The variant [green3]'{name}'[/green3] could not be found!")
             return
 
     if diag_layers:
@@ -56,8 +56,8 @@ def print_summary(odxdb: Database,
 
     for dl in diag_layers:
         rich.print("\n")
-        rich.print(f"Diagnostic layer: '{dl.short_name}'")
-        rich.print(f" Variant Type: {dl.variant_type.value}")
+        rich.print(f"[grey89 b]Diagnostic layer:[/grey89 b] [green3]'{dl.short_name}'[/green3]")
+        rich.print(f" Variant Type: [light_green]{dl.variant_type.value}[/light_green]")
 
         all_services: list[DiagComm] = sorted(dl.services, key=lambda x: x.short_name)
 
@@ -76,7 +76,9 @@ def print_summary(odxdb: Database,
 
         if print_global_negative_responses and dl.global_negative_responses:
             rich.print("\n")
-            rich.print(f"The global negative responses of '{dl.short_name}' are: ")
+            rich.print(
+                f"The [cornsilk1]global negative responses[/cornsilk1] of [green3]'{dl.short_name}'[/green3] are: "
+            )
             for gnr in dl.global_negative_responses:
                 rich.print(f" {gnr.short_name}")
 
@@ -84,7 +86,9 @@ def print_summary(odxdb: Database,
             services = [s for s in all_services if service_filter(s)]
             if len(services) > 0:
                 rich.print("\n")
-                rich.print(f"The services of '{dl.short_name}' are: ")
+                rich.print(
+                    f"The [cornsilk1]services[/cornsilk1] of [green3]'{dl.short_name}'[/green3] are: "
+                )
                 for service in services:
                     if isinstance(service, DiagService):
                         print_diagnostic_service(
@@ -103,7 +107,9 @@ def print_summary(odxdb: Database,
             DataObjectProperty] = [] if ddd_spec is None else ddd_spec.data_object_props
         if print_dops and len(data_object_properties) > 0:
             rich.print("\n")
-            rich.print(f"The DOPs of the {dl.variant_type.value} '{dl.short_name}' are: ")
+            rich.print(
+                f"The [cornsilk1]DOPs[/cornsilk1] of the [light_green]{dl.variant_type.value}[/light_green] [green3]'{dl.short_name}'[/green3] are: "
+            )
             for dop in sorted(
                     data_object_properties, key=lambda x: (type(x).__name__, x.short_name)):
                 rich.print("  " + str(dop.short_name).replace("\n", "\n  "))
@@ -115,7 +121,7 @@ def print_summary(odxdb: Database,
         if print_comparams and len(comparam_refs) > 0:
             rich.print("\n")
             rich.print(
-                f"The communication parameters of the {dl.variant_type.value} '{dl.short_name}' are: "
+                f"The [cornsilk1]communication parameters[/cornsilk1] of the [light_green]{dl.variant_type.value}[/light_green] [green3]'{dl.short_name}'[/green3] are: "
             )
             for com_param in comparam_refs:
                 rich.print(f"  {com_param.short_name}: {com_param.value}")
@@ -179,7 +185,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         action="store_const",
         const=True,
         required=False,
-        help="Print a list of all parameters relevant for the selected items.\n",
+        help="Print a list of all parameters relevant for the selected items.",
     )
     parser.add_argument(
         "-d",

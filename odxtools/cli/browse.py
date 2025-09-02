@@ -24,7 +24,7 @@ from ..request import Request
 from ..response import Response
 from . import _parser_utils
 from ._parser_utils import SubparsersList
-from ._print_utils import extract_parameter_tabulation_data
+from ._print_utils import build_parameter_table
 
 # name of the tool
 _odxtools_tool_name_ = "browse"
@@ -373,7 +373,7 @@ def browse(odxdb: Database) -> None:
             codec = answer.get("message_type")
             if codec is not None:
                 assert isinstance(codec, (Request, Response))
-                table = extract_parameter_tabulation_data(codec.parameters)
+                table = build_parameter_table(codec.parameters)
                 print(table)
 
                 encode_message_interactively(codec, ask_user_confirmation=True)

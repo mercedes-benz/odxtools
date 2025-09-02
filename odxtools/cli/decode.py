@@ -33,7 +33,7 @@ def print_summary(
     service_db: dict[str, DiagService] = {}
     service_ecus: dict[str, list[str]] = {}
     for ecu_name in ecu_names:
-        ecu = odxdb.ecus[ecu_name]
+        ecu = odxdb.ecus.get(ecu_name)
         if not ecu:
             print(f"The ecu variant '{ecu_name}' could not be found!")
             continue
