@@ -31,8 +31,8 @@ from ..parameters.valueparameter import ValueParameter
 from ..unit import Unit
 from . import _parser_utils
 from ._parser_utils import SubparsersList
-
-from ._print_utils import build_service_table, print_dl_metrics, print_service_parameters, print_change_metrics
+from ._print_utils import (build_service_table, print_change_metrics, print_dl_metrics,
+                           print_service_parameters)
 
 # name of the tool
 _odxtools_tool_name_ = "compare"
@@ -45,7 +45,6 @@ class ParameterAttributeChanges:
         default=None)
     new_value: AtomicOdxType | Sequence[AtomicOdxType] | Encoding | DataType | None = field(
         default=None)
-
 
 
 @dataclass
@@ -679,7 +678,6 @@ class Comparison(Display):
                             new_value=[x.short_name for x in service1.positive_responses])
                     ]))
 
-
         # Negative Responses
         if len(service1.negative_responses) == len(service2.negative_responses):
             for res1_idx, response1 in enumerate(service1.negative_responses):
@@ -1018,13 +1016,13 @@ def run(args: argparse.Namespace) -> None:
             if file.lower().endswith(".pdx"):
                 full_path = os.path.join(args.folder, file)
                 pdx_files.append(full_path)
-        
+
         for pdx in range(len(pdx_files) - 1):
-            summary_results: list[dict[str, int|str|None]] = []
+            summary_results: list[dict[str, int | str | None]] = []
             file_a = pdx_files[pdx]
             file_b = pdx_files[pdx + 1]
             db_changes = task.compare_databases([load_file(file_a)][0], [load_file(file_b)][0])
-            
+
             summary: dict[str, Any] = {
                 "new_layers": [],
                 "deleted_layers": [],
@@ -1051,19 +1049,24 @@ def run(args: argparse.Namespace) -> None:
                 summary["deleted_layers"].append(deleted_info)
             summary["service_changes"] = getattr(db_changes, "service_changes", {})
             summary_results.append({
-                    "Variant Comparison":"",
-                    "Variant Type": "",
-                   "Services Added": len(summary["new_layers"]),
-                    "Services Changed": len(summary["service_changes"]),
-                    "Services Deleted": len(summary["deleted_layers"][0]["services"] if summary["deleted_layers"] else []),
-                })
-            
+                "Variant Comparison":
+                    "",
+                "Variant Type":
+                    "",
+                "Services Added":
+                    len(summary["new_layers"]),
+                "Services Changed":
+                    len(summary["service_changes"]),
+                "Services Deleted":
+                    len(summary["deleted_layers"][0]["services"]
+                        if summary["deleted_layers"] else []),
+            })
+
             rich_print(f"Changes in file '{file_a}")
             rich_print(f" (compared to '{file_b}')")
 
             rich_print()
 
-            
             for db_idx, dl in enumerate(changed_variant):
                 if db_idx + 1 > len(changed_variant):
                     break
@@ -1072,7 +1075,8 @@ def run(args: argparse.Namespace) -> None:
                 summary_results[-1]["Variant Type"] = changed_variant_type[db_idx]
                 print_change_metrics(summary_results)
                 if len(deleted_diaglayer_objs) > 1:
-                    dl_change = task.compare_diagnostic_layers(deleted_diaglayer_objs[db_idx ],deleted_diaglayer_objs[db_idx + 1])
+                    dl_change = task.compare_diagnostic_layers(deleted_diaglayer_objs[db_idx],
+                                                               deleted_diaglayer_objs[db_idx + 1])
                     if dl_change:
                         task.print_dl_changes(dl_change)
             if db_changes:
