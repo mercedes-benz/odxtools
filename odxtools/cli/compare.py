@@ -884,28 +884,14 @@ def add_subparser(subparsers: SubparsersList) -> None:
         required=False,
         help="Show all variant and service details",
     )
-    # TODO
-    # Idea: provide folder with multiple pdx files as argument
-    # -> load all pdx files in folder, sort them alphabetically, compare databases pairwaise
-    # -> calculate metrics (number of added services, number of changed services, number of removed services, total number of services per ecu variant, ...)
-    # -> display metrics graphically
     parser.add_argument(
         "-f",
         "--folder",
-        #action="store_false",
-        #default=True,
+        type=str,
+        default=None,
         metavar="FOLDER",
         required=False,
         help="Provide folder path containing multiple PDX files for pairwise comparison.",
-    )
-    parser.add_argument(
-        "-o",
-        "--output",
-        #action="store_false",
-        #default=True,
-        metavar="RESULT",
-        required=False,
-        help="Write comparison results to JSON file.",
     )
 
 
@@ -1009,7 +995,7 @@ def run(args: argparse.Namespace) -> None:
                                                              task.diagnostic_layers[db_idx + 1])):
                 task.print_dl_changes(dl_changes)
 
-    elif args.folder:
+    elif getattr(args, "folder", None):
         rich_print()
         pdx_files = []
         for file in os.listdir(args.folder):
