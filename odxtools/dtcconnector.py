@@ -43,4 +43,8 @@ class DtcConnector(NamedElement):
         self._dtc_dop = odxlinks.resolve(self.dtc_dop_ref, DtcDop)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
-        self._dtc = resolve_snref(self.dtc_snref, self._dtc_dop.dtcs, DiagnosticTroubleCode)
+        self._dtc = resolve_snref(
+            self.dtc_snref,
+            self._dtc_dop.dtcs,
+            DiagnosticTroubleCode,
+            use_weakrefs=context.use_weakrefs)

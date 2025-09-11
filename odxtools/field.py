@@ -81,11 +81,18 @@ class Field(ComplexDop):
         ddds = odxrequire(context.diag_layer).diag_data_dictionary_spec
 
         if self.structure_snref is not None:
-            self._structure = resolve_snref(self.structure_snref, ddds.structures, BasicStructure)
+            self._structure = resolve_snref(
+                self.structure_snref,
+                ddds.structures,
+                BasicStructure,
+                use_weakrefs=context.use_weakrefs)
 
         if self.env_data_desc_snref is not None:
-            self._env_data_desc = resolve_snref(self.env_data_desc_snref, ddds.env_data_descs,
-                                                EnvironmentDataDescription)
+            self._env_data_desc = resolve_snref(
+                self.env_data_desc_snref,
+                ddds.env_data_descs,
+                EnvironmentDataDescription,
+                use_weakrefs=context.use_weakrefs)
 
     def get_static_bit_length(self) -> int | None:
         return None

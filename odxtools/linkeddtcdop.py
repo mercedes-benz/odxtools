@@ -56,7 +56,8 @@ class LinkedDtcDop:
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         dtc_dop = self._dtc_dop
         not_inherited_dtcs = [
-            resolve_snref(ni_snref, dtc_dop.dtcs, DiagnosticTroubleCode)
+            resolve_snref(
+                ni_snref, dtc_dop.dtcs, DiagnosticTroubleCode, use_weakrefs=context.use_weakrefs)
             for ni_snref in self.not_inherited_dtc_snrefs
         ]
 

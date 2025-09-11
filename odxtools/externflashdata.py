@@ -51,4 +51,7 @@ class ExternFlashdata(Flashdata):
 
         # this is slightly hacky because we only remember the
         # applicable ODX database and do not resolve any SNREFs here
-        self._database = weakref.proxy(context.database)
+        if context.use_weakrefs:
+            self._database = weakref.proxy(odxrequire(context.database))
+        else:
+            self._database = odxrequire(context.database)

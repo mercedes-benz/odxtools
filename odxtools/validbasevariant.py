@@ -57,6 +57,9 @@ class ValidBaseVariant:
 
         self._ecu_variants = NamedItemList[EcuVariant]()
         for ev_snref in self.ecu_variant_snrefs:
-            self._ecu_variants.append(resolve_snref(ev_snref, ecu_variants, EcuVariant))
+            self._ecu_variants.append(
+                resolve_snref(
+                    ev_snref, ecu_variants, EcuVariant, use_weakrefs=context.use_weakrefs))
 
-        self._base_variant = resolve_snref(self.base_variant_snref, base_variants, BaseVariant)
+        self._base_variant = resolve_snref(
+            self.base_variant_snref, base_variants, BaseVariant, use_weakrefs=context.use_weakrefs)

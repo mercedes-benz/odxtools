@@ -67,7 +67,11 @@ class ParameterWithDOP(Parameter):
 
         if self.dop_snref:
             ddds = odxrequire(context.diag_layer).diag_data_dictionary_spec
-            self._dop = resolve_snref(self.dop_snref, ddds.all_data_object_properties, DopBase)
+            self._dop = resolve_snref(
+                self.dop_snref,
+                ddds.all_data_object_properties,
+                DopBase,
+                use_weakrefs=context.use_weakrefs)
 
     @override
     def get_static_bit_length(self) -> int | None:

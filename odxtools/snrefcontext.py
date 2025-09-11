@@ -20,6 +20,7 @@ class SnRefContext:
     to be resolved
     """
 
+    use_weakrefs: bool = True
     database: Optional["Database"] = None
     diag_layer: Optional["DiagLayer"] = None
     diag_service: Optional["DiagService"] = None

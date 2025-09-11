@@ -239,9 +239,14 @@ class TableRow(IdentifiableElement):
         ddd_spec = odxrequire(context.diag_layer).diag_data_dictionary_spec
 
         if self.structure_snref is not None:
-            self._structure = resolve_snref(self.structure_snref, ddd_spec.structures, Structure)
+            self._structure = resolve_snref(
+                self.structure_snref,
+                ddd_spec.structures,
+                Structure,
+                use_weakrefs=context.use_weakrefs)
         if self.dop_snref is not None:
-            self._dop = resolve_snref(self.dop_snref, ddd_spec.data_object_props)
+            self._dop = resolve_snref(
+                self.dop_snref, ddd_spec.data_object_props, use_weakrefs=context.use_weakrefs)
             if not isinstance(self._dop, (DataObjectProperty, DtcDop)):
                 odxraise("The DOP-SNREF of TABLE-ROWs must reference a simple DOP!")
 

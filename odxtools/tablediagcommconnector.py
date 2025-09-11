@@ -45,4 +45,5 @@ class TableDiagCommConnector:
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         if self.diag_comm_snref is not None:
             dl = odxrequire(context.diag_layer)
-            self._diag_comm = resolve_snref(self.diag_comm_snref, dl.diag_comms, DiagComm)
+            self._diag_comm = resolve_snref(
+                self.diag_comm_snref, dl.diag_comms, DiagComm, use_weakrefs=context.use_weakrefs)
