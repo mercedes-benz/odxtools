@@ -2,7 +2,6 @@
 import re
 import warnings
 from collections.abc import Callable, Iterable
-from copy import deepcopy
 from dataclasses import dataclass
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, TypeVar, Union, cast
@@ -72,23 +71,6 @@ class HierarchyElement(DiagLayer):
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         super()._resolve_snrefs(context)
-
-    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
-        """Create a deep copy of the hierarchy element
-
-        Note that the copied diagnostic layer is not fully
-        initialized, so `_finalize_init()` should to be called on it
-        before it can be used normally.
-        """
-
-        new_he = super().__deepcopy__(memo)
-
-        # note that the self.hierarchy_element_raw object is *not*
-        # copied at this place because the attribute points to the
-        # same object as self.diag_layer_raw.
-        new_he.hierarchy_element_raw = deepcopy(self.hierarchy_element_raw)
-
-        return new_he
 
     def _finalize_init(self, database: "Database", odxlinks: OdxLinkDatabase) -> None:
         """This method deals with everything inheritance related and

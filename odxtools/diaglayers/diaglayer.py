@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from collections.abc import Callable, Iterable
-from copy import copy, deepcopy
+from copy import copy
 from dataclasses import dataclass
 from functools import cached_property
 from itertools import chain
@@ -165,21 +165,6 @@ class DiagLayer:
 
         """
         return get_local_objects(self)
-
-    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
-        """Create a deep copy of the diagnostic layer
-
-        Note that the copied diagnostic layer is not fully
-        initialized, so `_finalize_init()` should to be called on it
-        before it can be used normally.
-        """
-        cls = self.__class__
-        result = cls.__new__(cls)
-        memo[id(self)] = result
-
-        result.diag_layer_raw = deepcopy(self.diag_layer_raw, memo)
-
-        return result
 
     #####
     # <convenience functionality>
