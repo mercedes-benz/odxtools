@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: MIT
 from collections.abc import Iterable
-from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -81,23 +80,6 @@ class BaseVariant(HierarchyElement):
             isinstance(self.diag_layer_raw, BaseVariantRaw),
             "The raw diagnostic layer passed to BaseVariant "
             "must be a BaseVariantRaw")
-
-    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
-        """Create a deep copy of the base variant
-
-        Note that the copied diagnostic layer is not fully
-        initialized, so `_finalize_init()` should to be called on it
-        before it can be used normally.
-        """
-
-        result = super().__deepcopy__(memo)
-
-        # note that the self.base_variant_raw object is *not* copied at
-        # this place because the attribute points to the same object
-        # as self.diag_layer_raw.
-        result.base_variant_raw = deepcopy(self.base_variant_raw, memo)
-
-        return result
 
     @override
     def _compute_value_inheritance(self, odxlinks: OdxLinkDatabase) -> None:

@@ -1,8 +1,7 @@
 # SPDX-License-Identifier: MIT
 from collections.abc import Iterable
-from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import cast
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -92,20 +91,3 @@ class FunctionalGroup(HierarchyElement):
             return []
 
         return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
-
-    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
-        """Create a deep copy of the functional group layer
-
-        Note that the copied diagnostic layer is not fully
-        initialized, so `_finalize_init()` should to be called on it
-        before it can be used normally.
-        """
-
-        result = super().__deepcopy__(memo)
-
-        # note that the self.functional_group_raw object is *not* copied at
-        # this place because the attribute points to the same object
-        # as self.diag_layer_raw.
-        result.functional_group_raw = deepcopy(self.functional_group_raw, memo)
-
-        return result

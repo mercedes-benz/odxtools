@@ -2,7 +2,6 @@
 import abc
 import typing
 from collections.abc import Collection, Iterable
-from copy import deepcopy
 from keyword import iskeyword
 from typing import Any, SupportsIndex, TypeVar, overload, runtime_checkable
 
@@ -177,20 +176,11 @@ class ItemAttributeList(list[T]):
         return f"{type(self).__name__}([{', '.join([repr(x) for x in self])}])"
 
     def __copy__(self) -> Any:
-        return self.__class__(list(self))
-
-    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
-        cls = self.__class__
-        result = cls.__new__(cls)
-        memo[id(self)] = result
-        result._item_dict = {}
-        for x in self:
-            result.append(deepcopy(x, memo))
-
-        return result
+        return self.__class__(self)
 
     def __reduce__(self) -> tuple[Any, ...]:
         """Support for Python's pickle protocol.
+
         This method ensures that the object can be reconstructed with its current state,
         using its class and the list of items it contains.
         It returns a tuple containing the reconstruction function (the class)
