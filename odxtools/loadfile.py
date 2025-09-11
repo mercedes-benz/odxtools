@@ -2,6 +2,8 @@
 import os
 from pathlib import Path
 
+from deprecation import deprecated
+
 from .database import Database
 
 
@@ -12,19 +14,24 @@ def load_pdx_file(pdx_file: str | Path, *, use_weakrefs: bool = True) -> Databas
     return db
 
 
-def load_odx_d_file(odx_d_file_name: str | Path, *, use_weakrefs: bool = True) -> Database:
+def load_xml_file(xml_file_name: str | Path, *, use_weakrefs: bool = True) -> Database:
     db = Database(use_weakrefs=use_weakrefs)
-    db.add_odx_file(str(odx_d_file_name))
+    db.add_xml_file(str(xml_file_name))
     db.refresh()
 
     return db
+
+
+@deprecated("use load_xml_file()")  # type: ignore[misc]
+def load_odx_d_file(odx_d_file_name: str | Path) -> Database:
+    return load_xml_file(odx_d_file_name)
 
 
 def load_file(file_name: str | Path, *, use_weakrefs: bool = True) -> Database:
     if str(file_name).lower().endswith(".pdx"):
         return load_pdx_file(str(file_name), use_weakrefs=use_weakrefs)
     elif Path(file_name).suffix.lower().startswith(".odx"):
-        return load_odx_d_file(str(file_name), use_weakrefs=use_weakrefs)
+        return load_xml_file(str(file_name), use_weakrefs=use_weakrefs)
     else:
         raise RuntimeError(f"Could not guess the file format of file '{file_name}'!")
 
@@ -36,7 +43,7 @@ def load_files(*file_names: str | Path, use_weakrefs: bool = True) -> Database:
         if p.suffix.lower() == ".pdx":
             db.add_pdx_file(str(file_name))
         elif p.suffix.lower().startswith(".odx"):
-            db.add_odx_file(str(file_name))
+            db.add_xml_file(str(file_name))
         elif p.name.lower() != "index.xml":
             db.add_auxiliary_file(str(file_name))
 
@@ -55,7 +62,7 @@ def load_directory(dir_name: str | Path, *, use_weakrefs: bool = True) -> Databa
         if p.suffix.lower() == ".pdx":
             db.add_pdx_file(str(p))
         elif p.suffix.lower().startswith(".odx"):
-            db.add_odx_file(str(p))
+            db.add_xml_file(str(p))
         elif p.name.lower() != "index.xml":
             db.add_auxiliary_file(p.name, open(str(p), "rb"))
 
