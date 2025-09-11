@@ -97,7 +97,11 @@ class CommRelation:
         diag_layer = odxrequire(context.diag_layer)
 
         if self.diag_comm_snref is not None:
-            self._diag_comm = resolve_snref(self.diag_comm_snref, diag_layer.diag_comms, DiagComm)
+            self._diag_comm = resolve_snref(
+                self.diag_comm_snref,
+                diag_layer.diag_comms,
+                DiagComm,
+                use_weakrefs=context.use_weakrefs)
 
         service = self.diag_comm
         if not isinstance(service, DiagService):
@@ -107,11 +111,16 @@ class CommRelation:
 
         self._in_param_if = None
         if self.in_param_if_snref is not None:
-            self._in_param_if = resolve_snref(self.in_param_if_snref,
-                                              odxrequire(service.request).parameters, Parameter)
+            self._in_param_if = resolve_snref(
+                self.in_param_if_snref,
+                odxrequire(service.request).parameters,
+                Parameter,
+                use_weakrefs=context.use_weakrefs)
 
         self._out_param_if = None
         if self.out_param_if_snref is not None:
-            self._out_param_if = resolve_snref(self.out_param_if_snref,
-                                               odxrequire(service.positive_responses[0]).parameters,
-                                               Parameter)
+            self._out_param_if = resolve_snref(
+                self.out_param_if_snref,
+                odxrequire(service.positive_responses[0]).parameters,
+                Parameter,
+                use_weakrefs=context.use_weakrefs)

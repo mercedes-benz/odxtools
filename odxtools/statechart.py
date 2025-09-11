@@ -80,7 +80,8 @@ class StateChart(IdentifiableElement):
         # start state SNREF is mandatory. Is this a gap in the spec or
         # does it allow "foreign" start states? If the latter, what
         # does that mean?
-        self._start_state = resolve_snref(self.start_state_snref, self.states, State)
+        self._start_state = resolve_snref(
+            self.start_state_snref, self.states, State, use_weakrefs=context.use_weakrefs)
 
         for strans in self.state_transitions:
             strans._resolve_snrefs(context)

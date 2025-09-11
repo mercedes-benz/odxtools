@@ -38,8 +38,9 @@ class Database:
     into a single PDX file.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, use_weakrefs: bool = True) -> None:
         self.model_version: Version | None = None
+        self.use_weakrefs = use_weakrefs
         self.auxiliary_files: OrderedDict[str, IO[bytes]] = OrderedDict()
 
         # create an empty database object
@@ -146,7 +147,10 @@ class Database:
         else:
             odxraise(f"Encountered unknown ODX category '{category_tag}' (non-conforming dataset?)")
 
-    def refresh(self) -> None:
+    def refresh(self, *, use_weakrefs: bool | None = None) -> None:
+        if use_weakrefs is None:
+            use_weakrefs = self.use_weakrefs
+
         # Create wrapper objects
         self._diag_layers = NamedItemList(
             chain(*[dlc.diag_layers for dlc in self.diag_layer_containers]))
@@ -163,7 +167,7 @@ class Database:
             chain(*[dlc.ecu_variants for dlc in self.diag_layer_containers]))
 
         # Build odxlinks
-        self._odxlinks = OdxLinkDatabase()
+        self._odxlinks = OdxLinkDatabase(use_weakrefs=use_weakrefs)
         self._odxlinks.update(self._build_odxlinks())
 
         # Resolve ODXLINK references
@@ -194,6 +198,7 @@ class Database:
         # resolve short name references for containers which do not do
         # inheritance (we can call directly call _resolve_snrefs())
         context = SnRefContext()
+        context.use_weakrefs = self.use_weakrefs
         context.database = self
 
         # let the diaglayers sort out the inherited objects

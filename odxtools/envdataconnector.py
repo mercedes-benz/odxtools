@@ -45,5 +45,8 @@ class EnvDataConnector(NamedElement):
         self._env_data_desc = odxlinks.resolve(self.env_data_desc_ref, EnvironmentDataDescription)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
-        self._env_data = resolve_snref(self.env_data_snref, self._env_data_desc.env_datas,
-                                       EnvironmentData)
+        self._env_data = resolve_snref(
+            self.env_data_snref,
+            self._env_data_desc.env_datas,
+            EnvironmentData,
+            use_weakrefs=context.use_weakrefs)

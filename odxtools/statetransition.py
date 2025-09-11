@@ -58,5 +58,7 @@ class StateTransition(IdentifiableElement):
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         states = odxrequire(context.state_chart).states
-        self._source_state = resolve_snref(self.source_snref, states, State)
-        self._target_state = resolve_snref(self.target_snref, states, State)
+        self._source_state = resolve_snref(
+            self.source_snref, states, State, use_weakrefs=context.use_weakrefs)
+        self._target_state = resolve_snref(
+            self.target_snref, states, State, use_weakrefs=context.use_weakrefs)

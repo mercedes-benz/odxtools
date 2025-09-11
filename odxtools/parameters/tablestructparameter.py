@@ -82,8 +82,11 @@ class TableStructParameter(Parameter):
         super()._resolve_snrefs(context)
 
         if self.table_key_snref is not None:
-            self._table_key = resolve_snref(self.table_key_snref, odxrequire(context.parameters),
-                                            TableKeyParameter)
+            self._table_key = resolve_snref(
+                self.table_key_snref,
+                odxrequire(context.parameters),
+                TableKeyParameter,
+                use_weakrefs=context.use_weakrefs)
 
     @override
     def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,

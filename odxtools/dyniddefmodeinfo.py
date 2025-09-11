@@ -129,16 +129,25 @@ class DynIdDefModeInfo:
         diag_layer = odxrequire(context.diag_layer)
 
         if self.clear_dyn_def_message_snref is not None:
-            self._clear_dyn_def_message = resolve_snref(self.clear_dyn_def_message_snref,
-                                                        diag_layer.diag_comms, DiagComm)
+            self._clear_dyn_def_message = resolve_snref(
+                self.clear_dyn_def_message_snref,
+                diag_layer.diag_comms,
+                DiagComm,
+                use_weakrefs=context.use_weakrefs)
 
         if self.read_dyn_def_message_snref is not None:
-            self._read_dyn_def_message = resolve_snref(self.read_dyn_def_message_snref,
-                                                       diag_layer.diag_comms, DiagComm)
+            self._read_dyn_def_message = resolve_snref(
+                self.read_dyn_def_message_snref,
+                diag_layer.diag_comms,
+                DiagComm,
+                use_weakrefs=context.use_weakrefs)
 
         if self.dyn_def_message_snref is not None:
-            self._dyn_def_message = resolve_snref(self.dyn_def_message_snref, diag_layer.diag_comms,
-                                                  DiagComm)
+            self._dyn_def_message = resolve_snref(
+                self.dyn_def_message_snref,
+                diag_layer.diag_comms,
+                DiagComm,
+                use_weakrefs=context.use_weakrefs)
 
         if self._clear_dyn_def_message.diagnostic_class != DiagClassType.CLEAR_DYN_DEF_MESSAGE:
             odxraise(
@@ -158,4 +167,5 @@ class DynIdDefModeInfo:
         ddd_spec = odxrequire(diag_layer.diag_data_dictionary_spec)
         for i, x in enumerate(self.selection_table_refs):
             if isinstance(x, str):
-                self._selection_tables.insert(i, resolve_snref(x, ddd_spec.tables, Table))
+                self._selection_tables.insert(
+                    i, resolve_snref(x, ddd_spec.tables, Table, use_weakrefs=context.use_weakrefs))
