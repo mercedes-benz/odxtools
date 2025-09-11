@@ -7,6 +7,7 @@ from typing import IO, Any, Union
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
+from deprecation import deprecated
 from packaging.version import Version
 
 from .comparamspec import ComparamSpec
@@ -75,8 +76,12 @@ class Database:
             else:
                 self.add_auxiliary_file(zip_member, pdx_zip.open(zip_member))
 
-    def add_odx_file(self, odx_file_name: Union[str, "PathLike[Any]"]) -> None:
+    def add_xml_file(self, odx_file_name: Union[str, "PathLike[Any]"]) -> None:
         self.add_xml_tree(ElementTree.parse(odx_file_name).getroot())
+
+    @deprecated("use .add_xml_file()")  # type: ignore[misc]
+    def add_odx_file(self, odx_file_name: Union[str, "PathLike[Any]"]) -> None:
+        self.add_xml_file(odx_file_name)
 
     def add_auxiliary_file(self,
                            aux_file_name: Union[str, "PathLike[Any]"],
