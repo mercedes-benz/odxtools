@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
 import re
+import weakref
 from dataclasses import dataclass, field
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 from xml.etree import ElementTree
 
 from bincopy import BinFile
@@ -16,6 +17,9 @@ from .odxlink import OdxLinkDatabase, OdxLinkId
 from .snrefcontext import SnRefContext
 from .specialdatagroup import SpecialDataGroup
 from .utils import dataclass_fields_asdict
+
+if TYPE_CHECKING:
+    from .database import Database
 
 
 @dataclass(kw_only=True)
@@ -34,7 +38,7 @@ class DataRecord(NamedElement):
     @property
     def dataset(self) -> BinFile | bytearray:
         if self.datafile is not None:
-            db = odxrequire(self._database)
+            db: Database = odxrequire(self._database)
             if db is None:
                 return bytearray()
 
@@ -129,4 +133,4 @@ class DataRecord(NamedElement):
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         # this is slightly hacky because we only remember the
         # applicable ODX database and do not resolve any SNREFs here
-        self._database = odxrequire(context.database)
+        self._database = weakref.proxy(odxrequire(context.database))
