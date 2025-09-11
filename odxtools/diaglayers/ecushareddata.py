@@ -61,11 +61,6 @@ class EcuSharedData(DiagLayer):
 
         """
 
-        # this attribute may be removed later. it is currently
-        # required to properly deal with auxiliary files within the
-        # diagnostic layer.
-        self._database = database
-
         #####
         # resolve all SNREFs. TODO: We allow SNREFS to objects that
         # were inherited by the diaglayer. This might not be allowed

@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+import weakref
 from dataclasses import dataclass
 from typing import IO, Any
 from xml.etree import ElementTree
@@ -50,4 +51,4 @@ class ExternFlashdata(Flashdata):
 
         # this is slightly hacky because we only remember the
         # applicable ODX database and do not resolve any SNREFs here
-        self._database = context.database
+        self._database = weakref.proxy(context.database)

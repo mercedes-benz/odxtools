@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 import abc
 import typing
+import weakref
 from collections.abc import Collection, Iterable
 from keyword import iskeyword
 from typing import Any, SupportsIndex, TypeVar, overload, runtime_checkable
@@ -202,9 +203,15 @@ class NamedItemList(ItemAttributeList[T]):
         such short names.
 
         """
-        if not isinstance(item, OdxNamed):
+        if isinstance(item, (weakref.ProxyType, weakref.CallableProxyType)):
+            if not isinstance(item.__repr__.__self__, OdxNamed):  # type: ignore[attr-defined]
+                odxraise()
+            sn = item.short_name
+        elif not isinstance(item, OdxNamed):
             odxraise()
-        sn = item.short_name
+        else:
+            sn = item.short_name
+
         if not isinstance(sn, str):
             odxraise()
 

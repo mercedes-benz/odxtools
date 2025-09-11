@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import warnings
+import weakref
 from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
@@ -212,7 +213,7 @@ class OdxLinkDatabase:
                              f"{type(obj).__name__} which is not a subclass of expected "
                              f"type {expected_type.__name__}")
 
-                return obj
+                return weakref.proxy(obj)
 
         odxraise(
             f"ODXLINK reference {ref} could not be resolved for any "
@@ -321,4 +322,4 @@ def resolve_snref(target_short_name: str,
         odxraise(f"Reference '{target_short_name}' points to a {type(candidates[0]).__name__}"
                  f"object while expecting {expected_type.__name__}")
 
-    return candidates[0]
+    return weakref.proxy(candidates[0])
