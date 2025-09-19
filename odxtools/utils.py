@@ -61,7 +61,9 @@ def read_hex_binary(et_element: ElementTree.Element | None) -> int | None:
 
 def retarget_snrefs(database: "Database",
                     diag_layer: "DiagLayer",
-                    context: Optional["SnRefContext"] = None) -> None:
+                    context: Optional["SnRefContext"] = None,
+                    *,
+                    use_weakrefs: bool | None = None) -> None:
     """Re-resolve the short name references reachable by a
     DiagLayer to this DiagLayer
 
@@ -81,6 +83,11 @@ def retarget_snrefs(database: "Database",
 
     if context is None:
         context = SnRefContext()
+
+        if use_weakrefs is None:
+            context.use_weakrefs = database.use_weakrefs
+        else:
+            context.use_weakrefs = use_weakrefs
 
     if context.database is None:
         context.database = database
