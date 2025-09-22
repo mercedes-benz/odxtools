@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: MIT
 from collections import OrderedDict
+from copy import copy
+from io import BytesIO
 from itertools import chain
 from os import PathLike
 from pathlib import Path
@@ -348,6 +350,35 @@ class Database:
     @property
     def function_dictionaries(self) -> NamedItemList[FunctionDictionary]:
         return self._function_dictionaries
+
+    def __getstate__(self) -> dict[str, Any]:
+        """Returns a pickleable state of the database object
+
+        This is necessary because file like objects are not pickleable
+        but auxiliary files are represented as such."""
+
+        result = copy(self.__dict__)
+        result["auxiliary_files"] = copy(result["auxiliary_files"])
+
+        # replace the contents of the auxiliary files by their content
+        for file_name in result["auxiliary_files"]:
+            res_aux_file = result["auxiliary_files"][file_name]
+            raf_contents = res_aux_file.read()
+            res_aux_file.seek(0)
+            result["auxiliary_files"][file_name] = raf_contents
+
+        return result
+
+    def __setstate__(self, state: dict[str, Any]) -> None:
+        """Restores the database object from the state returned by `__getstate()`
+        """
+
+        self.__dict__ = state
+
+        # make the values of `auxiliary_files` file like objects
+        for file_name in self.__dict__["auxiliary_files"]:
+            data = self.__dict__["auxiliary_files"][file_name]
+            self.__dict__["auxiliary_files"][file_name] = BytesIO(data)
 
     def __repr__(self) -> str:
         return f"Database(model_version={self.model_version}, " \
