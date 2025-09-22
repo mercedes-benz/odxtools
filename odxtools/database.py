@@ -202,8 +202,7 @@ class Database:
 
         # resolve short name references for containers which do not do
         # inheritance (we can call directly call _resolve_snrefs())
-        context = SnRefContext()
-        context.use_weakrefs = use_weakrefs
+        context = SnRefContext(use_weakrefs=use_weakrefs)
         context.database = self
 
         # let the diaglayers sort out the inherited objects

@@ -483,7 +483,7 @@ class TestEncodeRequest(unittest.TestCase):
             parameters=NamedItemList([param1]),
         )
 
-        snref_ctx = SnRefContext(parameters=req.parameters)
+        snref_ctx = SnRefContext(parameters=req.parameters, use_weakrefs=False)
         param1._resolve_odxlinks(odxlinks)
         param1._resolve_snrefs(snref_ctx)
 
@@ -760,7 +760,7 @@ class TestEncodeRequest(unittest.TestCase):
         env_data_desc._resolve_odxlinks(odxlinks)
         resp._resolve_odxlinks(odxlinks)
 
-        snref_ctx = SnRefContext()
+        snref_ctx = SnRefContext(use_weakrefs=False)
 
         dop._resolve_snrefs(snref_ctx)
         dtc_dop._resolve_snrefs(snref_ctx)
@@ -866,7 +866,7 @@ class TestEncodeRequest(unittest.TestCase):
             byte_position=0,
             bit_position=2,
             dop_ref=OdxLinkRef.from_id(inner_dop.odx_id))
-        snref_ctx = SnRefContext()
+        snref_ctx = SnRefContext(use_weakrefs=False)
         inner_param._resolve_odxlinks(odxlinks)
         inner_param._resolve_snrefs(snref_ctx)
 

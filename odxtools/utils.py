@@ -82,12 +82,10 @@ def retarget_snrefs(database: "Database",
     from .snrefcontext import SnRefContext
 
     if context is None:
-        context = SnRefContext()
-
         if use_weakrefs is None:
-            context.use_weakrefs = database.use_weakrefs
-        else:
-            context.use_weakrefs = use_weakrefs
+            use_weakrefs = database.use_weakrefs
+
+        context = SnRefContext(use_weakrefs=use_weakrefs)
 
     if context.database is None:
         context.database = database
