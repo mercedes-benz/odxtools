@@ -201,7 +201,7 @@ flash_et = ElementTree.fromstring(flash_xml_str)
 
 def test_create_flash_from_et() -> None:
     somersault_db._flashs = NamedItemList()
-    somersault_db.add_xml_tree(flash_et)
+    somersault_db.add_odx_xml_tree(flash_et)
     somersault_db.add_auxiliary_file("my_funny_blob.hex", BytesIO(b"I can do whatever I want"))
     somersault_db.refresh()
     assert len(somersault_db.flashs) == 1
@@ -317,7 +317,7 @@ def test_create_flash_from_et() -> None:
 
 def test_write_flash() -> None:
     somersault_db._flashs = NamedItemList()
-    somersault_db.add_xml_tree(flash_et)
+    somersault_db.add_odx_xml_tree(flash_et)
     somersault_db.refresh()
     assert len(somersault_db.flashs) == 1
 

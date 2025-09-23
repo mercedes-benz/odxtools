@@ -14,24 +14,37 @@ def load_pdx_file(pdx_file: str | Path) -> Database:
     return db
 
 
-def load_xml_file(xml_file_name: str | Path) -> Database:
+def load_odx_file(odx_file_name: str | Path) -> Database:
+    """Create a Database object from an `.odx-*` XML file.
+
+    These files contain the different ODX categories:
+
+    - .odx-c: COMPARAM-SPEC (communication parameters)
+    - .odx-cs: COMPARAM-SUBSET (communication parameters)
+    - .odx-d: DIAG-LAYER-CONTAINER (diagnostics)
+    - .odx-e: ECU-CONFIG (variant coding information)
+    - .odx-f: FLASH (flashware specification)
+    - .odx-fd: FUNCTION-DICTIONARY (diagnostics using functional addressing)
+    - .odx-m: MULTIPLE-ECU-JOBS (multiple ECU jobs)
+    - .odx-v: VEHICLE-INFO-SPEC (specifications for vehicle identifcation)
+    """
     db = Database()
-    db.add_xml_file(str(xml_file_name))
+    db.add_odx_file(str(odx_file_name))
     db.refresh()
 
     return db
 
 
-@deprecated("use load_xml_file()")  # type: ignore[misc]
+@deprecated("use load_odx_file()")  # type: ignore[misc]
 def load_odx_d_file(odx_d_file_name: str | Path) -> Database:
-    return load_xml_file(odx_d_file_name)
+    return load_odx_file(odx_d_file_name)
 
 
 def load_file(file_name: str | Path) -> Database:
     if str(file_name).lower().endswith(".pdx"):
         return load_pdx_file(str(file_name))
     elif Path(file_name).suffix.lower().startswith(".odx"):
-        return load_xml_file(str(file_name))
+        return load_odx_file(str(file_name))
     else:
         raise RuntimeError(f"Could not guess the file format of file '{file_name}'!")
 
@@ -43,7 +56,7 @@ def load_files(*file_names: str | Path) -> Database:
         if p.suffix.lower() == ".pdx":
             db.add_pdx_file(str(file_name))
         elif p.suffix.lower().startswith(".odx"):
-            db.add_xml_file(str(file_name))
+            db.add_odx_file(str(file_name))
         elif p.name.lower() != "index.xml":
             db.add_auxiliary_file(str(file_name))
 
@@ -62,7 +75,7 @@ def load_directory(dir_name: str | Path) -> Database:
         if p.suffix.lower() == ".pdx":
             db.add_pdx_file(str(p))
         elif p.suffix.lower().startswith(".odx"):
-            db.add_xml_file(str(p))
+            db.add_odx_file(str(p))
         elif p.name.lower() != "index.xml":
             db.add_auxiliary_file(p.name, open(str(p), "rb"))
 
