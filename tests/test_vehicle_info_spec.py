@@ -167,7 +167,7 @@ vehicle_info_spec_et = ElementTree.fromstring(vehicle_info_spec_xml_str)
 
 def test_create_vehicle_info_spec_from_et() -> None:
     somersault_db._vehicle_info_specs = NamedItemList()
-    somersault_db.add_xml_tree(vehicle_info_spec_et)
+    somersault_db.add_odx_xml_tree(vehicle_info_spec_et)
     somersault_db.refresh()
     assert len(somersault_db.vehicle_info_specs) == 1
 
@@ -245,7 +245,7 @@ def test_create_vehicle_info_spec_from_et() -> None:
 
 def test_write_vehicle_info_spec() -> None:
     somersault_db._vehicle_info_specs = NamedItemList()
-    somersault_db.add_xml_tree(vehicle_info_spec_et)
+    somersault_db.add_odx_xml_tree(vehicle_info_spec_et)
     somersault_db.refresh()
     assert len(somersault_db.vehicle_info_specs) == 1
 

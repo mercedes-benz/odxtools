@@ -99,7 +99,7 @@ multiple_ecu_job_et = ElementTree.fromstring(multiple_ecu_job_xml_str)
 
 def test_create_multiple_ecu_job_from_et() -> None:
     somersault_db._multiple_ecu_job_specs = NamedItemList()
-    somersault_db.add_xml_tree(multiple_ecu_job_et)
+    somersault_db.add_odx_xml_tree(multiple_ecu_job_et)
     somersault_db.refresh()
     assert len(somersault_db.multiple_ecu_job_specs) == 1
 
@@ -135,7 +135,7 @@ def test_create_multiple_ecu_job_from_et() -> None:
 
 def test_write_multiple_ecu_job() -> None:
     somersault_db._multiple_ecu_job_specs = NamedItemList()
-    somersault_db.add_xml_tree(multiple_ecu_job_et)
+    somersault_db.add_odx_xml_tree(multiple_ecu_job_et)
     somersault_db.refresh()
     assert len(somersault_db.multiple_ecu_job_specs) == 1
 

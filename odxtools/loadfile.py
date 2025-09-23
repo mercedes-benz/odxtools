@@ -2,6 +2,8 @@
 import os
 from pathlib import Path
 
+from deprecation import deprecated
+
 from .database import Database
 
 
@@ -12,19 +14,37 @@ def load_pdx_file(pdx_file: str | Path) -> Database:
     return db
 
 
-def load_odx_d_file(odx_d_file_name: str | Path) -> Database:
+def load_odx_file(odx_file_name: str | Path) -> Database:
+    """Create a Database object from an `.odx-*` XML file.
+
+    These files contain the different ODX categories:
+
+    - .odx-c: COMPARAM-SPEC (communication parameters)
+    - .odx-cs: COMPARAM-SUBSET (communication parameters)
+    - .odx-d: DIAG-LAYER-CONTAINER (diagnostics)
+    - .odx-e: ECU-CONFIG (variant coding information)
+    - .odx-f: FLASH (flashware specification)
+    - .odx-fd: FUNCTION-DICTIONARY (diagnostics using functional addressing)
+    - .odx-m: MULTIPLE-ECU-JOBS (multiple ECU jobs)
+    - .odx-v: VEHICLE-INFO-SPEC (specifications for vehicle identifcation)
+    """
     db = Database()
-    db.add_odx_file(str(odx_d_file_name))
+    db.add_odx_file(str(odx_file_name))
     db.refresh()
 
     return db
+
+
+@deprecated("use load_odx_file()")  # type: ignore[misc]
+def load_odx_d_file(odx_d_file_name: str | Path) -> Database:
+    return load_odx_file(odx_d_file_name)
 
 
 def load_file(file_name: str | Path) -> Database:
     if str(file_name).lower().endswith(".pdx"):
         return load_pdx_file(str(file_name))
     elif Path(file_name).suffix.lower().startswith(".odx"):
-        return load_odx_d_file(str(file_name))
+        return load_odx_file(str(file_name))
     else:
         raise RuntimeError(f"Could not guess the file format of file '{file_name}'!")
 

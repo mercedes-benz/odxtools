@@ -184,7 +184,7 @@ ecu_config_et = ElementTree.fromstring(ecu_config_xml_str)
 
 def test_create_ecu_config_from_et() -> None:
     somersault_db._ecu_configs = NamedItemList()
-    somersault_db.add_xml_tree(ecu_config_et)
+    somersault_db.add_odx_xml_tree(ecu_config_et)
     somersault_db.refresh()
     assert len(somersault_db.ecu_configs) == 1
 
@@ -304,7 +304,7 @@ def test_create_ecu_config_from_et() -> None:
 
 def test_write_ecu_config() -> None:
     somersault_db._ecu_configs = NamedItemList()
-    somersault_db.add_xml_tree(ecu_config_et)
+    somersault_db.add_odx_xml_tree(ecu_config_et)
     somersault_db.refresh()
     assert len(somersault_db.ecu_configs) == 1
 

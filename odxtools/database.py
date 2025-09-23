@@ -9,6 +9,7 @@ from typing import IO, Any, Union
 from xml.etree import ElementTree
 from zipfile import ZipFile
 
+from deprecation import deprecated
 from packaging.version import Version
 
 from .comparamspec import ComparamSpec
@@ -69,7 +70,7 @@ class Database:
             p = Path(zip_member)
             if p.suffix.lower().startswith(".odx"):
                 root = ElementTree.parse(pdx_zip.open(zip_member)).getroot()
-                self.add_xml_tree(root)
+                self.add_odx_xml_tree(root)
             elif p.name.lower() == "index.xml":
                 root = ElementTree.parse(pdx_zip.open(zip_member)).getroot()
                 db_short_name = odxrequire(root.findtext("SHORT-NAME"))
@@ -78,7 +79,11 @@ class Database:
                 self.add_auxiliary_file(zip_member, pdx_zip.open(zip_member))
 
     def add_odx_file(self, odx_file_name: Union[str, "PathLike[Any]"]) -> None:
-        self.add_xml_tree(ElementTree.parse(odx_file_name).getroot())
+        self.add_odx_xml_tree(ElementTree.parse(odx_file_name).getroot())
+
+    @deprecated("use .add_odx_file()")  # type: ignore[misc]
+    def add_odx_d_file(self, odx_file_name: Union[str, "PathLike[Any]"]) -> None:
+        self.add_odx_file(odx_file_name)
 
     def add_auxiliary_file(self,
                            aux_file_name: Union[str, "PathLike[Any]"],
@@ -88,7 +93,7 @@ class Database:
 
         self.auxiliary_files[str(aux_file_name)] = aux_file_obj
 
-    def add_xml_tree(self, root: ElementTree.Element) -> None:
+    def add_odx_xml_tree(self, root: ElementTree.Element) -> None:
         # ODX spec version
         model_version = Version(root.attrib.get("MODEL-VERSION", "2.0"))
         if self.model_version is not None and self.model_version != model_version:

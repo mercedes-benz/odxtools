@@ -184,9 +184,9 @@ def test_create_function_dictionary_from_et() -> None:
     somersault_db._function_dictionaries = NamedItemList()
     somersault_db._vehicle_info_specs = NamedItemList()
     somersault_db._multiple_ecu_job_specs = NamedItemList()
-    somersault_db.add_xml_tree(function_dictionary_et)
-    somersault_db.add_xml_tree(vehicle_info_spec_et)
-    somersault_db.add_xml_tree(multiple_ecu_job_et)
+    somersault_db.add_odx_xml_tree(function_dictionary_et)
+    somersault_db.add_odx_xml_tree(vehicle_info_spec_et)
+    somersault_db.add_odx_xml_tree(multiple_ecu_job_et)
     somersault_db.refresh()
     assert len(somersault_db.function_dictionaries) == 1
 
@@ -271,9 +271,9 @@ def test_write_function_dictionary() -> None:
     somersault_db._function_dictionaries = NamedItemList()
     somersault_db._vehicle_info_specs = NamedItemList()
     somersault_db._multiple_ecu_job_specs = NamedItemList()
-    somersault_db.add_xml_tree(function_dictionary_et)
-    somersault_db.add_xml_tree(vehicle_info_spec_et)
-    somersault_db.add_xml_tree(multiple_ecu_job_et)
+    somersault_db.add_odx_xml_tree(function_dictionary_et)
+    somersault_db.add_odx_xml_tree(vehicle_info_spec_et)
+    somersault_db.add_odx_xml_tree(multiple_ecu_job_et)
     somersault_db.refresh()
     assert len(somersault_db.function_dictionaries) == 1
 
