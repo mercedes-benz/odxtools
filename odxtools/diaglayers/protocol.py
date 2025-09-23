@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
-from copy import deepcopy
 from dataclasses import dataclass
-from typing import Any, cast
+from typing import cast
 from xml.etree import ElementTree
 
 from ..comparamspec import ComparamSpec
@@ -59,20 +58,3 @@ class Protocol(HierarchyElement):
             isinstance(self.diag_layer_raw, ProtocolRaw),
             "The raw diagnostic layer passed to Protocol "
             "must be a ProtocolRaw")
-
-    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
-        """Create a deep copy of the protocol layer
-
-        Note that the copied diagnostic layer is not fully
-        initialized, so `_finalize_init()` should to be called on it
-        before it can be used normally.
-        """
-
-        result = super().__deepcopy__(memo)
-
-        # note that the self.protocol_raw object is *not* copied at
-        # this place because the attribute points to the same object
-        # as self.diag_layer_raw.
-        result.protocol_raw = deepcopy(self.protocol_raw, memo)
-
-        return result

@@ -1,7 +1,6 @@
 # SPDX-License-Identifier: MIT
-from copy import deepcopy
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, cast
 from xml.etree import ElementTree
 
 from ..diagvariable import DiagVariable
@@ -77,20 +76,3 @@ class EcuSharedData(DiagLayer):
         context.diag_layer = self
         self._resolve_snrefs(context)
         context.diag_layer = None
-
-    def __deepcopy__(self, memo: dict[int, Any]) -> Any:
-        """Create a deep copy of the protocol layer
-
-        Note that the copied diagnostic layer is not fully
-        initialized, so `_finalize_init()` should to be called on it
-        before it can be used normally.
-        """
-
-        result = super().__deepcopy__(memo)
-
-        # note that the self.ecu_shared_data_raw object is *not* copied at
-        # this place because the attribute points to the same object
-        # as self.diag_layer_raw.
-        result.ecu_shared_data_raw = deepcopy(self.ecu_shared_data_raw, memo)
-
-        return result
