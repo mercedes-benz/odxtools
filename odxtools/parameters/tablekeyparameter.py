@@ -110,16 +110,22 @@ class TableKeyParameter(Parameter):
         if self.table_snref is not None:
             tables = odxrequire(context.diag_layer).diag_data_dictionary_spec.tables
             if TYPE_CHECKING:
-                self._table = resolve_snref(self.table_snref, tables, Table)
+                self._table = resolve_snref(
+                    self.table_snref, tables, Table, use_weakrefs=context.use_weakrefs)
             else:
-                self._table = resolve_snref(self.table_snref, tables)
+                self._table = resolve_snref(
+                    self.table_snref, tables, use_weakrefs=context.use_weakrefs)
 
         if self.table_row_snref is not None:
             if TYPE_CHECKING:
-                self._table_row = resolve_snref(self.table_row_snref, self._table.table_rows,
-                                                TableRow)
+                self._table_row = resolve_snref(
+                    self.table_row_snref,
+                    self._table.table_rows,
+                    TableRow,
+                    use_weakrefs=context.use_weakrefs)
             else:
-                self._table_row = resolve_snref(self.table_row_snref, self._table.table_rows)
+                self._table_row = resolve_snref(
+                    self.table_row_snref, self._table.table_rows, use_weakrefs=context.use_weakrefs)
 
     @property
     def table(self) -> "Table":

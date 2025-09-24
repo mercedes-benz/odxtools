@@ -211,7 +211,7 @@ class HierarchyElement(DiagLayer):
         # by the spec (So far, I haven't found any definitive
         # statement...)
         #####
-        context = SnRefContext(database=database)
+        context = SnRefContext(database=database, use_weakrefs=odxlinks.use_weakrefs)
         context.diag_layer = self
         self._resolve_snrefs(context)
         context.diag_layer = None

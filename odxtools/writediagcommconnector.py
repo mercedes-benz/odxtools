@@ -74,4 +74,8 @@ class WriteDiagCommConnector:
            self._write_diag_comm is not None and \
            (req := getattr(self._write_diag_comm, "request", None)) is not None:
             assert isinstance(req, Request)
-            self._write_data = resolve_snref(self.write_data_snref, req.parameters, ValueParameter)
+            self._write_data = resolve_snref(
+                self.write_data_snref,
+                req.parameters,
+                ValueParameter,
+                use_weakrefs=context.use_weakrefs)

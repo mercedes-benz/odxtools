@@ -144,9 +144,13 @@ class DiagVariable(IdentifiableElement):
         self._table_row = None
         if self.table_snref is not None:
             ddds = odxrequire(context.diag_layer).diag_data_dictionary_spec
-            self._table = resolve_snref(self.table_snref, ddds.tables, Table)
+            self._table = resolve_snref(
+                self.table_snref, ddds.tables, Table, use_weakrefs=context.use_weakrefs)
             self._table_row = resolve_snref(
-                odxrequire(self.table_row_snref), self._table.table_rows, TableRow)
+                odxrequire(self.table_row_snref),
+                self._table.table_rows,
+                TableRow,
+                use_weakrefs=context.use_weakrefs)
 
         for sdg in self.sdgs:
             sdg._resolve_snrefs(context)

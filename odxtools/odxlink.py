@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import warnings
+import weakref
 from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum
@@ -172,18 +173,31 @@ class OdxLinkDatabase:
     This can resolve ODXLINK references.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, use_weakrefs: bool = False) -> None:
         self._db: dict[OdxDocFragment, dict[str, Any]] = {}
+        self.use_weakrefs = use_weakrefs
 
     @overload
-    def resolve(self, ref: OdxLinkRef, expected_type: None = None) -> Any:
+    def resolve(self,
+                ref: OdxLinkRef,
+                expected_type: None = None,
+                *,
+                use_weakrefs: bool | None = None) -> Any:
         ...
 
     @overload
-    def resolve(self, ref: OdxLinkRef, expected_type: type[T]) -> T:
+    def resolve(self,
+                ref: OdxLinkRef,
+                expected_type: type[T],
+                *,
+                use_weakrefs: bool | None = None) -> T:
         ...
 
-    def resolve(self, ref: OdxLinkRef, expected_type: Any | None = None) -> Any:
+    def resolve(self,
+                ref: OdxLinkRef,
+                expected_type: Any | None = None,
+                *,
+                use_weakrefs: bool | None = None) -> Any:
         """
         Resolve a reference to an object
 
@@ -212,7 +226,10 @@ class OdxLinkDatabase:
                              f"{type(obj).__name__} which is not a subclass of expected "
                              f"type {expected_type.__name__}")
 
-                return obj
+                if use_weakrefs or (use_weakrefs is None and self.use_weakrefs):
+                    return weakref.proxy(obj)
+                else:
+                    return obj
 
         odxraise(
             f"ODXLINK reference {ref} could not be resolved for any "
@@ -220,14 +237,26 @@ class OdxLinkDatabase:
         return None
 
     @overload
-    def resolve_lenient(self, ref: OdxLinkRef, expected_type: None = None) -> Any:
+    def resolve_lenient(self,
+                        ref: OdxLinkRef,
+                        expected_type: None = None,
+                        *,
+                        use_weakrefs: bool | None = None) -> Any:
         ...
 
     @overload
-    def resolve_lenient(self, ref: OdxLinkRef, expected_type: type[T]) -> T | None:
+    def resolve_lenient(self,
+                        ref: OdxLinkRef,
+                        expected_type: type[T],
+                        *,
+                        use_weakrefs: bool | None = None) -> T | None:
         ...
 
-    def resolve_lenient(self, ref: OdxLinkRef, expected_type: Any | None = None) -> Any | None:
+    def resolve_lenient(self,
+                        ref: OdxLinkRef,
+                        expected_type: Any | None = None,
+                        *,
+                        use_weakrefs: bool | None = None) -> Any | None:
         """
         Resolve a reference to an object
 
@@ -253,7 +282,10 @@ class OdxLinkDatabase:
                 if expected_type is not None:
                     odxassert(isinstance(obj, expected_type))
 
-                return obj
+                if use_weakrefs or (use_weakrefs is None and self.use_weakrefs):
+                    return weakref.proxy(obj)
+                else:
+                    return obj
 
         return None
 
@@ -282,7 +314,8 @@ def resolve_snref(target_short_name: str,
                   items: Iterable[OdxNamed],
                   expected_type: None = None,
                   *,
-                  lenient: None = None) -> Any:
+                  lenient: None = None,
+                  use_weakrefs: bool = False) -> Any:
     """Resolve a short name reference given a sequence of candidate objects"""
     ...
 
@@ -292,7 +325,8 @@ def resolve_snref(target_short_name: str,
                   items: Iterable[OdxNamed],
                   expected_type: type[TNamed],
                   *,
-                  lenient: None = None) -> TNamed:
+                  lenient: None = None,
+                  use_weakrefs: bool = False) -> TNamed:
     ...
 
 
@@ -301,14 +335,17 @@ def resolve_snref(target_short_name: str,
                   items: Iterable[OdxNamed],
                   expected_type: type[TNamed],
                   *,
-                  lenient: bool = True) -> TNamed | None:
+                  lenient: bool = True,
+                  use_weakrefs: bool = False) -> TNamed | None:
     ...
 
 
 def resolve_snref(target_short_name: str,
                   items: Iterable[OdxNamed],
                   expected_type: Any = None,
-                  lenient: bool | None = None) -> Any:
+                  *,
+                  lenient: bool | None = None,
+                  use_weakrefs: bool = False) -> Any:
     candidates = [x for x in items if x.short_name == target_short_name]
 
     if not candidates:
@@ -321,4 +358,7 @@ def resolve_snref(target_short_name: str,
         odxraise(f"Reference '{target_short_name}' points to a {type(candidates[0]).__name__}"
                  f"object while expecting {expected_type.__name__}")
 
-    return candidates[0]
+    if use_weakrefs:
+        return weakref.proxy(candidates[0])
+    else:
+        return candidates[0]

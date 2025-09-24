@@ -1348,7 +1348,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
         self.parameter_termination_end_of_pdu._resolve_odxlinks(odxlinks)
         self.parameter_sid._resolve_odxlinks(odxlinks)
 
-        snref_ctx = SnRefContext()
+        snref_ctx = SnRefContext(use_weakrefs=False)
         self.parameter_termination_end_of_pdu._resolve_snrefs(snref_ctx)
         self.parameter_sid._resolve_snrefs(snref_ctx)
 
@@ -1395,7 +1395,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
 
         req_param1._resolve_odxlinks(odxlinks)
         req_param2._resolve_odxlinks(odxlinks)
-        snref_ctx = SnRefContext()
+        snref_ctx = SnRefContext(use_weakrefs=False)
         req_param1._resolve_snrefs(snref_ctx)
         req_param2._resolve_snrefs(snref_ctx)
 
@@ -1462,7 +1462,7 @@ class TestDecodingAndEncoding(unittest.TestCase):
         req_param1._resolve_odxlinks(odxlinks)
         req_param2._resolve_odxlinks(odxlinks)
 
-        snref_ctx = SnRefContext()
+        snref_ctx = SnRefContext(use_weakrefs=False)
         req_param1._resolve_snrefs(snref_ctx)
         req_param2._resolve_snrefs(snref_ctx)
 

@@ -167,4 +167,4 @@ class LogicalLink(IdentifiableElement):
         self._prot_stack = None
         # TODO: resolve prot_stack_snref
         # if self.prot_stack_snref is not None:
-        #    self._prot_stack = resolve_snref(self.prot_stack_snref, context., ProtStack)
+        #    self._prot_stack = resolve_snref(self.prot_stack_snref, context., ProtStack, use_weakrefs=context.use_weakrefs)

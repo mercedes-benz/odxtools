@@ -212,12 +212,17 @@ class DiagComm(IdentifiableElement):
         if TYPE_CHECKING:
             diag_layer = odxrequire(context.diag_layer)
             self._protocols = NamedItemList([
-                resolve_snref(prot_snref, getattr(diag_layer, "protocols", []), Protocol)
-                for prot_snref in self.protocol_snrefs
+                resolve_snref(
+                    prot_snref,
+                    getattr(diag_layer, "protocols", []),
+                    Protocol,
+                    use_weakrefs=context.use_weakrefs) for prot_snref in self.protocol_snrefs
             ])
         else:
             diag_layer = odxrequire(context.diag_layer)
             self._protocols = NamedItemList([
-                resolve_snref(prot_snref, getattr(diag_layer, "protocols", []))
-                for prot_snref in self.protocol_snrefs
+                resolve_snref(
+                    prot_snref,
+                    getattr(diag_layer, "protocols", []),
+                    use_weakrefs=context.use_weakrefs) for prot_snref in self.protocol_snrefs
             ])

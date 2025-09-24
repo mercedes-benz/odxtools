@@ -43,4 +43,8 @@ class TableRowConnector(NamedElement):
         self._table = odxlinks.resolve(self.table_ref, Table)
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
-        self._table_row = resolve_snref(self.table_row_snref, self._table.table_rows, TableRow)
+        self._table_row = resolve_snref(
+            self.table_row_snref,
+            self._table.table_rows,
+            TableRow,
+            use_weakrefs=context.use_weakrefs)

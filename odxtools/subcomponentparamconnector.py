@@ -73,8 +73,11 @@ class SubComponentParamConnector(IdentifiableElement):
         pass
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
-        service = resolve_snref(self.diag_comm_snref,
-                                odxrequire(context.diag_layer).diag_comms, DiagService)
+        service = resolve_snref(
+            self.diag_comm_snref,
+            odxrequire(context.diag_layer).diag_comms,
+            DiagService,
+            use_weakrefs=context.use_weakrefs)
         self._service = service
 
         if self._service.request is None:
@@ -87,7 +90,8 @@ class SubComponentParamConnector(IdentifiableElement):
         request = odxrequire(service.request)
         in_param_ifs = []
         for x in self.in_param_if_refs:
-            in_param_ifs.append(resolve_snref(x, request.parameters, Parameter))
+            in_param_ifs.append(
+                resolve_snref(x, request.parameters, Parameter, use_weakrefs=context.use_weakrefs))
 
         # TODO: The output parameters are probably part of a response
         # (?). If so, they cannot be resolved ahead of time because
@@ -98,7 +102,8 @@ class SubComponentParamConnector(IdentifiableElement):
         response = service.positive_responses[0]
         out_param_ifs = []
         for x in self.out_param_if_refs:
-            out_param_ifs.append(resolve_snref(x, response.parameters, Parameter))
+            out_param_ifs.append(
+                resolve_snref(x, response.parameters, Parameter, use_weakrefs=context.use_weakrefs))
 
         self._in_param_ifs = NamedItemList(in_param_ifs)
         self._out_param_ifs = NamedItemList(out_param_ifs)

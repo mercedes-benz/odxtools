@@ -83,8 +83,11 @@ class ProtocolRaw(HierarchyElementRaw):
 
         self._prot_stack = None
         if self.prot_stack_snref is not None:
-            self._prot_stack = resolve_snref(self.prot_stack_snref, self._comparam_spec.prot_stacks,
-                                             ProtStack)
+            self._prot_stack = resolve_snref(
+                self.prot_stack_snref,
+                self._comparam_spec.prot_stacks,
+                ProtStack,
+                use_weakrefs=context.use_weakrefs)
 
         for parent_ref in self.parent_refs:
             parent_ref._resolve_snrefs(context)

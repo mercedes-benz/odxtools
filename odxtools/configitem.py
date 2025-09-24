@@ -78,8 +78,11 @@ class ConfigItem(NamedElement):
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         if self.data_object_prop_snref is not None:
             ddds = odxrequire(context.diag_layer).diag_data_dictionary_spec
-            self._data_object_prop = resolve_snref(self.data_object_prop_snref,
-                                                   ddds.all_data_object_properties, DopBase)
+            self._data_object_prop = resolve_snref(
+                self.data_object_prop_snref,
+                ddds.all_data_object_properties,
+                DopBase,
+                use_weakrefs=context.use_weakrefs)
 
         for sdg in self.sdgs:
             sdg._resolve_snrefs(context)
