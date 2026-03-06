@@ -31,8 +31,8 @@ class SubComponentParamConnector(IdentifiableElement):
         self._in_param_ifs: NamedItemList[Parameter] | NamedItemList[InputParam]
 
     @property
-    def diagComm(self) -> DiagComm:
-        return self._diagComm
+    def diag_comm(self) -> DiagComm:
+        return self._diag_comm
 
     @property
     def out_param_ifs(self) -> NamedItemList[Parameter] | NamedItemList[OutputParam]:
@@ -81,33 +81,33 @@ class SubComponentParamConnector(IdentifiableElement):
         pass
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
-        diagComm = resolve_snref(
+        diag_comm = resolve_snref(
             self.diag_comm_snref,
             odxrequire(context.diag_layer).diag_comms,
             DiagComm,
             use_weakrefs=context.use_weakrefs)
-        self._diagComm = diagComm
+        self._diag_comm = diag_comm
 
-        if isinstance(diagComm, DiagService):
-            if not diagComm.positive_responses:
-                odxraise(f"The DIAG-SERVICE '{diagComm.short_name}' referenced by "
+        if isinstance(diag_comm, DiagService):
+            if not diag_comm.positive_responses:
+                odxraise(f"The DIAG-SERVICE '{diag_comm.short_name}' referenced by "
                          f"SUB-COMPONENT-PARAM-CONNECTOR '{self.short_name}' does "
                          f"not exhibit any positive responses")
                 return
 
-            if (request := diagComm.request) is None:
-                odxraise(f"The DIAG-SERVICE '{diagComm.short_name}' referenced by "
+            if (request := diag_comm.request) is None:
+                odxraise(f"The DIAG-SERVICE '{diag_comm.short_name}' referenced by "
                          f"SUB-COMPONENT-PARAM-CONNECTOR '{self.short_name}' does "
                          f"not exhibit a request")
                 return
 
             # TODO: The output parameters are probably part of a response
             # (?). If so, they cannot be resolved ahead of time because
-            # the diagComm in question can have multiple responses
+            # the diag_comm in question can have multiple responses
             # associated with it and each of these has its own set of
             # parameters. In the meantime, we simply use the first
             # positive response specified.
-            response = diagComm.positive_responses[0]
+            response = diag_comm.positive_responses[0]
             out_param_service_ifs = []
             for x in self.out_param_if_refs:
                 out_param_service_ifs.append(
@@ -123,24 +123,24 @@ class SubComponentParamConnector(IdentifiableElement):
             self._out_param_ifs = NamedItemList(out_param_service_ifs)
             self._in_param_ifs = NamedItemList(in_param_service_ifs)
 
-        elif isinstance(diagComm, SingleEcuJob):
+        elif isinstance(diag_comm, SingleEcuJob):
             # single-ECU jobs specify their input and output parameters directly
             out_param_secuj_ifs = []
             for x in self.out_param_if_refs:
                 out_param_secuj_ifs.append(
                     resolve_snref(
-                        x, diagComm.output_params, OutputParam, use_weakrefs=context.use_weakrefs))
+                        x, diag_comm.output_params, OutputParam, use_weakrefs=context.use_weakrefs))
 
             in_param_secuj_ifs = []
             for x in self.in_param_if_refs:
                 in_param_secuj_ifs.append(
                     resolve_snref(
-                        x, diagComm.input_params, InputParam, use_weakrefs=context.use_weakrefs))
+                        x, diag_comm.input_params, InputParam, use_weakrefs=context.use_weakrefs))
 
             self._out_param_ifs = NamedItemList(out_param_secuj_ifs)
             self._in_param_ifs = NamedItemList(in_param_secuj_ifs)
 
         else:
-            odxraise(f"Reference to DIAG-COMM of type {type(diagComm).__name__} "\
+            odxraise(f"Reference to DIAG-COMM of type {type(diag_comm).__name__} "\
                      f"is not supported")
             return
