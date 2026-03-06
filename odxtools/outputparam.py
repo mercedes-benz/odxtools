@@ -23,7 +23,7 @@ class OutputParam(IdentifiableElement):
     def dop(self) -> DopBase:
         return self._dop
 
-    @deprecated(details="use .dop")  # type: ignore[misc]
+    @deprecated(details="use .dop")  # type: ignore[untyped-decorator]
     def dop_base(self) -> DopBase:
         return self._dop
 
