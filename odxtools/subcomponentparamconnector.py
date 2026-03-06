@@ -3,13 +3,17 @@ from dataclasses import dataclass, field
 from typing import Any
 from xml.etree import ElementTree
 
+from .diagcomm import DiagComm
 from .diagservice import DiagService
 from .element import IdentifiableElement
 from .exceptions import odxassert, odxraise, odxrequire
+from .inputparam import InputParam
 from .nameditemlist import NamedItemList
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId, resolve_snref
+from .outputparam import OutputParam
 from .parameters.parameter import Parameter
+from .singleecujob import SingleEcuJob
 from .snrefcontext import SnRefContext
 from .utils import dataclass_fields_asdict
 
@@ -22,16 +26,20 @@ class SubComponentParamConnector(IdentifiableElement):
     out_param_if_refs: list[str] = field(default_factory=list)
     in_param_if_refs: list[str] = field(default_factory=list)
 
-    @property
-    def service(self) -> DiagService:
-        return self._service
+    def __post_init__(self) -> None:
+        self._out_param_ifs: NamedItemList[Parameter] | NamedItemList[OutputParam]
+        self._in_param_ifs: NamedItemList[Parameter] | NamedItemList[InputParam]
 
     @property
-    def out_param_ifs(self) -> NamedItemList[Parameter]:
+    def diagComm(self) -> DiagComm:
+        return self._diagComm
+
+    @property
+    def out_param_ifs(self) -> NamedItemList[Parameter] | NamedItemList[OutputParam]:
         return self._out_param_ifs
 
     @property
-    def in_param_ifs(self) -> NamedItemList[Parameter]:
+    def in_param_ifs(self) -> NamedItemList[Parameter] | NamedItemList[InputParam]:
         return self._in_param_ifs
 
     @staticmethod
@@ -73,37 +81,66 @@ class SubComponentParamConnector(IdentifiableElement):
         pass
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
-        service = resolve_snref(
+        diagComm = resolve_snref(
             self.diag_comm_snref,
             odxrequire(context.diag_layer).diag_comms,
-            DiagService,
+            DiagComm,
             use_weakrefs=context.use_weakrefs)
-        self._service = service
+        self._diagComm = diagComm
 
-        if self._service.request is None:
-            odxraise()
+        if isinstance(diagComm, DiagService):
+            if not diagComm.positive_responses:
+                odxraise(f"The DIAG-SERVICE '{diagComm.short_name}' referenced by "
+                         f"SUB-COMPONENT-PARAM-CONNECTOR '{self.short_name}' does "
+                         f"not exhibit any positive responses")
+                return
+
+            if (request := diagComm.request) is None:
+                odxraise(f"The DIAG-SERVICE '{diagComm.short_name}' referenced by "
+                         f"SUB-COMPONENT-PARAM-CONNECTOR '{self.short_name}' does "
+                         f"not exhibit a request")
+                return
+
+            # TODO: The output parameters are probably part of a response
+            # (?). If so, they cannot be resolved ahead of time because
+            # the diagComm in question can have multiple responses
+            # associated with it and each of these has its own set of
+            # parameters. In the meantime, we simply use the first
+            # positive response specified.
+            response = diagComm.positive_responses[0]
+            out_param_service_ifs = []
+            for x in self.out_param_if_refs:
+                out_param_service_ifs.append(
+                    resolve_snref(
+                        x, response.parameters, Parameter, use_weakrefs=context.use_weakrefs))
+
+            in_param_service_ifs = []
+            for x in self.in_param_if_refs:
+                in_param_service_ifs.append(
+                    resolve_snref(
+                        x, request.parameters, Parameter, use_weakrefs=context.use_weakrefs))
+
+            self._out_param_ifs = NamedItemList(out_param_service_ifs)
+            self._in_param_ifs = NamedItemList(in_param_service_ifs)
+
+        elif isinstance(diagComm, SingleEcuJob):
+            # single-ECU jobs specify their input and output parameters directly
+            out_param_secuj_ifs = []
+            for x in self.out_param_if_refs:
+                out_param_secuj_ifs.append(
+                    resolve_snref(
+                        x, diagComm.output_params, OutputParam, use_weakrefs=context.use_weakrefs))
+
+            in_param_secuj_ifs = []
+            for x in self.in_param_if_refs:
+                in_param_secuj_ifs.append(
+                    resolve_snref(
+                        x, diagComm.input_params, InputParam, use_weakrefs=context.use_weakrefs))
+
+            self._out_param_ifs = NamedItemList(out_param_secuj_ifs)
+            self._in_param_ifs = NamedItemList(in_param_secuj_ifs)
+
+        else:
+            odxraise(f"Reference to DIAG-COMM of type {type(diagComm).__name__} "\
+                     f"is not supported")
             return
-        if not self._service.positive_responses:
-            odxraise()
-            return
-
-        request = odxrequire(service.request)
-        in_param_ifs = []
-        for x in self.in_param_if_refs:
-            in_param_ifs.append(
-                resolve_snref(x, request.parameters, Parameter, use_weakrefs=context.use_weakrefs))
-
-        # TODO: The output parameters are probably part of a response
-        # (?). If so, they cannot be resolved ahead of time because
-        # the service in question can have multiple responses
-        # associated with it and each of these has its own set of
-        # parameters. In the meantime, we simply use the first
-        # positive response specified.
-        response = service.positive_responses[0]
-        out_param_ifs = []
-        for x in self.out_param_if_refs:
-            out_param_ifs.append(
-                resolve_snref(x, response.parameters, Parameter, use_weakrefs=context.use_weakrefs))
-
-        self._in_param_ifs = NamedItemList(in_param_ifs)
-        self._out_param_ifs = NamedItemList(out_param_ifs)
