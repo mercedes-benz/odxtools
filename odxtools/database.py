@@ -82,7 +82,7 @@ class Database:
     def add_odx_file(self, odx_file_name: Union[str, "PathLike[Any]"]) -> None:
         self.add_odx_xml_tree(ElementTree.parse(odx_file_name).getroot())
 
-    @deprecated("use .add_odx_file()")  # type: ignore[misc]
+    @deprecated("use .add_odx_file()")  # type: ignore[untyped-decorator]
     def add_odx_d_file(self, odx_file_name: Union[str, "PathLike[Any]"]) -> None:
         self.add_odx_file(odx_file_name)
 

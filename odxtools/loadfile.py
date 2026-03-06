@@ -35,7 +35,7 @@ def load_odx_file(odx_file_name: str | Path, *, use_weakrefs: bool = True) -> Da
     return db
 
 
-@deprecated("use load_odx_file()")  # type: ignore[misc]
+@deprecated("use load_odx_file()")  # type: ignore[untyped-decorator]
 def load_odx_d_file(odx_d_file_name: str | Path) -> Database:
     return load_odx_file(odx_d_file_name, use_weakrefs=False)
 
