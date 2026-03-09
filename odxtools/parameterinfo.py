@@ -103,11 +103,14 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
             )
             for tr in param.table_key.table.table_rows:
                 of.write(f"  ('{tr.short_name}',\n")
-                of.write(f"   {{\n")
-                of.write(
-                    textwrap.indent(
-                        parameter_info(odxrequire(tr.structure).parameters, True), "    "))
-                of.write(f"   }}),\n")
+                if tr.structure is not None:
+                    of.write(f"   {{\n")
+                    of.write(textwrap.indent(parameter_info(tr.structure.parameters, True), "    "))
+                    of.write(f"   }}),\n")
+                elif tr.dop is not None:
+                    of.write(f"   <DOP: {tr.dop.short_name}>),\n")
+                else:
+                    of.write(f"   <no structure or DOP>),\n")
 
             continue
         elif not isinstance(param, ParameterWithDOP):
@@ -117,7 +120,7 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
 
         dop = param.dop
         if dop is None:
-            of.write("{q}{param.short_name}{q}: <no DOP>\n")
+            of.write(f"{q}{param.short_name}{q}: <no DOP>\n")
             continue
         elif isinstance(dop, EndOfPduField):
             of.write(f"{q}{param.short_name}{q}: list({{\n")
