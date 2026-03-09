@@ -105,9 +105,7 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 of.write(f"  ('{tr.short_name}',\n")
                 if tr.structure is not None:
                     of.write(f"   {{\n")
-                    of.write(
-                        textwrap.indent(
-                            parameter_info(tr.structure.parameters, True), "    "))
+                    of.write(textwrap.indent(parameter_info(tr.structure.parameters, True), "    "))
                     of.write(f"   }}),\n")
                 elif tr.dop is not None:
                     of.write(f"   <DOP: {tr.dop.short_name}>),\n")
