@@ -194,7 +194,7 @@ class TableKeyParameter(Parameter):
 
         sz = key_dop.get_static_bit_length()
         if sz is None:
-            odxraise("The DOP of table key {self.short_name} must exhibit a fixed size.",
+            odxraise(f"The DOP of table key {self.short_name} must exhibit a fixed size.",
                      EncodeError)
             return
 
