@@ -40,6 +40,10 @@ def _parse_compu_scale_to_linear_compu_method(*,
     kwargs["internal_type"] = internal_type
     kwargs["physical_type"] = physical_type
 
+    compu_inverse_el = scale_element.find("COMPU-INVERSE-VALUE/V")
+    if compu_inverse_el is not None:
+        kwargs["compu_inverse_value"] = computation_python_type(compu_inverse_el.text)
+
     coeffs = scale_element.find("COMPU-RATIONAL-COEFFS")
     nums = coeffs.iterfind("COMPU-NUMERATOR/V")
 

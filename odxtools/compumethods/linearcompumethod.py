@@ -63,14 +63,15 @@ class LinearCompuMethod(CompuMethod):
                  internal_type: Union[DataType, str],
                  physical_type: Union[DataType, str],
                  internal_lower_limit: Optional[Limit],
-                 internal_upper_limit: Optional[Limit]):
+                 internal_upper_limit: Optional[Limit],
+                 compu_inverse_value=None):
         super().__init__(internal_type=internal_type,
                          physical_type=physical_type,
                          category="LINEAR")
         self.offset = offset
         self.factor = factor
         self.denominator = denominator
-
+        self.compu_inverse_value = compu_inverse_value
         self.internal_lower_limit = internal_lower_limit
         if internal_lower_limit is None or internal_lower_limit.interval_type == IntervalType.INFINITE:
             self.internal_lower_limit = Limit(float("-inf"),
