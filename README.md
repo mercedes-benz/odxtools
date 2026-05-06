@@ -766,27 +766,28 @@ python3 -m mypy --ignore-missing-imports odxtools
 ## Contributing
 
 We welcome any contributions.  If you want to contribute to this
-project, please read the [contributing guide](https://github.com/mercedes-benz/odxtools/blob/main/CONTRIBUTING.md).
+project, please read the [contributing guide](CONTRIBUTING.md).
 
 ## Code of Conduct
 
-Please read our [Code of Conduct](https://github.com/mercedes-benz/foss/blob/master/CODE_OF_CONDUCT.md)
-as it is our base for interaction.
+Please read our [Code of Conduct](https://github.com/mercedes-benz/.github/blob/main/CODE_OF_CONDUCT.md)
+as it is our basis for collaborative development.
 
 ## Provider Information
 
-Please visit <https://mbition.io/en/home/index.html> for information on the provider.
+Please visit <https://mbition.io/imprint/> for information on the provider.
 
-Notice: Before you use the program in productive use, please take all necessary precautions,
-e.g. testing and verifying the program with regard to your specific use.
-The program was tested solely for our own use cases, which might differ from yours.
+Notice: Before you use the program in productive use, please take all
+necessary precautions, e.g. testing and verifying the program with
+regard to your specific use.  The program was tested solely for our
+own use cases, which might differ from yours.
 
 ## Acknowledgements
 
-This work includes research of the project
-[SofDCar](https://sofdcar.de/) (19S21002), which is funded by the
-[German Federal Ministry for Economic Affairs and
-Climate Action](https://www.bmwk.de/).
+This work includes results of research conducted in the context of the
+SofDCar project which was funded by the [German Federal Ministry for
+Economic Affairs and Climate Action](https://www.bmwk.de/) under grant
+number 19S21002.
 
 ## License
 

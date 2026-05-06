@@ -15,7 +15,7 @@ This document explains how to contribute to the odxtools project. By contributin
 
 ## Communication
 
-For communication please respect our [FOSS Code of Conduct](https://github.com/mercedes-benz/foss/blob/master/CODE_OF_CONDUCT.md).
+For communication please respect our [FOSS Code of Conduct](https://github.com/mercedes-benz/.github/blob/main/CODE_OF_CONDUCT.md).
 
 The following communication channels exist for this project:
 - Github for reporting and claiming issues: https://github.com/mercedes-benz/odxtools/issues
