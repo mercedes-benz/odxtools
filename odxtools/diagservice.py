@@ -27,7 +27,7 @@ class DiagService(DiagComm):
     """
 
     comparam_refs: list[ComparamInstance] = field(default_factory=list)
-    request_ref: OdxLinkRef
+    request_ref: OdxLinkRef | None
     pos_response_refs: list[OdxLinkRef] = field(default_factory=list)
     neg_response_refs: list[OdxLinkRef] = field(default_factory=list)
     pos_response_suppressible: PosResponseSuppressible | None = None
@@ -86,7 +86,7 @@ class DiagService(DiagComm):
             for el in et_element.iterfind("COMPARAM-REFS/COMPARAM-REF")
         ]
 
-        request_ref = odxrequire(OdxLinkRef.from_et(et_element.find("REQUEST-REF"), context))
+        request_ref = OdxLinkRef.from_et(et_element.find("REQUEST-REF"), context)
 
         pos_response_refs = [
             odxrequire(OdxLinkRef.from_et(el, context))
@@ -147,7 +147,11 @@ class DiagService(DiagComm):
         for cpr in self.comparam_refs:
             cpr._resolve_odxlinks(odxlinks)
 
-        self._request = odxlinks.resolve(self.request_ref, Request)
+        self._request: Request | None
+        if self.request_ref is not None:
+            self._request = odxlinks.resolve(self.request_ref, Request)
+        else:
+            self._request = None
 
         self._positive_responses = NamedItemList[Response](
             [odxlinks.resolve(x, Response) for x in self.pos_response_refs])
