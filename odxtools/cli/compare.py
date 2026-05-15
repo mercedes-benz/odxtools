@@ -5,6 +5,7 @@ import argparse
 import os
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from typing import Any
 
 from rich import print as rich_print
 from rich.padding import Padding as RichPadding
@@ -30,7 +31,8 @@ from ..parameters.valueparameter import ValueParameter
 from ..unit import Unit
 from . import _parser_utils
 from ._parser_utils import SubparsersList
-from ._print_utils import build_service_table, print_dl_metrics, print_service_parameters
+from ._print_utils import (build_service_table, print_change_metrics, print_dl_metrics,
+                           print_service_parameters)
 
 # name of the tool
 _odxtools_tool_name_ = "compare"
@@ -652,6 +654,7 @@ class Comparison(Display):
                                                     description=description,
                                                     changed_attributes=param_changes))
                         else:
+
                             description = f"List of positive response parameters for service [magenta]'{service2.short_name}'[/magenta] is not identical"
                             changed_params.append(
                                 ParameterChanges(
@@ -693,6 +696,7 @@ class Comparison(Display):
                                                     description=description,
                                                     changed_attributes=param_changes))
                         else:
+
                             description = f"List of negative response parameters for service [magenta]'{service2.short_name}'[/magenta] is not identical"
                             changed_params.append(
                                 ParameterChanges(
@@ -880,12 +884,15 @@ def add_subparser(subparsers: SubparsersList) -> None:
         required=False,
         help="Show all variant and service details",
     )
-
-    # TODO
-    # Idea: provide folder with multiple pdx files as argument
-    # -> load all pdx files in folder, sort them alphabetically, compare databases pairwaise
-    # -> calculate metrics (number of added services, number of changed services, number of removed services, total number of services per ecu variant, ...)
-    # -> display metrics graphically
+    parser.add_argument(
+        "-f",
+        "--folder",
+        type=str,
+        default=None,
+        metavar="FOLDER",
+        required=False,
+        help="Provide folder path containing multiple PDX files for pairwise comparison.",
+    )
 
 
 def run(args: argparse.Namespace) -> None:
@@ -988,6 +995,76 @@ def run(args: argparse.Namespace) -> None:
                                                              task.diagnostic_layers[db_idx + 1])):
                 task.print_dl_changes(dl_changes)
 
-    else:
-        # no databases & no variants specified
-        rich_print("Please specify either a database or variant for a comparison")
+    elif getattr(args, "folder", None):
+        rich_print()
+        pdx_files = []
+        for file in os.listdir(args.folder):
+            if file.lower().endswith(".pdx"):
+                full_path = os.path.join(args.folder, file)
+                pdx_files.append(full_path)
+
+        for pdx in range(len(pdx_files) - 1):
+            summary_results: list[dict[str, int | str | None]] = []
+            file_a = pdx_files[pdx]
+            file_b = pdx_files[pdx + 1]
+            db_changes = task.compare_databases([load_file(file_a)][0], [load_file(file_b)][0])
+
+            summary: dict[str, Any] = {
+                "new_layers": [],
+                "deleted_layers": [],
+                "service_changes": {}
+            }
+            deleted_diaglayer_objs: list[DiagLayer] = []
+            changed_variant: list[DiagLayer] = []
+            changed_variant_type: list[str] = []
+            for variant in getattr(db_changes, "deleted_diagnostic_layers", []):
+                assert isinstance(variant, DiagLayer)
+                deleted_diaglayer_objs.append(variant)
+                changed_variant.append(variant)
+                changed_variant_type.append(str(variant.variant_type.value))
+
+            for layer in getattr(db_changes, "new_diagnostic_layers", []):
+                summary["new_layers"].append({
+                    "short_name": getattr(layer, "short_name", None),
+                })
+
+            for layer in getattr(db_changes, "deleted_diagnostic_layers", []):
+                deleted_info = {
+                    "services": [svc.short_name for svc in getattr(layer, "diag_comms_raw", [])],
+                }
+                summary["deleted_layers"].append(deleted_info)
+            summary["service_changes"] = getattr(db_changes, "service_changes", {})
+            summary_results.append({
+                "Variant Comparison":
+                    "",
+                "Variant Type":
+                    "",
+                "Services Added":
+                    len(summary["new_layers"]),
+                "Services Changed":
+                    len(summary["service_changes"]),
+                "Services Deleted":
+                    len(summary["deleted_layers"][0]["services"]
+                        if summary["deleted_layers"] else []),
+            })
+
+            rich_print(f"Changes in file '{file_a}")
+            rich_print(f" (compared to '{file_b}')")
+
+            rich_print()
+
+            for db_idx, dl in enumerate(changed_variant):
+                if db_idx + 1 > len(changed_variant):
+                    break
+                rich_print()
+                summary_results[-1]["Variant Comparison"] = dl.short_name
+                summary_results[-1]["Variant Type"] = changed_variant_type[db_idx]
+                print_change_metrics(summary_results)
+                if len(deleted_diaglayer_objs) > 1:
+                    dl_change = task.compare_diagnostic_layers(deleted_diaglayer_objs[db_idx],
+                                                               deleted_diaglayer_objs[db_idx + 1])
+                    if dl_change:
+                        task.print_dl_changes(dl_change)
+            if db_changes:
+                task.print_database_changes(db_changes)
+            rich_print()

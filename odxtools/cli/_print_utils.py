@@ -289,3 +289,29 @@ def print_dl_metrics(variants: list[DiagLayer]) -> None:
         table.add_row(variant.short_name, variant.variant_type.value, str(len(all_services)),
                       str(len(list(ddds.data_object_props))), str(len(comparam_refs)))
     rich_print(table)
+
+
+def print_change_metrics(variants: list[dict[str, int | str | None]]) -> None:
+    """Print new/deleted/renamed/changed counts between files."""
+
+    table = RichTable(
+        title="", show_header=True, border_style="blue", show_lines=True, header_style="bold green")
+
+    table.add_column("Variant Comparison", style="magenta")
+    table.add_column("Variant Type", style="magenta")
+    table.add_column(
+        "Services Added", justify="center", style="yellow", no_wrap=False, max_width=10)
+    table.add_column(
+        "Services Changed", justify="center", style="yellow", no_wrap=False, max_width=10)
+    table.add_column(
+        "Services Deleted", justify="center", style="yellow", no_wrap=False, max_width=10)
+    for variant in variants:
+        table.add_row(
+            str(variant["Variant Comparison"]),
+            str(variant["Variant Type"]),
+            str(variant["Services Added"]),
+            str(variant["Services Changed"]),
+            str(variant["Services Deleted"]),
+        )
+
+    rich_print(table)
