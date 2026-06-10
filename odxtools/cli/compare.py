@@ -911,8 +911,8 @@ class DiffEngine:
                     ))
             return changed_params
 
-        params_new = list(getattr(request_new, "parameters", []) or [])
-        params_old = list(getattr(request_old, "parameters", []) or [])
+        params_new = list(request_new.parameters or []) if request_new else []
+        params_old = list(request_old.parameters or []) if request_old else []
         new_map = {param.short_name: param for param in params_new}
         old_map = {param.short_name: param for param in params_old}
         all_names = sorted(set(new_map) | set(old_map))
@@ -978,8 +978,8 @@ class DiffEngine:
                 continue
             response_new = new_map[response_name]
             response_old = old_map[response_name]
-            params_new = list(getattr(response_new, "parameters", []) or [])
-            params_old = list(getattr(response_old, "parameters", []) or [])
+            params_new = list(response_new.parameters or []) if response_new else []
+            params_old = list(response_old.parameters or []) if response_old else []
             param_new_map = {param.short_name: param for param in params_new}
             param_old_map = {param.short_name: param for param in params_old}
             all_param_names = sorted(set(param_new_map) | set(param_old_map))
@@ -1023,11 +1023,12 @@ class DiffEngine:
     def _service_signature(self, service: DiagService
                           ) -> tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]:
         request_names = tuple(
-            param.short_name for param in getattr(service.request, "parameters", []) or [])
+            param.short_name
+            for param in (service.request.parameters or [])) if service.request else ()
         positive_response_names = tuple(
-            response.short_name for response in getattr(service, "positive_responses", []) or [])
+            response.short_name for response in (service.positive_responses or []))
         negative_response_names = tuple(
-            response.short_name for response in getattr(service, "negative_responses", []) or [])
+            response.short_name for response in (service.negative_responses or []))
         return request_names, positive_response_names, negative_response_names
 
     def _build_service_maps(
@@ -1106,7 +1107,8 @@ class TextExporter(Exporter):
         if data.changed_diagnostic_layers:
             lines.append("\nChanged diagnostic layers:")
             for layer in sorted(
-                    data.changed_diagnostic_layers, key=lambda x: x.diag_layer):  # type: ignore
+                    data.changed_diagnostic_layers, key=lambda x:
+                (x.diag_layer_type, x.diag_layer)):  # type: ignore
                 lines.append(f"  - {layer.diag_layer} ({layer.diag_layer_type})")  # type: ignore
         return "\n".join(lines)
 
