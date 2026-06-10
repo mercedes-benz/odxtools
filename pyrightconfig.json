@@ -1,0 +1,15 @@
+{
+  "include": [
+    "odxtools",
+    "tests"
+  ],
+  "executionEnvironments": [
+    {
+      "root": ".",
+      "extraPaths": [
+        ".",
+        "./odxtools"
+      ]
+    }
+  ]
+}
