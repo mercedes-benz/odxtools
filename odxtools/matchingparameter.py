@@ -50,7 +50,8 @@ class MatchingParameter:
         if (out_param_snref_el := et_element.find("OUT-PARAM-IF-SNREF")) is not None:
             out_param_if_snref = odxrequire(out_param_snref_el.get("SHORT-NAME"))
         elif (out_param_snpathref_el := et_element.find("OUT-PARAM-IF-SNPATHREF")) is not None:
-            out_param_if_snpathref = odxrequire(out_param_snpathref_el.get("SHORT-NAME-PATH"))
+            out_param_if_snpathref = odxrequire(
+                odxrequire(out_param_snpathref_el).get("SHORT-NAME-PATH"))
         else:
             odxraise("Output parameter must not be left unspecified")
 
