@@ -129,3 +129,6 @@ split_penalty_after_opening_bracket=1000
 filterwarnings = [
     "error::odxtools.exceptions.DecodeError",
 ]
+
+[tool.pyright]
+include = ["odxtools", "tests"]
