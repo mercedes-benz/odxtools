@@ -50,22 +50,26 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 browse-tool = [
-     "InquirerPy >= 0.3.4",
+    "InquirerPy >= 0.3.4",
+]
+
+compare-tool = [
+    "PyYAML >= 6.0",
 ]
 
 test = [
-     "mypy >= 1.5",
-     "ruff >= 0.0.290",
-     "pytest >= 7.4",
-     "coverage >= 7.3",
+    "mypy >= 1.5",
+    "ruff >= 0.0.290",
+    "pytest >= 7.4",
+    "coverage >= 7.3",
 ]
 
 examples = [
-     "can-isotp >= 1.9",
+    "can-isotp >= 1.9",
 ]
 
 all = [
-     "odxtools[browse-tool,test,examples]"
+    "odxtools[browse-tool,compare-tool,test,examples]"
 ]
 
 [project.urls]
@@ -85,7 +89,7 @@ write_to = "odxtools/version.py"
 [tool.mypy]
 
 exclude = [
-	'build',
+    'build',
 ]
 
 ignore_missing_imports = true
