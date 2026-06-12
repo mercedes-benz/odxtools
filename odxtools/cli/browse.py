@@ -56,7 +56,7 @@ def _validate_string_value(input: str, parameter: Parameter) -> bool:
         try:
             phys_type = odxrequire(parameter.physical_type)
             val = _convert_string_to_odx_type(input, phys_type.base_data_type)
-        except:
+        except Exception:
             return False
         dop = parameter.dop
         if isinstance(dop, DataObjectProperty):
@@ -75,12 +75,17 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
         odxraise("Only ValueParameters which define a physical data type can be queried")
 
     param_prompt = [{
-        "type": "input",
-        "name": parameter.short_name,
-        "message": f"Value for parameter '{parameter.short_name}' (Type: {parameter.physical_type.base_data_type})"
-        + (f"[optional]" if not parameter.is_required else ""),
-        "validate": lambda x: _validate_string_value(x, parameter),
-        "filter": lambda x: x
+        "type":
+            "input",
+        "name":
+            parameter.short_name,
+        "message":
+            f"Value for parameter '{parameter.short_name}' (Type: {parameter.physical_type.base_data_type})"
+            + (f"[optional]" if not parameter.is_required else ""),
+        "validate":
+            lambda x: _validate_string_value(x, parameter),
+        "filter":
+            lambda x: x
     }]
 
     if (dop := getattr(parameter, "dop", None)) and \
@@ -114,10 +119,14 @@ def encode_message_interactively(codec: Request | Response,
     answered_request = b''
     if isinstance(codec, Response):
         answered_request_prompt = [{
-            "type": "input",
-            "name": "request",
-            "message": "What is the request you want to answer? (Enter the coded request as integer in hexadecimal format (e.g. 12 3B 5)",
-            "filter": lambda input: _convert_string_to_bytes(input),
+            "type":
+                "input",
+            "name":
+                "request",
+            "message":
+                "What is the request you want to answer? (Enter the coded request as integer in hexadecimal format (e.g. 12 3B 5)",
+            "filter":
+                lambda input: _convert_string_to_bytes(input),
         }]
         if IP_prompt is None:
             raise SystemError("InquirerPy prompt is required for interactive mode")
@@ -256,7 +265,7 @@ def encode_message_from_string_values(
             if not isinstance(parameter, MatchingRequestParameter):
                 parameter_values[param_key] = _convert_string_to_odx_type(
                     parameter_value,
-                    parameter.physical_type.base_data_type,
+                    parameter.physical_type.base_data_type,  # type: ignore[attr-defined]
                 )
             else:
                 parameter_values[param_key] = _convert_string_to_odx_type(
@@ -312,9 +321,12 @@ def browse(odxdb: Database) -> None:
                 s for s in variant.services if isinstance(s, DiagService)
             ]
             selection = [{
-                "type": "list",
-                "name": "service",
-                "message": f"The variant {variant.short_name} offers the following services. Select one!",
+                "type":
+                    "list",
+                "name":
+                    "service",
+                "message":
+                    f"The variant {variant.short_name} offers the following services. Select one!",
                 "choices": [s.short_name for s in services] + ["[back]"],
             }]
             if IP_prompt is None:
@@ -333,10 +345,13 @@ def browse(odxdb: Database) -> None:
             assert service.negative_responses is not None
 
             selection = [{
-                "type": "list",
-                "name": "message_type",
-                "message": "This service offers the following messages.",
-                "choices": [{
+                "type":
+                    "list",
+                "name":
+                    "message_type",
+                "message":
+                    "This service offers the following messages.",
+                "choices": [{  # type: ignore
                     "name": f"Request: {service.request.short_name}",
                     "value": service.request,
                     "short": f"Request: {service.request.short_name}",
