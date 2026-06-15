@@ -252,7 +252,7 @@ def encode_message_from_string_values(
 
                 if isinstance(inner_param,
                               ParameterWithDOP) and inner_param.physical_type is not None:
-                        typed_dict[inner_param_sn] = _convert_string_to_odx_type(
+                    typed_dict[inner_param_sn] = _convert_string_to_odx_type(
                         inner_param_value, inner_param.physical_type.base_data_type)
             parameter_values[parameter.short_name] = typed_dict
         else:
