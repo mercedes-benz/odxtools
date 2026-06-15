@@ -226,8 +226,7 @@ def encode_message_from_string_values(
     for parameter_sn, parameter_value in list(parameter_values.items()):
         if not isinstance(parameter_sn, str):
             odxraise()
-        param_key = str(parameter_sn)
-        parameter = resolve_snref(param_key, sub_service.parameters, Parameter)
+        parameter = resolve_snref(parameter_sn, sub_service.parameters, Parameter)
         if parameter is None:
             print(f"I don't know the parameter {parameter_sn}")
             continue
@@ -243,8 +242,7 @@ def encode_message_from_string_values(
             for inner_param_sn, inner_param_value in parameter_value.items():
                 if not isinstance(inner_param_sn, str):
                     odxraise()
-                inner_key = str(inner_param_sn)
-                inner_param = resolve_snref(inner_key, inner_params, Parameter, lenient=True)
+                inner_param = resolve_snref(inner_param_sn, inner_params, Parameter, lenient=True)
                 if inner_param is None:
                     print(f"Unknown sub-parameter {inner_param_sn}")
                     continue
@@ -254,7 +252,7 @@ def encode_message_from_string_values(
 
                 if isinstance(inner_param,
                               ParameterWithDOP) and inner_param.physical_type is not None:
-                    typed_dict[inner_key] = _convert_string_to_odx_type(
+                        typed_dict[inner_param_sn] = _convert_string_to_odx_type(
                         inner_param_value, inner_param.physical_type.base_data_type)
             parameter_values[parameter.short_name] = typed_dict
         else:
@@ -263,12 +261,12 @@ def encode_message_from_string_values(
                 continue
 
             if not isinstance(parameter, MatchingRequestParameter):
-                parameter_values[param_key] = _convert_string_to_odx_type(
+                parameter_values[parameter_sn] = _convert_string_to_odx_type(
                     parameter_value,
                     parameter.physical_type.base_data_type,  # type: ignore[attr-defined]
                 )
             else:
-                parameter_values[param_key] = _convert_string_to_odx_type(
+                parameter_values[parameter_sn] = _convert_string_to_odx_type(
                     parameter_value, DataType.A_BYTEFIELD)
 
     payload = sub_service.encode(coded_request=b"\xff" * 100, **parameter_values)
