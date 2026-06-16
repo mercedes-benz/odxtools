@@ -30,6 +30,7 @@ from . import _parser_utils
 from ._parser_utils import SubparsersList
 from ._print_utils import build_parameter_table
 
+# name of the tool
 _odxtools_tool_name_ = "browse"
 
 
@@ -56,7 +57,7 @@ def _validate_string_value(input: str, parameter: Parameter) -> bool:
         try:
             phys_type = odxrequire(parameter.physical_type)
             val = _convert_string_to_odx_type(input, phys_type.base_data_type)
-        except Exception:
+        except Exception:  # noqa: E722
             return False
         dop = parameter.dop
         if isinstance(dop, DataObjectProperty):
@@ -74,6 +75,10 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
     if parameter.physical_type is None:
         odxraise("Only ValueParameters which define a physical data type can be queried")
 
+    # TODO: add valid choices for the parameter
+    #        "choices": parameter.get_valid_physical_values(),
+    # TODO: improve validation for complex DOPs
+    # TODO: do type conversion?
     param_prompt = [{
         "type":
             "input",
@@ -113,6 +118,9 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
 
 def encode_message_interactively(codec: Request | Response,
                                  ask_user_confirmation: bool = False) -> None:
+    # TODO: Specifying complex parameters with nesting depth > 1 is not possible yet
+    # TODO: Add support for nested structures
+    # TODO: Better error handling for settable parameters
     if sys.stdin is None or sys.stdout is None or not sys.stdin.isatty() or not sys.stdout.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
 
@@ -198,6 +206,9 @@ def encode_message_from_string_values(
     sub_service: Request | Response,
     parameter_values: ParameterValueDict | None = None,
 ) -> None:
+    # TODO: Add validation for parameter values before encoding
+    # TODO: Support for nested structures in parameter values
+    # TODO: Handle missing parameters more gracefully
     if parameter_values is None:
         parameter_values = {}
     parameter_values = parameter_values.copy()
@@ -274,6 +285,8 @@ def encode_message_from_string_values(
 
 
 def browse(odxdb: Database) -> None:
+    # TODO: Add support for filtering variants by type
+    # TODO: Add search functionality for services
     if sys.stdin is None or sys.stdout is None or not sys.stdin.isatty() or not sys.stdout.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
     dl_names = [dl.short_name for dl in odxdb.diag_layers]
@@ -378,6 +391,7 @@ def browse(odxdb: Database) -> None:
 
 
 def add_subparser(subparsers: SubparsersList) -> None:
+    # Browse interactively to avoid spamming the console.
     parser = subparsers.add_parser(
         "browse",
         description="Interactively browse the content of automotive diagnostic files (*.pdx).",
