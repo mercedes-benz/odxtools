@@ -30,6 +30,7 @@ from .parameters.tablekeyparameter import TableKeyParameter
 from .parameters.tablestructparameter import TableStructParameter
 from .paramlengthinfotype import ParamLengthInfoType
 from .staticfield import StaticField
+from .structure import Structure
 
 
 def _get_linear_segment_info(segment: LinearSegment) -> str:
@@ -153,6 +154,11 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 else:
                     dtc_desc = dtc.text and f" (\"{dtc.text}\")"
                     of.write(f"  0x{dtc.trouble_code:06x}{dtc_desc}\n")
+            continue
+        elif isinstance(dop, Structure):
+            of.write(f"{q}{param.short_name}{q}: {{\n")
+            of.write(textwrap.indent(parameter_info(dop.parameters, True), "  "))
+            of.write(f"}}\n")
             continue
         elif isinstance(dop, Multiplexer):
             of.write(f"{q}{param.short_name}{q}: ")
