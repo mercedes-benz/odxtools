@@ -17,6 +17,7 @@ from .dataobjectproperty import DataObjectProperty
 from .dtcdop import DtcDop
 from .dynamiclengthfield import DynamicLengthField
 from .endofpdufield import EndOfPduField
+from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxrequire
 from .multiplexer import Multiplexer
 from .parameters.codedconstparameter import CodedConstParameter
@@ -170,6 +171,36 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 if (struc := mux_case.structure) is not None:
                     of.write(textwrap.indent(parameter_info(struc.parameters, True), "    "))
                 of.write(f"   }})\n")
+            continue
+        elif isinstance(dop, EnvironmentDataDescription):
+            dtc_ref = dop.param_snref or dop.param_snpathref or "<unknown>"
+            of.write(
+                f"{q}{param.short_name}{q}: environment data description; DTC parameter: '{dtc_ref}'; choices:\n"
+            )
+            # first, print the environment datas which are always send
+            # (the ODX standard mandates them to be send before the
+            # DTC-specific ones)
+            for env_data in dop.env_datas:
+                if not env_data.all_value:
+                    continue
+
+                of.write(f"  ('{env_data.short_name}' (DTCs: <all>), {{\n")
+                of.write(textwrap.indent(parameter_info(env_data.parameters, True), "    "))
+                of.write(f"  }})\n")
+
+            # then print the DTC-specific parts
+            for env_data in dop.env_datas:
+                if env_data.all_value:
+                    continue
+
+                if env_data.dtc_values:
+                    dtc_str = f"DTCs: {','.join([f'0x{v:06x}' for v in env_data.dtc_values])}"
+                else:
+                    dtc_str = "DTCs: <none>"
+
+                of.write(f"  ('{env_data.short_name}' ({dtc_str}), {{\n")
+                of.write(textwrap.indent(parameter_info(env_data.parameters, True), "    "))
+                of.write(f"  }})\n")
             continue
         elif isinstance(dop, DataObjectProperty):
             # a "simple" DOP
