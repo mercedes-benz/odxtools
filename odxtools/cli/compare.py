@@ -1291,11 +1291,9 @@ class DiffEngine:
                         description=f"Request for service [magenta]'{service_name}'[/magenta] is not identical, exactly one of the requests is None.",
                         changed_attributes=[
                             ParameterAttributeChanges(
-                                attribute="Request parameter list",
-                                old_value=[x.short_name for x in request_old.parameters]
-                                if request_old else [],
-                                new_value=[x.short_name for x in request_new.parameters]
-                                if request_new else [],
+                                attribute="Request",
+                                old_value=request_old.short_name if request_old else "",
+                                new_value=request_new.short_name if request_new else "",
                             )
                         ],
                     ))
