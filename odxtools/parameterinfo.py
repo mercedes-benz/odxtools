@@ -175,8 +175,9 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
         elif isinstance(dop, EnvironmentDataDescription):
             dtc_ref = dop.param_snref or dop.param_snpathref or "<unknown>"
             of.write(
-                f"{q}{param.short_name}{q}: environment data description; DTC parameter: '{dtc_ref}'; choices:\n"
+                f"{q}{param.short_name}{q}: environment data description; DTC parameter: '{dtc_ref}': {{\n"
             )
+
             # first, print the environment datas which are always send
             # (the ODX standard mandates them to be send before the
             # DTC-specific ones)
@@ -184,9 +185,8 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 if not env_data.all_value:
                     continue
 
-                of.write(f"  ('{env_data.short_name}' (DTCs: <all>), {{\n")
+                of.write(f"  parameters required for all DTCs:\n")
                 of.write(textwrap.indent(parameter_info(env_data.parameters, True), "    "))
-                of.write(f"  }})\n")
 
             # then print the DTC-specific parts
             for env_data in dop.env_datas:
@@ -194,13 +194,17 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                     continue
 
                 if env_data.dtc_values:
-                    dtc_str = f"DTCs: {','.join([f'0x{v:06x}' for v in env_data.dtc_values])}"
+                    if len(env_data.dtc_values) == 1:
+                        dtc_str = f"DTC 0x{env_data.dtc_values[0]:06x}"
+                    else:
+                        dtc_list_str = f"{','.join([f'0x{v:06x}' for v in env_data.dtc_values])}"
+                        dtc_str = f"DTCs {dtc_list_str}"
                 else:
-                    dtc_str = "DTCs: <none>"
+                    dtc_str = "<no DTCs>"
+                of.write(f"  parameters required for {dtc_str}:\n")
 
-                of.write(f"  ('{env_data.short_name}' ({dtc_str}), {{\n")
                 of.write(textwrap.indent(parameter_info(env_data.parameters, True), "    "))
-                of.write(f"  }})\n")
+            of.write(f"}}\n")
             continue
         elif isinstance(dop, DataObjectProperty):
             # a "simple" DOP
