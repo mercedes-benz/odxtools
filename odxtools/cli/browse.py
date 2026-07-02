@@ -7,7 +7,7 @@ from typing import cast
 try:
     import InquirerPy.prompt as IP_prompt
 except ImportError:
-    IP_prompt = None  # type: ignore[assignment]
+    IP_prompt = None
 
 from ..complexdop import ComplexDop
 from ..database import Database
