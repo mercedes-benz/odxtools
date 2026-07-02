@@ -5,19 +5,18 @@ import sys
 from typing import cast
 
 try:
-    import importlib
-    IP_prompt = importlib.import_module("InquirerPy").prompt
-except Exception:  # pragma: no cover - optional dependency for interactive mode
-    IP_prompt = None
+    import InquirerPy.prompt as IP_prompt
+except ImportError:
+    IP_prompt = None  # type: ignore[assignment]
 
 from ..complexdop import ComplexDop
 from ..database import Database
 from ..dataobjectproperty import DataObjectProperty
-from ..diaglayers.diaglayer import DiagLayer
+from ..diaglayer import DiagLayer
 from ..diagservice import DiagService
 from ..dopbase import DopBase
-from ..hierarchyelement import HierarchyElement
 from ..exceptions import odxraise, odxrequire
+from ..hierarchyelement import HierarchyElement
 from ..odxlink import resolve_snref
 from ..odxtypes import AtomicOdxType, DataType, ParameterValueDict
 from ..parameters.matchingrequestparameter import MatchingRequestParameter
@@ -35,6 +34,7 @@ _odxtools_tool_name_ = "browse"
 
 
 def _convert_string_to_odx_type(string_value: str, odx_type: DataType) -> AtomicOdxType:
+    """Similar to odx_type.from_string(string_value) but more relaxed to parse user input"""
     if odx_type == DataType.A_UINT32:
         return int(string_value, 0)
     elif odx_type == DataType.A_BYTEFIELD:
@@ -57,7 +57,7 @@ def _validate_string_value(input: str, parameter: Parameter) -> bool:
         try:
             phys_type = odxrequire(parameter.physical_type)
             val = _convert_string_to_odx_type(input, phys_type.base_data_type)
-        except Exception:  # noqa: E722
+        except:  # noqa: E722
             return False
         dop = parameter.dop
         if isinstance(dop, DataObjectProperty):
@@ -77,8 +77,6 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
 
     # TODO: add valid choices for the parameter
     #        "choices": parameter.get_valid_physical_values(),
-    # TODO: improve validation for complex DOPs
-    # TODO: do type conversion?
     param_prompt = [{
         "type":
             "input",
@@ -87,10 +85,14 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
         "message":
             f"Value for parameter '{parameter.short_name}' (Type: {parameter.physical_type.base_data_type})"
             + (f"[optional]" if not parameter.is_required else ""),
+        # TODO: improve validation
         "validate":
             lambda x: _validate_string_value(x, parameter),
+        # TODO: do type conversion?
         "filter":
             lambda x: x
+        # x if x == "" or p.physical_type.base_data_type is None
+        # else _convert_string_to_odx_type(x, p.physical_type.base_data_type, param=p) # This does not work because the next parameter to be promted is used (for some reason?)
     }]
 
     if (dop := getattr(parameter, "dop", None)) and \
@@ -101,8 +103,11 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
             choices.append(cdv.compu_const)
         param_prompt[0]["choices"] = choices
 
+    # Guard: InquirerPy must be available for interactive prompts
     if IP_prompt is None:
-        raise SystemError("InquirerPy prompt is required for interactive mode")
+        raise SystemError("InquirerPy is required for interactive mode. Install: pip install InquirerPy")
+    answer = IP_prompt(param_prompt)
+
     answer = IP_prompt(param_prompt)
     if answer.get(parameter.short_name) == "" and not parameter.is_required:
         return None
@@ -118,10 +123,8 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
 
 def encode_message_interactively(codec: Request | Response,
                                  ask_user_confirmation: bool = False) -> None:
-    # TODO: Specifying complex parameters with nesting depth > 1 is not possible yet
-    # TODO: Add support for nested structures
-    # TODO: Better error handling for settable parameters
-    if sys.stdin is None or sys.stdout is None or not sys.stdin.isatty() or not sys.stdout.isatty():
+    if sys.__stdin__ is None or sys.__stdout__ is None or not sys.__stdin__.isatty(
+    ) or not sys.__stdout__.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
 
     answered_request = b''
@@ -132,12 +135,14 @@ def encode_message_interactively(codec: Request | Response,
             "name":
                 "request",
             "message":
-                "What is the request you want to answer? (Enter the coded request as integer in hexadecimal format (e.g. 12 3B 5)",
+                f"What is the request you want to answer? (Enter the coded request as integer in hexadecimal format (e.g. 12 3B 5)",
             "filter":
                 lambda input: _convert_string_to_bytes(input),
         }]
+
+        # Guard: InquirerPy must be available for interactive prompts
         if IP_prompt is None:
-            raise SystemError("InquirerPy prompt is required for interactive mode")
+            raise SystemError("InquirerPy is required for interactive mode. Install: pip install InquirerPy")
         answer = IP_prompt(answered_request_prompt)
         answered_request = cast(bytes, answer.get("request"))
         print(f"Input interpretation as list: {list(answered_request)}")
@@ -147,6 +152,8 @@ def encode_message_interactively(codec: Request | Response,
         if not param.is_settable:
             continue
 
+        # TODO: Specifying complex parameters with nesting depth > 1
+        # is not possible yet
         if (inner_params := getattr(getattr(param, "dop", None), "parameters", None)) is not None:
             for inner_param in inner_params:
                 if inner_param.is_settable:
@@ -156,24 +163,30 @@ def encode_message_interactively(codec: Request | Response,
 
     param_values: ParameterValueDict = {}
     if has_settable_param:
+        # Ask whether user wants to encode a message
         if ask_user_confirmation:
             encode_message_prompt = [{
                 "type": "list",
                 "name": "yes_no_prompt",
-                "message": "Do you want to encode a message? [y/n]",
+                "message": f"Do you want to encode a message? [y/n]",
                 "choices": ["yes", "no"],
             }]
+
+            # Guard: InquirerPy must be available for interactive prompts
             if IP_prompt is None:
-                raise SystemError("InquirerPy prompt is required for interactive mode")
+                raise SystemError("InquirerPy is required for interactive mode. Install: pip install InquirerPy")
             answer = IP_prompt(encode_message_prompt)
             if answer.get("yes_no_prompt") == "no":
                 return
 
+        # Query user for the values of all settable parameters
         for param in codec.parameters:
             if (inner_params := getattr(dop := getattr(param, "dop", None), "parameters",
                                         None)) is not None:
                 assert isinstance(dop, DopBase)
                 inner_params = cast(list[Parameter], inner_params)
+                # param refers to a complex DOP, i.e., the required
+                # value is a key-value dict
                 print(
                     f"The next {len(inner_params)} parameters belong to the structure '{dop.short_name}'"
                 )
@@ -194,6 +207,7 @@ def encode_message_interactively(codec: Request | Response,
         else:
             payload = codec.encode(coded_request=b'', **param_values)
     else:
+        # There are no settable parameters -> Just print message
         if isinstance(codec, Response):
             payload = codec.encode(coded_request=answered_request)
         else:
@@ -206,21 +220,19 @@ def encode_message_from_string_values(
     sub_service: Request | Response,
     parameter_values: ParameterValueDict | None = None,
 ) -> None:
-    # TODO: Add validation for parameter values before encoding
-    # TODO: Support for nested structures in parameter values
-    # TODO: Handle missing parameters more gracefully
     if parameter_values is None:
         parameter_values = {}
     parameter_values = parameter_values.copy()
 
-    missing_parameter_names: list[str] = []
+    # Check if all needed parameters have been specified
+    missing_parameter_names = []
     for param in sub_service.parameters:
-        if (inner_params := getattr(getattr(param, "dop", None), "parameters", None)) is not None:
+        if (inner_params := getattr(dop := getattr(param, "dop", None), "parameters",
+                                    None)) is not None:
             inner_param_values = parameter_values.get(param.short_name, {})
             if not isinstance(inner_param_values, dict):
-                print(
-                    f"Value for composite parameter {param.short_name} must be a dictionary, got {type(inner_param_values).__name__}"
-                )
+                print(f"Value for composite parameter {param.short_name} must be "
+                      f"a dictionary, got {type(inner_param_values).__name__}")
                 continue
             for inner_param in inner_params:
                 if inner_param.is_required and inner_param.short_name not in inner_param_values:
@@ -229,20 +241,20 @@ def encode_message_from_string_values(
             if param.is_required and parameter_values.get(param.short_name) is None:
                 missing_parameter_names.append(param.short_name)
 
-    if missing_parameter_names:
+    if len(missing_parameter_names) > 0:
         print("The following parameters are required but missing:")
         print(" - " + "\n - ".join(sorted(missing_parameter_names)))
         return
 
-    for parameter_sn, parameter_value in list(parameter_values.items()):
-        if not isinstance(parameter_sn, str):
-            odxraise()
+    # Request values for parameters
+    for parameter_sn, parameter_value in parameter_values.items():
         parameter = resolve_snref(parameter_sn, sub_service.parameters, Parameter)
         if parameter is None:
             print(f"I don't know the parameter {parameter_sn}")
             continue
 
         if isinstance(parameter_value, dict):
+            # parameter_value refers to a structure (represented as dict of params)
             dop = getattr(parameter, "dop", None)
             inner_params = getattr(dop, "parameters", None)
             assert isinstance(dop, ComplexDop)
@@ -251,9 +263,7 @@ def encode_message_from_string_values(
 
             typed_dict = parameter_value.copy()
             for inner_param_sn, inner_param_value in parameter_value.items():
-                if not isinstance(inner_param_sn, str):
-                    odxraise()
-                inner_param = resolve_snref(inner_param_sn, inner_params, Parameter, lenient=True)
+                inner_param = resolve_snref(inner_param_sn, inner_params, Parameter)
                 if inner_param is None:
                     print(f"Unknown sub-parameter {inner_param_sn}")
                     continue
@@ -280,25 +290,29 @@ def encode_message_from_string_values(
                 parameter_values[parameter_sn] = _convert_string_to_odx_type(
                     parameter_value, DataType.A_BYTEFIELD)
 
-    payload = sub_service.encode(coded_request=b"\xff" * 100, **parameter_values)
+    payload = sub_service.encode(coded_request=b'\xff' * 100, **parameter_values)
+
     print(f"Message payload: 0x{bytes(payload).hex()}")
 
 
 def browse(odxdb: Database) -> None:
-    # TODO: Add support for filtering variants by type
-    # TODO: Add search functionality for services
-    if sys.stdin is None or sys.stdout is None or not sys.stdin.isatty() or not sys.stdout.isatty():
+    if sys.__stdin__ is None or sys.__stdout__ is None or not sys.__stdin__.isatty(
+    ) or not sys.__stdout__.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
     dl_names = [dl.short_name for dl in odxdb.diag_layers]
     while True:
+        # Select an ECU
         selection = [{
             "type": "list",
             "name": "variant",
             "message": "Select a Variant.",
             "choices": list(dl_names) + ["[exit]"],
         }]
+
+        # Guard: InquirerPy must be available for interactive prompts
         if IP_prompt is None:
-            raise SystemError("InquirerPy prompt is required for interactive mode")
+            raise SystemError("InquirerPy is required for interactive mode. Install: pip install InquirerPy")
+        answer = IP_prompt(selection)
         answer = IP_prompt(selection)
         if answer.get("variant") == "[exit]":
             return
@@ -309,28 +323,26 @@ def browse(odxdb: Database) -> None:
         print(f"{type(answer.get('variant'))=}")
         assert isinstance(variant, DiagLayer)
 
-        recv_id = "<<undefined>>"
-        send_id = "<<undefined>>"
         if isinstance(variant, HierarchyElement):
-            try:
-                if (rx_id := variant.get_can_receive_id()) is not None:
-                    recv_id = hex(rx_id)
-            except Exception:
-                pass
-            try:
-                if (tx_id := variant.get_can_send_id()) is not None:
-                    send_id = hex(tx_id)
-            except Exception:
-                pass
+            if (rx_id := variant.get_receive_id()) is not None:
+                recv_id = hex(rx_id)
+            else:
+                recv_id = "None"
 
-        print(
-            f"{variant.variant_type.value} '{variant.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
-        )
+            if (tx_id := variant.get_send_id()) is not None:
+                send_id = hex(tx_id)
+            else:
+                send_id = "None"
+
+            print(
+                f"{variant.variant_type.value} '{variant.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
+            )
 
         while True:
             services: list[DiagService] = [
                 s for s in variant.services if isinstance(s, DiagService)
             ]
+            # Select a service of the ECU
             selection = [{
                 "type":
                     "list",
@@ -340,8 +352,10 @@ def browse(odxdb: Database) -> None:
                     f"The variant {variant.short_name} offers the following services. Select one!",
                 "choices": [s.short_name for s in services] + ["[back]"],
             }]
+
+            # Guard: InquirerPy must be available for interactive prompts
             if IP_prompt is None:
-                raise SystemError("InquirerPy prompt is required for interactive mode")
+                raise SystemError("InquirerPy is required for interactive mode. Install: pip install InquirerPy")
             answer = IP_prompt(selection)
             if answer.get("service") == "[back]":
                 break
@@ -355,6 +369,7 @@ def browse(odxdb: Database) -> None:
             assert service.positive_responses is not None
             assert service.negative_responses is not None
 
+            # Select a request/ response of the service
             selection = [{
                 "type":
                     "list",
@@ -362,7 +377,7 @@ def browse(odxdb: Database) -> None:
                     "message_type",
                 "message":
                     "This service offers the following messages.",
-                "choices": [{  # type: ignore
+                "choices": [{
                     "name": f"Request: {service.request.short_name}",
                     "value": service.request,
                     "short": f"Request: {service.request.short_name}",
@@ -374,10 +389,12 @@ def browse(odxdb: Database) -> None:
                     "name": f"Negative response: {nr.short_name}",
                     "value": nr,
                     "short": f"Negative response: {nr.short_name}",
-                } for nr in service.negative_responses] + ["[back]"],
+                } for nr in service.negative_responses] + ["[back]"], # type: ignore
             }]
+
+            # Guard: InquirerPy must be available for interactive prompts
             if IP_prompt is None:
-                raise SystemError("InquirerPy prompt is required for interactive mode")
+                raise SystemError("InquirerPy is required for interactive mode. Install: pip install InquirerPy")
             answer = IP_prompt(selection)
             if answer.get("message_type") == "[back]":
                 continue
@@ -387,6 +404,7 @@ def browse(odxdb: Database) -> None:
                 assert isinstance(codec, (Request, Response))
                 table = build_parameter_table(codec.parameters)
                 print(table)
+
                 encode_message_interactively(codec, ask_user_confirmation=True)
 
 
@@ -398,6 +416,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         help="Interactively browse the content of automotive diagnostic files.",
         formatter_class=argparse.RawTextHelpFormatter,
     )
+
     _parser_utils.add_pdx_argument(parser)
 
 
