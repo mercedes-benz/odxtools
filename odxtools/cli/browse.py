@@ -105,7 +105,8 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
 
     # Guard: InquirerPy must be available for interactive prompts
     if IP_prompt is None:
-        raise SystemError("InquirerPy is required for interactive mode. Install: pip install InquirerPy")
+        raise SystemError(
+            "InquirerPy is required for interactive mode. Install: pip install InquirerPy")
     answer = IP_prompt(param_prompt)
 
     answer = IP_prompt(param_prompt)
@@ -142,7 +143,8 @@ def encode_message_interactively(codec: Request | Response,
 
         # Guard: InquirerPy must be available for interactive prompts
         if IP_prompt is None:
-            raise SystemError("InquirerPy is required for interactive mode. Install: pip install InquirerPy")
+            raise SystemError(
+                "InquirerPy is required for interactive mode. Install: pip install InquirerPy")
         answer = IP_prompt(answered_request_prompt)
         answered_request = cast(bytes, answer.get("request"))
         print(f"Input interpretation as list: {list(answered_request)}")
@@ -174,7 +176,8 @@ def encode_message_interactively(codec: Request | Response,
 
             # Guard: InquirerPy must be available for interactive prompts
             if IP_prompt is None:
-                raise SystemError("InquirerPy is required for interactive mode. Install: pip install InquirerPy")
+                raise SystemError(
+                    "InquirerPy is required for interactive mode. Install: pip install InquirerPy")
             answer = IP_prompt(encode_message_prompt)
             if answer.get("yes_no_prompt") == "no":
                 return
@@ -311,7 +314,8 @@ def browse(odxdb: Database) -> None:
 
         # Guard: InquirerPy must be available for interactive prompts
         if IP_prompt is None:
-            raise SystemError("InquirerPy is required for interactive mode. Install: pip install InquirerPy")
+            raise SystemError(
+                "InquirerPy is required for interactive mode. Install: pip install InquirerPy")
         answer = IP_prompt(selection)
         answer = IP_prompt(selection)
         if answer.get("variant") == "[exit]":
@@ -355,7 +359,8 @@ def browse(odxdb: Database) -> None:
 
             # Guard: InquirerPy must be available for interactive prompts
             if IP_prompt is None:
-                raise SystemError("InquirerPy is required for interactive mode. Install: pip install InquirerPy")
+                raise SystemError(
+                    "InquirerPy is required for interactive mode. Install: pip install InquirerPy")
             answer = IP_prompt(selection)
             if answer.get("service") == "[back]":
                 break
@@ -389,12 +394,13 @@ def browse(odxdb: Database) -> None:
                     "name": f"Negative response: {nr.short_name}",
                     "value": nr,
                     "short": f"Negative response: {nr.short_name}",
-                } for nr in service.negative_responses] + ["[back]"], # type: ignore
+                } for nr in service.negative_responses] + ["[back]"],  # type: ignore
             }]
 
             # Guard: InquirerPy must be available for interactive prompts
             if IP_prompt is None:
-                raise SystemError("InquirerPy is required for interactive mode. Install: pip install InquirerPy")
+                raise SystemError(
+                    "InquirerPy is required for interactive mode. Install: pip install InquirerPy")
             answer = IP_prompt(selection)
             if answer.get("message_type") == "[back]":
                 continue
