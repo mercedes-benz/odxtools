@@ -264,10 +264,9 @@ class ReportFormatter:
         Initialize the ReportFormatter.
 
         Args:
-            detailed: Whether to show detailed service parameter information.
-                      When True, full parameter structures and DOP trees
-                      are printed. When False, only summary information
-                      is displayed.
+            detailed: When True, prints full service parameter structures
+                via print_service_parameters(). When False, prints only
+                summary change information.
         """
         self.detailed = detailed
 
