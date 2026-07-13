@@ -1591,15 +1591,10 @@ class TextExporter(Exporter):
 
     @override
     def export(self, data: SpecsChangesVariants, target: Path | None) -> Path:
-        destination = Path(target) if target else None
-        output = self._render_report(data)
-        if destination:
-            with destination.open("w", encoding="utf-8") as handle:
-                handle.write(output)
-            return destination
-
-        rich_print(output)
-        return Path("stdout")
+        destination = Path(target) if target else Path.cwd() / "compare-report.txt"
+        with destination.open("w", encoding="utf-8") as handle:
+            handle.write(self._render_report(data))
+        return destination
 
     def _render_report(self, data: SpecsChangesVariants) -> str:
         lines = self._render_summary(data)
@@ -1681,8 +1676,9 @@ class YamlExporter(Exporter):
     @override
     def export(self, data: SpecsChangesVariants, target: Path | None) -> Path:
         if yaml is None:
-            raise RuntimeError(
-                "YAML export requires PyYAML. Install it to use --output-format yaml.")
+            rich_print("[bold]Error:[/bold] YAML export requires PyYAML. "
+                       "Install it to use --output-format yaml.")
+            sys.exit(1)
         destination = Path(target) if target else Path.cwd() / "compare-report.yaml"
         with destination.open("w", encoding="utf-8") as handle:
             yaml.safe_dump(data.to_dict(), handle, sort_keys=False)
