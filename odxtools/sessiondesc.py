@@ -46,7 +46,7 @@ class SessionDesc(NamedElement):
                 priority = int(priority_str)
             except Exception as e:
                 odxraise(f"Cannot parse PRIORITY: {e}")
-        session_snref = None
+        session_snref = cast(str, None)
         if (session_snref_elem := odxrequire(et_element.find("SESSION-SNREF"))) is not None:
             session_snref = odxrequire(session_snref_elem.attrib.get("SHORT-NAME"))
         diag_comm_snref = None

@@ -343,7 +343,7 @@ class DiagLayer:
         return prefix_tree
 
     @staticmethod
-    def _extend_prefix_tree(prefix_tree: PrefixTree, coded_prefix: bytes,
+    def _extend_prefix_tree(prefix_tree: PrefixTree, coded_prefix: bytes | bytearray,
                             service: DiagService) -> None:
 
         # make sure that tree has an entry for the given prefix

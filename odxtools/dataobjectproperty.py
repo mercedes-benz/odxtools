@@ -120,7 +120,8 @@ class DataObjectProperty(DopBase):
         if not isinstance(physical_value, (int, float, str, BytesTypes)):
             odxraise(f"Invalid type '{type(physical_value).__name__}' for physical value. "
                      f"(Expect atomic type!)")
-        internal_value = self.compu_method.convert_physical_to_internal(physical_value)
+        internal_value = self.compu_method.convert_physical_to_internal(
+            physical_value)  # pyright: ignore[reportArgumentType]
         self.diag_coded_type.encode_into_pdu(internal_value, encode_state)
 
     def decode_from_pdu(self, decode_state: DecodeState) -> ParameterValue:

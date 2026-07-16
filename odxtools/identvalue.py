@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
+from typing import cast
 from xml.etree import ElementTree
 
 from .exceptions import odxraise
@@ -36,7 +37,7 @@ class IdentValue:
             value_type = IdentValueType(et_element.attrib["TYPE"])
         except Exception as e:
             odxraise(f"Cannot parse IDENT-VALUE-TYPE: {e}")
-            value_type = None
+            value_type = cast(IdentValueType, None)
 
         return IdentValue(value_raw=value_raw, value_type=value_type)
 

@@ -4,16 +4,16 @@ import logging
 import sys
 from typing import cast
 
-import InquirerPy.prompt as IP_prompt
+from InquirerPy.resolver import prompt as IP_prompt
 
 from ..complexdop import ComplexDop
 from ..database import Database
 from ..dataobjectproperty import DataObjectProperty
-from ..diaglayer import DiagLayer
+from ..diaglayers.diaglayer import DiagLayer
+from ..diaglayers.hierarchyelement import HierarchyElement
 from ..diagservice import DiagService
 from ..dopbase import DopBase
 from ..exceptions import odxraise, odxrequire
-from ..hierarchyelement import HierarchyElement
 from ..odxlink import resolve_snref
 from ..odxtypes import AtomicOdxType, DataType, ParameterValueDict
 from ..parameters.matchingrequestparameter import MatchingRequestParameter
@@ -247,6 +247,8 @@ def encode_message_from_string_values(
 
             typed_dict = parameter_value.copy()
             for inner_param_sn, inner_param_value in parameter_value.items():
+                if not isinstance(inner_param_sn, str):
+                    odxraise(f"Expected string parameter name, got {type(inner_param_sn).__name__}")
                 inner_param = resolve_snref(inner_param_sn, inner_params, Parameter)
                 if inner_param is None:
                     print(f"Unknown sub-parameter {inner_param_sn}")
@@ -303,12 +305,12 @@ def browse(odxdb: Database) -> None:
         assert isinstance(variant, DiagLayer)
 
         if isinstance(variant, HierarchyElement):
-            if (rx_id := variant.get_receive_id()) is not None:
+            if (rx_id := variant.get_can_receive_id()) is not None:
                 recv_id = hex(rx_id)
             else:
                 recv_id = "None"
 
-            if (tx_id := variant.get_send_id()) is not None:
+            if (tx_id := variant.get_can_send_id()) is not None:
                 send_id = hex(tx_id)
             else:
                 send_id = "None"

@@ -24,8 +24,9 @@ class DynEndDopRef(OdxLinkRef):
         ...
 
     @staticmethod
-    def from_et(et_element: ElementTree.Element | None,
-                context: OdxDocContext) -> Optional["DynEndDopRef"]:
+    def from_et(  # pyright: ignore[reportIncompatibleMethodOverride]
+            et_element: ElementTree.Element | None,
+            context: OdxDocContext) -> Optional["DynEndDopRef"]:
 
         if et_element is None:
             odxraise("Mandatory DYN-END-DOP-REF tag is missing")

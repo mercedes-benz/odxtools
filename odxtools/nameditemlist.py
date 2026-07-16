@@ -142,7 +142,8 @@ class ItemAttributeList(list[T]):
     def __getitem__(self, key: slice) -> list[T]:
         ...
 
-    def __getitem__(self, key: SupportsIndex | str | slice) -> T | list[T]:
+    def __getitem__(  # pyright: ignore[reportIncompatibleMethodOverride]
+            self, key: SupportsIndex | str | slice) -> T | list[T]:
         if isinstance(key, (SupportsIndex, slice)):
             return super().__getitem__(key)
         else:
