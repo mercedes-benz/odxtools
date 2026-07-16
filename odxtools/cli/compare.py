@@ -48,11 +48,7 @@ from ..response import Response
 from ..unit import Unit
 from . import _parser_utils
 from ._parser_utils import SubparsersList
-from ._print_utils import (
-    build_service_table,
-    print_dl_metrics,
-    print_service_parameters,
-)
+from ._print_utils import build_service_table, print_dl_metrics, print_service_parameters
 
 ParameterAttributeChangesDict = dict[str, str]
 ParameterChangesDict = dict[str, str | list[ParameterAttributeChangesDict]]
