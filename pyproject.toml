@@ -132,3 +132,4 @@ filterwarnings = [
 
 [tool.pyright]
 include = ["odxtools", "tests"]
+reportMissingImports = "none"

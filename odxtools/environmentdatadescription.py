@@ -189,7 +189,9 @@ class EnvironmentDataDescription(ComplexDop):
                 tmp = env_data.decode_from_pdu(decode_state)
                 if not isinstance(tmp, dict):
                     odxraise()
-                result.update(tmp)
+                    break
+                result.update(tmp)  # pyright: ignore[reportArgumentType,reportCallIssue]
+
                 break
 
         # find the environment data corresponding to the given trouble
@@ -199,7 +201,9 @@ class EnvironmentDataDescription(ComplexDop):
                 tmp = env_data.decode_from_pdu(decode_state)
                 if not isinstance(tmp, dict):
                     odxraise()
-                result.update(tmp)
+                    break
+                result.update(tmp)  # pyright: ignore[reportArgumentType,reportCallIssue]
+
                 break
 
         return result

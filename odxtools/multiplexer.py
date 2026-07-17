@@ -167,6 +167,7 @@ class Multiplexer(ComplexDop):
         elif case_spec is None:
             if self.default_case is None:
                 raise EncodeError(f"Multiplexer {self.short_name} does not define a default case")
+            mux_case = self.default_case
             key_value = 0
         else:
             raise EncodeError(f"Illegal case specification '{case_spec}' for "

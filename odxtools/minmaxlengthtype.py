@@ -92,6 +92,10 @@ class MinMaxLengthType(DiagCodedType):
             else:
                 raw_value = internal_value.encode(str_encoding)
         else:
+            if not isinstance(internal_value, BytesTypes):
+                odxraise(
+                    f"Expected bytes value for MinMaxLengthType, got {type(internal_value).__name__}",
+                    EncodeError)
             raw_value = bytes(internal_value)
 
         data_length = len(raw_value)
@@ -107,7 +111,7 @@ class MinMaxLengthType(DiagCodedType):
                 f"Encoded value for MinMaxLengthType "
                 f"must not be longer than {self.max_length} bytes. "
                 f"(Is: {data_length} bytes.)", EncodeError)
-            data_length = self.max_length
+            data_length = int(self.max_length)
 
         encode_state.emplace_atomic_value(
             internal_value=raw_value,

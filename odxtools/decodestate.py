@@ -118,12 +118,16 @@ class DecodeState:
             str_encoding = get_string_encoding(base_data_type, base_type_encoding,
                                                is_highlow_byte_order)
             if str_encoding is not None:
+                if not isinstance(raw_value, (bytes, bytearray)):
+                    odxraise(f"Expected bytes for string decoding, got {type(raw_value).__name__}")
                 internal_value = raw_value.decode(str_encoding, errors=text_errors)
             else:
                 internal_value = "ERROR"
 
         # ... signed integers, ...
         elif base_data_type == DataType.A_INT32:
+            if not isinstance(raw_value, int):
+                odxraise(f"Expected integer raw value for A_INT32, got {type(raw_value).__name__}")
             if base_type_encoding == Encoding.ONEC:
                 # one-complement
                 sign_bit = 1 << (bit_length - 1)
@@ -160,6 +164,8 @@ class DecodeState:
 
         # ... unsigned integers, ...
         elif base_data_type == DataType.A_UINT32:
+            if not isinstance(raw_value, int):
+                odxraise(f"Expected integer raw value for A_UINT32, got {type(raw_value).__name__}")
             if base_type_encoding == Encoding.BCD_P:
                 internal_value = self.__decode_bcd_p(raw_value)
             elif base_type_encoding == Encoding.BCD_UP:

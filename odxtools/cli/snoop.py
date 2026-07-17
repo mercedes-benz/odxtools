@@ -235,7 +235,7 @@ def run(args: argparse.Namespace) -> None:
 
     odx_diag_layer = None
     if odx_database is not None:
-        odx_diag_layer = odx_database.diag_layers.get(args.variant)
+        odx_diag_layer = odx_database.diag_layers.get(str(args.variant))
 
         if odx_diag_layer is None:
             print(f"Variant '{args.variant}' does not exist. Available variants:")

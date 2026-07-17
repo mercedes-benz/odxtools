@@ -14,7 +14,7 @@ from .exceptions import EncodeError, odxraise, odxrequire
 from .internalconstr import InternalConstr
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
-from .odxtypes import AtomicOdxType, BytesTypes, ParameterValue
+from .odxtypes import AtomicOdxType, ParameterValue
 from .physicaltype import PhysicalType
 from .snrefcontext import SnRefContext
 from .unit import Unit
@@ -117,9 +117,10 @@ class DataObjectProperty(DopBase):
                 f"The value {repr(physical_value)} of type {type(physical_value).__name__}"
                 f" is not a valid.")
 
-        if not isinstance(physical_value, (int, float, str, BytesTypes)):
+        if not isinstance(physical_value, AtomicOdxType):
             odxraise(f"Invalid type '{type(physical_value).__name__}' for physical value. "
                      f"(Expect atomic type!)")
+            return
         internal_value = self.compu_method.convert_physical_to_internal(physical_value)
         self.diag_coded_type.encode_into_pdu(internal_value, encode_state)
 

@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Union, cast
 from xml.etree import ElementTree
 
 from .basicstructure import BasicStructure
@@ -65,7 +65,7 @@ def _resolve_in_param_helper(
             return None, None
 
         if TYPE_CHECKING:
-            tr = resolve_snref(inner_param_value[0], inner_param.table.table_rows, TableRow)
+            tr = resolve_snref(str(inner_param_value[0]), inner_param.table.table_rows, TableRow)
         else:
             tr = resolve_snref(inner_param_value[0], inner_param.table.table_rows)
 
@@ -86,7 +86,8 @@ def _resolve_in_param_helper(
         odxraise(f"Expected the referenced parameter to be composite")
         return None, None
 
-    return _resolve_in_param_helper(inner_param_list, inner_param_value, path_chunks[1:])
+    return _resolve_in_param_helper(inner_param_list, cast(ParameterValueDict, inner_param_value),
+                                    path_chunks[1:])
 
 
 def _check_applies(ref: Union["StateTransitionRef",
