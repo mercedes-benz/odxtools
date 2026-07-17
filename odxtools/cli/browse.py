@@ -93,25 +93,37 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
         # else _convert_string_to_odx_type(x, p.physical_type.base_data_type, param=p) # This does not work because the next parameter to be promted is used (for some reason?)
     }]
 
-    if (dop := getattr(parameter, "dop", None)) and \
-       (compu_method := getattr(dop, "compu_method", None)):
-        scales = compu_method.internal_to_phys
-        choices = [scale.compu_const for scale in scales if scale is not None]
-        if (cdv := compu_method.compu_default_value) is not None:
-            choices.append(cdv.compu_const)
-        param_prompt[0]["choices"] = choices
+    if (dop := getattr(parameter, "dop", None)) is not None and \
+       (compu_method := getattr(dop, "compu_method", None)) is not None and \
+       (citp := getattr(compu_method, "compu_internal_to_phys", None)) is not None:
+
+        choices = [
+            scale.compu_const.value
+            for scale in citp.compu_scales
+            if scale.compu_const is not None and scale.compu_const.value is not None
+        ]
+
+        if (cdv := citp.compu_default_value) is not None and cdv.value is not None:
+            choices.append(cdv.value)
+
+        if choices:
+            param_prompt[0]["type"] = "list"
+            param_prompt[0]["choices"] = choices
 
     answer = IP_prompt(param_prompt)
-    if answer.get(parameter.short_name) == "" and not parameter.is_required:
+    raw_answer = answer.get(parameter.short_name)
+    if raw_answer == "" and not parameter.is_required:
         return None
+    elif not isinstance(raw_answer, str):
+        # list prompt already returns the physical value directly
+        return cast(AtomicOdxType, raw_answer)
     elif parameter.physical_type.base_data_type is not None:
-        return _convert_string_to_odx_type(
-            cast(str, answer.get(parameter.short_name)), parameter.physical_type.base_data_type)
+        return _convert_string_to_odx_type(raw_answer, parameter.physical_type.base_data_type)
     else:
         logging.warning(
             f"Parameter {parameter.short_name} does not have a physical data type. Param details: {parameter}"
         )
-        return cast(str, answer.get(parameter.short_name))
+        return cast(str, raw_answer)
 
 
 def encode_message_interactively(codec: Request | Response,
