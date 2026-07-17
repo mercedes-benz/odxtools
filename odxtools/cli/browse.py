@@ -202,7 +202,7 @@ def encode_message_interactively(codec: Request | Response,
         if isinstance(codec, Response):
             payload = codec.encode(coded_request=answered_request, **param_values)
         else:
-            payload = codec.encode(coded_request=b'', **param_values)
+            payload = codec.encode(**param_values)
     else:
         # There are no settable parameters -> Just print message
         if isinstance(codec, Response):
