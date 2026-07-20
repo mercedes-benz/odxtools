@@ -4,16 +4,17 @@ import logging
 import sys
 from typing import cast
 
-import InquirerPy.prompt as IP_prompt
+from InquirerPy.resolver import prompt as IP_prompt
+from rich import print as rich_print
 
 from ..complexdop import ComplexDop
 from ..database import Database
 from ..dataobjectproperty import DataObjectProperty
-from ..diaglayer import DiagLayer
+from ..diaglayers.diaglayer import DiagLayer
+from ..diaglayers.hierarchyelement import HierarchyElement
 from ..diagservice import DiagService
 from ..dopbase import DopBase
 from ..exceptions import odxraise, odxrequire
-from ..hierarchyelement import HierarchyElement
 from ..odxlink import resolve_snref
 from ..odxtypes import AtomicOdxType, DataType, ParameterValueDict
 from ..parameters.matchingrequestparameter import MatchingRequestParameter
@@ -92,25 +93,37 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
         # else _convert_string_to_odx_type(x, p.physical_type.base_data_type, param=p) # This does not work because the next parameter to be promted is used (for some reason?)
     }]
 
-    if (dop := getattr(parameter, "dop", None)) and \
-       (compu_method := getattr(dop, "compu_method", None)):
-        scales = compu_method.internal_to_phys
-        choices = [scale.compu_const for scale in scales if scale is not None]
-        if (cdv := compu_method.compu_default_value) is not None:
-            choices.append(cdv.compu_const)
-        param_prompt[0]["choices"] = choices
+    if (dop := getattr(parameter, "dop", None)) is not None and \
+       (compu_method := getattr(dop, "compu_method", None)) is not None and \
+       (citp := getattr(compu_method, "compu_internal_to_phys", None)) is not None:
+
+        choices = [
+            scale.compu_const.value
+            for scale in citp.compu_scales
+            if scale.compu_const is not None and scale.compu_const.value is not None
+        ]
+
+        if (cdv := citp.compu_default_value) is not None and cdv.value is not None:
+            choices.append(cdv.value)
+
+        if choices:
+            param_prompt[0]["type"] = "list"
+            param_prompt[0]["choices"] = choices
 
     answer = IP_prompt(param_prompt)
-    if answer.get(parameter.short_name) == "" and not parameter.is_required:
+    raw_answer = answer.get(parameter.short_name)
+    if raw_answer == "" and not parameter.is_required:
         return None
+    elif not isinstance(raw_answer, str):
+        # list prompt already returns the physical value directly
+        return cast(AtomicOdxType, raw_answer)
     elif parameter.physical_type.base_data_type is not None:
-        return _convert_string_to_odx_type(
-            cast(str, answer.get(parameter.short_name)), parameter.physical_type.base_data_type)
+        return _convert_string_to_odx_type(raw_answer, parameter.physical_type.base_data_type)
     else:
         logging.warning(
             f"Parameter {parameter.short_name} does not have a physical data type. Param details: {parameter}"
         )
-        return cast(str, answer.get(parameter.short_name))
+        return cast(str, raw_answer)
 
 
 def encode_message_interactively(codec: Request | Response,
@@ -133,7 +146,7 @@ def encode_message_interactively(codec: Request | Response,
         }]
         answer = IP_prompt(answered_request_prompt)
         answered_request = cast(bytes, answer.get("request"))
-        print(f"Input interpretation as list: {list(answered_request)}")
+        rich_print(f"Input interpretation as list: {list(answered_request)}")
 
     has_settable_param = False
     for param in codec.parameters:
@@ -171,7 +184,7 @@ def encode_message_interactively(codec: Request | Response,
                 inner_params = cast(list[Parameter], inner_params)
                 # param refers to a complex DOP, i.e., the required
                 # value is a key-value dict
-                print(
+                rich_print(
                     f"The next {len(inner_params)} parameters belong to the structure '{dop.short_name}'"
                 )
                 structure_param_values: ParameterValueDict = {}
@@ -189,7 +202,7 @@ def encode_message_interactively(codec: Request | Response,
         if isinstance(codec, Response):
             payload = codec.encode(coded_request=answered_request, **param_values)
         else:
-            payload = codec.encode(coded_request=b'', **param_values)
+            payload = codec.encode(**param_values)
     else:
         # There are no settable parameters -> Just print message
         if isinstance(codec, Response):
@@ -197,7 +210,7 @@ def encode_message_interactively(codec: Request | Response,
         else:
             payload = codec.encode()
 
-    print(f"Message payload: 0x{bytes(payload).hex()}")
+    rich_print(f"Message payload: 0x{bytes(payload).hex()}")
 
 
 def encode_message_from_string_values(
@@ -215,8 +228,8 @@ def encode_message_from_string_values(
                                     None)) is not None:
             inner_param_values = parameter_values.get(param.short_name, {})
             if not isinstance(inner_param_values, dict):
-                print(f"Value for composite parameter {param.short_name} must be "
-                      f"a dictionary, got {type(inner_param_values).__name__}")
+                rich_print(f"Value for composite parameter {param.short_name} must be "
+                           f"a dictionary, got {type(inner_param_values).__name__}")
                 continue
             for inner_param in inner_params:
                 if inner_param.is_required and inner_param.short_name not in inner_param_values:
@@ -226,15 +239,15 @@ def encode_message_from_string_values(
                 missing_parameter_names.append(param.short_name)
 
     if len(missing_parameter_names) > 0:
-        print("The following parameters are required but missing:")
-        print(" - " + "\n - ".join(sorted(missing_parameter_names)))
+        rich_print("The following parameters are required but missing:")
+        rich_print(" - " + "\n - ".join(sorted(missing_parameter_names)))
         return
 
     # Request values for parameters
     for parameter_sn, parameter_value in parameter_values.items():
         parameter = resolve_snref(parameter_sn, sub_service.parameters, Parameter)
         if parameter is None:
-            print(f"I don't know the parameter {parameter_sn}")
+            rich_print(f"I don't know the parameter {parameter_sn}")
             continue
 
         if isinstance(parameter_value, dict):
@@ -247,12 +260,15 @@ def encode_message_from_string_values(
 
             typed_dict = parameter_value.copy()
             for inner_param_sn, inner_param_value in parameter_value.items():
+                if not isinstance(inner_param_sn, str):
+                    odxraise(f"Expected string parameter name, got {type(inner_param_sn).__name__}")
                 inner_param = resolve_snref(inner_param_sn, inner_params, Parameter)
                 if inner_param is None:
-                    print(f"Unknown sub-parameter {inner_param_sn}")
+                    rich_print(f"Unknown sub-parameter {inner_param_sn}")
                     continue
                 if not isinstance(inner_param_value, str):
-                    print(f"The value specified for parameter {inner_param_sn} is not a string")
+                    rich_print(
+                        f"The value specified for parameter {inner_param_sn} is not a string")
                     continue
 
                 if isinstance(inner_param,
@@ -262,7 +278,7 @@ def encode_message_from_string_values(
             parameter_values[parameter.short_name] = typed_dict
         else:
             if not isinstance(parameter_value, str):
-                print(f"Value for parameter {parameter_sn} is not a string")
+                rich_print(f"Value for parameter {parameter_sn} is not a string")
                 continue
 
             if not isinstance(parameter, MatchingRequestParameter):
@@ -276,7 +292,7 @@ def encode_message_from_string_values(
 
     payload = sub_service.encode(coded_request=b'\xff' * 100, **parameter_values)
 
-    print(f"Message payload: 0x{bytes(payload).hex()}")
+    rich_print(f"Message payload: 0x{bytes(payload).hex()}")
 
 
 def browse(odxdb: Database) -> None:
@@ -299,21 +315,20 @@ def browse(odxdb: Database) -> None:
         variant_name = answer.get("variant")
         assert isinstance(variant_name, str)
         variant = odxdb.diag_layers[variant_name]
-        print(f"{type(answer.get('variant'))=}")
         assert isinstance(variant, DiagLayer)
 
         if isinstance(variant, HierarchyElement):
-            if (rx_id := variant.get_receive_id()) is not None:
+            if (rx_id := variant.get_can_receive_id()) is not None:
                 recv_id = hex(rx_id)
             else:
                 recv_id = "None"
 
-            if (tx_id := variant.get_send_id()) is not None:
+            if (tx_id := variant.get_can_send_id()) is not None:
                 send_id = hex(tx_id)
             else:
                 send_id = "None"
 
-            print(
+            rich_print(
                 f"{variant.variant_type.value} '{variant.short_name}' (Receive ID: {recv_id}, Send ID: {send_id})"
             )
 
@@ -374,7 +389,7 @@ def browse(odxdb: Database) -> None:
             if codec is not None:
                 assert isinstance(codec, (Request, Response))
                 table = build_parameter_table(codec.parameters)
-                print(table)
+                rich_print(table)
 
                 encode_message_interactively(codec, ask_user_confirmation=True)
 

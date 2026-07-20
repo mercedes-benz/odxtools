@@ -17,6 +17,7 @@ from .dataobjectproperty import DataObjectProperty
 from .dtcdop import DtcDop
 from .dynamiclengthfield import DynamicLengthField
 from .endofpdufield import EndOfPduField
+from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxrequire
 from .multiplexer import Multiplexer
 from .parameters.codedconstparameter import CodedConstParameter
@@ -30,6 +31,7 @@ from .parameters.tablekeyparameter import TableKeyParameter
 from .parameters.tablestructparameter import TableStructParameter
 from .paramlengthinfotype import ParamLengthInfoType
 from .staticfield import StaticField
+from .structure import Structure
 
 
 def _get_linear_segment_info(segment: LinearSegment) -> str:
@@ -154,6 +156,11 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                     dtc_desc = dtc.text and f" (\"{dtc.text}\")"
                     of.write(f"  0x{dtc.trouble_code:06x}{dtc_desc}\n")
             continue
+        elif isinstance(dop, Structure):
+            of.write(f"{q}{param.short_name}{q}: {{\n")
+            of.write(textwrap.indent(parameter_info(dop.parameters, True), "  "))
+            of.write(f"}}\n")
+            continue
         elif isinstance(dop, Multiplexer):
             of.write(f"{q}{param.short_name}{q}: ")
             if dop.default_case is not None:
@@ -164,6 +171,40 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 if (struc := mux_case.structure) is not None:
                     of.write(textwrap.indent(parameter_info(struc.parameters, True), "    "))
                 of.write(f"   }})\n")
+            continue
+        elif isinstance(dop, EnvironmentDataDescription):
+            dtc_ref = dop.param_snref or dop.param_snpathref or "<unknown>"
+            of.write(
+                f"{q}{param.short_name}{q}: environment data description; DTC parameter: '{dtc_ref}': {{\n"
+            )
+
+            # first, print the environment datas which are always send
+            # (the ODX standard mandates them to be send before the
+            # DTC-specific ones)
+            for env_data in dop.env_datas:
+                if not env_data.all_value:
+                    continue
+
+                of.write(f"  parameters required for all DTCs:\n")
+                of.write(textwrap.indent(parameter_info(env_data.parameters, True), "    "))
+
+            # then print the DTC-specific parts
+            for env_data in dop.env_datas:
+                if env_data.all_value:
+                    continue
+
+                if env_data.dtc_values:
+                    if len(env_data.dtc_values) == 1:
+                        dtc_str = f"DTC 0x{env_data.dtc_values[0]:06x}"
+                    else:
+                        dtc_list_str = f"{','.join([f'0x{v:06x}' for v in env_data.dtc_values])}"
+                        dtc_str = f"DTCs {dtc_list_str}"
+                else:
+                    dtc_str = "<no DTCs>"
+                of.write(f"  parameters required for {dtc_str}:\n")
+
+                of.write(textwrap.indent(parameter_info(env_data.parameters, True), "    "))
+            of.write(f"}}\n")
             continue
         elif isinstance(dop, DataObjectProperty):
             # a "simple" DOP

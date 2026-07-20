@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
+from typing import cast
 from xml.etree import ElementTree
 
 from .exceptions import odxraise, odxrequire
@@ -53,7 +54,7 @@ class PhysicalType:
             base_data_type = DataType(base_data_type_str)
         except ValueError:
             odxraise(f"Encountered unknown base data type '{base_data_type_str}'")
-            base_data_type = None
+            base_data_type = cast(DataType, None)
 
         display_radix_str = et_element.get("DISPLAY-RADIX")
         if display_radix_str is not None:

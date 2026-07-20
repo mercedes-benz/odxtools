@@ -175,6 +175,9 @@ class EncodeState:
                 else:
                     raw_value = internal_value
 
+            if not isinstance(raw_value, int):
+                odxraise(f"Expected integer raw value for A_INT32, got {type(raw_value).__name__}",
+                         EncodeError)
             if raw_value.bit_length() > bit_length:
                 odxraise(
                     f"The value '{internal_value!r}' cannot be encoded using "
@@ -202,6 +205,9 @@ class EncodeState:
 
                 raw_value = internal_value
 
+            if not isinstance(raw_value, int):
+                odxraise(f"Expected integer raw value for A_UINT32, got {type(raw_value).__name__}",
+                         EncodeError)
             if raw_value.bit_length() > bit_length:
                 odxraise(
                     f"The value '{internal_value!r}' cannot be encoded using "
