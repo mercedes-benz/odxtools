@@ -36,12 +36,9 @@ class DummyTool:
             if hint:
                 return (
                     f"Error: Tool '{self._odxtools_tool_name_}' requires '{self._error.name}'.\n"
-                    f"Install it with: {hint}"
-                )
-            return (
-                f"Error: Tool '{self._odxtools_tool_name_}' requires '{self._error.name}'.\n"
-                f"Install it with: pip install {self._error.name}"
-            )
+                    f"Install it with: {hint}")
+            return (f"Error: Tool '{self._odxtools_tool_name_}' requires '{self._error.name}'.\n"
+                    f"Install it with: pip install {self._error.name}")
 
         return f"Error: Tool '{self._odxtools_tool_name_}' is unavailable: {self._error}"
 
@@ -52,12 +49,15 @@ class DummyTool:
         print(f"Traceback:", file=desc)
         traceback.print_tb(self._error.__traceback__, file=desc)
 
-        subparser_list.add_parser(
+        parser = subparser_list.add_parser(
             self._odxtools_tool_name_,
             description=desc.getvalue(),
             help="Tool unavailable",
             formatter_class=argparse.RawTextHelpFormatter,
         )
+        # Accept any positional arguments that the real tool would have taken,
+        # so that argparse does not fail before we can display our error message.
+        parser.add_argument("args", nargs="*", help=argparse.SUPPRESS)
 
     def run(self, args: argparse.Namespace) -> None:
         print(self._format_error(), file=sys.stderr)
