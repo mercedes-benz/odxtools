@@ -1,8 +1,8 @@
 [build-system]
 requires = [
-    "setuptools >= 59",
-    "setuptools_scm[toml] >= 6.2",
-    "wheel >= 0.41"
+    "setuptools >= 75",
+    "setuptools_scm[toml] >= 8.0",
+    "wheel >= 0.44"
 ]
 build-backend = "setuptools.build_meta"
 
@@ -37,13 +37,13 @@ classifiers = [
 dependencies = [
     "bitstruct >= 8.17",
     "argparse_addons >= 0.12",
-    "jinja2 >= 3.1",
+    "jinja2 >= 3.1.4",
     "python-can >= 4.2",
     "markdownify >= 0.11",
     "deprecation >= 2.1",
     "packaging",
-    "rich >= 13.7",
-    "typing_extensions >= 4.9",
+    "rich >= 13.9",
+    "typing_extensions >= 4.12",
     "bincopy >= 20.1",
 ]
 dynamic = ["version"]
@@ -52,20 +52,20 @@ dynamic = ["version"]
 browse-tool = [
      "InquirerPy >= 0.3.4",
 ]
-
-test = [
-     "mypy >= 1.5",
-     "ruff >= 0.0.290",
-     "pytest >= 7.4",
-     "coverage >= 7.3",
+compare-tool = [
+     "PyYAML >= 6.0.2",
 ]
-
+test = [
+     "mypy >= 1.11",
+     "ruff >= 0.6",
+     "pytest >= 7.4",
+     "coverage >= 7.6",
+]
 examples = [
      "can-isotp >= 1.9",
 ]
-
 all = [
-     "odxtools[browse-tool,test,examples]"
+     "odxtools[browse-tool,compare-tool,test,examples]"
 ]
 
 [project.urls]
