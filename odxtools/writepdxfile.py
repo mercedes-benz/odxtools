@@ -126,7 +126,8 @@ def write_pdx_file(
                 file_index.append(
                     (template_file_name, template_file_creation_date, template_file_mime_type))
                 with zf.open(template_file_name, "w") as out_file:
-                    out_file.write(open(in_file_name, "rb").read())
+                    with open(in_file_name, "rb") as in_file:
+                        out_file.write(in_file.read())
 
         # write the auxiliary files
         for output_file_name, data_file in database.auxiliary_files.items():
@@ -274,7 +275,7 @@ def write_pdx_file(
         # write the function dictionary objects
         function_dictionary_tpl = jinja_env.get_template("function_dictionary.odx-fd.xml.jinja2")
         for function_dictionary in database.function_dictionaries:
-            zf_file_name = f"{function_dictionary.short_name}.odx-v"
+            zf_file_name = f"{function_dictionary.short_name}.odx-fd"
             zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
             zf_mime_type = "application/x-asam.odx.odx-fd"
 
