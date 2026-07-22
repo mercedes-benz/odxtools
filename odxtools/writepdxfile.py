@@ -111,10 +111,11 @@ def write_pdx_file(
                     template_file_mime_type = "application/x-asam.odx.odx-d"
 
                 guessed_mime_type, guessed_encoding = mimetypes.guess_type(template_file_name)
-                if template_file_mime_type is None and guessed_mime_type is not None:
-                    template_file_mime_type = guessed_mime_type
-                else:
-                    template_file_mime_type = "application/octet-stream"
+                if template_file_mime_type is None:
+                    if guessed_mime_type is not None:
+                        template_file_mime_type = guessed_mime_type
+                    else:
+                        template_file_mime_type = "application/octet-stream"
 
                 in_path = [root]
                 in_path.append(template_file_name)
@@ -141,10 +142,11 @@ def write_pdx_file(
                 mime_type = "application/x-asam.odx.odx-d"
 
             guessed_mime_type, guessed_encoding = mimetypes.guess_type(output_file_name)
-            if mime_type is None and guessed_mime_type is not None:
-                mime_type = guessed_mime_type
-            else:
-                mime_type = "application/octet-stream"
+            if mime_type is None:
+                if guessed_mime_type is not None:
+                    mime_type = guessed_mime_type
+                else:
+                    mime_type = "application/octet-stream"
 
             zf_name = os.path.basename(output_file_name)
             with zf.open(zf_name, "w") as out_file:
