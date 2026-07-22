@@ -111,10 +111,11 @@ def write_pdx_file(
                     template_file_mime_type = "application/x-asam.odx.odx-d"
 
                 guessed_mime_type, guessed_encoding = mimetypes.guess_type(template_file_name)
-                if template_file_mime_type is None and guessed_mime_type is not None:
-                    template_file_mime_type = guessed_mime_type
-                else:
-                    template_file_mime_type = "application/octet-stream"
+                if template_file_mime_type is None:
+                    if guessed_mime_type is not None:
+                        template_file_mime_type = guessed_mime_type
+                    else:
+                        template_file_mime_type = "application/octet-stream"
 
                 in_path = [root]
                 in_path.append(template_file_name)
@@ -126,7 +127,8 @@ def write_pdx_file(
                 file_index.append(
                     (template_file_name, template_file_creation_date, template_file_mime_type))
                 with zf.open(template_file_name, "w") as out_file:
-                    out_file.write(open(in_file_name, "rb").read())
+                    with open(in_file_name, "rb") as in_file:
+                        out_file.write(in_file.read())
 
         # write the auxiliary files
         for output_file_name, data_file in database.auxiliary_files.items():
@@ -140,10 +142,11 @@ def write_pdx_file(
                 mime_type = "application/x-asam.odx.odx-d"
 
             guessed_mime_type, guessed_encoding = mimetypes.guess_type(output_file_name)
-            if mime_type is None and guessed_mime_type is not None:
-                mime_type = guessed_mime_type
-            else:
-                mime_type = "application/octet-stream"
+            if mime_type is None:
+                if guessed_mime_type is not None:
+                    mime_type = guessed_mime_type
+                else:
+                    mime_type = "application/octet-stream"
 
             zf_name = os.path.basename(output_file_name)
             with zf.open(zf_name, "w") as out_file:
@@ -274,7 +277,7 @@ def write_pdx_file(
         # write the function dictionary objects
         function_dictionary_tpl = jinja_env.get_template("function_dictionary.odx-fd.xml.jinja2")
         for function_dictionary in database.function_dictionaries:
-            zf_file_name = f"{function_dictionary.short_name}.odx-v"
+            zf_file_name = f"{function_dictionary.short_name}.odx-fd"
             zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
             zf_mime_type = "application/x-asam.odx.odx-fd"
 
