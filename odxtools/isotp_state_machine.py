@@ -9,7 +9,6 @@ from enum import IntEnum
 from io import TextIOBase
 from typing import TextIO
 
-import bitstruct
 import can
 
 
@@ -56,12 +55,13 @@ class IsoTpStateMachine:
             return  # unknown CAN ID
 
         # decode the isotp segment
-        frame_type, _ = bitstruct.unpack("u4u4", data)
+        frame_type = data[0] >> 4
         assert isinstance(frame_type, int)
 
         telegram_len = None
         if frame_type == IsoTp.FRAME_TYPE_SINGLE:
-            frame_type, telegram_len = bitstruct.unpack("u4u4", data)
+            frame_type = data[0] >> 4
+            telegram_len = data[0] & 0x0F
             assert isinstance(telegram_len, int)
 
             self.on_single_frame(telegram_idx, data[1:1 + telegram_len])
@@ -70,7 +70,8 @@ class IsoTpStateMachine:
             yield (rx_id, bytes(data[1:1 + telegram_len]))
 
         elif frame_type == IsoTp.FRAME_TYPE_FIRST:
-            frame_type, telegram_len = bitstruct.unpack("u4u12", data)
+            frame_type = data[0] >> 4
+            telegram_len = ((data[0] & 0x0F) << 8) | data[1]
             assert isinstance(telegram_len, int)
 
             self._telegram_specified_len[telegram_idx] = telegram_len
@@ -80,7 +81,8 @@ class IsoTpStateMachine:
             self.on_first_frame(telegram_idx, data)
 
         elif frame_type == IsoTp.FRAME_TYPE_CONSECUTIVE:
-            frame_type, rx_segment_idx = bitstruct.unpack("u4u4", data)
+            frame_type = data[0] >> 4
+            rx_segment_idx = data[0] & 0x0F
             assert isinstance(rx_segment_idx, int)
 
             expected_segment_idx = (self._telegram_last_rx_fragment_idx[telegram_idx] + 1) % 16
@@ -108,7 +110,8 @@ class IsoTpStateMachine:
                 yield (rx_id, bytes(telegram_data))
 
         elif frame_type == IsoTp.FRAME_TYPE_FLOW_CONTROL:
-            frame_type, flow_control_flag = bitstruct.unpack("u4u4", data)
+            frame_type = data[0] >> 4
+            flow_control_flag = data[0] & 0x0F
             assert isinstance(flow_control_flag, int)
 
             self.on_flow_control_frame(telegram_idx, flow_control_flag)
@@ -270,13 +273,8 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         tx_id = self.can_tx_id(telegram_idx)
         block_size = 0xFF
         min_separation_time = 0  # ms
-        fc_payload = bitstruct.pack(
-            "u4u4u8u8",
-            IsoTp.FRAME_TYPE_FLOW_CONTROL,
-            IsoTp.FLOW_CONTROL_CONTINUE,
-            block_size,  # does not matter here?!
-            min_separation_time,
-        )
+        fc_payload = bytes([(IsoTp.FRAME_TYPE_FLOW_CONTROL << 4) | IsoTp.FLOW_CONTROL_CONTINUE,
+                            block_size, min_separation_time])
 
         self._send_can_message(tx_id, fc_payload)
         self._frames_received[telegram_idx] = None
@@ -289,13 +287,8 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         tx_id = self.can_tx_id(telegram_idx)
         block_size = 0xFF  # default value, can be overwritten later
         min_separation_time = 0  # ms
-        fc_payload = bitstruct.pack(
-            "u4u4u8u8",
-            IsoTp.FRAME_TYPE_FLOW_CONTROL,
-            IsoTp.FLOW_CONTROL_CONTINUE,
-            block_size,
-            min_separation_time,
-        )
+        fc_payload = bytes([(IsoTp.FRAME_TYPE_FLOW_CONTROL << 4) | IsoTp.FLOW_CONTROL_CONTINUE,
+                            block_size, min_separation_time])
 
         self._send_can_message(tx_id, fc_payload)
 
@@ -320,13 +313,8 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
             # rx_id = self.can_rx_id(telegram_idx)
             tx_id = self.can_tx_id(telegram_idx)
             min_separation_time = 0  # ms
-            fc_payload = bitstruct.pack(
-                "u4u4u8u8",
-                IsoTp.FRAME_TYPE_FLOW_CONTROL,
-                IsoTp.FLOW_CONTROL_CONTINUE,
-                block_size,
-                min_separation_time,
-            )
+            fc_payload = bytes([(IsoTp.FRAME_TYPE_FLOW_CONTROL << 4) | IsoTp.FLOW_CONTROL_CONTINUE,
+                                block_size, min_separation_time])
             self._send_can_message(tx_id, fc_payload)
 
             self._frames_received[telegram_idx] = 0  # TODO: 1?
