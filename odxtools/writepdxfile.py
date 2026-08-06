@@ -13,6 +13,7 @@ import jinja2
 
 import odxtools
 
+import warnings
 from .database import Database
 from .odxlink import DocType, OdxDocFragment, OdxLinkRef
 from .odxtypes import bool_to_odxstr
@@ -109,8 +110,6 @@ def _get_jinja_env(templates_dir: str) -> jinja2.Environment:
     env = jinja2.Environment(
         loader=jinja2.FileSystemLoader(templates_dir),
         auto_reload=False,
-        trim_blocks=True,
-        lstrip_blocks=True,
     )
     env.globals["getattr"] = getattr
     env.globals["hasattr"] = hasattr
@@ -131,14 +130,23 @@ def _preload_templates(env: jinja2.Environment, templates_dir: str) -> None:
             rel_path = os.path.relpath(os.path.join(root, f), templates_dir).replace(os.sep, "/")
             try:
                 _TEMPLATE_CACHE[rel_path] = env.get_template(rel_path)
-            except jinja2.TemplateSyntaxError:
-                pass
+            except jinja2.TemplateSyntaxError as e:
+                warnings.warn(
+                    f"Template syntax error in {rel_path}: {e}. "
+                    "This template will be skipped. If it is required, fix the syntax error.",
+                    RuntimeWarning,
+                    stacklevel=2,
+                )
 
 
 def _get_cached_template(name: str, env: jinja2.Environment, templates_dir: str) -> jinja2.Template:
     if name not in _TEMPLATE_CACHE:
         _preload_templates(env, templates_dir)
-    return _TEMPLATE_CACHE[name]
+    tpl = _TEMPLATE_CACHE.get(name)
+    if tpl is None:
+        raise FileNotFoundError(f"Template '{name}' not found or has syntax errors. "
+                                f"Check warnings for details.")
+    return tpl
 
 
 def _render_cached(tpl: jinja2.Template, cache_key: str, obj: Any, jinja_vars: dict[str,
