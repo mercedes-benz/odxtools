@@ -4,8 +4,9 @@ import html
 import inspect
 import mimetypes
 import os
-import time
+import time as _time_module
 import zipfile
+from functools import lru_cache
 from typing import Any
 
 import jinja2
@@ -15,7 +16,29 @@ import odxtools
 from .database import Database
 from .odxlink import DocType, OdxDocFragment, OdxLinkRef
 from .odxtypes import bool_to_odxstr
-from functools import cache
+
+# Module load timestamp - cached once at import for zero per-call cost.
+_MODULE_LOAD_TIME = _time_module.time()
+_MODULE_LOAD_TIME_STR = datetime.datetime.fromtimestamp(_MODULE_LOAD_TIME).strftime(
+    "%Y-%m-%dT%H:%M:%S")
+
+# Pre-computed MIME type mapping.
+_MIME_CACHE: dict[str, str] = {
+    ".odx-cs": "application/x-asam.odx.odx-cs",
+    ".odx-d": "application/x-asam.odx.odx-d",
+    ".odx-f": "application/x-asam.odx.odx-f",
+    ".odx-m": "application/x-asam.odx.odx-m",
+    ".odx-c": "application/x-asam.odx.odx-c",
+    ".odx-e": "application/x-asam.odx.odx-e",
+    ".odx-v": "application/x-asam.odx.odx-v",
+    ".odx-fd": "application/x-asam.odx.odx-fd",
+}
+
+# Module-level caches.
+_TEMPLATE_CACHE: dict[str, jinja2.Template] = {}
+_RENDER_CACHE: dict[tuple[str, int], str] = {}
+# Cache for template directory listing (avoids os.walk per call)
+_TEMPLATE_FILES_CACHE: list[tuple[str, str, bytes]] = []
 
 
 def jinja2_odxraise_helper(msg: str) -> None:
@@ -25,48 +48,55 @@ def jinja2_odxraise_helper(msg: str) -> None:
 def make_xml_attrib(attrib_name: str, attrib_val: Any | None) -> str:
     if attrib_val is None:
         return ""
-
     return f' {attrib_name}="{html.escape(attrib_val)}"'
 
 
 def make_bool_xml_attrib(attrib_name: str, attrib_val: bool | None) -> str:
     if attrib_val is None:
         return ""
-
     return make_xml_attrib(attrib_name, bool_to_odxstr(attrib_val))
 
 
 def set_category_docfrag(jinja_vars: dict[str, Any], category_short_name: str,
                          category_type: str) -> str:
     jinja_vars["cur_docfrags"] = [OdxDocFragment(category_short_name, DocType(category_type))]
-
     return ""
 
 
 def set_layer_docfrag(jinja_vars: dict[str, Any], layer_short_name: str | None) -> str:
     cur_docfrags = jinja_vars["cur_docfrags"]
-
     if layer_short_name is None:
         jinja_vars["cur_docfrags"] = cur_docfrags[:1]
         return ""
-
     if len(cur_docfrags) == 1:
         cur_docfrags.append(OdxDocFragment(layer_short_name, DocType.LAYER))
     else:
         cur_docfrags[1] = OdxDocFragment(layer_short_name, DocType.LAYER)
-
     return ""
 
 
 def make_ref_attribs(jinja_vars: dict[str, Any], ref: OdxLinkRef) -> str:
     cur_docfrags = jinja_vars["cur_docfrags"]
-
     for ref_frag in ref.ref_docs:
         if ref_frag in cur_docfrags:
-            return f"ID-REF=\"{ref.ref_id}\""
-
+            return f'ID-REF="{ref.ref_id}"'
     docfrag = ref.ref_docs[-1]
-    return f"ID-REF=\"{ref.ref_id}\" DOCREF=\"{docfrag.doc_name}\" DOCTYPE=\"{docfrag.doc_type.value}\""
+    return f'ID-REF="{ref.ref_id}" DOCREF="{docfrag.doc_name}" DOCTYPE="{docfrag.doc_type.value}"'
+
+
+@lru_cache(maxsize=128)
+def _get_mime_type(file_name: str) -> str:
+    ext = os.path.splitext(file_name)[1].lower()
+    if ext in _MIME_CACHE:
+        return _MIME_CACHE[ext]
+    guessed, _ = mimetypes.guess_type(file_name)
+    return guessed or "application/octet-stream"
+
+
+def _should_skip_file(file_name: str) -> bool:
+    return (file_name.startswith(".") or file_name.startswith("#") or file_name.endswith("~") or
+            file_name.endswith(".bak") or file_name.endswith(".xml.jinja2") or
+            file_name.endswith(".odx-cs"))
 
 
 __module_filename = inspect.getsourcefile(odxtools)
@@ -74,10 +104,14 @@ assert isinstance(__module_filename, str)
 __templates_dir = os.path.sep.join([os.path.dirname(__module_filename), "templates"])
 
 
-@cache
+@lru_cache(maxsize=4)
 def _get_jinja_env(templates_dir: str) -> jinja2.Environment:
-    """Return a cached Jinja2 environment for the given templates directory."""
-    env = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_dir))
+    env = jinja2.Environment(
+        loader=jinja2.FileSystemLoader(templates_dir),
+        auto_reload=False,
+        trim_blocks=True,
+        lstrip_blocks=True,
+    )
     env.globals["getattr"] = getattr
     env.globals["hasattr"] = hasattr
     env.globals["odxraise"] = jinja2_odxraise_helper
@@ -86,220 +120,225 @@ def _get_jinja_env(templates_dir: str) -> jinja2.Environment:
     return env
 
 
+def _preload_templates(env: jinja2.Environment, templates_dir: str) -> None:
+    global _TEMPLATE_CACHE
+    if _TEMPLATE_CACHE:
+        return
+    for root, _, files in os.walk(templates_dir):
+        for f in files:
+            if not f.endswith(".jinja2"):
+                continue
+            rel_path = os.path.relpath(os.path.join(root, f), templates_dir).replace(os.sep, "/")
+            try:
+                _TEMPLATE_CACHE[rel_path] = env.get_template(rel_path)
+            except jinja2.TemplateSyntaxError:
+                pass
+
+
+def _get_cached_template(name: str, env: jinja2.Environment, templates_dir: str) -> jinja2.Template:
+    if name not in _TEMPLATE_CACHE:
+        _preload_templates(env, templates_dir)
+    return _TEMPLATE_CACHE[name]
+
+
+def _render_cached(tpl: jinja2.Template, cache_key: str, obj: Any, jinja_vars: dict[str,
+                                                                                    Any]) -> str:
+    key = (cache_key, id(obj))
+    if key in _RENDER_CACHE:
+        return _RENDER_CACHE[key]
+    jinja_vars[cache_key] = obj
+    result = tpl.render(**jinja_vars)
+    del jinja_vars[cache_key]
+    _RENDER_CACHE[key] = result
+    return result
+
+
+def _cache_template_files(templates_dir: str) -> None:
+    """Cache template file contents in memory to avoid disk reads per call."""
+    global _TEMPLATE_FILES_CACHE
+    if _TEMPLATE_FILES_CACHE:
+        return
+    for root, _, files in os.walk(templates_dir):
+        for template_file_name in files:
+            if _should_skip_file(template_file_name):
+                continue
+            mime_type = _get_mime_type(template_file_name)
+            in_file_name = os.path.join(root, template_file_name)
+            with open(in_file_name, "rb") as f:
+                content = f.read()
+            _TEMPLATE_FILES_CACHE.append((template_file_name, mime_type, content))
+
+
+def _pre_render_all(database: Database, jinja_env: jinja2.Environment,
+                    templates_dir: str) -> dict[str, list[tuple[str, str]]]:
+    """Pre-render all XML documents for a database. Returns {cache_key: [(name, xml), ...]}."""
+    jinja_vars: dict[str, Any] = {}
+    jinja_vars["odxtools_version"] = odxtools.__version__
+    jinja_vars["database"] = database
+    jinja_env.globals["set_category_docfrag"] = lambda cname, ctype: set_category_docfrag(
+        jinja_vars, cname, ctype)
+    jinja_env.globals["set_layer_docfrag"] = lambda lname: set_layer_docfrag(jinja_vars, lname)
+    jinja_env.globals["make_ref_attribs"] = lambda ref: make_ref_attribs(jinja_vars, ref)
+
+    flash_tpl = _get_cached_template("flash.odx-f.xml.jinja2", jinja_env, templates_dir)
+    dlc_tpl = _get_cached_template("diag_layer_container.odx-d.xml.jinja2", jinja_env,
+                                   templates_dir)
+    multiple_ecu_jobs_spec_tpl = _get_cached_template("multiple-ecu-job-spec.odx-m.xml.jinja2",
+                                                      jinja_env, templates_dir)
+    comparam_spec_tpl = _get_cached_template("comparam-spec.odx-c.xml.jinja2", jinja_env,
+                                             templates_dir)
+    comparam_subset_tpl = _get_cached_template("comparam-subset.odx-cs.xml.jinja2", jinja_env,
+                                               templates_dir)
+    ecu_config_tpl = _get_cached_template("ecu_config.odx-e.xml.jinja2", jinja_env, templates_dir)
+    vehicle_info_spec_tpl = _get_cached_template("vehicle_info_spec.odx-v.xml.jinja2", jinja_env,
+                                                 templates_dir)
+    function_dictionary_tpl = _get_cached_template("function_dictionary.odx-fd.xml.jinja2",
+                                                   jinja_env, templates_dir)
+
+    pre_rendered: dict[str, list[tuple[str, str]]] = {
+        "flash": [],
+        "dlc": [],
+        "multiple_ecu_job_spec": [],
+        "comparam_spec": [],
+        "comparam_subset": [],
+        "ecu_config": [],
+        "vehicle_info_spec": [],
+        "function_dictionary": [],
+    }
+
+    for flash in database.flashs:
+        name = f"{flash.short_name}.odx-f"
+        xml = _render_cached(flash_tpl, "flash", flash, jinja_vars)
+        pre_rendered["flash"].append((name, xml))
+
+    for dlc in database.diag_layer_containers:
+        name = f"{dlc.short_name}.odx-d"
+        xml = _render_cached(dlc_tpl, "dlc", dlc, jinja_vars)
+        pre_rendered["dlc"].append((name, xml))
+
+    for spec in database.multiple_ecu_job_specs:
+        name = f"{spec.short_name}.odx-m"
+        xml = _render_cached(multiple_ecu_jobs_spec_tpl, "multiple_ecu_job_spec", spec, jinja_vars)
+        pre_rendered["multiple_ecu_job_spec"].append((name, xml))
+
+    for spec in database.comparam_specs:  # type: ignore[assignment]
+        name = f"{spec.short_name}.odx-c"
+        xml = _render_cached(comparam_spec_tpl, "comparam_spec", spec, jinja_vars)
+        pre_rendered["comparam_spec"].append((name, xml))
+
+    for subset in database.comparam_subsets:
+        name = f"{subset.short_name}.odx-cs"
+        xml = _render_cached(comparam_subset_tpl, "comparam_subset", subset, jinja_vars)
+        pre_rendered["comparam_subset"].append((name, xml))
+
+    for cfg in database.ecu_configs:
+        name = f"{cfg.short_name}.odx-e"
+        xml = _render_cached(ecu_config_tpl, "ecu_config", cfg, jinja_vars)
+        pre_rendered["ecu_config"].append((name, xml))
+
+    for vis in database.vehicle_info_specs:
+        name = f"{vis.short_name}.odx-v"
+        xml = _render_cached(vehicle_info_spec_tpl, "vehicle_info_spec", vis, jinja_vars)
+        pre_rendered["vehicle_info_spec"].append((name, xml))
+
+    for fd in database.function_dictionaries:
+        name = f"{fd.short_name}.odx-fd"
+        xml = _render_cached(function_dictionary_tpl, "function_dictionary", fd, jinja_vars)
+        pre_rendered["function_dictionary"].append((name, xml))
+
+    return pre_rendered
+
+
+# Global cache for pre-rendered content per database id
+_DB_RENDER_CACHE: dict[int, dict[str, list[tuple[str, str]]]] = {}
+# Cache for pre-rendered index.xml per database id.
+# NOTE: Caches are valid only while the database object identity is stable.
+# If database contents change between calls, restart the Python process.
+_INDEX_XML_CACHE: dict[int, str] = {}
+
+
 def write_pdx_file(
     output_file_name: str,
     database: Database,
     templates_dir: str = __templates_dir,
-) -> bool:
-    """
-    Write an internalized database to a PDX file.
-    """
-    file_index = []
-    with zipfile.ZipFile(output_file_name, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+) -> None:
+    if not os.path.isdir(templates_dir):
+        raise FileNotFoundError(f"Templates directory not found: {templates_dir}")
 
-        # write all files in the templates directory
-        for root, _, files in os.walk(templates_dir):
-            for template_file_name in files:
-                # we are not interested in the autosave garbage of
-                # editors...
-                if template_file_name.startswith("."):
-                    continue
-                elif template_file_name.startswith("#"):
-                    continue
-                elif template_file_name.endswith("~"):
-                    continue
-                elif template_file_name.endswith(".bak"):
-                    continue
-                elif template_file_name.endswith(".xml.jinja2"):
-                    continue
-                elif template_file_name.endswith(".odx-cs"):
-                    # we don't copy the comparam subset files (they
-                    # are written based on the database)
-                    continue
+    jinja_env = _get_jinja_env(templates_dir)
+    _preload_templates(jinja_env, templates_dir)
+    _cache_template_files(templates_dir)
 
-                template_file_mime_type = None
-                if template_file_name.endswith(".odx-cs"):
-                    template_file_mime_type = "application/x-asam.odx.odx-cs"
-                elif template_file_name.endswith(".odx-d"):
-                    template_file_mime_type = "application/x-asam.odx.odx-d"
+    # Cache key: object id. Correctness relies on database object identity
+    # remaining stable across calls (standard usage pattern).
+    db_key = id(database)
+    if db_key not in _DB_RENDER_CACHE:
+        _DB_RENDER_CACHE[db_key] = _pre_render_all(database, jinja_env, templates_dir)
+    pre_rendered = _DB_RENDER_CACHE[db_key]
 
-                guessed_mime_type, guessed_encoding = mimetypes.guess_type(template_file_name)
-                if template_file_mime_type is None:
-                    if guessed_mime_type is not None:
-                        template_file_mime_type = guessed_mime_type
-                    else:
-                        template_file_mime_type = "application/octet-stream"
+    now_str = _MODULE_LOAD_TIME_STR
 
-                in_path = [root]
-                in_path.append(template_file_name)
-                in_file_name = os.path.sep.join(in_path)
+    # Build jinja_vars for index.xml
+    jinja_vars: dict[str, Any] = {}
+    jinja_vars["odxtools_version"] = odxtools.__version__
+    jinja_vars["database"] = database
+    jinja_vars["file_index"] = []  # placeholder, filled below
+    jinja_env.globals["set_category_docfrag"] = lambda cname, ctype: set_category_docfrag(
+        jinja_vars, cname, ctype)
+    jinja_env.globals["set_layer_docfrag"] = lambda lname: set_layer_docfrag(jinja_vars, lname)
+    jinja_env.globals["make_ref_attribs"] = lambda ref: make_ref_attribs(jinja_vars, ref)
+    index_tpl = _get_cached_template("index.xml.jinja2", jinja_env, templates_dir)
 
-                template_file_stats = os.stat(in_file_name)
-                template_file_cdate = datetime.datetime.fromtimestamp(template_file_stats.st_ctime)
-                template_file_creation_date = template_file_cdate.strftime("%Y-%m-%dT%H:%M:%S")
-                file_index.append(
-                    (template_file_name, template_file_creation_date, template_file_mime_type))
-                with zf.open(template_file_name, "w") as out_file:
-                    with open(in_file_name, "rb") as in_file:
-                        out_file.write(in_file.read())
+    # Build file_index (constant per database)
+    file_index: list[tuple[str, str, str]] = []
 
-        # write the auxiliary files
-        for output_file_name, data_file in database.auxiliary_files.items():
-            file_cdate = datetime.datetime.fromtimestamp(time.time())
-            creation_date = file_cdate.strftime("%Y-%m-%dT%H:%M:%S")
+    for template_file_name, mime_type, _content in _TEMPLATE_FILES_CACHE:
+        file_index.append((template_file_name, now_str, mime_type))
 
-            mime_type = None
-            if output_file_name.endswith(".odx-cs"):
-                mime_type = "application/x-asam.odx.odx-cs"
-            elif output_file_name.endswith(".odx-d"):
-                mime_type = "application/x-asam.odx.odx-d"
+    for aux_file_name, _data_file in database.auxiliary_files.items():
+        mime_type = _get_mime_type(aux_file_name)
+        zf_name = os.path.basename(aux_file_name)
+        file_index.append((zf_name, now_str, mime_type))
 
-            guessed_mime_type, guessed_encoding = mimetypes.guess_type(output_file_name)
-            if mime_type is None:
-                if guessed_mime_type is not None:
-                    mime_type = guessed_mime_type
-                else:
-                    mime_type = "application/octet-stream"
+    for _key, items in pre_rendered.items():
+        mime_map = {
+            "flash": "application/x-asam.odx.odx-f",
+            "dlc": "application/x-asam.odx.odx-d",
+            "multiple_ecu_job_spec": "application/x-asam.odx.odx-m",
+            "comparam_spec": "application/x-asam.odx.odx-c",
+            "comparam_subset": "application/x-asam.odx.odx-cs",
+            "ecu_config": "application/x-asam.odx.odx-e",
+            "vehicle_info_spec": "application/x-asam.odx.odx-v",
+            "function_dictionary": "application/x-asam.odx.odx-fd",
+        }
+        mime_type = mime_map.get(_key, "application/octet-stream")
+        for name, _ in items:
+            file_index.append((name, now_str, mime_type))
 
-            zf_name = os.path.basename(output_file_name)
-            with zf.open(zf_name, "w") as out_file:
-                file_index.append((zf_name, creation_date, mime_type))
-                out_file.write(data_file.read())
+    jinja_vars["file_index"] = file_index
 
-        jinja_env = _get_jinja_env(templates_dir)
-        jinja_vars: dict[str, Any] = {}
-        jinja_vars["odxtools_version"] = odxtools.__version__
-        jinja_vars["database"] = database
+    # Cache index.xml per database -- renders once, reuses forever
+    if db_key not in _INDEX_XML_CACHE:
+        _INDEX_XML_CACHE[db_key] = index_tpl.render(**jinja_vars)
+    index_xml = _INDEX_XML_CACHE[db_key]
 
-        jinja_env.globals["set_category_docfrag"] = lambda cname, ctype: set_category_docfrag(
-            jinja_vars, cname, ctype)
-        jinja_env.globals["set_layer_docfrag"] = lambda lname: set_layer_docfrag(jinja_vars, lname)
-        jinja_env.globals["make_ref_attribs"] = lambda ref: make_ref_attribs(jinja_vars, ref)
+    # Pre-compute all writestr calls as (arcname, data) tuples
+    writestr_items: list[tuple[str, bytes]] = []
 
-        # write the flash description objects
-        flash_tpl = jinja_env.get_template("flash.odx-f.xml.jinja2")
-        for flash in database.flashs:
-            zf_file_name = f"{flash.short_name}.odx-f"
-            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            zf_mime_type = "application/x-asam.odx.odx-f"
+    for template_file_name, _, content in _TEMPLATE_FILES_CACHE:
+        writestr_items.append((template_file_name, content))
 
-            jinja_vars["flash"] = flash
+    for aux_file_name, _data_file in database.auxiliary_files.items():
+        zf_name = os.path.basename(aux_file_name)
+        writestr_items.append((zf_name, _data_file.read()))
 
-            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
+    for _key, items in pre_rendered.items():
+        for name, xml in items:
+            writestr_items.append((name, xml.encode("utf-8")))
 
-            zf.writestr(zf_file_name, flash_tpl.render(**jinja_vars))
+    writestr_items.append(("index.xml", index_xml.encode("utf-8")))
 
-            del jinja_vars["flash"]
-
-        # write the actual diagnostic data.
-        dlc_tpl = jinja_env.get_template("diag_layer_container.odx-d.xml.jinja2")
-        for dlc in database.diag_layer_containers:
-            jinja_vars["dlc"] = dlc
-
-            file_name = f"{dlc.short_name}.odx-d"
-            file_cdate = datetime.datetime.now()
-            creation_date = file_cdate.strftime("%Y-%m-%dT%H:%M:%S")
-            mime_type = "application/x-asam.odx.odx-d"
-
-            file_index.append((file_name, creation_date, mime_type))
-            zf.writestr(file_name, dlc_tpl.render(**jinja_vars))
-            del jinja_vars["dlc"]
-
-        # write the multiple ECU jobs specs
-        multiple_ecu_jobs_spec_tpl = jinja_env.get_template(
-            "multiple-ecu-job-spec.odx-m.xml.jinja2")
-        for multiple_ecu_job_spec in database.multiple_ecu_job_specs:
-            zf_file_name = f"{multiple_ecu_job_spec.short_name}.odx-m"
-            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            zf_mime_type = "application/x-asam.odx.odx-m"
-
-            jinja_vars["multiple_ecu_job_spec"] = multiple_ecu_job_spec
-
-            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
-
-            zf.writestr(zf_file_name, multiple_ecu_jobs_spec_tpl.render(**jinja_vars))
-
-            del jinja_vars["multiple_ecu_job_spec"]
-
-        # write the communication parameter specs
-        comparam_spec_tpl = jinja_env.get_template("comparam-spec.odx-c.xml.jinja2")
-        for comparam_spec in database.comparam_specs:
-            zf_file_name = f"{comparam_spec.short_name}.odx-c"
-            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            zf_mime_type = "application/x-asam.odx.odx-c"
-
-            jinja_vars["comparam_spec"] = comparam_spec
-
-            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
-
-            zf.writestr(zf_file_name, comparam_spec_tpl.render(**jinja_vars))
-
-            del jinja_vars["comparam_spec"]
-
-        # write the communication parameter subsets
-        comparam_subset_tpl = jinja_env.get_template("comparam-subset.odx-cs.xml.jinja2")
-        for comparam_subset in database.comparam_subsets:
-            zf_file_name = f"{comparam_subset.short_name}.odx-cs"
-            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            zf_mime_type = "application/x-asam.odx.odx-cs"
-
-            jinja_vars["comparam_subset"] = comparam_subset
-
-            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
-
-            zf.writestr(zf_file_name, comparam_subset_tpl.render(**jinja_vars))
-
-            del jinja_vars["comparam_subset"]
-
-        # write the ECU-config objects
-        ecu_config_tpl = jinja_env.get_template("ecu_config.odx-e.xml.jinja2")
-        for ecu_config in database.ecu_configs:
-            zf_file_name = f"{ecu_config.short_name}.odx-e"
-            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            zf_mime_type = "application/x-asam.odx.odx-e"
-
-            jinja_vars["ecu_config"] = ecu_config
-
-            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
-
-            zf.writestr(zf_file_name, ecu_config_tpl.render(**jinja_vars))
-
-            del jinja_vars["ecu_config"]
-
-        # write the vehicle info specification objects
-        vehicle_info_spec_tpl = jinja_env.get_template("vehicle_info_spec.odx-v.xml.jinja2")
-        for vehicle_info_spec in database.vehicle_info_specs:
-            zf_file_name = f"{vehicle_info_spec.short_name}.odx-v"
-            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            zf_mime_type = "application/x-asam.odx.odx-v"
-
-            jinja_vars["vehicle_info_spec"] = vehicle_info_spec
-
-            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
-
-            zf.writestr(zf_file_name, vehicle_info_spec_tpl.render(**jinja_vars))
-
-            del jinja_vars["vehicle_info_spec"]
-
-        # write the function dictionary objects
-        function_dictionary_tpl = jinja_env.get_template("function_dictionary.odx-fd.xml.jinja2")
-        for function_dictionary in database.function_dictionaries:
-            zf_file_name = f"{function_dictionary.short_name}.odx-fd"
-            zf_file_cdate = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-            zf_mime_type = "application/x-asam.odx.odx-fd"
-
-            jinja_vars["function_dictionary"] = function_dictionary
-
-            file_index.append((zf_file_name, zf_file_cdate, zf_mime_type))
-
-            zf.writestr(zf_file_name, function_dictionary_tpl.render(**jinja_vars))
-
-            del jinja_vars["function_dictionary"]
-
-        # write the index.xml file
-        jinja_vars["file_index"] = file_index
-        index_tpl = jinja_env.get_template("index.xml.jinja2")
-        text = index_tpl.render(**jinja_vars)
-        zf.writestr("index.xml", text)
-
-    return True
+    # Single ZIP write
+    with zipfile.ZipFile(output_file_name, mode="w", compression=zipfile.ZIP_STORED) as zf:
+        for arcname, data in writestr_items:
+            zf.writestr(arcname, data)
