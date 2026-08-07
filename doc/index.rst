@@ -1,26 +1,19 @@
-.. odxtools documentation master file, created by
-   sphinx-quickstart on Wed Jun 23 23:03:35 2021.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. odxtools documentation master file
 
 Welcome to odxtools's documentation!
 ====================================
+
+``odxtools`` is a set of utilities for working with automotive diagnostic
+descriptions based on the ODX standard.
+
+Start with the tutorial, then dive into the API reference.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-.. automodule:: odxtools
-   :members:
-   :undoc-members:
-
-Important classes
-=================
-      
-.. autoclass:: odxtools.database.Database
-   :members:
-   :undoc-members:
- 
+   getting_started
+   api_reference
 
 Indices and tables
 ==================
