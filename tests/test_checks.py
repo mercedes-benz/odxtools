@@ -1,10 +1,15 @@
 # SPDX-License-Identifier: MIT
 """Consistency checks over a loaded database."""
+import argparse
+import contextlib
+import io
 import unittest
+from unittest import mock
 
 import odxtools
 from odxtools.checks import RULES, Finding, Severity, run_checks
 from odxtools.checks.overlapping_parameters import _bit_span, _overlaps_in
+from odxtools.cli import check as check_tool
 
 
 class _Param:
@@ -103,6 +108,37 @@ class TestFinding(unittest.TestCase):
         self.assertTrue(RULES)
         for rule in RULES:
             self.assertTrue(rule.name)
+
+
+class TestExitStatus(unittest.TestCase):
+    """The exit status is what makes the tool usable in a pipeline."""
+
+    def _run(self, findings: list[Finding], warnings_as_errors: bool = False) -> int:
+        args = argparse.Namespace(pdx_file="unused", warnings_as_errors=warnings_as_errors)
+        with mock.patch.object(check_tool._parser_utils, "load_file", return_value=object()), \
+             mock.patch.object(check_tool, "run_checks", return_value=iter(findings)), \
+             contextlib.redirect_stdout(io.StringIO()):
+            try:
+                check_tool.run(args)
+            except SystemExit as exit_:
+                return int(exit_.code or 0)
+        return 0
+
+    def test_no_findings_is_a_success(self) -> None:
+        self.assertEqual(self._run([]), 0)
+
+    def test_an_error_fails(self) -> None:
+        self.assertEqual(self._run([_finding(Severity.ERROR)]), 1)
+
+    def test_a_warning_alone_does_not_fail(self) -> None:
+        self.assertEqual(self._run([_finding(Severity.WARNING)]), 0)
+
+    def test_a_warning_fails_when_asked_for(self) -> None:
+        self.assertEqual(self._run([_finding(Severity.WARNING)], warnings_as_errors=True), 1)
+
+
+def _finding(severity: Severity) -> Finding:
+    return Finding(rule="a-rule", severity=severity, location=("Ecu",), message="something")
 
 
 if __name__ == "__main__":

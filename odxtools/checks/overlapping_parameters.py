@@ -20,11 +20,12 @@ def _bit_span(param: Parameter) -> tuple[int, int] | None:
 
     try:
         bit_length = param.get_static_bit_length()
-    except Exception:
-        # The length of a parameter can depend on objects which a
-        # non-conforming database left unresolved, and a check must not fail
-        # on the very files it exists to inspect. Such a parameter cannot be
-        # placed, which is the same situation as one without a static length.
+    except AttributeError:
+        # The length can depend on objects which a non-conforming database
+        # left unresolved, and reading those raises. A check has to survive
+        # the very files it exists to inspect, and a parameter whose length
+        # cannot be determined is in the same position as one which has no
+        # static length at all.
         return None
     if bit_length is None:
         return None
