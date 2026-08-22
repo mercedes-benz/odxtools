@@ -9,6 +9,7 @@ from unittest import mock
 import odxtools
 from odxtools.checks import RULES, Finding, Severity, run_checks
 from odxtools.checks.overlapping_parameters import _bit_span, _overlaps_in
+from odxtools.cli import _parser_utils
 from odxtools.cli import check as check_tool
 
 
@@ -115,7 +116,7 @@ class TestExitStatus(unittest.TestCase):
 
     def _run(self, findings: list[Finding], warnings_as_errors: bool = False) -> int:
         args = argparse.Namespace(pdx_file="unused", warnings_as_errors=warnings_as_errors)
-        with mock.patch.object(check_tool._parser_utils, "load_file", return_value=object()), \
+        with mock.patch.object(_parser_utils, "load_file", return_value=object()), \
              mock.patch.object(check_tool, "run_checks", return_value=iter(findings)), \
              contextlib.redirect_stdout(io.StringIO()):
             try:
