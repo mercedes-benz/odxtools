@@ -45,8 +45,8 @@ def _place(codec: CompositeCodec) -> tuple[list[tuple[tuple[int, int], Parameter
     return placed, skipped
 
 
-def _overlaps(placed: list[tuple[tuple[int, int], Parameter]]
-              ) -> Iterator[tuple[Parameter, Parameter]]:
+def _overlaps(placed: list[tuple[tuple[int, int],
+                                 Parameter]]) -> Iterator[tuple[Parameter, Parameter]]:
     for i, ((a_start, a_end), a) in enumerate(placed):
         for (b_start, b_end), b in placed[i + 1:]:
             if a_start < b_end and b_start < a_end:

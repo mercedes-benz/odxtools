@@ -95,8 +95,7 @@ class TestReferenceDatabase(unittest.TestCase):
         odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
 
         objections = [
-            str(f) for f in run_checks(odxdb)
-            if f.severity in (Severity.ERROR, Severity.WARNING)
+            str(f) for f in run_checks(odxdb) if f.severity in (Severity.ERROR, Severity.WARNING)
         ]
 
         self.assertEqual(objections, [])
