@@ -52,7 +52,8 @@ class MatchingParameter:
         elif (out_param_snpathref_el := et_element.find("OUT-PARAM-IF-SNPATHREF")) is not None:
             out_param_if_snpathref = odxrequire(out_param_snpathref_el.get("SHORT-NAME-PATH"))
         else:
-            odxraise("Output parameter must not be left unspecified")
+            odxraise(f"MATCHING-PARAMETER for DIAG-COMM '{diag_comm_snref}' specifies "
+                     f"neither OUT-PARAM-IF-SNREF nor OUT-PARAM-IF-SNPATHREF")
 
         return MatchingParameter(
             expected_value=expected_value,

@@ -105,7 +105,10 @@ class CommRelation:
                 use_weakrefs=context.use_weakrefs)
 
         if self._diag_comm is None:
-            odxraise("No DIAG-COMM referenced by COMM-RELATION")
+            ref = self.diag_comm_snref
+            if ref is None and self.diag_comm_ref is not None:
+                ref = self.diag_comm_ref.ref_id
+            odxraise(f"COMM-RELATION references unresolvable DIAG-COMM '{ref}'")
             return
 
         service = self.diag_comm

@@ -57,7 +57,9 @@ class SubComponentParamConnector(IdentifiableElement):
         out_param_if_refs = []
         for elem in out_param_if_ref_elems:
             if elem.tag != "OUT-PARAM-IF-SNREF":
-                odxraise("Currently, only SNREFS are supported for OUT-PARAM-IF-REFS")
+                odxraise(f"SUB-COMPONENT-PARAM-CONNECTOR '{kwargs['short_name']}' uses "
+                         f"{elem.tag} in OUT-PARAM-IF-REFS; only "
+                         f"OUT-PARAM-IF-SNREF is currently supported")
                 continue
             else:
                 odxassert(elem.tag == "OUT-PARAM-IF-SNREF")
@@ -70,7 +72,9 @@ class SubComponentParamConnector(IdentifiableElement):
         in_param_if_refs = []
         for elem in in_param_if_ref_elems:
             if elem.tag != "IN-PARAM-IF-SNREF":
-                odxraise("Currently, only SNREFS are supported for IN-PARAM-IF-REFS")
+                odxraise(f"SUB-COMPONENT-PARAM-CONNECTOR '{kwargs['short_name']}' uses "
+                         f"{elem.tag} in IN-PARAM-IF-REFS; only "
+                         f"IN-PARAM-IF-SNREF is currently supported")
                 continue
             else:
                 odxassert(elem.tag == "IN-PARAM-IF-SNREF")
