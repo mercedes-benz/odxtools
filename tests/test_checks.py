@@ -241,17 +241,56 @@ class TestReferenceDatabase(unittest.TestCase):
 
         self.assertEqual(errors, [])
 
-    def test_somersault_has_exactly_the_known_warning(self) -> None:
-        """The NRC-CONST 'reason' of flips_not_done is not overlapped by any
-        VALUE parameter, so the rule proposed by the maintainers reports it.
-        Pinned here so that any change to this is a conscious one."""
+    def test_the_reference_databases_have_no_warnings(self) -> None:
+        for pdx in ("./examples/somersault.pdx", "./examples/somersault_modified.pdx"):
+            odxdb = odxtools.load_pdx_file(pdx)
+
+            warnings = [str(f) for f in run_checks(odxdb) if f.severity >= Severity.WARNING]
+
+            self.assertEqual(warnings, [], pdx)
+
+    def test_the_legitimate_overlap_of_flips_not_done_is_reported_as_info(self) -> None:
+        """The NRC-CONST 'reason' shares its byte with the VALUE parameter
+        'reason_value' on purpose; the overlap rule reports that at INFO and
+        nothing louder. Pinned as the living example of both rules."""
         odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
 
-        warnings = [f for f in run_checks(odxdb) if f.severity == Severity.WARNING]
+        infos = [f for f in run_checks(odxdb) if f.severity == Severity.INFO]
 
-        self.assertEqual(len(warnings), 1)
-        self.assertIn("'reason'", warnings[0].message)
-        self.assertEqual(warnings[0].rule, "nrc-const-without-value")
+        self.assertEqual(len(infos), 1)
+        self.assertIn("'reason'", infos[0].message)
+        self.assertIn("'reason_value'", infos[0].message)
+        self.assertEqual(infos[0].rule, "overlapping-parameters")
+
+
+class TestNrcConstEncodeSemantics(unittest.TestCase):
+    """The empirical basis of the nrc-const rule, pinned as a test.
+
+    If odxtools ever makes NRC-CONST bytes directly encodable, this fails and
+    the rule's justification has to be revisited.
+    """
+
+    def test_the_reason_is_chosen_through_the_overlapping_value(self) -> None:
+        from odxtools.exceptions import EncodeError
+
+        odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
+        layer = odxdb.diag_layers.somersault_lazy
+        service = layer.services.do_forward_flips
+        response = next(r for r in service.negative_responses if r.short_name == "flips_not_done")
+        request = bytes(service.encode_request(forward_soberness_check=0x12, num_flips=3))
+
+        # the NRC-CONST itself still refuses a directly set value ...
+        with self.assertRaises(EncodeError):
+            response.encode(coded_request=request, reason=2, flips_successfully_done=1)
+
+        # ... which is exactly why the overlapping VALUE parameter exists
+        encoded = bytes(
+            response.encode(coded_request=request, reason_value=2, flips_successfully_done=1))
+        self.assertEqual(encoded[2], 2)
+
+        decoded = layer.decode(encoded)[0]
+        self.assertEqual(decoded.param_dict["reason"], 2)
+        self.assertEqual(decoded.param_dict["reason_value"], 2)
 
 
 class TestRunChecks(unittest.TestCase):
