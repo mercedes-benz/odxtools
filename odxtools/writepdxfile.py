@@ -6,7 +6,6 @@ import mimetypes
 import os
 import time
 import zipfile
-from functools import cache
 from typing import Any
 
 import jinja2
