@@ -201,7 +201,7 @@ class TableRow(IdentifiableElement):
             if not isinstance(self._dop, (DataObjectProperty, DtcDop)):
                 odxraise(f"The DOP-REF of TABLE-ROW '{self.short_name}' references "
                          f"'{self.dop_ref.ref_id}' which is a "
-                         f"{type(self._dop).__name__}, but a simple DOP is required")
+                         f"{self._dop.__class__.__name__}, but a simple DOP is required")
         if self.structure_ref is not None:
             self._structure = odxlinks.resolve(self.structure_ref, Structure)
 
@@ -251,7 +251,7 @@ class TableRow(IdentifiableElement):
                 self.dop_snref, ddd_spec.data_object_props, use_weakrefs=context.use_weakrefs)
             if not isinstance(self._dop, (DataObjectProperty, DtcDop)):
                 odxraise(f"The DOP-SNREF of TABLE-ROW '{self.short_name}' references "
-                         f"'{self.dop_snref}' which is a {type(self._dop).__name__}, "
+                         f"'{self.dop_snref}' which is a {self._dop.__class__.__name__}, "
                          f"but a simple DOP is required")
 
         if self.audience is not None:
