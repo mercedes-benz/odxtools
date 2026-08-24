@@ -26,22 +26,34 @@ def add_subparser(subparsers: SubparsersList) -> None:
         help="Also exit with a non-zero status when only warnings were found",
     )
 
+    parser.add_argument(
+        "--severity",
+        choices=[severity.value for severity in Severity],
+        default=Severity.WARNING.value,
+        required=False,
+        help="Lowest severity to report. Below warning are the findings which say what was "
+        "not inspected rather than what is wrong (default: %(default)s)",
+    )
+
 
 def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
 
-    errors = warnings = 0
-    for finding in run_checks(odxdb):
-        print(finding)
-        if finding.severity is Severity.ERROR:
-            errors += 1
-        else:
-            warnings += 1
+    # Ordered loudest first, so a threshold admits everything at least as loud.
+    order = (Severity.ERROR, Severity.WARNING, Severity.INFO, Severity.DEBUG)
+    threshold = order.index(Severity(args.severity))
 
-    if errors or warnings:
-        print(f"\n{errors} error(s), {warnings} warning(s)")
-    else:
-        print("no findings")
+    counts = dict.fromkeys(order, 0)
+    for finding in run_checks(odxdb):
+        counts[finding.severity] += 1
+        if order.index(finding.severity) <= threshold:
+            print(finding)
+
+    errors = counts[Severity.ERROR]
+    warnings = counts[Severity.WARNING]
+
+    print()
+    print(f"{errors} error(s), {warnings} warning(s)")
 
     if errors or (warnings and args.warnings_as_errors):
         raise SystemExit(1)

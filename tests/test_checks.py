@@ -7,8 +7,8 @@ import unittest
 from unittest import mock
 
 import odxtools
-from odxtools.checks import RULES, Finding, Severity, run_checks
-from odxtools.checks.overlapping_parameters import _bit_span, _overlaps_in
+from odxtools.checks import DEFAULT_RULES, Finding, Severity, run_checks
+from odxtools.checks.overlapping_parameters import _bit_span, _overlaps, _place
 from odxtools.cli import _parser_utils
 from odxtools.cli import check as check_tool
 
@@ -62,12 +62,12 @@ class TestOverlapDetection(unittest.TestCase):
     def test_adjacent_parameters_do_not_overlap(self) -> None:
         codec = _Codec(_Param("first", 0, 8), _Param("second", 1, 8))
 
-        self.assertEqual(list(_overlaps_in(codec)), [])  # type: ignore[arg-type]
+        self.assertEqual(list(_overlaps(_place(codec)[0])), [])  # type: ignore[arg-type]
 
     def test_parameters_on_the_same_bytes_overlap(self) -> None:
         codec = _Codec(_Param("first", 1, 16), _Param("second", 1, 16))
 
-        found = list(_overlaps_in(codec))  # type: ignore[arg-type]
+        found = list(_overlaps(_place(codec)[0]))  # type: ignore[arg-type]
 
         self.assertEqual(len(found), 1)
         self.assertEqual({p.short_name for p in found[0]}, {"first", "second"})
@@ -75,22 +75,31 @@ class TestOverlapDetection(unittest.TestCase):
     def test_a_partial_overlap_is_reported(self) -> None:
         codec = _Codec(_Param("first", 0, 24), _Param("second", 2, 16))
 
-        self.assertEqual(len(list(_overlaps_in(codec))), 1)  # type: ignore[arg-type]
+        self.assertEqual(len(list(_overlaps(_place(codec)[0]))), 1)  # type: ignore[arg-type]
 
     def test_unplaceable_parameters_are_passed_over(self) -> None:
         """Two parameters which cannot be placed cannot be said to overlap."""
         codec = _Codec(_Param("first", None, 8), _Param("second", None, 8))
 
-        self.assertEqual(list(_overlaps_in(codec)), [])  # type: ignore[arg-type]
+        self.assertEqual(list(_overlaps(_place(codec)[0])), [])  # type: ignore[arg-type]
 
 
 class TestReferenceDatabase(unittest.TestCase):
 
-    def test_somersault_has_no_findings(self) -> None:
-        """A conforming database must not be reported by any rule."""
+    def test_somersault_is_not_objected_to(self) -> None:
+        """A conforming database must not be reported by any rule.
+
+        Findings below warning are excluded on purpose: they say what a rule
+        did not inspect, which a conforming database can legitimately produce.
+        """
         odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
 
-        self.assertEqual([str(f) for f in run_checks(odxdb)], [])
+        objections = [
+            str(f) for f in run_checks(odxdb)
+            if f.severity in (Severity.ERROR, Severity.WARNING)
+        ]
+
+        self.assertEqual(objections, [])
 
 
 class TestFinding(unittest.TestCase):
@@ -103,11 +112,11 @@ class TestFinding(unittest.TestCase):
             message="something is wrong",
         )
 
-        self.assertEqual(str(finding), "error: Ecu/Service: something is wrong [a-rule]")
+        self.assertEqual(str(finding), "Ecu/Service: error: something is wrong [a-rule]")
 
     def test_registered_rules_are_named(self) -> None:
-        self.assertTrue(RULES)
-        for rule in RULES:
+        self.assertTrue(DEFAULT_RULES)
+        for rule in DEFAULT_RULES:
             self.assertTrue(rule.name)
 
 
@@ -115,7 +124,11 @@ class TestExitStatus(unittest.TestCase):
     """The exit status is what makes the tool usable in a pipeline."""
 
     def _run(self, findings: list[Finding], warnings_as_errors: bool = False) -> int:
-        args = argparse.Namespace(pdx_file="unused", warnings_as_errors=warnings_as_errors)
+        args = argparse.Namespace(
+            pdx_file="unused",
+            warnings_as_errors=warnings_as_errors,
+            severity=Severity.WARNING.value,
+        )
         with mock.patch.object(_parser_utils, "load_file", return_value=object()), \
              mock.patch.object(check_tool, "run_checks", return_value=iter(findings)), \
              contextlib.redirect_stdout(io.StringIO()):

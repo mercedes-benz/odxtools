@@ -1,11 +1,13 @@
 # SPDX-License-Identifier: MIT
-"""Parameters of the same object which occupy the same bits."""
+"""Check that Parameters of the same codec object do not occupy the same bits in a PDU."""
 from collections.abc import Iterable, Iterator
+from itertools import chain
 
 from ..compositecodec import CompositeCodec
 from ..database import Database
+from ..diagservice import DiagService
 from ..parameters.parameter import Parameter
-from . import Finding, Severity
+from .finding import Finding, Severity
 
 
 def _bit_span(param: Parameter) -> tuple[int, int] | None:
@@ -18,15 +20,7 @@ def _bit_span(param: Parameter) -> tuple[int, int] | None:
     if param.byte_position is None:
         return None
 
-    try:
-        bit_length = param.get_static_bit_length()
-    except AttributeError:
-        # The length can depend on objects which a non-conforming database
-        # left unresolved, and reading those raises. A check has to survive
-        # the very files it exists to inspect, and a parameter whose length
-        # cannot be determined is in the same position as one which has no
-        # static length at all.
-        return None
+    bit_length = param.get_static_bit_length()
     if bit_length is None:
         return None
 
@@ -34,13 +28,25 @@ def _bit_span(param: Parameter) -> tuple[int, int] | None:
     return start, start + bit_length
 
 
-def _overlaps_in(codec: CompositeCodec) -> Iterator[tuple[Parameter, Parameter]]:
+def _place(codec: CompositeCodec) -> tuple[list[tuple[tuple[int, int], Parameter]], int]:
+    """The parameters of ``codec`` which can be placed, and how many cannot."""
     placed: list[tuple[tuple[int, int], Parameter]] = []
+    skipped = 0
     for param in codec.parameters:
+        if param is None:
+            # this can happen in non-strict mode
+            skipped += 1
+            continue
         span = _bit_span(param)
-        if span is not None:
+        if span is None:
+            skipped += 1
+        else:
             placed.append((span, param))
+    return placed, skipped
 
+
+def _overlaps(placed: list[tuple[tuple[int, int], Parameter]]
+              ) -> Iterator[tuple[Parameter, Parameter]]:
     for i, ((a_start, a_end), a) in enumerate(placed):
         for (b_start, b_end), b in placed[i + 1:]:
             if a_start < b_end and b_start < a_end:
@@ -52,14 +58,27 @@ class OverlappingParameters:
 
     Only parameters whose position and length are both known from the database
     are considered, so a structure whose layout depends on the data it carries
-    is passed over rather than guessed at.
+    is passed over rather than guessed at. Passing one over is reported at
+    ``DEBUG``, so that a database which reports nothing can be told apart from
+    one which could not be inspected.
     """
 
     name = "overlapping-parameters"
 
     def check(self, database: Database) -> Iterable[Finding]:
         for codec, location in _codecs(database):
-            for a, b in _overlaps_in(codec):
+            placed, skipped = _place(codec)
+
+            if skipped:
+                yield Finding(
+                    rule=self.name,
+                    severity=Severity.DEBUG,
+                    location=location,
+                    message=(f"{skipped} of {skipped + len(placed)} parameters have no "
+                             f"statically known position and length and were not compared"),
+                )
+
+            for a, b in _overlaps(placed):
                 a_span = _bit_span(a)
                 b_span = _bit_span(b)
                 assert a_span is not None and b_span is not None
@@ -74,7 +93,7 @@ class OverlappingParameters:
 
 
 def _codecs(database: Database) -> Iterator[tuple[CompositeCodec, tuple[str, ...]]]:
-    """Every parameter-carrying object reachable from ``database``.
+    """Find every parameter-carrying object reachable from ``database``.
 
     Requests, responses and structures all carry parameters without sharing a
     base class, so they are identified through the CompositeCodec protocol.
@@ -84,18 +103,18 @@ def _codecs(database: Database) -> Iterator[tuple[CompositeCodec, tuple[str, ...
     for diag_layer in database.diag_layers:
         layer_name = diag_layer.short_name
 
-        for service in getattr(diag_layer, "services", []):
-            for attribute in ("request", "positive_responses", "negative_responses"):
-                value = getattr(service, attribute, None)
-                candidates = value if isinstance(value, (list, tuple)) else [value]
-                for candidate in candidates:
-                    if not isinstance(candidate, CompositeCodec) or id(candidate) in seen:
-                        continue
-                    seen.add(id(candidate))
-                    yield candidate, (layer_name, service.short_name, candidate.short_name)
+        for diag_comm in diag_layer.diag_comms:
+            if not isinstance(diag_comm, DiagService):
+                continue
+            for codec_obj in chain([diag_comm.request], diag_comm.positive_responses,
+                                   diag_comm.negative_responses):
+                if not isinstance(codec_obj, CompositeCodec) or id(codec_obj) in seen:
+                    continue
+                seen.add(id(codec_obj))
+                yield codec_obj, (layer_name, diag_comm.short_name, codec_obj.short_name)
 
-        ddd_spec = getattr(diag_layer, "diag_data_dictionary_spec", None)
-        for structure in getattr(ddd_spec, "structures", []):
+        ddd_spec = diag_layer.diag_data_dictionary_spec
+        for structure in chain(ddd_spec.structures, ddd_spec.env_datas):
             if id(structure) in seen:
                 continue
             seen.add(id(structure))
