@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 import warnings
 import weakref
-from collections.abc import Iterable
+from collections.abc import Iterator, Iterable
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Optional, TypeVar, overload
@@ -190,6 +190,18 @@ class OdxLinkDatabase:
     def __init__(self, *, use_weakrefs: bool = False) -> None:
         self._db: dict[OdxDocFragment, dict[str, Any]] = {}
         self.use_weakrefs = use_weakrefs
+
+    def objects(self) -> Iterator[tuple[OdxDocFragment, Any]]:
+        """Iterate over every object the database holds, with the document
+        fragment which defines it.
+
+        An object which is defined by several document fragments is yielded
+        once per fragment; deduplicate by identity if each object is wanted
+        only once.
+        """
+        for doc_frag, frag_objects in self._db.items():
+            for obj in frag_objects.values():
+                yield doc_frag, obj
 
     @overload
     def resolve(self,

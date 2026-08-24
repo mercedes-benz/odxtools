@@ -1,22 +1,21 @@
 # SPDX-License-Identifier: MIT
+"""Report the findings of the consistency checks for a database."""
 import argparse
 
-from ..checks import Severity, run_checks
+from ..checks import DEFAULT_RULES, Severity, run_checks
 from . import _parser_utils
 from ._parser_utils import SubparsersList
 
-# name of the tool
 _odxtools_tool_name_ = "check"
 
 
 def add_subparser(subparsers: SubparsersList) -> None:
     parser = subparsers.add_parser(
-        "check",
-        description="Check a database for inconsistencies",
-        help="Report parts of a database which a conforming one should not contain",
+        _odxtools_tool_name_,
+        description="Check a database for consistency findings",
+        help="Check a database for consistency findings",
         formatter_class=argparse.RawTextHelpFormatter,
     )
-
     _parser_utils.add_pdx_argument(parser)
 
     parser.add_argument(
@@ -28,26 +27,38 @@ def add_subparser(subparsers: SubparsersList) -> None:
 
     parser.add_argument(
         "--severity",
-        choices=[severity.value for severity in Severity],
-        default=Severity.WARNING.value,
+        choices=[severity.name.lower() for severity in Severity],
+        default=Severity.INFO.name.lower(),
         required=False,
-        help="Lowest severity to report. Below warning are the findings which say what was "
-        "not inspected rather than what is wrong (default: %(default)s)",
+        help="Lowest severity to report. Below info are the findings which say what "
+        "was not inspected rather than what was found (default: %(default)s)",
+    )
+
+    parser.add_argument(
+        "--disable-rule",
+        action="append",
+        default=[],
+        metavar="NAME",
+        required=False,
+        help="Skip the rule with this name; may be given several times. "
+        "Known rules: " + ", ".join(sorted(rule.name for rule in DEFAULT_RULES)),
     )
 
 
 def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
 
-    # Ordered loudest first, so a threshold admits everything at least as loud.
-    order = (Severity.ERROR, Severity.WARNING, Severity.INFO, Severity.DEBUG)
-    threshold = order.index(Severity(args.severity))
+    threshold = Severity[args.severity.upper()]
 
-    counts = dict.fromkeys(order, 0)
-    for finding in run_checks(odxdb):
-        counts[finding.severity] += 1
-        if order.index(finding.severity) <= threshold:
-            print(finding)
+    counts = dict.fromkeys(Severity, 0)
+    try:
+        for finding in run_checks(odxdb, disabled=args.disable_rule):
+            counts[finding.severity] += 1
+            if finding.severity >= threshold:
+                print(finding)
+    except ValueError as error:
+        print(f"error: {error}")
+        raise SystemExit(2) from error
 
     errors = counts[Severity.ERROR]
     warnings = counts[Severity.WARNING]
