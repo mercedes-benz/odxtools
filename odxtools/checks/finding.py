@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 """What a rule reports, and how much it matters."""
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import IntEnum
 
 
@@ -37,12 +37,11 @@ class Finding:
     #: where in the database the finding is, as a path of short names
     #: starting with the name of the document which defines the object,
     #: e.g. ``("somersault", "flips_not_done")``
-    location: tuple[str, ...] = field(default_factory=tuple)
+    location: tuple[str, ...]
 
     #: what was found, in one sentence, naming the objects involved
     message: str
 
     def __str__(self) -> str:
         where = "/".join(self.location)
-        prefix = f"{where}: " if where else ""
-        return f"{prefix}{self.severity.name.lower()}: {self.message} [{self.rule}]"
+        return f"{where}: {self.severity.name.lower()}: {self.message} [{self.rule}]"

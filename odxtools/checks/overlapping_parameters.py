@@ -6,6 +6,7 @@ from ..compositecodec import CompositeCodec
 from ..database import Database
 from ..parameters.parameter import Parameter
 from .finding import Finding, Severity
+from .objects import iter_codecs
 
 
 def _bit_span(param: Parameter) -> tuple[int, int] | None:
@@ -50,21 +51,6 @@ def _overlaps(placed: list[tuple[tuple[int, int],
         for (b_start, b_end), b in placed[i + 1:]:
             if (a_start < b_end and b_start < a_end) or (b_start < a_end and a_start < b_end):
                 yield a, b
-
-
-def iter_codecs(database: Database) -> Iterator[tuple[str, CompositeCodec]]:
-    """``(doc_name, codec)`` for every parameter-carrying object, exactly once.
-
-    The objects are taken from the link database rather than from attributes
-    like ``service.request``: those attributes may hand out ``weakref`` proxies,
-    and a proxy does not pass an ``isinstance`` check against a
-    runtime-checkable protocol, which would silently drop the object.
-    """
-    seen: set[int] = set()
-    for doc_fragment, obj in database.odxlinks.objects():
-        if isinstance(obj, CompositeCodec) and id(obj) not in seen:
-            seen.add(id(obj))
-            yield doc_fragment.doc_name, obj
 
 
 class OverlappingParameters:

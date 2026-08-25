@@ -9,8 +9,10 @@ from unittest import mock
 import odxtools
 from odxtools.checks import DEFAULT_RULES, Finding, Rule, Severity, run_checks
 from odxtools.checks.nrc_const_without_value import NrcConstWithoutValue
+from odxtools.checks.objects import iter_codecs, iter_objects
+from odxtools.diagservice import DiagService
 from odxtools.checks.overlapping_parameters import (OverlappingParameters, _bit_span, _overlaps,
-                                                    _place, iter_codecs)
+                                                    _place)
 from odxtools.cli import _parser_utils
 from odxtools.cli import check as check_tool
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
@@ -74,9 +76,13 @@ class TestFinding(unittest.TestCase):
         self.assertEqual(str(finding), "Ecu/Service: error: something is wrong [a-rule]")
 
     def test_str_never_prints_the_numeric_value(self) -> None:
-        finding = Finding(rule="r", severity=Severity.ERROR, message="m")
+        finding = Finding(rule="r", severity=Severity.ERROR, location=("Ecu",), message="m")
 
         self.assertNotIn("40", str(finding))
+
+    def test_a_location_is_required(self) -> None:
+        with self.assertRaises(TypeError):
+            Finding(rule="r", severity=Severity.ERROR, message="m")  # type: ignore[call-arg]
 
 
 class TestRuleRegistry(unittest.TestCase):
@@ -185,6 +191,15 @@ class TestCodecEnumeration(unittest.TestCase):
         ids = [id(codec) for _, codec in iter_codecs(odxdb)]
 
         self.assertEqual(len(ids), len(set(ids)))
+
+    def test_iter_objects_takes_the_type_to_look_for(self) -> None:
+        odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
+
+        services = [obj for _, obj in iter_objects(odxdb, DiagService)]
+
+        self.assertTrue(services)
+        self.assertTrue(all(isinstance(s, DiagService) for s in services))
+        self.assertEqual(len(services), len({id(s) for s in services}))
 
     def test_the_document_name_is_part_of_the_location(self) -> None:
         odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
@@ -333,7 +348,7 @@ class TestExitStatus(unittest.TestCase):
         return 0
 
     def _finding(self, severity: Severity) -> Finding:
-        return Finding(rule="r", severity=severity, message="m")
+        return Finding(rule="r", severity=severity, location=("Ecu",), message="m")
 
     def test_no_findings_is_a_success(self) -> None:
         self.assertEqual(self._run([]), 0)

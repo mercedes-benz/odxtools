@@ -6,7 +6,8 @@ from ..database import Database
 from ..parameters.nrcconstparameter import NrcConstParameter
 from ..parameters.valueparameter import ValueParameter
 from .finding import Finding, Severity
-from .overlapping_parameters import _bit_span, iter_codecs
+from .objects import iter_codecs
+from .overlapping_parameters import _bit_span
 
 
 class NrcConstWithoutValue:
