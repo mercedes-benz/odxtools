@@ -70,17 +70,26 @@ class TestFinding(unittest.TestCase):
         finding = Finding(
             rule="a-rule",
             severity=Severity.ERROR,
-            location=("Ecu", "Service"),
+            doc="Ecu",
+            element_name="Service",
+            element_id="Ecu.SV.Service",
             message="something is wrong")
 
-        self.assertEqual(str(finding), "Ecu/Service: error: something is wrong [a-rule]")
+        self.assertEqual(
+            str(finding), "Ecu/Service (Ecu.SV.Service): error: something is wrong [a-rule]")
 
     def test_str_never_prints_the_numeric_value(self) -> None:
-        finding = Finding(rule="r", severity=Severity.ERROR, location=("Ecu",), message="m")
+        finding = Finding(
+            rule="r",
+            severity=Severity.ERROR,
+            doc="Ecu",
+            element_name="e",
+            element_id="i",
+            message="m")
 
         self.assertNotIn("40", str(finding))
 
-    def test_a_location_is_required(self) -> None:
+    def test_the_element_identity_is_required(self) -> None:
         with self.assertRaises(TypeError):
             Finding(rule="r", severity=Severity.ERROR, message="m")  # type: ignore[call-arg]
 
@@ -188,24 +197,28 @@ class TestCodecEnumeration(unittest.TestCase):
     def test_each_codec_is_seen_exactly_once(self) -> None:
         odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
 
-        ids = [id(codec) for _, codec in iter_codecs(odxdb)]
+        ids = [id(codec) for _, _, codec in iter_codecs(odxdb)]
 
         self.assertEqual(len(ids), len(set(ids)))
 
     def test_iter_objects_takes_the_type_to_look_for(self) -> None:
         odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
 
-        services = [obj for _, obj in iter_objects(odxdb, DiagService)]
+        services = [obj for _, _, obj in iter_objects(odxdb, DiagService)]
 
         self.assertTrue(services)
         self.assertTrue(all(isinstance(s, DiagService) for s in services))
         self.assertEqual(len(services), len({id(s) for s in services}))
 
-    def test_the_document_name_is_part_of_the_location(self) -> None:
+    def test_every_codec_comes_with_its_document_and_id(self) -> None:
         odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
 
-        for doc_name, _ in iter_codecs(odxdb):
+        seen_ids: set[tuple[str, str]] = set()
+        for doc_name, codec_id, _ in iter_codecs(odxdb):
             self.assertTrue(doc_name)
+            self.assertTrue(codec_id)
+            self.assertNotIn((doc_name, codec_id), seen_ids)
+            seen_ids.add((doc_name, codec_id))
 
 
 class TestNrcConstWithoutValue(unittest.TestCase):
@@ -243,7 +256,7 @@ class TestNrcConstWithoutValue(unittest.TestCase):
         rule = NrcConstWithoutValue()
         with mock.patch(
                 "odxtools.checks.nrc_const_without_value.iter_codecs",
-                return_value=[("doc", codec)]):
+                return_value=[("doc", "doc.id", codec)]):
             return list(rule.check(object()))  # type: ignore[arg-type]
 
 
@@ -275,6 +288,9 @@ class TestReferenceDatabase(unittest.TestCase):
         self.assertEqual(len(infos), 1)
         self.assertIn("'reason'", infos[0].message)
         self.assertIn("'reason_value'", infos[0].message)
+        self.assertEqual(infos[0].doc, "somersault")
+        self.assertEqual(infos[0].element_name, "flips_not_done")
+        self.assertTrue(infos[0].element_id)
         self.assertEqual(infos[0].rule, "overlapping-parameters")
 
 
@@ -348,7 +364,8 @@ class TestExitStatus(unittest.TestCase):
         return 0
 
     def _finding(self, severity: Severity) -> Finding:
-        return Finding(rule="r", severity=severity, location=("Ecu",), message="m")
+        return Finding(
+            rule="r", severity=severity, doc="Ecu", element_name="e", element_id="i", message="m")
 
     def test_no_findings_is_a_success(self) -> None:
         self.assertEqual(self._run([]), 0)

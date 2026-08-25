@@ -31,7 +31,7 @@ class NrcConstWithoutValue:
     spec = "NRC-CONST semantics, ASAM MCD-2 D p. 77-79"
 
     def check(self, database: Database) -> Iterable[Finding]:
-        for doc_name, codec in iter_codecs(database):
+        for doc_name, codec_id, codec in iter_codecs(database):
             spans = [(param, _bit_span(param)) for param in codec.parameters if param is not None]
             values = [(param, span)
                       for param, span in spans
@@ -44,7 +44,9 @@ class NrcConstWithoutValue:
                     yield Finding(
                         rule=self.name,
                         severity=Severity.DEBUG,
-                        location=(doc_name, codec.short_name),
+                        doc=doc_name,
+                        element_name=codec.short_name,
+                        element_id=codec_id,
                         message=(f"NRC-CONST '{param.short_name}' has no statically known "
                                  f"position and length and was not checked"),
                     )
@@ -54,7 +56,9 @@ class NrcConstWithoutValue:
                     yield Finding(
                         rule=self.name,
                         severity=Severity.WARNING,
-                        location=(doc_name, codec.short_name),
+                        doc=doc_name,
+                        element_name=codec.short_name,
+                        element_id=codec_id,
                         message=(f"NRC-CONST '{param.short_name}' (bits {start}..{end - 1}) "
                                  f"is not overlapped by any VALUE parameter, so no "
                                  f"specific value can be chosen when encoding this "

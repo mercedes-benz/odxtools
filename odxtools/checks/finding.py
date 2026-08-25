@@ -34,14 +34,18 @@ class Finding:
 
     severity: Severity
 
-    #: where in the database the finding is, as a path of short names
-    #: starting with the name of the document which defines the object,
-    #: e.g. ``("somersault", "flips_not_done")``
-    location: tuple[str, ...]
+    #: name of the document which defines the element the finding is about
+    doc: str
+
+    #: short name of that element
+    element_name: str
+
+    #: the ODX ID the element is registered under in its document
+    element_id: str
 
     #: what was found, in one sentence, naming the objects involved
     message: str
 
     def __str__(self) -> str:
-        where = "/".join(self.location)
+        where = f"{self.doc}/{self.element_name} ({self.element_id})"
         return f"{where}: {self.severity.name.lower()}: {self.message} [{self.rule}]"

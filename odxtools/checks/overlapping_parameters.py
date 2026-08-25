@@ -76,15 +76,16 @@ class OverlappingParameters:
             "(cf. NRC-CONST semantics, ASAM MCD-2 D p. 77-79)")
 
     def check(self, database: Database) -> Iterable[Finding]:
-        for doc_name, codec in iter_codecs(database):
+        for doc_name, codec_id, codec in iter_codecs(database):
             placed, skipped = _place(codec)
-            location = (doc_name, codec.short_name)
 
             if skipped:
                 yield Finding(
                     rule=self.name,
                     severity=Severity.DEBUG,
-                    location=location,
+                    doc=doc_name,
+                    element_name=codec.short_name,
+                    element_id=codec_id,
                     message=(f"{skipped} of {skipped + len(placed)} parameters have no "
                              f"statically known position and length and were not compared"),
                 )
@@ -96,7 +97,9 @@ class OverlappingParameters:
                 yield Finding(
                     rule=self.name,
                     severity=Severity.INFO,
-                    location=location,
+                    doc=doc_name,
+                    element_name=codec.short_name,
+                    element_id=codec_id,
                     message=(f"parameters '{a.short_name}' (bits {a_span[0]}..{a_span[1] - 1}) "
                              f"and '{b.short_name}' (bits {b_span[0]}..{b_span[1] - 1}) "
                              f"share bits"),

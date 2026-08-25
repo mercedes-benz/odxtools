@@ -9,8 +9,8 @@ from ..database import Database
 T = TypeVar("T")
 
 
-def iter_objects(database: Database, of_type: type[T]) -> Iterator[tuple[str, T]]:
-    """``(doc_name, obj)`` for every object of ``of_type``, exactly once.
+def iter_objects(database: Database, of_type: type[T]) -> Iterator[tuple[str, str, T]]:
+    """``(doc_name, odx_id, obj)`` for every object of ``of_type``, exactly once.
 
     The objects are taken from the link database rather than from attributes
     like ``service.request``: those attributes may hand out ``weakref`` proxies,
@@ -18,13 +18,13 @@ def iter_objects(database: Database, of_type: type[T]) -> Iterator[tuple[str, T]
     runtime-checkable protocol, which would silently drop the object.
     """
     seen: set[int] = set()
-    for doc_fragment, obj in database.odxlinks.objects():
+    for doc_fragment, local_id, obj in database.odxlinks.objects():
         if isinstance(obj, of_type) and id(obj) not in seen:
             seen.add(id(obj))
-            yield doc_fragment.doc_name, obj
+            yield doc_fragment.doc_name, local_id, obj
 
 
-def iter_codecs(database: Database) -> Iterator[tuple[str, CompositeCodec]]:
+def iter_codecs(database: Database) -> Iterator[tuple[str, str, CompositeCodec]]:
     """The parameter-carrying objects of ``database``, exactly once each."""
     # mypy rejects a protocol class where type[T] is expected because it deems
     # type[T] instantiable (python/mypy#4717); of_type is only given to

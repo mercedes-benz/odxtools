@@ -191,17 +191,17 @@ class OdxLinkDatabase:
         self._db: dict[OdxDocFragment, dict[str, Any]] = {}
         self.use_weakrefs = use_weakrefs
 
-    def objects(self) -> Iterator[tuple[OdxDocFragment, Any]]:
+    def objects(self) -> Iterator[tuple[OdxDocFragment, str, Any]]:
         """Iterate over every object the database holds, with the document
-        fragment which defines it.
+        fragment which defines it and the local ODX ID it is registered under.
 
         An object which is defined by several document fragments is yielded
         once per fragment; deduplicate by identity if each object is wanted
         only once.
         """
         for doc_frag, frag_objects in self._db.items():
-            for obj in frag_objects.values():
-                yield doc_frag, obj
+            for local_id, obj in frag_objects.items():
+                yield doc_frag, local_id, obj
 
     @overload
     def resolve(self,
