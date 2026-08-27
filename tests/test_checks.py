@@ -11,10 +11,12 @@ from odxtools.checks import DEFAULT_RULES, Finding, Rule, Severity, run_checks
 from odxtools.checks.nrc_const_without_value import NrcConstWithoutValue
 from odxtools.checks.objects import iter_codecs, iter_objects
 from odxtools.diagservice import DiagService
+from odxtools.element import IdentifiableElement
 from odxtools.checks.overlapping_parameters import (OverlappingParameters, _bit_span, _overlaps,
                                                     _place)
 from odxtools.cli import _parser_utils
 from odxtools.cli import check as check_tool
+from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
 from odxtools.parameters.valueparameter import ValueParameter
 
@@ -175,6 +177,28 @@ class TestOverlappingParametersRule(unittest.TestCase):
 
     def test_the_spec_field_admits_it_is_not_a_rule_of_the_standard(self) -> None:
         self.assertIn("standard permits", OverlappingParameters().spec)
+
+
+class TestLinkDatabaseObjects(unittest.TestCase):
+
+    def test_an_object_in_two_document_fragments_is_yielded_once(self) -> None:
+        container = OdxDocFragment("dlc", DocType.CONTAINER)
+        layer = OdxDocFragment("layer", DocType.LAYER)
+        obj = IdentifiableElement(short_name="x", odx_id=OdxLinkId("x", (container, layer)))
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update({obj.odx_id: obj})
+
+        objects = list(odxlinks.objects())
+
+        self.assertEqual(len(objects), 1)
+        self.assertIs(objects[0], obj)
+
+    def test_the_reference_database_yields_each_object_once(self) -> None:
+        odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
+
+        ids = [id(obj) for obj in odxdb.odxlinks.objects()]
+
+        self.assertEqual(len(ids), len(set(ids)))
 
 
 class TestCodecEnumeration(unittest.TestCase):

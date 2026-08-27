@@ -17,11 +17,9 @@ def iter_objects(database: Database, of_type: type[T]) -> Iterator[tuple[str, st
     and a proxy does not pass an ``isinstance`` check against a
     runtime-checkable protocol, which would silently drop the object.
     """
-    seen: set[int] = set()
-    for doc_fragment, local_id, obj in database.odxlinks.objects():
-        if isinstance(obj, of_type) and id(obj) not in seen:
-            seen.add(id(obj))
-            yield doc_fragment.doc_name, local_id, obj
+    for obj in database.odxlinks.objects():
+        if isinstance(obj, of_type):
+            yield obj.odx_id.doc_fragments[0].doc_name, obj.odx_id.local_id, obj
 
 
 def iter_codecs(database: Database) -> Iterator[tuple[str, str, CompositeCodec]]:

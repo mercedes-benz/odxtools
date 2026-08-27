@@ -4,12 +4,15 @@ import weakref
 from collections.abc import Iterator, Iterable
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional, TypeVar, overload
+from typing import TYPE_CHECKING, Any, Optional, TypeVar, overload
 from xml.etree import ElementTree
 
 from .exceptions import OdxWarning, odxassert, odxraise, odxrequire
 from .nameditemlist import OdxNamed, TNamed
 from .odxdoccontext import OdxDocContext
+
+if TYPE_CHECKING:
+    from .element import IdentifiableElement
 
 
 class DocType(Enum):
@@ -191,17 +194,22 @@ class OdxLinkDatabase:
         self._db: dict[OdxDocFragment, dict[str, Any]] = {}
         self.use_weakrefs = use_weakrefs
 
-    def objects(self) -> Iterator[tuple[OdxDocFragment, str, Any]]:
-        """Iterate over every object the database holds, with the document
-        fragment which defines it and the local ODX ID it is registered under.
+    def objects(self) -> Iterator["IdentifiableElement"]:
+        """Iterate over every object the database holds, each exactly once.
 
-        An object which is defined by several document fragments is yielded
-        once per fragment; deduplicate by identity if each object is wanted
-        only once.
+        An object which is registered in several document fragments (e.g.
+        for a DIAG-LAYER-CONTAINER as well as for one of its DIAG-LAYERs)
+        is yielded only the first time it is encountered. Its ODX ID and the
+        document fragments it is registered under are available as
+        ``obj.odx_id``.
         """
-        for doc_frag, frag_objects in self._db.items():
-            for local_id, obj in frag_objects.items():
-                yield doc_frag, local_id, obj
+        seen: set[int] = set()
+        for frag_objects in self._db.values():
+            for obj in frag_objects.values():
+                if id(obj) in seen:
+                    continue
+                seen.add(id(obj))
+                yield obj
 
     @overload
     def resolve(self,
