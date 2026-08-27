@@ -2,6 +2,9 @@
 """What a rule reports, and how much it matters."""
 from dataclasses import dataclass
 from enum import IntEnum
+from typing import Any
+
+from ..odxlink import OdxLinkId
 
 
 class Severity(IntEnum):
@@ -37,18 +40,44 @@ class Finding:
     #: it found.
     severity: Severity
 
-    #: name of the document which defines the element the finding is about
-    doc: str
-
-    #: short name of that element
-    element_name: str
-
-    #: the ODX ID the element is registered under in its document
-    element_id: str
+    #: the object the finding is about
+    object: Any
 
     #: what was found, in one sentence, naming the objects involved
     message: str
 
+    @property
+    def odx_id(self) -> OdxLinkId | None:
+        """The ODX ID of the object, or ``None`` if it has none."""
+        odx_id = getattr(self.object, "odx_id", None)
+        return odx_id if isinstance(odx_id, OdxLinkId) else None
+
+    @property
+    def short_name(self) -> str | None:
+        """The short name of the object, or ``None`` if it has none."""
+        short_name = getattr(self.object, "short_name", None)
+        return short_name if isinstance(short_name, str) else None
+
+    @property
+    def short_name_path(self) -> str | None:
+        """Where to find the object: the short names of the documents it is
+        registered under, followed by its own, joined by dots.
+
+        The documents are taken from the document fragments of the object's
+        ODX ID, i.e. the DIAG-LAYER-CONTAINER and the DIAG-LAYER (or the
+        COMPARAM-SUBSET, ...) which define it. Objects do not know their
+        parents, so what lies in between, e.g. the service a response belongs
+        to, is not part of the path.
+        """
+        short_name = self.short_name
+        if short_name is None:
+            return None
+        odx_id = self.odx_id
+        doc_names = [] if odx_id is None else [frag.doc_name for frag in odx_id.doc_fragments]
+        return ".".join([*doc_names, short_name])
+
     def __str__(self) -> str:
-        where = f"{self.doc}/{self.element_name} ({self.element_id})"
+        where = self.short_name_path or type(self.object).__name__
+        if (odx_id := self.odx_id) is not None:
+            where = f"{where} ({odx_id.local_id})"
         return f"{where}: {self.severity.name.lower()}: {self.message} [{self.rule}]"

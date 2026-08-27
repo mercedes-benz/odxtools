@@ -12,6 +12,7 @@ from odxtools.checks.nrc_const_without_value import NrcConstWithoutValue
 from odxtools.checks.objects import iter_codecs, iter_objects
 from odxtools.diagservice import DiagService
 from odxtools.element import IdentifiableElement
+from odxtools.exceptions import odxrequire
 from odxtools.checks.overlapping_parameters import (OverlappingParameters, _bit_span, _overlaps,
                                                     _place)
 from odxtools.cli import _parser_utils
@@ -69,31 +70,38 @@ class TestSeverity(unittest.TestCase):
 class TestFinding(unittest.TestCase):
 
     def test_str_prints_location_first_and_the_level_name(self) -> None:
+        doc_frags = (OdxDocFragment("Ecu", DocType.CONTAINER), OdxDocFragment("Var", DocType.LAYER))
+        service = IdentifiableElement(
+            short_name="Service", odx_id=OdxLinkId("Ecu.SV.Service", doc_frags))
         finding = Finding(
-            rule="a-rule",
-            severity=Severity.ERROR,
-            doc="Ecu",
-            element_name="Service",
-            element_id="Ecu.SV.Service",
-            message="something is wrong")
+            rule="a-rule", severity=Severity.ERROR, object=service, message="something is wrong")
 
         self.assertEqual(
-            str(finding), "Ecu/Service (Ecu.SV.Service): error: something is wrong [a-rule]")
+            str(finding), "Ecu.Var.Service (Ecu.SV.Service): error: something is wrong [a-rule]")
 
     def test_str_never_prints_the_numeric_value(self) -> None:
-        finding = Finding(
-            rule="r",
-            severity=Severity.ERROR,
-            doc="Ecu",
-            element_name="e",
-            element_id="i",
-            message="m")
+        finding = Finding(rule="r", severity=Severity.ERROR, object=object(), message="m")
 
         self.assertNotIn("40", str(finding))
 
-    def test_the_element_identity_is_required(self) -> None:
+    def test_the_object_is_required(self) -> None:
         with self.assertRaises(TypeError):
             Finding(rule="r", severity=Severity.ERROR, message="m")  # type: ignore[call-arg]
+
+    def test_an_object_without_an_id_is_located_by_its_name_alone(self) -> None:
+        finding = Finding(rule="r", severity=Severity.INFO, object=_Codec([]), message="m")
+
+        self.assertIsNone(finding.odx_id)
+        self.assertEqual(finding.short_name, "codec")
+        self.assertEqual(finding.short_name_path, "codec")
+        self.assertEqual(str(finding), "codec: info: m [r]")
+
+    def test_an_object_without_a_name_is_located_by_its_type(self) -> None:
+        finding = Finding(rule="r", severity=Severity.INFO, object=object(), message="m")
+
+        self.assertIsNone(finding.short_name)
+        self.assertIsNone(finding.short_name_path)
+        self.assertEqual(str(finding), "object: info: m [r]")
 
 
 class TestRuleRegistry(unittest.TestCase):
@@ -312,9 +320,10 @@ class TestReferenceDatabase(unittest.TestCase):
         self.assertEqual(len(infos), 1)
         self.assertIn("'reason'", infos[0].message)
         self.assertIn("'reason_value'", infos[0].message)
-        self.assertEqual(infos[0].doc, "somersault")
-        self.assertEqual(infos[0].element_name, "flips_not_done")
-        self.assertTrue(infos[0].element_id)
+        self.assertEqual(infos[0].short_name, "flips_not_done")
+        self.assertEqual(infos[0].short_name_path,
+                         "somersault.somersault_base_variant.flips_not_done")
+        self.assertEqual(odxrequire(infos[0].odx_id).local_id, "somersault.NR.flips_not_done")
         self.assertEqual(infos[0].rule, "overlapping-parameters")
 
 
@@ -388,8 +397,7 @@ class TestExitStatus(unittest.TestCase):
         return 0
 
     def _finding(self, severity: Severity) -> Finding:
-        return Finding(
-            rule="r", severity=severity, doc="Ecu", element_name="e", element_id="i", message="m")
+        return Finding(rule="r", severity=severity, object=object(), message="m")
 
     def test_no_findings_is_a_success(self) -> None:
         self.assertEqual(self._run([]), 0)
