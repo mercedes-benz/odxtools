@@ -11,6 +11,7 @@ from unittest import mock
 import odxtools
 from odxtools.checks import DEFAULT_RULES, Finding, Rule, Severity, run_checks
 from odxtools.checks.nrc_const_without_value import NrcConstWithoutValue
+from odxtools.checks.rule import is_composite_codec
 from odxtools.compositecodec import CompositeCodec
 from odxtools.element import IdentifiableElement
 from odxtools.exceptions import odxrequire
@@ -228,6 +229,29 @@ class TestCodecEnumeration(unittest.TestCase):
         codecs = [obj for obj in odxdb.odxlinks.objects() if isinstance(obj, CompositeCodec)]
 
         self.assertEqual(len(codecs), 25)
+
+    def test_the_rules_select_exactly_the_objects_which_implement_the_protocol(self) -> None:
+        odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
+        objects = list(odxdb.odxlinks.objects())
+
+        selected = [obj for obj in objects if is_composite_codec(obj)]
+        implementing = [obj for obj in objects if isinstance(obj, CompositeCodec)]
+
+        self.assertEqual(selected, implementing)
+        self.assertEqual(len(selected), 25)
+
+    def test_the_selection_does_not_evaluate_the_parameters(self) -> None:
+        """Up to Python 3.11 a runtime protocol check evaluates every property
+        the protocol names; a codec whose parameters cannot be inspected would
+        fail it and never reach a rule."""
+        response = Response(
+            short_name="codec",
+            odx_id=OdxLinkId("doc.NR.codec", (OdxDocFragment("doc", DocType.CONTAINER),)),
+            response_type=ResponseType.NEGATIVE,
+            parameters=NamedItemList([_fake(ValueParameter, 0, 8)]))
+        self.assertRaises(AttributeError, getattr, response, "required_parameters")
+
+        self.assertTrue(is_composite_codec(response))
 
 
 class TestNrcConstWithoutValue(unittest.TestCase):

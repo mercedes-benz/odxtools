@@ -2,12 +2,12 @@
 """Check that every NRC-CONST parameter overlaps a VALUE parameter."""
 from collections.abc import Iterable
 
-from ..compositecodec import CompositeCodec
 from ..database import Database
 from ..parameters.nrcconstparameter import NrcConstParameter
 from ..parameters.valueparameter import ValueParameter
 from .finding import Finding, Severity
 from .overlapping_parameters import _bit_span
+from .rule import is_composite_codec
 
 
 class NrcConstWithoutValue:
@@ -33,7 +33,7 @@ class NrcConstWithoutValue:
 
     def check(self, database: Database) -> Iterable[Finding]:
         for codec in database.odxlinks.objects():
-            if not isinstance(codec, CompositeCodec):
+            if not is_composite_codec(codec):
                 continue
             spans = [(param, _bit_span(param)) for param in codec.parameters if param is not None]
             values = [(param, span)

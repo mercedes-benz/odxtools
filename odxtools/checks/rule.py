@@ -1,9 +1,13 @@
 # SPDX-License-Identifier: MIT
-"""The interface a consistency rule implements."""
+"""The interface a consistency rule implements, and what a rule inspects."""
 from collections.abc import Iterable
-from typing import Protocol, runtime_checkable
+from typing import Protocol, TypeGuard, runtime_checkable
 
+from ..basicstructure import BasicStructure
+from ..compositecodec import CompositeCodec
 from ..database import Database
+from ..request import Request
+from ..response import Response
 from .finding import Finding
 
 
@@ -23,3 +27,17 @@ class Rule(Protocol):
     def check(self, database: Database) -> Iterable[Finding]:
         """Yield a finding for every object this rule reports."""
         ...
+
+
+def is_composite_codec(obj: object) -> TypeGuard[CompositeCodec]:
+    """Whether ``obj`` is one of the objects which carry a list of parameters.
+
+    The test is against the concrete classes rather than against the
+    :class:`~odxtools.compositecodec.CompositeCodec` protocol. Up to Python
+    3.11, ``isinstance`` against a runtime-checkable protocol evaluates every
+    property the protocol names, so an object whose ``required_parameters``
+    cannot be computed, i.e. one with a broken parameter, fails the check and
+    is skipped without a word, although it is exactly what a rule is there to
+    look at.
+    """
+    return isinstance(obj, (BasicStructure, Request, Response))
