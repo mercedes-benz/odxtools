@@ -6,7 +6,6 @@ from ..compositecodec import CompositeCodec
 from ..database import Database
 from ..parameters.parameter import Parameter
 from .finding import Finding, Severity
-from .objects import iter_codecs
 
 
 def _bit_span(param: Parameter) -> tuple[int, int] | None:
@@ -76,7 +75,9 @@ class OverlappingParameters:
             "(cf. NRC-CONST, ASAM MCD-2 D (ODX) 2.2, section 7.3.5.4, p. 79)")
 
     def check(self, database: Database) -> Iterable[Finding]:
-        for _, _, codec in iter_codecs(database):
+        for codec in database.odxlinks.objects():
+            if not isinstance(codec, CompositeCodec):
+                continue
             placed, skipped = _place(codec)
 
             if skipped:

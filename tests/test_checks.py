@@ -3,16 +3,17 @@ import argparse
 import itertools
 import unittest
 from dataclasses import dataclass
+from types import SimpleNamespace
 from typing import Any
 from unittest import mock
 
 import odxtools
 from odxtools.checks import DEFAULT_RULES, Finding, Rule, Severity, run_checks
 from odxtools.checks.nrc_const_without_value import NrcConstWithoutValue
-from odxtools.checks.objects import iter_codecs, iter_objects
-from odxtools.diagservice import DiagService
+from odxtools.compositecodec import CompositeCodec
 from odxtools.element import IdentifiableElement
 from odxtools.exceptions import odxrequire
+from odxtools.nameditemlist import NamedItemList
 from odxtools.checks.overlapping_parameters import (OverlappingParameters, _bit_span, _overlaps,
                                                     _place)
 from odxtools.cli import _parser_utils
@@ -20,6 +21,7 @@ from odxtools.cli import check as check_tool
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId
 from odxtools.parameters.nrcconstparameter import NrcConstParameter
 from odxtools.parameters.valueparameter import ValueParameter
+from odxtools.response import Response, ResponseType
 
 
 @dataclass
@@ -210,86 +212,58 @@ class TestLinkDatabaseObjects(unittest.TestCase):
 
 
 class TestCodecEnumeration(unittest.TestCase):
-    """Coverage guards: the enumeration must see the real objects.
+    """Coverage guard: the rules must see the real objects.
 
     Attributes like ``service.request`` hand out weakref proxies, and a proxy
     fails ``isinstance`` against a runtime-checkable protocol. Walking those
     attributes silently inspected 3 of the 25 codec objects of the reference
-    database; these tests pin the full number so that a regression cannot
+    database; this test pins the full number so that a regression cannot
     pass quietly again.
     """
 
     def test_every_codec_of_the_reference_database_is_seen(self) -> None:
         odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
 
-        codecs = list(iter_codecs(odxdb))
+        codecs = [obj for obj in odxdb.odxlinks.objects() if isinstance(obj, CompositeCodec)]
 
         self.assertEqual(len(codecs), 25)
-
-    def test_each_codec_is_seen_exactly_once(self) -> None:
-        odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
-
-        ids = [id(codec) for _, _, codec in iter_codecs(odxdb)]
-
-        self.assertEqual(len(ids), len(set(ids)))
-
-    def test_iter_objects_takes_the_type_to_look_for(self) -> None:
-        odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
-
-        services = [obj for _, _, obj in iter_objects(odxdb, DiagService)]
-
-        self.assertTrue(services)
-        self.assertTrue(all(isinstance(s, DiagService) for s in services))
-        self.assertEqual(len(services), len({id(s) for s in services}))
-
-    def test_every_codec_comes_with_its_document_and_id(self) -> None:
-        odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
-
-        seen_ids: set[tuple[str, str]] = set()
-        for doc_name, codec_id, _ in iter_codecs(odxdb):
-            self.assertTrue(doc_name)
-            self.assertTrue(codec_id)
-            self.assertNotIn((doc_name, codec_id), seen_ids)
-            seen_ids.add((doc_name, codec_id))
 
 
 class TestNrcConstWithoutValue(unittest.TestCase):
 
     def test_an_overlapped_nrc_const_is_quiet(self) -> None:
-        codec = _Codec(
+        findings = self._check(
             [_fake(NrcConstParameter, 2, 8, "reason"),
              _fake(ValueParameter, 2, 8, "reason_value")])
-
-        findings = self._check(codec)
 
         self.assertEqual(findings, [])
 
     def test_an_unoverlapped_nrc_const_is_a_warning(self) -> None:
-        codec = _Codec(
+        findings = self._check(
             [_fake(NrcConstParameter, 2, 8, "reason"),
              _fake(ValueParameter, 3, 8, "elsewhere")])
-
-        findings = self._check(codec)
 
         self.assertEqual(len(findings), 1)
         self.assertEqual(findings[0].severity, Severity.WARNING)
         self.assertIn("reason", findings[0].message)
 
     def test_an_unplaceable_nrc_const_is_reported_at_debug(self) -> None:
-        codec = _Codec([_fake(NrcConstParameter, None, None, "reason")])
-
-        findings = self._check(codec)
+        findings = self._check([_fake(NrcConstParameter, None, None, "reason")])
 
         self.assertEqual([f.severity for f in findings], [Severity.DEBUG])
 
-    def _check(self, codec: _Codec) -> list[Finding]:
-        # check() is a generator: it has to be drained while the patch is in
-        # effect, or the real enumeration runs when the caller iterates.
-        rule = NrcConstWithoutValue()
-        with mock.patch(
-                "odxtools.checks.nrc_const_without_value.iter_codecs",
-                return_value=[("doc", "doc.id", codec)]):
-            return list(rule.check(object()))  # type: ignore[arg-type]
+    def _check(self, parameters: list[Any]) -> list[Finding]:
+        """Run the rule over a database holding one negative response."""
+        response = Response(
+            short_name="codec",
+            odx_id=OdxLinkId("doc.NR.codec", (OdxDocFragment("doc", DocType.CONTAINER),)),
+            response_type=ResponseType.NEGATIVE,
+            parameters=NamedItemList(parameters))
+        odxlinks = OdxLinkDatabase()
+        odxlinks.update({response.odx_id: response})
+        database = SimpleNamespace(odxlinks=odxlinks)
+
+        return list(NrcConstWithoutValue().check(database))  # type: ignore[arg-type]
 
 
 class TestReferenceDatabase(unittest.TestCase):
