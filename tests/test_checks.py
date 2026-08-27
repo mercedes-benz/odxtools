@@ -118,6 +118,11 @@ class TestRuleRegistry(unittest.TestCase):
             self.assertTrue(rule.spec, f"rule '{rule.name}' does not say what it draws on")
             self.assertIsInstance(rule, Rule)
 
+    def test_registered_rules_have_a_one_line_description(self) -> None:
+        for rule in DEFAULT_RULES:
+            self.assertTrue(rule.description, f"rule '{rule.name}' has no description")
+            self.assertNotIn("\n", rule.description)
+
 
 class TestBitSpan(unittest.TestCase):
 
@@ -366,6 +371,23 @@ class TestRunChecks(unittest.TestCase):
 
         self.assertTrue(findings)
         self.assertEqual({f.rule for f in findings}, {"overlapping-parameters"})
+
+
+class TestListAvailableRules(unittest.TestCase):
+
+    def test_prints_every_rule_with_its_description_and_exits_without_a_file(self) -> None:
+        parser = argparse.ArgumentParser()
+        check_tool.add_subparser(parser.add_subparsers())
+        with mock.patch("sys.stdout", new_callable=io.StringIO) as out, \
+             self.assertRaises(SystemExit) as caught:
+            parser.parse_args(["check", "--list-available-rules"])
+
+        self.assertEqual(caught.exception.code, 0)
+        lines = out.getvalue().splitlines()
+        self.assertEqual(len(lines), len(DEFAULT_RULES))
+        for rule, line in zip(DEFAULT_RULES, lines, strict=True):
+            self.assertTrue(line.startswith(rule.name), line)
+            self.assertIn(rule.description, line)
 
 
 class TestDisableRule(unittest.TestCase):

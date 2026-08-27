@@ -29,6 +29,8 @@ class NrcConstWithoutValue:
 
     name = "nrc-const-without-value"
 
+    description = "an NRC-CONST parameter whose bits no VALUE parameter covers"
+
     spec = "ASAM MCD-2 D (ODX) 2.2, section 7.3.5.4, p. 79"
 
     def check(self, database: Database) -> Iterable[Finding]:

@@ -69,6 +69,8 @@ class OverlappingParameters:
 
     name = "overlapping-parameters"
 
+    description = "two parameters of one codec object cover the same bits"
+
     #: This rule does not enforce a requirement of the standard, which permits
     #: overlapping parameters (see e.g. NRC-CONST, ASAM MCD-2 D (ODX) 2.2,
     #: section 7.3.5.4). It reports them for the reader's information.

@@ -18,6 +18,10 @@ class Rule(Protocol):
     #: identifier used to name the rule in output and to select or disable it
     name: str
 
+    #: one line saying what the rule reports, shown next to the name when the
+    #: available rules are listed
+    description: str
+
     #: which part of the specification the rule draws on, so that the rule can
     #: be checked against the document rather than against its author's
     #: assumptions. Rules which do not enforce a requirement of the standard

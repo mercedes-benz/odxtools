@@ -1,12 +1,32 @@
 # SPDX-License-Identifier: MIT
 """Report the findings of the consistency checks for a database."""
 import argparse
+from collections.abc import Sequence
+from typing import Any
 
 from ..checks import DEFAULT_RULES, Severity, run_checks
 from . import _parser_utils
 from ._parser_utils import SubparsersList
 
 _odxtools_tool_name_ = "check"
+
+
+def _available_rules() -> str:
+    """One line per rule: its name, padded to a column, and its description."""
+    width = max(len(rule.name) for rule in DEFAULT_RULES)
+    return "\n".join(f"{rule.name:<{width}}  {rule.description}" for rule in DEFAULT_RULES)
+
+
+class _ListAvailableRules(argparse.Action):
+    """Print the available rules and exit, the way ``--help`` does."""
+
+    def __call__(self,
+                 parser: argparse.ArgumentParser,
+                 namespace: argparse.Namespace,
+                 values: str | Sequence[Any] | None,
+                 option_string: str | None = None) -> None:
+        print(_available_rules())
+        parser.exit()
 
 
 def add_subparser(subparsers: SubparsersList) -> None:
@@ -17,6 +37,14 @@ def add_subparser(subparsers: SubparsersList) -> None:
         formatter_class=argparse.RawTextHelpFormatter,
     )
     _parser_utils.add_pdx_argument(parser)
+
+    parser.add_argument(
+        "--list-available-rules",
+        action=_ListAvailableRules,
+        nargs=0,
+        default=argparse.SUPPRESS,
+        help="Print the name and a one-line description of every rule, then exit",
+    )
 
     parser.add_argument(
         "--warnings-as-errors",
