@@ -32,6 +32,9 @@ class Finding:
     #: name of the rule which produced this finding
     rule: str
 
+    #: how much this finding matters. A rule may emit findings of different
+    #: severities, e.g. a note about what it could not inspect next to what
+    #: it found.
     severity: Severity
 
     #: name of the document which defines the element the finding is about
