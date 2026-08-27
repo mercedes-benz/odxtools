@@ -33,30 +33,12 @@ DEFAULT_RULES: tuple[Rule, ...] = (
 )
 
 
-def run_checks(
-        database: Database,
-        rules: Iterable[Rule] | None = None,
-        *,
-        disabled: Iterable[str] = (),
-) -> Iterator[Finding]:
+def run_checks(database: Database, rules: Iterable[Rule] = DEFAULT_RULES) -> Iterator[Finding]:
     """Apply ``rules`` to ``database`` and yield what they report.
 
     Args:
         database: the database to inspect
-        rules: the rules to apply, defaulting to :data:`DEFAULT_RULES`
-        disabled: names of rules to skip. An unknown name raises
-            :class:`ValueError`, so that a typo cannot silently disable
-            nothing.
+        rules: the rules to apply, :data:`DEFAULT_RULES` unless given
     """
-    selected_rules = list(DEFAULT_RULES if rules is None else rules)
-
-    disabled_names = set(disabled)
-    known_names = {rule.name for rule in selected_rules}
-    if unknown := sorted(disabled_names - known_names):
-        raise ValueError(f"cannot disable unknown rule(s) {', '.join(unknown)}; "
-                         f"known rules are: {', '.join(sorted(known_names))}")
-
-    for rule in selected_rules:
-        if rule.name in disabled_names:
-            continue
+    for rule in rules:
         yield from rule.check(database)

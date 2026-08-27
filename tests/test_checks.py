@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 import argparse
+import io
 import itertools
 import unittest
 from dataclasses import dataclass
@@ -333,19 +334,38 @@ class TestNrcConstEncodeSemantics(unittest.TestCase):
 
 class TestRunChecks(unittest.TestCase):
 
-    def test_disabling_a_rule_skips_only_that_rule(self) -> None:
+    def test_only_the_given_rules_are_applied(self) -> None:
         odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
+        rules = [rule for rule in DEFAULT_RULES if rule.name == "overlapping-parameters"]
 
-        findings = list(run_checks(odxdb, disabled=["nrc-const-without-value"]))
+        findings = list(run_checks(odxdb, rules))
 
-        self.assertFalse(any(f.rule == "nrc-const-without-value" for f in findings))
-        self.assertTrue(any(f.rule == "overlapping-parameters" for f in findings))
+        self.assertTrue(findings)
+        self.assertEqual({f.rule for f in findings}, {"overlapping-parameters"})
 
-    def test_disabling_an_unknown_rule_names_the_known_ones(self) -> None:
-        odxdb = odxtools.load_pdx_file("./examples/somersault.pdx")
 
-        with self.assertRaisesRegex(ValueError, "no-such-rule.*overlapping-parameters"):
-            list(run_checks(odxdb, disabled=["no-such-rule"]))
+class TestDisableRule(unittest.TestCase):
+
+    def _parse(self, argv: list[str]) -> argparse.Namespace:
+        parser = argparse.ArgumentParser()
+        check_tool.add_subparser(parser.add_subparsers())
+        return parser.parse_args(["check", "unused.pdx", *argv])
+
+    def test_the_disabled_rules_are_left_out_of_the_list_passed_on(self) -> None:
+        args = self._parse(["--disable-rule", "nrc-const-without-value"])
+        with mock.patch.object(_parser_utils, "load_file", return_value=object()), \
+             mock.patch.object(check_tool, "run_checks", return_value=iter([])) as run:
+            check_tool.run(args)
+
+        rules = run.call_args.args[1]
+        self.assertEqual([rule.name for rule in rules], ["overlapping-parameters"])
+
+    def test_an_unknown_rule_is_a_usage_error(self) -> None:
+        with mock.patch("sys.stderr", new_callable=io.StringIO), \
+             self.assertRaises(SystemExit) as caught:
+            self._parse(["--disable-rule", "nope"])
+
+        self.assertEqual(caught.exception.code, 2)
 
 
 class TestExitStatus(unittest.TestCase):
@@ -389,16 +409,6 @@ class TestExitStatus(unittest.TestCase):
 
     def test_an_error_fails(self) -> None:
         self.assertEqual(self._run([self._finding(Severity.ERROR)]), 1)
-
-    def test_an_unknown_disabled_rule_exits_with_a_usage_error(self) -> None:
-        args = argparse.Namespace(
-            pdx_file="unused", warnings_as_errors=False, severity="info", disable_rule=["nope"])
-        with mock.patch.object(_parser_utils, "load_file", return_value=object()), \
-             mock.patch.object(check_tool, "run_checks",
-                               side_effect=ValueError("cannot disable unknown rule(s) nope")):
-            with self.assertRaises(SystemExit) as caught:
-                check_tool.run(args)
-        self.assertEqual(caught.exception.code, 2)
 
 
 if __name__ == "__main__":

@@ -39,6 +39,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         action="append",
         default=[],
         metavar="NAME",
+        choices=[rule.name for rule in DEFAULT_RULES],
         required=False,
         help="Skip the rule with this name; may be given several times. "
         "Known rules: " + ", ".join(sorted(rule.name for rule in DEFAULT_RULES)),
@@ -49,16 +50,13 @@ def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
 
     threshold = Severity[args.severity.upper()]
+    rules = [rule for rule in DEFAULT_RULES if rule.name not in args.disable_rule]
 
     counts = dict.fromkeys(Severity, 0)
-    try:
-        for finding in run_checks(odxdb, disabled=args.disable_rule):
-            counts[finding.severity] += 1
-            if finding.severity >= threshold:
-                print(finding)
-    except ValueError as error:
-        print(f"error: {error}")
-        raise SystemExit(2) from error
+    for finding in run_checks(odxdb, rules):
+        counts[finding.severity] += 1
+        if finding.severity >= threshold:
+            print(finding)
 
     errors = counts[Severity.ERROR]
     warnings = counts[Severity.WARNING]
