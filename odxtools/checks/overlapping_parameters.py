@@ -70,10 +70,10 @@ class OverlappingParameters:
     name = "overlapping-parameters"
 
     #: This rule does not enforce a requirement of the standard, which permits
-    #: overlapping parameters (see e.g. NRC-CONST, ASAM MCD-2 D, p. 77-79).
-    #: It reports them for the reader's information.
+    #: overlapping parameters (see e.g. NRC-CONST, ASAM MCD-2 D (ODX) 2.2,
+    #: section 7.3.5.4). It reports them for the reader's information.
     spec = ("informational; the standard permits overlaps "
-            "(cf. NRC-CONST semantics, ASAM MCD-2 D p. 77-79)")
+            "(cf. NRC-CONST, ASAM MCD-2 D (ODX) 2.2, section 7.3.5.4, p. 79)")
 
     def check(self, database: Database) -> Iterable[Finding]:
         for doc_name, codec_id, codec in iter_codecs(database):

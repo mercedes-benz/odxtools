@@ -13,11 +13,15 @@ from .overlapping_parameters import _bit_span
 class NrcConstWithoutValue:
     """An NRC-CONST parameter whose bits no VALUE parameter covers.
 
+    ASAM MCD-2 D (ODX) 2.2, section 7.3.5.4: "The NRC-CONST is located at
+    the same PDU position as the VALUE parameter. As a VALUE parameter is
+    never used to match a RESPONSE, the parameter (and its associated
+    TEXTTABLE) does not suffice to select the response."
+
     Decoding is not the problem: the matched value is exposed either way.
     Encoding is: an NRC-CONST refuses a directly set value, so the byte it
-    matches on is meant to be written through an overlapping VALUE parameter
-    (see ASAM MCD-2 D, p. 77-79, and
-    :class:`~odxtools.parameters.nrcconstparameter.NrcConstParameter`).
+    matches on is meant to be written through the overlapping VALUE parameter
+    (see :class:`~odxtools.parameters.nrcconstparameter.NrcConstParameter`).
     Without one, no specific value can be encoded at all and the bytes are
     left at zero — measured on ``somersault.pdx``, where encoding
     ``flips_not_done`` cannot choose a reason.
@@ -25,10 +29,7 @@ class NrcConstWithoutValue:
 
     name = "nrc-const-without-value"
 
-    #: The expectation comes from the NRC-CONST semantics of the standard:
-    #: the parameter constrains bits which an overlapping VALUE parameter
-    #: is supposed to expose (ASAM MCD-2 D, p. 77-79).
-    spec = "NRC-CONST semantics, ASAM MCD-2 D p. 77-79"
+    spec = "ASAM MCD-2 D (ODX) 2.2, section 7.3.5.4, p. 79"
 
     def check(self, database: Database) -> Iterable[Finding]:
         for doc_name, codec_id, codec in iter_codecs(database):
