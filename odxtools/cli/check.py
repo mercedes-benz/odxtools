@@ -29,6 +29,22 @@ class _ListAvailableRules(argparse.Action):
         parser.exit()
 
 
+class _DisableRules(argparse.Action):
+    """Collect rule names, rejecting the ones no rule has."""
+
+    def __call__(self,
+                 parser: argparse.ArgumentParser,
+                 namespace: argparse.Namespace,
+                 values: str | Sequence[Any] | None,
+                 option_string: str | None = None) -> None:
+        names = [values] if isinstance(values, str) else list(values or [])
+        known = {rule.name for rule in DEFAULT_RULES}
+        if unknown := [name for name in names if name not in known]:
+            parser.error(f"{option_string}: unknown rule(s) {', '.join(unknown)}; "
+                         f"see --list-available-rules")
+        setattr(namespace, self.dest, [*getattr(namespace, self.dest, []), *names])
+
+
 def add_subparser(subparsers: SubparsersList) -> None:
     parser = subparsers.add_parser(
         _odxtools_tool_name_,
@@ -63,14 +79,13 @@ def add_subparser(subparsers: SubparsersList) -> None:
     )
 
     parser.add_argument(
-        "--disable-rule",
-        action="append",
+        "--disable-rules",
+        action=_DisableRules,
+        nargs="+",
         default=[],
         metavar="NAME",
-        choices=[rule.name for rule in DEFAULT_RULES],
         required=False,
-        help="Skip the rule with this name; may be given several times. "
-        "Known rules: " + ", ".join(sorted(rule.name for rule in DEFAULT_RULES)),
+        help="Skip the rules with these names (see --list-available-rules)",
     )
 
 
@@ -78,7 +93,7 @@ def run(args: argparse.Namespace) -> None:
     odxdb = _parser_utils.load_file(args)
 
     threshold = Severity[args.severity.upper()]
-    rules = [rule for rule in DEFAULT_RULES if rule.name not in args.disable_rule]
+    rules = [rule for rule in DEFAULT_RULES if rule.name not in args.disable_rules]
 
     counts = dict.fromkeys(Severity, 0)
     for finding in run_checks(odxdb, rules):

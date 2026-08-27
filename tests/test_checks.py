@@ -390,28 +390,40 @@ class TestListAvailableRules(unittest.TestCase):
             self.assertIn(rule.description, line)
 
 
-class TestDisableRule(unittest.TestCase):
+class TestDisableRules(unittest.TestCase):
 
     def _parse(self, argv: list[str]) -> argparse.Namespace:
         parser = argparse.ArgumentParser()
         check_tool.add_subparser(parser.add_subparsers())
         return parser.parse_args(["check", "unused.pdx", *argv])
 
-    def test_the_disabled_rules_are_left_out_of_the_list_passed_on(self) -> None:
-        args = self._parse(["--disable-rule", "nrc-const-without-value"])
+    def _rules_passed_on(self, argv: list[str]) -> list[str]:
+        args = self._parse(argv)
         with mock.patch.object(_parser_utils, "load_file", return_value=object()), \
              mock.patch.object(check_tool, "run_checks", return_value=iter([])) as run:
             check_tool.run(args)
 
-        rules = run.call_args.args[1]
-        self.assertEqual([rule.name for rule in rules], ["overlapping-parameters"])
+        return [rule.name for rule in run.call_args.args[1]]
 
-    def test_an_unknown_rule_is_a_usage_error(self) -> None:
-        with mock.patch("sys.stderr", new_callable=io.StringIO), \
+    def test_the_disabled_rule_is_left_out_of_the_list_passed_on(self) -> None:
+        self.assertEqual(
+            self._rules_passed_on(["--disable-rules", "nrc-const-without-value"]),
+            ["overlapping-parameters"])
+
+    def test_several_names_disable_several_rules_and_the_rest_are_applied(self) -> None:
+        rules = tuple(SimpleNamespace(name=name, description=name) for name in ("a", "b", "c"))
+        with mock.patch.object(check_tool, "DEFAULT_RULES", rules):
+            self.assertEqual(self._rules_passed_on(["--disable-rules", "a", "c"]), ["b"])
+
+    def test_an_unknown_rule_is_a_usage_error_naming_it(self) -> None:
+        with mock.patch("sys.stderr", new_callable=io.StringIO) as err, \
              self.assertRaises(SystemExit) as caught:
-            self._parse(["--disable-rule", "nope"])
+            self._parse(["--disable-rules", "nope", "overlapping-parameters", "also-nope"])
 
         self.assertEqual(caught.exception.code, 2)
+        self.assertIn("nope", err.getvalue())
+        self.assertIn("also-nope", err.getvalue())
+        self.assertNotIn("overlapping-parameters", err.getvalue().split("error:")[1])
 
 
 class TestExitStatus(unittest.TestCase):
@@ -426,7 +438,7 @@ class TestExitStatus(unittest.TestCase):
             pdx_file="unused",
             warnings_as_errors=warnings_as_errors,
             severity=severity,
-            disable_rule=disable or [],
+            disable_rules=disable or [],
         )
         with mock.patch.object(_parser_utils, "load_file", return_value=object()), \
              mock.patch.object(check_tool, "run_checks", return_value=iter(findings)):
