@@ -129,7 +129,7 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
 def encode_message_interactively(codec: Request | Response,
                                  ask_user_confirmation: bool = False) -> None:
     if sys.__stdin__ is None or sys.__stdout__ is None or not sys.__stdin__.isatty(
-    ) or not sys.__stdout__.isatty():
+    ) or not sys.stdout.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
 
     answered_request = b''
@@ -297,7 +297,7 @@ def encode_message_from_string_values(
 
 def browse(odxdb: Database) -> None:
     if sys.__stdin__ is None or sys.__stdout__ is None or not sys.__stdin__.isatty(
-    ) or not sys.__stdout__.isatty():
+    ) or not sys.stdout.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
     dl_names = [dl.short_name for dl in odxdb.diag_layers]
     while True:
