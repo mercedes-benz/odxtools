@@ -14,7 +14,7 @@ from ..diaglayers.diaglayer import DiagLayer
 from ..diaglayers.hierarchyelement import HierarchyElement
 from ..diagservice import DiagService
 from ..dopbase import DopBase
-from ..exceptions import odxraise, odxrequire
+from ..exceptions import OdxError, odxraise, odxrequire
 from ..odxlink import resolve_snref
 from ..odxtypes import AtomicOdxType, DataType, ParameterValueDict
 from ..parameters.matchingrequestparameter import MatchingRequestParameter
@@ -55,7 +55,7 @@ def _validate_string_value(input: str, parameter: Parameter) -> bool:
         try:
             phys_type = odxrequire(parameter.physical_type)
             val = _convert_string_to_odx_type(input, phys_type.base_data_type)
-        except:  # noqa: E722
+        except (OdxError, ValueError, TypeError):
             return False
         dop = parameter.dop
         if isinstance(dop, DataObjectProperty):
