@@ -240,7 +240,7 @@ def encode_message_from_string_values(
 
     if len(missing_parameter_names) > 0:
         rich_print("The following parameters are required but missing:")
-        rich_print(" - " + "\n - ".join(sorted(missing_parameter_names)))
+        rich_print(" - " + "\n - ".join(sorted(missing_parameter_names, key=str.lower)))
         return
 
     # Request values for parameters
@@ -299,7 +299,7 @@ def browse(odxdb: Database) -> None:
     if sys.__stdin__ is None or sys.__stdout__ is None or not sys.__stdin__.isatty(
     ) or not sys.stdout.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
-    dl_names = [dl.short_name for dl in odxdb.diag_layers]
+    dl_names = sorted([dl.short_name for dl in odxdb.diag_layers], key=str.lower)
     while True:
         # Select an ECU
         selection = [{
@@ -344,7 +344,8 @@ def browse(odxdb: Database) -> None:
                     "service",
                 "message":
                     f"The variant {variant.short_name} offers the following services. Select one!",
-                "choices": [s.short_name for s in services] + ["[back]"],
+                "choices":
+                    sorted([s.short_name for s in services], key=str.lower) + ["[back]"],
             }]
             answer = IP_prompt(selection)
             if answer.get("service") == "[back]":
