@@ -8,12 +8,11 @@ name the offending element so that it can be found in a large database.
 import unittest
 
 import odxtools.exceptions as exceptions
-
 from odxtools.exceptions import OdxError
-from odxtools.odxlink import (DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef)
+from odxtools.nameditemlist import NamedItemList
+from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.parameters.physicalconstantparameter import PhysicalConstantParameter
 from odxtools.parameters.valueparameter import ValueParameter
-from odxtools.nameditemlist import NamedItemList
 from odxtools.snrefcontext import SnRefContext
 from odxtools.structure import Structure
 
