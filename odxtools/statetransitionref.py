@@ -60,7 +60,7 @@ def _resolve_in_param_helper(
 
     # deal with table parameters
     if isinstance(inner_param, TableStructParameter):
-        if not isinstance(inner_param_value, tuple) or len(inner_param_value) == 2:
+        if not isinstance(inner_param_value, tuple) or len(inner_param_value) != 2:
             odxraise("Invalid value for table struct parameter")
             return None, None
 
@@ -193,7 +193,7 @@ class StateTransitionRef(OdxLinkRef):
 
     def __post_init__(self) -> None:
         if self.value is not None:
-            odxassert(self.in_param_if_snref is not None or self.in_param_if_snref is not None,
+            odxassert(self.in_param_if_snref is not None or self.in_param_if_snpathref is not None,
                       "If VALUE is specified, a parameter must be referenced")
 
     def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
