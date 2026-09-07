@@ -8,14 +8,16 @@ from InquirerPy.resolver import prompt as IP_prompt
 from InquirerPy.resolver import question_mapping
 from rich import print as rich_print
 
-from ..complexdop import ComplexDop
+from ..basicstructure import BasicStructure
 from ..database import Database
 from ..dataobjectproperty import DataObjectProperty
 from ..diaglayers.diaglayer import DiagLayer
 from ..diaglayers.hierarchyelement import HierarchyElement
 from ..diagservice import DiagService
-from ..dopbase import DopBase
-from ..exceptions import OdxError, odxraise, odxrequire
+from ..environmentdatadescription import EnvironmentDataDescription
+from ..exceptions import odxraise
+from ..field import Field
+from ..multiplexer import Multiplexer
 from ..odxlink import resolve_snref
 from ..odxtypes import AtomicOdxType, DataType, ParameterValueDict
 from ..parameters.matchingrequestparameter import MatchingRequestParameter
@@ -51,26 +53,30 @@ def _convert_string_to_bytes(string_value: str) -> bytes:
         return int(string_value, 16).to_bytes((int(string_value, 16).bit_length() + 7) // 8, "big")
 
 
-def _validate_string_value(input: str, parameter: Parameter) -> bool:
-    if not parameter.is_required and input == "":
+def _validate_chosen_value(input_val: AtomicOdxType, parameter: Parameter) -> bool:
+    if not parameter.is_required and (input_val == "" or input_val is None):
         return True
     elif isinstance(parameter, ParameterWithDOP):
-        try:
-            phys_type = odxrequire(parameter.physical_type)
-            val = _convert_string_to_odx_type(input, phys_type.base_data_type)
-        except (OdxError, ValueError, TypeError):
-            return False
         dop = parameter.dop
         if isinstance(dop, DataObjectProperty):
-            return dop.is_valid_physical_value(val)
+            if isinstance(input_val, str):
+                base_data_type = dop.physical_type.base_data_type
+                if base_data_type is None:
+                    return input_val != ""
+                try:
+                    converted_val = _convert_string_to_odx_type(input_val, base_data_type)
+                except ValueError:
+                    return False
+                return dop.is_valid_physical_value(converted_val)
+            return dop.is_valid_physical_value(input_val)
         else:
-            raise NotImplementedError("Validation of complex DOPs")
+            raise NotImplementedError(f"Validation of {dop.__class__.__name__} DOPs")
     else:
-        logging.info("This value is not validated precisely: Parameter {parameter}")
-        return input != ""
+        logging.info(f"Parameter's '{parameter}' value not validated")
+        return input_val != ""
 
 
-def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
+def prompt_primitive_parameter_value(parameter: Parameter, indent: str) -> AtomicOdxType | None:
     if not isinstance(parameter, ValueParameter):
         odxraise("Only the value of ValueParameters can be queried")
     if parameter.physical_type is None:
@@ -84,11 +90,11 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
         "name":
             parameter.short_name,
         "message":
-            f"Value for parameter '{parameter.short_name}' (Type: {parameter.physical_type.base_data_type})"
+            f"{indent}Value for parameter '{parameter.short_name}' (Type: {parameter.physical_type.base_data_type})"
             + (f"[optional]" if not parameter.is_required else ""),
         # TODO: improve validation
         "validate":
-            lambda x: _validate_string_value(x, parameter),
+            lambda x: _validate_chosen_value(x, parameter),
         # TODO: do type conversion?
         "filter":
             lambda x: x
@@ -120,13 +126,43 @@ def prompt_single_parameter_value(parameter: Parameter) -> AtomicOdxType | None:
     elif not isinstance(raw_answer, str):
         # list prompt already returns the physical value directly
         return cast(AtomicOdxType, raw_answer)
-    elif parameter.physical_type.base_data_type is not None:
-        return _convert_string_to_odx_type(raw_answer, parameter.physical_type.base_data_type)
+    elif (base_data_type := parameter.physical_type.base_data_type) is not None:
+        return _convert_string_to_odx_type(raw_answer, base_data_type)
     else:
-        logging.warning(
-            f"Parameter {parameter.short_name} does not have a physical data type. Param details: {parameter}"
-        )
+        logging.warning(f"Parameter {parameter.short_name} does not have a physical data type.")
         return cast(str, raw_answer)
+
+
+def prompt_all_parameter_values(params: list[Parameter], indent: str = "") -> ParameterValueDict:
+    """Query the user for the values of all settable parameters of a list of parameters
+    """
+
+    param_values: ParameterValueDict = {}
+    for param in params:
+        if isinstance(param, ValueParameter):
+            dop = param.dop
+            if isinstance(dop, Field):
+                odxraise("Encoding field parameters is currently not supported")
+            elif isinstance(dop, Multiplexer):
+                odxraise("Encoding multiplexer parameters is currently not supported")
+            elif isinstance(dop, EnvironmentDataDescription):
+                odxraise(
+                    "Encoding environment data description parameters is currently not supported")
+            elif (inner_params := getattr(dop, "parameters", None)) is not None:
+                # param refers to a complex DOP, i.e., the required
+                # value is a key-value dict
+                inner_params = cast(list[Parameter], inner_params)
+                rich_print(f"{indent}Parameters for structure '{dop.short_name}':")
+
+                complex_val = prompt_all_parameter_values(inner_params, indent=indent + "  ")
+                param_values[param.short_name] = complex_val
+
+            elif param.is_settable:
+                primitive_val = prompt_primitive_parameter_value(param, indent)
+                if primitive_val is not None:
+                    param_values[param.short_name] = primitive_val
+
+    return param_values
 
 
 def encode_message_interactively(codec: Request | Response,
@@ -135,37 +171,31 @@ def encode_message_interactively(codec: Request | Response,
     ) or not sys.stdout.isatty():
         raise SystemError("This command can only be used in an interactive shell!")
 
-    answered_request = b''
-    if isinstance(codec, Response):
-        answered_request_prompt = [{
-            "type":
-                "input",
-            "name":
-                "request",
-            "message":
-                f"What is the request you want to answer? (Enter the coded request as integer in hexadecimal format (e.g. 12 3B 5)",
-            "filter":
-                lambda input: _convert_string_to_bytes(input),
-        }]
-        answer = IP_prompt(answered_request_prompt)
-        answered_request = cast(bytes, answer.get("request"))
-        rich_print(f"Input interpretation as list: {list(answered_request)}")
+    def has_settable_or_matching_request_param(params: list[Parameter]) -> tuple[bool, bool]:
+        has_settable_param = False
+        has_matching_request_param = False
+        for param in params:
+            if param.is_settable:
+                has_settable_param = True
+            if isinstance(param, MatchingRequestParameter):
+                has_matching_request_param = True
 
-    has_settable_param = False
-    for param in codec.parameters:
-        if not param.is_settable:
-            continue
+            # check nested parameters
+            dop = getattr(param, "dop", None)
+            inner_params = getattr(dop, "parameters", None)
+            if inner_params is not None:
+                inner_settable, inner_matching = \
+                    has_settable_or_matching_request_param(inner_params)
+                has_settable_param = has_settable_param or inner_settable
+                has_matching_request_param = has_matching_request_param or inner_matching
 
-        # TODO: Specifying complex parameters with nesting depth > 1
-        # is not possible yet
-        if (inner_params := getattr(getattr(param, "dop", None), "parameters", None)) is not None:
-            for inner_param in inner_params:
-                if inner_param.is_settable:
-                    has_settable_param = True
-        elif param.is_settable:
-            has_settable_param = True
+        return has_settable_param, has_matching_request_param
+
+    has_settable_param, has_matching_request_param = \
+        has_settable_or_matching_request_param(codec.parameters)
 
     param_values: ParameterValueDict = {}
+    answered_request = b''
     if has_settable_param:
         # Ask whether user wants to encode a message
         if ask_user_confirmation:
@@ -179,28 +209,23 @@ def encode_message_interactively(codec: Request | Response,
             if answer.get("yes_no_prompt") == "no":
                 return
 
-        # Query user for the values of all settable parameters
-        for param in codec.parameters:
-            if (inner_params := getattr(dop := getattr(param, "dop", None), "parameters",
-                                        None)) is not None:
-                assert isinstance(dop, DopBase)
-                inner_params = cast(list[Parameter], inner_params)
-                # param refers to a complex DOP, i.e., the required
-                # value is a key-value dict
-                rich_print(
-                    f"The next {len(inner_params)} parameters belong to the structure '{dop.short_name}'"
-                )
-                structure_param_values: ParameterValueDict = {}
-                for inner_param in inner_params:
-                    if inner_param.is_settable:
-                        val = prompt_single_parameter_value(inner_param)
-                        if val is not None:
-                            structure_param_values[inner_param.short_name] = val
-                param_values[param.short_name] = structure_param_values
-            elif param.is_settable:
-                val = prompt_single_parameter_value(param)
-                if val is not None:
-                    param_values[param.short_name] = val
+        # if the user wants to encode a message for a response and the
+        # response contains a matching request parameter, we need the
+        # corresponding request
+        if isinstance(codec, Response):
+            answered_request_prompt = [{
+                "type": "input",
+                "name": "request",
+                "message":
+                    "What is the request you want to answer? "
+                    "(Enter the coded request as integer in hexadecimal format (e.g. 12 3B 05)",
+                "filter": lambda input: _convert_string_to_bytes(input),
+            }]
+            answer = IP_prompt(answered_request_prompt)
+            answered_request = cast(bytes, answer.get("request"))
+            rich_print(f"Input interpretation as list: {list(answered_request)}")
+
+        param_values = prompt_all_parameter_values(codec.parameters)
 
         if isinstance(codec, Response):
             payload = codec.encode(coded_request=answered_request, **param_values)
@@ -227,8 +252,11 @@ def encode_message_from_string_values(
     # Check if all needed parameters have been specified
     missing_parameter_names = []
     for param in sub_service.parameters:
-        if (inner_params := getattr(dop := getattr(param, "dop", None), "parameters",
-                                    None)) is not None:
+        if not isinstance(param, ParameterWithDOP):
+            continue
+        dop = param.dop
+        if isinstance(dop, BasicStructure):
+            inner_params = dop.parameters
             inner_param_values = parameter_values.get(param.short_name, {})
             if not isinstance(inner_param_values, dict):
                 rich_print(f"Value for composite parameter {param.short_name} must be "
@@ -255,17 +283,22 @@ def encode_message_from_string_values(
 
         if isinstance(parameter_value, dict):
             # parameter_value refers to a structure (represented as dict of params)
-            dop = getattr(parameter, "dop", None)
-            inner_params = getattr(dop, "parameters", None)
-            assert isinstance(dop, ComplexDop)
-            assert isinstance(inner_params, list)
-            inner_params = cast(list[Parameter], inner_params)
+            if not isinstance(parameter, ParameterWithDOP):
+                rich_print(f"Parameter {parameter_sn} does not reference a DOP")
+                continue
+            param_dop = parameter.dop
+            raw_inner_params = getattr(param_dop, "parameters", None)
+            if not isinstance(raw_inner_params, list):
+                # the parameter's DOP does not exhibit sub-parameters
+                # (e.g. environment data descriptions)
+                continue
+            inner_params_list = cast(list[Parameter], raw_inner_params)
 
             typed_dict = parameter_value.copy()
             for inner_param_sn, inner_param_value in parameter_value.items():
                 if not isinstance(inner_param_sn, str):
                     odxraise(f"Expected string parameter name, got {type(inner_param_sn).__name__}")
-                inner_param = resolve_snref(inner_param_sn, inner_params, Parameter)
+                inner_param = resolve_snref(inner_param_sn, inner_params_list, Parameter)
                 if inner_param is None:
                     rich_print(f"Unknown sub-parameter {inner_param_sn}")
                     continue
