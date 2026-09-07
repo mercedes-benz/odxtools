@@ -5,6 +5,7 @@ import sys
 from typing import cast
 
 from InquirerPy.resolver import prompt as IP_prompt
+from InquirerPy.resolver import question_mapping
 from rich import print as rich_print
 
 from ..complexdop import ComplexDop
@@ -23,12 +24,14 @@ from ..parameters.parameterwithdop import ParameterWithDOP
 from ..parameters.valueparameter import ValueParameter
 from ..request import Request
 from ..response import Response
-from . import _parser_utils
+from . import _browse_utils, _parser_utils
 from ._parser_utils import SubparsersList
 from ._print_utils import build_parameter_table
 
 # name of the tool
 _odxtools_tool_name_ = "browse"
+
+question_mapping["list"] = _browse_utils._ListPromptWithCustomKeys
 
 
 def _convert_string_to_odx_type(string_value: str, odx_type: DataType) -> AtomicOdxType:
