@@ -8,7 +8,6 @@ from InquirerPy.resolver import prompt as IP_prompt
 from InquirerPy.resolver import question_mapping
 from rich import print as rich_print
 
-from ..basicstructure import BasicStructure
 from ..database import Database
 from ..dataobjectproperty import DataObjectProperty
 from ..diaglayers.diaglayer import DiagLayer
@@ -19,11 +18,9 @@ from ..environmentdatadescription import EnvironmentDataDescription
 from ..exceptions import OdxError, odxraise, odxrequire
 from ..field import Field
 from ..multiplexer import Multiplexer
-from ..odxlink import resolve_snref
 from ..odxtypes import AtomicOdxType, DataType, ParameterValue, ParameterValueDict
 from ..parameters.matchingrequestparameter import MatchingRequestParameter
 from ..parameters.parameter import Parameter
-from ..parameters.parameterwithdop import ParameterWithDOP
 from ..parameters.valueparameter import ValueParameter
 from ..request import Request
 from ..response import Response
@@ -276,101 +273,6 @@ def encode_message_interactively(codec: Request | Response,
             payload = codec.encode(coded_request=answered_request)
         else:
             payload = codec.encode()
-
-    rich_print(f"Message payload: 0x{bytes(payload).hex()}")
-
-
-def encode_message_from_string_values(
-    sub_service: Request | Response,
-    parameter_values: ParameterValueDict | None = None,
-) -> None:
-    if parameter_values is None:
-        parameter_values = {}
-    parameter_values = parameter_values.copy()
-
-    # Check if all needed parameters have been specified
-    missing_parameter_names = []
-    for param in sub_service.parameters:
-        if not isinstance(param, ParameterWithDOP):
-            continue
-        dop = param.dop
-        if isinstance(dop, BasicStructure):
-            inner_params = dop.parameters
-            inner_param_values = parameter_values.get(param.short_name, {})
-            if not isinstance(inner_param_values, dict):
-                rich_print(f"Value for composite parameter {param.short_name} must be "
-                           f"a dictionary, got {type(inner_param_values).__name__}")
-                continue
-            for inner_param in inner_params:
-                if inner_param.is_required and inner_param.short_name not in inner_param_values:
-                    missing_parameter_names.append(f"{param.short_name}.{inner_param.short_name}")
-        else:
-            if param.is_required and parameter_values.get(param.short_name) is None:
-                missing_parameter_names.append(param.short_name)
-
-    if len(missing_parameter_names) > 0:
-        rich_print("The following parameters are required but missing:")
-        rich_print(" - " + "\n - ".join(sorted(missing_parameter_names, key=str.lower)))
-        return
-
-    # Request values for parameters
-    for parameter_sn, parameter_value in parameter_values.items():
-        parameter = resolve_snref(parameter_sn, sub_service.parameters, Parameter)
-        if parameter is None:
-            rich_print(f"I don't know the parameter {parameter_sn}")
-            continue
-
-        if isinstance(parameter_value, dict):
-            # parameter_value refers to a structure (represented as dict of params)
-            if not isinstance(parameter, ParameterWithDOP):
-                rich_print(f"Parameter {parameter_sn} does not reference a DOP")
-                continue
-            param_dop = parameter.dop
-            raw_inner_params = getattr(param_dop, "parameters", None)
-            if not isinstance(raw_inner_params, list):
-                # the parameter's DOP does not exhibit sub-parameters
-                # (e.g. environment data descriptions)
-                continue
-            inner_params_list = cast(list[Parameter], raw_inner_params)
-
-            typed_dict = parameter_value.copy()
-            for inner_param_sn, inner_param_value in parameter_value.items():
-                if not isinstance(inner_param_sn, str):
-                    odxraise(f"Expected string parameter name, got {type(inner_param_sn).__name__}")
-                inner_param = resolve_snref(inner_param_sn, inner_params_list, Parameter)
-                if inner_param is None:
-                    rich_print(f"Unknown sub-parameter {inner_param_sn}")
-                    continue
-                if not isinstance(inner_param_value, str):
-                    rich_print(
-                        f"The value specified for parameter {inner_param_sn} is not a string")
-                    continue
-
-                if isinstance(inner_param,
-                              ParameterWithDOP) and inner_param.physical_type is not None:
-                    typed_dict[inner_param_sn] = _convert_string_to_odx_type(
-                        inner_param_value, inner_param.physical_type.base_data_type)
-            parameter_values[parameter.short_name] = typed_dict
-        else:
-            if not isinstance(parameter_value, str):
-                rich_print(f"Value for parameter {parameter_sn} is not a string")
-                continue
-
-            if isinstance(parameter, MatchingRequestParameter):
-                # values of MatchingRequestParameters do not need to
-                # be specified
-                continue
-
-            elif isinstance(parameter, ParameterWithDOP) and parameter.physical_type is not None:
-                parameter_values[parameter_sn] = _convert_string_to_odx_type(
-                    parameter_value,
-                    parameter.physical_type.base_data_type,
-                )
-            else:
-                rich_print(f"Cannot convert value for parameter {parameter_sn} because it has no "
-                           f"physical data type")
-
-    payload = sub_service.encode(coded_request=b'\xff' * 100, **parameter_values)
 
     rich_print(f"Message payload: 0x{bytes(payload).hex()}")
 
