@@ -12,7 +12,7 @@ from .dummy_sub_parser import DummyTool
 # import the tool modules which can be loaded. if a tool
 # can't be loaded, add a dummy one
 tool_modules: list[Any] = []
-for tool_name in ["list", "browse", "snoop", "find", "decode", "compare"]:
+for tool_name in ["list", "browse", "snoop", "find", "decode", "compare", "check"]:
     try:
         tool_modules.append(importlib.import_module(f".{tool_name}", package="odxtools.cli"))
     except Exception as e:
