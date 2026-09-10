@@ -232,7 +232,7 @@ def encode_message_interactively(codec: Request | Response,
 
     param_values: ParameterValueDict = {}
     answered_request = b''
-    if has_settable_param:
+    if has_settable_param or has_matching_request_param:
         # Ask whether user wants to encode a message
         if ask_user_confirmation:
             encode_message_prompt = [{
@@ -245,34 +245,31 @@ def encode_message_interactively(codec: Request | Response,
             if answer.get("yes_no_prompt") == "no":
                 return
 
+    answered_request = b""
+    if has_matching_request_param:
         # if the user wants to encode a message for a response and the
         # response contains a matching request parameter, we need the
         # corresponding request
-        if isinstance(codec, Response):
-            answered_request_prompt = [{
-                "type": "input",
-                "name": "request",
-                "message":
-                    "What is the request you want to answer? "
-                    "(Enter the coded request as integer in hexadecimal format (e.g. 12 3B 05)",
-                "filter": lambda input: _convert_string_to_bytes(input),
-            }]
-            answer = IP_prompt(answered_request_prompt)
-            answered_request = cast(bytes, answer.get("request"))
-            rich_print(f"Input interpretation as list: {list(answered_request)}")
+        answered_request_prompt = [{
+            "type": "input",
+            "name": "request",
+            "message":
+            "What is the request you want to answer? "
+            "(Enter the coded request as integer in hexadecimal format (e.g. 12 3B 05)",
+            "filter": lambda input: _convert_string_to_bytes(input),
+        }]
+        answer = IP_prompt(answered_request_prompt)
+        answered_request = cast(bytes, answer.get("request"))
+        rich_print(f"Input interpretation as list: {list(answered_request)}")
 
+    param_values = {}
+    if has_settable_param:
         param_values = prompt_all_parameter_values(codec.parameters)
 
-        if isinstance(codec, Response):
-            payload = codec.encode(coded_request=answered_request, **param_values)
-        else:
-            payload = codec.encode(**param_values)
+    if isinstance(codec, Response):
+        payload = codec.encode(coded_request=answered_request, **param_values)
     else:
-        # There are no settable parameters -> Just print message
-        if isinstance(codec, Response):
-            payload = codec.encode(coded_request=answered_request)
-        else:
-            payload = codec.encode()
+        payload = codec.encode(**param_values)
 
     rich_print(f"Message payload: 0x{bytes(payload).hex()}")
 
