@@ -12,8 +12,10 @@ from ..database import Database
 from ..dataobjectproperty import DataObjectProperty
 from ..diaglayers.diaglayer import DiagLayer
 from ..diaglayers.hierarchyelement import HierarchyElement
+from ..diagnostictroublecode import DiagnosticTroubleCode
 from ..diagservice import DiagService
 from ..dopbase import DopBase
+from ..dtcdop import DtcDop
 from ..environmentdatadescription import EnvironmentDataDescription
 from ..exceptions import OdxError, odxraise, odxrequire
 from ..field import Field
@@ -55,7 +57,27 @@ def _validate_chosen_value(input_val: ParameterValue, dop: DopBase, is_required:
     if not is_required and (input_val == "" or input_val is None):
         return True
 
-    if isinstance(dop, DataObjectProperty):
+    if isinstance(dop, DtcDop):
+        if isinstance(input_val, DiagnosticTroubleCode) or any(
+                dtc.short_name == input_val for dtc in dop.dtcs):
+            return True
+
+        # DTC specified as display_trouble_code
+        if any(dtc.display_trouble_code == input_val for dtc in dop.dtcs):
+            return True
+
+        # DTC specified as numeric value?
+        if isinstance(input_val, (int, float)):
+            trouble_code = int(input_val)
+        else:
+            assert isinstance(input_val, str)
+            try:
+                trouble_code = int(input_val, 0)
+            except ValueError:
+                return False
+        return any(dtc.trouble_code == trouble_code for dtc in dop.dtcs)
+
+    elif isinstance(dop, DataObjectProperty):
         if isinstance(input_val, str):
             try:
                 phys_type = odxrequire(dop.physical_type)
@@ -65,6 +87,7 @@ def _validate_chosen_value(input_val: ParameterValue, dop: DopBase, is_required:
             return dop.is_valid_physical_value(converted_val)
 
         return dop.is_valid_physical_value(input_val)
+
     else:
         raise NotImplementedError(f"Validation of {dop.__class__.__name__} DOPs")
 
@@ -76,7 +99,7 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
         return None
 
     dop = parameter.dop
-    type_name = parameter.physical_type.base_data_type
+    type_name = "DTC" if isinstance(dop, DtcDop) else parameter.physical_type.base_data_type
     param_prompt = [{
         "type": "input",
         "name": parameter.short_name,
@@ -92,8 +115,27 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
         if internal_to_phys is not None and internal_to_phys.compu_default_value is not None:
             default_value = internal_to_phys.compu_default_value.value
 
+    # if the parameter refers to a DTC-DOP, list the available DTCs
+    if isinstance(dop, DtcDop) and len(dop.dtcs) > 0:
+        dtc_choices: list[dict[str, Any]] = [{
+            "name": f"{dtc.short_name} (0x{dtc.trouble_code:06x}): {dtc.text}",
+            "value": dtc,
+        } for dtc in dop.dtcs]
+        if not parameter.is_required:
+            dtc_choices.insert(0, {"name": "[none]", "value": None})
+
+        param_prompt[0]["type"] = "list"
+        param_prompt[0]["choices"] = dtc_choices
+
+        # pre-select the default DTC if available
+        if isinstance(default_value, int):
+            for dtc in dop.dtcs:
+                if dtc.trouble_code == default_value:
+                    param_prompt[0]["default"] = dtc
+                    break
+
     # if the parameter is a texttable, list the possible choices
-    if (compu_method := getattr(dop, "compu_method", None)) is not None and \
+    elif (compu_method := getattr(dop, "compu_method", None)) is not None and \
        (citp := getattr(compu_method, "compu_internal_to_phys", None)) is not None:
 
         texttable_choices: list[dict[str, Any]] = [
@@ -160,6 +202,8 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
             return empty_phys_val
 
         return None
+    elif isinstance(raw_answer, DiagnosticTroubleCode):
+        return raw_answer.trouble_code
     elif not isinstance(raw_answer, str):
         return cast(AtomicOdxType, raw_answer)
     elif parameter.physical_type.base_data_type is not None:
