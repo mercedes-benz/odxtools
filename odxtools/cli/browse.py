@@ -2,27 +2,25 @@
 import argparse
 import logging
 import sys
-from typing import cast
+from typing import Any, cast
 
 from InquirerPy.resolver import prompt as IP_prompt
 from InquirerPy.resolver import question_mapping
 from rich import print as rich_print
 
-from ..basicstructure import BasicStructure
 from ..database import Database
 from ..dataobjectproperty import DataObjectProperty
 from ..diaglayers.diaglayer import DiagLayer
 from ..diaglayers.hierarchyelement import HierarchyElement
 from ..diagservice import DiagService
+from ..dopbase import DopBase
 from ..environmentdatadescription import EnvironmentDataDescription
-from ..exceptions import odxraise
+from ..exceptions import OdxError, odxraise, odxrequire
 from ..field import Field
 from ..multiplexer import Multiplexer
-from ..odxlink import resolve_snref
-from ..odxtypes import AtomicOdxType, DataType, ParameterValueDict
+from ..odxtypes import AtomicOdxType, DataType, ParameterValue, ParameterValueDict
 from ..parameters.matchingrequestparameter import MatchingRequestParameter
 from ..parameters.parameter import Parameter
-from ..parameters.parameterwithdop import ParameterWithDOP
 from ..parameters.valueparameter import ValueParameter
 from ..request import Request
 from ..response import Response
@@ -53,81 +51,119 @@ def _convert_string_to_bytes(string_value: str) -> bytes:
         return int(string_value, 16).to_bytes((int(string_value, 16).bit_length() + 7) // 8, "big")
 
 
-def _validate_chosen_value(input_val: AtomicOdxType, parameter: Parameter) -> bool:
-    if not parameter.is_required and (input_val == "" or input_val is None):
+def _validate_chosen_value(input_val: ParameterValue, dop: DopBase, is_required: bool) -> bool:
+    if not is_required and (input_val == "" or input_val is None):
         return True
-    elif isinstance(parameter, ParameterWithDOP):
-        dop = parameter.dop
-        if isinstance(dop, DataObjectProperty):
-            if isinstance(input_val, str):
-                base_data_type = dop.physical_type.base_data_type
-                if base_data_type is None:
-                    return input_val != ""
-                try:
-                    converted_val = _convert_string_to_odx_type(input_val, base_data_type)
-                except ValueError:
-                    return False
-                return dop.is_valid_physical_value(converted_val)
-            return dop.is_valid_physical_value(input_val)
-        else:
-            raise NotImplementedError(f"Validation of {dop.__class__.__name__} DOPs")
+
+    if isinstance(dop, DataObjectProperty):
+        if isinstance(input_val, str):
+            try:
+                phys_type = odxrequire(dop.physical_type)
+                converted_val = _convert_string_to_odx_type(input_val, phys_type.base_data_type)
+            except (OdxError, ValueError, TypeError):
+                return False
+            return dop.is_valid_physical_value(converted_val)
+
+        return dop.is_valid_physical_value(input_val)
     else:
-        logging.info(f"Parameter's '{parameter}' value not validated")
-        return input_val != ""
+        raise NotImplementedError(f"Validation of {dop.__class__.__name__} DOPs")
 
 
-def prompt_primitive_parameter_value(parameter: Parameter, indent: str) -> AtomicOdxType | None:
-    if not isinstance(parameter, ValueParameter):
-        odxraise("Only the value of ValueParameters can be queried")
+def prompt_primitive_parameter_value(parameter: ValueParameter,
+                                     indent: str = "") -> AtomicOdxType | None:
     if parameter.physical_type is None:
         odxraise("Only ValueParameters which define a physical data type can be queried")
+        return None
 
-    # TODO: add valid choices for the parameter
-    #        "choices": parameter.get_valid_physical_values(),
+    dop = parameter.dop
+    type_name = parameter.physical_type.base_data_type
     param_prompt = [{
-        "type":
-            "input",
-        "name":
-            parameter.short_name,
-        "message":
-            f"{indent}Value for parameter '{parameter.short_name}' (Type: {parameter.physical_type.base_data_type})"
-            + (f"[optional]" if not parameter.is_required else ""),
-        # TODO: improve validation
-        "validate":
-            lambda x: _validate_chosen_value(x, parameter),
-        # TODO: do type conversion?
-        "filter":
-            lambda x: x
-        # x if x == "" or p.physical_type.base_data_type is None
-        # else _convert_string_to_odx_type(x, p.physical_type.base_data_type, param=p) # This does not work because the next parameter to be promted is used (for some reason?)
+        "type": "input",
+        "name": parameter.short_name,
+        "message": f"{indent}Value for parameter '{parameter.short_name}' "
+                   f"(Type: {type_name})" + (" [optional]" if not parameter.is_required else ""),
+        "validate": lambda x: _validate_chosen_value(x, dop, parameter.is_required),
     }]
 
-    if (dop := getattr(parameter, "dop", None)) is not None and \
-       (compu_method := getattr(dop, "compu_method", None)) is not None and \
+    # determine the default value to pre-select if a list of choices is shown
+    default_value: AtomicOdxType | None = parameter.physical_default_value
+    if default_value is None and isinstance(dop, DataObjectProperty):
+        internal_to_phys = dop.compu_method.compu_internal_to_phys
+        if internal_to_phys is not None and internal_to_phys.compu_default_value is not None:
+            default_value = internal_to_phys.compu_default_value.value
+
+    # if the parameter is a texttable, list the possible choices
+    if (compu_method := getattr(dop, "compu_method", None)) is not None and \
        (citp := getattr(compu_method, "compu_internal_to_phys", None)) is not None:
 
-        choices = [
-            scale.compu_const.value
+        texttable_choices: list[dict[str, Any]] = [
+            {
+                "name": scale.compu_const.value,
+                "value": scale.compu_const.value,
+            }
             for scale in citp.compu_scales
             if scale.compu_const is not None and scale.compu_const.value is not None
         ]
 
         if (cdv := citp.compu_default_value) is not None and cdv.value is not None:
-            choices.append(cdv.value)
+            texttable_choices.append({
+                "name": f"[default] ({cdv.value})",
+                "value": cdv.value,
+            })
+            param_prompt[0]["default"] = cdv.value
 
-        if choices:
+        if texttable_choices:
             param_prompt[0]["type"] = "list"
-            param_prompt[0]["choices"] = choices
+            param_prompt[0]["choices"] = texttable_choices
 
+    # query user for answer
     answer = IP_prompt(param_prompt)
     raw_answer = answer.get(parameter.short_name)
-    if raw_answer == "" and not parameter.is_required:
+
+    if raw_answer in ("", None):
+        if raw_answer == "" and parameter.is_required:
+            # For required parameters, an empty input represents the empty
+            # value of the parameter's data type (e.g., b'' for byte fields).
+            if parameter.physical_type.base_data_type is not None:
+                try:
+                    return _convert_string_to_odx_type("", parameter.physical_type.base_data_type)
+                except (OdxError, ValueError, TypeError):
+                    return None
+            return None
+
+        # For optional parameters, determine the default value and ask
+        # the user whether they meant the default or the empty value.
+        if isinstance(dop, DataObjectProperty):
+            try:
+                empty_phys_val = _convert_string_to_odx_type("",
+                                                             parameter.physical_type.base_data_type)
+            except (OdxError, ValueError, TypeError):
+                empty_phys_val = None
+
+            if empty_phys_val != default_value:
+                # ask user if they mean the default or the empty value
+                message_prompt = [{
+                    "type":
+                        "list",
+                    "name":
+                        "default_empty_prompt",
+                    "message":
+                        f"Do you want to use the parameter's default value ({default_value!r}) or the empty value?",
+                    "choices": ["default", "empty"],
+                }]
+                answer = IP_prompt(message_prompt)
+                if answer.get("default_empty_prompt") == "default":
+                    return None
+                else:
+                    return empty_phys_val
+
+            return empty_phys_val
+
         return None
     elif not isinstance(raw_answer, str):
-        # list prompt already returns the physical value directly
         return cast(AtomicOdxType, raw_answer)
-    elif (base_data_type := parameter.physical_type.base_data_type) is not None:
-        return _convert_string_to_odx_type(raw_answer, base_data_type)
+    elif parameter.physical_type.base_data_type is not None:
+        return _convert_string_to_odx_type(raw_answer, parameter.physical_type.base_data_type)
     else:
         logging.warning(f"Parameter {parameter.short_name} does not have a physical data type.")
         return cast(str, raw_answer)
@@ -196,137 +232,43 @@ def encode_message_interactively(codec: Request | Response,
 
     param_values: ParameterValueDict = {}
     answered_request = b''
-    if has_settable_param:
+    if has_settable_param or has_matching_request_param:
         # Ask whether user wants to encode a message
         if ask_user_confirmation:
             encode_message_prompt = [{
                 "type": "list",
                 "name": "yes_no_prompt",
-                "message": f"Do you want to encode a message? [y/n]",
+                "message": f"Do you want to encode a message?",
                 "choices": ["yes", "no"],
             }]
             answer = IP_prompt(encode_message_prompt)
             if answer.get("yes_no_prompt") == "no":
                 return
 
+    answered_request = b""
+    if has_matching_request_param:
         # if the user wants to encode a message for a response and the
         # response contains a matching request parameter, we need the
         # corresponding request
-        if isinstance(codec, Response):
-            answered_request_prompt = [{
-                "type": "input",
-                "name": "request",
-                "message":
-                    "What is the request you want to answer? "
-                    "(Enter the coded request as integer in hexadecimal format (e.g. 12 3B 05)",
-                "filter": lambda input: _convert_string_to_bytes(input),
-            }]
-            answer = IP_prompt(answered_request_prompt)
-            answered_request = cast(bytes, answer.get("request"))
-            rich_print(f"Input interpretation as list: {list(answered_request)}")
+        answered_request_prompt = [{
+            "type": "input",
+            "name": "request",
+            "message": "What is the request you want to answer? "
+                       "(Enter the coded request as integer in hexadecimal format (e.g. 12 3B 05)",
+            "filter": lambda input: _convert_string_to_bytes(input),
+        }]
+        answer = IP_prompt(answered_request_prompt)
+        answered_request = cast(bytes, answer.get("request"))
+        rich_print(f"Input interpretation as list: {list(answered_request)}")
 
+    param_values = {}
+    if has_settable_param:
         param_values = prompt_all_parameter_values(codec.parameters)
 
-        if isinstance(codec, Response):
-            payload = codec.encode(coded_request=answered_request, **param_values)
-        else:
-            payload = codec.encode(**param_values)
+    if isinstance(codec, Response):
+        payload = codec.encode(coded_request=answered_request, **param_values)
     else:
-        # There are no settable parameters -> Just print message
-        if isinstance(codec, Response):
-            payload = codec.encode(coded_request=answered_request)
-        else:
-            payload = codec.encode()
-
-    rich_print(f"Message payload: 0x{bytes(payload).hex()}")
-
-
-def encode_message_from_string_values(
-    sub_service: Request | Response,
-    parameter_values: ParameterValueDict | None = None,
-) -> None:
-    if parameter_values is None:
-        parameter_values = {}
-    parameter_values = parameter_values.copy()
-
-    # Check if all needed parameters have been specified
-    missing_parameter_names = []
-    for param in sub_service.parameters:
-        if not isinstance(param, ParameterWithDOP):
-            continue
-        dop = param.dop
-        if isinstance(dop, BasicStructure):
-            inner_params = dop.parameters
-            inner_param_values = parameter_values.get(param.short_name, {})
-            if not isinstance(inner_param_values, dict):
-                rich_print(f"Value for composite parameter {param.short_name} must be "
-                           f"a dictionary, got {type(inner_param_values).__name__}")
-                continue
-            for inner_param in inner_params:
-                if inner_param.is_required and inner_param.short_name not in inner_param_values:
-                    missing_parameter_names.append(f"{param.short_name}.{inner_param.short_name}")
-        else:
-            if param.is_required and parameter_values.get(param.short_name) is None:
-                missing_parameter_names.append(param.short_name)
-
-    if len(missing_parameter_names) > 0:
-        rich_print("The following parameters are required but missing:")
-        rich_print(" - " + "\n - ".join(sorted(missing_parameter_names, key=str.lower)))
-        return
-
-    # Request values for parameters
-    for parameter_sn, parameter_value in parameter_values.items():
-        parameter = resolve_snref(parameter_sn, sub_service.parameters, Parameter)
-        if parameter is None:
-            rich_print(f"I don't know the parameter {parameter_sn}")
-            continue
-
-        if isinstance(parameter_value, dict):
-            # parameter_value refers to a structure (represented as dict of params)
-            if not isinstance(parameter, ParameterWithDOP):
-                rich_print(f"Parameter {parameter_sn} does not reference a DOP")
-                continue
-            param_dop = parameter.dop
-            raw_inner_params = getattr(param_dop, "parameters", None)
-            if not isinstance(raw_inner_params, list):
-                # the parameter's DOP does not exhibit sub-parameters
-                # (e.g. environment data descriptions)
-                continue
-            inner_params_list = cast(list[Parameter], raw_inner_params)
-
-            typed_dict = parameter_value.copy()
-            for inner_param_sn, inner_param_value in parameter_value.items():
-                if not isinstance(inner_param_sn, str):
-                    odxraise(f"Expected string parameter name, got {type(inner_param_sn).__name__}")
-                inner_param = resolve_snref(inner_param_sn, inner_params_list, Parameter)
-                if inner_param is None:
-                    rich_print(f"Unknown sub-parameter {inner_param_sn}")
-                    continue
-                if not isinstance(inner_param_value, str):
-                    rich_print(
-                        f"The value specified for parameter {inner_param_sn} is not a string")
-                    continue
-
-                if isinstance(inner_param,
-                              ParameterWithDOP) and inner_param.physical_type is not None:
-                    typed_dict[inner_param_sn] = _convert_string_to_odx_type(
-                        inner_param_value, inner_param.physical_type.base_data_type)
-            parameter_values[parameter.short_name] = typed_dict
-        else:
-            if not isinstance(parameter_value, str):
-                rich_print(f"Value for parameter {parameter_sn} is not a string")
-                continue
-
-            if not isinstance(parameter, MatchingRequestParameter):
-                parameter_values[parameter_sn] = _convert_string_to_odx_type(
-                    parameter_value,
-                    parameter.physical_type.base_data_type,  # type: ignore[attr-defined]
-                )
-            else:
-                parameter_values[parameter_sn] = _convert_string_to_odx_type(
-                    parameter_value, DataType.A_BYTEFIELD)
-
-    payload = sub_service.encode(coded_request=b'\xff' * 100, **parameter_values)
+        payload = codec.encode(**param_values)
 
     rich_print(f"Message payload: 0x{bytes(payload).hex()}")
 
