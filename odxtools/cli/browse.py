@@ -16,16 +16,25 @@ from ..diagnostictroublecode import DiagnosticTroubleCode
 from ..diagservice import DiagService
 from ..dopbase import DopBase
 from ..dtcdop import DtcDop
+from ..environmentdata import EnvironmentData
 from ..environmentdatadescription import EnvironmentDataDescription
 from ..exceptions import OdxError, odxraise, odxrequire
 from ..field import Field
 from ..multiplexer import Multiplexer
+from ..multiplexercase import MultiplexerCase
+from ..multiplexerdefaultcase import MultiplexerDefaultCase
+from ..odxlink import resolve_snref
 from ..odxtypes import AtomicOdxType, DataType, ParameterValue, ParameterValueDict
 from ..parameters.matchingrequestparameter import MatchingRequestParameter
 from ..parameters.parameter import Parameter
+from ..parameters.parameterwithdop import ParameterWithDOP
+from ..parameters.tablekeyparameter import TableKeyParameter
+from ..parameters.tablestructparameter import TableStructParameter
 from ..parameters.valueparameter import ValueParameter
 from ..request import Request
 from ..response import Response
+from ..staticfield import StaticField
+from ..structure import Structure
 from . import _browse_utils, _parser_utils
 from ._parser_utils import SubparsersList
 from ._print_utils import build_parameter_table
@@ -135,8 +144,8 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
                     break
 
     # if the parameter is a texttable, list the possible choices
-    elif (compu_method := getattr(dop, "compu_method", None)) is not None and \
-       (citp := getattr(compu_method, "compu_internal_to_phys", None)) is not None:
+    elif isinstance(dop, DataObjectProperty) and \
+       (citp := dop.compu_method.compu_internal_to_phys) is not None:
 
         texttable_choices: list[dict[str, Any]] = [
             {
@@ -149,7 +158,7 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
 
         if (cdv := citp.compu_default_value) is not None and cdv.value is not None:
             texttable_choices.append({
-                "name": f"[default] ({cdv.value})",
+                "name": f"[default] ({cdv.value!r})",
                 "value": cdv.value,
             })
             param_prompt[0]["default"] = cdv.value
@@ -213,6 +222,251 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
         return cast(str, raw_answer)
 
 
+def prompt_field_parameter_value(parameter: ValueParameter,
+                                 indent: str = "") -> list[ParameterValueDict]:
+    """Query the user for the value of a parameter that references a field."""
+    dop = parameter.dop
+    if not isinstance(dop, Field):
+        odxraise(f"Expected a Field DOP for parameter '{parameter.short_name}'")
+        return []
+
+    structure = dop.structure
+    inner_params = structure.parameters
+
+    result: list[ParameterValueDict] = []
+    if isinstance(dop, StaticField):
+        n_items = dop.fixed_number_of_items
+        for i in range(n_items):
+            rich_print(f"{indent}Item {i + 1}/{n_items} of field '{parameter.short_name}'")
+            item_val = prompt_all_parameter_values(inner_params, indent=indent + "  ")
+            result.append(item_val)
+        return result
+
+    # dynamically-sized list of items
+    min_items = dop.minimum_number_of_items
+    max_items = dop.maximum_number_of_items
+
+    while True:
+        i = len(result)
+        rich_print(f"{indent}Item {i + 1} of field '{parameter.short_name}'")
+        item_val = prompt_all_parameter_values(inner_params, indent=indent + "  ")
+        result.append(item_val)
+
+        if max_items is not None and len(result) >= max_items:
+            break
+
+        if len(result) >= min_items:
+            add_another_prompt = [{
+                "type": "list",
+                "name": "add_another",
+                "message": f"{indent}Add another item to field '{parameter.short_name}'?",
+                "choices": ["yes", "no"],
+                "default": "yes" if len(result) < min_items else "no",
+            }]
+            answer = IP_prompt(add_another_prompt)
+            if answer.get("add_another") == "no":
+                break
+
+    return result
+
+
+def prompt_env_data_desc_parameter_value(parameter: ValueParameter,
+                                         sibling_params: list[Parameter],
+                                         param_values: ParameterValueDict,
+                                         indent: str = "") -> ParameterValueDict:
+    """Query the user for the value of a parameter that references an environment data description."""
+    dop = parameter.dop
+    if not isinstance(dop, EnvironmentDataDescription):
+        odxraise(
+            f"Expected an EnvironmentDataDescription DOP for parameter '{parameter.short_name}'")
+        return {}
+
+    # Determine the environment data objects that are applicable for
+    # the DTC value of the referenced parameter.
+    applicable_env_datas: list[EnvironmentData] = dop.env_datas
+    if dop.param_snpathref is not None:
+        raise NotImplementedError(f"Specifying the DOP parameter via SNPATHREF in "
+                                  f"environment data description '{parameter.short_name} "
+                                  f"is not yet implemented.")
+
+    if dop.param_snref is not None:
+        dtc_param = resolve_snref(dop.param_snref, sibling_params, Parameter)
+        if dtc_param is None:
+            raise OdxError(f"Could not find parameter '{dop.param_snref}' referenced by "
+                           f"environment data description '{dop.short_name}'")
+        else:
+            dtc_value = param_values.get(dop.param_snref)
+            numerical_dtc = dop._get_numerical_dtc_from_parameter(dtc_param, dtc_value)
+            applicable_env_datas = [
+                ed for ed in dop.env_datas if ed.all_value or numerical_dtc in ed.dtc_values
+            ]
+
+    # Collect the union of all parameters of the applicable environment data objects.
+    all_inner_params: list[Parameter] = []
+    seen_param_names: set[str] = set()
+    for env_data in applicable_env_datas:
+        for inner_param in env_data.parameters:
+            if inner_param.short_name not in seen_param_names:
+                seen_param_names.add(inner_param.short_name)
+                all_inner_params.append(inner_param)
+
+    if all_inner_params:
+        rich_print(f"{indent}Parameters for environment data description '{dop.short_name}':")
+
+    return prompt_all_parameter_values(all_inner_params, indent=indent + "  ")
+
+
+def prompt_multiplexer_parameter_value(parameter: ValueParameter,
+                                       indent: str = "") -> tuple[str, ParameterValueDict]:
+    """Query the user for the value of a parameter that references a multiplexer."""
+    dop = parameter.dop
+    if not isinstance(dop, Multiplexer):
+        odxraise(f"Expected a Multiplexer DOP for parameter '{parameter.short_name}'")
+        return ("", {})
+
+    choices: list[str | dict[str, str]] = []
+    for cur_mux_case in dop.cases:
+        case_dop = cur_mux_case.structure
+        assert case_dop is not None
+        choices.append({
+            "name": f"{cur_mux_case.short_name} ({case_dop.short_name})",
+            "value": cur_mux_case.short_name,
+        })
+    if dop.default_case is not None:
+        choices.append({
+            "name": f"{dop.default_case.short_name} (default)",
+            "value": dop.default_case.short_name,
+        })
+
+    if not choices:
+        odxraise(f"Multiplexer '{dop.short_name}' does not contain any cases")
+        return ("", {})
+
+    prompt = [{
+        "type": "list",
+        "name": parameter.short_name,
+        "message": f"{indent}Select case for multiplexer parameter '{parameter.short_name}'",
+        "choices": choices,
+    }]
+    answer = IP_prompt(prompt)
+    case_name = answer.get(parameter.short_name)
+    if not isinstance(case_name, str):
+        odxraise(f"Expected string case name, got {type(case_name).__name__}")
+        return ("", {})
+
+    candidate_cases = [c for c in dop.cases if c.short_name == case_name]
+    mux_case: MultiplexerCase | MultiplexerDefaultCase
+    if len(candidate_cases) == 1:
+        mux_case = candidate_cases[0]
+    elif dop.default_case is not None and dop.default_case.short_name == case_name:
+        mux_case = dop.default_case
+    else:
+        odxraise(f"Could not find unique case '{case_name}' in multiplexer '{dop.short_name}'")
+        return (case_name, {})
+
+    case_value: ParameterValueDict
+    if mux_case.structure is not None:
+        rich_print(f"{indent}Parameters for case '{mux_case.short_name}':")
+        case_value = prompt_all_parameter_values(
+            mux_case.structure.parameters, indent=indent + "  ")
+    else:
+        case_value = {}
+
+    return (case_name, case_value)
+
+
+def prompt_table_key_parameter_value(parameter: TableKeyParameter, indent: str = "") -> str:
+    """Query the user for the value of a table key parameter."""
+
+    if parameter.table_row is not None:
+        # the table row is statically specified
+        return parameter.table_row.short_name
+
+    table = parameter.table
+    choices = [tr.short_name for tr in table.table_rows]
+    if not choices:
+        odxraise(f"Table '{table.short_name}' does not contain any rows")
+        return ""
+
+    prompt = [{
+        "type": "list",
+        "name": parameter.short_name,
+        "message": f"{indent}Select table row for parameter '{parameter.short_name}'",
+        "choices": choices,
+    }]
+    answer = IP_prompt(prompt)
+    result = answer.get(parameter.short_name)
+    if not isinstance(result, str):
+        odxraise(f"Expected string table row name, got {type(result).__name__}")
+        return ""
+    return result
+
+
+def prompt_table_struct_parameter_value(parameter: TableStructParameter,
+                                        param_values: ParameterValueDict,
+                                        indent: str = ""
+                                       ) -> tuple[str, AtomicOdxType | ParameterValueDict]:
+    """Query the user for the value of a table struct parameter."""
+
+    table_key = parameter.table_key
+    table = table_key.table
+
+    # if the table key has a statically specified row, use it
+    if table_key.table_row is not None:
+        row_short_name = table_key.table_row.short_name
+    else:
+        # use the value of the corresponding table key parameter
+        key_value = param_values.get(table_key.short_name)
+        if not isinstance(key_value, str):
+            odxraise(f"Cannot determine table row for parameter '{parameter.short_name}': "
+                     f"No value has been specified for the associated table key "
+                     f"'{table_key.short_name}'")
+            return ("", {})
+        row_short_name = key_value
+
+    # find the selected table row
+    candidate_rows = [tr for tr in table.table_rows if tr.short_name == row_short_name]
+    if len(candidate_rows) != 1:
+        odxraise(
+            f"Could not find unique table row '{row_short_name}' in table '{table.short_name}'")
+        return (row_short_name, {})
+    table_row = candidate_rows[0]
+
+    # prompt for the value of the row's structure or DOP
+    row_value: AtomicOdxType | ParameterValueDict
+    if table_row.structure is not None:
+        rich_print(f"{indent}Parameters for table row '{table_row.short_name}':")
+        row_value = prompt_all_parameter_values(
+            table_row.structure.parameters, indent=indent + "  ")
+    elif table_row.dop is not None:
+        # the row references a simple DOP -> prompt for a primitive value
+        row_dop = table_row.dop
+        phys_type = row_dop.physical_type
+        if phys_type is None:
+            odxraise(f"Table row '{table_row.short_name}' does not have a physical type")
+            return (row_short_name, {})
+
+        param_prompt = [{
+            "type": "input",
+            "name": "row_value",
+            "message": f"{indent}Value for table row '{table_row.short_name}' "
+                       f"(Type: {phys_type.base_data_type})",
+            "validate": lambda x: _validate_chosen_value(x, row_dop, is_required=True),
+            "filter": lambda x: x,
+        }]
+        answer = IP_prompt(param_prompt)
+        raw_answer = answer.get("row_value")
+        if not isinstance(raw_answer, str):
+            odxraise(f"Expected string value, got {type(raw_answer).__name__}")
+            return (row_short_name, {})
+        row_value = _convert_string_to_odx_type(raw_answer, phys_type.base_data_type)
+    else:
+        odxraise(f"Table row '{table_row.short_name}' does not reference a structure or a DOP")
+        return (row_short_name, {})
+
+    return (row_short_name, row_value)
+
+
 def prompt_all_parameter_values(params: list[Parameter], indent: str = "") -> ParameterValueDict:
     """Query the user for the values of all settable parameters of a list of parameters
     """
@@ -221,26 +475,33 @@ def prompt_all_parameter_values(params: list[Parameter], indent: str = "") -> Pa
     for param in params:
         if isinstance(param, ValueParameter):
             dop = param.dop
+
             if isinstance(dop, Field):
-                odxraise("Encoding field parameters is currently not supported")
+                param_values[param.short_name] = prompt_field_parameter_value(param, indent)
             elif isinstance(dop, Multiplexer):
-                odxraise("Encoding multiplexer parameters is currently not supported")
+                param_values[param.short_name] = prompt_multiplexer_parameter_value(param, indent)
             elif isinstance(dop, EnvironmentDataDescription):
-                odxraise(
-                    "Encoding environment data description parameters is currently not supported")
-            elif (inner_params := getattr(dop, "parameters", None)) is not None:
-                # param refers to a complex DOP, i.e., the required
-                # value is a key-value dict
-                inner_params = cast(list[Parameter], inner_params)
-                rich_print(f"{indent}Parameters for structure '{dop.short_name}':")
+                param_values[param.short_name] = prompt_env_data_desc_parameter_value(
+                    param, params, param_values, indent)
+            elif isinstance(dop, Structure):
+                # param uses a structure as its DOP, i.e., we need to
+                # retrieve the values for it recursively
+                inner_params = dop.parameters
+                rich_print(f"{indent}Parameters belong for structure '{dop.short_name}':")
 
-                complex_val = prompt_all_parameter_values(inner_params, indent=indent + "  ")
-                param_values[param.short_name] = complex_val
-
+                val = prompt_all_parameter_values(inner_params, indent=indent + "  ")
+                param_values[param.short_name] = val
             elif param.is_settable:
                 primitive_val = prompt_primitive_parameter_value(param, indent)
                 if primitive_val is not None:
                     param_values[param.short_name] = primitive_val
+
+        elif isinstance(param, TableKeyParameter):
+            param_values[param.short_name] = prompt_table_key_parameter_value(param, indent)
+
+        elif isinstance(param, TableStructParameter):
+            param_values[param.short_name] = prompt_table_struct_parameter_value(
+                param, param_values, indent)
 
     return param_values
 
@@ -260,9 +521,25 @@ def encode_message_interactively(codec: Request | Response,
             if isinstance(param, MatchingRequestParameter):
                 has_matching_request_param = True
 
+            if not isinstance(param, ParameterWithDOP):
+                continue
+
             # check nested parameters
-            dop = getattr(param, "dop", None)
-            inner_params = getattr(dop, "parameters", None)
+            inner_params: list[Parameter] | None = None
+            dop = param.dop
+            if isinstance(dop, Field):
+                inner_params = dop.structure.parameters
+            elif isinstance(dop, Structure):
+                inner_params = dop.parameters
+            elif isinstance(dop, EnvironmentDataDescription):
+                inner_params = []
+                seen_param_names: set[str] = set()
+                for env_data in dop.env_datas:
+                    for inner_param in env_data.parameters:
+                        if inner_param.short_name not in seen_param_names:
+                            seen_param_names.add(inner_param.short_name)
+                            inner_params.append(inner_param)
+
             if inner_params is not None:
                 inner_settable, inner_matching = \
                     has_settable_or_matching_request_param(inner_params)

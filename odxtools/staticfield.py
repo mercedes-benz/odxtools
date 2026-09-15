@@ -23,6 +23,14 @@ class StaticField(Field):
     fixed_number_of_items: int
     item_byte_size: int
 
+    @property
+    def minimum_number_of_items(self) -> int:
+        return self.fixed_number_of_items
+
+    @property
+    def maximum_number_of_items(self) -> int | None:
+        return self.fixed_number_of_items
+
     @staticmethod
     @override
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "StaticField":

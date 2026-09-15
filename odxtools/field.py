@@ -22,6 +22,23 @@ class Field(ComplexDop):
     is_visible_raw: bool | None = None
 
     @property
+    def minimum_number_of_items(self) -> int:
+        """The minimum number of items that must be stored in the field.
+        """
+        return 0
+
+    @property
+    def maximum_number_of_items(self) -> int | None:
+        """The maximum number of items that can be stored in the field.
+
+        `None` means that the field can hold an arbitrary number of
+        items. There still might be a maximum, but this is not
+        determined by the field but by things like the maximum
+        possible size of a PDU, etc.
+        """
+        return None
+
+    @property
     def structure(self) -> BasicStructure:
         """may be a Structure or a env-data-desc"""
         return odxrequire(self._structure, "EnvironmentDataDescription is not supported")

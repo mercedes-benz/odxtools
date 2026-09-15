@@ -20,6 +20,14 @@ class EndOfPduField(Field):
     max_number_of_items: int | None = None
     min_number_of_items: int | None = None
 
+    @property
+    def minimum_number_of_items(self) -> int:
+        return self.min_number_of_items or 0
+
+    @property
+    def maximum_number_of_items(self) -> int | None:
+        return self.max_number_of_items
+
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EndOfPduField":
         kwargs = dataclass_fields_asdict(Field.from_et(et_element, context))
