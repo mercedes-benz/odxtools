@@ -326,7 +326,6 @@ def prompt_multiplexer_parameter_value(parameter: ValueParameter,
 
     choices: list[str | dict[str, str]] = []
     for cur_mux_case in dop.cases:
-        lower, upper = dop._get_case_limits(cur_mux_case)
         case_dop = cur_mux_case.structure
         assert case_dop is not None
         choices.append({
