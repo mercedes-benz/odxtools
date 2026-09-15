@@ -158,7 +158,7 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
 
         if (cdv := citp.compu_default_value) is not None and cdv.value is not None:
             texttable_choices.append({
-                "name": f"[default] ({cdv.value})",
+                "name": f"[default] ({cdv.value!r})",
                 "value": cdv.value,
             })
             param_prompt[0]["default"] = cdv.value
