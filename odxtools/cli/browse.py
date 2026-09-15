@@ -27,6 +27,7 @@ from ..odxlink import resolve_snref
 from ..odxtypes import AtomicOdxType, DataType, ParameterValue, ParameterValueDict
 from ..parameters.matchingrequestparameter import MatchingRequestParameter
 from ..parameters.parameter import Parameter
+from ..parameters.parameterwithdop import ParameterWithDOP
 from ..parameters.tablekeyparameter import TableKeyParameter
 from ..parameters.tablestructparameter import TableStructParameter
 from ..parameters.valueparameter import ValueParameter
@@ -143,8 +144,8 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
                     break
 
     # if the parameter is a texttable, list the possible choices
-    elif (compu_method := getattr(dop, "compu_method", None)) is not None and \
-       (citp := getattr(compu_method, "compu_internal_to_phys", None)) is not None:
+    elif isinstance(dop, DataObjectProperty) and \
+       (citp := dop.compu_method.compu_internal_to_phys) is not None:
 
         texttable_choices: list[dict[str, Any]] = [
             {
@@ -242,8 +243,8 @@ def prompt_field_parameter_value(parameter: ValueParameter,
         return result
 
     # dynamically-sized list of items
-    min_items = getattr(dop, "min_number_of_items", None) or 0
-    max_items = getattr(dop, "max_number_of_items", None)
+    min_items = dop.minimum_number_of_items
+    max_items = dop.maximum_number_of_items
 
     while True:
         i = len(result)
@@ -521,11 +522,16 @@ def encode_message_interactively(codec: Request | Response,
             if isinstance(param, MatchingRequestParameter):
                 has_matching_request_param = True
 
+            if not isinstance(param, ParameterWithDOP):
+                continue
+
             # check nested parameters
-            dop = getattr(param, "dop", None)
-            inner_params = getattr(dop, "parameters", None)
+            inner_params: list[Parameter] | None = None
+            dop = param.dop
             if isinstance(dop, Field):
                 inner_params = dop.structure.parameters
+            elif isinstance(dop, Structure):
+                inner_params = dop.parameters
             elif isinstance(dop, EnvironmentDataDescription):
                 inner_params = []
                 seen_param_names: set[str] = set()
