@@ -91,6 +91,10 @@ exclude = [
 ignore_missing_imports = true
 strict = true
 
+[[tool.mypy.overrides]]
+module = "tests.*"
+disable_error_code = ["untyped-decorator"]
+
 [tool.ruff]
 lint.select = [
     "E",  # pycodestyle Error
