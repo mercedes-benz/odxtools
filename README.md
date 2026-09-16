@@ -35,7 +35,7 @@ standards, though.)
 The functionality provided by `odxtools` encompasses parsing and
 internalizing ODX diagnostic database files as well as de- and
 encoding the data of diagnostic requests and their responses
-send to/received from ECUs in an pythonic manner.
+sent to/received from ECUs in a pythonic manner.
 
 ## Table of Contents
 
@@ -66,7 +66,7 @@ send to/received from ECUs in an pythonic manner.
 Here are some of the intended use cases of `odxtools`:
 
 - Prototype development: Interacting with the diagnostic services of
-  electronic control units directly from python (requires taping into
+  electronic control units directly from python (requires tapping into
   the car's relevant CAN or ethernet bus)
 - End-of-production calibration/quality control: Initial set up and
   running a self diagnosis of newly produced cars to ensure that
@@ -79,7 +79,7 @@ Here are some of the intended use cases of `odxtools`:
 - Prototype development (III): Implementing bridges to higher-level protocols
   such as HTTP
 - Development for mass production: Accelerating the implementation of
-  diagnostic servicesfor low-cost ECUs by using `odxtools`-based code
+  diagnostic services for low-cost ECUs by using `odxtools`-based code
   generators for the diagnostic glue code on system-level languages like
   C++ or rust
 
@@ -247,13 +247,13 @@ this is done, enables the safety checks again:
 
 ### Python REPL
 
-python's interactive read-reval-print-loop (REPL) supports
-tab-completion on most plattforms, i.e., in this case, all data can be
-conveniently interactivly discovered and this makes `odxtools` a very
+python's interactive read-eval-print-loop (REPL) supports
+tab-completion on most platforms, i.e., in this case, all data can be
+conveniently interactively discovered and this makes `odxtools` a very
 convenient tool to explore the capabilities of a given ECU.
 
 A notable exception is the Microsoft Windows platform: Most python
-distribtions for Windows do not enable tab-completion by default in
+distributions for Windows do not enable tab-completion by default in
 their REPL.  For more convenience in such a scenario, we recommend
 using
 [ptpython](https://github.com/prompt-toolkit/ptpython/). `ptpython`
@@ -261,7 +261,7 @@ can be installed like any other python package, i.e., via `python3 -m
 pip install ptpython`. Then, the REPL ought to be started using
 
 ```cmd
-c:\odxtest>python3 "C:\Python39\Lib\site-packages\ptpython\entry_points\run_ptpython.py"
+c:\odxtest>python3 "C:\Python\Lib\site-packages\ptpython\entry_points\run_ptpython.py"
 ```
 
 Alternatively, `pyreadline` can be used after installing it via
@@ -272,9 +272,9 @@ should work.
 
 ## Command line usage
 
-Based the python module, `odxtools` also provides a set of command
+Based on the python module, `odxtools` also provides a set of command
 line utilities for quick interactive explorations. Amongst others,
-these utilities allow the inspection ODX/PDX files, snooping on
+these utilities allow the inspection of ODX/PDX files, snooping on
 diagnostic sessions, etc. If `odxtools` is installed on a system-wide
 basis, these commands can be invoked using `odxtools SUBCOMMAND
 [PARAMS]`, if the repository has been manually cloned via `git` and
@@ -289,7 +289,7 @@ using `odxtools --help`:
 
 ```bash
 $ odxtools --help
-usage: odxtools [-h] [--version] {list,browse,snoop,find,decode,compare} ...
+usage: odxtools [-h] [--no-strict] [--version] {list,browse,snoop,find,decode,compare} ...
 
 Utilities to interact with automotive diagnostic descriptions based on the ODX standard.
 
@@ -301,16 +301,17 @@ Examples:
 
 positional arguments:
   {list,browse,snoop,find,decode,compare}
-                        Select a sub command
+                        Select a subcommand
     list                Print a summary of automotive diagnostic files.
     browse              Interactively browse the content of automotive diagnostic files.
     snoop               Live decoding of a diagnostic session.
     find                Find & display services by their name
     decode              Find & print service by hex-data. Can also decode the hex-data to its named parameters.
-    compare              Compares two versions of diagnostic layers and/or databases with each other. Checks whether diagnostic services and its parameters have changed.
+    compare             Compares two versions of diagnostic layers and/or databases with each other. Checks whether diagnostic services and its parameters have changed.
 
-optional arguments:
+options:
   -h, --help            show this help message and exit
+  --no-strict           Load the dataset in non-strict mode (which is more robust but might lead to undefined behavior)
   --version             Print the odxtools version
 ```
 
@@ -318,7 +319,7 @@ All subcommands accept the `--help` parameter:
 
 ```bash
 $ odxtools list --help
-usage: odxtools list [-h] [-v VARIANT [VARIANT ...]] [-g] [-s [SERVICE [SERVICE ...]]] [-p] [-d] [-a] PDX_FILE
+usage: odxtools list [-h] [-v VARIANT [VARIANT ...]] [-g] [-s [SERVICE ...]] [-p] [-d] [-a] [--dump-database] PDX_FILE
 [...]
 ```
 
@@ -363,17 +364,19 @@ optional arguments:
                         Ignore all other parameters and print a comprehensive dump of the full database instead of providing a pretty-printed summary
 ```
 
-The options `--variants` and `--services` can be used to specify which services should be printed.  
+The options `--variants` and `--services` can be used to specify which services should be printed.
 If the `--params` option is specified, the message layout and information about the service parameters (request as well as responses) are printed for all specified variants/services.
 If the `--global-negative-responses` option is specified, all global negative responses are printed for all specified variants.
 If the `--dops` option is specified, a list of all data object properties (their names) is printed for all specified variants/services.
 With the parameter `--all` all data of the file that is recognized by `odxtools` is printed.
-The default output does not display all information of the specified objects but a selection. To see all object information without formating choose the parameter `--dump-database`.
+The default output does not display all information of the specified objects but a selection. To see all object information without formatting choose the parameter `--dump-database`.
 
 Example:
 
 ```bash
 $ odxtools list $BASE_DIR/odxtools/examples/somersault.pdx --variants somersault_lazy --services do_forward_flips --params
+
+
 
 Overview of diagnostic layers:
 ┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -382,16 +385,18 @@ Overview of diagnostic layers:
 │ somersault_lazy │ ECU-VARIANT  │                  6 │             12 │                                 10 │
 └─────────────────┴──────────────┴────────────────────┴────────────────┴────────────────────────────────────┘
 
+
 Diagnostic layer: 'somersault_lazy'
  Variant Type: ECU-VARIANT
   CAN receive ID for protocol 'somersault_protocol': 0x7b
   CAN send ID for protocol 'somersault_protocol': 0x1c8
- Description: Sloppy variant of the somersault ECU (lazy < assiduous)
+ Description:   Sloppy variant of the somersault ECU (lazy < assiduous)
+
 
 The services of 'somersault_lazy' are:
 
  Service 'do_forward_flips':
-  Description: Do a forward flip.
+  Description:    Do a forward flip.
 
   Request and response parameters of diagnostic service 'do_forward_flips'
 
@@ -445,65 +450,46 @@ spamming the terminal:
 
 ```bash
 $ odxtools browse $BASE_DIR/odxtools/examples/somersault.pdx
-? Select a Variant.  somersault_lazy
+? Select a Variant. somersault_lazy
 ECU-VARIANT 'somersault_lazy' (Receive ID: 0x7b, Send ID: 0x1c8)
-? The variant somersault_lazy offers the following services. Select one!  do_forward_flips
-? This service offers the following messages.  Request: do_forward_flips
-             7     6     5     4     3     2     1     0
-          +-----+-----+-----+-----+-----+-----+-----+-----+
-        0 | sid(8 bits)                                   |
-          +-----+-----+-----+-----+-----+-----+-----+-----+
-        1 | forward_soberness_check(8 bits)               |
-          +-----+-----+-----+-----+-----+-----+-----+-----+
-        2 | num_flips(8 bits)                             |
-          +-----+-----+-----+-----+-----+-----+-----+-----+
-     Parameter(short_name='sid', type='CODED-CONST', semantic=None, byte_position=0, bit_length=8, coded_value='0xba')
-     Parameter(short_name='forward_soberness_check', type='VALUE', semantic=None, byte_position=1, bit_length=8, dop_ref='somersault.DOP.soberness_check')
-      DataObjectProperty('soberness_check', category='LINEAR', internal_type='A_UINT32', physical_type='A_UINT32')
-     Parameter(short_name='num_flips', type='VALUE', semantic=None, byte_position=2, bit_length=8, dop_ref='somersault.DOP.num_flips')
-      DataObjectProperty('num_flips', category='LINEAR', internal_type='A_UINT32', physical_type='A_UINT32')
+? The variant somersault_lazy offers the following services. Select one! do_forward_flips
+? This service offers the following messages. Request: do_forward_flips
+┏━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━━━━┳━━━━━━━━━━━┳━━━━━━━┳━━━━━━━━━━━━━━━━━┓
+┃ Name                    ┃ Byte Position ┃ Bit Length ┃ Semantic ┃ Parameter Type ┃ Data Type ┃ Value ┃ Linked DOP      ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━━━━╇━━━━━━━━━━━╇━━━━━━━╇━━━━━━━━━━━━━━━━━┩
+│ sid                     │             0 │          8 │          │ CODED-CONST    │ A_UINT32  │ 0xBA  │                 │
+├─────────────────────────┼───────────────┼────────────┼──────────┼────────────────┼───────────┼───────┼─────────────────┤
+│ forward_soberness_check │             1 │          8 │          │ VALUE          │ A_UINT32  │       │ soberness_check │
+├─────────────────────────┼───────────────┼────────────┼──────────┼────────────────┼───────────┼───────┼─────────────────┤
+│ num_flips               │             2 │          8 │          │ VALUE          │ A_UINT32  │       │ num_flips       │
+└─────────────────────────┴───────────────┴────────────┴──────────┴────────────────┴───────────┴───────┴─────────────────┘
 [...]
 ```
 
 ### The `snoop` subcommand
 
-The `snoop` subcommand can be used to decode a trace of a or a
+The `snoop` subcommand can be used to decode a trace of or a
 currently running diagnostic session.
 
 ```bash
 $ odxtools snoop -h
-usage: odxtools snoop [-h] [--active] [--channel CHANNEL] [--rx RX] [--tx TX] [--variant VARIANT]
-                      [--protocol PROTOCOL]
-                      PDX_FILE
 
 Live decoding of a diagnostic session.
 
 positional arguments:
-  PDX_FILE              path to the .pdx file
+  PDX_FILE              Location of the .pdx file
 
 options:
   -h, --help            show this help message and exit
   --active, -a          Active mode, sends flow control messages to receive ISO-TP telegrams successfully
-  --channel CHANNEL, -c CHANNEL
+  --channel, -c CHANNEL
                         CAN interface name to be used (required in active mode)
-  --rx RX, -r RX        CAN ID in which the ECU listens for diagnostic messages
-  --tx TX, -t TX        CAN ID in which the ECU sends replys to diagnostic messages  (required in active mode)
-  --variant VARIANT, -v VARIANT
+  --rx, -r RX           CAN ID in which the ECU listens for diagnostic messages
+  --tx, -t TX           CAN ID in which the ECU sends replies to diagnostic messages  (required in active mode)
+  --variant, -v VARIANT
                         Name of the ECU variant which the decode process ought to be based on
-  --protocol PROTOCOL, -p PROTOCOL
+  --protocol, -p PROTOCOL
                         Name of the protocol used for decoding
-```
-Example:
-```bash
-# create a socketcan `vcan0` interface
-sudo ip link add dev vcan0 type vcan
-sudo ip link set vcan0 up
-
-# start the snooping on vcan0
-odxtools snoop -c vcan0 --variant "somersault_lazy" $BASE_DIR/odxtools/examples/somersault.pdx
-
-# on a different terminal, run the diagnostic session
-$BASE_DIR/odxtools/examples/somersaultlazy.py -c vcan0
 ```
 
 The snoop command will then output the following:
@@ -527,7 +513,7 @@ Tester: do_forward_flips(forward_soberness_check=18, num_flips=50)
 
 ### The `find` subcommand
 
-The `find` subcommand can be used to find a service and its associated information by a partial name via cli.
+The `find` subcommand can be used to find a service and its associated information by partial name via the CLI.
 
 ```bash
 $ odxtools find -h
@@ -536,8 +522,8 @@ usage: odxtools find [-h] [-v VARIANT] -s [SERVICES ...] [-V] [-ro] PDX_FILE
 Find & print services by name
 
 Examples:
-  For displaying the services associated with the partial name 'Reset':
-    odxtools find ./path/to/database.pdx -s "Reset"
+  For displaying the services associated with the partial name 'Reset' without details:
+    odxtools find ./path/to/database.pdx -s "Reset" --no-details
   For more information use:
     odxtools find -h
 
@@ -546,9 +532,9 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  -v VARIANT, --variants VARIANT
+  -v, --variants VARIANT
                         Specifies which ecu variants should be included.
-  -s [SERVICES ...], --service-names [SERVICES ...]
+  -s, --service-names [SERVICES ...]
                         Print a list of diagnostic services partially matching given service names
   -V, --verbose         Show all service details
   -ro, --relaxed-output
@@ -593,9 +579,9 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  -v VARIANT, --variants VARIANT
+  -v, --variants VARIANT
                         Specifies which ecu variants should be included.
-  -d DATA, --data DATA  Specify data of hex request
+  -d, --data DATA       Specify data of hex request
   -D, --decode          Decode the given hex data
 ```
 
@@ -621,7 +607,7 @@ Decoded data:
 
 ### The `compare` subcommand
 
-The `compare` subcommand can be used to compare databases (pdx-files) and diagnostic layers with each other. All diagnostic services as well as its parameters of specified databases and variants are compared with each other and changes are displayed.
+The `compare` subcommand can be used to compare databases (PDX-files) and diagnostic layers with each other. All diagnostic services as well as their parameters of specified databases and variants are compared with each other and changes are displayed.
 
 #### database comparison:
 - new diagnostic layers
@@ -635,7 +621,7 @@ The `compare` subcommand can be used to compare databases (pdx-files) and diagno
 - service parameter comparison
 
 #### service parameter comparison:
-find changes in following properties:
+find changes in the following properties:
 - Name
 - Byte Position
 - Bit Length
@@ -647,12 +633,14 @@ find changes in following properties:
 
 ```bash
 $ odxtools compare -h
-usage: odxtools compare [-h] [-v VARIANT [VARIANT ...]] [-db DATABASE [DATABASE ...]] [-V] PDX_FILE
+usage: odxtools compare [-h] [-v VARIANT [VARIANT ...]] [-db DATABASE [DATABASE ...]] [-V] [--output-format {text,json,yaml,csv}] [--output-file OUTPUT_FILE]
+                        [--fail-on-diff] [--ignore IGNORE [IGNORE ...]] [--profile]
+                        PDX_FILE
 
-Compares two ecu versions or databases with each other. Checks whether diagnostic services and its parameters have changed.
+Compares two versions of diagnostic layers or databases with each other. Checks whether diagnostic services and their parameters have changed.
 
 Examples:
-  Comparison of two ecu versions:
+  Comparison of two diagnostic layers:
     odxtools compare ./path/to/database.pdx -v variant1 variant2
   Comparison of two database versions:
     odxtools compare ./path/to/database.pdx -db ./path/to/old-database.pdx
@@ -664,14 +652,22 @@ positional arguments:
 
 options:
   -h, --help            show this help message and exit
-  -v VARIANT [VARIANT ...], --variants VARIANT [VARIANT ...]
-                        Compare specified ecu variants to each other.
-  -db DATABASE [DATABASE ...], --database DATABASE [DATABASE ...]
-                        Compare specified database file(s) to database file of first input argument.
+  -v, --variants VARIANT [VARIANT ...]
+                        Compare specified ECU variants to each other.
+  -db, --database DATABASE [DATABASE ...]
+                        Compare specified database file(s) to the database file of first input argument.
   -V, --verbose         Show all variant and service details
+  --output-format {text,json,yaml,csv}
+                        Write comparison results to a structured export format.
+  --output-file OUTPUT_FILE
+                        Path to write the comparison report when using --output-format.
+  --fail-on-diff        Return a failing exit code when differences are detected.
+  --ignore IGNORE [IGNORE ...]
+                        Ignore changes for matching attribute regex patterns.
+  --profile             Enable comparison profiling for performance investigation.
 ```
 
-Example: Compare the ecu variants `somersault_lazy` and `somersault_assiduous`
+Example: Compare the ECU variants `somersault_lazy` and `somersault_assiduous`
 
 ```bash
 $ odxtools compare $BASE_DIR/odxtools/examples/somersault.pdx -v somersault_assiduous somersault_lazy
@@ -685,11 +681,11 @@ Changed diagnostic services of diagnostic layer 'somersault_assiduous' (ECU-VARI
 ┏━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━━━━┓
 ┃ Name                 ┃ Semantic ┃ Hex-Request ┃
 ┡━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━╇━━━━━━━━━━━━━┩
-│ set_operation_params │ FUNCTION │ 0xBD        │
-├──────────────────────┼──────────┼─────────────┤
 │ do_backward_flips    │ FUNCTION │ 0xBB        │
 ├──────────────────────┼──────────┼─────────────┤
 │ headstand            │          │ 0x03        │
+├──────────────────────┼──────────┼─────────────┤
+│ set_operation_params │ FUNCTION │ 0xBD        │
 └──────────────────────┴──────────┴─────────────┘
 ```
 
@@ -706,8 +702,8 @@ New diagnostic layers:
 
 Changed diagnostic layers:
  somersault_base_variant (BASE-VARIANT)
- somersault_lazy (ECU-VARIANT)
  somersault_assiduous (ECU-VARIANT)
+ somersault_lazy (ECU-VARIANT)
 
 Changed diagnostic services of diagnostic layer 'somersault_base_variant' (BASE-VARIANT):
 
@@ -720,33 +716,6 @@ Changed diagnostic services of diagnostic layer 'somersault_base_variant' (BASE-
 │ stop_session  │ SESSION  │ 0x1001      │ session_stop     │
 └───────────────┴──────────┴─────────────┴──────────────────┘
 
- Services with parameter changes
- ┏━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
- ┃ Name              ┃ Semantic      ┃ Hex-Request ┃ Changed Parameters                                                                ┃
- ┡━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
- │ start_session     │ SESSION       │ 0x1000      │ Properties of 2. positive response parameter 'can_do_backward_flips' have changed │
- ├───────────────────┼───────────────┼─────────────┼───────────────────────────────────────────────────────────────────────────────────┤
- │ stop_session      │ SESSION       │ 0x1001      │ Properties of 2. positive response parameter 'can_do_backward_flips' have changed │
- ├───────────────────┼───────────────┼─────────────┼───────────────────────────────────────────────────────────────────────────────────┤
- │ tester_present    │ TESTERPRESENT │ 0x3E00      │ Properties of 2. positive response parameter 'status' have changed                │
- ├───────────────────┼───────────────┼─────────────┼───────────────────────────────────────────────────────────────────────────────────┤
- │ do_backward_flips │ FUNCTION      │ 0xBB        │ Properties of 2. positive response parameter 'num_flips_done' have changed        │
- └───────────────────┴───────────────┴─────────────┴───────────────────────────────────────────────────────────────────────────────────┘
-
-  Detailed changes of diagnostic service 'start_session'
-   Properties of 2. positive response parameter 'can_do_backward_flips' have changed:
-   ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━┓
-   ┃ Attribute                                        ┃ Old Value                ┃ New Value              ┃
-   ┡━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━┩
-   │ Linked DOP (data object property) object         │ <somersault.DOP.boolean> │ <somersault.DOP.uint8> │
-   ├──────────────────────────────────────────────────┼──────────────────────────┼────────────────────────┤
-   │ Linked DOP object: Name                          │ boolean                  │ uint8                  │
-   ├──────────────────────────────────────────────────┼──────────────────────────┼────────────────────────┤
-   │ Linked DOP object: Computation Method            │ <COMPU-METHOD>           │ <COMPU-METHOD>         │
-   ├──────────────────────────────────────────────────┼──────────────────────────┼────────────────────────┤
-   │ Linked DOP object: PHYSICAL-TYPE: Base data type │ A_UNICODE2STRING         │ A_UINT32               │
-   └──────────────────────────────────────────────────┴──────────────────────────┴────────────────────────┘
-
 [...]
 ```
 
@@ -755,7 +724,7 @@ Changed diagnostic services of diagnostic layer 'somersault_base_variant' (BASE-
 The included unit tests can be run via
 
 ```bash
-python -m unittest tests/test_*.py
+python -m pytest tests/
 ```
 
 The static type checker can be run via
@@ -779,7 +748,7 @@ Please visit <https://mbition.io/imprint/> for information on the provider.
 
 Notice: Before you use the program in productive use, please take all
 necessary precautions, e.g. testing and verifying the program with
-regard to your specific use.  The program was tested solely for our
+regard to your specific use case.  The program was tested solely for our
 own use cases, which might differ from yours.
 
 ## Acknowledgements

@@ -1887,7 +1887,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
     parser = subparsers.add_parser(
         "compare",
         description="\n".join([
-            "Compares two versions of diagnostic layers or databases with each other. Checks whether diagnostic services and its parameters have changed.",
+            "Compares two versions of diagnostic layers or databases with each other. Checks whether diagnostic services and their parameters have changed.",
             "",
             "Examples:",
             "  Comparison of two diagnostic layers:",
@@ -1909,7 +1909,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         metavar="VARIANT",
         required=False,
         default=None,
-        help="Compare specified (ecu) variants to each other.",
+        help="Compare specified ECU variants to each other.",
     )
 
     parser.add_argument(
@@ -1919,7 +1919,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         default=None,
         metavar="DATABASE",
         required=False,
-        help="Compare specified database file(s) to database file of first input argument.",
+        help="Compare specified database file(s) to the database file of first input argument.",
     )
 
     parser.add_argument(

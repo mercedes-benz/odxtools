@@ -194,7 +194,7 @@ def add_cli_arguments(parser: argparse.ArgumentParser) -> None:
         "-t",
         default=None,
         required=False,
-        help="CAN ID in which the ECU sends replys to diagnostic messages  (required in active mode)",
+        help="CAN ID in which the ECU sends replies to diagnostic messages  (required in active mode)",
     )
     parser.add_argument(
         "--variant",

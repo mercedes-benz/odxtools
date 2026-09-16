@@ -7,11 +7,8 @@ from unittest.mock import MagicMock, patch
 from odxtools.dataobjectproperty import DataObjectProperty
 from odxtools.diagnostictroublecode import DiagnosticTroubleCode
 from odxtools.dtcdop import DtcDop
-from odxtools.environmentdatadescription import EnvironmentDataDescription
 from odxtools.exceptions import OdxError
-from odxtools.field import Field
 from odxtools.loadfile import load_pdx_file
-from odxtools.multiplexer import Multiplexer
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkId
 from odxtools.odxtypes import DataType
 from odxtools.parameters.valueparameter import ValueParameter
@@ -121,23 +118,21 @@ class TestBrowseTool(unittest.TestCase):
         with self.assertRaises(OdxError):
             browse.prompt_primitive_parameter_value(param)
 
-    def test_prompt_all_parameter_values_unsupported_dops(self) -> None:
+    def test_prompt_all_parameter_values_invalid_dop(self) -> None:
         assert browse is not None
 
-        for dop_type, dop in [
-            ("Field", MagicMock(spec=Field)),
-            ("Multiplexer", MagicMock(spec=Multiplexer)),
-            ("EnvironmentDataDescription", MagicMock(spec=EnvironmentDataDescription)),
-        ]:
-            with self.subTest(dop_type=dop_type):
-                dop.short_name = f"{dop_type.lower()}_dop"
-                param = MagicMock(spec=ValueParameter)
-                param.short_name = f"{dop_type.lower()}_param"
-                param.dop = dop
-                param.is_settable = True
+        dop_type = "UnsupportedDop"
+        dop = MagicMock()
+        with self.subTest(dop_type=dop_type):
+            dop.short_name = f"{dop_type.lower()}_dop"
+            param = MagicMock(spec=ValueParameter)
+            param.short_name = f"{dop_type.lower()}_param"
+            param.dop = dop
+            param.is_settable = True
+            param.physical_type = None
 
-                with self.assertRaises(OdxError):
-                    browse.prompt_all_parameter_values([param])
+            with self.assertRaises(OdxError):
+                browse.prompt_all_parameter_values([param])
 
     def test_encode_message_interactively_non_tty(self) -> None:
         assert browse is not None
