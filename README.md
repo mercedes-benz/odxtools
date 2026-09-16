@@ -755,7 +755,7 @@ Changed diagnostic services of diagnostic layer 'somersault_base_variant' (BASE-
 The included unit tests can be run via
 
 ```bash
-python -m unittest tests/test_*.py
+python -m pytest tests/
 ```
 
 The static type checker can be run via
