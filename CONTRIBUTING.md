@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 # Contributing
 
-This document explains how to contribute to the odxtools project. By contributing you will agree that your contribution will be put under the MIT License.
+This document explains how to contribute to the odxtools project. By contributing, you agree that your contribution will be licensed under the MIT License.
 
 ## Table of Contents
 
@@ -15,20 +15,20 @@ This document explains how to contribute to the odxtools project. By contributin
 
 ## Communication
 
-For communication please respect our [FOSS Code of Conduct](https://github.com/mercedes-benz/.github/blob/main/CODE_OF_CONDUCT.md).
+For communication, please respect our [FOSS Code of Conduct](https://github.com/mercedes-benz/.github/blob/main/CODE_OF_CONDUCT.md).
 
-The following communication channels exist for this project:
-- Github for reporting and claiming issues: https://github.com/mercedes-benz/odxtools/issues
+The following communication channels are available for this project:
+- GitHub for reporting and claiming issues: https://github.com/mercedes-benz/odxtools/issues
 
-Transparent and open communication is important to us. Thus, all project-related communication should happen only through these channels and in English. Issue-related communication should happen within the concerned issue.
+Transparent and open communication is important to us. Therefore, all project-related communication should take place exclusively through these channels and in English. Issue-related communication should happen within the relevant issue.
 
 ## Contributions
 
-If you would like to contribute code you can do so through Mercedes-Benz using the standard [GitHub flow](https://docs.github.com/en/get-started/using-github/github-flow).
+If you would like to contribute code, you can do so through Mercedes-Benz using the standard [GitHub flow](https://docs.github.com/en/get-started/using-github/github-flow).
 
-When submitting code, please make every effort to follow existing conventions and style in order to keep the code as readable as possible.
+When submitting code, please make every effort to follow existing conventions and style to keep the code as readable as possible.
 
-If you are new to contributing on Github, [First Contributions](https://github.com/firstcontributions/first-contributions) might be a good starting point.
+If you are new to contributing on GitHub, [First Contributions](https://github.com/firstcontributions/first-contributions) might be a good starting point.
 
 ### Developer Certificate of Origin
 
@@ -37,7 +37,7 @@ All contributions submitted to the `odxtools` repository have to carry a signed-
 
     Signed-off-by: Firstname Lastname <email.address>
 
-where the specified email address must be associated with your [github account](https://docs.github.com/en/account-and-profile/concepts/email-addresses). If a commit does not carry such a signed-off-by statement, the pull request cannot be merged into the official `odxtools` repository because by adding signed-off-by statements to the commit messages, you convey that you have the necessary rights to contribute the respective changes.
+where the specified email address must be associated with your [GitHub account](https://docs.github.com/en/account-and-profile/concepts/email-addresses). If a commit does not include such a signed-off-by statement, the pull request cannot be merged into the official `odxtools` repository. By adding signed-off-by statements to your commit messages, you confirm that you have the necessary rights to contribute the respective changes.
 
 
 ### Developer Certificate of Origin (Text)
