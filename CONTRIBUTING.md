@@ -6,7 +6,7 @@ SPDX-License-Identifier: MIT
 
 # Contributing
 
-This document explains how to contribute to the odxtools project. By contributing you will agree that your contribution will be put under the GNU Affero General Public License, version 3 (AGPLv3).
+This document explains how to contribute to the odxtools project. By contributing you will agree that your contribution will be put under the MIT License.
 
 ## Table of Contents
 
