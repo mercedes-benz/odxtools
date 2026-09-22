@@ -1098,7 +1098,7 @@ somersault_services = {
                     ref_id="charts.annoyed.states.in_bed",
                     ref_docs=doc_frags,
                 ),
-                # note that the standard does not allow to specify
+                # note that the standard does not allow specifying
                 # relations other than equivalence for the specified
                 # value (larger-than would be more appropriate here...)
                 PreConditionStateRef(
@@ -1371,13 +1371,13 @@ somersault_comparam_refs = [
         value=f"{tester_nr_value.hex()}",
         protocol_snref="somersault_protocol",
     ),
-    # when a tester present message must be send
+    # when a tester present message must be sent
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentSendType", cp_iso15765_3_doc_frags),
         value="On idle",
         protocol_snref="somersault_protocol",
     ),
-    # "tester present" messages are send directly to the CAN IDs
+    # "tester present" messages are sent directly to the CAN IDs
     # (i.e., they are not embedded in the ISO-TP telegram?)
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentAddrMode", cp_iso15765_3_doc_frags),

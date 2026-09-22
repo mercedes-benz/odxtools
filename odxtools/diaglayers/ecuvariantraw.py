@@ -31,9 +31,9 @@ class EcuVariantRaw(HierarchyElementRaw):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EcuVariantRaw":
-        # objects contained by diagnostic layers exibit an additional
+        # objects contained by diagnostic layers exhibit an additional
         # document fragment for the diag layer, so we use the document
-        # fragments of the odx id of the diag layer for IDs of
+        # fragments of the ODX ID of the diag layer for IDs of
         # contained objects.
         her = HierarchyElementRaw.from_et(et_element, context)
         kwargs = dataclass_fields_asdict(her)

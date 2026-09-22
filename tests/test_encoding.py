@@ -336,7 +336,7 @@ class TestEncodeRequest(unittest.TestCase):
             base_data_type=DataType.A_FLOAT32,
             base_type_encoding=Encoding.NONE,
             is_highlow_byte_order=True)
-        # allow rounding errors due to python's float objects
+        # allow rounding errors due to Python's float objects
         # potentially using a different representation
         assert isinstance(decoded, float)
         self.assertTrue(abs(decoded - (-1.234)) < 1e-6)
@@ -358,7 +358,7 @@ class TestEncodeRequest(unittest.TestCase):
             base_data_type=DataType.A_FLOAT32,
             base_type_encoding=Encoding.NONE,
             is_highlow_byte_order=False)
-        # allow rounding errors due to python's float objects
+        # allow rounding errors due to Python's float objects
         # potentially using a different representation
         assert isinstance(decoded, float)
         self.assertTrue(abs(decoded - (-1.234)) < 1e-6)
@@ -414,7 +414,7 @@ class TestEncodeRequest(unittest.TestCase):
             base_data_type=DataType.A_FLOAT64,
             base_type_encoding=Encoding.NONE,
             is_highlow_byte_order=True)
-        # allow rounding errors due to python's float objects
+        # allow rounding errors due to Python's float objects
         # potentially using a different representation
         assert isinstance(decoded, float)
         self.assertTrue(abs(decoded - (-1.234)) < 1e-9)
@@ -776,7 +776,7 @@ class TestEncodeRequest(unittest.TestCase):
         self.assertEqual(raw_data.hex(), "445566ee0203")
 
         # test for a DCT without any special environment data (just
-        # the all-data boiler plate)
+        # the all-data boilerplate)
         raw_data = resp.encode(DTC=0xf00de5, dtc_info={})
         self.assertEqual(raw_data.hex(), "f00de5ee")
 

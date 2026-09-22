@@ -26,12 +26,12 @@ class ItemAttributeList(list[T]):
     This is a hybrid between a list and a user-defined object: One can
     iterate over all items of the list as usual, but items can also be
     accessed via `named_list.itemname`, where the 'itemname' is
-    specified via a item -> string mapping function that is passed to
+    specified via an item -> string mapping function that is passed to
     the constructor.
 
     If an item name is not unique, `_<num>` will be appended to
     avoid naming collisions. The user is responsible that the strings
-    returned by the item-to-name function are valid identifiers in python.
+    returned by the item-to-name function are valid identifiers in Python.
     """
 
     def __init__(self, input_list: Iterable[T] | None = None) -> None:
@@ -202,11 +202,11 @@ class NamedItemList(ItemAttributeList[T]):
 
     def _get_item_key(self, item: T) -> str:
         """Transform an object's `short_name` attribute into a valid
-        python identifier
+        Python identifier
 
-        Although short names are almost identical to valid python
+        Although short names are almost identical to valid Python
         identifiers, their first character is allowed to be a number or
-        they may be python keywords. This method prepends an underscore to
+        they may be Python keywords. This method prepends an underscore to
         such short names.
 
         """
@@ -221,8 +221,8 @@ class NamedItemList(ItemAttributeList[T]):
             odxraise(f".short_name is the empty string")
             return
 
-        # make sure that the name of the item in question is not a python
-        # keyword (this would lead to syntax errors) and that does not
+        # make sure that the name of the item in question is not a Python
+        # keyword (this would lead to syntax errors) and that it does not
         # start with a digit
         if sn[0].isdigit() or iskeyword(sn):
             return f"_{sn}"

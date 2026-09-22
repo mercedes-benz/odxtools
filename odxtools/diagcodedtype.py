@@ -105,7 +105,7 @@ class DiagCodedType:
 
         Parameters
         ----------
-        internal_value : python type corresponding to self.base_data_type
+        internal_value : Python type corresponding to self.base_data_type
             the value to be encoded
         bit_position : int
 

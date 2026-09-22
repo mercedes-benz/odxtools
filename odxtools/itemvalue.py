@@ -13,7 +13,7 @@ from .text import Text
 
 @dataclass(kw_only=True)
 class ItemValue:
-    """This class represents a ITEM-VALUE."""
+    """This class represents an ITEM-VALUE."""
 
     phys_constant_value: str | None
     meaning: Text | None = None

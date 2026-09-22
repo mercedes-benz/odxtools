@@ -33,7 +33,7 @@ class ResponseType(Enum):
 
 @dataclass(kw_only=True)
 class Response(IdentifiableElement):
-    """Represents all information related to an UDS response
+    """Represents all information related to a UDS response
 
     This class implements the `CompositeCodec` interface.
     """
@@ -148,7 +148,7 @@ class Response(IdentifiableElement):
         return composite_codec_get_free_parameters(self)
 
     def print_free_parameters_info(self) -> None:
-        """Return a human readable description of the structure's
+        """Return a human-readable description of the structure's
         free parameters.
         """
         from .parameterinfo import parameter_info

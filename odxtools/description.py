@@ -21,7 +21,7 @@ class Description:
         if et_element is None:
             return None
 
-        # Extract the contents of the tag as a XHTML string.
+        # Extract the contents of the tag as an XHTML string.
         raw_string = et_element.text or ""
         for e in et_element:
             if e.tag == "EXTERNAL-DOCS":

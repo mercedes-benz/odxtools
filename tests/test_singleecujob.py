@@ -53,12 +53,12 @@ class TestSingleEcuJob(unittest.TestCase):
 
         * self.singleecujob_object: SingleEcuJob - job to be tested
         * self.context: NamedTuple - elements referenced by the SingleEcuJob
-        * self.singleecujob_odx: string - odx description of self.singleecujob_object
+        * self.singleecujob_odx: string - ODX description of self.singleecujob_object
         """
         super().setUp()
 
         class Context(NamedTuple):
-            """odx elements referenced by the tested single ECU job, i.e., elements needed in the `odxlinks` when resolving references"""
+            """ODX elements referenced by the tested single ECU job, i.e., elements needed in the `odxlinks` when resolving references"""
 
             extensiveTask: FunctionalClass
             specialAudience: AdditionalAudience

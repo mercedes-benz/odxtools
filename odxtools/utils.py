@@ -25,7 +25,7 @@ def strip_indent(text: None) -> None:
 def strip_indent(text: str | None) -> str | None:
     """Remove the leading and trailing space characters of all lines of a string.
 
-    Note that non-space whitespace characters (tabulators, etc) are unaffected
+    Note that non-space whitespace characters (tabulators, etc.) are unaffected
     """
     if text is None:
         return None
@@ -46,7 +46,7 @@ def read_hex_binary(et_element: ElementTree.Element | None) -> int | None:
 
     # The XSD uses the type xsd:hexBinary and xsd:hexBinary allows for
     # leading/trailing whitespace and empty strings whilst `int(x,
-    # 16)` raises an exception if one of these things happen.
+    # 16)` raises an exception if one of these things happens.
     bytes_str = bytes_str.strip()
     if len(bytes_str) == 0:
         return 0
@@ -75,7 +75,7 @@ def retarget_snrefs(database: "Database",
     DOP, the reference in the base variant to Foo ought to be resolved
     differently depending on whether it is accessed via V1 or
     V2. Since odxtools resolves all references ahead of time, a fixed
-    variant has to be chosen. This method allows to switch the variant
+    variant has to be chosen. This method allows switching the variant
     to another one.
 
     """
@@ -120,7 +120,7 @@ _short_name_path_pattern = re.compile("[a-zA-Z0-9_]+(.[a-zA-Z0-9_]+)*")
 
 
 def is_short_name(test_val: str) -> bool:
-    """Returns true iff the test_val string is a ODX short name.
+    """Returns true iff the test_val string is an ODX short name.
 
     See also: ISO 22901 section 7.1.1
     """
@@ -128,7 +128,7 @@ def is_short_name(test_val: str) -> bool:
 
 
 def is_short_name_path(test_val: str) -> bool:
-    """Returns true iff the test_val string is a ODX short name path.
+    """Returns true iff the test_val string is an ODX short name path.
 
     See also: ISO 22901 section 7.3.13.3
     """

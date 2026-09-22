@@ -53,7 +53,7 @@ class OdxLinkId:
 
     A full ODX ID comprises the document fragment where the object
     is located (i.e., the short name object beneath the root object of the
-    currently read XMl file) plus a locally unique identifier for the object.
+    currently read XML file) plus a locally unique identifier for the object.
 
     OdxLinkIds are hashable.
     """
@@ -67,7 +67,7 @@ class OdxLinkId:
     doc_fragments: tuple[OdxDocFragment] | tuple[OdxDocFragment, OdxDocFragment]
 
     def __hash__(self) -> int:
-        # we do not hash about the document fragment here, because
+        # we do not hash the document fragment here, because
         # document fragments are handled using separate sub-databases,
         # i.e. the same OdxId object can be put into all of them.
         return hash(self.local_id)
@@ -76,7 +76,7 @@ class OdxLinkId:
         if not isinstance(other, OdxLinkId):
             return False
 
-        # if the local ID is different, the whole id is different
+        # if the local ID is different, the whole ID is different
         if self.local_id != other.local_id:
             return False
 
@@ -236,7 +236,7 @@ class OdxLinkDatabase:
                 )
                 continue
 
-            # locate an object exhibiting with the referenced local ID
+            # locate an object exhibiting the referenced local ID
             # in the ID database for the document fragment
             if (obj := doc_frag_db.get(ref.ref_id)) is not None:
                 if expected_type is not None and not isinstance(obj, expected_type):

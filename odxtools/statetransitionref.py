@@ -153,7 +153,7 @@ class StateTransitionRef(OdxLinkRef):
     """Describes a state transition that is to be potentially taken if
     a diagnostic communication is executed
 
-    Besides the "raw" state transistion, state transition references
+    Besides the "raw" state transition, state transition references
     may also be conditional on the observed response of the ECU.
 
     """
@@ -213,7 +213,7 @@ class StateTransitionRef(OdxLinkRef):
 
         Note that the specification is unclear about what the
         parameters are: It says "The optional VALUE together with the
-        also optional IN-PARAM-IF snref at STATE-TRANSITION-REF and
+        also optional IN-PARAM-IF SNREF at STATE-TRANSITION-REF and
         PRE-CONDITION-STATE-REF can be used if the STATE-TRANSITIONs
         and pre-condition STATEs are dependent on the values of the
         referenced PARAMs.", but it does not specify what the

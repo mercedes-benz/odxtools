@@ -117,7 +117,7 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
         "validate": lambda x: _validate_chosen_value(x, dop, parameter.is_required),
     }]
 
-    # determine the default value to pre-select if a list of choices is shown
+    # determine the default value to preselect if a list of choices is shown
     default_value: AtomicOdxType | None = parameter.physical_default_value
     if default_value is None and isinstance(dop, DataObjectProperty):
         internal_to_phys = dop.compu_method.compu_internal_to_phys
@@ -136,7 +136,7 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
         param_prompt[0]["type"] = "list"
         param_prompt[0]["choices"] = dtc_choices
 
-        # pre-select the default DTC if available
+        # preselect the default DTC if available
         if isinstance(default_value, int):
             for dtc in dop.dtcs:
                 if dtc.trouble_code == default_value:

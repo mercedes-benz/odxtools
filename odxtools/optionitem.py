@@ -14,7 +14,7 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class OptionItem(ConfigItem):
-    """This class represents a OPTION-ITEM."""
+    """This class represents an OPTION-ITEM."""
 
     physical_default_value: str | None = None
     item_values: list[ItemValue] = field(default_factory=list)

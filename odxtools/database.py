@@ -363,7 +363,7 @@ class Database:
     def __getstate__(self) -> dict[str, Any]:
         """Returns a pickleable state of the database object
 
-        This is necessary because file like objects are not pickleable
+        This is necessary because file-like objects are not pickleable
         but auxiliary files are represented as such."""
 
         result = copy(self.__dict__)

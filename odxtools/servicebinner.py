@@ -87,7 +87,7 @@ class ServiceBinner:
         return result.getvalue()
 
     def __repr__(self) -> str:
-        """Return an string representing the object
+        """Return a string representing the object
         """
         result = StringIO()
         result.write("[ ")

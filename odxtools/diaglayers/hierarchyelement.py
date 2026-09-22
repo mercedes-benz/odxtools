@@ -502,10 +502,10 @@ class HierarchyElement(DiagLayer):
         the diagnostic layer
 
         Be aware that the inheritance scheme for communication
-        parameters is slightly different than for objects that are
+        parameters is slightly different from that for objects that are
         subject to value inheritance:
 
-        - The ODXLINK ID id of communication parameters is used to
+        - The ODXLINK ID of communication parameters is used to
           override inherited parameters instead of the short name.
         - A parameter is only overridden if the specified protocol
           matches.
@@ -513,7 +513,7 @@ class HierarchyElement(DiagLayer):
         Note that the specification leaves some room for
         interpretation here: It says that if no protocol is specified,
         the parameter shall apply to any protocol. But what happens if
-        the the same comparam is specified with and without a
+        the same comparam is specified with and without a
         protocol? Is this allowed at all? If yes, which of these
         definitions gets priority? How does this interact with
         inheritance? The approach taken here is to allow such cases
@@ -617,7 +617,7 @@ class HierarchyElement(DiagLayer):
         """Return the maximum size of a CAN frame payload that can be
         transmitted in bytes.
 
-        For classic CAN busses, this is basically always 8. CAN-FD can
+        For classic CAN buses, this is basically always 8. CAN-FD can
         send up to 64 bytes per frame.
 
         """
@@ -783,7 +783,7 @@ class HierarchyElement(DiagLayer):
         # The CP_DoIPLogicalEcuAddress is specified by the
         # "CP_DoIPLogicalEcuAddress" subvalue of the complex comparam
         # CP_UniqueRespIdTable of the ISO_13400_2_DIS_2015 comparam
-        # subset. Depending of the underlying transport protocol,
+        # subset. Depending on the underlying transport protocol,
         # (i.e., CAN using ISO-TP) this subvalue might not exist.
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", category=OdxWarning)
@@ -852,7 +852,7 @@ class HierarchyElement(DiagLayer):
     def get_doip_routing_activation_timeout(self,
                                             protocol: Union[str, "Protocol"] | None = None
                                            ) -> float | None:
-        """The timout for the DoIP routing activation request in seconds"""
+        """The timeout for the DoIP routing activation request in seconds"""
 
         # retrieve CP_DoIPRoutingActivationTimeout from the
         # ISO_13400_2_DIS_2015 subset. hopefully.

@@ -66,8 +66,8 @@ class WriteDiagCommConnector:
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         # write_diag_comm_snref can only be uniquely resolved ahead of
-        # time if the diag comm is referenced via ODXLINK, the write
-        # data parameter is referenced via SNREF. If the diag comm is
+        # time if the diag comm is referenced via ODXLINK and the
+        # write data parameter is referenced via SNREF. If the diag comm is
         # referenced via SNREF, it depends on the applicable diag layer
         self._write_data = None
         if self.write_data_snref is not None and \

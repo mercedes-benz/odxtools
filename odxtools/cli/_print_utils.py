@@ -21,9 +21,9 @@ from ..singleecujob import SingleEcuJob
 
 
 def format_desc(description: Description, indent: int = 0) -> str:
-    # Collapse whitespaces
+    # Collapse whitespace
     desc = re.sub(r"\s+", " ", str(description))
-    # Covert XHTML to Markdown
+    # Convert XHTML to Markdown
     desc = markdownify.markdownify(desc)
     # Collapse blank lines
     desc = re.sub(r"(\n\s*)+\n+", "\n", desc).strip()
@@ -211,7 +211,7 @@ def build_parameter_table(parameters: list[Parameter]) -> RichTable:
             dop_column.append("")
         elif isinstance(param, (PhysicalConstantParameter, SystemParameter, ValueParameter)):
             # this is a hack to make this routine work for parameters
-            # which reference DOPs of a type that a is not yet
+            # which reference DOPs of a type that is not yet
             # internalized. (all parameter objects of the tested types
             # are supposed to have a DOP.)
             param_dop = getattr(param, "_dop", None)

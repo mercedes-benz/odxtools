@@ -58,7 +58,7 @@ SpecsChangesVariantsDict = dict[str, list[dict[str, str] | DiagLayerChangesDict]
 
 
 def _strip_rich_formatting(text: str) -> str:
-    """Remove rich formatting tags like [blue], [/blue], , etc."""
+    """Remove rich formatting tags like [blue], [/blue], etc."""
     return re.sub(r'\[.*?\]', '', text)
 
 

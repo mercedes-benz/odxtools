@@ -26,7 +26,7 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class Request(IdentifiableElement):
-    """Represents all information related to an UDS request
+    """Represents all information related to a UDS request
 
     This class implements the `CompositeCodec` interface.
     """
@@ -99,7 +99,7 @@ class Request(IdentifiableElement):
         return composite_codec_get_static_bit_length(self)
 
     def print_free_parameters_info(self) -> None:
-        """Print a human readable description of the composite codec's
+        """Print a human-readable description of the composite codec's
         free parameters to `stdout`
         """
         from .parameterinfo import parameter_info

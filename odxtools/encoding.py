@@ -32,7 +32,7 @@ def get_string_encoding(base_data_type: DataType, base_type_encoding: Encoding |
     # note that the spec disallows certain combinations of
     # base_data_type and encoding (e.g., A_ASCIISTRING encoded
     # using UTF-8). Since in python3 strings are always
-    # capable of the full unicode character set, odxtools
+    # capable of the full Unicode character set, odxtools
     # ignores these restrictions...
     if base_type_encoding == Encoding.UTF8 or (base_data_type == DataType.A_UTF8STRING and
                                                base_type_encoding is None):

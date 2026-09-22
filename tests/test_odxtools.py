@@ -27,7 +27,7 @@ class TestStrictMode(unittest.TestCase):
         with self.assertRaises(OdxError):
             odxtools.exceptions.odxraise()
         # ... odxassert() must raise OdxError for failed
-        # assertations ...
+        # assertions ...
         odxtools.exceptions.odxassert(True)  # nothing happens
         with self.assertRaises(OdxError):
             odxtools.exceptions.odxassert(False)
@@ -139,7 +139,7 @@ class TestNamedItemList(unittest.TestCase):
         self.assertEqual(foo["_as"], X("as", 3))
         self.assertEqual(foo._as, X("as", 3))
 
-        # add an object which's name conflicts with a method of the class
+        # add an object whose name conflicts with a method of the class
         foo.append(X("sort", 4))
         self.assertEqual(foo[4], X("sort", 4))
         self.assertEqual(foo["sort_2"], X("sort", 4))
@@ -163,7 +163,7 @@ class TestNamedItemList(unittest.TestCase):
         self.assertEqual(len(foo.items()), len(foo))
         self.assertEqual(len(foo.values()), len(foo))
 
-        # ensure that mypy accepts NamedItemList objecs where List
+        # ensure that mypy accepts NamedItemList objects where List
         # objects are expected
         def bar(x: list[X]) -> None:
             pass

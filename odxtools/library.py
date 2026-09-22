@@ -16,7 +16,7 @@ class Library(IdentifiableElement):
     """
     A library defines a shared library used for single ECU jobs etc.
 
-    It this is basically equivalent to ProgCode.
+    This is basically equivalent to ProgCode.
     """
 
     code_file: str

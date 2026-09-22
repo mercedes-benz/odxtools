@@ -93,7 +93,7 @@ class IsoTpStateMachine:
 
                 n = self._telegram_specified_len[telegram_idx]
                 if len(telegram_data) > n:
-                    # can frames can include padding, i.e. the length
+                    # CAN frames can include padding, i.e. the length
                     # of the telegram payload is not necessarily a
                     # multiple of the segment payloads
                     telegram_data = telegram_data[:n]
@@ -118,7 +118,7 @@ class IsoTpStateMachine:
         """This is equivalent to the :py:meth:`file.readlines()` method, but
         it yields ISO-TP telegrams instead of lines.
 
-        The  yielded telegrams are (can_id, payload_data) tuples.
+        The yielded telegrams are (can_id, payload_data) tuples.
 
         :param bus: Input file or socket of can bus to read the can frames
         """
@@ -226,8 +226,8 @@ class IsoTpStateMachine:
 
 class IsoTpActiveDecoder(IsoTpStateMachine):
     """This class is equivalent to IsoTpStateMachine, but it sends out
-    ISO-TP flow control messages (acknowledgements) to allow to
-    receive ISO-TP messages actively instead of just snooping in on
+    ISO-TP flow control messages (acknowledgements) to allow
+    receiving ISO-TP messages actively instead of just snooping in on
     other people's conversations."""
 
     def __init__(self,
@@ -297,7 +297,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
                              frame_payload: bytes | bytearray) -> None:
         num_received = self._frames_received[telegram_idx]
         if num_received is None:
-            # consequtive frame received before a first frame.
+            # consecutive frame received before a first frame.
             # TODO (?): throw an exception
             return
         self._frames_received[telegram_idx] = num_received + 1

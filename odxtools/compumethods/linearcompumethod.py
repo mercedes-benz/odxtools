@@ -14,7 +14,7 @@ from .linearsegment import LinearSegment
 
 @dataclass(kw_only=True)
 class LinearCompuMethod(CompuMethod):
-    """A compu method which does linear interpoation
+    """A compu method that performs linear interpolation
 
     i.e. internal values are converted to physical ones using the
     function `f(x) = (offset + factor * x)/denominator` where `f(x)`

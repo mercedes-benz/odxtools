@@ -175,7 +175,7 @@ class DiagService(DiagComm):
         context.diag_service = None
 
     def print_free_parameters_info(self) -> None:
-        """Return a human readable description of the service's
+        """Return a human-readable description of the service's
         request's free parameters.
         """
         if self.request is None:
@@ -226,7 +226,7 @@ class DiagService(DiagComm):
         return result_list[0]
 
     def encode_request(self, **kwargs: ParameterValue) -> bytearray:
-        """Prepare an array of bytes ready to be send over the wire
+        """Prepare an array of bytes ready to be sent over the wire
         for the request of this service.
         """
         # make sure that all parameters which are required for

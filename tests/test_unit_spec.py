@@ -51,7 +51,7 @@ class TestUnitSpec(unittest.TestCase):
                 )
             ]),
         )
-        # Define an example ECU job as odx
+        # Define an example ECU job as ODX
         sample_unit_spec_odx = f"""
             <UNIT-SPEC>
                 <UNITS>

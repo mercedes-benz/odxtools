@@ -45,7 +45,7 @@ class VariantMatcher:
         print("No matching base- or ECU variant found")
     ```
 
-    TODO: Note that only patterns that exclusivly reference diagnostic
+    TODO: Note that only patterns that exclusively reference diagnostic
     services (i.e., no single-ECU jobs) in their matching parameters
     are currently supported.
     """
@@ -69,10 +69,10 @@ class VariantMatcher:
 
     def request_loop(self) -> Generator[tuple[bool, bytes], None, None]:
         """The request loop yielding tuples of byte sequences of
-        requests and the whether physical addressing ought to be used
+        requests and whether physical addressing ought to be used
         to send them
 
-        Each of these requests needs to be send to the ECU to be
+        Each of these requests needs to be sent to the ECU to be
         identified using the specified addressing scheme. The response
         of the ECU is then required to be passed to the matcher using
         the `evaluate()` method.
@@ -136,7 +136,7 @@ class VariantMatcher:
             self._state = VariantMatcher.State.NO_MATCH
 
     def evaluate(self, resp_bytes: bytes) -> None:
-        """Update the matcher with the response to a requst.
+        """Update the matcher with the response to a request.
 
         Warning: Use this method EXACTLY once within the loop body of the request loop.
         """
@@ -147,7 +147,7 @@ class VariantMatcher:
         return self._state == VariantMatcher.State.PENDING
 
     def has_match(self) -> bool:
-        """Returns true iff the non-pending matcher found a matching ecu variant.
+        """Returns true iff the non-pending matcher found a matching ECU variant.
 
         Raises a runtime error if the matcher is pending.
         """
@@ -159,7 +159,7 @@ class VariantMatcher:
 
     @property
     def matching_variant(self) -> EcuVariant | BaseVariant | None:
-        """Returns the matched, i.e., active ecu variant if such a variant has been found."""
+        """Returns the matched, i.e., active ECU variant if such a variant has been found."""
         return self._matching_variant
 
     def _ident_response_matches(
@@ -169,11 +169,11 @@ class VariantMatcher:
         response_bytes: bytes,
     ) -> bool:
         """Decode a binary response and extract the identification string according
-        to the snref or snpathref of the matching_param.
+        to the SNREF or SNPATHREF of the matching_param.
         """
         service = matching_param.get_ident_service(variant)
 
-        # ISO 22901 requires that snref or snpathref is resolvable in
+        # ISO 22901 requires that SNREF or SNPATHREF is resolvable in
         # at least one POS-RESPONSE or NEG-RESPONSE
         all_responses: list[Response] = []
         all_responses.extend(service.positive_responses)

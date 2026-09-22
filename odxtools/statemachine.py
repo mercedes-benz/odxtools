@@ -168,7 +168,7 @@ class StateMachine:
                     # we only execute the first applicable state
                     # transition: The spec seems to imply a
                     # deterministic state machine and chaining
-                    # transistions most likely is not what the user
+                    # transitions most likely is not what the user
                     # expects. (The spec seems to be a bit loose on
                     # this front...)
                     if stransref.execute(self, decoded_resp_msg.coding_object.parameters,

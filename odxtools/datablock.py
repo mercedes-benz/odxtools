@@ -43,7 +43,7 @@ class Datablock(IdentifiableElement):
     audience: Audience | None = None
 
     # note that the spec says this attribute is named "TYPE", but in
-    # python, "type" is a build-in function...
+    # Python, "type" is a built-in function...
     data_type: str
 
     @property

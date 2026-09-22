@@ -29,7 +29,7 @@ class DataObjectProperty(DopBase):
     name would thus be SimpleDataObjectProp...
     """
 
-    #: Conversion from the physical to the internal representation and vice-versa.
+    #: Conversion from the physical to the internal representation and vice versa.
     compu_method: CompuMethod
 
     #: The type used to represent a value internally
@@ -110,7 +110,7 @@ class DataObjectProperty(DopBase):
 
     def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:
         """
-        Convert a physical representation of a parameter to a string bytes that can be send over the wire
+        Convert a physical representation of a parameter to a string of bytes that can be sent over the wire
         """
         if not self.is_valid_physical_value(physical_value):
             raise EncodeError(

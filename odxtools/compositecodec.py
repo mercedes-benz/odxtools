@@ -39,7 +39,7 @@ def composite_codec_get_static_bit_length(codec: CompositeCodec) -> int | None:
     """Compute the length of a composite codec object in bits
 
     This is basically the sum of the lengths of all parameters. If the
-    length of any parameter can only determined at runtime, `None` is
+    length of any parameter can only be determined at runtime, `None` is
     returned.
     """
 

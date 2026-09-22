@@ -14,9 +14,9 @@ if TYPE_CHECKING:
 class Message:
     """A diagnostic message with its interpretation.
 
-    The `coded_message` attribute contains the binary data that's send
+    The `coded_message` attribute contains the binary data that's sent
     over the wire using ISO-TP (CAN/LIN) or DoIP (Ethernet), while the
-    remaining attributes of the class specify the "human readable"
+    remaining attributes of the class specify the "human-readable"
     interpretation of the same data.
     """
 

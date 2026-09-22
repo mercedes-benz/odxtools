@@ -14,7 +14,7 @@ from .compumethod import CompuMethod
 
 @dataclass(kw_only=True)
 class CompuCodeCompuMethod(CompuMethod):
-    """A compu method specifies the tranfer functions using Java bytecode
+    """A compu method specifies the transfer functions using Java bytecode
 
     For details, refer to ASAM specification MCD-2 D (ODX), section 7.3.6.6.9.
     """

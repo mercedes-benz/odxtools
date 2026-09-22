@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 # This script demonstrates how an existing ODX database can be
-# modified programatically. Note that this is pretty hacky...
+# modified programmatically. Note that this is pretty hacky...
 import argparse
 from copy import deepcopy
 from typing import TypeVar

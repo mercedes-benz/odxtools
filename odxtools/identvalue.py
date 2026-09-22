@@ -18,7 +18,7 @@ class IdentValue:
     value_raw: str
 
     # note that the spec says this attribute is named "TYPE", but in
-    # python, "type" is a build-in function...
+    # Python, "type" is a built-in function...
     value_type: IdentValueType
 
     @property
