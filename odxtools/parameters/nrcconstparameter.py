@@ -23,9 +23,9 @@ class NrcConstParameter(Parameter):
     matched for a negative response object to apply
 
     The behaviour of NRC-CONST parameters is similar to CODED-CONST
-    parameters in that they allow to specify which coding objects
+    parameters in that they allow specifying which coding objects
     apply to a binary string, but in contrast to CODED-CONST
-    parameters they allow to specify multiple values. Thus, the value
+    parameters they allow specifying multiple values. Thus, the value
     of a CODED-CONST parameter is usually set using an overlapping
     VALUE parameter. Since NRC-CONST parameters can only be specified
     for negative responses, they can thus be regarded as a multiplexer
@@ -96,8 +96,8 @@ class NrcConstParameter(Parameter):
     @override
     def _encode_positioned_into_pdu(self, physical_value: ParameterValue | None,
                                     encode_state: EncodeState) -> None:
-        # NRC-CONST parameters are not encoding any value on its
-        # own. instead, it is supposed to overlap with a value
+        # NRC-CONST parameters do not encode any value on their
+        # own. Instead, they are supposed to overlap with a value
         # parameter.
         if physical_value is not None:
             odxraise("The value of NRC-CONST parameters cannot be set directly!", EncodeError)

@@ -110,7 +110,7 @@ class NegativeResponseCodes(IntEnum):
     Busy = 0x21  # please repeat!
     ConditionsIncorrect = 0x22  # request cannot be satisfied because ECU is in wrong state
     RequestSequenceError = 0x24
-    NoResponseFromSubNetComponent = 0x25  # we pinged a slave ECU bit it did not respond in time
+    NoResponseFromSubNetComponent = 0x25  # we pinged a slave ECU but it did not respond in time
     Failure = 0x26  # failure prevents execution of requested action
     RequestOutOfRange = 0x31
     SecurityAccessDenied = 0x33

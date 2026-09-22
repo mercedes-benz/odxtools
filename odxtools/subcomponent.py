@@ -18,11 +18,11 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class SubComponent(IdentifiableElement):
-    """Sub-components describe collections of related diagnostic variables
+    """Subcomponents describe collections of related diagnostic variables
 
     Note that the communication paradigm via diagnostic variables is
     somewhat uncommon. If your ECU does not define any, there's no
-    need for it to define sub-components.
+    need for it to define subcomponents.
 
     """
 

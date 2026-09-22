@@ -335,7 +335,7 @@ somersault_units = {
             odx_id=OdxLinkId("somersault.unit.celsius", doc_frags),
             short_name="celsius",
             display_name="°C",
-            long_name="Degrees Celcius",
+            long_name="Degrees Celsius",
             factor_si_to_unit=1,
             offset_si_to_unit=-273.15,
             physical_dimension_ref=OdxLinkRef.from_id(
@@ -878,7 +878,7 @@ somersault_tables = {
                     structure_ref=OdxLinkRef.from_id(
                         somersault_structures["forward_flips_grudgingly_done"].odx_id),
                     description=Description.from_string(
-                        "<p>The the last forward flip was grudgingly done</p>"),
+                        "<p>The last forward flip was grudgingly done</p>"),
                     semantic="DETAILS-KEY",
                 ),
                 TableRow(
@@ -1078,7 +1078,7 @@ somersault_requests = {
             parameters=NamedItemList([
                 ValueParameter(
                     short_name="schroedinger_param",
-                    long_name="Parameter where the DOP changes dending on how you "
+                    long_name="Parameter where the DOP changes depending on how you "
                     "look at the SNREF to it",
                     byte_position=0,
                     dop_snref="schroedinger_dop",
@@ -1098,7 +1098,7 @@ somersault_services = {
                     ref_id="charts.annoyed.states.in_bed",
                     ref_docs=doc_frags,
                 ),
-                # note that the standard does not allow to specify
+                # note that the standard does not allow specifying
                 # relations other than equivalence for the specified
                 # value (larger-than would be more appropriate here...)
                 PreConditionStateRef(
@@ -1371,13 +1371,13 @@ somersault_comparam_refs = [
         value=f"{tester_nr_value.hex()}",
         protocol_snref="somersault_protocol",
     ),
-    # when a tester present message must be send
+    # when a tester present message must be sent
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentSendType", cp_iso15765_3_doc_frags),
         value="On idle",
         protocol_snref="somersault_protocol",
     ),
-    # "tester present" messages are send directly to the CAN IDs
+    # "tester present" messages are sent directly to the CAN IDs
     # (i.e., they are not embedded in the ISO-TP telegram?)
     ComparamInstance(
         spec_ref=OdxLinkRef("ISO_15765_3.CP_TesterPresentAddrMode", cp_iso15765_3_doc_frags),

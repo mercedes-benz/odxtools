@@ -88,7 +88,7 @@ class BasicStructure(ComplexDop):
         return composite_codec_get_static_bit_length(self)
 
     def print_free_parameters_info(self) -> None:
-        """Return a human readable description of the structure's
+        """Return a human-readable description of the structure's
         free parameters.
         """
         from .parameterinfo import parameter_info

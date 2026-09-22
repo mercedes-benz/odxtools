@@ -39,7 +39,7 @@ def composite_codec_get_static_bit_length(codec: CompositeCodec) -> int | None:
     """Compute the length of a composite codec object in bits
 
     This is basically the sum of the lengths of all parameters. If the
-    length of any parameter can only determined at runtime, `None` is
+    length of any parameter can only be determined at runtime, `None` is
     returned.
     """
 
@@ -103,7 +103,7 @@ def composite_codec_encode_into_pdu(codec: CompositeCodec, physical_value: Param
             f"got {type(physical_value).__name__}", EncodeError)
     elif encode_state.cursor_bit_position != 0:
         odxraise(
-            f"Compositional codec objecs must be byte aligned, but "
+            f"Compositional codec objects must be byte aligned, but "
             f"{codec.short_name} requested to be at bit position "
             f"{encode_state.cursor_bit_position}", EncodeError)
         encode_state.bit_position = 0

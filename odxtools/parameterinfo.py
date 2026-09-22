@@ -178,8 +178,8 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 f"{q}{param.short_name}{q}: environment data description; DTC parameter: '{dtc_ref}': {{\n"
             )
 
-            # first, print the environment datas which are always send
-            # (the ODX standard mandates them to be send before the
+            # first, print the environment datas which are always sent
+            # (the ODX standard mandates that these are sent before the
             # DTC-specific ones)
             for env_data in dop.env_datas:
                 if not env_data.all_value:

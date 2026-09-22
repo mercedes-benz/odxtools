@@ -233,7 +233,7 @@ class TableRow(IdentifiableElement):
             # luck, expose the raw key string. This is probably a gap
             # in the ODX specification because table-rows must exhibit
             # a "KEY" sub-tag, while the KEY-DOP-REF is optional for
-            # tables (and non-existant for table rows...)
+            # tables (and non-existent for table rows...)
             self._key = self.key_raw
         else:
             self._key = key_dop.physical_type.base_data_type.from_string(self.key_raw)

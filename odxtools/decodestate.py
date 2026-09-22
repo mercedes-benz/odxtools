@@ -160,7 +160,7 @@ class DecodeState:
                 if raw_value < sign_bit:
                     internal_value = raw_value
                 else:
-                    # python defines the bitwise inversion of a
+                    # Python defines the bitwise inversion of a
                     # positive integer value x as ~x = -(x + 1).
                     internal_value = -((1 << bit_length) - raw_value - 1)
             elif base_type_encoding in (None, Encoding.TWOC):

@@ -61,7 +61,7 @@ class DopBase(IdentifiableElement):
         return None
 
     def is_valid_physical_value(self, physical_value: ParameterValue) -> bool:
-        """Determine if a phyical value can be handled by the DOP"""
+        """Determine if a physical value can be handled by the DOP"""
         raise NotImplementedError
 
     def encode_into_pdu(self, physical_value: ParameterValue, encode_state: EncodeState) -> None:

@@ -76,7 +76,7 @@ class StateChart(IdentifiableElement):
 
         # For now, we assume that the start state short name reference
         # points to a local state of the state chart. TODO: The XSD
-        # allows to define state charts without any states, yet the
+        # allows defining state charts without any states, yet the
         # start state SNREF is mandatory. Is this a gap in the spec or
         # does it allow "foreign" start states? If the latter, what
         # does that mean?

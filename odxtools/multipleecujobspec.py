@@ -33,7 +33,7 @@ class MultipleEcuJobSpec(OdxCategory):
         """The resolved IMPORT-REFs
 
         ODXLINK defined by ECU-SHARED-DATA layers referenced via
-        IMPORT-REF ought to be treated as if they where defined
+        IMPORT-REF ought to be treated as if they were defined
         locally.
         """
         return self._imported_layers
@@ -99,8 +99,8 @@ class MultipleEcuJobSpec(OdxCategory):
                 imported_dl = odxlinks.resolve(import_ref, EcuSharedData)
                 self._imported_layers.append(imported_dl)
 
-                # replace the document fragments of the ODX id with
-                # the those of the muliple-ecu-spec. (be aware that
+                # replace the document fragments of the ODX ID with
+                # those of the multiple-ECU-spec. (be aware that
                 # the "original" locations are still available.)
                 imported_dl_links = imported_dl._build_odxlinks()
                 for link_id, obj in imported_dl_links.items():

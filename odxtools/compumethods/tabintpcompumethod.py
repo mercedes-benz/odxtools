@@ -19,7 +19,7 @@ class TabIntpCompuMethod(CompuMethod):
 
     A `TabIntpCompuMethod` is defined by a set of points. Each point
     is an (internal, physical) value pair.  When converting from
-    internal to physical or vice-versa, the result is linearly
+    internal to physical or vice versa, the result is linearly
     interpolated.
 
     The function defined by a `TabIntpCompuMethod` is similar to the
@@ -71,7 +71,7 @@ class TabIntpCompuMethod(CompuMethod):
 
     def __post_init__(self) -> None:
         odxassert(self.category == CompuCategory.TAB_INTP,
-                  "TabIntpCompuMethod must exibit TAB-INTP category")
+                  "TabIntpCompuMethod must exhibit TAB-INTP category")
 
         self._internal_points: list[int | float] = []
         self._physical_points: list[int | float] = []

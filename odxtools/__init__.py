@@ -11,9 +11,9 @@ maintained by ASAM e.V. `[ASAM]`_ and standardized internationally by
 ISO 22901 `[ISO22901]`_.
 
 The services provided by odxtools encompass parsing and internalizing
-ODX diagnostic database files as well as decoding and endcoding raw
-data of diagnostic requests and responses that are send to/received
-from ECUs in an pythonic manner.
+ODX diagnostic database files as well as decoding and encoding raw
+data of diagnostic requests and responses that are sent to/received
+from ECUs in a pythonic manner.
 
 Examples:
 =========

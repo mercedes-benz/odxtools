@@ -19,7 +19,7 @@ class DecodeError(Warning, OdxError):
 class DecodeMismatch(DecodeError):
     """Decoding failed because some parameters exhibit an incorrect value
 
-    This is can happen if NRC-CONST or environment data descriptions
+    This can happen if NRC-CONST or environment data descriptions
     are present.
 
     """
@@ -56,13 +56,13 @@ def odxassert(condition: bool,
               message: str | None = None,
               error_type: type[Exception] = OdxError) -> None:
     """
-    This method works similar as the build-in `assert` statement
+    This method works similarly to the built-in `assert` statement
 
-    The differences are that instead of raising an `AssertationError`,
-    an `OdxError` is raised by default and that is possible to not
+    The differences are that instead of raising an `AssertionError`,
+    an `OdxError` is raised by default and that it is possible to not
     raise any exception by setting `odxtools.exceptions.strict_mode` to
     `False`. The latter is convenient when having to deal with files
-    that do not comply to the ODX specification, but it may lead to
+    that do not comply with the ODX specification, but it may lead to
     undefined behavior. (Use the non-strict mode with great care.)
     """
     if not condition:

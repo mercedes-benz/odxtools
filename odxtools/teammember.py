@@ -16,7 +16,7 @@ class TeamMember(IdentifiableElement):
     roles: list[str] = field(default_factory=list)
     department: str | None = None
     address: str | None = None
-    zipcode: str | None = None  # the tag for this is "ZIP", but `zip` is a keyword in python
+    zipcode: str | None = None  # the XML tag for this is "ZIP", but `zip` is a keyword in Python
     city: str | None = None
     phone: str | None = None
     fax: str | None = None

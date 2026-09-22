@@ -13,7 +13,7 @@
   {{ pd.printDescription(cp.description) }}
   {%- elif cp.value is iterable %}
   {%- if hasattr(cp.value, "hex") %}
-  {#- the value has a hex() method. assume that is a bytes or bytestring #}
+  {#- the value has a hex() method; assume that it is a bytes object or a bytestring #}
   <SIMPLE-VALUE>{{cp.value.hex().upper()}}</SIMPLE-VALUE>
   {{ pd.printDescription(cp.description) }}
   {%- else %}

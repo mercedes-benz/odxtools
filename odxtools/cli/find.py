@@ -33,7 +33,7 @@ def print_summary(odxdb: Database,
     for ecu_name in ecu_names:
         ecu = odxdb.diag_layers.get(ecu_name)
         if ecu is None:
-            print(f"The ecu variant [green3]'{ecu_name}'[/green3] could not be found!")
+            print(f"The ECU variant [green3]'{ecu_name}'[/green3] could not be found!")
             continue
 
         if service_names:
@@ -89,7 +89,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         nargs=1,
         metavar="VARIANT",
         required=False,
-        help="Specifies which ecu variants should be included.",
+        help="Specifies which ECU variants should be included.",
         default="all",
     )
 

@@ -148,7 +148,7 @@ class DiagDataDictionarySpec:
             ))
 
     def _build_odxlinks(self) -> dict[OdxLinkId, Any]:
-        # note that DataDictionarySpec objects do not exhibit an ODXLINK id.
+        # note that DataDictionarySpec objects do not exhibit an ODXLINK ID.
         odxlinks = {}
 
         if self.admin_data is not None:

@@ -74,13 +74,13 @@ class DataRecord(NamedElement):
 
     @property
     def blob(self) -> bytearray:
-        """Computes the binary data blob that ought to be send to the ECU.
+        """Computes the binary data blob that ought to be sent to the ECU.
 
         i.e., this property stitches together the data of all
         segments.
 
         Note that, in order to reduce memory usage, this property is
-        not computed when instanting the data record object, but at
+        not computed when instantiating the data record object, but at
         run time when it is accessed.
         """
 

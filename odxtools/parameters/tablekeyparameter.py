@@ -170,7 +170,7 @@ class TableKeyParameter(Parameter):
                 return
 
             if not isinstance(physical_value, str):
-                odxraise(f"Invalid type for for table key '{self.short_name}' specified. "
+                odxraise(f"Invalid type for table key '{self.short_name}' specified. "
                          f"(expect name of table row.)")
 
             tkv = encode_state.table_keys.get(self.short_name)

@@ -56,7 +56,7 @@ class TestLeadingLengthInfoType(unittest.TestCase):
             base_data_type=DataType.A_BYTEFIELD,
             bit_length=5,
         )
-        # 0xC2 = 0b11000010, with bit_position=1 and bit_lenth=5, the extracted bits are 00001,
+        # 0xC2 = 0b11000010, with bit_position=1 and bit_length=5, the extracted bits are 00001,
         # i.e. the leading length is 1, i.e. only the byte 0x3 should be extracted.
         state = DecodeState(
             bytes([0x1, 0xC2, 0x3, 0x4]), cursor_byte_position=1, cursor_bit_position=1)

@@ -122,7 +122,7 @@ class DynamicEndmarkerField(Field):
                     # the endmarker ought to be considered to be not
                     # consumed (why?!), i.e., we need to keep the
                     # cursor where it is before adding the
-                    # endmarker. (we still consider its to be used
+                    # endmarker. (we still consider its bits to be
                     # "used", though.)
                     decode_state.cursor_byte_position = tmp_cursor
                     break

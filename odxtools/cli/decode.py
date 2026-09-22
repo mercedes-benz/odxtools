@@ -35,7 +35,7 @@ def print_summary(
     for ecu_name in ecu_names:
         ecu = odxdb.ecus.get(ecu_name)
         if not ecu:
-            print(f"The ecu variant '{ecu_name}' could not be found!")
+            print(f"The ECU variant '{ecu_name}' could not be found!")
             continue
         if data:
             found_services = ecu._find_services_for_uds(data)
@@ -54,7 +54,7 @@ def print_summary(
             )
         elif isinstance(service, SingleEcuJob):
             print(
-                f"Decoded by single ecu job '{service.short_name}' (decoding ECUs: {', '.join(ecu_names)})"
+                f"Decoded by single ECU job '{service.short_name}' (decoding ECUs: {', '.join(ecu_names)})"
             )
         else:
             print(f"Decoded by unknown diagnostic communication: '{service.short_name}' "
@@ -95,7 +95,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         nargs=1,
         metavar="VARIANT",
         required=False,
-        help="Specifies which ecu variants should be included.",
+        help="Specifies which ECU variants should be included.",
         default="all",
     )
 

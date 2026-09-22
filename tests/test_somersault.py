@@ -409,7 +409,7 @@ class TestNavigation(unittest.TestCase):
         self.assertIsNotNone(odxdb.diag_layers.somersault_base_variant.services.do_forward_flips)
         self.assertIsNotNone(odxdb.diag_layers.somersault_base_variant.services.report_status)
 
-        # Find ecu variant
+        # Find ECU variant
         self.assertIsNotNone(odxdb.ecus.somersault_assiduous.services.headstand)
         # Inherited services
         self.assertIsNotNone(odxdb.ecus.somersault_assiduous.services.do_backward_flips)

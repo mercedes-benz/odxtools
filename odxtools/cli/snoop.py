@@ -295,7 +295,7 @@ def run(args: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Decode ISO-TP communication over a can bus")
+    parser = argparse.ArgumentParser(description="Decode ISO-TP communication over a CAN bus")
 
     add_cli_arguments(parser)
 

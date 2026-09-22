@@ -26,7 +26,7 @@ def load_odx_file(odx_file_name: str | Path, *, use_weakrefs: bool = True) -> Da
     - .odx-f: FLASH (flashware specification)
     - .odx-fd: FUNCTION-DICTIONARY (diagnostics using functional addressing)
     - .odx-m: MULTIPLE-ECU-JOBS (multiple ECU jobs)
-    - .odx-v: VEHICLE-INFO-SPEC (specifications for vehicle identifcation)
+    - .odx-v: VEHICLE-INFO-SPEC (specifications for vehicle identification)
     """
     db = Database(use_weakrefs=use_weakrefs)
     db.add_odx_file(str(odx_file_name))

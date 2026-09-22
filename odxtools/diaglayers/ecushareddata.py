@@ -50,7 +50,7 @@ class EcuSharedData(DiagLayer):
         odxassert(
             isinstance(self.diag_layer_raw, EcuSharedDataRaw),
             "The raw diagnostic layer passed to EcuSharedData "
-            "must be a EcuSharedDataRaw")
+            "must be an EcuSharedDataRaw")
 
     def _finalize_init(self, database: "Database", odxlinks: OdxLinkDatabase) -> None:
         """This method makes sure that all references in sub-objects

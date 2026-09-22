@@ -227,7 +227,7 @@ class DiagLayerRaw(IdentifiableElement):
             functional_class._resolve_odxlinks(odxlinks)
 
         # resolve references to diagnostic communication objects and
-        # separate them into services and single-ecu jobs
+        # separate them into services and single-ECU jobs
         self._diag_comms = NamedItemList[DiagComm]()
         self._diag_services = NamedItemList[DiagService]()
         self._single_ecu_jobs = NamedItemList[SingleEcuJob]()

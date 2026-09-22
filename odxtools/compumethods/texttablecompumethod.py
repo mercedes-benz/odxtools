@@ -14,7 +14,7 @@ from .compuscale import CompuScale
 
 @dataclass(kw_only=True)
 class TexttableCompuMethod(CompuMethod):
-    """Text table compute methods translate numbers to human readable
+    """Text table compute methods translate numbers to human-readable
     textual descriptions.
 
     For details, refer to ASAM specification MCD-2 D (ODX), section 7.3.6.6.7.

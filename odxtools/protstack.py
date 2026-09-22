@@ -15,7 +15,7 @@ from .utils import dataclass_fields_asdict
 
 @dataclass(kw_only=True)
 class ProtStack(IdentifiableElement):
-    # mandatory in ODX 2.2, but non existent in ODX 2.0
+    # mandatory in ODX 2.2, but non-existent in ODX 2.0
     pdu_protocol_type: str
     physical_link_type: str
     comparam_subset_refs: list[OdxLinkRef] = field(default_factory=list)

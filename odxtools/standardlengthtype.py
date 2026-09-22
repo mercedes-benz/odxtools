@@ -46,7 +46,7 @@ class StandardLengthType(DiagCodedType):
             maskable_types = (DataType.A_UINT32, DataType.A_INT32, DataType.A_BYTEFIELD)
             odxassert(
                 self.base_data_type in maskable_types,
-                'Can not apply a bit_mask on a value of type {self.base_data_type}',
+                'Cannot apply a bit_mask on a value of type {self.base_data_type}',
             )
 
     def __get_used_mask(self, internal_value: AtomicOdxType) -> bytes | None:
@@ -124,7 +124,7 @@ class StandardLengthType(DiagCodedType):
             int_value &= self.bit_mask
             return int_value.to_bytes(len(bytes(internal_value)), 'big')
 
-        odxraise(f'Can not apply a bit_mask on a value of type {type(internal_value)}')
+        odxraise(f'Cannot apply a bit_mask on a value of type {type(internal_value)}')
         return internal_value
 
     def __unapply_mask(self, raw_value: AtomicOdxType) -> AtomicOdxType:
@@ -161,7 +161,7 @@ class StandardLengthType(DiagCodedType):
             int_value &= self.bit_mask
             return int_value.to_bytes(len(bytes(raw_value)), 'big')
 
-        odxraise(f'Can not apply a bit_mask on a value of type {type(raw_value)}')
+        odxraise(f'Cannot apply a bit_mask on a value of type {type(raw_value)}')
         return raw_value
 
     def get_static_bit_length(self) -> int | None:

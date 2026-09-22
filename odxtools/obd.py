@@ -3,10 +3,10 @@ from enum import IntEnum
 
 
 class SID(IntEnum):
-    """The standardized service IDs for ODB-II (SAE J1979).
+    """The standardized service IDs for OBD-II (SAE J1979).
 
     The physical CAN address to which OBD-II (functional) requests are
-    to be send to is usually 0x7DF and CAN frames must be padded to 8
+    sent is usually 0x7DF and CAN frames must be padded to 8
     bytes (with 0xcc as the padding pattern, i.e., one byte by ISO-TP
     and "actual" 7 payload bytes). Some vehicles support addressing up
     to seven additional ECUs via OBD-II which use the CAN IDs 0x7DF +

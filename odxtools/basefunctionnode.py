@@ -64,7 +64,7 @@ class BaseFunctionNode(IdentifiableElement):
         if (admin_data_elem := et_element.find("ADMIN-DATA")) is not None:
             admin_data = AdminData.from_et(admin_data_elem, context)
 
-        # be a aware that for whatever reason, function nodes only
+        # be aware that for whatever reason, function nodes only
         # exhibit at most one SDG. (quirk of the ODX standard?)
         sdg = None
         if (sdge := et_element.find("SDG")) is not None:

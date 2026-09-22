@@ -16,7 +16,7 @@ class PhysicalType:
     Similar to how a `DiagCodedType` describes the encoding of the internal value,
     the `PhysicalType` describes how to display the physical value.
 
-    For an unsigned integers (A_UINT32) it may specify a display radix (HEX, DEC, BIN, OCT).
+    For an unsigned integer (A_UINT32) it may specify a display radix (HEX, DEC, BIN, OCT).
     For floating point numbers (A_FLOAT32, A_FLOAT64) it may specify a precision,
     that is, the number of digits to display after the decimal point.
 

@@ -57,7 +57,7 @@ class DiagLayer:
 
     def __post_init__(self) -> None:
         if self.diag_layer_raw.diag_data_dictionary_spec is None:
-            # create an empry DiagDataDictionarySpec object if the raw
+            # create an empty DiagDataDictionarySpec object if the raw
             # layer does not define a DDDS...
             self._diag_data_dictionary_spec = DiagDataDictionarySpec(
                 admin_data=None,
@@ -121,7 +121,7 @@ class DiagLayer:
                     link_id = OdxLinkId(link_id.local_id, self.odx_id.doc_fragments)
                     imported_links[link_id] = obj
 
-            # We need to copy the odxlink database here since this
+            # We need to copy the ODXLINK database here since this
             # function must not modify its argument because the
             # imported references only apply within this specific
             # diagnostic layer
@@ -139,7 +139,7 @@ class DiagLayer:
     def _get_local_diag_comms(self, odxlinks: OdxLinkDatabase) -> Iterable[DiagComm]:
         """Return the list of locally defined diagnostic communications.
 
-        This is not completely trivial as it requires to resolving the
+        This is not completely trivial as it requires resolving the
         references specified in the <DIAG-COMMS> XML tag.
         """
         return self.diag_layer_raw.diag_comms
@@ -315,7 +315,7 @@ class DiagLayer:
         from possible service IDs.
 
         Also note, that it is actually allowed that
-        (a) SIDs for different services are the same like for service
+        (a) SIDs for different services are the same as for service
             1 and 2 (thus each leaf node is a list) and
         (b) one SID is the prefix of another SID like for service 3
             and 4 (thus the constant `-1` key).

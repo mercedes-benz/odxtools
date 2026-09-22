@@ -389,7 +389,7 @@ def as_bytes(dikt: dict[str, Any]) -> bytes:
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-# the req_resp_mapping maps request to responses for the ecu-under-test
+# the req_resp_mapping maps request to responses for the ECU-under-test
 @pytest.mark.parametrize(
     "req_resp_mapping, expected_variant",
     [
@@ -434,7 +434,7 @@ def test_base_variant_matching(
         if resp is not None:
             matcher.evaluate(resp)
         else:
-            # we don't know about the request. report back an negative response
+            # we don't know about the request. report back a negative response
             matcher.evaluate(b'{ "SID": 127 }')
 
     assert has_physical_addressing and has_functional_addressing
@@ -443,7 +443,7 @@ def test_base_variant_matching(
 
 
 @pytest.mark.parametrize("use_cache", [True, False])
-# the req_resp_mapping maps request to responses for the ecu-under-test
+# the req_resp_mapping maps request to responses for the ECU-under-test
 @pytest.mark.parametrize(
     "req_resp_mapping, expected_variant",
     [
@@ -499,7 +499,7 @@ def test_ecu_variant_matching(
 
 @pytest.mark.parametrize("use_cache", [True, False])
 def test_no_match(ecu_variants: list[EcuVariant], use_cache: bool) -> None:
-    # stores the responses for each request for the ecu-under-test
+    # stores the responses for each request for the ECU-under-test
     req_resp_mapping = {
         b"\x22\x10\x00": as_bytes({"id": 1000}),
         b"\x22\x20\x00": as_bytes({"name": {
@@ -575,7 +575,7 @@ def test_request_loop_idempotency(ecu_variants: list[EcuVariant], use_cache: boo
 
 @pytest.mark.parametrize("use_cache", [True, False])
 def test_unresolvable_snpathref(ecu_variants: list[EcuVariant], use_cache: bool) -> None:
-    # stores the responses for each request for the ecu-under-test
+    # stores the responses for each request for the ECU-under-test
     req_resp_mapping = {
         b"\x22\x10\x00": as_bytes({"id": 1000}),
         # the snpathref cannot be resolved, because name is not a struct

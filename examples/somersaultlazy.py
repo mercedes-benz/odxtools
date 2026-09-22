@@ -216,7 +216,7 @@ class SomersaultLazyEcu:
 
         # keep alive message.
         if service.short_name == "tester_present":
-            # send a positive response if have an active diagnostic
+            # send a positive response if we have an active diagnostic
             # session, and a negative one if we don't.
             if self._diag_session_open:
                 response_payload = service.positive_responses[0].encode(
@@ -417,7 +417,7 @@ async def tester_main() -> None:
         rxid=odxrequire(somersault_lazy_diag_layer.get_can_send_id()),
     )
 
-    # try to to do a single forward flip without having an active session (ought to fail)
+    # try to do a single forward flip without having an active session (ought to fail)
     tester_logger.debug(f"attempting a sessionless forward flip")
     raw_message = somersault_lazy_diag_layer.services.do_forward_flips(
         forward_soberness_check=0x12, num_flips=1)

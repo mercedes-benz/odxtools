@@ -40,7 +40,7 @@ class Field(ComplexDop):
 
     @property
     def structure(self) -> BasicStructure:
-        """may be a Structure or a env-data-desc"""
+        """may be a Structure or an env-data-desc"""
         return odxrequire(self._structure, "EnvironmentDataDescription is not supported")
 
     @property
@@ -81,7 +81,7 @@ class Field(ComplexDop):
 
         odxassert(
             num_struct_refs + num_edd_refs == 1,
-            "FIELDs need to specify exactly one reference to a "
+            "Fields need to specify exactly one reference to a "
             "structure or an environment data description")
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:

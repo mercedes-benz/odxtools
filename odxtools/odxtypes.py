@@ -121,7 +121,7 @@ def compare_odx_values(a: AtomicOdxType, b: AtomicOdxType) -> int:
         return 0
 
     # strings are compared lexicographically. (the spec only allows
-    # equals, but this cannot easily implemented using a single
+    # equals, but this cannot easily be implemented using a single
     # comparison function.
     if isinstance(a, str):
         if not isinstance(b, str):
@@ -155,7 +155,7 @@ def compare_odx_values(a: AtomicOdxType, b: AtomicOdxType) -> int:
         else:
             return 0
 
-    odxraise(f"Unhandled comparsion between objects of type {type(a).__name__} "
+    odxraise(f"Unhandled comparison between objects of type {type(a).__name__} "
              f"and {type(b).__name__}")
 
 
@@ -232,7 +232,7 @@ class DataType(Enum):
             # parse the string
             return self.from_string(value)
         else:
-            # regular type cast of python objects
+            # regular type cast of Python objects
             return self.python_type(value)
 
     def isinstance(self, value: Any) -> bool:

@@ -16,7 +16,7 @@ from .diaglayerraw import DiagLayerRaw
 
 @dataclass(kw_only=True)
 class EcuSharedDataRaw(DiagLayerRaw):
-    """This is a diagnostic layer for data shared accross others
+    """This is a diagnostic layer for data shared across others
     """
 
     diag_variables_raw: list[DiagVariable | OdxLinkRef] = field(default_factory=list)
@@ -28,9 +28,9 @@ class EcuSharedDataRaw(DiagLayerRaw):
 
     @staticmethod
     def from_et(et_element: ElementTree.Element, context: OdxDocContext) -> "EcuSharedDataRaw":
-        # objects contained by diagnostic layers exibit an additional
+        # objects contained by diagnostic layers exhibit an additional
         # document fragment for the diag layer, so we use the document
-        # fragments of the odx id of the diag layer for IDs of
+        # fragments of the ODX ID of the diag layer for IDs of
         # contained objects.
         dlr = DiagLayerRaw.from_et(et_element, context)
         kwargs = dataclass_fields_asdict(dlr)

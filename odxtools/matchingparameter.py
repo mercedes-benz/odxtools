@@ -17,8 +17,8 @@ from .snrefcontext import SnRefContext
 class MatchingParameter:
     """According to ISO 22901, a MatchingParameter contains a string
     value identifying the active ECU or base variant. Moreover, it
-    references a DIAG-COMM via snref and one of its positive
-    response's OUT-PARAM-IF via snref or snpathref.
+    references a DIAG-COMM via SNREF and one of its positive
+    response's OUT-PARAM-IF via SNREF or SNPATHREF.
 
     Unlike other parameters defined in the `parameters` package, a
     MatchingParameter is not transferred over the network.

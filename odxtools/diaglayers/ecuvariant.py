@@ -79,7 +79,7 @@ class EcuVariant(HierarchyElement):
         odxassert(
             isinstance(self.diag_layer_raw, EcuVariantRaw),
             "The raw diagnostic layer passed to EcuVariant "
-            "must be a EcuVariantRaw")
+            "must be an EcuVariantRaw")
 
     @override
     def _compute_value_inheritance(self, odxlinks: OdxLinkDatabase) -> None:
