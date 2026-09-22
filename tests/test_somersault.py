@@ -159,7 +159,7 @@ class TestDatabase(unittest.TestCase):
         nr = service.negative_responses.flips_not_done
         self.assertEqual(
             [x.short_name for x in nr.parameters],
-            ["sid", "rq_sid", "reason", "flips_successfully_done"],
+            ["sid", "rq_sid", "reason", "reason_value", "flips_successfully_done"],
         )
         self.assertEqual(nr.get_static_bit_length(), 32)
 
@@ -336,6 +336,7 @@ class TestEnDecode(unittest.TestCase):
             expected_output = ("forward_soberness_check: uint\n"
                                "num_flips: uint\n"
                                "sault_time: uint\n"
+                               "reason_value: uint\n"
                                "flips_successfully_done: uint\n")
             actual_output = stdout.getvalue()
             self.assertEqual(expected_output, actual_output)
