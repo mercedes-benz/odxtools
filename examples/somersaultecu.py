@@ -335,7 +335,7 @@ somersault_units = {
             odx_id=OdxLinkId("somersault.unit.celsius", doc_frags),
             short_name="celsius",
             display_name="°C",
-            long_name="Degrees Celcius",
+            long_name="Degrees Celsius",
             factor_si_to_unit=1,
             offset_si_to_unit=-273.15,
             physical_dimension_ref=OdxLinkRef.from_id(
@@ -878,7 +878,7 @@ somersault_tables = {
                     structure_ref=OdxLinkRef.from_id(
                         somersault_structures["forward_flips_grudgingly_done"].odx_id),
                     description=Description.from_string(
-                        "<p>The the last forward flip was grudgingly done</p>"),
+                        "<p>The last forward flip was grudgingly done</p>"),
                     semantic="DETAILS-KEY",
                 ),
                 TableRow(
@@ -1078,7 +1078,7 @@ somersault_requests = {
             parameters=NamedItemList([
                 ValueParameter(
                     short_name="schroedinger_param",
-                    long_name="Parameter where the DOP changes dending on how you "
+                    long_name="Parameter where the DOP changes depending on how you "
                     "look at the SNREF to it",
                     byte_position=0,
                     dop_snref="schroedinger_dop",

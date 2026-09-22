@@ -1897,7 +1897,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
             "  For more information use:",
             "    odxtools compare -h",
         ]),
-        help="Compares two versions of diagnostic layers and/or databases with each other. Checks whether diagnostic services and its parameters have changed.",
+        help="Compares two versions of diagnostic layers and/or databases with each other. Checks whether diagnostic services and their parameters have changed.",
         formatter_class=argparse.RawTextHelpFormatter,
     )
     _parser_utils.add_pdx_argument(parser)

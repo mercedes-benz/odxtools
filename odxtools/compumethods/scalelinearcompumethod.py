@@ -39,7 +39,7 @@ class ScaleLinearCompuMethod(CompuMethod):
         self._segments: list[LinearSegment] = []
 
         odxassert(self.category == CompuCategory.SCALE_LINEAR,
-                  "ScaleLinearCompuMethod must exibit SCALE-LINEAR category")
+                  "ScaleLinearCompuMethod must exhibit SCALE-LINEAR category")
 
         odxassert(self.physical_type in [
             DataType.A_FLOAT32,

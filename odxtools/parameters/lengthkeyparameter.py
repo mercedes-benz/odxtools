@@ -128,7 +128,7 @@ class LengthKeyParameter(ParameterWithDOP):
         phys_val = super()._decode_positioned_from_pdu(decode_state)
 
         if not isinstance(phys_val, int):
-            odxraise(f"The pysical type of length keys must be an integer, "
+            odxraise(f"The physical type of length keys must be an integer, "
                      f"(is {type(phys_val).__name__})")
         decode_state.length_keys[self.short_name] = phys_val
 

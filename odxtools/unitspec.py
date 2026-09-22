@@ -17,13 +17,7 @@ from .unitgroup import UnitGroup
 @dataclass(kw_only=True)
 class UnitSpec:
     """
-    A unit spec encapsulates three lists:
-
-    * unit groups
-    * units
-    * physical_dimensions
-
-    The following odx elements are not internalized: ADMIN-DATA, SDGS
+    Specification of physical units
     """
 
     admin_data: AdminData | None = None

@@ -41,7 +41,7 @@ class Comparam(BaseComparam):
         return super()._build_odxlinks()
 
     def _resolve_odxlinks(self, odxlinks: OdxLinkDatabase) -> None:
-        """Resolves the reference to the dop"""
+        """Resolves the reference to the DOP"""
         super()._resolve_odxlinks(odxlinks)
 
         self._dop = odxlinks.resolve(self.dop_ref, DataObjectProperty)

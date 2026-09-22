@@ -132,7 +132,7 @@ class VariantMatcher:
                 break
 
         if self.is_pending():
-            # no pattern has matched for any ecu variant
+            # no pattern has matched for any ECU variant
             self._state = VariantMatcher.State.NO_MATCH
 
     def evaluate(self, resp_bytes: bytes) -> None:
@@ -153,7 +153,7 @@ class VariantMatcher:
         """
         if self.is_pending():
             raise RuntimeError(
-                "EcuVariantMatcher is pending. Run the request_loop to determine the active ecu variant."
+                "EcuVariantMatcher is pending. Run the request_loop to determine the active ECU variant."
             )
         return self._state == VariantMatcher.State.MATCH
 

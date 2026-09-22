@@ -174,7 +174,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         default=None,
         metavar="SERVICE",
         required=False,
-        help="Print a list of diagnostic services specified in the pdx. \n" +
+        help="Print a list of diagnostic services specified in the PDX. \n" +
         "If no service names are specified, all services are printed.",
     )
     # Pretty print message format and list parameters
@@ -205,7 +205,7 @@ def add_subparser(subparsers: SubparsersList) -> None:
         action="store_const",
         const=True,
         required=False,
-        help="Print a list of all diagnostic services and DOPs specified in the pdx",
+        help="Print a list of all diagnostic services and DOPs specified in the PDX",
     )
 
     parser.add_argument(

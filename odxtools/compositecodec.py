@@ -103,7 +103,7 @@ def composite_codec_encode_into_pdu(codec: CompositeCodec, physical_value: Param
             f"got {type(physical_value).__name__}", EncodeError)
     elif encode_state.cursor_bit_position != 0:
         odxraise(
-            f"Compositional codec objecs must be byte aligned, but "
+            f"Compositional codec objects must be byte aligned, but "
             f"{codec.short_name} requested to be at bit position "
             f"{encode_state.cursor_bit_position}", EncodeError)
         encode_state.bit_position = 0

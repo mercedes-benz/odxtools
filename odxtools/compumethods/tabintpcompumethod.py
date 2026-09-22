@@ -71,7 +71,7 @@ class TabIntpCompuMethod(CompuMethod):
 
     def __post_init__(self) -> None:
         odxassert(self.category == CompuCategory.TAB_INTP,
-                  "TabIntpCompuMethod must exibit TAB-INTP category")
+                  "TabIntpCompuMethod must exhibit TAB-INTP category")
 
         self._internal_points: list[int | float] = []
         self._physical_points: list[int | float] = []

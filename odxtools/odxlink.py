@@ -141,7 +141,7 @@ class OdxLinkRef:
 
         id_ref = et.attrib.get("ID-REF")
         if id_ref is None:
-            odxraise(f"Tag {et.tag} is not a ODXLINK reference")
+            odxraise(f"Tag {et.tag} is not an ODXLINK reference")
             return None
 
         docref = et.attrib.get("DOCREF")

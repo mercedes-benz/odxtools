@@ -155,7 +155,7 @@ def compare_odx_values(a: AtomicOdxType, b: AtomicOdxType) -> int:
         else:
             return 0
 
-    odxraise(f"Unhandled comparsion between objects of type {type(a).__name__} "
+    odxraise(f"Unhandled comparison between objects of type {type(a).__name__} "
              f"and {type(b).__name__}")
 
 

@@ -92,7 +92,7 @@ operational parameters can be set. Finally, it is unwilling to compete
 somersault_young = DiagLayer(diag_layer_raw=somersault_young_dlr)
 
 # remove the "sault_time" parameter from the positive response of the
-# "do_forward_flips" service for ecu variant "somersault_young"
+# "do_forward_flips" service for ECU variant "somersault_young"
 pr_grudging_forward = find_named_object(somersault_dlr.positive_responses, "grudging_forward")
 assert isinstance(pr_grudging_forward, Response)
 pr_young_forward = deepcopy(pr_grudging_forward)
@@ -191,7 +191,7 @@ if __name__ == "__main__":
     argparser.add_argument(
         "output_pdx_file",
         metavar="OUTPUT_PDX_FILE",
-        help="Path to the where the resulting .pdx file is written",
+        help="Path where the resulting .pdx file is written",
     )
 
     args = argparser.parse_args()

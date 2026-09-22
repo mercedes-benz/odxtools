@@ -109,7 +109,7 @@ class Multiplexer(ComplexDop):
         upper_limit = key_type.make_from(case.upper_limit.value)
         if not isinstance(lower_limit, type(upper_limit)) and not isinstance(
                 upper_limit, type(lower_limit)):
-            odxraise("Upper and lower bounds of limits must compareable")
+            odxraise("Upper and lower bounds of limits must be comparable")
         return lower_limit, upper_limit
 
     @override

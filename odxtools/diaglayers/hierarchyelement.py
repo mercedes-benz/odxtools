@@ -266,7 +266,7 @@ class HierarchyElement(DiagLayer):
         inheritance mechanism
 
         Note that all objects subject to the value inheritance
-        mechanism exhibit a short_name attribute.
+        mechanism exhibit a `.short_name` attribute.
 
         :param get_local_objects: Function mapping a DiagLayer to the
         set of objects that are locally defined by that DiagLayer. If
@@ -340,7 +340,7 @@ class HierarchyElement(DiagLayer):
                     continue
 
                 odxraise(f"Diagnostic layer {self.short_name} cannot inherit object "
-                         f"{obj.short_name} due to an unresolveable inheritance conflict between "
+                         f"{obj.short_name} due to an unresolvable inheritance conflict between "
                          f"parent layers {result_dict[obj.short_name][1].short_name} "
                          f"and {parent_dl.short_name}")
 
@@ -603,7 +603,7 @@ class HierarchyElement(DiagLayer):
         if len(cps) > 1:
             warnings.warn(
                 f"Communication parameter `{cp_short_name}` specified more "
-                f"than once. Using first occurence.",
+                f"than once. Using first occurrence.",
                 OdxWarning,
                 stacklevel=1,
             )

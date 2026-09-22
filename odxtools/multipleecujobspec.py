@@ -100,7 +100,7 @@ class MultipleEcuJobSpec(OdxCategory):
                 self._imported_layers.append(imported_dl)
 
                 # replace the document fragments of the ODX ID with
-                # the those of the multiple-ecu-spec. (be aware that
+                # those of the multiple-ECU-spec. (be aware that
                 # the "original" locations are still available.)
                 imported_dl_links = imported_dl._build_odxlinks()
                 for link_id, obj in imported_dl_links.items():

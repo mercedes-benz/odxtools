@@ -49,7 +49,7 @@ vehicle_info_spec_xml_str = """<?xml version="1.0" encoding="UTF-8" standalone="
             <MATCHING-COMPONENTS>
               <MATCHING-COMPONENT>
                 <EXPECTED-VALUE>1842</EXPECTED-VALUE>
-                <OUT-PARAM-IF-SNPATHREF SHORT-NAME-PATH="last_pos_resonse.forward_grudging.num_flips_done" />
+                <OUT-PARAM-IF-SNPATHREF SHORT-NAME-PATH="last_pos_response.forward_grudging.num_flips_done" />
                 <DIAG-COMM-REF ID-REF="somersault.service.report_status" DOCREF="somersault" DOCTYPE="CONTAINER" />
               </MATCHING-COMPONENT>
             </MATCHING-COMPONENTS>
@@ -190,7 +190,7 @@ def test_create_vehicle_info_spec_from_et() -> None:
     ic = vehicle_info_spec.info_components._1842
     assert ic.matching_components[0].out_param_if_snref is None
     assert ic.matching_components[
-        0].out_param_if_snpathref == "last_pos_resonse.forward_grudging.num_flips_done"
+        0].out_param_if_snpathref == "last_pos_response.forward_grudging.num_flips_done"
 
     assert len(vehicle_info_spec.vehicle_informations) == 1
     vi = vehicle_info_spec.vehicle_informations.coach_info

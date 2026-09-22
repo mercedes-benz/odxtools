@@ -21,7 +21,7 @@ argparser.add_argument(
 argparser.add_argument(
     "output_pdx_file",
     metavar="OUTPUT_PDX_FILE",
-    help="Path to the where the resulting .pdx file is written",
+    help="Path where the resulting .pdx file is written",
 )
 
 args = argparser.parse_args()

@@ -26,7 +26,7 @@ payload = sys.argv[4].encode()
 
 
 def isotp_error_handler(error: str) -> None:
-    print(f"An isotp error occoured: {error}")
+    print(f"An isotp error occurred: {error}")
 
 
 isotp_socket = isotp.socket()

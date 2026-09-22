@@ -120,11 +120,11 @@ class IsoTpStateMachine:
 
         The yielded telegrams are (can_id, payload_data) tuples.
 
-        :param bus: Input file or socket of can bus to read the can frames
+        :param bus: Input file or socket of CAN bus to read the CAN frames
         """
 
         if isinstance(bus, can.BusABC):
-            # create an "on receive" event for the can bus
+            # create an "on receive" event for the CAN bus
             rx_event = asyncio.Event()
             loop = asyncio.get_running_loop()
             loop.add_reader(bus, rx_event.set)

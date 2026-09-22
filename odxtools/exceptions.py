@@ -62,7 +62,7 @@ def odxassert(condition: bool,
     an `OdxError` is raised by default and that it is possible to not
     raise any exception by setting `odxtools.exceptions.strict_mode` to
     `False`. The latter is convenient when having to deal with files
-    that do not comply to the ODX specification, but it may lead to
+    that do not comply with the ODX specification, but it may lead to
     undefined behavior. (Use the non-strict mode with great care.)
     """
     if not condition:
