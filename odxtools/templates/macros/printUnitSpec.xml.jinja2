@@ -29,7 +29,7 @@
  {%- if spec.physical_dimensions %}
  <PHYSICAL-DIMENSIONS>
  {%- for dim in spec.physical_dimensions %}
-  {{ printPhysicalDimesion(dim)|indent(2) }}
+  {{ printPhysicalDimension(dim)|indent(2) }}
  {%- endfor %}
  </PHYSICAL-DIMENSIONS>
  {%- endif %}
@@ -68,7 +68,7 @@
 </UNIT-GROUP>
 {%- endmacro -%}
 
-{%- macro printPhysicalDimesion(dim) -%}
+{%- macro printPhysicalDimension(dim) -%}
 <PHYSICAL-DIMENSION {{-peid.printElementIdAttribs(dim)}}>
  {{ peid.printElementIdSubtags(dim)|indent(1) }}
  {%- if dim.length_exp %}
