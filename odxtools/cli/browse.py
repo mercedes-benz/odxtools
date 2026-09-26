@@ -4,8 +4,6 @@ import logging
 import sys
 from typing import Any, cast
 
-from InquirerPy.resolver import prompt as IP_prompt
-from InquirerPy.resolver import question_mapping
 from rich import print as rich_print
 
 from ..database import Database
@@ -35,14 +33,13 @@ from ..request import Request
 from ..response import Response
 from ..staticfield import StaticField
 from ..structure import Structure
-from . import _browse_utils, _parser_utils
+from . import _parser_utils
+from ._browse_utils import prompt_questions
 from ._parser_utils import SubparsersList
 from ._print_utils import build_parameter_table
 
 # name of the tool
 _odxtools_tool_name_ = "browse"
-
-question_mapping["list"] = _browse_utils._ListPromptWithCustomKeys
 
 
 def _convert_string_to_odx_type(string_value: str, odx_type: DataType) -> AtomicOdxType:
@@ -168,7 +165,7 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
             param_prompt[0]["choices"] = texttable_choices
 
     # query user for answer
-    answer = IP_prompt(param_prompt)
+    answer = prompt_questions(param_prompt)
     raw_answer = answer.get(parameter.short_name)
 
     if raw_answer in ("", None):
@@ -202,7 +199,7 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
                         f"Do you want to use the parameter's default value ({default_value!r}) or the empty value?",
                     "choices": ["default", "empty"],
                 }]
-                answer = IP_prompt(message_prompt)
+                answer = prompt_questions(message_prompt)
                 if answer.get("default_empty_prompt") == "default":
                     return None
                 else:
@@ -263,7 +260,7 @@ def prompt_field_parameter_value(parameter: ValueParameter,
                 "choices": ["yes", "no"],
                 "default": "yes" if len(result) < min_items else "no",
             }]
-            answer = IP_prompt(add_another_prompt)
+            answer = prompt_questions(add_another_prompt)
             if answer.get("add_another") == "no":
                 break
 
@@ -348,7 +345,7 @@ def prompt_multiplexer_parameter_value(parameter: ValueParameter,
         "message": f"{indent}Select case for multiplexer parameter '{parameter.short_name}'",
         "choices": choices,
     }]
-    answer = IP_prompt(prompt)
+    answer = prompt_questions(prompt)
     case_name = answer.get(parameter.short_name)
     if not isinstance(case_name, str):
         odxraise(f"Expected string case name, got {type(case_name).__name__}")
@@ -394,7 +391,7 @@ def prompt_table_key_parameter_value(parameter: TableKeyParameter, indent: str =
         "message": f"{indent}Select table row for parameter '{parameter.short_name}'",
         "choices": choices,
     }]
-    answer = IP_prompt(prompt)
+    answer = prompt_questions(prompt)
     result = answer.get(parameter.short_name)
     if not isinstance(result, str):
         odxraise(f"Expected string table row name, got {type(result).__name__}")
@@ -452,9 +449,8 @@ def prompt_table_struct_parameter_value(parameter: TableStructParameter,
             "message": f"{indent}Value for table row '{table_row.short_name}' "
                        f"(Type: {phys_type.base_data_type})",
             "validate": lambda x: _validate_chosen_value(x, row_dop, is_required=True),
-            "filter": lambda x: x,
         }]
-        answer = IP_prompt(param_prompt)
+        answer = prompt_questions(param_prompt)
         raw_answer = answer.get("row_value")
         if not isinstance(raw_answer, str):
             odxraise(f"Expected string value, got {type(raw_answer).__name__}")
@@ -562,7 +558,7 @@ def encode_message_interactively(codec: Request | Response,
                 "message": f"Do you want to encode a message?",
                 "choices": ["yes", "no"],
             }]
-            answer = IP_prompt(encode_message_prompt)
+            answer = prompt_questions(encode_message_prompt)
             if answer.get("yes_no_prompt") == "no":
                 return
 
@@ -578,7 +574,7 @@ def encode_message_interactively(codec: Request | Response,
                        "(Enter the coded request as integer in hexadecimal format (e.g. 12 3B 05)",
             "filter": lambda input: _convert_string_to_bytes(input),
         }]
-        answer = IP_prompt(answered_request_prompt)
+        answer = prompt_questions(answered_request_prompt)
         answered_request = cast(bytes, answer.get("request"))
         rich_print(f"Input interpretation as list: {list(answered_request)}")
 
@@ -607,7 +603,7 @@ def browse(odxdb: Database) -> None:
             "message": "Select a Variant.",
             "choices": list(dl_names) + ["[exit]"],
         }]
-        answer = IP_prompt(selection)
+        answer = prompt_questions(selection)
         if answer.get("variant") == "[exit]":
             return
 
@@ -646,7 +642,7 @@ def browse(odxdb: Database) -> None:
                 "choices":
                     sorted([s.short_name for s in services], key=str.lower) + ["[back]"],
             }]
-            answer = IP_prompt(selection)
+            answer = prompt_questions(selection)
             if answer.get("service") == "[back]":
                 break
 
@@ -670,18 +666,15 @@ def browse(odxdb: Database) -> None:
                 "choices": [{
                     "name": f"Request: {service.request.short_name}",
                     "value": service.request,
-                    "short": f"Request: {service.request.short_name}",
                 }] + [{
                     "name": f"Positive response: {pr.short_name}",
                     "value": pr,
-                    "short": f"Positive response: {pr.short_name}",
                 } for pr in service.positive_responses] + [{
                     "name": f"Negative response: {nr.short_name}",
                     "value": nr,
-                    "short": f"Negative response: {nr.short_name}",
                 } for nr in service.negative_responses] + ["[back]"],  # type: ignore
             }]
-            answer = IP_prompt(selection)
+            answer = prompt_questions(selection)
             if answer.get("message_type") == "[back]":
                 continue
 
