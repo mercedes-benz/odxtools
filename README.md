@@ -443,7 +443,7 @@ The services of 'somersault_lazy' are:
 ### The `browse` subcommand
 
 The `browse` subcommand uses
-[InquirerPy](https://github.com/kazhala/InquirerPy) to interactively
+[prompt_toolkit](https://github.com/prompt-toolkit/python-prompt-toolkit) to interactively
 navigate through the database of a `.pdx` file. For example, using the
 `browse` subcommand you can select the ECU and service without
 spamming the terminal:
