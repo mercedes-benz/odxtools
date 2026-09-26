@@ -230,10 +230,14 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                             of.write(f"  {v}\n")
 
             elif isinstance(cm, IdenticalCompuMethod):
-                of.write(f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}\n")
+                bit_length = dop.get_static_bit_length() or ""
+                of.write(
+                    f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}{bit_length}\n")
 
             elif isinstance(cm, ScaleLinearCompuMethod):
-                of.write(f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}")
+                bit_length = dop.get_static_bit_length() or ""
+                of.write(
+                    f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}{bit_length}")
                 seg_list = [_get_linear_segment_info(x) for x in cm.segments]
                 of.write(f"; ranges = {{ {', '.join(seg_list)} }}")
 
@@ -245,7 +249,9 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 of.write("\n")
 
             elif isinstance(cm, LinearCompuMethod):
-                of.write(f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}")
+                bit_length = dop.get_static_bit_length() or ""
+                of.write(
+                    f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}{bit_length}")
                 of.write(f"; range: {_get_linear_segment_info(cm.segment)}")
 
                 unit = dop.unit
@@ -256,7 +262,9 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 of.write("\n")
 
             elif isinstance(cm, ScaleRatFuncCompuMethod):
-                of.write(f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}")
+                bit_length = dop.get_static_bit_length() or ""
+                of.write(
+                    f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}{bit_length}")
                 if cm._phys_to_int_segments is None:
                     of.write("<NOT ENCODABLE>\n")
                 else:
@@ -271,7 +279,9 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                     of.write("\n")
 
             elif isinstance(cm, RatFuncCompuMethod):
-                of.write(f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}")
+                bit_length = dop.get_static_bit_length() or ""
+                of.write(
+                    f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}{bit_length}")
                 if cm._phys_to_int_segment is None:
                     of.write("<NOT ENCODABLE>")
                 else:
@@ -285,7 +295,9 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 of.write("\n")
 
             elif isinstance(cm, CompuCodeCompuMethod):
-                of.write(f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}")
+                bit_length = dop.get_static_bit_length() or ""
+                of.write(
+                    f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}{bit_length}")
                 of.write(f"; <programmatic translation>")
 
                 of.write("\n")
