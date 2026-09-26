@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
-from typing import Any
+from collections.abc import Callable
+from typing import Any, TypedDict
 
 from prompt_toolkit import Application, print_formatted_text
 from prompt_toolkit.formatted_text import StyleAndTextTuples
@@ -11,7 +12,20 @@ from prompt_toolkit.shortcuts import prompt
 from prompt_toolkit.validation import Validator
 
 
-def _select(question: dict[str, Any]) -> Any:
+class _BaseQuestion(TypedDict):
+    type: str
+    name: str
+    message: str
+
+
+class _Question(_BaseQuestion, total=False):
+    choices: list[Any]
+    default: Any
+    validate: Callable[[Any], bool]
+    filter: Callable[[Any], Any]
+
+
+def _select(question: _Question) -> Any:
     # Keep values separate from labels: a choice can be an ODX object or None.
     choices = [c if isinstance(c, dict) else {"name": c, "value": c} for c in question["choices"]]
     if not choices:
@@ -99,7 +113,7 @@ def _select(question: dict[str, Any]) -> Any:
     return value
 
 
-def prompt_questions(questions: list[dict[str, Any]]) -> dict[str, Any]:
+def prompt_questions(questions: list[_Question]) -> dict[str, Any]:
     """Ask the browser's selection and text questions using prompt_toolkit."""
     answers = {}
     for question in questions:
