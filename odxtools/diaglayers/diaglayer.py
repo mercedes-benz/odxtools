@@ -22,6 +22,7 @@ from ..nameditemlist import NamedItemList, TNamed
 from ..odxdoccontext import OdxDocContext
 from ..odxlink import OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from ..parentref import ParentRef
+from ..physicaldimension import PhysicalDimension
 from ..request import Request
 from ..response import Response
 from ..servicebinner import ServiceBinner
@@ -30,6 +31,7 @@ from ..snrefcontext import SnRefContext
 from ..specialdatagroup import SpecialDataGroup
 from ..statechart import StateChart
 from ..subcomponent import SubComponent
+from ..unit import Unit
 from ..unitgroup import UnitGroup
 from .diaglayerraw import DiagLayerRaw
 from .diaglayertype import DiagLayerType
@@ -153,6 +155,26 @@ class DiagLayer:
             return []
 
         return unit_spec.unit_groups
+
+    def _get_local_units(self) -> Iterable[Unit]:
+        if self.diag_layer_raw.diag_data_dictionary_spec is None:
+            return []
+
+        unit_spec = self.diag_layer_raw.diag_data_dictionary_spec.unit_spec
+        if unit_spec is None:
+            return []
+
+        return unit_spec.units
+
+    def _get_local_physical_dimensions(self) -> Iterable[PhysicalDimension]:
+        if self.diag_layer_raw.diag_data_dictionary_spec is None:
+            return []
+
+        unit_spec = self.diag_layer_raw.diag_data_dictionary_spec.unit_spec
+        if unit_spec is None:
+            return []
+
+        return unit_spec.physical_dimensions
 
     def _compute_available_objects(
         self,
