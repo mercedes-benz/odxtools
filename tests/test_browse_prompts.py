@@ -1,6 +1,4 @@
 # SPDX-License-Identifier: MIT
-from collections.abc import Callable
-
 import pytest
 
 pytest.importorskip("prompt_toolkit")
