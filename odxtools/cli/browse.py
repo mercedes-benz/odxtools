@@ -2,7 +2,7 @@
 import argparse
 import logging
 import sys
-from typing import Any, cast
+from typing import cast
 
 from rich import print as rich_print
 
@@ -34,7 +34,7 @@ from ..response import Response
 from ..staticfield import StaticField
 from ..structure import Structure
 from . import _parser_utils
-from ._browse_utils import prompt_questions
+from ._browse_utils import InputQuestion, SelectQuestion, prompt_question
 from ._parser_utils import SubparsersList
 from ._print_utils import build_parameter_table
 
@@ -106,13 +106,12 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
 
     dop = parameter.dop
     type_name = "DTC" if isinstance(dop, DtcDop) else parameter.physical_type.base_data_type
-    param_prompt = [{
-        "type": "input",
-        "name": parameter.short_name,
-        "message": f"{indent}Value for parameter '{parameter.short_name}' "
-                   f"(Type: {type_name})" + (" [optional]" if not parameter.is_required else ""),
-        "validate": lambda x: _validate_chosen_value(x, dop, parameter.is_required),
-    }]
+    message = (f"{indent}Value for parameter '{parameter.short_name}' "
+               f"(Type: {type_name})" + (" [optional]" if not parameter.is_required else ""))
+    question: SelectQuestion | InputQuestion = InputQuestion(
+        message=message,
+        validate=lambda x: _validate_chosen_value(x, dop, parameter.is_required),
+    )
 
     # determine the default value to preselect if a list of choices is shown
     default_value: AtomicOdxType | None = parameter.physical_default_value
@@ -123,28 +122,31 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
 
     # if the parameter refers to a DTC-DOP, list the available DTCs
     if isinstance(dop, DtcDop) and len(dop.dtcs) > 0:
-        dtc_choices: list[dict[str, Any]] = [{
+        dtc_choices: list[dict[str, object]] = [{
             "name": f"{dtc.short_name} (0x{dtc.trouble_code:06x}): {dtc.text}",
             "value": dtc,
         } for dtc in dop.dtcs]
         if not parameter.is_required:
             dtc_choices.insert(0, {"name": "[none]", "value": None})
 
-        param_prompt[0]["type"] = "list"
-        param_prompt[0]["choices"] = dtc_choices
-
-        # preselect the default DTC if available
+        selected_default: object | None = default_value
         if isinstance(default_value, int):
             for dtc in dop.dtcs:
                 if dtc.trouble_code == default_value:
-                    param_prompt[0]["default"] = dtc
+                    selected_default = dtc
                     break
+        question = SelectQuestion(
+            message=message,
+            choices=dtc_choices,
+            default=selected_default,
+            validate=lambda x: _validate_chosen_value(x, dop, parameter.is_required),
+        )
 
     # if the parameter is a texttable, list the possible choices
     elif isinstance(dop, DataObjectProperty) and \
        (citp := dop.compu_method.compu_internal_to_phys) is not None:
 
-        texttable_choices: list[dict[str, Any]] = [
+        texttable_choices: list[dict[str, object]] = [
             {
                 "name": scale.compu_const.value,
                 "value": scale.compu_const.value,
@@ -158,15 +160,17 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
                 "name": f"[default] ({cdv.value!r})",
                 "value": cdv.value,
             })
-            param_prompt[0]["default"] = cdv.value
+            default_value = cdv.value
 
         if texttable_choices:
-            param_prompt[0]["type"] = "list"
-            param_prompt[0]["choices"] = texttable_choices
+            question = SelectQuestion(
+                message=message,
+                choices=texttable_choices,
+                default=default_value,
+            )
 
     # query user for answer
-    answer = prompt_questions(param_prompt)
-    raw_answer = answer.get(parameter.short_name)
+    raw_answer = prompt_question(question)
 
     if raw_answer in ("", None):
         if raw_answer == "" and parameter.is_required:
@@ -190,17 +194,12 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
 
             if empty_phys_val != default_value:
                 # ask user if they mean the default or the empty value
-                message_prompt = [{
-                    "type":
-                        "list",
-                    "name":
-                        "default_empty_prompt",
-                    "message":
-                        f"Do you want to use the parameter's default value ({default_value!r}) or the empty value?",
-                    "choices": ["default", "empty"],
-                }]
-                answer = prompt_questions(message_prompt)
-                if answer.get("default_empty_prompt") == "default":
+                answer = prompt_question(
+                    SelectQuestion(
+                        message=f"Do you want to use the parameter's default value ({default_value!r}) or the empty value?",
+                        choices=["default", "empty"],
+                    ))
+                if answer == "default":
                     return None
                 else:
                     return empty_phys_val
@@ -253,15 +252,13 @@ def prompt_field_parameter_value(parameter: ValueParameter,
             break
 
         if len(result) >= min_items:
-            add_another_prompt = [{
-                "type": "list",
-                "name": "add_another",
-                "message": f"{indent}Add another item to field '{parameter.short_name}'?",
-                "choices": ["yes", "no"],
-                "default": "yes" if len(result) < min_items else "no",
-            }]
-            answer = prompt_questions(add_another_prompt)
-            if answer.get("add_another") == "no":
+            answer = prompt_question(
+                SelectQuestion(
+                    message=f"{indent}Add another item to field '{parameter.short_name}'?",
+                    choices=["yes", "no"],
+                    default="yes" if len(result) < min_items else "no",
+                ))
+            if answer == "no":
                 break
 
     return result
@@ -339,14 +336,11 @@ def prompt_multiplexer_parameter_value(parameter: ValueParameter,
         odxraise(f"Multiplexer '{dop.short_name}' does not contain any cases")
         return ("", {})
 
-    prompt = [{
-        "type": "list",
-        "name": parameter.short_name,
-        "message": f"{indent}Select case for multiplexer parameter '{parameter.short_name}'",
-        "choices": choices,
-    }]
-    answer = prompt_questions(prompt)
-    case_name = answer.get(parameter.short_name)
+    case_name = prompt_question(
+        SelectQuestion(
+            message=f"{indent}Select case for multiplexer parameter '{parameter.short_name}'",
+            choices=choices,
+        ))
     if not isinstance(case_name, str):
         odxraise(f"Expected string case name, got {type(case_name).__name__}")
         return ("", {})
@@ -385,14 +379,11 @@ def prompt_table_key_parameter_value(parameter: TableKeyParameter, indent: str =
         odxraise(f"Table '{table.short_name}' does not contain any rows")
         return ""
 
-    prompt = [{
-        "type": "list",
-        "name": parameter.short_name,
-        "message": f"{indent}Select table row for parameter '{parameter.short_name}'",
-        "choices": choices,
-    }]
-    answer = prompt_questions(prompt)
-    result = answer.get(parameter.short_name)
+    result = prompt_question(
+        SelectQuestion(
+            message=f"{indent}Select table row for parameter '{parameter.short_name}'",
+            choices=choices,
+        ))
     if not isinstance(result, str):
         odxraise(f"Expected string table row name, got {type(result).__name__}")
         return ""
@@ -443,15 +434,12 @@ def prompt_table_struct_parameter_value(parameter: TableStructParameter,
             odxraise(f"Table row '{table_row.short_name}' does not have a physical type")
             return (row_short_name, {})
 
-        param_prompt = [{
-            "type": "input",
-            "name": "row_value",
-            "message": f"{indent}Value for table row '{table_row.short_name}' "
-                       f"(Type: {phys_type.base_data_type})",
-            "validate": lambda x: _validate_chosen_value(x, row_dop, is_required=True),
-        }]
-        answer = prompt_questions(param_prompt)
-        raw_answer = answer.get("row_value")
+        raw_answer = prompt_question(
+            InputQuestion(
+                message=f"{indent}Value for table row '{table_row.short_name}' "
+                        f"(Type: {phys_type.base_data_type})",
+                validate=lambda x: _validate_chosen_value(x, row_dop, is_required=True),
+            ))
         if not isinstance(raw_answer, str):
             odxraise(f"Expected string value, got {type(raw_answer).__name__}")
             return (row_short_name, {})
@@ -552,14 +540,12 @@ def encode_message_interactively(codec: Request | Response,
     if has_settable_param or has_matching_request_param:
         # Ask whether user wants to encode a message
         if ask_user_confirmation:
-            encode_message_prompt = [{
-                "type": "list",
-                "name": "yes_no_prompt",
-                "message": f"Do you want to encode a message?",
-                "choices": ["yes", "no"],
-            }]
-            answer = prompt_questions(encode_message_prompt)
-            if answer.get("yes_no_prompt") == "no":
+            answer = prompt_question(
+                SelectQuestion(
+                    message="Do you want to encode a message?",
+                    choices=["yes", "no"],
+                ))
+            if answer == "no":
                 return
 
     answered_request = b""
@@ -567,15 +553,13 @@ def encode_message_interactively(codec: Request | Response,
         # if the user wants to encode a message for a response and the
         # response contains a matching request parameter, we need the
         # corresponding request
-        answered_request_prompt = [{
-            "type": "input",
-            "name": "request",
-            "message": "What is the request you want to answer? "
-                       "(Enter the coded request as integer in hexadecimal format (e.g. 12 3B 05)",
-            "filter": lambda input: _convert_string_to_bytes(input),
-        }]
-        answer = prompt_questions(answered_request_prompt)
-        answered_request = cast(bytes, answer.get("request"))
+        answer = prompt_question(
+            InputQuestion(
+                message="What is the request you want to answer? "
+                        "(Enter the coded request as integer in hexadecimal format (e.g. 12 3B 05)",
+                filter=_convert_string_to_bytes,
+            ))
+        answered_request = cast(bytes, answer)
         rich_print(f"Input interpretation as list: {list(answered_request)}")
 
     param_values = {}
@@ -597,17 +581,13 @@ def browse(odxdb: Database) -> None:
     dl_names = sorted([dl.short_name for dl in odxdb.diag_layers], key=str.lower)
     while True:
         # Select an ECU
-        selection = [{
-            "type": "list",
-            "name": "variant",
-            "message": "Select a Variant.",
-            "choices": list(dl_names) + ["[exit]"],
-        }]
-        answer = prompt_questions(selection)
-        if answer.get("variant") == "[exit]":
+        variant_name = prompt_question(
+            SelectQuestion(
+                message="Select a Variant.",
+                choices=list(dl_names) + ["[exit]"],
+            ))
+        if variant_name == "[exit]":
             return
-
-        variant_name = answer.get("variant")
         assert isinstance(variant_name, str)
         variant = odxdb.diag_layers[variant_name]
         assert isinstance(variant, DiagLayer)
@@ -632,21 +612,13 @@ def browse(odxdb: Database) -> None:
                 s for s in variant.services if isinstance(s, DiagService)
             ]
             # Select a service of the ECU
-            selection = [{
-                "type":
-                    "list",
-                "name":
-                    "service",
-                "message":
-                    f"The variant {variant.short_name} offers the following services. Select one!",
-                "choices":
-                    sorted([s.short_name for s in services], key=str.lower) + ["[back]"],
-            }]
-            answer = prompt_questions(selection)
-            if answer.get("service") == "[back]":
+            service_sn = prompt_question(
+                SelectQuestion(
+                    message=f"The variant {variant.short_name} offers the following services. Select one!",
+                    choices=sorted([s.short_name for s in services], key=str.lower) + ["[back]"],
+                ))
+            if service_sn == "[back]":
                 break
-
-            service_sn = answer.get("service")
             assert isinstance(service_sn, str)
 
             service = variant.services[service_sn]
@@ -656,29 +628,22 @@ def browse(odxdb: Database) -> None:
             assert service.negative_responses is not None
 
             # Select a request/ response of the service
-            selection = [{
-                "type":
-                    "list",
-                "name":
-                    "message_type",
-                "message":
-                    "This service offers the following messages.",
-                "choices": [{
-                    "name": f"Request: {service.request.short_name}",
-                    "value": service.request,
-                }] + [{
-                    "name": f"Positive response: {pr.short_name}",
-                    "value": pr,
-                } for pr in service.positive_responses] + [{
-                    "name": f"Negative response: {nr.short_name}",
-                    "value": nr,
-                } for nr in service.negative_responses] + ["[back]"],  # type: ignore
-            }]
-            answer = prompt_questions(selection)
-            if answer.get("message_type") == "[back]":
+            codec = prompt_question(
+                SelectQuestion(
+                    message="This service offers the following messages.",
+                    choices=[{
+                        "name": f"Request: {service.request.short_name}",
+                        "value": service.request,
+                    }] + [{
+                        "name": f"Positive response: {pr.short_name}",
+                        "value": pr,
+                    } for pr in service.positive_responses] + [{
+                        "name": f"Negative response: {nr.short_name}",
+                        "value": nr,
+                    } for nr in service.negative_responses] + ["[back]"],  # type: ignore
+                ))
+            if codec == "[back]":
                 continue
-
-            codec = answer.get("message_type")
             if codec is not None:
                 assert isinstance(codec, (Request, Response))
                 table = build_parameter_table(codec.parameters)
