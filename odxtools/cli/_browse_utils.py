@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
-from collections.abc import Callable
-from typing import Any, TypedDict
+from collections.abc import Callable, Mapping, Sequence
+from dataclasses import dataclass
 
 from prompt_toolkit import Application, print_formatted_text
 from prompt_toolkit.formatted_text import StyleAndTextTuples
@@ -12,38 +12,50 @@ from prompt_toolkit.shortcuts import prompt
 from prompt_toolkit.validation import Validator
 
 
-class _BaseQuestion(TypedDict):
-    type: str
-    name: str
+@dataclass
+class SelectQuestion:
     message: str
+    choices: Sequence[object]
+    default: object | None = None
+    validate: Callable[[object], bool] | None = None
 
 
-class _Question(_BaseQuestion, total=False):
-    choices: list[Any]
-    default: Any
-    validate: Callable[[Any], bool]
-    filter: Callable[[Any], Any]
+@dataclass
+class InputQuestion:
+    message: str
+    validate: Callable[[str], bool] | None = None
+    filter: Callable[[str], object] | None = None
 
 
-def _select(question: _Question) -> Any:
+def _choice_parts(choice: object) -> tuple[str, object]:
+    if isinstance(choice, Mapping):
+        name = choice.get("name")
+        if not isinstance(name, str):
+            raise TypeError("Choice mappings need a string 'name'")
+        return name, choice.get("value")
+    return str(choice), choice
+
+
+def _select(question: SelectQuestion) -> object:
     # Keep values separate from labels: a choice can be an ODX object or None.
-    choices = [c if isinstance(c, dict) else {"name": c, "value": c} for c in question["choices"]]
+    choices = [_choice_parts(choice) for choice in question.choices]
     if not choices:
         raise ValueError("A selection needs at least one choice")
+
     index = 0
-    for i, c in enumerate(choices):
-        if c["value"] == question.get("default"):
+    for i, (_, value) in enumerate(choices):
+        if value == question.default:
             index = i
+
     error = ""
     keys = KeyBindings()
 
     def fragments() -> StyleAndTextTuples:
         result: StyleAndTextTuples = []
-        for i, c in enumerate(choices):
+        for i, (name, _) in enumerate(choices):
             if i == index:
                 result.append(("[SetCursorPosition]", ""))
-            result.append(
-                ("reverse" if i == index else "", f"{'>' if i == index else ' '} {c['name']}"))
+            result.append(("reverse" if i == index else "", f"{'>' if i == index else ' '} {name}"))
             if i < len(choices) - 1:
                 result.append(("", "\n"))
         return result
@@ -51,7 +63,8 @@ def _select(question: _Question) -> Any:
     menu = Window(
         FormattedTextControl(fragments, focusable=True),
         height=Dimension(min=1, max=10),
-        wrap_lines=True)
+        wrap_lines=True,
+    )
 
     @keys.add("c-p")
     @keys.add("s-tab")
@@ -71,21 +84,24 @@ def _select(question: _Question) -> Any:
         index = max(
             0,
             min(
-                len(choices) - 1, {
+                len(choices) - 1,
+                {
                     "up": (index - 1) % len(choices),
                     "down": (index + 1) % len(choices),
                     "pageup": index - page,
                     "pagedown": index + page,
                     "home": 0,
                     "end": len(choices) - 1,
-                }[key]))
+                }[key],
+            ),
+        )
         error = ""
 
     @keys.add("enter")
     def accept(event: KeyPressEvent) -> None:
         nonlocal error
-        value = choices[index]["value"]
-        if "validate" in question and not question["validate"](value):
+        value = choices[index][1]
+        if question.validate is not None and not question.validate(value):
             error = "Invalid input"
             return
         event.app.exit(result=value)
@@ -94,41 +110,44 @@ def _select(question: _Question) -> Any:
     def cancel(event: KeyPressEvent) -> None:
         event.app.exit(exception=KeyboardInterrupt())
 
-    app: Application[Any] = Application(
+    app: Application[object] = Application(
         layout=Layout(
             HSplit([
                 Window(
-                    FormattedTextControl(f"? {question['message']}"),
+                    FormattedTextControl(f"? {question.message}"),
                     dont_extend_height=True,
-                    wrap_lines=True),
+                    wrap_lines=True,
+                ),
                 menu,
                 Window(FormattedTextControl(lambda: error), height=lambda: 1 if error else 0),
             ]),
-            focused_element=menu),
+            focused_element=menu,
+        ),
         key_bindings=keys,
         erase_when_done=True,
     )
     value = app.run()
-    print_formatted_text(f"? {question['message']} {choices[index]['name']}")
+    print_formatted_text(f"? {question.message} {choices[index][0]}")
     return value
 
 
-def prompt_questions(questions: list[_Question]) -> dict[str, Any]:
-    """Ask the browser's selection and text questions using prompt_toolkit."""
-    answers = {}
-    for question in questions:
-        if question["type"] == "list":
-            value = _select(question)
-        elif question["type"] == "input":
-            validator = None
-            if "validate" in question:
-                validator = Validator.from_callable(
-                    question["validate"], error_message="Invalid input", move_cursor_to_end=True)
-            value = prompt(
-                f"? {question['message']} ", validator=validator, validate_while_typing=False)
-        else:
-            raise ValueError(f"Unsupported question type: {question['type']}")
-        if "filter" in question:
-            value = question["filter"](value)
-        answers[question["name"]] = value
-    return answers
+def prompt_question(question: SelectQuestion | InputQuestion) -> object:
+    """Ask one browser selection or text question using prompt_toolkit."""
+    if isinstance(question, SelectQuestion):
+        return _select(question)
+
+    validator = None
+    if question.validate is not None:
+        validator = Validator.from_callable(
+            question.validate,
+            error_message="Invalid input",
+            move_cursor_to_end=True,
+        )
+    value = prompt(
+        f"? {question.message} ",
+        validator=validator,
+        validate_while_typing=False,
+    )
+    if question.filter is not None:
+        return question.filter(value)
+    return value
