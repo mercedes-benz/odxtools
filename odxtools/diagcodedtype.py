@@ -5,7 +5,7 @@ from xml.etree import ElementTree
 
 from .decodestate import DecodeState
 from .encodestate import EncodeState
-from .encoding import Encoding
+from .encoding import Encoding, get_string_encoding
 from .exceptions import odxassert, odxraise, odxrequire
 from .odxdoccontext import OdxDocContext
 from .odxlink import OdxLinkDatabase, OdxLinkId
@@ -83,20 +83,20 @@ class DiagCodedType:
         # A_BYTEFIELD, A_ASCIISTRING, A_UNICODE2STRING, A_UTF8STRING
         if self.base_data_type == DataType.A_BYTEFIELD:
             byte_length = len(internal_value)
-        elif self.base_data_type in [DataType.A_ASCIISTRING, DataType.A_UTF8STRING]:
+        elif self.base_data_type in [
+                DataType.A_ASCIISTRING, DataType.A_UTF8STRING, DataType.A_UNICODE2STRING
+        ]:
             if not isinstance(internal_value, str):
                 odxraise()
 
-            # TODO: Handle different encodings
-            byte_length = len(bytes(internal_value, "utf-8"))
-        elif self.base_data_type == DataType.A_UNICODE2STRING:
-            if not isinstance(internal_value, str):
-                odxraise()
-
-            byte_length = len(bytes(internal_value, "utf-16-le"))
-            odxassert(
-                byte_length % 2 == 0, f"The bit length of A_UNICODE2STRING must"
-                f" be a multiple of 16 but is {8*byte_length}")
+            str_encoding = odxrequire(
+                get_string_encoding(self.base_data_type, self.base_type_encoding,
+                                    self.is_highlow_byte_order))
+            byte_length = len(internal_value.encode(str_encoding))
+            if self.base_data_type == DataType.A_UNICODE2STRING:
+                odxassert(
+                    byte_length % 2 == 0, f"The bit length of A_UNICODE2STRING must"
+                    f" be a multiple of 16 but is {8*byte_length}")
 
         return byte_length
 
