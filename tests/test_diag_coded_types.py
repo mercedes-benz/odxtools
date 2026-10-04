@@ -82,6 +82,24 @@ class TestLeadingLengthInfoType(unittest.TestCase):
         dct.encode_into_pdu(bytes([0x3]), state)
         self.assertEqual(state.coded_message.hex(), "0803")
 
+    def test_leading_length_info_type_uses_string_encoding_for_length_and_value(self) -> None:
+        for base_data_type, base_type_encoding, expected in [
+            (DataType.A_ASCIISTRING, None, bytes.fromhex("01e4")),
+            (DataType.A_UTF8STRING, Encoding.ISO_8859_1, bytes.fromhex("01e4")),
+            (DataType.A_UTF8STRING, None, bytes.fromhex("02c3a4")),
+        ]:
+            with self.subTest(base_data_type=base_data_type, encoding=base_type_encoding):
+                dct = LeadingLengthInfoType(
+                    base_data_type=base_data_type,
+                    base_type_encoding=base_type_encoding,
+                    bit_length=8,
+                )
+                state = EncodeState()
+                dct.encode_into_pdu("ä", state)
+                self.assertEqual(state.coded_message, expected)
+                decoded = dct.decode_from_pdu(DecodeState(bytes(state.coded_message)))
+                self.assertEqual(decoded, "ä")
+
     def test_decode_leading_length_info_type_bytefield2(self) -> None:
         dct = LeadingLengthInfoType(
             base_data_type=DataType.A_BYTEFIELD,
