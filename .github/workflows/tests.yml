@@ -94,7 +94,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install .
-          pip install .[test]
+          pip install .[test,browse-tool]
 
       - name: Create somersault.pdx
         run: |

@@ -20,7 +20,7 @@ class DummyTool:
 
     # Map missing modules to install hints
     _INSTALL_HINTS: dict[str, str] = {
-        "InquirerPy": 'pip install "odxtools[browse-tool]"',
+        "prompt_toolkit": 'pip install "odxtools[browse-tool]"',
         "PyYAML": 'pip install "odxtools[compare-tool]"',
         "can_isotp": 'pip install "odxtools[examples]"',
     }
