@@ -159,19 +159,6 @@ def compare_odx_values(a: AtomicOdxType, b: AtomicOdxType) -> int:
              f"and {type(b).__name__}")
 
 
-# format specifiers for the data type using the bitstruct module
-_BITSTRUCT_FORMAT_LETTER_MAP__ = {
-    "A_INT32": "u",  # the sign must be handled separately
-    "A_UINT32": "u",
-    "A_FLOAT32": "f",
-    "A_FLOAT64": "f",
-    "A_BYTEFIELD": "r",
-    "A_UNICODE2STRING": "r",  # UTF-16 strings must be converted explicitly
-    "A_ASCIISTRING": "r",
-    "A_UTF8STRING": "r",
-}
-
-
 class DataType(Enum):
     """Types for the physical and internal value.
 
@@ -198,10 +185,6 @@ class DataType(Enum):
     @property
     def python_type(self) -> type[int | float | str | bytearray]:
         return _ODX_TYPE_TO_PYTHON_TYPE[self.value]
-
-    @property
-    def bitstruct_format_letter(self) -> str:
-        return _BITSTRUCT_FORMAT_LETTER_MAP__[self.value]
 
     def from_string(self, value: str) -> AtomicOdxType:
         return _PARSE_ODX_TYPE[self.value](value)

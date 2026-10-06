@@ -321,22 +321,22 @@ class TestEnDecode(unittest.TestCase):
         stdout = StringIO()
         with patch("sys.stdout", stdout):
             request.print_free_parameters_info()
-            expected_output = "forward_soberness_check: uint\nnum_flips: uint\n"
+            expected_output = "forward_soberness_check: uint8\nnum_flips: uint8\n"
             actual_output = stdout.getvalue()
             self.assertEqual(actual_output, expected_output)
 
         with patch("sys.stdout", stdout):
             pos_response.print_free_parameters_info()
-            expected_output = "forward_soberness_check: uint\nnum_flips: uint\nsault_time: uint\n"
+            expected_output = "forward_soberness_check: uint8\nnum_flips: uint8\nsault_time: uint8\n"
             actual_output = stdout.getvalue()
             self.assertEqual(actual_output, expected_output)
 
         with patch("sys.stdout", stdout):
             neg_response.print_free_parameters_info()
-            expected_output = ("forward_soberness_check: uint\n"
-                               "num_flips: uint\n"
-                               "sault_time: uint\n"
-                               "flips_successfully_done: uint\n")
+            expected_output = ("forward_soberness_check: uint8\n"
+                               "num_flips: uint8\n"
+                               "sault_time: uint8\n"
+                               "flips_successfully_done: uint8\n")
             actual_output = stdout.getvalue()
             self.assertEqual(expected_output, actual_output)
 
