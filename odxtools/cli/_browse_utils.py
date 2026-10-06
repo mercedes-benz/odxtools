@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from typing import Generic, TypeVar, overload
 
 from prompt_toolkit import Application, print_formatted_text
 from prompt_toolkit.formatted_text import StyleAndTextTuples
@@ -11,32 +12,42 @@ from prompt_toolkit.layout.dimension import Dimension
 from prompt_toolkit.shortcuts import prompt
 from prompt_toolkit.validation import Validator
 
+T = TypeVar("T")
+
 
 @dataclass
-class SelectQuestion:
+class Choice(Generic[T]):
+    """A selectable choice with a display name distinct from its value."""
+    name: str
+    value: T
+
+
+@dataclass
+class SelectQuestion(Generic[T]):
+    """A single-choice question presented as a scrollable list to pick from."""
     message: str
-    choices: Sequence[object]
-    default: object | None = None
-    validate: Callable[[object], bool] | None = None
+    choices: Sequence[T | Choice[T]]
+    default: T | None = None
+    validate: Callable[[T], bool] | None = None
 
 
 @dataclass
-class InputQuestion:
+class InputQuestion(Generic[T]):
+    """A free-text question whose typed-in answer can be validated and converted."""
     message: str
     validate: Callable[[str], bool] | None = None
-    filter: Callable[[str], object] | None = None
+    filter: Callable[[str], T] | None = None
 
 
-def _choice_parts(choice: object) -> tuple[str, object]:
-    if isinstance(choice, Mapping):
-        name = choice.get("name")
-        if not isinstance(name, str):
-            raise TypeError("Choice mappings need a string 'name'")
-        return name, choice.get("value")
+def _choice_parts(choice: T | Choice[T]) -> tuple[str, T]:
+    """Determine the displayed name and its associated value of a choice."""
+    if isinstance(choice, Choice):
+        return choice.name, choice.value
     return str(choice), choice
 
 
-def _select(question: SelectQuestion) -> object:
+def _select(question: SelectQuestion[T]) -> T:
+    """Render an interactive scrollable menu and return the chosen value."""
     # Keep values separate from labels: a choice can be an ODX object or None.
     choices = [_choice_parts(choice) for choice in question.choices]
     if not choices:
@@ -80,7 +91,7 @@ def _select(question: SelectQuestion) -> object:
         nonlocal index, error
         key = event.key_sequence[-1].key
         key = {"c-p": "up", "s-tab": "up", "c-n": "down", "c-i": "down"}.get(key, key)
-        page = menu.render_info.window_height if menu.render_info else 10
+        page_size = menu.render_info.window_height if menu.render_info else 10
         index = max(
             0,
             min(
@@ -88,8 +99,8 @@ def _select(question: SelectQuestion) -> object:
                 {
                     "up": (index - 1) % len(choices),
                     "down": (index + 1) % len(choices),
-                    "pageup": index - page,
-                    "pagedown": index + page,
+                    "pageup": index - page_size,
+                    "pagedown": index + page_size,
                     "home": 0,
                     "end": len(choices) - 1,
                 }[key],
@@ -110,7 +121,7 @@ def _select(question: SelectQuestion) -> object:
     def cancel(event: KeyPressEvent) -> None:
         event.app.exit(exception=KeyboardInterrupt())
 
-    app: Application[object] = Application(
+    app: Application[T] = Application(
         layout=Layout(
             HSplit([
                 Window(
@@ -131,7 +142,17 @@ def _select(question: SelectQuestion) -> object:
     return value
 
 
-def prompt_question(question: SelectQuestion | InputQuestion) -> object:
+@overload
+def prompt_question(question: SelectQuestion[T]) -> T:
+    ...
+
+
+@overload
+def prompt_question(question: InputQuestion[T]) -> T | str:
+    ...
+
+
+def prompt_question(question: SelectQuestion[T] | InputQuestion[T]) -> T | str:
     """Ask one browser selection or text question using prompt_toolkit."""
     if isinstance(question, SelectQuestion):
         return _select(question)

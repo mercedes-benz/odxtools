@@ -34,12 +34,17 @@ from ..response import Response
 from ..staticfield import StaticField
 from ..structure import Structure
 from . import _parser_utils
-from ._browse_utils import InputQuestion, SelectQuestion, prompt_question
+from ._browse_utils import Choice, InputQuestion, SelectQuestion, prompt_question
 from ._parser_utils import SubparsersList
 from ._print_utils import build_parameter_table
 
 # name of the tool
 _odxtools_tool_name_ = "browse"
+
+# the value type of a primitive parameter's prompt: either a concrete
+# ODX value, a DTC object (when a DTC-DOP's choices are listed) or
+# None (an explicit "no value" choice for optional parameters)
+PrimitiveChoiceValue = AtomicOdxType | DiagnosticTroubleCode | None
 
 
 def _convert_string_to_odx_type(string_value: str, odx_type: DataType) -> AtomicOdxType:
@@ -59,8 +64,13 @@ def _convert_string_to_bytes(string_value: str) -> bytes:
         return int(string_value, 16).to_bytes((int(string_value, 16).bit_length() + 7) // 8, "big")
 
 
-def _validate_chosen_value(input_val: ParameterValue, dop: DopBase, is_required: bool) -> bool:
-    if not is_required and (input_val == "" or input_val is None):
+def _validate_chosen_value(input_val: ParameterValue | None, dop: DopBase,
+                           is_required: bool) -> bool:
+    if input_val is None:
+        # An explicit "no value" choice is only acceptable for optional parameters.
+        return not is_required
+
+    if not is_required and input_val == "":
         return True
 
     if isinstance(dop, DtcDop):
@@ -108,10 +118,11 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
     type_name = "DTC" if isinstance(dop, DtcDop) else parameter.physical_type.base_data_type
     message = (f"{indent}Value for parameter '{parameter.short_name}' "
                f"(Type: {type_name})" + (" [optional]" if not parameter.is_required else ""))
-    question: SelectQuestion | InputQuestion = InputQuestion(
-        message=message,
-        validate=lambda x: _validate_chosen_value(x, dop, parameter.is_required),
-    )
+    question: (SelectQuestion[PrimitiveChoiceValue]
+               | InputQuestion[PrimitiveChoiceValue]) = InputQuestion(
+                   message=message,
+                   validate=lambda x: _validate_chosen_value(x, dop, parameter.is_required),
+               )
 
     # determine the default value to preselect if a list of choices is shown
     default_value: AtomicOdxType | None = parameter.physical_default_value
@@ -122,14 +133,14 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
 
     # if the parameter refers to a DTC-DOP, list the available DTCs
     if isinstance(dop, DtcDop) and len(dop.dtcs) > 0:
-        dtc_choices: list[dict[str, object]] = [{
-            "name": f"{dtc.short_name} (0x{dtc.trouble_code:06x}): {dtc.text}",
-            "value": dtc,
-        } for dtc in dop.dtcs]
+        dtc_choices: list[Choice[PrimitiveChoiceValue]] = [
+            Choice(name=f"{dtc.short_name} (0x{dtc.trouble_code:06x}): {dtc.text}", value=dtc)
+            for dtc in dop.dtcs
+        ]
         if not parameter.is_required:
-            dtc_choices.insert(0, {"name": "[none]", "value": None})
+            dtc_choices.insert(0, Choice(name="[none]", value=None))
 
-        selected_default: object | None = default_value
+        selected_default: PrimitiveChoiceValue = default_value
         if isinstance(default_value, int):
             for dtc in dop.dtcs:
                 if dtc.trouble_code == default_value:
@@ -146,20 +157,14 @@ def prompt_primitive_parameter_value(parameter: ValueParameter,
     elif isinstance(dop, DataObjectProperty) and \
        (citp := dop.compu_method.compu_internal_to_phys) is not None:
 
-        texttable_choices: list[dict[str, object]] = [
-            {
-                "name": scale.compu_const.value,
-                "value": scale.compu_const.value,
-            }
+        texttable_choices: list[Choice[PrimitiveChoiceValue]] = [
+            Choice(name=str(scale.compu_const.value), value=scale.compu_const.value)
             for scale in citp.compu_scales
             if scale.compu_const is not None and scale.compu_const.value is not None
         ]
 
         if (cdv := citp.compu_default_value) is not None and cdv.value is not None:
-            texttable_choices.append({
-                "name": f"[default] ({cdv.value!r})",
-                "value": cdv.value,
-            })
+            texttable_choices.append(Choice(name=f"[default] ({cdv.value!r})", value=cdv.value))
             default_value = cdv.value
 
         if texttable_choices:
@@ -318,29 +323,27 @@ def prompt_multiplexer_parameter_value(parameter: ValueParameter,
         odxraise(f"Expected a Multiplexer DOP for parameter '{parameter.short_name}'")
         return ("", {})
 
-    choices: list[str | dict[str, str]] = []
+    choices: list[Choice[str]] = []
     for cur_mux_case in dop.cases:
         case_dop = cur_mux_case.structure
         assert case_dop is not None
-        choices.append({
-            "name": f"{cur_mux_case.short_name} ({case_dop.short_name})",
-            "value": cur_mux_case.short_name,
-        })
+        choices.append(
+            Choice(
+                name=f"{cur_mux_case.short_name} ({case_dop.short_name})",
+                value=cur_mux_case.short_name))
     if dop.default_case is not None:
-        choices.append({
-            "name": f"{dop.default_case.short_name} (default)",
-            "value": dop.default_case.short_name,
-        })
+        choices.append(
+            Choice(
+                name=f"{dop.default_case.short_name} (default)", value=dop.default_case.short_name))
 
     if not choices:
         odxraise(f"Multiplexer '{dop.short_name}' does not contain any cases")
         return ("", {})
 
-    case_name = prompt_question(
-        SelectQuestion(
-            message=f"{indent}Select case for multiplexer parameter '{parameter.short_name}'",
-            choices=choices,
-        ))
+    case_name = prompt_question(SelectQuestion[str](
+        message=f"{indent}Select case for multiplexer parameter '{parameter.short_name}'",
+        choices=choices,
+    ))
     if not isinstance(case_name, str):
         odxraise(f"Expected string case name, got {type(case_name).__name__}")
         return ("", {})
@@ -437,7 +440,7 @@ def prompt_table_struct_parameter_value(parameter: TableStructParameter,
         raw_answer = prompt_question(
             InputQuestion(
                 message=f"{indent}Value for table row '{table_row.short_name}' "
-                        f"(Type: {phys_type.base_data_type})",
+                f"(Type: {phys_type.base_data_type})",
                 validate=lambda x: _validate_chosen_value(x, row_dop, is_required=True),
             ))
         if not isinstance(raw_answer, str):
@@ -553,13 +556,12 @@ def encode_message_interactively(codec: Request | Response,
         # if the user wants to encode a message for a response and the
         # response contains a matching request parameter, we need the
         # corresponding request
-        answer = prompt_question(
-            InputQuestion(
-                message="What is the request you want to answer? "
-                        "(Enter the coded request as integer in hexadecimal format (e.g. 12 3B 05)",
-                filter=_convert_string_to_bytes,
-            ))
-        answered_request = cast(bytes, answer)
+        raw_answer = prompt_question(InputQuestion[bytes](
+            message="What is the request you want to answer? "
+            "(Enter the coded request as integer in hexadecimal format (e.g. 12 3B 05)",
+            filter=_convert_string_to_bytes,
+        ))
+        answered_request = cast(bytes, raw_answer)
         rich_print(f"Input interpretation as list: {list(answered_request)}")
 
     param_values = {}
@@ -628,20 +630,22 @@ def browse(odxdb: Database) -> None:
             assert service.negative_responses is not None
 
             # Select a request/ response of the service
-            codec = prompt_question(
-                SelectQuestion(
-                    message="This service offers the following messages.",
-                    choices=[{
-                        "name": f"Request: {service.request.short_name}",
-                        "value": service.request,
-                    }] + [{
-                        "name": f"Positive response: {pr.short_name}",
-                        "value": pr,
-                    } for pr in service.positive_responses] + [{
-                        "name": f"Negative response: {nr.short_name}",
-                        "value": nr,
-                    } for nr in service.negative_responses] + ["[back]"],  # type: ignore
-                ))
+            message_choices: list[Choice[Request | Response | str] | str] = [
+                Choice(name=f"Request: {service.request.short_name}", value=service.request)
+            ]
+            message_choices += [
+                Choice(name=f"Positive response: {pr.short_name}", value=pr)
+                for pr in service.positive_responses
+            ]
+            message_choices += [
+                Choice(name=f"Negative response: {nr.short_name}", value=nr)
+                for nr in service.negative_responses
+            ]
+            message_choices.append("[back]")
+            codec = prompt_question(SelectQuestion[Request | Response | str](
+                message="This service offers the following messages.",
+                choices=message_choices,
+            ))
             if codec == "[back]":
                 continue
             if codec is not None:

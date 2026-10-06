@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: MIT
+import re
 import sys
 from types import SimpleNamespace
 
@@ -15,6 +16,10 @@ from odxtools.loadfile import load_pdx_file
 
 DOWN = "\x1b[B"
 LAST = "\x1b[F\r"
+
+# Matches ANSI escape sequences (e.g. color codes) that rich may emit once the
+# test spoofs stdout as a terminal; stripped before asserting on plain text.
+_ANSI_ESCAPE_RE = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 
 
 @pytest.mark.parametrize(
@@ -51,7 +56,7 @@ def test_browse_encode_and_navigate_back(monkeypatch: pytest.MonkeyPatch,
         except KeyboardInterrupt:
             pytest.fail("The browser asked for more input than expected")
 
-    output = capsys.readouterr().out
+    output = _ANSI_ESCAPE_RE.sub("", capsys.readouterr().out)
     assert "ECU-VARIANT 'somersault_lazy'" in output
     if payload is None:
         assert "Message payload:" not in output

@@ -1,6 +1,4 @@
 # SPDX-License-Identifier: MIT
-from typing import Any
-
 import pytest
 
 pytest.importorskip("prompt_toolkit")
@@ -9,9 +7,12 @@ from prompt_toolkit import Application
 from prompt_toolkit.application import create_app_session
 from prompt_toolkit.data_structures import Size
 from prompt_toolkit.input import create_pipe_input
+from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.layout import Layout
 from prompt_toolkit.output import DummyOutput
 
 from odxtools.cli import _browse_utils
+from odxtools.cli._browse_utils import SelectQuestion
 
 
 class SmallTerminalOutput(DummyOutput):
@@ -28,7 +29,7 @@ def test_wrapped_question_and_scrolling_keep_selection_visible(monkeypatch: pyte
 
     with create_pipe_input() as pipe, create_app_session(input=pipe, output=SmallTerminalOutput()):
 
-        def capture_frame(app: Application[Any]) -> None:
+        def capture_frame(app: Application[str]) -> None:
             screen = app.renderer._last_screen
             if app.is_done or screen is None:
                 return
@@ -41,18 +42,22 @@ def test_wrapped_question_and_scrolling_keep_selection_visible(monkeypatch: pyte
             ])
             pipe.send_text(next(keys, "\r"))
 
-        def capturing_application(**kwargs: Any) -> Application[Any]:
-            return Application(after_render=capture_frame, **kwargs)
+        def capturing_application(*, layout: Layout, key_bindings: KeyBindings,
+                                  erase_when_done: bool) -> Application[str]:
+            return Application(
+                after_render=capture_frame,
+                layout=layout,
+                key_bindings=key_bindings,
+                erase_when_done=erase_when_done)
 
         monkeypatch.setattr(_browse_utils, "Application", capturing_application)
-        result = _browse_utils.prompt_questions([{
-            "type": "list",
-            "name": "service",
-            "message": question,
-            "choices": [f"service-{index:02}" for index in range(25)],
-        }])
+        result = _browse_utils.prompt_question(
+            SelectQuestion(
+                message=question,
+                choices=[f"service-{index:02}" for index in range(25)],
+            ))
 
-    assert result["service"] == "service-24"
+    assert result == "service-24"
     assert len(frames) == 3
     title_rows = next(index for index, row in enumerate(frames[0]) if row.startswith(">"))
     assert title_rows > 1
