@@ -20,6 +20,7 @@ from .endofpdufield import EndOfPduField
 from .environmentdatadescription import EnvironmentDataDescription
 from .exceptions import odxrequire
 from .multiplexer import Multiplexer
+from .odxtypes import DataType
 from .parameters.codedconstparameter import CodedConstParameter
 from .parameters.matchingrequestparameter import MatchingRequestParameter
 from .parameters.nrcconstparameter import NrcConstParameter
@@ -68,6 +69,16 @@ def _get_rat_func_segment_info(segment: RatFuncSegment) -> str:
         ul_str = f"{ul._value!r}{ul_delim}"
 
     return f"{ll_str}, {ul_str}"
+
+
+def _get_type_qualifier(dop: DataObjectProperty) -> str:
+    phys_base_type = dop.physical_type.base_data_type
+
+    bit_length = ""
+    if phys_base_type in (DataType.A_INT32, DataType.A_UINT32):
+        bit_length = str(dop.get_static_bit_length()) or ""
+
+    return f"{phys_base_type}{bit_length}"
 
 
 def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) -> str:
@@ -230,14 +241,12 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                             of.write(f"  {v}\n")
 
             elif isinstance(cm, IdenticalCompuMethod):
-                bit_length = dop.get_static_bit_length() or ""
-                of.write(
-                    f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}{bit_length}\n")
+                type_qual = _get_type_qualifier(dop)
+                of.write(f"{q}{param.short_name}{q}: {type_qual}\n")
 
             elif isinstance(cm, ScaleLinearCompuMethod):
-                bit_length = dop.get_static_bit_length() or ""
-                of.write(
-                    f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}{bit_length}")
+                type_qual = _get_type_qualifier(dop)
+                of.write(f"{q}{param.short_name}{q}: {type_qual}")
                 seg_list = [_get_linear_segment_info(x) for x in cm.segments]
                 of.write(f"; ranges = {{ {', '.join(seg_list)} }}")
 
@@ -249,9 +258,8 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 of.write("\n")
 
             elif isinstance(cm, LinearCompuMethod):
-                bit_length = dop.get_static_bit_length() or ""
-                of.write(
-                    f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}{bit_length}")
+                type_qual = _get_type_qualifier(dop)
+                of.write(f"{q}{param.short_name}{q}: {type_qual}")
                 of.write(f"; range: {_get_linear_segment_info(cm.segment)}")
 
                 unit = dop.unit
@@ -262,9 +270,8 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 of.write("\n")
 
             elif isinstance(cm, ScaleRatFuncCompuMethod):
-                bit_length = dop.get_static_bit_length() or ""
-                of.write(
-                    f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}{bit_length}")
+                type_qual = _get_type_qualifier(dop)
+                of.write(f"{q}{param.short_name}{q}: {type_qual}")
                 if cm._phys_to_int_segments is None:
                     of.write("<NOT ENCODABLE>\n")
                 else:
@@ -279,9 +286,8 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                     of.write("\n")
 
             elif isinstance(cm, RatFuncCompuMethod):
-                bit_length = dop.get_static_bit_length() or ""
-                of.write(
-                    f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}{bit_length}")
+                type_qual = _get_type_qualifier(dop)
+                of.write(f"{q}{param.short_name}{q}: {type_qual}")
                 if cm._phys_to_int_segment is None:
                     of.write("<NOT ENCODABLE>")
                 else:
@@ -295,9 +301,8 @@ def parameter_info(param_list: Iterable[Parameter], quoted_names: bool = False) 
                 of.write("\n")
 
             elif isinstance(cm, CompuCodeCompuMethod):
-                bit_length = dop.get_static_bit_length() or ""
-                of.write(
-                    f"{q}{param.short_name}{q}: {dop.physical_type.base_data_type}{bit_length}")
+                type_qual = _get_type_qualifier(dop)
+                of.write(f"{q}{param.short_name}{q}: {type_qual}")
                 of.write(f"; <programmatic translation>")
 
                 of.write("\n")
