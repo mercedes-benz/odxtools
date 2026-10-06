@@ -351,7 +351,12 @@ class HierarchyElement(DiagLayer):
     def _compute_available_diag_comms(self, odxlinks: OdxLinkDatabase) -> Iterable[DiagComm]:
 
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[DiagComm]:
-            return dl._get_local_diag_comms(odxlinks)
+            """Return the list of locally defined diagnostic communications.
+
+            Note that at this point the references specified in the
+            <DIAG-COMMS> XML tag must have been resolved.
+            """
+            return dl.diag_layer_raw.diag_comms
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_diag_comms
@@ -416,7 +421,14 @@ class HierarchyElement(DiagLayer):
     def _compute_available_unit_groups(self) -> Iterable[UnitGroup]:
 
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[UnitGroup]:
-            return dl._get_local_unit_groups()
+            if dl.diag_layer_raw.diag_data_dictionary_spec is None:
+                return []
+
+            unit_spec = dl.diag_layer_raw.diag_data_dictionary_spec.unit_spec
+            if unit_spec is None:
+                return []
+
+            return unit_spec.unit_groups
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
@@ -426,7 +438,14 @@ class HierarchyElement(DiagLayer):
     def _compute_available_units(self) -> Iterable[Unit]:
 
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[Unit]:
-            return dl._get_local_units()
+            if dl.diag_layer_raw.diag_data_dictionary_spec is None:
+                return []
+
+            unit_spec = dl.diag_layer_raw.diag_data_dictionary_spec.unit_spec
+            if unit_spec is None:
+                return []
+
+            return unit_spec.units
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
@@ -436,7 +455,14 @@ class HierarchyElement(DiagLayer):
     def _compute_available_physical_dimensions(self) -> Iterable[PhysicalDimension]:
 
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[PhysicalDimension]:
-            return dl._get_local_physical_dimensions()
+            if dl.diag_layer_raw.diag_data_dictionary_spec is None:
+                return []
+
+            unit_spec = dl.diag_layer_raw.diag_data_dictionary_spec.unit_spec
+            if unit_spec is None:
+                return []
+
+            return unit_spec.physical_dimensions
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []
