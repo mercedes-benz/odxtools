@@ -19,11 +19,13 @@ from ..nameditemlist import NamedItemList, OdxNamed
 from ..odxdoccontext import OdxDocContext
 from ..odxlink import OdxLinkDatabase, OdxLinkId
 from ..parentref import ParentRef
+from ..physicaldimension import PhysicalDimension
 from ..response import Response
 from ..singleecujob import SingleEcuJob
 from ..snrefcontext import SnRefContext
 from ..specialdatagroup import SpecialDataGroup
 from ..statechart import StateChart
+from ..unit import Unit
 from ..unitgroup import UnitGroup
 from ..unitspec import UnitSpec
 from .diaglayer import DiagLayer
@@ -96,11 +98,14 @@ class HierarchyElement(DiagLayer):
 
         ############
         # create a new unit_spec object. This is necessary because
-        # unit_groups are subject to value inheritance.
+        # unit_groups, units, and physical_dimensions are subject to
+        # value inheritance.
 
-        # unit groups applicable to this diaglayer (i.e., including
-        # value inheritance)
-        unit_groups = self._compute_available_unit_groups()
+        # unit groups, units, and physical dimensions applicable to
+        # this diaglayer (i.e., including value inheritance)
+        unit_groups = NamedItemList(self._compute_available_unit_groups())
+        units = NamedItemList(self._compute_available_units())
+        physical_dimensions = NamedItemList(self._compute_available_physical_dimensions())
 
         # convenience variable for the locally-defined unit spec
         local_unit_spec: UnitSpec | None = None
@@ -110,23 +115,15 @@ class HierarchyElement(DiagLayer):
             local_unit_spec = None
 
         unit_spec: UnitSpec | None = None
-        if local_unit_spec is None and not unit_groups:
-            # no locally defined unit spec and no inherited unit groups
+        if local_unit_spec is None and not unit_groups and not units and not physical_dimensions:
+            # no locally defined unit spec and no inherited objects
             unit_spec = None
-        elif local_unit_spec is None:
-            # no locally defined unit spec but inherited unit groups
-            unit_spec = UnitSpec(
-                unit_groups=NamedItemList(unit_groups),
-                units=NamedItemList([]),
-                physical_dimensions=NamedItemList([]),
-                admin_data=None,
-                sdgs=[])
         else:
-            # locally defined unit spec and inherited unit groups
+            # locally defined unit spec and/or inherited objects
             unit_spec = UnitSpec(
-                unit_groups=NamedItemList(unit_groups),
-                units=local_unit_spec.units,
-                physical_dimensions=local_unit_spec.physical_dimensions,
+                unit_groups=unit_groups,
+                units=units,
+                physical_dimensions=physical_dimensions,
                 admin_data=None,
                 sdgs=[])
         ############
@@ -354,7 +351,12 @@ class HierarchyElement(DiagLayer):
     def _compute_available_diag_comms(self, odxlinks: OdxLinkDatabase) -> Iterable[DiagComm]:
 
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[DiagComm]:
-            return dl._get_local_diag_comms(odxlinks)
+            """Return the list of locally defined diagnostic communications.
+
+            Note that at this point the references specified in the
+            <DIAG-COMMS> XML tag must have been resolved.
+            """
+            return dl.diag_layer_raw.diag_comms
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return parent_ref.not_inherited_diag_comms
@@ -419,7 +421,48 @@ class HierarchyElement(DiagLayer):
     def _compute_available_unit_groups(self) -> Iterable[UnitGroup]:
 
         def get_local_objects_fn(dl: DiagLayer) -> Iterable[UnitGroup]:
-            return dl._get_local_unit_groups()
+            if dl.diag_layer_raw.diag_data_dictionary_spec is None:
+                return []
+
+            unit_spec = dl.diag_layer_raw.diag_data_dictionary_spec.unit_spec
+            if unit_spec is None:
+                return []
+
+            return unit_spec.unit_groups
+
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
+            return []
+
+        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+
+    def _compute_available_units(self) -> Iterable[Unit]:
+
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[Unit]:
+            if dl.diag_layer_raw.diag_data_dictionary_spec is None:
+                return []
+
+            unit_spec = dl.diag_layer_raw.diag_data_dictionary_spec.unit_spec
+            if unit_spec is None:
+                return []
+
+            return unit_spec.units
+
+        def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
+            return []
+
+        return self._compute_available_objects(get_local_objects_fn, not_inherited_fn)
+
+    def _compute_available_physical_dimensions(self) -> Iterable[PhysicalDimension]:
+
+        def get_local_objects_fn(dl: DiagLayer) -> Iterable[PhysicalDimension]:
+            if dl.diag_layer_raw.diag_data_dictionary_spec is None:
+                return []
+
+            unit_spec = dl.diag_layer_raw.diag_data_dictionary_spec.unit_spec
+            if unit_spec is None:
+                return []
+
+            return unit_spec.physical_dimensions
 
         def not_inherited_fn(parent_ref: ParentRef) -> list[str]:
             return []

@@ -30,7 +30,6 @@ from ..snrefcontext import SnRefContext
 from ..specialdatagroup import SpecialDataGroup
 from ..statechart import StateChart
 from ..subcomponent import SubComponent
-from ..unitgroup import UnitGroup
 from .diaglayerraw import DiagLayerRaw
 from .diaglayertype import DiagLayerType
 
@@ -135,24 +134,6 @@ class DiagLayer:
 
     def _resolve_snrefs(self, context: SnRefContext) -> None:
         self.diag_layer_raw._resolve_snrefs(context)
-
-    def _get_local_diag_comms(self, odxlinks: OdxLinkDatabase) -> Iterable[DiagComm]:
-        """Return the list of locally defined diagnostic communications.
-
-        This is not completely trivial as it requires resolving the
-        references specified in the <DIAG-COMMS> XML tag.
-        """
-        return self.diag_layer_raw.diag_comms
-
-    def _get_local_unit_groups(self) -> Iterable[UnitGroup]:
-        if self.diag_layer_raw.diag_data_dictionary_spec is None:
-            return []
-
-        unit_spec = self.diag_layer_raw.diag_data_dictionary_spec.unit_spec
-        if unit_spec is None:
-            return []
-
-        return unit_spec.unit_groups
 
     def _compute_available_objects(
         self,
