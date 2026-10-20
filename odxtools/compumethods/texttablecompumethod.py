@@ -119,7 +119,11 @@ class TexttableCompuMethod(CompuMethod):
         odxraise(f"Texttable compu method could not decode '{internal_value!r}'.", EncodeError)
 
     def is_valid_physical_value(self, physical_value: AtomicOdxType) -> bool:
-        if self._compu_physical_default_value is not None:
+        # convert_physical_to_internal() falls back to the *internal*
+        # default value (COMPU-PHYS-TO-INTERNAL's default) for physical
+        # values that match no scale, so with that default every physical
+        # value can be encoded.
+        if self._compu_internal_default_value is not None:
             return True
 
         scales = []
@@ -131,7 +135,10 @@ class TexttableCompuMethod(CompuMethod):
                    if scale.compu_const is not None)
 
     def is_valid_internal_value(self, internal_value: AtomicOdxType) -> bool:
-        if self._compu_internal_default_value is not None:
+        # Likewise, convert_internal_to_physical() falls back to the
+        # *physical* default value (COMPU-INTERNAL-TO-PHYS's default), so
+        # with that default every internal value can be decoded.
+        if self._compu_physical_default_value is not None:
             return True
 
         scales = []
