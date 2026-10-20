@@ -75,8 +75,11 @@ class MatchingRequestParameter(Parameter):
 
     @override
     def _decode_positioned_from_pdu(self, decode_state: DecodeState) -> ParameterValue:
+        # MatchingRequest parameters need to replicate the data of the
+        # request, so we always use high-low byte order (big
+        # endian)...
         return decode_state.extract_atomic_value(
             bit_length=self.byte_length * 8,
             base_data_type=DataType.A_UINT32,
             base_type_encoding=None,
-            is_highlow_byte_order=False)
+            is_highlow_byte_order=True)
