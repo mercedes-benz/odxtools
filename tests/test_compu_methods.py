@@ -11,6 +11,7 @@ import odxtools
 from odxtools.compumethods.compucategory import CompuCategory
 from odxtools.compumethods.compucodecompumethod import CompuCodeCompuMethod
 from odxtools.compumethods.compuconst import CompuConst
+from odxtools.compumethods.compudefaultvalue import CompuDefaultValue
 from odxtools.compumethods.compuinternaltophys import CompuInternalToPhys
 from odxtools.compumethods.compuphystointernal import CompuPhysToInternal
 from odxtools.compumethods.compurationalcoeffs import CompuRationalCoeffs
@@ -22,6 +23,7 @@ from odxtools.compumethods.linearcompumethod import LinearCompuMethod
 from odxtools.compumethods.ratfunccompumethod import RatFuncCompuMethod
 from odxtools.compumethods.scaleratfunccompumethod import ScaleRatFuncCompuMethod
 from odxtools.compumethods.tabintpcompumethod import TabIntpCompuMethod
+from odxtools.compumethods.texttablecompumethod import TexttableCompuMethod
 from odxtools.exceptions import DecodeError, EncodeError, OdxError
 from odxtools.odxdoccontext import OdxDocContext
 from odxtools.odxlink import DocType, OdxDocFragment
@@ -617,6 +619,61 @@ class TestScaleRatFuncCompuMethod(unittest.TestCase):
             compu_method.convert_internal_to_physical(3.99)
         with self.assertRaises(DecodeError):
             compu_method.convert_internal_to_physical(9.01)
+
+
+class TestTexttableCompuMethod(unittest.TestCase):
+
+    def _make_scales(self) -> list[CompuScale]:
+        return [
+            CompuScale(
+                lower_limit=Limit(value_raw=str(internal), value_type=DataType.A_UINT32),
+                upper_limit=Limit(value_raw=str(internal), value_type=DataType.A_UINT32),
+                compu_const=CompuConst(vt=physical, data_type=DataType.A_UNICODE2STRING),
+                domain_type=DataType.A_UINT32,
+                range_type=DataType.A_UNICODE2STRING)
+            for internal, physical in [(0, "off"), (1, "on")]
+        ]
+
+    def test_internal_default_value(self) -> None:
+        # unknown physical values are encoded using the default value
+        # of COMPU-PHYS-TO-INTERNAL
+        compu_method = TexttableCompuMethod(
+            category=CompuCategory.TEXTTABLE,
+            compu_internal_to_phys=CompuInternalToPhys(compu_scales=self._make_scales()),
+            compu_phys_to_internal=CompuPhysToInternal(
+                compu_default_value=CompuDefaultValue(v="255", data_type=DataType.A_UINT32)),
+            internal_type=DataType.A_UINT32,
+            physical_type=DataType.A_UNICODE2STRING,
+        )
+
+        self.assertTrue(compu_method.is_valid_physical_value("on"))
+        self.assertTrue(compu_method.is_valid_physical_value("unknown"))
+        self.assertEqual(compu_method.convert_physical_to_internal("unknown"), 255)
+
+        self.assertTrue(compu_method.is_valid_internal_value(1))
+        self.assertFalse(compu_method.is_valid_internal_value(7))
+        self.assertRaises(DecodeError, compu_method.convert_internal_to_physical, 7)
+
+    def test_physical_default_value(self) -> None:
+        # unknown internal values are decoded using the default value
+        # of COMPU-INTERNAL-TO-PHYS
+        compu_method = TexttableCompuMethod(
+            category=CompuCategory.TEXTTABLE,
+            compu_internal_to_phys=CompuInternalToPhys(
+                compu_scales=self._make_scales(),
+                compu_default_value=CompuDefaultValue(
+                    vt="unknown", data_type=DataType.A_UNICODE2STRING)),
+            internal_type=DataType.A_UINT32,
+            physical_type=DataType.A_UNICODE2STRING,
+        )
+
+        self.assertTrue(compu_method.is_valid_internal_value(1))
+        self.assertTrue(compu_method.is_valid_internal_value(7))
+        self.assertEqual(compu_method.convert_internal_to_physical(7), "unknown")
+
+        self.assertTrue(compu_method.is_valid_physical_value("on"))
+        self.assertFalse(compu_method.is_valid_physical_value("bogus"))
+        self.assertRaises(EncodeError, compu_method.convert_physical_to_internal, "bogus")
 
 
 class TestTabIntpCompuMethod(unittest.TestCase):
