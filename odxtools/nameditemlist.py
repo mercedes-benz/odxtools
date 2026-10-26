@@ -5,6 +5,8 @@ from collections.abc import Collection, Iterable
 from keyword import iskeyword
 from typing import Any, SupportsIndex, TypeVar, overload, runtime_checkable
 
+from typing_extensions import Self
+
 from .exceptions import odxraise
 
 
@@ -106,8 +108,15 @@ class ItemAttributeList(list[T]):
         return result
 
     def extend(self, items: Iterable[T]) -> None:
+        if items is self:
+            items = list(items)
         for item in items:
             self.append(item)
+
+    # Like list.__iadd__, accept any iterable, unlike list.__add__.
+    def __iadd__(self, items: Iterable[T]) -> Self:  # type: ignore[override,misc]
+        self.extend(items)
+        return self
 
     def clear(self) -> None:
         super().clear()

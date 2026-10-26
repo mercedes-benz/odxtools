@@ -98,6 +98,50 @@ class X:
 
 class TestNamedItemList(unittest.TestCase):
 
+    def test_in_place_addition(self) -> None:
+        foo = NamedItemList([X("hello", 0)])
+        original = foo
+
+        foo += [X("world", 1), X("hello", 2)]
+
+        self.assertIs(foo, original)
+        self.assertEqual(list(foo), [X("hello", 0), X("world", 1), X("hello", 2)])
+        self.assertEqual(foo.hello, X("hello", 0))
+        self.assertEqual(foo.world, X("world", 1))
+        self.assertEqual(foo["hello_2"], X("hello", 2))
+        self.assertEqual(list(foo.keys()), ["hello", "world", "hello_2"])
+
+    def test_in_place_addition_from_generator(self) -> None:
+        foo = NamedItemList([X("hello", 0)])
+
+        foo += (X(name, value) for value, name in enumerate(["world", "sort"], start=1))
+
+        self.assertEqual(foo.world, X("world", 1))
+        self.assertEqual(foo["sort_2"], X("sort", 2))
+        self.assertEqual(list(foo.values()), list(foo))
+
+    def test_in_place_addition_to_self(self) -> None:
+        foo = NamedItemList([X("hello", 0), X("world", 1)])
+        original_items = list(foo)
+
+        foo += foo
+
+        self.assertEqual(list(foo), original_items * 2)
+        self.assertEqual(list(foo.keys()), ["hello", "world", "hello_2", "world_2"])
+        self.assertEqual(foo.hello_2, X("hello", 0))
+        self.assertEqual(foo.world_2, X("world", 1))
+
+    def test_in_place_addition_empty(self) -> None:
+        foo = NamedItemList([X("hello", 0)])
+        original = foo
+
+        foo += []
+
+        self.assertIs(foo, original)
+        self.assertEqual(list(foo), [X("hello", 0)])
+        self.assertEqual(foo.hello, X("hello", 0))
+        self.assertEqual(list(foo.keys()), ["hello"])
+
     def test_NamedItemList(self) -> None:
         foo = NamedItemList([X("hello", 0), X("world", 1)])
 
