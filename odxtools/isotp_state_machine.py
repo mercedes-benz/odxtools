@@ -265,18 +265,10 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         return self._can_tx_ids[telegram_idx]
 
     def on_single_frame(self, telegram_idx: int, frame_payload: bytes | bytearray) -> None:
-        # send ACK
-        # rx_id = self.can_rx_id(telegram_idx)
-        tx_id = self.can_tx_id(telegram_idx)
-        block_size = 0xFF
-        min_separation_time = 0  # ms
-        fc_payload = bytes([(IsoTp.FRAME_TYPE_FLOW_CONTROL << 4) | IsoTp.FLOW_CONTROL_CONTINUE,
-                            block_size, min_separation_time])
-
-        self._send_can_message(tx_id, fc_payload)
+        # single frames are not acknowledged by flow control
         self._frames_received[telegram_idx] = None
 
-        super().on_first_frame(telegram_idx, frame_payload)
+        super().on_single_frame(telegram_idx, frame_payload)
 
     def on_first_frame(self, telegram_idx: int, frame_payload: bytes | bytearray) -> None:
         # send ACK
