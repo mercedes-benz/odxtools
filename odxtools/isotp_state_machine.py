@@ -235,8 +235,10 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
                  can_rx_ids: list[int],
                  can_tx_ids: list[int],
                  padding_size: int = 0,
-                 padding_value: int = 0xAA):
+                 padding_value: int = 0xAA,
+                 is_extended_id: bool = False):
         self._can_bus = can_bus
+        self._is_extended_id = is_extended_id
 
         if isinstance(can_tx_ids, int):
             can_tx_ids = [can_tx_ids]
@@ -321,6 +323,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
             payload = bytes(payload) + bytes([self._padding_value] *
                                              (self._padding_size - len(payload)))
 
-        msg = can.Message(arbitration_id=can_tx_id, data=payload, is_extended_id=False)
+        msg = can.Message(
+            arbitration_id=can_tx_id, data=payload, is_extended_id=self._is_extended_id)
 
         self._can_bus.send(msg)
