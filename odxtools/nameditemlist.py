@@ -109,11 +109,14 @@ class ItemAttributeList(list[T]):
 
     def extend(self, items: Iterable[T]) -> None:
         if items is self:
+            # Appending while iterating over self would otherwise never finish.
             items = list(items)
         for item in items:
             self.append(item)
 
     # Like list.__iadd__, accept any iterable, unlike list.__add__.
+    # mypy compares this with list.__add__ and reports override/misc, even
+    # though the signature matches list.__iadd__ (also suppressed in typeshed).
     def __iadd__(self, items: Iterable[T]) -> Self:  # type: ignore[override,misc]
         self.extend(items)
         return self
