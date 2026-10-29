@@ -282,7 +282,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         self._send_can_message(tx_id, fc_payload)
 
         self._block_size[telegram_idx] = block_size
-        # TODO: find out if the first frame counts into the current block...
+        # Only consecutive frames count towards the advertised block size.
         self._frames_received[telegram_idx] = 0
 
         super().on_first_frame(telegram_idx, frame_payload)
@@ -294,11 +294,15 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
             # consecutive frame received before a first frame.
             # TODO (?): throw an exception
             return
-        self._frames_received[telegram_idx] = num_received + 1
+        num_received += 1
+        self._frames_received[telegram_idx] = num_received
 
         # send new ACK if necessary
         block_size = self._block_size[telegram_idx]
-        if block_size is not None and num_received >= block_size:
+        telegram_data = self._telegram_data[telegram_idx]
+        if (block_size is not None and block_size > 0 and num_received >= block_size and
+                telegram_data is not None and
+                len(telegram_data) < self._telegram_specified_len[telegram_idx]):
             # rx_id = self.can_rx_id(telegram_idx)
             tx_id = self.can_tx_id(telegram_idx)
             min_separation_time = 0  # ms
@@ -306,7 +310,7 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
                                 block_size, min_separation_time])
             self._send_can_message(tx_id, fc_payload)
 
-            self._frames_received[telegram_idx] = 0  # TODO: 1?
+            self._frames_received[telegram_idx] = 0
 
         super().on_consecutive_frame(telegram_idx, segment_idx, frame_payload)
 
