@@ -9,8 +9,7 @@ from odxtools.isotp_state_machine import IsoTpStateMachine
 
 
 @pytest.mark.parametrize("payload_length", [1, 7, 8, 10, 14, 18, 22, 30, 46, 62])
-@pytest.mark.parametrize("as_bytearray", [False, True])
-def test_single_frame_lengths(payload_length: int, as_bytearray: bool) -> None:
+def test_single_frame_lengths(payload_length: int) -> None:
     payload = bytes(range(payload_length))
     if payload_length <= 7:
         frame = bytes([payload_length]) + payload
@@ -20,11 +19,10 @@ def test_single_frame_lengths(payload_length: int, as_bytearray: bool) -> None:
         frame_length = next(n for n in [12, 16, 20, 24, 32, 48, 64] if n >= len(frame))
     frame = frame.ljust(frame_length, b"\xcc")
     decoder = IsoTpStateMachine(0x123)
-    data = bytearray(frame) if as_bytearray else frame
 
     with patch.object(decoder, "on_single_frame") as single, patch.object(
             decoder, "on_telegram_complete") as complete:
-        assert list(decoder.decode_rx_frame(0x123, data)) == [(0x123, payload)]
+        assert list(decoder.decode_rx_frame(0x123, frame)) == [(0x123, payload)]
         single.assert_called_once_with(0, payload)
         complete.assert_called_once_with(0, payload)
 
@@ -79,6 +77,11 @@ def test_short_payload_in_can_fd_single_frame(payload_length: int, frame_length:
     payload = bytes(range(payload_length))
     frame = (bytes([0, payload_length]) + payload).ljust(frame_length, b"\xcc")
     assert list(IsoTpStateMachine(0x123).decode_rx_frame(0x123, frame)) == [(0x123, payload)]
+
+
+def test_classic_zero_length_single_frame_is_unchanged() -> None:
+    frame = b"\x00\x03abc\xcc\xcc\xcc"
+    assert list(IsoTpStateMachine(0x123).decode_rx_frame(0x123, frame)) == [(0x123, b"")]
 
 
 @pytest.mark.parametrize("length", [0, 11])
