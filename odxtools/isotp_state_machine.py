@@ -48,6 +48,9 @@ class IsoTpStateMachine:
 
         E.g., add some data to a telegram, etc. Returns a generator of
         (receive_id, payload_data) tuples.
+
+        Supports CAN FD single frame escape lengths and the 32-bit first
+        frame length encoding, in addition to the classical CAN encodings.
         """
         try:
             telegram_idx = self._can_rx_ids.index(rx_id)
@@ -61,17 +64,32 @@ class IsoTpStateMachine:
         telegram_len = None
         if frame_type == IsoTp.FRAME_TYPE_SINGLE:
             telegram_len = data[0] & 0x0F
+            payload_offset = 1
+            if telegram_len == 0 and len(data) > 8:
+                # CAN FD single frames use a second PCI byte for the length.
+                telegram_len = data[1]
+                payload_offset = 2
+                if telegram_len == 0 or telegram_len > len(data) - payload_offset:
+                    raise ValueError("Invalid ISO-TP single frame escape length")
 
-            self.on_single_frame(telegram_idx, data[1:1 + telegram_len])
-            self.on_telegram_complete(telegram_idx, data[1:1 + telegram_len])
+            payload = data[payload_offset:payload_offset + telegram_len]
+            self.on_single_frame(telegram_idx, payload)
+            self.on_telegram_complete(telegram_idx, payload)
 
-            yield (rx_id, bytes(data[1:1 + telegram_len]))
+            yield (rx_id, bytes(payload))
 
         elif frame_type == IsoTp.FRAME_TYPE_FIRST:
             telegram_len = ((data[0] & 0x0F) << 8) | data[1]
+            payload_offset = 2
+            if telegram_len == 0:
+                # Lengths above 4095 use four additional bytes, MSB first.
+                if len(data) < 6:
+                    raise ValueError("Incomplete ISO-TP first frame escape length")
+                telegram_len = int.from_bytes(data[2:6], "big")
+                payload_offset = 6
 
             self._telegram_specified_len[telegram_idx] = telegram_len
-            self._telegram_data[telegram_idx] = bytearray(data[2:])
+            self._telegram_data[telegram_idx] = bytearray(data[payload_offset:])
             self._telegram_last_rx_fragment_idx[telegram_idx] = 0
 
             self.on_first_frame(telegram_idx, data)
