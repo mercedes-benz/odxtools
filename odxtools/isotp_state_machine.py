@@ -66,11 +66,13 @@ class IsoTpStateMachine:
             telegram_len = data[0] & 0x0F
             payload_offset = 1
             if telegram_len == 0 and len(data) > 8:
-                # CAN FD single frames use a second PCI byte for the length.
+                # Single frames with more than eight data bytes use a second length byte.
                 telegram_len = data[1]
                 payload_offset = 2
                 if telegram_len == 0 or telegram_len > len(data) - payload_offset:
-                    raise ValueError("Invalid ISO-TP single frame escape length")
+                    self.on_protocol_error(telegram_idx,
+                                           "Invalid ISO-TP single frame escape length")
+                    return
 
             payload = data[payload_offset:payload_offset + telegram_len]
             self.on_single_frame(telegram_idx, payload)
@@ -79,14 +81,25 @@ class IsoTpStateMachine:
             yield (rx_id, bytes(payload))
 
         elif frame_type == IsoTp.FRAME_TYPE_FIRST:
+            if len(data) < 8:
+                self.on_protocol_error(telegram_idx,
+                                       "ISO-TP first frame has fewer than eight bytes")
+                return
             telegram_len = ((data[0] & 0x0F) << 8) | data[1]
             payload_offset = 2
             if telegram_len == 0:
                 # Lengths above 4095 use four additional bytes, MSB first.
-                if len(data) < 6:
-                    raise ValueError("Incomplete ISO-TP first frame escape length")
                 telegram_len = int.from_bytes(data[2:6], "big")
+                if telegram_len <= 4095:
+                    self.on_protocol_error(telegram_idx, "Invalid ISO-TP first frame escape length")
+                    return
                 payload_offset = 6
+
+            # ISO 15765-2:2016 Table 14, normal addressing.
+            minimum_length = 8 if len(data) == 8 else len(data) - 1
+            if telegram_len < minimum_length:
+                self.on_protocol_error(telegram_idx, "ISO-TP first frame length below minimum")
+                return
 
             self._telegram_specified_len[telegram_idx] = telegram_len
             self._telegram_data[telegram_idx] = bytearray(data[payload_offset:])
@@ -102,6 +115,8 @@ class IsoTpStateMachine:
             if telegram_data is None:
                 # consecutive frame received before first frame
                 self.on_sequence_error(telegram_idx, expected_segment_idx, rx_segment_idx)
+                self.on_protocol_error(telegram_idx,
+                                       "Consecutive frame received before first frame")
                 return
 
             n = -1
@@ -120,6 +135,9 @@ class IsoTpStateMachine:
 
             if expected_segment_idx != rx_segment_idx:
                 self.on_sequence_error(telegram_idx, expected_segment_idx, rx_segment_idx)
+                self.on_protocol_error(
+                    telegram_idx,
+                    f"Expected sequence index {expected_segment_idx}, got {rx_segment_idx}")
             elif len(telegram_data) == n:
                 self.on_telegram_complete(telegram_idx, telegram_data)
                 yield (rx_id, bytes(telegram_data))
@@ -231,6 +249,10 @@ class IsoTpStateMachine:
 
     def on_sequence_error(self, telegram_idx: int, expected_idx: int, rx_idx: int) -> None:
         """Method called when a frame with an unexpected sequence index has been received"""
+        pass
+
+    def on_protocol_error(self, telegram_idx: int, message: str) -> None:
+        """Called when an invalid ISO-TP frame is ignored."""
         pass
 
     def on_frame_type_error(self, telegram_idx: int, frame_type: int) -> None:

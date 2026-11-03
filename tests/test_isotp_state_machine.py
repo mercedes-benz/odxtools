@@ -88,15 +88,38 @@ def test_classic_zero_length_single_frame_is_unchanged() -> None:
 def test_invalid_can_fd_single_frame_length(length: int) -> None:
     frame = bytes([0, length]) + b"\xcc" * 10
     decoder = IsoTpStateMachine(0x123)
-    with patch.object(decoder, "on_telegram_complete") as complete:
-        with pytest.raises(ValueError, match="single frame escape length"):
-            list(decoder.decode_rx_frame(0x123, frame))
-        complete.assert_not_called()
+    with patch.object(decoder, "on_protocol_error") as error:
+        assert list(decoder.decode_rx_frame(0x123, frame)) == []
+        error.assert_called_once_with(0, "Invalid ISO-TP single frame escape length")
 
 
-@pytest.mark.parametrize("frame_length", [2, 3, 4, 5])
-def test_incomplete_first_frame_escape_length(frame_length: int) -> None:
+@pytest.mark.parametrize("frame", [
+    b"\x10",
+    b"\x10\x07abcdef",
+    b"\x10\x0aabcdefghij",
+    b"\x10\x00\x00\x01\x00",
+    b"\x10\x00\x00\x01\x00\x00\x00",
+    b"\x10\x00\x00\x00\x00\x00\x00\x00",
+    b"\x10\x00\x00\x00\x0f\xff\x00\x00",
+])
+def test_invalid_first_frame_does_not_start_reassembly(frame: bytes) -> None:
     decoder = IsoTpStateMachine(0x123)
-    with pytest.raises(ValueError, match="first frame escape length"):
-        list(decoder.decode_rx_frame(0x123, b"\x10\x00\x00\x01\x00"[:frame_length]))
+    with patch.object(decoder,
+                      "on_protocol_error") as error, patch.object(decoder,
+                                                                  "on_first_frame") as first:
+        assert list(decoder.decode_rx_frame(0x123, frame)) == []
+        error.assert_called_once()
+        first.assert_not_called()
     assert decoder.telegram_data(0) is None
+
+
+@pytest.mark.parametrize("with_first_frame", [False, True])
+def test_sequence_errors_call_both_callbacks(with_first_frame: bool) -> None:
+    decoder = IsoTpStateMachine(0x123)
+    if with_first_frame:
+        assert list(decoder.decode_rx_frame(0x123, b"\x10\x08abcdef")) == []
+    with patch.object(decoder, "on_protocol_error") as protocol_error, patch.object(
+            decoder, "on_sequence_error") as sequence_error:
+        assert list(decoder.decode_rx_frame(0x123, b"\x22gh")) == []
+        sequence_error.assert_called_once_with(0, 1, 2)
+        protocol_error.assert_called_once()
