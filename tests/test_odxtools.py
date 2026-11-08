@@ -170,6 +170,77 @@ class TestNamedItemList(unittest.TestCase):
 
         bar(foo)
 
+    def test_remove_equal_item_preserves_remaining_alias(self) -> None:
+        first = X("duplicate", 1)
+        second = X("duplicate", 1)
+        foo = NamedItemList([first, second])
+
+        foo.remove(X("duplicate", 1))
+
+        self.assertEqual(len(foo), 1)
+        self.assertIs(foo[0], second)
+        self.assertIs(foo["duplicate_2"], second)
+        self.assertEqual(list(foo.keys()), ["duplicate_2"])
+
+    def test_pop_equal_last_item_preserves_remaining_alias(self) -> None:
+        first = X("duplicate", 1)
+        second = X("duplicate", 1)
+        foo = NamedItemList([first, second])
+
+        self.assertIs(foo.pop(), second)
+
+        self.assertEqual(len(foo), 1)
+        self.assertIs(foo[0], first)
+        self.assertIs(foo.duplicate, first)
+        self.assertEqual(list(foo.keys()), ["duplicate"])
+
+    def test_pop_equal_first_item_preserves_remaining_alias(self) -> None:
+        first = X("duplicate", 1)
+        second = X("duplicate", 1)
+        foo = NamedItemList([first, second])
+
+        self.assertIs(foo.pop(0), first)
+
+        self.assertEqual(len(foo), 1)
+        self.assertIs(foo[0], second)
+        self.assertIs(foo.duplicate_2, second)
+        self.assertEqual(list(foo.keys()), ["duplicate_2"])
+
+    def test_pop_repeated_instance_preserves_primary_alias(self) -> None:
+        item = X("duplicate", 1)
+        foo = NamedItemList([item, item])
+
+        self.assertIs(foo.pop(), item)
+
+        self.assertEqual(len(foo), 1)
+        self.assertIs(foo.duplicate, item)
+        self.assertEqual(list(foo.keys()), ["duplicate"])
+        self.assertEqual(list(foo.values()), [item])
+
+    def test_remove_missing_item_preserves_aliases(self) -> None:
+        item = X("present", 1)
+        foo = NamedItemList([item])
+
+        with self.assertRaises(ValueError):
+            foo.remove(X("missing", 2))
+
+        self.assertEqual(len(foo), 1)
+        self.assertIs(foo[0], item)
+        self.assertIs(foo.present, item)
+        self.assertEqual(list(foo.keys()), ["present"])
+
+    def test_pop_invalid_index_preserves_aliases(self) -> None:
+        item = X("present", 1)
+        foo = NamedItemList([item])
+
+        with self.assertRaises(IndexError):
+            foo.pop(3)
+
+        self.assertEqual(len(foo), 1)
+        self.assertIs(foo[0], item)
+        self.assertIs(foo.present, item)
+        self.assertEqual(list(foo.keys()), ["present"])
+
 
 class TestNavigation(unittest.TestCase):
 

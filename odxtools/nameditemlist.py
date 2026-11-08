@@ -92,17 +92,16 @@ class ItemAttributeList(list[T]):
         list.insert(self, index, obj)
 
     def remove(self, obj: T) -> None:
-        list.remove(self, obj)
-
-        keys = [k for (k, v) in self._item_dict.items() if v == obj]
-        for key in keys:
-            del self._item_dict[key]
+        self.pop(self.index(obj))
 
     def pop(self, index: SupportsIndex = -1) -> T:
         result = list.pop(self, index)
-        keys = [k for (k, v) in self._item_dict.items() if v == result]
-        for key in keys:
-            del self._item_dict[key]
+        # Remove only the actual object's alias. For repeated instances,
+        # keep the earlier aliases and remove the most recently added one.
+        for key, value in reversed(self._item_dict.items()):
+            if value is result:
+                del self._item_dict[key]
+                break
         return result
 
     def extend(self, items: Iterable[T]) -> None:
