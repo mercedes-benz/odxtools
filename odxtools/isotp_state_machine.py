@@ -297,7 +297,9 @@ class IsoTpActiveDecoder(IsoTpStateMachine):
         num_received += 1
         self._frames_received[telegram_idx] = num_received
 
-        # send new ACK if necessary
+        # A block size of zero lets the sender continue without further flow control.
+        # With a positive block size, the sender pauses after that many consecutive
+        # frames. Send Continue To Send at that boundary if more data is needed.
         block_size = self._block_size[telegram_idx]
         telegram_data = self._telegram_data[telegram_idx]
         if (block_size is not None and block_size > 0 and num_received >= block_size and
