@@ -801,6 +801,14 @@ somersault_negative_responses = {
                     # 1 -> too dizzy
                     # 2 -> stumbled
                 ),
+                # The NRC-CONST above matches on byte 2 but refuses a directly
+                # set value, so the byte it matches on is written through this
+                # overlapping VALUE parameter.
+                ValueParameter(
+                    short_name="reason_value",
+                    dop_ref=OdxLinkRef("somersault.DOP.uint8", doc_frags),
+                    byte_position=2,
+                ),
                 ValueParameter(
                     short_name="flips_successfully_done",
                     dop_ref=OdxLinkRef("somersault.DOP.num_flips", doc_frags),
