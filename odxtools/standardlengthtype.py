@@ -1,6 +1,5 @@
 # SPDX-License-Identifier: MIT
 from dataclasses import dataclass
-from typing import Literal
 from xml.etree import ElementTree
 
 from typing_extensions import override
@@ -58,23 +57,17 @@ class StandardLengthType(DiagCodedType):
         if self.bit_mask is None:
             return None
 
-        endianness: Literal["little", "big"] = "big"
-        if not self.is_highlow_byte_order and self.base_data_type in [
-                DataType.A_INT32, DataType.A_UINT32, DataType.A_FLOAT32, DataType.A_FLOAT64
-        ]:
-            # TODO (?): Technically, little endian A_UNICODE2STRING
-            # objects require a byte swap for each 16 bit letter, and
-            # thus also for the mask. I somehow doubt that this has
-            # been anticipated by the standard, though...
-            endianness = "little"
-
+        # the mask is always specified in big endian byte order here:
+        # EncodeState.emplace_atomic_value() swaps the bytes of the
+        # mask together with those of the value if the object is
+        # little endian.
         if self.is_condensed:
             # if a condensed bitmask is specified, the number of bits
             # set to one in the bit mask are used in the PDU
             bit_sz = self.bit_mask.bit_count()
             used_mask = (1 << bit_sz) - 1
 
-            return used_mask.to_bytes((bit_sz + 7) // 8, endianness)
+            return used_mask.to_bytes((bit_sz + 7) // 8, "big")
 
         sz: int
         if isinstance(internal_value, BytesTypes):
@@ -85,7 +78,7 @@ class StandardLengthType(DiagCodedType):
         max_value = (1 << (sz * 8)) - 1
         used_mask = self.bit_mask & max_value
 
-        return used_mask.to_bytes(sz, endianness)
+        return used_mask.to_bytes(sz, "big")
 
     def __apply_mask(self, internal_value: AtomicOdxType) -> AtomicOdxType:
         if self.bit_mask is None:

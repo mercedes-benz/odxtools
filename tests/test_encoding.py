@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 import math
 import unittest
+import warnings
 from datetime import datetime
 
 from odxtools.compumethods.compucategory import CompuCategory
@@ -24,7 +25,7 @@ from odxtools.encodestate import EncodeState
 from odxtools.encoding import Encoding
 from odxtools.environmentdata import EnvironmentData
 from odxtools.environmentdatadescription import EnvironmentDataDescription
-from odxtools.exceptions import EncodeError, OdxError
+from odxtools.exceptions import EncodeError, OdxError, OdxWarning
 from odxtools.nameditemlist import NamedItemList
 from odxtools.odxlink import DocType, OdxDocFragment, OdxLinkDatabase, OdxLinkId, OdxLinkRef
 from odxtools.odxtypes import DataType
@@ -886,6 +887,58 @@ class TestEncodeRequest(unittest.TestCase):
                 "inner_param": (0xbc << 2),
                 "outer_param": 0xa00d
             })
+
+    def test_bit_mask_little_endian(self) -> None:
+        physical_type = PhysicalType(base_data_type=DataType.A_UINT32)
+        compu_method = IdenticalCompuMethod(
+            category=CompuCategory.IDENTICAL,
+            internal_type=DataType.A_UINT32,
+            physical_type=DataType.A_UINT32)
+
+        def create_param(short_name: str, bit_mask: int,
+                         is_highlow_byte_order: bool) -> ValueParameter:
+            dct = StandardLengthType(
+                bit_mask=bit_mask,
+                base_data_type=DataType.A_UINT32,
+                bit_length=16,
+                is_highlow_byte_order_raw=is_highlow_byte_order)
+            dop = DataObjectProperty(
+                odx_id=OdxLinkId(f"dop.{short_name}", doc_frags),
+                short_name=f"{short_name}_dop",
+                diag_coded_type=dct,
+                physical_type=physical_type,
+                compu_method=compu_method)
+
+            odxlinks = OdxLinkDatabase()
+            odxlinks.update(dop._build_odxlinks())
+            odxlinks.update(dct._build_odxlinks())
+
+            param = ValueParameter(
+                short_name=short_name, byte_position=0, dop_ref=OdxLinkRef.from_id(dop.odx_id))
+            param._resolve_odxlinks(odxlinks)
+            param._resolve_snrefs(SnRefContext(use_weakrefs=False))
+
+            return param
+
+        # a single little endian parameter: the masked value 0x0bc0
+        # is sent with the low byte first
+        req = self._create_request([create_param("le_param", 0x0ff0, False)])
+        self.assertEqual(req.encode(le_param=0xabcd).hex(), "c00b")
+        self.assertEqual(req.decode(bytes.fromhex("c00b")), {"le_param": 0x0bc0})
+
+        # a little endian and a big endian parameter which share the
+        # same two bytes. The mask 0xf00f covers the bits 0x0ff0 of
+        # the PDU for the little endian parameter, i.e., the two
+        # parameters do not overlap.
+        req = self._create_request([
+            create_param("le_param", 0xf00f, False),
+            create_param("be_param", 0xf00f, True),
+        ])
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", OdxWarning)
+            coded = req.encode(le_param=0x4568, be_param=0x1234)
+        self.assertEqual(coded.hex(), "1844")
+        self.assertEqual(req.decode(coded), {"le_param": 0x4008, "be_param": 0x1004})
 
     def test_condensed_bit_mask(self) -> None:
         dct = StandardLengthType(
